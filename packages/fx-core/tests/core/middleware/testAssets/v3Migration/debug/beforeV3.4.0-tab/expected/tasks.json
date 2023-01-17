@@ -75,7 +75,7 @@
         {
             "label": "Start auth",
             "type": "shell",
-            "command": "node teamsfx/script/run.auth.js . teamsfx/.env.local",
+            "command": "node teamsfx/script/run.auth.js . env/.env.local",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -102,7 +102,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node ../script/run.tab.js .. ../teamsfx/.env.local",
+            "command": "node ../script/run.tab.js .. ../env/.env.local",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/tabs"

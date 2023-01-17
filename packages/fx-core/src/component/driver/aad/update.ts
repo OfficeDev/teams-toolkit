@@ -53,7 +53,7 @@ export class UpdateAadAppDriver implements StepDriver {
 
       const manifest = await buildAadManifest(
         context,
-        args.manifestTemplatePath,
+        args.manifestPath,
         args.outputFilePath,
         state
       );
@@ -71,7 +71,7 @@ export class UpdateAadAppDriver implements StepDriver {
       await aadAppClient.updateAadApp(manifest);
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,
-        args.manifestTemplatePath,
+        args.manifestPath,
         manifest.id
       );
       context.logProvider?.info(summary);
@@ -133,8 +133,8 @@ export class UpdateAadAppDriver implements StepDriver {
 
   private validateArgs(args: UpdateAadAppArgs): void {
     const invalidParameters: string[] = [];
-    if (typeof args.manifestTemplatePath !== "string" || !args.manifestTemplatePath) {
-      invalidParameters.push("manifestTemplatePath");
+    if (typeof args.manifestPath !== "string" || !args.manifestPath) {
+      invalidParameters.push("manifestPath");
     }
 
     if (typeof args.outputFilePath !== "string" || !args.outputFilePath) {

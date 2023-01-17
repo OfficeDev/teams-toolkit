@@ -73,6 +73,8 @@ import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
+import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VersionSource } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 
@@ -241,12 +243,21 @@ export class FxCoreV3Implement {
       `aad.${inputs.env}.json`
     );
     const inputArgs: UpdateAadAppArgs = {
-      manifestTemplatePath: manifestTemplatePath,
+      manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
-    if (res.isErr()) return err(res.error);
+    if (res.isErr()) {
+      if (res.error instanceof MissingEnvInFileUserError) {
+        res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
+        if (res.error.displayMessage) {
+          res.error.displayMessage +=
+            " " + getLocalizedString("error.UpdateAadManifest.MissingEnvHint");
+        }
+      }
+      return err(res.error);
+    }
     return ok(Void);
   }
 

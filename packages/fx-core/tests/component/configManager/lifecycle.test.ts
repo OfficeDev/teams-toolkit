@@ -39,7 +39,7 @@ class DriverAWithSummary extends DriverA {
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     return {
       result: ok(new Map([["OUTPUT_A", "VALUE_A"]])),
-      summaries: ["Environment variable OUTPUT_A set in teamsfx/.env file"],
+      summaries: ["Environment variable OUTPUT_A set in env/.env file"],
     };
   }
 }
@@ -54,7 +54,7 @@ class DriverBWithSummary extends DriverB {
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     return {
       result: ok(new Map([["OUTPUT_B", "VALUE_B"]])),
-      summaries: ["Environment variable OUTPUT_B set in teamsfx/.env file"],
+      summaries: ["Environment variable OUTPUT_B set in env/.env file"],
     };
   }
 }
@@ -72,7 +72,7 @@ class DriverThatCapitalizeWithSummary extends DriverThatCapitalize {
   async execute(args: { INPUT_A: string }, ctx: DriverContext): Promise<ExecutionResult> {
     return {
       result: ok(new Map([["OUTPUT", args.INPUT_A.toUpperCase()]])),
-      summaries: ["Environment variable OUTPUT set in teamsfx/.env file"],
+      summaries: ["Environment variable OUTPUT set in env/.env file"],
     };
   }
 }
@@ -737,10 +737,10 @@ describe("Summary", () => {
       summaries.length === 2 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in env/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in teamsfx/.env file`
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in env/.env file`
     );
   });
 
@@ -777,10 +777,10 @@ describe("Summary", () => {
       summaries.length === 3 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in env/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in env/.env file` &&
         summaries[2].length === 1 &&
         summaries[2][0].includes(`${SummaryConstant.Failed} fake message`)
     );
@@ -820,7 +820,7 @@ describe("Summary", () => {
       summaries.length === 2 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in env/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] === `${SummaryConstant.Failed} Unresolved placeholders: AAA,CCC`,
       `Summary should only contain 2 items, because of execution stops at DriverBWithSummary`

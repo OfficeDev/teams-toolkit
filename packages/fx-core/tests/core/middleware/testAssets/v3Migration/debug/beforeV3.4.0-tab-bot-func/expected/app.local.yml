@@ -34,7 +34,7 @@ configureApp:
 
   - uses: aadApp/update
     with:
-      manifestTemplatePath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.template.json
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   - uses: teamsApp/validate

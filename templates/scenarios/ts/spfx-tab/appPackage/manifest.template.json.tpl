@@ -11,7 +11,7 @@
         "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
     },
     "name": {
-        "short": "${{TEAMS_APP_NAME}}",
+        "short": "{%appName%}-${{TEAMSFX_ENV}}",
         "full": "Full name for {%appName%}"
     },
     "description": {

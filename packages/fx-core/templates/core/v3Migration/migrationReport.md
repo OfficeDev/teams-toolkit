@@ -4,13 +4,13 @@ Congratulations! Your project has been upgraded to work with latest Teams Toolki
 
 ## Changes to your project
 
-1. Created `teamsapp.yml` and `teamsapp.local.yml` in your project root folder
-2. Moved environment files in `.fx` to `.env.{env}` in `teamsAppEnv` folder
+1. Created `teamsapp.yml` and `teamsapp.local.yml` in your project root folder.
+2. Moved environment files in `.fx` to `.env.{env}` in `env` folder.
 3. Moved `templates/appPackage` to `appPackage` and updated placeholders in it per latest tooling's requirement.
 4. Moved `templates/appPackage/aad.template.json` to `aad.manifest.template.json` and updated placeholders in it per latest tooling's requirement.
 5. Updated `.vscode/tasks.json` and `.vscode/launch.json`.
 6. Updated `.gitignore` to ignore new environment files.
-7. Removed `.fx` folder
+7. Removed `.fx` folder.
 
 For more detailed changes, please refer to this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#file-changes).
 

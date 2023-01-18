@@ -1,7 +1,5 @@
 version: 1.0.0
 
-environmentFolderPath: ./env
-
 registerApp:
   - uses: aadApp/create
     with:

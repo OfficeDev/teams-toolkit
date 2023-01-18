@@ -110,9 +110,9 @@ export async function envLoaderMWImpl(
     }
     if (!fs.pathExistsSync(envFilePath)) {
       const defaultEnvContent =
-        `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n` +
-        "# Generated during provision, you can also add your own variables\n\n" +
-        "# Secret. You can add your own secret value, prefixed with SECRET_\n";
+        `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n\n` +
+        "# Generated during provision, you can also add your own variables\n";
+      // "# Secret. You can add your own secret value, prefixed with SECRET_\n";
       await fs.writeFile(envFilePath, defaultEnvContent);
       inputs.createdEnvFile = envFilePath; // record created state for summary report
     }

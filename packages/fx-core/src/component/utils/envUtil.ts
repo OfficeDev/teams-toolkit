@@ -75,6 +75,7 @@ export class EnvUtil {
     env: string,
     envs: DotenvOutput
   ): Promise<Result<undefined, FxError>> {
+    envs.TEAMSFX_ENV = env;
     //encrypt
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) {

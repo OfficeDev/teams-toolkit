@@ -798,7 +798,7 @@ export class Coordinator {
         }
       }
     } finally {
-      const summary = summaryReporter.getLifecycleSummary();
+      const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
       ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
     }
 

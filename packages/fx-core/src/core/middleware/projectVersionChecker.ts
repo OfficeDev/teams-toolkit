@@ -10,6 +10,8 @@ import semver from "semver";
 import { isV3Enabled } from "../../common/tools";
 import { getProjectVersion } from "./utils/v3MigrationUtils";
 import { VersionInfo, VersionSource } from "../../common/versionMetadata";
+import { learnMoreText } from "./projectMigrator";
+import { learnMoreLink } from "./projectMigratorV3";
 
 let userCancelFlag = false;
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -44,24 +46,30 @@ async function showDialog(ctx: CoreHookContext) {
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (inputs.platform === Platform.VSCode) {
-    await TOOLS?.ui.showMessage(
+    const res = await TOOLS?.ui.showMessage(
       "warn",
       getLocalizedString("core.projectVersionChecker.vscodeUseNewVersion", "Teams Toolkit 5.0.0"),
       false,
-      "OK"
+      learnMoreText
     );
+    if (res.isOk() && res.value === learnMoreText) {
+      TOOLS?.ui!.openUrl(learnMoreLink);
+    }
   } else if (inputs.platform === Platform.CLI) {
     TOOLS?.logProvider.warning(getLocalizedString("core.projectVersionChecker.cliUseNewVersion"));
   } else if (inputs.platform === Platform.VS) {
-    await TOOLS?.ui.showMessage(
+    const res = await TOOLS?.ui.showMessage(
       "warn",
       getLocalizedString(
         "core.projectVersionChecker.vscodeUseNewVersion",
         "Visual Studio 2022 17.5 Preview"
       ),
       false,
-      "OK"
+      learnMoreText
     );
+    if (res.isOk() && res.value === learnMoreText) {
+      TOOLS?.ui!.openUrl(learnMoreLink);
+    }
   }
 }
 

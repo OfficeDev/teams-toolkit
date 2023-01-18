@@ -1,7 +1,5 @@
 version: 1.0.0
 
-environmentFolderPath: ./ {{~placeholderMappings.[defaultEnvironmentFolder]~}}
-
 deploy:
   - uses: cli/runNpmCommand
     with:

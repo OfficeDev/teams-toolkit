@@ -19,6 +19,7 @@ import _ from "lodash";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { pathUtils } from "../utils/pathUtils";
 import fs from "fs-extra";
+import { InvalidEnvFolderPath } from "../configManager/error";
 
 export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -99,6 +100,14 @@ export async function envLoaderMWImpl(
       return;
     }
     const envFilePath = dotEnvFilePathRes.value;
+    if (!envFilePath) {
+      ctx.result = err(
+        new InvalidEnvFolderPath(
+          "missing 'environmentFolderPath' field or environment folder not exist"
+        )
+      );
+      return;
+    }
     if (!fs.pathExistsSync(envFilePath)) {
       const defaultEnvContent =
         `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n` +

@@ -83,7 +83,16 @@ describe("env utils", () => {
       assert.equal(res.value, "/home/envs");
     }
   });
-
+  it("pathUtils.getEnvFolderPath returns undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const res = await pathUtils.getEnvFolderPath(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isUndefined(res.value);
+    }
+  });
   it("pathUtils.getEnvFilePath", async () => {
     const mockProjectModel: ProjectModel = {
       environmentFolderPath: "/home/envs",
@@ -96,7 +105,16 @@ describe("env utils", () => {
       assert.equal(res.value, path.join("/home/envs", ".env.dev"));
     }
   });
-
+  it("pathUtils.getEnvFilePath returns undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const res = await pathUtils.getEnvFilePath(".", "dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isUndefined(res.value);
+    }
+  });
   it("envUtil.readEnv", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     const encRes = await cryptoProvider.encrypt(decrypted);
@@ -116,7 +134,7 @@ describe("env utils", () => {
     const res = await envUtil.readEnv(".", "dev", false, true);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
-      assert.deepEqual(res.value, {});
+      assert.deepEqual(res.value, { TEAMSFX_ENV: "dev" });
     }
   });
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
@@ -135,6 +153,7 @@ describe("env utils", () => {
   it("envUtil.readEnv fail: read settings.json fail", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
     sandbox.stub(fs, "readFile").resolves("SECRET_ABC=AAA" as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
@@ -158,6 +177,12 @@ describe("env utils", () => {
     assert.isTrue(decRes.isOk());
     assert.equal(decRes.value, decrypted);
   });
+  it("envUtil.writeEnv to output", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
+    assert.isTrue(res.isOk());
+  });
   it("envUtil.writeEnv failed", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
     sandbox
@@ -166,6 +191,7 @@ describe("env utils", () => {
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
     assert.isTrue(res.isErr());
   });
+
   it("envUtil.listEnv", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);

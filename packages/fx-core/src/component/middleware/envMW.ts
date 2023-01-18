@@ -40,11 +40,11 @@ export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   };
 }
 
-export async function envLoaderMWImpl(
+export const envLoaderMWImpl = async (
   withLocalEnv: boolean,
   ctx: CoreHookContext,
   next: NextFunction
-): Promise<void> {
+) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -125,7 +125,7 @@ export async function envLoaderMWImpl(
   }
   ctx.envVars = res.value;
   await next();
-}
+};
 
 export const EnvWriterMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   await next();

@@ -102,6 +102,7 @@ export const envLoaderMWImpl = async (
         "# Generated during provision, you can also add your own variables\n\n" +
         "# Secret. You can add your own secret value, prefixed with SECRET_\n";
       await fs.writeFile(envFilePath, defaultEnvContent);
+      inputs.createdEnvFile = envFilePath; // record created state for summary report
     }
   }
 

@@ -231,6 +231,29 @@ describe("env utils", () => {
     const getDotEnvRes = await core.getDotEnv(inputs);
     assert.isTrue(getDotEnvRes.isOk());
   });
+  it("EnvLoaderMW success for F5 (missing .env file)", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW(false)],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      isLocalDebug: true,
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isOk());
+  });
   it("EnvLoaderMW failed: no yml file error", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(envUtil, "listEnv").resolves(ok([]));

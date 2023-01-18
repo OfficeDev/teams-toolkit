@@ -157,6 +157,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     // projectId
     this.handlebarsContext.placeholderMappings[MetadataV3.projectId] =
       this.oldProjectSettings.projectId;
+    // env folder
+    this.handlebarsContext.placeholderMappings["defaultEnvironmentFolder"] = MetadataV3.defaultEnvironmentFolder;
   }
 
   private setPlaceholderMapping(placeholder: string): void {

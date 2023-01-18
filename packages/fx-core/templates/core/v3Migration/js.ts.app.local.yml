@@ -1,5 +1,7 @@
 version: 1.0.0
 
+environmentFolderPath: {{placeholderMappings.[defaultEnvironmentFolder]}}
+
 {{#config.registerApp}}
 registerApp:
   {{#if aad}}

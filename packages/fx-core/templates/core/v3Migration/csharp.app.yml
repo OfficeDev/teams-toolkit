@@ -1,5 +1,7 @@
 version: 1.0.0
 
+environmentFolderPath: {{placeholderMappings.[defaultEnvironmentFolder]}}
+
 provision:
 {{#if activePlugins.fx-resource-bot}}
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.

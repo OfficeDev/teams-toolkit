@@ -65,6 +65,7 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
+import { restore } from "sinon";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -167,19 +168,67 @@ describe("handlers", () => {
     executeCommand.restore();
   });
 
-  it("addFileSystemWatcher", async () => {
+  it("addFileSystemWatcher in valid project", async () => {
     const workspacePath = "test";
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
 
-    const watcher = { onDidCreate: () => ({ dispose: () => undefined }) } as any;
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+    } as any;
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
-    const listener = sinon.stub(watcher, "onDidCreate").resolves();
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const sendTelemetryEventFunc = sinon
+      .stub(ExtTelemetry, "sendTelemetryEvent")
+      .callsFake(() => {});
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.isTrue(createWatcher.calledThrice);
+    chai.assert.isTrue(createListener.calledThrice);
+    chai.assert.isTrue(changeListener.calledOnce);
+    isValidProject.restore();
+    createWatcher.restore();
+    createListener.restore();
+    changeListener.restore();
+    sendTelemetryEventFunc.restore();
+  });
+
+  it("addFileSystemWatcher in invalid project", async () => {
+    const workspacePath = "test";
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(false);
+
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+    } as any;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
 
     handlers.addFileSystemWatcher(workspacePath);
 
     chai.assert.isTrue(createWatcher.calledTwice);
-    chai.assert.isTrue(listener.calledTwice);
+    chai.assert.isTrue(createListener.calledTwice);
+    chai.assert.isTrue(changeListener.notCalled);
+    isValidProject.restore();
     createWatcher.restore();
-    listener.restore();
+    createListener.restore();
+    changeListener.restore();
+  });
+
+  it("sendSDKVersionTelemetry", async () => {
+    const filePath = "test/package-lock.json";
+
+    const readJsonFunc = sinon.stub(fs, "readJson").resolves();
+    const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    handlers.sendSDKVersionTelemetry(filePath);
+
+    chai.assert.isTrue(readJsonFunc.calledOnce);
+    readJsonFunc.restore();
+    sendTelemetryEventFunc.restore();
   });
 
   describe("command handlers", function () {
@@ -713,8 +762,57 @@ describe("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
+  it("openReadMeHandler v3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any as vscode.TextDocument);
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(openTextDocumentStub.calledOnce);
+    chai.assert.isTrue(executeCommands.calledOnce);
+
+    sandbox.restore();
+  });
+
+  it("openReadMeHandler spfx - v2", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    const fake_config_v2 = {
+      isFromSample: false,
+    };
+    sandbox.stub(MockCore.prototype, "getProjectConfig").resolves(ok(fake_config_v2));
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any as vscode.TextDocument);
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(openTextDocumentStub.calledOnce);
+    chai.assert.isTrue(executeCommands.calledOnce);
+
+    sandbox.restore();
+  });
+
   it("signOutM365", async () => {
-    const signOut = sinon.stub(M365TokenInstance, "signout");
+    const signOut = sinon.stub(M365TokenInstance, "signout").resolves(true);
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 

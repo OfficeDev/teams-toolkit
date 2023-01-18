@@ -7,7 +7,6 @@ import {
   FxError,
   ok,
   ProjectSettings,
-  SettingsFileName,
   SettingsFolderName,
   SystemError,
   UserError,
@@ -18,7 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
-import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
+import { backupFolder, MigrationContext } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
@@ -32,7 +31,12 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError, TooklitNotSupportError } from "../error";
+import {
+  UpgradeV3CanceledError,
+  MigrationError,
+  AbandonedProjectError,
+  ToolkitNotSupportError,
+} from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -53,9 +57,8 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
-  getMigrationHelpLink,
+  getVersionState,
 } from "./utils/v3MigrationUtils";
-import * as semver from "semver";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
@@ -86,7 +89,7 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
-import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
+import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
@@ -95,8 +98,6 @@ import { getLocalizedString } from "../../common/localizeUtils";
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
-  appYmlName: "app.yml",
-  appLocalYmlName: "app.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
   envWriteOption: {
@@ -104,19 +105,19 @@ const Constants = {
     encoding: "utf8",
     flag: "a+",
   },
+  envFilePrefix: ".env.",
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
-const helpLinkAnchors = {
-  appPackageNotExist: "app-package-not-exist",
-  manifestTemplateNotExist: "manifest-template-not-exist",
+export const errorNames = {
+  appPackageNotExist: "AppPackageNotExist",
+  manifestTemplateNotExist: "ManifestTemplateNotExist",
 };
 const migrationMessageButtons = [learnMoreText, upgradeButton];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
-  generateSettingsJson,
   manifestsMigration,
   generateAppYml,
   generateLocalConfig,
@@ -132,22 +133,26 @@ const subMigrations: Array<Migration> = [
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const versionForMigration = await checkVersionForMigration(ctx);
-  if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
+  // abandoned v3 project which will not be supported. Show user the message to create new project.
+  if (versionForMigration.source === VersionSource.settings) {
+    await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.migrationV3.abandonedProject"),
+      true
+    );
+    ctx.result = err(AbandonedProjectError());
+  } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
     }
     if (!isMigrationV3Enabled()) {
-      const lastArg = ctx.arguments[ctx.arguments.length - 1];
-      const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
-      if (inputs.platform !== Platform.VSCode || inputs.stage !== Stage.debug) {
-        await TOOLS?.ui.showMessage(
-          "warn",
-          getLocalizedString("core.migrationV3.CreateNewProject"),
-          true
-        );
-      }
-      ctx.result = err(TooklitNotSupportError());
+      await TOOLS?.ui.showMessage(
+        "warn",
+        getLocalizedString("core.migrationV3.CreateNewProject"),
+        true
+      );
+      ctx.result = err(ToolkitNotSupportError());
       return false;
     }
 
@@ -210,7 +215,7 @@ export async function wrapRunMigration(
 async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanModifiedPaths();
   await context.restoreBackup();
-  await context.cleanTeamsfx();
+  await context.cleanBackup();
 }
 
 async function showSummaryReport(context: MigrationContext): Promise<void> {
@@ -229,49 +234,20 @@ export async function migrate(context: MigrationContext): Promise<void> {
 }
 
 async function preMigration(context: MigrationContext): Promise<void> {
-  await context.backup(V2TeamsfxFolder);
+  await context.backup(MetadataV2.configFolder);
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionForMigration> {
-  const version = (await getProjectVersion(ctx)) || "0.0.0";
+  const versionInfo = await getProjectVersion(ctx);
+  const versionState = getVersionState(versionInfo);
   const platform = getParameterFromCxt(ctx, "platform", Platform.VSCode) as Platform;
-  if (semver.gte(version, MetadataV3.projectVersion)) {
-    return {
-      currentVersion: version,
-      state: VersionState.compatible,
-      platform: platform,
-    };
-  } else if (
-    semver.gte(version, MetadataV2.projectVersion) &&
-    semver.lte(version, MetadataV2.projectMaxVersion)
-  ) {
-    return {
-      currentVersion: version,
-      state: VersionState.upgradeable,
-      platform: platform,
-    };
-  } else {
-    return {
-      currentVersion: version,
-      state: VersionState.unsupported,
-      platform: platform,
-    };
-  }
-}
 
-export async function generateSettingsJson(context: MigrationContext): Promise<void> {
-  const oldProjectSettings = await loadProjectSettings(context.projectPath);
-
-  const content = {
-    version: MetadataV3.projectVersion,
-    trackingId: oldProjectSettings.projectId,
+  return {
+    currentVersion: versionInfo.version,
+    source: versionInfo.source,
+    state: versionState,
+    platform: platform,
   };
-
-  await context.fsEnsureDir(SettingsFolderName);
-  await context.fsWriteFile(
-    path.join(SettingsFolderName, SettingsFileName),
-    JSON.stringify(content, null, 4)
-  );
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
@@ -283,16 +259,13 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
     context.projectPath
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+  await context.fsWriteFile(MetadataV3.configFile, appYmlString);
   if (oldProjectSettings.programmingLanguage?.toLowerCase() === "csharp") {
     const placeholderMappings = await getPlaceholderMappings(context);
     const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml(
       placeholderMappings
     );
-    await context.fsWriteFile(
-      path.join(SettingsFolderName, Constants.appLocalYmlName),
-      appLocalYmlString
-    );
+    await context.fsWriteFile(MetadataV3.localConfigFile, appLocalYmlString);
   }
 }
 
@@ -326,10 +299,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   if (!oldAppPackageFolderBackupRes) {
     // templates/appPackage does not exists
     // invalid teamsfx project
-    throw MigrationReadFileError(
+    throw MigrationError(
       new Error("templates/appPackage does not exist"),
-      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.appPackageNotExist)
-    ) as UserError;
+      errorNames.appPackageNotExist,
+      learnMoreLink
+    );
   }
 
   // Ensure appPackage
@@ -369,9 +343,10 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     }
   } else {
     // templates/appPackage/manifest.template.json does not exist
-    throw MigrationReadFileError(
+    throw MigrationError(
       new Error("templates/appPackage/manifest.template.json does not exist"),
-      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.manifestTemplateNotExist)
+      errorNames.manifestTemplateNotExist,
+      learnMoreLink
     );
   }
 
@@ -484,9 +459,15 @@ export async function configsMigration(context: MigrationContext): Promise<void>
           // get envName
           const envName = fileNamesArray[2];
           // create .env.{env} file if not exist
-          await context.fsEnsureDir(SettingsFolderName);
-          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
+          if (
+            !(await context.fsPathExists(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+            ))
+          )
+            await context.fsCreateFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+            );
           const obj = await readJsonFile(
             context,
             path.join(".fx", "configs", "config." + envName + ".json")
@@ -494,7 +475,13 @@ export async function configsMigration(context: MigrationContext): Promise<void>
           if (obj["manifest"]) {
             const bicepContent = await readBicepContent(context);
             const teamsfx_env = fs
-              .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
+              .readFileSync(
+                path.join(
+                  context.projectPath,
+                  MetadataV3.defaultEnvironmentFolder,
+                  Constants.envFilePrefix + envName
+                )
+              )
               .toString()
               .includes("TEAMSFX_ENV=")
               ? ""
@@ -510,7 +497,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
                 bicepContent
               );
             await context.fsWriteFile(
-              path.join(SettingsFolderName, ".env." + envName),
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
               envData,
               Constants.envWriteOption
             );
@@ -533,9 +520,15 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           // get envName
           const envName = fileNamesArray[2];
           // create .env.{env} file if not exist
-          await context.fsEnsureDir(SettingsFolderName);
-          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
+          if (
+            !(await context.fsPathExists(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+            ))
+          )
+            await context.fsCreateFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+            );
           const obj = await readJsonFile(
             context,
             path.join(".fx", "states", "state." + envName + ".json")
@@ -551,7 +544,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
               bicepContent
             );
             await context.fsWriteFile(
-              path.join(SettingsFolderName, ".env." + envName),
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
               envData,
               Constants.envWriteOption
             );
@@ -574,9 +567,15 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           // get envName
           const envName = fileNamesArray[1];
           // create .env.{env} file if not exist
-          await context.fsEnsureDir(SettingsFolderName);
-          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
+          if (
+            !(await context.fsPathExists(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+            ))
+          )
+            await context.fsCreateFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+            );
           const bicepContent = await readBicepContent(context);
           const envData = await readAndConvertUserdata(
             context,
@@ -584,7 +583,7 @@ export async function userdataMigration(context: MigrationContext): Promise<void
             bicepContent
           );
           await context.fsWriteFile(
-            path.join(SettingsFolderName, ".env." + envName),
+            path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
             envData,
             Constants.envWriteOption
           );
@@ -655,8 +654,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     placeholderMappings
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsEnsureDir(SettingsFolderName);
-  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
+  await context.fsWriteFile(MetadataV3.localConfigFile, appYmlString);
 }
 
 export function checkapimPluginExists(pjSettings: any): boolean {
@@ -686,16 +684,22 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
             // get envName
             const envName = fileNamesArray[2];
             if (envName != "local") {
-              await context.fsEnsureDir(SettingsFolderName);
-              if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-                await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+              await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
+              if (
+                !(await context.fsPathExists(
+                  path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+                ))
+              )
+                await context.fsCreateFile(
+                  path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
+                );
               const apimPluginAppendContent =
                 "APIM__PUBLISHEREMAIL= # Teams Toolkit does not record your mail to protect your privacy, please fill your mail address here before provision to avoid failures" +
                 EOL +
                 "APIM__PUBLISHERNAME= # Teams Toolkit does not record your name to protect your privacy, please fill your name here before provision to avoid failures" +
                 EOL;
               await context.fsWriteFile(
-                path.join(SettingsFolderName, ".env." + envName),
+                path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
                 apimPluginAppendContent,
                 Constants.envWriteOption
               );
@@ -717,8 +721,9 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
     path.join(context.projectPath, gitignoreFile),
     "utf8"
   );
-  ignoreFileContent += EOL + "teamsfx/.env.*";
-  ignoreFileContent += EOL + "teamsfx/backup/*";
+  ignoreFileContent +=
+    EOL + path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + "*");
+  ignoreFileContent += EOL + `${backupFolder}/*`;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);
 }

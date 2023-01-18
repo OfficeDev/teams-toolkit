@@ -145,13 +145,13 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
 
-      // migrate to v3
-      if (isV3Enabled()) {
-        await commonUtils.triggerV3Migration();
+      if (!isValidProject(workspacePath)) {
         return ok(undefined);
       }
 
-      if (!isValidProject(workspacePath)) {
+      // migrate to v3
+      if (isV3Enabled()) {
+        await commonUtils.triggerV3Migration();
         return ok(undefined);
       }
 
@@ -262,7 +262,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       }
 
       if (needsMigration) {
-        await commonUtils.triggerV3Migration();
+        // if returning undefined, vscode will resolve the task from task provider and migration will be triggered then
         return undefined;
       }
     }

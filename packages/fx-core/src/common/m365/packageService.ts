@@ -5,9 +5,10 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { LogProvider } from "@microsoft/teamsfx-api";
+import { assembleError, LogProvider } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
+import { CoreSource } from "../../core/error";
 
 // Call m365 service for package CRUD
 export class PackageService {
@@ -39,7 +40,7 @@ export class PackageService {
     }
   }
 
-  public async sideLoading(token: string, manifestPath: string): Promise<void> {
+  public async sideLoading(token: string, manifestPath: string): Promise<string> {
     try {
       const data = await fs.readFile(manifestPath);
       const content = new FormData();
@@ -114,6 +115,7 @@ export class PackageService {
       );
       this.logger?.debug(JSON.stringify(launchInfo.data));
       this.logger?.info("Sideloading done.");
+      return titleId;
     } catch (error: any) {
       this.logger?.error("Sideloading failed.");
       if (error.response) {
@@ -121,7 +123,7 @@ export class PackageService {
       } else {
         this.logger?.error(error.message);
       }
-      throw error;
+      throw assembleError(error, CoreSource);
     }
   }
 
@@ -174,7 +176,7 @@ export class PackageService {
         this.logger?.error(error.message);
       }
 
-      throw error;
+      throw assembleError(error, CoreSource);
     }
   }
 
@@ -197,7 +199,7 @@ export class PackageService {
         this.logger?.error(error.message);
       }
 
-      throw error;
+      throw assembleError(error, CoreSource);
     }
   }
 
@@ -229,7 +231,7 @@ export class PackageService {
         this.logger?.error(error.message);
       }
 
-      throw error;
+      throw assembleError(error, CoreSource);
     }
   }
 }

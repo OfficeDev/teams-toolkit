@@ -26,6 +26,7 @@ export interface VersionCheckRes {
   currentVersion: string;
   isSupport: VersionState;
   trackingId: string;
+  versionSource: string;
 }
 
 export interface PreProvisionResForVS {

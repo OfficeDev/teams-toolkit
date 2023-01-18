@@ -234,6 +234,9 @@ export enum TelemetryEvent {
   // Create from developer portal
   HandleUrlFromDeveloperProtalStart = "handle-url-from-developer-portal-start",
   HandleUrlFromDeveloperProtal = "handle-url-from-developer-portal",
+
+  // Update SDK packages
+  UpdateSDKPackages = "update-sdk-packages",
 }
 
 export enum TelemetryProperty {

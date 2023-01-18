@@ -143,7 +143,7 @@ function stringifyLifecycleState(lifecycleState: LifecycleState): string[] {
 
 export class SummaryReporter {
   private lifecycles: ILifecycle[];
-  private lifecycleStates: LifecycleState[];
+  lifecycleStates: LifecycleState[];
   private log: LogProvider;
 
   constructor(lifecycles: ILifecycle[], log: LogProvider) {

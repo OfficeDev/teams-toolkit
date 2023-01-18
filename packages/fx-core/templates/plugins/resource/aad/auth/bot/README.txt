@@ -83,7 +83,7 @@ Note: This part is for `command and response bot`.
         });
         '''
 
-5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
+5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `commands` in `commandLists` of your bot:
     '''
     {
       "title": "show",
@@ -152,4 +152,4 @@ Related Doc: https://docs.microsoft.com/azure/active-directory/develop/reference
 
 Follow https://aka.ms/teamsfx-aad-manifest#how-to-customize-the-aad-manifest-template if you need to include additional API permissions to access your desired APIs.
 
-Follow https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal to view your AAD application in Azure Portal.
+Follow https://aka.ms/teamsfx-aad-manifest#view-azure-ad-application-on-the-azure-portal to view your AAD application in Azure Portal.

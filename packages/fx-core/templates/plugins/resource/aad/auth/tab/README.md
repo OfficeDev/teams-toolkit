@@ -48,4 +48,4 @@ The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/ref
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#how-to-customize-the-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.
 
-Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.
+Follow this [document](https://aka.ms/teamsfx-aad-manifest#view-azure-ad-application-on-the-azure-portal) to view your AAD application in Azure Portal.

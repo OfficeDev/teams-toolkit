@@ -10,6 +10,7 @@ import { AzureSolutionSettings, ProjectSettings, SettingsFolderName } from "@mic
 import * as dotenv from "dotenv";
 import * as os from "os";
 import * as path from "path";
+import { MetadataV3 } from "../../../../common/versionMetadata";
 
 export async function readJsonCommentFile(filepath: string): Promise<CommentJSONValue | undefined> {
   if (await fs.pathExists(filepath)) {
@@ -35,6 +36,7 @@ export interface DebugPlaceholderMapping {
   tabIndexPath?: string;
   botDomain?: string;
   botEndpoint?: string;
+  defaultEnvironmentFolder?: string;
 }
 
 export async function getPlaceholderMappings(
@@ -51,6 +53,7 @@ export async function getPlaceholderMappings(
     tabIndexPath: getName("state.fx-resource-frontend-hosting.indexPath"),
     botDomain: getName("state.fx-resource-bot.domain"),
     botEndpoint: getName("state.fx-resource-bot.siteEndpoint"),
+    defaultEnvironmentFolder: MetadataV3.defaultEnvironmentFolder,
   };
 }
 

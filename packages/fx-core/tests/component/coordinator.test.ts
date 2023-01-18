@@ -68,6 +68,7 @@ import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
 import { deployUtils } from "../../src/component/deployUtils";
 import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
+import { pathUtils } from "../../src/component/utils/pathUtils";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -462,11 +463,14 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
-
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    sandbox.stub(fs, "writeFile").resolves();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
       ignoreLockByUT: true,
+      isLocalDebug: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);

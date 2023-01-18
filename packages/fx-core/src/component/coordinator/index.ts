@@ -798,17 +798,7 @@ export class Coordinator {
         }
       }
     } finally {
-      if (inputs.createdEnvFile) {
-        summaryReporter.lifecycleStates = [
-          {
-            name: `create .env file: ${inputs.createdEnvFile}`,
-            status: "succeeded",
-            actionStates: [],
-          },
-          ...summaryReporter.lifecycleStates,
-        ];
-      }
-      const summary = summaryReporter.getLifecycleSummary();
+      const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
       ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
     }
 

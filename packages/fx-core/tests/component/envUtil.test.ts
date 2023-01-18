@@ -254,6 +254,26 @@ describe("env utils", () => {
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
   });
+  it("EnvLoaderMW failed for F5 (missing .env file and getEnvFilePath Error)", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserError({})));
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW(false)],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      isLocalDebug: true,
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("EnvLoaderMW failed: no yml file error", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(envUtil, "listEnv").resolves(ok([]));

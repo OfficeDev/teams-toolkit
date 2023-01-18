@@ -39,11 +39,11 @@ export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   };
 }
 
-export const envLoaderMWImpl = async (
+export async function envLoaderMWImpl(
   withLocalEnv: boolean,
   ctx: CoreHookContext,
   next: NextFunction
-) => {
+): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -94,7 +94,10 @@ export const envLoaderMWImpl = async (
   //for F5 scenario, TTK will create a default .env file if the target env file does not exist
   if (inputs.isLocalDebug) {
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, inputs.env);
-    if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
+    if (dotEnvFilePathRes.isErr()) {
+      ctx.result = err(dotEnvFilePathRes.error);
+      return;
+    }
     const envFilePath = dotEnvFilePathRes.value;
     if (!fs.pathExistsSync(envFilePath)) {
       const defaultEnvContent =
@@ -113,7 +116,7 @@ export const envLoaderMWImpl = async (
   }
   ctx.envVars = res.value;
   await next();
-};
+}
 
 export const EnvWriterMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   await next();

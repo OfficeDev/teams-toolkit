@@ -853,7 +853,7 @@ export class FxCore implements v3.ICore {
     }
     const env = inputs.env;
     const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;
-    const result = await envUtil.readEnv(projectPath, env, true, true);
+    const result = await envUtil.readEnv(projectPath, env);
     if (result.isErr()) {
       return err(result.error);
     }

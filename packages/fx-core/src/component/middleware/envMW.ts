@@ -116,7 +116,7 @@ export const envLoaderMWImpl = async (
   //   }
   // }
 
-  const res = await envUtil.readEnv(projectPath, inputs.env, true, true);
+  const res = await envUtil.readEnv(projectPath, inputs.env);
   if (res.isErr()) {
     ctx.result = err(res.error);
     return;

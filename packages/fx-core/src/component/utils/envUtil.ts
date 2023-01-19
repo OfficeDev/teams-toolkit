@@ -28,7 +28,7 @@ export class EnvUtil {
     projectPath: string,
     env: string,
     loadToProcessEnv = true,
-    silent = false
+    silent = true
   ): Promise<Result<DotenvOutput, FxError>> {
     // read
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);

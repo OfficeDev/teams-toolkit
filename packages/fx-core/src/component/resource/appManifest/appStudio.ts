@@ -708,7 +708,7 @@ export async function updateManifestV3(
     appPackagePath: createAppPackageArgs.outputZipPath,
   };
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
-  await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!, true, true);
+  await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
 
   // render manifest
   let manifest: any;

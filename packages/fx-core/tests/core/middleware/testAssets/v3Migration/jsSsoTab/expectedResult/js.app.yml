@@ -1,5 +1,9 @@
 version: 1.0.0
 
+projectId: 4d4bfff9-82bf-4d75-8e66-72982c48d1db
+
+environmentFolderPath: ./env
+
 provision:
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
@@ -90,4 +94,3 @@ publish:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
   # Output: following environment variable will be persisted in current environment's .env file.
   # TEAMS_APP_PUBLISHED_APP_ID: app id in Teams tenant app catalog.
-projectId: 4d4bfff9-82bf-4d75-8e66-72982c48d1db

@@ -33,6 +33,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     isWebAppBot: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
+    environmentFolder: string | undefined;
+    projectId: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -50,6 +52,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       isWebAppBot: false,
       isTypescript: false,
       defaultFunctionName: undefined,
+      environmentFolder: undefined,
+      projectId: undefined,
     };
   }
 
@@ -122,6 +126,12 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // default function name
     this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
+
+    // projectId
+    this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
+
+    // env folder
+    this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {
@@ -154,9 +164,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
-    // projectId
-    this.handlebarsContext.placeholderMappings[MetadataV3.projectId] =
-      this.oldProjectSettings.projectId;
   }
 
   private setPlaceholderMapping(placeholder: string): void {

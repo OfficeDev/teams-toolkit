@@ -62,12 +62,45 @@ Note: This part is for `command and response bot`.
             botAuthOption.InitiateLoginEndpoint = authOptionsValue.Bot.InitiateLoginEndpoint;
         }).ValidateDataAnnotations();
         '''
-    4.2 Find and delete the following code:
+    4.2 Find the following lines:
+        '''
+        builder.Services.AddSingleton<HelloWorldCommandHandler>();
+        builder.Services.AddSingleton(sp =>
+        {
+          var options = new ConversationOptions()
+          {
+            Adapter = sp.GetService<CloudAdapter>(),
+            Command = new CommandOptions()
+            {
+              Commands = new List<ITeamsCommandHandler> { sp.GetService<HelloWorldCommandHandler>() }
+            }
+          };
+
+          return new ConversationBot(options);
+        });
+        '''
+        and replace with:
+        '''
+        builder.Services.AddSingleton(sp =>
+        {
+          var options = new ConversationOptions()
+          {
+            Adapter = sp.GetService<CloudAdapter>(),
+            Command = new CommandOptions()
+            {
+              Commands = new List<ITeamsCommandHandler> { }
+            }
+          };
+
+          return new ConversationBot(options);
+        });
+        '''
+    4.3 Find and delete the following code:
         '''
         // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
         builder.Services.AddTransient<IBot, TeamsBot>();
         '''
-    4.3 Find the following code:
+    4.4 Find the following code:
         '''
         app.UseEndpoints(endpoints =>
         {

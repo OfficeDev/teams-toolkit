@@ -101,7 +101,7 @@ export class HelperMethods {
     manifest.extensions = addinManifest.extensions;
     manifest.authorization = addinManifest.authorization;
 
-    // Safe project manifest
+    // Save project manifest
     await ManifestUtil.writeToPath(manifestTemplatePath, manifest);
   }
 }

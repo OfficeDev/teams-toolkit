@@ -74,6 +74,7 @@
 /packages/fx-core/src/component/feature/spfx.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/spfxGenerator.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/spfx.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang

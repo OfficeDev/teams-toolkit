@@ -15,6 +15,8 @@ README.md
 tsconfig.json
 teamsapp.yml
 teamsapp.local.yml
+/env/
+/script/
 /appPackage/
 /infra/
 /teamsfx/

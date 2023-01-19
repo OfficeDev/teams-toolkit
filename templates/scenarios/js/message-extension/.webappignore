@@ -15,6 +15,8 @@ tsconfig.json
 .DS_Store
 teamsapp.yml
 teamsapp.local.yml
+/env/
+/script/
 /node_modules/.bin
 /node_modules/ts-node
 /node_modules/typescript

@@ -1,5 +1,7 @@
 version: 1.0.0
 
+projectId: dabf2464-bcd7-4cf0-8803-55295da88a7c
+
 environmentFolderPath: ./env
 
 provision:
@@ -67,4 +69,3 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-projectId: dabf2464-bcd7-4cf0-8803-55295da88a7c

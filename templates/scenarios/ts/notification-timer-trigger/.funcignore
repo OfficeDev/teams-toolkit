@@ -14,7 +14,7 @@ local.settings.json
 README.md
 tsconfig.json
 teamsapp.yml
-teamsapp.local.yml
+teamsapp.*.yml
 /env/
 /script/
 /appPackage/

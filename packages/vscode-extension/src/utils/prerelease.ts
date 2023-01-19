@@ -9,16 +9,14 @@ import * as versionUtil from "./versionUtil";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { PrereleaseState } from "../constants";
 import * as folder from "../folder";
-import VsCodeLogInstance from "../commonlib/log";
+
 export class PrereleasePage {
   private context: vscode.ExtensionContext;
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
   }
   public async checkAndShow() {
-    const extensionId = versionUtil.getExtensionId();
-    const teamsToolkit = vscode.extensions.getExtension(extensionId);
-    const teamsToolkitVersion = teamsToolkit?.packageJSON.version;
+    const teamsToolkitVersion = this.getTeamsToolkitVersion();
     const prereleaseVersion = this.context.globalState.get<string>(PrereleaseState.Version);
     this.context.globalState.update(PrereleaseState.Version, teamsToolkitVersion);
     if (
@@ -31,12 +29,17 @@ export class PrereleasePage {
       this.show();
     }
   }
-  private async show() {
+  public async show() {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
     const uri = vscode.Uri.file(`${folder.getResourceFolder()}/PRERELEASE.md`);
     vscode.workspace.openTextDocument(uri).then(() => {
       const PreviewMarkdownCommand = "markdown.showPreview";
       vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+  public getTeamsToolkitVersion(): any {
+    const extensionId = versionUtil.getExtensionId();
+    const teamsToolkit = vscode.extensions.getExtension(extensionId);
+    return teamsToolkit?.packageJSON.version;
   }
 }

@@ -1,5 +1,9 @@
 version: 1.0.0
 
+projectId: 70eb5275-ecc0-4500-be64-e38cd9028f21
+
+environmentFolderPath: ./env
+
 provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
@@ -50,4 +54,3 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-projectId: 70eb5275-ecc0-4500-be64-e38cd9028f21

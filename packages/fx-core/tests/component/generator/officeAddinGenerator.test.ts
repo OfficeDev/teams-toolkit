@@ -187,7 +187,7 @@ describe("OfficeAddinGenerator", function () {
 describe("getQuestionsForScaffolding", () => {
   it("should contain all questions", () => {
     const q = getQuestionsForScaffolding();
-    chai.expect(q.children?.length).to.eq(3);
+    chai.expect(q.children?.length).to.eq(2);
   });
 
   describe("AddinLanguageQuestions", () => {
@@ -390,13 +390,13 @@ describe("helperMethods", () => {
       mockfs.restore();
     });
 
-    it("should copy project files and ignore .gitignore and node_modules", async () => {
+    it("should copy project files and .gitignore but ignore node_modules", async () => {
       try {
         const destination = "/home/user/destination";
         HelperMethods.copyAddinFiles(projectRoot, destination);
         chai.assert.equal(fs.existsSync(path.join(destination, "project", "file1")), true);
         chai.assert.equal(fs.existsSync(path.join(destination, "project", "file2")), true);
-        chai.assert.equal(fs.existsSync(path.join(destination, ".gitignore")), false);
+        chai.assert.equal(fs.existsSync(path.join(destination, ".gitignore")), true);
         chai.assert.equal(fs.existsSync(path.join(destination, "node_modules")), false);
       } catch (err) {
         chai.assert.fail(err);

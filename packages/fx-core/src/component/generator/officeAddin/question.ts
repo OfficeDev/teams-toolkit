@@ -5,7 +5,6 @@ import {
   QTreeNode,
   SingleFileQuestion,
   SingleSelectQuestion,
-  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -49,14 +48,6 @@ export enum QuestionName {
   AddinTemplateSelectQuestion = "addin-template-select",
   OfficeHostQuestion = "addin-host",
 }
-
-// TODO: localize the strings
-export const AddinNameQuestion: TextInputQuestion = {
-  type: "text",
-  name: QuestionName.AddinNameQuestion,
-  title: "Add-in name",
-  default: "office addin",
-};
 
 export const AddinLanguageQuestion: SingleSelectQuestion = {
   type: "singleSelect",
@@ -127,8 +118,6 @@ export const getTemplate = (inputs: Inputs): string => {
 };
 
 export const getQuestionsForScaffolding = (): QTreeNode => {
-  const nameNode = new QTreeNode(AddinNameQuestion);
-
   const importNode = new QTreeNode({ type: "group" });
   importNode.condition = {
     validFunc: (input: unknown, inputs?: Inputs) => {
@@ -169,7 +158,6 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
   const root = new QTreeNode({ type: "group" });
   root.addChild(importNode);
   root.addChild(templateNode);
-  root.addChild(nameNode);
 
   return root;
 };

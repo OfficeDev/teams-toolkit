@@ -79,8 +79,7 @@ export class HelperMethods {
     fse.copySync(fromFolder, toFolder, {
       filter: (path) => {
         const module: boolean = path.includes("node_modules");
-        const ignore: boolean = path.includes(".gitignore");
-        return !module && !ignore;
+        return !module;
       },
     });
   }

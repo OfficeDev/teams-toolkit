@@ -18,7 +18,6 @@ export class PrereleasePage {
   public async checkAndShow() {
     const teamsToolkitVersion = this.getTeamsToolkitVersion();
     const prereleaseVersion = this.context.globalState.get<string>(PrereleaseState.Version);
-    this.context.globalState.update(PrereleaseState.Version, teamsToolkitVersion);
     if (
       isV3Enabled() &&
       (prereleaseVersion === undefined ||

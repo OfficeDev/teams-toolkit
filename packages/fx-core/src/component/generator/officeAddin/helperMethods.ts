@@ -29,7 +29,7 @@ export class HelperMethods {
               );
             })
             .on("close", async () => {
-              HelperMethods.unzipProjectTemplate(projectFolder);
+              await HelperMethods.unzipProjectTemplate(projectFolder);
               resolve();
             });
         });

@@ -40,15 +40,7 @@ export const ProjectSettingsWriterMW: Middleware = async (
     let projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
     try {
-      if (isV3Enabled()) {
-        const settings: Settings = {
-          trackingId: projectSettings.projectId,
-          version: projectSettings.version!,
-        };
-        const settingFile = getProjectSettingsPath(inputs.projectPath);
-        await fs.writeFile(settingFile, JSON.stringify(settings, null, 4));
-        TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
-      } else {
+      if (!isV3Enabled()) {
         projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
         const solutionSettings = projectSettings.solutionSettings;
         if (solutionSettings) {

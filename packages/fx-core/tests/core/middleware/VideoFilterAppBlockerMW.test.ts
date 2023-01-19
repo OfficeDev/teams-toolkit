@@ -28,7 +28,7 @@ import { setTools } from "../../../src/core/globalVars";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { VideoFilterAppBlockerMW } from "../../../src/core/middleware/videoFilterAppBlocker";
 import { CoreHookContext } from "../../../src/core/types";
-import { MockProjectSettings, MockSettings, MockTools, randomAppName } from "../utils";
+import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
 
 describe("Middleware - VideoFilterAppBlockerMW", () => {

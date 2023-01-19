@@ -8,7 +8,7 @@
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
-        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "node script/run.js . env/.env.local",
         "dev": "func start --typescript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
         "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
         "watch:teamsfx": "tsc --watch",

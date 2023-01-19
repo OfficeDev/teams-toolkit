@@ -73,6 +73,11 @@ import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
+import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { VersionSource } from "../common/versionMetadata";
+import { pathUtils } from "../component/utils/pathUtils";
+import { InvalidEnvFolderPath } from "../component/configManager/error";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -239,12 +244,21 @@ export class FxCoreV3Implement {
       `aad.${inputs.env}.json`
     );
     const inputArgs: UpdateAadAppArgs = {
-      manifestTemplatePath: manifestTemplatePath,
+      manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
-    if (res.isErr()) return err(res.error);
+    if (res.isErr()) {
+      if (res.error instanceof MissingEnvInFileUserError) {
+        res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
+        if (res.error.displayMessage) {
+          res.error.displayMessage +=
+            " " + getLocalizedString("error.UpdateAadManifest.MissingEnvHint");
+        }
+      }
+      return err(res.error);
+    }
     return ok(Void);
   }
 
@@ -346,16 +360,17 @@ export class FxCoreV3Implement {
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     const projectPath = (inputs.projectPath as string) || "";
     if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
-      const currentVersion = await getProjectVersionFromPath(projectPath);
-      if (!currentVersion) {
+      const versionInfo = await getProjectVersionFromPath(projectPath);
+      if (!versionInfo.version) {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = getVersionState(currentVersion);
+      const isSupport = getVersionState(versionInfo);
       return ok({
-        currentVersion,
+        currentVersion: versionInfo.version,
         trackingId,
         isSupport,
+        versionSource: VersionSource[versionInfo.source],
       });
     } else {
       return err(new InvalidProjectError());
@@ -403,9 +418,20 @@ export class FxCoreV3Implement {
     sourceEnvName: string,
     projectPath: string
   ): Promise<Result<Void, FxError>> {
-    const sourceDotEnvFile = environmentManager.getDotEnvPath(sourceEnvName, projectPath);
+    let res = await pathUtils.getEnvFilePath(projectPath, sourceEnvName);
+    if (res.isErr()) return err(res.error);
+    const sourceDotEnvFile = res.value;
+
+    res = await pathUtils.getEnvFilePath(projectPath, targetEnvName);
+    if (res.isErr()) return err(res.error);
+    const targetDotEnvFile = res.value;
+    if (!sourceDotEnvFile || !targetDotEnvFile)
+      return err(
+        new InvalidEnvFolderPath(
+          "missing 'environmentFolderPath' field or environment folder not exist"
+        )
+      );
     const source = await fs.readFile(sourceDotEnvFile);
-    const targetDotEnvFile = environmentManager.getDotEnvPath(targetEnvName, projectPath);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
       .toString()

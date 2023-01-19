@@ -12,7 +12,6 @@ import {
   Platform,
   ResourceContextV3,
   Result,
-  SettingsFolderName,
   UserCancelError,
   UserError,
   Void,
@@ -82,7 +81,7 @@ import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { DotenvParseOutput } from "dotenv";
-import { YamlParser } from "../configManager/parser";
+import { yamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
@@ -100,6 +99,7 @@ import { SummaryReporter } from "./summary";
 import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { deployUtils } from "../deployUtils";
+import { pathUtils } from "../utils/pathUtils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -156,8 +156,6 @@ export const InitTemplateName: any = {
   ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
 };
 
-const workflowFileName = "app.yml";
-const localWorkflowFileName = "app.local.yml";
 const M365Actions = [
   "botAadApp/create",
   "teamsApp/create",
@@ -165,6 +163,7 @@ const M365Actions = [
   "aadApp/create",
   "aadApp/update",
   "botFramework/create",
+  "m365Title/acquire",
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [
@@ -524,9 +523,9 @@ export class Coordinator {
     };
 
     // 1. parse yml to cycles
-    const parser = new YamlParser();
-    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
-    const maybeProjectModel = await parser.parse(templatePath);
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
+    const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -583,9 +582,9 @@ export class Coordinator {
     const folderName = path.parse(ctx.projectPath).name;
 
     // 1. parse yml
-    const parser = new YamlParser();
-    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
-    const maybeProjectModel = await parser.parse(templatePath);
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
+    const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -799,7 +798,7 @@ export class Coordinator {
         }
       }
     } finally {
-      const summary = summaryReporter.getLifecycleSummary();
+      const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
       ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
     }
 
@@ -903,9 +902,9 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
-    const parser = new YamlParser();
-    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
-    const maybeProjectModel = await parser.parse(templatePath);
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
+    const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -970,9 +969,8 @@ export class Coordinator {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const parser = new YamlParser();
-    const templatePath = this.getYmlFilePath(ctx.projectPath);
-    const maybeProjectModel = await parser.parse(templatePath);
+    const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
+    const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -1034,23 +1032,6 @@ export class Coordinator {
       `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
     );
     return ok(Void);
-  }
-
-  getYmlFilePath(projectPath: string, inputs?: InputsWithProjectPath) {
-    if (inputs && inputs["workflowFilePath"]) return inputs["workflowFilePath"];
-    let ymlPath = path.join(
-      projectPath,
-      process.env.TEAMSFX_ENV !== "local" ? "teamsapp.yml" : "teamsapp.local.yml"
-    );
-    if (fs.pathExistsSync(ymlPath)) {
-      return ymlPath;
-    }
-    ymlPath = path.join(
-      projectPath,
-      SettingsFolderName,
-      process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
-    );
-    return ymlPath;
   }
 }
 

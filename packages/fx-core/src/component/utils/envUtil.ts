@@ -1,10 +1,11 @@
-import { err, FxError, ok, Result, SettingsFolderName, UserError } from "@microsoft/teamsfx-api";
-import * as path from "path";
+import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { pathUtils } from "./pathUtils";
+import { TOOLS } from "../../core/globalVars";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -18,7 +19,14 @@ export class EnvUtil {
     silent = false
   ): Promise<Result<DotenvOutput, FxError>> {
     // read
-    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
+    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
+    if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
+    const dotEnvFilePath = dotEnvFilePathRes.value;
+    if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
+      // .env file does not exist, just ignore
+      process.env.TEAMSFX_ENV = env;
+      return ok({ TEAMSFX_ENV: env });
+    }
     if (!(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         return ok({});
@@ -67,6 +75,7 @@ export class EnvUtil {
     env: string,
     envs: DotenvOutput
   ): Promise<Result<undefined, FxError>> {
+    envs.TEAMSFX_ENV = env;
     //encrypt
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) {
@@ -85,23 +94,32 @@ export class EnvUtil {
     }
 
     //replace existing
-    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
-    const parsedDotenv = (await fs.pathExists(dotEnvFilePath))
-      ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
-      : { obj: {} };
+    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
+    if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
+    const dotEnvFilePath = dotEnvFilePathRes.value;
+    const parsedDotenv =
+      dotEnvFilePath && (await fs.pathExists(dotEnvFilePath))
+        ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
+        : { obj: {} };
     parsedDotenv.obj = envs;
 
     //serialize
     const content = dotenvUtil.serialize(parsedDotenv);
 
     //persist
-    await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
-
+    if (dotEnvFilePath) {
+      await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
+    } else {
+      TOOLS.logProvider.info(`Env output:\n${content}\n`);
+    }
     return ok(undefined);
   }
   async listEnv(projectPath: string): Promise<Result<string[], FxError>> {
-    const folder = path.join(projectPath, SettingsFolderName);
-    const list = await fs.readdir(folder);
+    const folderRes = await pathUtils.getEnvFolderPath(projectPath);
+    if (folderRes.isErr()) return err(folderRes.error);
+    const envFolderPath = folderRes.value;
+    if (!envFolderPath) return ok([]);
+    const list = await fs.readdir(envFolderPath);
     const envs = list
       .filter((fileName) => fileName.startsWith(".env."))
       .map((fileName) => fileName.substring(5));

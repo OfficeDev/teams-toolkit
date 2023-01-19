@@ -2,16 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  err,
-  FxError,
-  Inputs,
-  ok,
-  Platform,
-  Result,
-  SettingsFileName,
-  SettingsFolderName,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -22,10 +13,12 @@ import * as sinon from "sinon";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
-import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
+import {
+  backupFolder,
+  MigrationContext,
+} from "../../../src/core/middleware/utils/migrationContext";
 import {
   generateAppYml,
-  generateSettingsJson,
   manifestsMigration,
   statesMigration,
   updateLaunchJson,
@@ -48,6 +41,7 @@ import {
   Metadata,
   MetadataV2,
   MetadataV3,
+  VersionSource,
   VersionState,
 } from "../../../src/common/versionMetadata";
 import {
@@ -61,6 +55,7 @@ import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSet
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../src/core/middleware/types";
 import { isMigrationV3Enabled } from "../../../src/common/tools";
+import * as loader from "../../../src/core/middleware/projectSettingsLoader";
 
 let mockedEnvRestore: () => void;
 
@@ -254,53 +249,7 @@ describe("MigrationContext", () => {
     context.addReport("test report");
     context.addTelemetryProperties({ testProperrty: "test property" });
     await context.restoreBackup();
-    await context.cleanTeamsfx();
-  });
-});
-
-describe("generateSettingsJson", () => {
-  const appName = randomAppName();
-  const projectPath = path.join(os.tmpdir(), appName);
-
-  beforeEach(async () => {
-    await fs.ensureDir(projectPath);
-  });
-
-  afterEach(async () => {
-    await fs.remove(projectPath);
-  });
-
-  it("happy path", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
-    const oldProjectSettings = await readOldProjectSettings(projectPath);
-
-    await generateSettingsJson(migrationContext);
-
-    assert.isTrue(
-      await fs.pathExists(path.join(projectPath, SettingsFolderName, SettingsFileName))
-    );
-    const newSettings = await readSettingJson(projectPath);
-    assert.equal(newSettings.trackingId, oldProjectSettings.projectId);
-    assert.equal(newSettings.version, "3.0.0");
-  });
-
-  it("no project id", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    delete projectSetting.projectId;
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateSettingsJson(migrationContext);
-
-    const newSettings = await readSettingJson(projectPath);
-    assert.isTrue(newSettings.hasOwnProperty("trackingId")); // will auto generate a new trackingId if old project does not have project id
+    await context.cleanBackup();
   });
 });
 
@@ -323,7 +272,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
   });
 
   it("should success for ts SSO tab", async () => {
@@ -337,7 +286,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
   });
 
   it("should success for js non SSO tab", async () => {
@@ -345,7 +294,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
   });
 
   it("should success for ts non SSO tab", async () => {
@@ -359,7 +308,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
   });
 
   it("should success for js tab with api", async () => {
@@ -367,7 +316,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
   });
 
   it("should success for ts tab with api", async () => {
@@ -381,7 +330,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
   });
 
   it("should success for js function bot", async () => {
@@ -389,7 +338,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
   });
 
   it("should success for ts function bot", async () => {
@@ -403,7 +352,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
   });
 
   it("should success for js webapp bot", async () => {
@@ -411,7 +360,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
   });
 
   it("should success for ts webapp bot", async () => {
@@ -425,7 +374,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
   });
 
   it("should success for js webapp bot as resourceId eq botWebAppResourceId", async () => {
@@ -433,7 +382,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
   });
 
   it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
@@ -447,7 +396,7 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
   });
 });
 
@@ -473,7 +422,7 @@ describe("generateAppYml-csharp", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
   });
 
   it("should success for non-sso tab project", async () => {
@@ -481,7 +430,7 @@ describe("generateAppYml-csharp", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
   });
 
   it("should success for web app bot project", async () => {
@@ -489,7 +438,7 @@ describe("generateAppYml-csharp", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
   });
 
   it("should success for function bot project", async () => {
@@ -497,7 +446,7 @@ describe("generateAppYml-csharp", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
   });
 });
 
@@ -544,7 +493,7 @@ describe("generateAppYml-spfx", () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
   });
 });
 
@@ -846,9 +795,7 @@ describe("updateLaunchJson", () => {
 
     await updateLaunchJson(migrationContext);
 
-    assert.isTrue(
-      await fs.pathExists(path.join(projectPath, "teamsfx/backup/.vscode/launch.json"))
-    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, backupFolder, ".vscode/launch.json")));
     const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
     assert.equal(
       updatedLaunchJson.configurations[0].url,
@@ -895,22 +842,32 @@ describe("stateMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await statesMigration(migrationContext);
 
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+    assert.isTrue(await fs.pathExists(path.join(projectPath, Constants.environmentFolder)));
 
     const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "state.dev"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
-    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+    );
+    const testEnvContent_dev = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "dev"
+    );
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
     const trueEnvContent_local = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "state.local"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
-    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.local"))
+    );
+    const testEnvContent_local = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "local"
+    );
     assert.equal(testEnvContent_local, trueEnvContent_local);
   });
 });
@@ -933,22 +890,32 @@ describe("configMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await configsMigration(migrationContext);
 
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+    assert.isTrue(await fs.pathExists(path.join(projectPath, Constants.environmentFolder)));
 
     const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "config.dev"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
-    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+    );
+    const testEnvContent_dev = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "dev"
+    );
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
     const trueEnvContent_local = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "config.local"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
-    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.local"))
+    );
+    const testEnvContent_local = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "local"
+    );
     assert.equal(testEnvContent_local, trueEnvContent_local);
   });
 });
@@ -971,22 +938,32 @@ describe("userdataMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await userdataMigration(migrationContext);
 
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+    assert.isTrue(await fs.pathExists(path.join(projectPath, Constants.environmentFolder)));
 
     const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "userdata.dev"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
-    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+    );
+    const testEnvContent_dev = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "dev"
+    );
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
     const trueEnvContent_local = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "userdata.local"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
-    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.local"))
+    );
+    const testEnvContent_local = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "local"
+    );
     assert.equal(testEnvContent_local, trueEnvContent_local);
   });
 });
@@ -1011,14 +988,19 @@ describe("generateApimPluginEnvContent", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await generateApimPluginEnvContent(migrationContext);
 
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+    assert.isTrue(await fs.pathExists(path.join(projectPath, Constants.environmentFolder)));
 
     const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "apimPlugin.dev"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
-    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+    );
+    const testEnvContent_dev = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "dev"
+    );
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
   });
 
@@ -1083,22 +1065,32 @@ describe("allEnvMigration", () => {
     await userdataMigration(migrationContext);
     await generateApimPluginEnvContent(migrationContext);
 
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+    assert.isTrue(await fs.pathExists(path.join(projectPath, Constants.environmentFolder)));
 
     const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "all.dev"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
-    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+    );
+    const testEnvContent_dev = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "dev"
+    );
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
     const trueEnvContent_local = await readEnvFile(
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "all.local"
     );
-    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
-    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.local"))
+    );
+    const testEnvContent_local = await readEnvFile(
+      path.join(projectPath, Constants.environmentFolder),
+      "local"
+    );
     assert.equal(testEnvContent_local, trueEnvContent_local);
   });
 });
@@ -1128,9 +1120,21 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves("3.0.0");
+    sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state.state, VersionState.compatible);
+  });
+
+  it("checkVersionForMigration V3 abandoned", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(loader, "getProjectSettingPathV2").returns("");
+    sandbox.stub(loader, "getProjectSettingPathV3").returns("");
+    sandbox.stub(fs, "pathExists").callsFake(async (path) => {
+      return path ? true : false;
+    });
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state.state, VersionState.unsupported);
   });
 
   it("checkVersionForMigration empty", async () => {
@@ -1178,9 +1182,27 @@ describe("Migration utils", () => {
   });
 
   it("getVersionState", () => {
-    assert.equal(getVersionState("2.0.0"), VersionState.upgradeable);
-    assert.equal(getVersionState("3.0.0"), VersionState.compatible);
-    assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
+    assert.equal(
+      getVersionState({
+        version: "2.0.0",
+        source: VersionSource.projectSettings,
+      }),
+      VersionState.upgradeable
+    );
+    assert.equal(
+      getVersionState({
+        version: "1.0.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "",
+        source: VersionSource.unknown,
+      }),
+      VersionState.unsupported
+    );
   });
 
   it("getDownloadLinkByVersionAndPlatform", () => {
@@ -1210,6 +1232,7 @@ describe("Migration utils", () => {
 
     const version: VersionForMigration = {
       currentVersion: "2.0.0",
+      source: VersionSource.projectSettings,
       state: VersionState.upgradeable,
       platform: Platform.VS,
     };
@@ -1285,9 +1308,8 @@ describe("debugMigration", () => {
 
       await debugMigration(migrationContext);
 
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
       assert.equal(
-        await fs.readFile(path.join(projectPath, "teamsfx", "app.local.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "teamsapp.local.yml"), "utf-8"),
         await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")
       );
       assert.equal(
@@ -1400,7 +1422,7 @@ const Constants = {
   happyPathTestProject: "happyPath",
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
-  appYmlPath: "teamsfx/app.yml",
+  appYmlPath: "teamsapp.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
   manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
   launchJsonPath: ".vscode/launch.json",
@@ -1410,4 +1432,5 @@ const Constants = {
   happyPathWithoutPermission: "happyPath_for_needMigrateToAadManifest/happyPath_no_permissionFile",
   happyPathAadPluginNotActive:
     "happyPath_for_needMigrateToAadManifest/happyPath_aadPluginNotActive",
+  environmentFolder: "env",
 };

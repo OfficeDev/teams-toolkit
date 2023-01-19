@@ -60,6 +60,8 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
+import { pathUtils } from "../../src/component/utils/pathUtils";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -214,7 +216,7 @@ describe("Core basic APIs", () => {
       sandbox.assert.calledOnce(runSpy);
       assert.isNotNull(runSpy.getCall(0).args[0]);
       assert.strictEqual(
-        runSpy.getCall(0).args[0].manifestTemplatePath,
+        runSpy.getCall(0).args[0].manifestPath,
         path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.template.json")
       );
       runSpy.restore();
@@ -281,6 +283,55 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr());
       if (res.isErr()) {
         assert.strictEqual(res.error.message, "fake_err_msg");
+      }
+    } finally {
+      restore();
+    }
+  });
+
+  it("deploy aad manifest with missing env err", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const appName = mockV3Project();
+      const appManifestPath = path.join(
+        os.tmpdir(),
+        appName,
+        "samples-v3",
+        "aad.manifest.template.json"
+      );
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.deployAad,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      sandbox
+        .stub(UpdateAadAppDriver.prototype, "run")
+        .resolves(
+          err(
+            new MissingEnvInFileUserError(
+              "aadApp/update",
+              "AAD_APP_OBJECT_ID",
+              "https://aka.ms/fake",
+              "driver.aadApp.error.generateManifestFailed",
+              "fake path"
+            )
+          )
+        );
+      const res = await core.deployAadManifest(inputs);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.strictEqual(
+          res.error.message,
+          "Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
+        );
       }
     } finally {
       restore();
@@ -377,6 +428,8 @@ describe("Core basic APIs", () => {
   it("buildAadManifest method should exist", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
+      NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
       AAD_APP_OBJECT_ID: getUuid(),
       AAD_APP_CLIENT_ID: getUuid(),
       TAB_DOMAIN: "fake",
@@ -416,6 +469,8 @@ describe("Core basic APIs", () => {
   it("addSso method should exist", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failures when template changed but not release to GitHub alpha template
+      NODE_ENV: "development", // workaround test failures when template changed but not release to GitHub alpha template
     });
     try {
       const appName = randomAppName();
@@ -699,16 +754,17 @@ describe("createEnvCopyV3", async () => {
     }
   }
 
-  before(() => {
+  beforeEach(() => {
     sandbox.stub(fs, "readFile").resolves(Buffer.from(sourceEnvStr, "utf8"));
     sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
   it("should create new .env file with desired content", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("./env/.env.dev"));
     const core = new FxCore(tools);
     const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());
@@ -733,6 +789,28 @@ describe("createEnvCopyV3", async () => {
       writeStreamContent[5] === `SECRET_KEY3=${os.EOL}`,
       "key not starts with SECRET_ should be copied with empty value"
     );
+  });
+
+  it("should failed case 1", async () => {
+    sandbox
+      .stub(pathUtils, "getEnvFilePath")
+      .onFirstCall()
+      .resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    assert(res.isErr());
+  });
+
+  it("should failed case 2", async () => {
+    sandbox
+      .stub(pathUtils, "getEnvFilePath")
+      .onFirstCall()
+      .resolves(ok("./env"))
+      .onSecondCall()
+      .resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    assert(res.isErr());
   });
 });
 

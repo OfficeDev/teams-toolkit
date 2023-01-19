@@ -61,7 +61,7 @@
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
@@ -72,7 +72,7 @@
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
@@ -85,7 +85,7 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "node teamsfx/script/run.js . teamsfx/.env.local",
+            "command": "node script/run.js . env/.env.local",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"

@@ -126,4 +126,24 @@ describe("v3 yaml parser", () => {
       assert(result.isOk());
     });
   });
+
+  describe(`when parsing yml with valid envrionmentFolderPath`, async () => {
+    it("should return ok", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "valid_env_folder_path.yml")
+      );
+      assert(result.isOk() && result.value.environmentFolderPath === "/home/xxx");
+    });
+  });
+
+  describe(`when parsing yml with invalid `, async () => {
+    it("should return ok", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_env_folder_path.yml")
+      );
+      assert(result.isErr() && result.error.name === "InvalidEnvFolderPathError");
+    });
+  });
 });

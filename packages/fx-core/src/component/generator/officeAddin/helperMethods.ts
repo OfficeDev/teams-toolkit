@@ -77,10 +77,7 @@ export class HelperMethods {
 
   static copyAddinFiles(fromFolder: string, toFolder: string): void {
     fse.copySync(fromFolder, toFolder, {
-      filter: (path) => {
-        const module: boolean = path.includes("node_modules");
-        return !module;
-      },
+      filter: (path) => !path.includes("node_modules"),
     });
   }
 

@@ -1,7 +1,10 @@
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
 environmentFolderPath: ./env
 
+# Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand
     with:
@@ -21,6 +24,7 @@ deploy:
       packageSolutionPath: ./src/config/package-solution.json
 
 
+# Triggered when 'teamsfx provision' is executed
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
@@ -28,6 +32,7 @@ registerApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
+# Triggered when 'teamsfx provision' is executed
 configureApp:
   - uses: teamsApp/validate
     with:
@@ -44,6 +49,7 @@ configureApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
+# Triggered when 'teamsfx publish' is executed
 publish:
   - uses: teamsApp/validate
     with:

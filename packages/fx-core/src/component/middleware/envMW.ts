@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
+import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   err,
   Inputs,
@@ -9,17 +9,14 @@ import {
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
+import _ from "lodash";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
-import _ from "lodash";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { pathUtils } from "../utils/pathUtils";
-import fs from "fs-extra";
-import { InvalidEnvFolderPath } from "../configManager/error";
 
 export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -92,33 +89,34 @@ export const envLoaderMWImpl = async (
     }
   }
 
-  //for F5 scenario, TTK will create a default .env file if the target env file does not exist
-  if (inputs.isLocalDebug) {
-    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, inputs.env);
-    if (dotEnvFilePathRes.isErr()) {
-      ctx.result = err(dotEnvFilePathRes.error);
-      return;
-    }
-    const envFilePath = dotEnvFilePathRes.value;
-    if (!envFilePath) {
-      ctx.result = err(
-        new InvalidEnvFolderPath(
-          "missing 'environmentFolderPath' field or environment folder not exist"
-        )
-      );
-      return;
-    }
-    if (!fs.pathExistsSync(envFilePath)) {
-      const defaultEnvContent =
-        `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n\n` +
-        "# Generated during provision, you can also add your own variables\n";
-      // "# Secret. You can add your own secret value, prefixed with SECRET_\n";
-      await fs.writeFile(envFilePath, defaultEnvContent);
-      inputs.createdEnvFile = envFilePath; // record created state for summary report
-    }
-  }
+  // move create default .env file into writeEnv()
+  // //for F5 scenario, TTK will create a default .env file if the target env file does not exist
+  // if (inputs.isLocalDebug) {
+  //   const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, inputs.env);
+  //   if (dotEnvFilePathRes.isErr()) {
+  //     ctx.result = err(dotEnvFilePathRes.error);
+  //     return;
+  //   }
+  //   const envFilePath = dotEnvFilePathRes.value;
+  //   if (!envFilePath) {
+  //     ctx.result = err(
+  //       new InvalidEnvFolderPath(
+  //         "missing 'environmentFolderPath' field or environment folder not exist"
+  //       )
+  //     );
+  //     return;
+  //   }
+  //   if (!fs.pathExistsSync(envFilePath)) {
+  //     const defaultEnvContent =
+  //       `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n\n` +
+  //       "# Generated during provision, you can also add your own variables\n";
+  //     // "# Secret. You can add your own secret value, prefixed with SECRET_\n";
+  //     await fs.writeFile(envFilePath, defaultEnvContent);
+  //     inputs.createdEnvFile = envFilePath; // record created state for summary report
+  //   }
+  // }
 
-  const res = await envUtil.readEnv(projectPath, inputs.env);
+  const res = await envUtil.readEnv(projectPath, inputs.env, true, true);
   if (res.isErr()) {
     ctx.result = err(res.error);
     return;

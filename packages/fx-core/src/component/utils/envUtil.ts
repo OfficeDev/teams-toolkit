@@ -6,12 +6,24 @@ import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { pathUtils } from "./pathUtils";
 import { TOOLS } from "../../core/globalVars";
+import * as path from "path";
+import { EOL } from "os";
 
 export type DotenvOutput = {
   [k: string]: string;
 };
 
 export class EnvUtil {
+  /**
+   * read .env file and set to process.env (if loadToProcessEnv = true)
+   * if silent = true, no error will return if .env file is not available, this function returns ok({ TEAMSFX_ENV: env })
+   * if silent = false, this function will return error if .env file is not available.
+   * @param projectPath
+   * @param env
+   * @param loadToProcessEnv
+   * @param silent
+   * @returns
+   */
   async readEnv(
     projectPath: string,
     env: string,
@@ -23,13 +35,10 @@ export class EnvUtil {
     if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
     const dotEnvFilePath = dotEnvFilePathRes.value;
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
-      // .env file does not exist, just ignore
-      process.env.TEAMSFX_ENV = env;
-      return ok({ TEAMSFX_ENV: env });
-    }
-    if (!(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
-        return ok({});
+        // .env file does not exist, just ignore
+        process.env.TEAMSFX_ENV = env;
+        return ok({ TEAMSFX_ENV: env });
       } else {
         return err(
           new UserError({
@@ -70,6 +79,15 @@ export class EnvUtil {
     return ok(parseResult.obj);
   }
 
+  /**
+   * write env variables into .env file,
+   * if .env file does not exist, this function will create a default one
+   * if .env fila path is not available, the default path is `./env/.env.{env}`
+   * @param projectPath
+   * @param env
+   * @param envs
+   * @returns
+   */
   async writeEnv(
     projectPath: string,
     env: string,
@@ -93,24 +111,25 @@ export class EnvUtil {
       }
     }
 
-    //replace existing
+    //replace existing, if env file not exist, create a default one
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
     if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
-    const dotEnvFilePath = dotEnvFilePathRes.value;
-    const parsedDotenv =
-      dotEnvFilePath && (await fs.pathExists(dotEnvFilePath))
-        ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
-        : { obj: {} };
-    parsedDotenv.obj = envs;
+    const dotEnvFilePath =
+      dotEnvFilePathRes.value || path.resolve(projectPath, "env", `.env.${env ? env : "dev"}`);
+    const envFileExists = await fs.pathExists(dotEnvFilePath);
+    const parsedDotenv = envFileExists
+      ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
+      : { obj: {} };
+    merge(parsedDotenv.obj, envs);
 
     //serialize
     const content = dotenvUtil.serialize(parsedDotenv);
 
     //persist
-    if (dotEnvFilePath) {
-      await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
-    } else {
-      TOOLS.logProvider.info(`Env output:\n${content}\n`);
+    TOOLS.logProvider.info(`  Env output:\n${content}\n`);
+    await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
+    if (!envFileExists) {
+      TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
     }
     return ok(undefined);
   }

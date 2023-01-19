@@ -417,7 +417,7 @@ export function isV3Enabled(): boolean {
 }
 
 export function isMigrationV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3Migration, false);
+  return process.env.TEAMSFX_V3_MIGRATION ? process.env.TEAMSFX_V3_MIGRATION === "true" : false;
 }
 
 export function isVideoFilterEnabled(): boolean {

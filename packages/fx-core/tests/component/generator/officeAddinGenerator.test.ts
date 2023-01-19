@@ -44,6 +44,7 @@ import { HelperMethods } from "../../../src/component/generator/officeAddin/help
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
+import EventEmitter from "events";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -223,7 +224,7 @@ describe("getTemplate", () => {
   });
 });
 
-describe("helperMethods", () => {
+describe("helperMethods", async () => {
   describe("updateManifest", () => {
     const sandbox = sinon.createSandbox();
     const manifestPath = "manifestPath";
@@ -272,23 +273,17 @@ describe("helperMethods", () => {
     });
   });
 
-  describe("downloadProjectTemplateZipFile", () => {
+  describe("downloadProjectTemplateZipFile", async () => {
     const sandbox = sinon.createSandbox();
 
-    class ResponseData {
+    class ResponseData extends EventEmitter {
       pipe(ws: fs.WriteStream) {
-        return this;
-      }
-
-      on(event: string, cb: () => void) {
         return this;
       }
     }
 
     class MockedWriteStream {
-      public handlers: { [key: string]: () => void } = {};
       on(event: string, cb: () => void) {
-        this.handlers[event] = cb;
         return this;
       }
     }
@@ -298,19 +293,17 @@ describe("helperMethods", () => {
     });
 
     it("should download project template zip file", async () => {
-      try {
-        const resp = new ResponseData();
-        sandbox.stub(axios, "get").resolves({ data: resp });
-        const mockedStream = new MockedWriteStream();
-        const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
-        sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-        await HelperMethods.downloadProjectTemplateZipFile("", "", "");
-        chai.assert(mockedStream.handlers["error"] !== undefined);
-        chai.assert(mockedStream.handlers["close"] !== undefined);
-        chai.expect(unzipStub.calledOnce).to.be.true;
-      } catch (err) {
-        chai.assert.fail(err);
-      }
+      const resp = new ResponseData();
+      sandbox.stub(axios, "get").resolves({ data: resp });
+      const mockedStream = new MockedWriteStream();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      resp.emit("close");
+      await promise;
+      chai.expect(unzipStub.calledOnce).to.be.true;
     });
   });
 

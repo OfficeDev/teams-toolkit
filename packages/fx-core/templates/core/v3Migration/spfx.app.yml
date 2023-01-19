@@ -1,6 +1,6 @@
 version: 1.0.0
 
-environmentFolderPath: ./ {{~defaultEnvironmentFolder}}
+environmentFolderPath: ./ {{~environmentFolder}}
 
 deploy:
   - uses: cli/runNpmCommand

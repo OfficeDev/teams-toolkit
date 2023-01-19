@@ -2,7 +2,7 @@ version: 1.0.0
 
 projectId: {{projectId}}
 
-environmentFolderPath: ./ {{~defaultEnvironmentFolder}}
+environmentFolderPath: ./ {{~environmentFolder}}
 
 provision:
 {{#if activePlugins.fx-resource-bot}}

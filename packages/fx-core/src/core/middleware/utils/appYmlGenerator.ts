@@ -33,7 +33,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     isWebAppBot: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
-    defaultEnvironmentFolder: string | undefined;
+    environmentFolder: string | undefined;
     projectId: string | undefined;
   };
   constructor(
@@ -52,7 +52,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       isWebAppBot: false,
       isTypescript: false,
       defaultFunctionName: undefined,
-      defaultEnvironmentFolder: undefined,
+      environmentFolder: undefined,
       projectId: undefined,
     };
   }
@@ -131,7 +131,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
 
     // env folder
-    this.handlebarsContext.defaultEnvironmentFolder = MetadataV3.defaultEnvironmentFolder;
+    this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {

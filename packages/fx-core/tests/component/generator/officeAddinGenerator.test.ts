@@ -286,17 +286,12 @@ describe("helperMethods", () => {
     }
 
     class MockedWriteStream {
+      public handlers: { [key: string]: () => void } = {};
       on(event: string, cb: () => void) {
+        this.handlers[event] = cb;
         return this;
       }
     }
-
-    beforeEach(() => {
-      const resp = new ResponseData();
-      sandbox.stub(axios, "get").resolves({ data: resp });
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
-      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
-    });
 
     afterEach(() => {
       sandbox.restore();
@@ -304,7 +299,15 @@ describe("helperMethods", () => {
 
     it("should download project template zip file", async () => {
       try {
-        HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        const resp = new ResponseData();
+        sandbox.stub(axios, "get").resolves({ data: resp });
+        const mockedStream = new MockedWriteStream();
+        const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+        sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+        await HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        chai.assert(mockedStream.handlers["error"] !== undefined);
+        chai.assert(mockedStream.handlers["close"] !== undefined);
+        chai.expect(unzipStub.calledOnce).to.be.true;
       } catch (err) {
         chai.assert.fail(err);
       }

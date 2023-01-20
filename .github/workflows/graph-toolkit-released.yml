@@ -22,7 +22,7 @@ jobs:
       - name: Setup Email and Recipient 
         id: email
         run: |
-          emails="vsciotadt@microsoft.com;junjieli@microsoft.com"
+          emails="vsciotadt@microsoft.com;junjieli@microsoft.com;zhshang@microsoft.com;donji@microsoft.com;zhany@microsoft.com"
           subject="Microsoft Graph Toolkit v${{ github.event.client_payload.version }} Released"
 
           echo "::set-output name=to::$emails"

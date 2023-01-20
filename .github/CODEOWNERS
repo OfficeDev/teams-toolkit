@@ -13,7 +13,7 @@
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
-/packages/vscode-extension/package.nls.json @timngmsft @HuihuiWu-Microsoft @tecton
+/packages/vscode-extension/package.nls.json @timngmsft @sffamily @HuihuiWu-Microsoft @tecton
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 
@@ -47,6 +47,7 @@
 /packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
+/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @HuihuiWu-Microsoft
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @blackchoey @wenytang-ms
 
@@ -73,6 +74,7 @@
 /packages/fx-core/src/component/feature/spfx.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/spfxGenerator.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/spfx.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
@@ -163,8 +165,14 @@
 /packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
+/packages/fx-core/src/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
 /packages/fx-core/src/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/deploy/azure @siglud @Yukun-dong @hund030 @JerryYangKai @IvanJobs @eriolchan
+/packages/fx-core/src/component/driver/script @siglud @Yukun-dong @hund030 @JerryYangKai @IvanJobs @eriolchan

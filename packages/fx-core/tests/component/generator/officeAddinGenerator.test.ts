@@ -44,6 +44,7 @@ import { HelperMethods } from "../../../src/component/generator/officeAddin/help
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
+import EventEmitter from "events";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -187,7 +188,9 @@ describe("OfficeAddinGenerator", function () {
 describe("getQuestionsForScaffolding", () => {
   it("should contain all questions", () => {
     const q = getQuestionsForScaffolding();
-    chai.expect(q.children?.length).to.eq(3);
+    chai.expect(q.children?.length).to.eq(2);
+    chai.expect(q.children?.[0].condition).is.not.undefined;
+    chai.expect(q.children?.[0].condition).has.property("validFunc");
   });
 
   describe("AddinLanguageQuestions", () => {
@@ -221,7 +224,7 @@ describe("getTemplate", () => {
   });
 });
 
-describe("helperMethods", () => {
+describe("helperMethods", async () => {
   describe("updateManifest", () => {
     const sandbox = sinon.createSandbox();
     const manifestPath = "manifestPath";
@@ -270,15 +273,11 @@ describe("helperMethods", () => {
     });
   });
 
-  describe("downloadProjectTemplateZipFile", () => {
+  describe("downloadProjectTemplateZipFile", async () => {
     const sandbox = sinon.createSandbox();
 
-    class ResponseData {
+    class ResponseData extends EventEmitter {
       pipe(ws: fs.WriteStream) {
-        return this;
-      }
-
-      on(event: string, cb: () => void) {
         return this;
       }
     }
@@ -289,23 +288,22 @@ describe("helperMethods", () => {
       }
     }
 
-    beforeEach(() => {
-      const resp = new ResponseData();
-      sandbox.stub(axios, "get").resolves({ data: resp });
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
-      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
-    });
-
     afterEach(() => {
       sandbox.restore();
     });
 
     it("should download project template zip file", async () => {
-      try {
-        HelperMethods.downloadProjectTemplateZipFile("", "", "");
-      } catch (err) {
-        chai.assert.fail(err);
-      }
+      const resp = new ResponseData();
+      sandbox.stub(axios, "get").resolves({ data: resp });
+      const mockedStream = new MockedWriteStream();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      resp.emit("close");
+      await promise;
+      chai.expect(unzipStub.calledOnce).to.be.true;
     });
   });
 
@@ -390,13 +388,13 @@ describe("helperMethods", () => {
       mockfs.restore();
     });
 
-    it("should copy project files and ignore .gitignore and node_modules", async () => {
+    it("should copy project files and .gitignore but ignore node_modules", async () => {
       try {
         const destination = "/home/user/destination";
         HelperMethods.copyAddinFiles(projectRoot, destination);
         chai.assert.equal(fs.existsSync(path.join(destination, "project", "file1")), true);
         chai.assert.equal(fs.existsSync(path.join(destination, "project", "file2")), true);
-        chai.assert.equal(fs.existsSync(path.join(destination, ".gitignore")), false);
+        chai.assert.equal(fs.existsSync(path.join(destination, ".gitignore")), true);
         chai.assert.equal(fs.existsSync(path.join(destination, "node_modules")), false);
       } catch (err) {
         chai.assert.fail(err);

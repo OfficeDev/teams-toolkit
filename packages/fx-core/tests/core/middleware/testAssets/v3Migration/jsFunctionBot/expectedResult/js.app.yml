@@ -1,5 +1,9 @@
 version: 1.0.0
 
+projectId: 4b90dcbf-aaf1-45f6-9c56-8c30e52c8c49
+
+environmentFolderPath: ./env
+
 provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:

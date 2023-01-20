@@ -29,7 +29,7 @@ export class HelperMethods {
               );
             })
             .on("close", async () => {
-              HelperMethods.unzipProjectTemplate(projectFolder);
+              await HelperMethods.unzipProjectTemplate(projectFolder);
               resolve();
             });
         });
@@ -77,11 +77,7 @@ export class HelperMethods {
 
   static copyAddinFiles(fromFolder: string, toFolder: string): void {
     fse.copySync(fromFolder, toFolder, {
-      filter: (path) => {
-        const module: boolean = path.includes("node_modules");
-        const ignore: boolean = path.includes(".gitignore");
-        return !module && !ignore;
-      },
+      filter: (path) => !path.includes("node_modules"),
     });
   }
 

@@ -8,6 +8,7 @@ import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
+import { MetadataV3 } from "../../../common/versionMetadata";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -32,6 +33,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     isWebAppBot: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
+    environmentFolder: string | undefined;
+    projectId: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -49,6 +52,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       isWebAppBot: false,
       isTypescript: false,
       defaultFunctionName: undefined,
+      environmentFolder: undefined,
+      projectId: undefined,
     };
   }
 
@@ -121,6 +126,12 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // default function name
     this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
+
+    // projectId
+    this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
+
+    // env folder
+    this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {

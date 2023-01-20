@@ -1,5 +1,9 @@
 version: 1.0.0
 
+projectId: a2db9168-f93e-4c12-b8e7-45e551f4bfa9
+
+environmentFolderPath: ./env
+
 provision:
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:

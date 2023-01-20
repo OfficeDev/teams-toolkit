@@ -17,6 +17,9 @@ import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 import _ from "lodash";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { pathUtils } from "../utils/pathUtils";
+import fs from "fs-extra";
+import { InvalidEnvFolderPath } from "../configManager/error";
 
 export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -62,9 +65,9 @@ export const envLoaderMWImpl = async (
       ctx.result = err(
         new UserError({
           source: "EnvLoaderMW",
-          name: "NoYmlFileError",
-          displayMessage: getLocalizedString("core.error.NoYmlFileError"),
-          message: getDefaultString("core.error.NoYmlFileError"),
+          name: "NoEnvFilesError",
+          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+          message: getDefaultString("core.error.NoEnvFilesError"),
         })
       );
       return;
@@ -88,6 +91,33 @@ export const envLoaderMWImpl = async (
       return;
     }
   }
+
+  //for F5 scenario, TTK will create a default .env file if the target env file does not exist
+  if (inputs.isLocalDebug) {
+    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, inputs.env);
+    if (dotEnvFilePathRes.isErr()) {
+      ctx.result = err(dotEnvFilePathRes.error);
+      return;
+    }
+    const envFilePath = dotEnvFilePathRes.value;
+    if (!envFilePath) {
+      ctx.result = err(
+        new InvalidEnvFolderPath(
+          "missing 'environmentFolderPath' field or environment folder not exist"
+        )
+      );
+      return;
+    }
+    if (!fs.pathExistsSync(envFilePath)) {
+      const defaultEnvContent =
+        `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n\n` +
+        "# Generated during provision, you can also add your own variables\n";
+      // "# Secret. You can add your own secret value, prefixed with SECRET_\n";
+      await fs.writeFile(envFilePath, defaultEnvContent);
+      inputs.createdEnvFile = envFilePath; // record created state for summary report
+    }
+  }
+
   const res = await envUtil.readEnv(projectPath, inputs.env);
   if (res.isErr()) {
     ctx.result = err(res.error);

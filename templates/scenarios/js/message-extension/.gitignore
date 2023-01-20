@@ -1,5 +1,5 @@
 # TeamsFx files
-teamsfx/.env.*
+env/.env.*
 
 # dependencies
 node_modules/

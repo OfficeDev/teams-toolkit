@@ -35,7 +35,7 @@
         "typescript": "^4.1.2"
     },
     "scripts": {
-        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "node script/run.js . env/.env.local",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

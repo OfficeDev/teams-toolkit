@@ -1,5 +1,9 @@
 version: 1.0.0
 
+projectId: {{projectId}}
+
+environmentFolderPath: ./ {{~environmentFolder}}
+
 provision:
 {{#if activePlugins.fx-resource-bot}}
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
@@ -158,7 +162,7 @@ configureApp:
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
-      manifestTemplatePath: ./aad.manifest.template.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
+      manifestPath: ./aad.manifest.template.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO

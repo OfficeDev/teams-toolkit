@@ -13,7 +13,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { join } from "path";
 import {
-  AddinNameQuestion,
   AddinLanguageQuestion,
   OfficeHostQuestion,
   getTemplate,
@@ -30,6 +29,7 @@ import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
+import { CoreQuestionNames } from "../../../core/question";
 import { convertProject } from "office-addin-project";
 
 const childProcessExec = promisify(childProcess.exec);
@@ -77,7 +77,7 @@ export class OfficeAddinGenerator {
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
     const template = getTemplate(inputs);
-    const name = inputs[AddinNameQuestion.name];
+    const name = inputs[CoreQuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[AddinProjectFolderQuestion.name];
     const language = inputs[AddinLanguageQuestion.name];

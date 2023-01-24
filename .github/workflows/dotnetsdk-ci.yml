@@ -32,3 +32,4 @@ jobs:
     - name: Test
       run:
         dotnet test Microsoft.TeamsFx.sln
+

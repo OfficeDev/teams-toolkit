@@ -27,7 +27,6 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
 } from "../component/constants";
-import { environmentManager } from "./environment";
 import {
   ObjectIsUndefinedError,
   NoAadManifestExistError,

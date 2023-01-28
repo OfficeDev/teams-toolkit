@@ -180,8 +180,9 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
     MetadataV3Abandoned.configFile
   );
   if (await fs.pathExists(abandonedPath)) {
+    const settings = await fs.readJson(abandonedPath);
     return {
-      version: MetadataV3Abandoned.configFolder,
+      version: settings.version || "",
       source: VersionSource.settings,
     };
   }

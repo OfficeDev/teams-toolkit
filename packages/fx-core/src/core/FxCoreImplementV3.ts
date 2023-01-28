@@ -77,6 +77,7 @@ import { MissingEnvInFileUserError } from "../component/driver/aad/error/missing
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VersionSource } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
+import { InvalidEnvFolderPath } from "../component/configManager/error";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -420,9 +421,16 @@ export class FxCoreV3Implement {
     let res = await pathUtils.getEnvFilePath(projectPath, sourceEnvName);
     if (res.isErr()) return err(res.error);
     const sourceDotEnvFile = res.value;
+
     res = await pathUtils.getEnvFilePath(projectPath, targetEnvName);
     if (res.isErr()) return err(res.error);
     const targetDotEnvFile = res.value;
+    if (!sourceDotEnvFile || !targetDotEnvFile)
+      return err(
+        new InvalidEnvFolderPath(
+          "missing 'environmentFolderPath' field or environment folder not exist"
+        )
+      );
     const source = await fs.readFile(sourceDotEnvFile);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source

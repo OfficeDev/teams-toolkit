@@ -143,7 +143,7 @@ function stringifyLifecycleState(lifecycleState: LifecycleState): string[] {
 
 export class SummaryReporter {
   private lifecycles: ILifecycle[];
-  private lifecycleStates: LifecycleState[];
+  lifecycleStates: LifecycleState[];
   private log: LogProvider;
 
   constructor(lifecycles: ILifecycle[], log: LogProvider) {
@@ -163,12 +163,14 @@ export class SummaryReporter {
     updateLifecycleState(this.lifecycleStates[index], execResult);
   }
 
-  getLifecycleSummary(): string {
+  getLifecycleSummary(createdEnvFile = undefined): string {
     const summaries = this.lifecycleStates.map((lifecycleState) => {
       return stringifyLifecycleState(lifecycleState);
     });
 
     const flattened = _.flatten(summaries);
-    return `Summary:${EOL}${flattened.join(EOL)}`;
+    return `Summary:${EOL}${
+      createdEnvFile ? "  Created environment file at " + createdEnvFile + EOL + EOL : ""
+    }${flattened.join(EOL)}`;
   }
 }

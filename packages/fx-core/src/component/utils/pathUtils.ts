@@ -33,24 +33,26 @@ export class PathUtils {
     );
     return ymlPath;
   }
-  async getEnvFolderPath(projectPath: string): Promise<Result<string, FxError>> {
+  async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {
     const ymlFilePath = this.getYmlFilePath(projectPath, "dev");
     const parseRes = await yamlParser.parse(ymlFilePath);
     if (parseRes.isErr()) return err(parseRes.error);
     const projectModel = parseRes.value;
-    if (!projectModel.environmentFolderPath)
-      return err(new InvalidEnvFolderPath("missing field: environmentFolderPath"));
+    if (!projectModel.environmentFolderPath) return ok(undefined); //err(new InvalidEnvFolderPath("missing field: environmentFolderPath"));
     const envFolderPath = path.isAbsolute(projectModel.environmentFolderPath)
       ? projectModel.environmentFolderPath
       : path.join(projectPath, projectModel.environmentFolderPath);
-    if (!(await fs.pathExists(envFolderPath)))
-      return err(new InvalidEnvFolderPath("environment folder not exist: " + envFolderPath));
+    if (!(await fs.pathExists(envFolderPath))) return ok(undefined); //err(new InvalidEnvFolderPath("environment folder not exist: " + envFolderPath));
     return ok(envFolderPath);
   }
-  async getEnvFilePath(projectPath: string, env: string): Promise<Result<string, FxError>> {
+  async getEnvFilePath(
+    projectPath: string,
+    env: string
+  ): Promise<Result<string | undefined, FxError>> {
     const envFolderPathRes = await this.getEnvFolderPath(projectPath);
     if (envFolderPathRes.isErr()) return err(envFolderPathRes.error);
     const folderPath = envFolderPathRes.value;
+    if (!folderPath) return ok(undefined);
     const envFilePath = path.join(folderPath, `.env.${env}`);
     return ok(envFilePath);
   }

@@ -2,14 +2,13 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, Inputs, ok, Platform, ProjectSettings, Result } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { setTools } from "../../../src/core/globalVars";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+import { MockTools, randomAppName } from "../utils";
 import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVersionChecker";
 import { assert } from "chai";
 import mockedEnv from "mocked-env";
@@ -77,7 +76,7 @@ describe("Middleware - projectVersionChecker.test", () => {
       myMethod: [ProjectVersionCheckerMW],
     });
 
-    const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
+    const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage").resolves(ok("Learn more"));
     const showLog = sandbox.stub(mockTools.logProvider, "warning");
 
     const my = new MyClass();

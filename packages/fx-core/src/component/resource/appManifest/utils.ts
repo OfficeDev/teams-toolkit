@@ -498,7 +498,7 @@ export class ManifestUtils {
       const botId = envInfo.state[ComponentNames.TeamsBot]?.botId;
       const botDomain = envInfo.state[ComponentNames.TeamsBot]?.validDomain;
       if (botId) {
-        if (!botDomain) {
+        if (!botDomain && !ignoreEnvStateValueMissing) {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,
@@ -509,7 +509,7 @@ export class ManifestUtils {
               HelpLinks.WhyNeedProvision
             )
           );
-        } else {
+        } else if (botDomain) {
           validDomains.push(botDomain);
         }
       }

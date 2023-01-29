@@ -225,6 +225,8 @@ export class CodeFlowTenantLogin {
               LogLevel.Error,
               "[Login] silent acquire token : " + error.message
             );
+            await this.logout();
+            (this.msalTokenCache as any).storage.setCache({});
             const accessToken = await this.login();
             return accessToken;
           });

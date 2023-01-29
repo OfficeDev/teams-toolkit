@@ -718,14 +718,10 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
 
   if (isV3Enabled()) {
     if (isMigrationV3Enabled()) {
-      const versionCheckResult = await handlers.projectVersionCheck();
-      const upgradeable = versionCheckResult.isOk()
-        ? versionCheckResult.value.isSupport == VersionState.upgradeable
-        : false;
+      const upgradeable = await checkProjectUpgradable();
       if (upgradeable) {
         await handlers.checkUpgrade();
       }
-      await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
     }
   } else {
     await vscode.commands.executeCommand(
@@ -1004,15 +1000,17 @@ async function runBackgroundAsyncTasks(
 
   if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();
-  } else {
-    const settingsFileWatcher = vscode.workspace.createFileSystemWatcher(
-      "**/teamsfx/settings.json"
-    );
-
-    settingsFileWatcher.onDidCreate(async (event) => {
-      await detectedTeamsFxProject(context);
-    });
   }
+
+  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/teamsapp.yml",
+    false,
+    true,
+    true
+  );
+  ymlFileWatcher.onDidCreate(async (event) => {
+    await detectedTeamsFxProject(context);
+  });
 
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
@@ -1052,9 +1050,19 @@ function runCommand(commandName: string, args: unknown[]) {
   commandController.runCommand(commandName, args);
 }
 
-function detectedTeamsFxProject(context: vscode.ExtensionContext) {
+async function checkProjectUpgradable(): Promise<boolean> {
+  const versionCheckResult = await handlers.projectVersionCheck();
+  const upgradeable = versionCheckResult.isOk()
+    ? versionCheckResult.value.isSupport == VersionState.upgradeable
+    : false;
+  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+  return upgradeable;
+}
+
+async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
+  const wasTeamsFxProject = isTeamsFxProject;
   initializeGlobalVariables(context);
-  if (isTeamsFxProject) {
+  if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 
     vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
@@ -1067,4 +1075,6 @@ function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 
     runTeamsFxBackgroundTasks();
   }
+
+  await checkProjectUpgradable();
 }

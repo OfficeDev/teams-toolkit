@@ -326,9 +326,9 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     //   return projectConfig.value?.settings?.version;
     // }
     if (isV3Enabled()) {
-      const settings = await core.getSettings(input as InputsWithProjectPath);
-      if (settings.isOk()) {
-        return settings.value?.version;
+      const versionCheckResult = await projectVersionCheck();
+      if (versionCheckResult.isOk()) {
+        return versionCheckResult.value.currentVersion;
       }
     } else {
       await core.getProjectConfig(input);

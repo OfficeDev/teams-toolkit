@@ -19,8 +19,8 @@
         "full": "Full description of {%appName%}"
     },
     "icons": {
-        "color": "resources/color.png",
-        "outline": "resources/outline.png"
+        "color": "color.png",
+        "outline": "outline.png"
     },
     "accentColor": "#004578",
     "staticTabs": [

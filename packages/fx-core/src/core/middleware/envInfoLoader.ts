@@ -135,9 +135,7 @@ export async function getTargetEnvName(
         return err(result.error);
       }
       targetEnvName = result.value;
-      TOOLS.logProvider.info(
-        `[${targetEnvName}] is selected as the target environment to ${ctx.method}`
-      );
+      TOOLS.logProvider.info(`[${targetEnvName}] is selected as the target environment`);
 
       lastUsedEnv = targetEnvName;
     }

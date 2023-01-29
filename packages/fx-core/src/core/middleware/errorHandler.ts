@@ -18,20 +18,20 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.locale) setLocale(inputs.locale);
   try {
-    let log = `[core] start task:${taskName}`;
-    if (inputs.loglevel && inputs.loglevel === "Debug") {
-      TOOLS?.logProvider?.debug(log);
-    } else {
-      TOOLS?.logProvider?.info(log);
-    }
+    // let log = `[core] start task:${taskName}`;
+    // if (inputs.loglevel && inputs.loglevel === "Debug") {
+    //   TOOLS?.logProvider?.debug(log);
+    // } else {
+    //   TOOLS?.logProvider?.info(log);
+    // }
     const time = new Date().getTime();
     await next();
-    log = `[core] finish task:${taskName}, time: ${new Date().getTime() - time} ms`;
-    if (inputs.loglevel && inputs.loglevel === "Debug") {
-      TOOLS?.logProvider?.debug(log);
-    } else {
-      TOOLS?.logProvider?.info(log);
-    }
+    // log = `[core] finish task:${taskName}, time: ${new Date().getTime() - time} ms`;
+    // if (inputs.loglevel && inputs.loglevel === "Debug") {
+    //   TOOLS?.logProvider?.debug(log);
+    // } else {
+    //   TOOLS?.logProvider?.info(log);
+    // }
   } catch (e) {
     let fxError = assembleError(e);
     if (fxError instanceof SystemError) {

@@ -105,10 +105,11 @@ export const automaticNpmInstallHintMessage =
 
 export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
-  NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).`,
-  NodeNotRecommended: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). It may cause problems if you continue to debug.`,
-  NodeSuccess: `Supported Node.js version (@Version) is installed`,
-  InstallNode: "Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).",
+  NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions), which means it is not actively maintained and fully tested by the Teams Toolkit development team. However, TeamsFx project may still work with this version and Teams Toolkit development team and community users are able to provide assistance through open-source community.`,
+  NodeSuccess: `Node.js version (@Version) is installed`,
+  InstallNode: "Go to https://nodejs.org/about/releases/ to install LTS Node.js.",
+  InstallNodeV3:
+    "The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.",
   SideLoadingDisabled:
     "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
   NotSignIn: "No Microsoft 365 account login",

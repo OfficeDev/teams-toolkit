@@ -11,7 +11,7 @@ import { LogLevel, UserError, Colors, SystemError } from "@microsoft/teamsfx-api
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
 import {
   azureLoginMessage,
@@ -185,14 +185,8 @@ export class CodeFlowTenantLogin {
 
   async logout(): Promise<boolean> {
     if (this.accountName) {
-      const accountCache = await loadAccountId(this.accountName);
-      if (accountCache) {
-        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-        if (dataCache) {
-          this.msalTokenCache?.removeAccount(dataCache);
-        }
-      }
-
+      (this.msalTokenCache as any).storage.setCache({});
+      await clearCache(this.accountName);
       await saveAccountId(this.accountName, undefined);
     }
     return true;
@@ -226,7 +220,6 @@ export class CodeFlowTenantLogin {
               "[Login] silent acquire token : " + error.message
             );
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             const accessToken = await this.login();
             return accessToken;
           });

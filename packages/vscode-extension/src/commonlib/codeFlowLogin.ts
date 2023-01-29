@@ -20,7 +20,7 @@ import { FxError, ok, Result, UserError, err } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -218,15 +218,9 @@ export class CodeFlowLogin {
 
   async logout(): Promise<boolean> {
     try {
-      const accountCache = await loadAccountId(this.accountName);
-      if (accountCache) {
-        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-        if (dataCache) {
-          this.msalTokenCache?.removeAccount(dataCache);
-        }
-      }
-
       await saveAccountId(this.accountName, undefined);
+      (this.msalTokenCache as any).storage.setCache({});
+      await clearCache(this.accountName);
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
@@ -282,7 +276,6 @@ export class CodeFlowLogin {
               return undefined;
             }
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login(this.scopes);
               return accessToken;
@@ -335,7 +328,6 @@ export class CodeFlowLogin {
           return error(CheckOnlineError());
         }
         await this.logout();
-        (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
           const accessToken = await this.login(scopes, loginHint);
           return ok(accessToken);

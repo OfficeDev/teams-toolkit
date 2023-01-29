@@ -21,7 +21,7 @@ import {
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
 import {
   azureLoginMessage,
@@ -253,14 +253,8 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = await loadAccountId(this.accountName);
-    if (accountCache) {
-      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.msalTokenCache?.removeAccount(dataCache);
-      }
-    }
-
+    (this.msalTokenCache as any).storage.setCache({});
+    await clearCache(this.accountName);
     await saveAccountId(this.accountName, undefined);
     this.account = undefined;
     return true;
@@ -300,7 +294,6 @@ export class CodeFlowLogin {
               return undefined;
             }
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login(this.scopes);
               return accessToken;
@@ -350,7 +343,6 @@ export class CodeFlowLogin {
           return err(CheckOnlineError());
         }
         await this.logout();
-        (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
           const accessToken = await this.login(scopes);
           return ok(accessToken);

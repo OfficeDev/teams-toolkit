@@ -259,7 +259,7 @@ export default function App() {
 
 ### Step 4: Modify manifest to add a new dashboard tab
 
-Open the [`appPackage/manifest.template.json`](appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
+Open the [`appPackage/manifest.json`](appPackage/manifest.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
 
 ```json
 {

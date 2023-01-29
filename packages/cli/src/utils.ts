@@ -182,7 +182,7 @@ export async function askTeamsManifestFilePath(): Promise<Result<string, FxError
   const config: InputTextConfig = {
     name: TeamsAppManifestFilePathName,
     title: "Enter the Teams app manifest template path",
-    default: "./appPackage/manifest.template.json",
+    default: "./appPackage/manifest.json",
   };
   const filePathInput = await CLIUIInstance.inputText(config);
   if (filePathInput.isErr()) {

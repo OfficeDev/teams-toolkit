@@ -95,7 +95,7 @@ export class ManifestUtils {
   async getTeamsAppManifestPath(projectPath: string): Promise<string> {
     const templateFolder = await getProjectTemplatesFolderPath(projectPath);
     const filePath = isV3Enabled()
-      ? path.join(projectPath, "appPackage", "manifest.template.json")
+      ? path.join(projectPath, "appPackage", "manifest.json")
       : path.join(templateFolder, "appPackage", "manifest.template.json");
     return filePath;
   }

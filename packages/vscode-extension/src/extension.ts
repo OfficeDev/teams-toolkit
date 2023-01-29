@@ -801,7 +801,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     language: "json",
     scheme: "file",
     pattern: isV3Enabled()
-      ? `**/${AppPackageFolderName}/manifest.template.json`
+      ? `**/${AppPackageFolderName}/manifest.json`
       : `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
   };
   const localManifestTemplateSelector = {

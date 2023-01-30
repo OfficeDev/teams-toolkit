@@ -2,9 +2,9 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import { PrereleasePage } from "../../../src/utils/prerelease";
 import { ExtensionContext, Memento } from "vscode";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as spies from "chai-spies";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 chai.use(spies);
 const spy = chai.spy;
 const ShowWhatIsNewNotification = "show-what-is-new-notification";
@@ -27,7 +27,6 @@ function globalStateGet(key: string): string {
 
 describe("versionUtil", () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn;
   let context: ExtensionContext;
   const mockGlobalState: Memento = {
     keys: gloablStateKeys,
@@ -38,7 +37,6 @@ describe("versionUtil", () => {
     chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
   });
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
     sandbox.stub(PrereleasePage.prototype, "show").resolves();
     context = {
       subscriptions: [],
@@ -47,9 +45,9 @@ describe("versionUtil", () => {
   });
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
   it("checkAndShow success", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -60,6 +58,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return prerelease version undefined", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
     sandbox.stub(context.globalState, "get").returns(undefined);
     const instance = new PrereleasePage(context);
@@ -70,6 +69,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return failed if not prerelease", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.1.0");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -79,6 +79,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow with Same version", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -88,7 +89,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow failed without V3 flag", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);

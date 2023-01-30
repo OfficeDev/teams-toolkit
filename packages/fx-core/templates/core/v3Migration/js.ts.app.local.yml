@@ -243,7 +243,7 @@ deploy:
   {{#if backendStart}}
   - uses: file/updateEnv
     with:
-      target: ./api/.localSetting
+      target: ./api/.localSettings
       envs:
         FUNCTIONS_WORKER_RUNTIME: node
         M365_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}

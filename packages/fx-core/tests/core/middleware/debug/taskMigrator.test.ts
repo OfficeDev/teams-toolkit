@@ -647,7 +647,7 @@ describe("debugMigration", () => {
               "Install npm packages",
               "Start local tunnel",
               "Create resources",
-              "Install tools and Build project",
+              "Build project",
               "Set up bot",
               "Set up SSO",
               "Build & upload Teams manifest",
@@ -659,7 +659,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -742,7 +742,7 @@ describe("debugMigration", () => {
               "Start local tunnel",
               "Set up tab",
               "Create resources",
-              "Install tools and Build project",
+              "Build project",
               "Set up SSO",
               "Build & upload Teams manifest",
               "Start services"
@@ -753,7 +753,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -935,7 +935,7 @@ describe("debugMigration", () => {
               "Set up tab",
               "Set up bot",
               "Create resources",
-              "Install tools and Build project",
+              "Build project",
               "Build & upload Teams manifest",
               "Start services"
           ],
@@ -945,7 +945,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -1084,7 +1084,7 @@ describe("debugMigration", () => {
               "Set up bot",
               "Set up SSO",
               "Create resources",
-              "Install tools and Build project",
+              "Build project",
               "Start services"
           ],
           "dependsOrder": "sequence"
@@ -1093,7 +1093,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;

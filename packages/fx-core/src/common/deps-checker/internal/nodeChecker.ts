@@ -220,6 +220,7 @@ function getNodeVersion(output: string): NodeVersion | null {
 }
 
 export class SPFxNodeChecker extends NodeChecker {
+  public static readonly supportedVersions = ["16"];
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
   protected readonly _type = DepsType.SpfxNode;
@@ -231,7 +232,7 @@ export class SPFxNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["16"];
+    return SPFxNodeChecker.supportedVersions;
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
@@ -240,6 +241,7 @@ export class SPFxNodeChecker extends NodeChecker {
 }
 
 export class AzureNodeChecker extends NodeChecker {
+  public static readonly supportedVersions = ["14", "16", "18"];
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
   protected readonly _type = DepsType.AzureNode;
@@ -250,7 +252,7 @@ export class AzureNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16"];
+    return AzureNodeChecker.supportedVersions;
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {

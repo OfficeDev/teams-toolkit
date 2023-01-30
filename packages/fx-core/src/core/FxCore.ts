@@ -117,6 +117,7 @@ import { ILifecycle, LifecycleName } from "../component/configManager/interface"
 import { DotenvParseOutput } from "dotenv";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
+import { AzureNodeChecker, SPFxNodeChecker } from "../common/deps-checker/internal/nodeChecker";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -1068,6 +1069,7 @@ export async function ensureBasicFolderStructure(
       if (inputs.platform !== Platform.VS) {
         const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
         const exists = await fs.pathExists(packageJsonFilePath);
+        const isSPFx = inputs?.capabilities === FeatureId.TabSPFx;
         if (!exists) {
           await fs.writeFile(
             packageJsonFilePath,
@@ -1076,6 +1078,11 @@ export async function ensureBasicFolderStructure(
                 name: appName,
                 version: "0.0.1",
                 description: "",
+                engines: {
+                  node: (isSPFx ? SPFxNodeChecker : AzureNodeChecker).supportedVersions.join(
+                    " || "
+                  ),
+                },
                 author: "",
                 scripts: {
                   test: 'echo "Error: no test specified" && exit 1',

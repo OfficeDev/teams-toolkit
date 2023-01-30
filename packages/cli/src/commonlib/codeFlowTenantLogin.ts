@@ -185,8 +185,12 @@ export class CodeFlowTenantLogin {
 
   async logout(): Promise<boolean> {
     if (this.accountName) {
-      (this.msalTokenCache as any).storage.setCache({});
-      await clearCache(this.accountName);
+      const accounts = await this.msalTokenCache.getAllAccounts();
+      if (accounts.length > 0) {
+        accounts.forEach(async (accountInfo) => {
+          await this.msalTokenCache.removeAccount(accountInfo);
+        });
+      }
       await saveAccountId(this.accountName, undefined);
     }
     return true;

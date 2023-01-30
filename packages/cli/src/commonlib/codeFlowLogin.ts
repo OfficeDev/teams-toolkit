@@ -253,8 +253,12 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    (this.msalTokenCache as any).storage.setCache({});
-    await clearCache(this.accountName);
+    const accounts = await this.msalTokenCache.getAllAccounts();
+    if (accounts.length > 0) {
+      accounts.forEach(async (accountInfo) => {
+        await this.msalTokenCache.removeAccount(accountInfo);
+      });
+    }
     await saveAccountId(this.accountName, undefined);
     this.account = undefined;
     return true;

@@ -219,8 +219,12 @@ export class CodeFlowLogin {
   async logout(): Promise<boolean> {
     try {
       await saveAccountId(this.accountName, undefined);
-      (this.msalTokenCache as any).storage.setCache({});
-      await clearCache(this.accountName);
+      const accounts = await this.msalTokenCache.getAllAccounts();
+      if (accounts.length > 0) {
+        accounts.forEach(async (accountInfo) => {
+          await this.msalTokenCache.removeAccount(accountInfo);
+        });
+      }
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {

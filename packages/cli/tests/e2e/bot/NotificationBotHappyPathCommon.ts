@@ -77,6 +77,9 @@ export function happyPathTest(runtime: Runtime): void {
         await bot.validateProvision(false);
       }
 
+      const context = await fs.readJSON(`${projectPath}/bot/package.json`);
+      console.log(context.dependencies["@microsoft/teamsfx"]);
+
       // deploy
       await execAsyncWithRetry(`teamsfx deploy bot`, {
         cwd: projectPath,

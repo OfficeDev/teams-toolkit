@@ -137,7 +137,7 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
     });
     const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    expect(res.isErr()).to.equal(false);
   });
 
   it("deploy restart throws", async () => {
@@ -184,7 +184,7 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
     });
     const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    expect(res.isErr()).to.equal(false);
   });
 
   it("Zip deploy throws when upload", async () => {

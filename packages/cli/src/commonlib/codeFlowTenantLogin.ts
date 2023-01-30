@@ -11,7 +11,7 @@ import { LogLevel, UserError, Colors, SystemError } from "@microsoft/teamsfx-api
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
 import {
   azureLoginMessage,

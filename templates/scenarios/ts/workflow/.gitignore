@@ -15,4 +15,5 @@ node_modules/
 lib/
 
 # Local data
+.localSettings
 .notification.localstore.json

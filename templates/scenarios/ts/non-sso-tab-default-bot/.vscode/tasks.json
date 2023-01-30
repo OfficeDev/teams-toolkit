@@ -88,10 +88,10 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "node script/run.bot.js . env/.env.local",
+            "command": "npm run dev:teamsfx",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/bot"
             },
             "problemMatcher": {
                 "pattern": [
@@ -112,10 +112,10 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node script/run.tab.js . env/.env.local",
+            "command": "npm run dev:teamsfx",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/tab"
             },
             "problemMatcher": {
                 "pattern": {

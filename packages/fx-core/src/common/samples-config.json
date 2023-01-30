@@ -196,6 +196,18 @@
             "time": "7min to run",
             "configuration": "Ready for debug",
             "suggested": false
+        },
+        {
+            "id": "live-share-dice-roller-sample",
+            "title": "Get started with a dice-roller sample introducing Live Share",
+            "shortDescription": "This sample introduces Microsoft Live Share and Azure Fluid Relay to enable a shared experience between multiple users.",
+            "fullDescription": "Microsoft Live Share is a collaboration tool that enables you to share your experience with others in real time. Azure Fluid Relay is a part of this service. \n\nThe dice-roller example is a simple app that allows multiple users to roll a dice and see the results.\n\nThis sample is a great way to get started with Live Share and Fluid.",
+            "tags": ["Live Share", "JS", "ReactJS", "Teams-JS 2.0"],
+            "time": "5 min to run",
+            "configuration": "Manual configuration required",
+            "suggested": false,
+            "url": "https://github.com/microsoft/live-share-sdk/tree/main/samples/javascript/01.dice-roller",
+            "packageurl": "https://github.com/microsoft/live-share-sdk/archive/refs/tags/v1.0.0-preview.1.zip"
         }
     ]
 }

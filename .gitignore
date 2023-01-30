@@ -390,3 +390,5 @@ mochawesome-report
 .metrics
 
 package-lock.json
+
+.DS_Store

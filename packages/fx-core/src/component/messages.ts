@@ -30,8 +30,9 @@ export class ProgressMessages {
   static readonly packingCode = getLocalizedString("core.progress.packingCode");
   static readonly enableStaticWebsite = getLocalizedString("core.progress.enableStaticWebsite");
   static readonly provisionBot = getLocalizedString("core.progress.provisionBot");
-  static readonly generateTemplate = getLocalizedString("core.progress.generateTemplate.detail");
-  static readonly generateSample = getLocalizedString("core.progress.generateSample.detail");
+  static readonly generateTemplate = () =>
+    getLocalizedString("core.progress.generateTemplate.detail");
+  static readonly generateSample = () => getLocalizedString("core.progress.generateSample.detail");
   static readonly getDeploymentSrcAndDest = getLocalizedString(
     "core.progress.getDeploymentSrcAndDest"
   );

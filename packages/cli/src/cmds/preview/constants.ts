@@ -105,7 +105,7 @@ export const automaticNpmInstallHintMessage =
 
 export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
-  NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions), which means it is not actively maintained and fully tested by the Teams Toolkit development team. However, TeamsFx project may still work with this version and Teams Toolkit development team and community users are able to provide assistance through open-source community.`,
+  NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version.`,
   NodeSuccess: `Node.js version (@Version) is installed`,
   InstallNode: "Go to https://nodejs.org/about/releases/ to install LTS Node.js.",
   InstallNodeV3:

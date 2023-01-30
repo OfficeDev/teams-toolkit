@@ -14,7 +14,7 @@ export const doctorConstant = {
     "Restart all your Visual Studio Code instances after the installation is finished.",
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,
   NodeNotSupported: (isV3Enabled: boolean) =>
-    `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions), which means it is not actively maintained and fully tested by the Teams Toolkit development team. However, TeamsFx project may still work with this version and Teams Toolkit development team and community users are able to provide assistance through open-source community. ${
+    `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version. ${
       isV3Enabled ? InstallNodeV3 : InstallNode
     }`,
   NodeSuccess: `Node.js version (@Version) is installed`,

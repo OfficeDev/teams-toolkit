@@ -59,3 +59,15 @@ deploy:
     with:
       workingDirectory: .
       args: install --no-audit
+
+  - uses: file/updateEnv # Generate runtime environment variables
+    with:
+      target: ./.localSettings
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html

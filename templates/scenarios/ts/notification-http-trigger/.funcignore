@@ -2,6 +2,7 @@
 .development
 .DS_Store
 .git*
+.localSettings
 .notification.localstore.json
 .vscode
 *.js.map

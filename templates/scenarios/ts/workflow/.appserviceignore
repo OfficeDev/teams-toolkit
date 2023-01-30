@@ -1,6 +1,7 @@
 .webappignore
 .fx
 .deployment
+.localSettings
 .vscode
 *.js.map
 *.ts.map

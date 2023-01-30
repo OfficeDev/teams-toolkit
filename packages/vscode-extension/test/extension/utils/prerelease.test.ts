@@ -64,4 +64,13 @@ describe("versionUtil", () => {
     assert(spyChecker.callCount == 0);
     spyChecker.restore();
   });
+  it("checkAndShow with Same version", async () => {
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
+    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    const instance = new PrereleasePage(context);
+    const spyChecker = sandbox.spy(context.globalState, "update");
+    await instance.checkAndShow();
+    assert(spyChecker.callCount == 0);
+    spyChecker.restore();
+  });
 });

@@ -3,9 +3,18 @@ import * as chai from "chai";
 import { PrereleasePage } from "../../../src/utils/prerelease";
 import { ExtensionContext, Memento } from "vscode";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { assert } from "console";
-import { update } from "lodash";
-
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+import * as spies from "chai-spies";
+chai.use(spies);
+const spy = chai.spy;
+const ShowWhatIsNewNotification = "show-what-is-new-notification";
+const reporterSpy = spy.interface({
+  sendTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {},
+});
 function gloablStateKeys(): readonly string[] {
   return ["PrereleaseState.Version"];
 }
@@ -25,6 +34,9 @@ describe("versionUtil", () => {
     get: globalStateGet,
     update: globalStateUpdate,
   };
+  before(() => {
+    chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
+  });
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
     sandbox.stub(PrereleasePage.prototype, "show").resolves();
@@ -38,30 +50,32 @@ describe("versionUtil", () => {
     mockedEnvRestore();
   });
   it("checkAndShow success", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.3.0");
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
     await instance.checkAndShow();
-    assert(spyChecker.callCount == 1);
+    chai.assert(spyChecker.callCount == 1);
+    chai.expect(reporterSpy.sendTelemetryEvent).to.have.been.called.with(ShowWhatIsNewNotification);
     spyChecker.restore();
   });
   it("checkAndShow return prerelease version undefined", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.3.0");
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
     sandbox.stub(context.globalState, "get").returns(undefined);
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
+    chai.expect(reporterSpy.sendTelemetryEvent).to.have.been.called.with(ShowWhatIsNewNotification);
     await instance.checkAndShow();
-    assert(spyChecker.callCount == 1);
+    chai.assert(spyChecker.callCount == 1);
     spyChecker.restore();
   });
-  it("checkAndShow return failed", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.10");
+  it("checkAndShow return failed if not prerelease", async () => {
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.1.0");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
     await instance.checkAndShow();
-    assert(spyChecker.callCount == 0);
+    chai.assert(spyChecker.callCount == 0);
     spyChecker.restore();
   });
   it("checkAndShow with Same version", async () => {
@@ -70,7 +84,17 @@ describe("versionUtil", () => {
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
     await instance.checkAndShow();
-    assert(spyChecker.callCount == 0);
+    chai.assert(spyChecker.callCount == 0);
+    spyChecker.restore();
+  });
+  it("checkAndShow failed without V3 flag", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
+    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    const instance = new PrereleasePage(context);
+    const spyChecker = sandbox.spy(context.globalState, "update");
+    await instance.checkAndShow();
+    chai.assert(spyChecker.callCount == 0);
     spyChecker.restore();
   });
 });

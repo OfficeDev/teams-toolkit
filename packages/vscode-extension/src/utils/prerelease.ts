@@ -21,15 +21,15 @@ export class PrereleasePage {
     if (
       isV3Enabled() &&
       (prereleaseVersion === undefined ||
-        (versionUtil.isPrereleaseVersion(prereleaseVersion) &&
+        (versionUtil.isPrereleaseVersion(teamsToolkitVersion) &&
           teamsToolkitVersion != prereleaseVersion))
     ) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
       this.context.globalState.update(PrereleaseState.Version, teamsToolkitVersion);
       this.show();
     }
   }
   public async show() {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
     const uri = vscode.Uri.file(`${folder.getResourceFolder()}/PRERELEASE.md`);
     vscode.workspace.openTextDocument(uri).then(() => {
       const PreviewMarkdownCommand = "markdown.showPreview";

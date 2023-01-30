@@ -121,6 +121,7 @@ export class OfficeAddinGenerator {
           manifestFile = manifestFile.replace(/\.xml$/, ".json");
         }
         inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
+        HelperMethods.updateManifest(destinationPath, manifestFile);
       }
       process.chdir(workingDir);
       return ok(undefined);

@@ -5,6 +5,7 @@ import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import {
   AccountCrypto,
   AzureSpCrypto,
+  clearCache,
   CryptoCachePlugin,
   loadAccountId,
 } from "../../../src/commonlib/cacheAccess";
@@ -100,5 +101,6 @@ describe("AccountCrypto Service principal Tests", function () {
     await AzureSpCrypto.loadAzureSP();
     await AzureSpCrypto.clearAzureSP();
     await loadAccountId("abc");
+    await clearCache("abc");
   });
 });

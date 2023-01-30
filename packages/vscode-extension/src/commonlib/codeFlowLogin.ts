@@ -218,15 +218,13 @@ export class CodeFlowLogin {
 
   async logout(): Promise<boolean> {
     try {
-      const accountCache = await loadAccountId(this.accountName);
-      if (accountCache) {
-        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-        if (dataCache) {
-          this.msalTokenCache?.removeAccount(dataCache);
-        }
-      }
-
       await saveAccountId(this.accountName, undefined);
+      const accounts = await this.msalTokenCache.getAllAccounts();
+      if (accounts.length > 0) {
+        accounts.forEach(async (accountInfo) => {
+          await this.msalTokenCache.removeAccount(accountInfo);
+        });
+      }
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
@@ -282,7 +280,6 @@ export class CodeFlowLogin {
               return undefined;
             }
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login(this.scopes);
               return accessToken;
@@ -335,7 +332,6 @@ export class CodeFlowLogin {
           return error(CheckOnlineError());
         }
         await this.logout();
-        (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
           const accessToken = await this.login(scopes, loginHint);
           return ok(accessToken);

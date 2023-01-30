@@ -106,6 +106,7 @@
     "read-package-json-fast": "^2.0.3",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.3.4",
+    "strip-bom": "^4.0.0",
     "tedious": "^15.1.2",
     "toposort": "^2.0.2",
     "tslib": "^2.1.0",

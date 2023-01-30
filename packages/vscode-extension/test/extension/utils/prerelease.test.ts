@@ -47,7 +47,7 @@ describe("versionUtil", () => {
     sandbox.restore();
   });
   it("checkAndShow success", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -58,7 +58,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return prerelease version undefined", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
     sandbox.stub(context.globalState, "get").returns(undefined);
     const instance = new PrereleasePage(context);
@@ -69,7 +69,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return failed if not prerelease", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.1.0");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -79,7 +79,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow with Same version", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -89,7 +89,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow failed without V3 flag", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(false);
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);

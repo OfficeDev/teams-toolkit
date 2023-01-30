@@ -11,8 +11,8 @@
         "termsOfUseUrl": "https://www.example.com/termofuse"
     },
     "icons": {
-        "color": "resources/color.png",
-        "outline": "resources/outline.png"
+        "color": "color.png",
+        "outline": "outline.png"
     },
     "name": {
         "short": "{%appName%}-${{TEAMSFX_ENV}}",

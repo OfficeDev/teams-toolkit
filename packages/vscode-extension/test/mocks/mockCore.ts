@@ -114,4 +114,8 @@ export class MockCore implements Core {
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async projectVersionCheck(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

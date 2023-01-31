@@ -16,7 +16,11 @@
         "react-router-dom": "^5.1.2",
         "react-scripts": "^5.0.1"
     },
+    "devDependencies": {
+        "env-cmd": "^10.1.0"
+    },
     "scripts": {
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

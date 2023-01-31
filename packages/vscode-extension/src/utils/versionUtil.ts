@@ -1,8 +1,12 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import * as extensionPackage from "./../../package.json";
 import { extensions } from "vscode";
 
 declare type VersionComparisonResult = -1 | 0 | 1;
-
+const PrereleaseVersionMajor = 4;
+const PrereleaseVersionMinor = 99;
 export interface Version {
   major: number;
   minor: number;
@@ -59,4 +63,14 @@ export function fromString(version: string): Version {
 
 export function getExtensionId(): string {
   return extensionPackage.publisher + "." + extensionPackage.name;
+}
+
+export function isPrereleaseVersion(version: string | Version): boolean {
+  if (typeof version === "string") {
+    version = fromString(version);
+  }
+  if (version.major === PrereleaseVersionMajor && version.minor === PrereleaseVersionMinor) {
+    return true;
+  }
+  return false;
 }

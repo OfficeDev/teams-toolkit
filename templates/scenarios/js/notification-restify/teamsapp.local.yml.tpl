@@ -46,3 +46,10 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
+
+  - uses: file/updateEnv # Generate runtime environment variables
+    with:
+      target: ./.localSettings
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

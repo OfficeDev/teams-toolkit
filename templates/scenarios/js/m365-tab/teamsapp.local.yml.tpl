@@ -1,3 +1,5 @@
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
 registerApp:
@@ -35,7 +37,7 @@ configureApp:
 
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
@@ -58,3 +60,14 @@ deploy:
       workingDirectory: .
       args: install --no-audit
 
+  - uses: file/updateEnv # Generate runtime environment variables
+    with:
+      target: ./.localSettings
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html

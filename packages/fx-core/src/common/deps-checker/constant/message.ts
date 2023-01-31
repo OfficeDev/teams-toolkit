@@ -9,7 +9,6 @@ export const Messages = {
     getDefaultString("error.depChecker.DefaultErrorMessage"),
     getLocalizedString("error.depChecker.DefaultErrorMessage"),
   ],
-
   startInstallFunctionCoreTool: () => getLocalizedString("depChecker.startInstallFunctionCoreTool"),
   finishInstallFunctionCoreTool: () =>
     getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
@@ -35,7 +34,13 @@ export const Messages = {
 
   NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound"),
   NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),
-  NodeNotRecommended: () => getLocalizedString("depChecker.NodeNotRecommended"),
+
+  // In v3, the message will be displayed in the output.
+  // TODO: add localized string to FxError.displayMessage
+  V3NodeNotSupported: (currentVersion: string, supportedVersions: string) =>
+    getDefaultString("depChecker.V3NodeNotSupported", currentVersion, supportedVersions),
+  NodeNotLts: (currentVersion: string, supportedVersions: string) =>
+    getDefaultString("depChecker.NodeNotLts", currentVersion, supportedVersions),
 
   dotnetNotFound: () => getLocalizedString("depChecker.dotnetNotFound"),
   // depsNotFound: () => getLocalizedString("depChecker.depsNotFound"),

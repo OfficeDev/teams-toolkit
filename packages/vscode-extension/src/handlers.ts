@@ -326,9 +326,9 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     //   return projectConfig.value?.settings?.version;
     // }
     if (isV3Enabled()) {
-      const settings = await core.getSettings(input as InputsWithProjectPath);
-      if (settings.isOk()) {
-        return settings.value?.version;
+      const versionCheckResult = await projectVersionCheck();
+      if (versionCheckResult.isOk()) {
+        return versionCheckResult.value.currentVersion;
       }
     } else {
       await core.getProjectConfig(input);
@@ -818,7 +818,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -913,7 +913,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(

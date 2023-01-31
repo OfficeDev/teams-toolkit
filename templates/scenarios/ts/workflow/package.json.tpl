@@ -9,7 +9,7 @@
     "license": "MIT",
     "main": "./src/index.js",
     "scripts": {
-        "dev:teamsfx": "node script/run.js . env/.env.local",
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run dev",
         "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
         "build": "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
         "start": "node ./lib/src/index.js",
@@ -28,8 +28,8 @@
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-	    "@types/node": "^14.0.0",
-        "@microsoft/teamsfx-run-utils": "alpha",
+        "@types/node": "^14.0.0",
+        "env-cmd": "^10.1.0",
         "nodemon": "^2.0.7",
         "shx": "^0.3.4",
         "ts-node": "^10.4.0",

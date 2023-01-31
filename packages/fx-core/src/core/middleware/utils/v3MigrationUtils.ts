@@ -27,12 +27,10 @@ import {
   VersionSource,
   VersionState,
 } from "../../../common/versionMetadata";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
-import { Constants } from "../projectMigratorV3";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {

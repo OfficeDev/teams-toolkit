@@ -1069,7 +1069,7 @@ export async function ensureBasicFolderStructure(
       if (inputs.platform !== Platform.VS) {
         const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
         const exists = await fs.pathExists(packageJsonFilePath);
-        const isSPFx = inputs?.capabilities === FeatureId.TabSPFx;
+        const isSPFx = inputs.capabilities === FeatureId.TabSPFx;
         if (!exists) {
           await fs.writeFile(
             packageJsonFilePath,

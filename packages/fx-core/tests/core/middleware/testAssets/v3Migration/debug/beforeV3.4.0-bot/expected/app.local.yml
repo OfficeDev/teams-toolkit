@@ -47,6 +47,19 @@ configureApp:
 deploy:
   - uses: cli/runNpmCommand
     with:
-      args: install -D @microsoft/teamsfx-run-utils@alpha
+      args: install -D env-cmd
       workingDirectory: .
+
+  - uses: file/updateEnv
+    with:
+      target: ./bot/.localSettings
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        M365_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+        M365_TENANT_ID: ${{AAD_APP_TENANT_ID}}
+        M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
+        INITIATE_LOGIN_ENDPOINT: ${{PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT}}/auth-start.html
+        M365_APPLICATION_ID_URI: api://botid-${{BOT_ID}}
 

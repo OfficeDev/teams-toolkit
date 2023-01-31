@@ -228,7 +228,7 @@ export class SPFxNodeChecker extends NodeChecker {
 }
 
 export class AzureNodeChecker extends NodeChecker {
-  public static readonly supportedVersions = ["14", "16"];
+  public static readonly supportedVersions = ["14", "16", "18"];
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
   protected readonly _type = DepsType.AzureNode;

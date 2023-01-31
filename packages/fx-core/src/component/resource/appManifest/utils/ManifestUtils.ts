@@ -16,6 +16,7 @@ import * as path from "path";
 import isUUID from "validator/lib/isUUID";
 import { v4 } from "uuid";
 import "reflect-metadata";
+import stripBom from "strip-bom";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { AppStudioError } from "../errors";
@@ -75,7 +76,10 @@ export class ManifestUtils {
         )
       );
     }
-    const content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    // Be compatible with UTF8-BOM encoding
+    // Avoid Unexpected token error at JSON.parse()
+    let content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);
     const manifest = JSON.parse(contentV3) as TeamsAppManifest;
     return ok(manifest);

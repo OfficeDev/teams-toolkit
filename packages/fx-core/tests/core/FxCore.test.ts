@@ -848,9 +848,7 @@ describe("publishInDeveloperPortal", () => {
 describe("ensureBasicFolderStructure", () => {
   const sandbox = sinon.createSandbox();
 
-  before(() => {
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-  });
+  before(() => {});
   afterEach(() => {
     sandbox.restore();
   });
@@ -874,5 +872,30 @@ describe("ensureBasicFolderStructure", () => {
     }
     assert.isTrue(res.isOk());
     sandbox.assert.calledWith(spy.getCall(0), sandbox.match.any, sandbox.match(`"node": "16"`));
+  });
+
+  it("Tab", async () => {
+    const inputs: Inputs = {
+      env: "local",
+      projectPath: "project-path",
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppPackagePath]: "path",
+      ignoreLockByUT: true,
+      capabilities: "Tab",
+    };
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub<any, any>(fs, "readFile").resolves("");
+    const spy = sandbox.stub<any, any>(fs, "writeFile");
+
+    const res = await ensureBasicFolderStructure(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+    sandbox.assert.calledWith(
+      spy.getCall(0),
+      sandbox.match.any,
+      sandbox.match(`"node": "14 || 16 || 18"`)
+    );
   });
 });

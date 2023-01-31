@@ -531,14 +531,14 @@ describe("manifestsMigration", () => {
     const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
     assert.isTrue(await fs.pathExists(resourcesPath));
 
-    const manifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
     assert.isTrue(await fs.pathExists(manifestPath));
     const manifest = (await fs.readFile(manifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const manifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
@@ -580,28 +580,28 @@ describe("manifestsMigration", () => {
     const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
     assert.isTrue(await fs.pathExists(resourcesPath));
 
-    const remoteManifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    const remoteManifestPath = path.join(appPackageFolderPath, "manifest.json");
     assert.isTrue(await fs.pathExists(remoteManifestPath));
     const remoteManifest = (await fs.readFile(remoteManifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const remoteManifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     assert.equal(remoteManifest, remoteManifestExpeceted);
 
-    const localManifestPath = path.join(appPackageFolderPath, "manifest.template.local.json");
+    const localManifestPath = path.join(appPackageFolderPath, "manifest.local.json");
     assert.isTrue(await fs.pathExists(localManifestPath));
     const localManifest = (await fs.readFile(localManifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const localManifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.local.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.local.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
@@ -627,14 +627,14 @@ describe("manifestsMigration", () => {
     const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
     assert.isTrue(await fs.pathExists(resourcesPath));
 
-    const manifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
     assert.isTrue(await fs.pathExists(manifestPath));
     const manifest = (await fs.readFile(manifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const manifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")

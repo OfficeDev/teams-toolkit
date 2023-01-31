@@ -6,10 +6,9 @@ AZURE_SUBSCRIPTION_ID=
 AZURE_RESOURCE_GROUP_NAME=
 RESOURCE_SUFFIX=
 
-# Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
+# Generated during provision, you can also add your own variables.
 TEAMS_APP_ID=
 AAD_APP_CLIENT_ID=
-SECRET_AAD_APP_CLIENT_SECRET=
 AAD_APP_OBJECT_ID=
 AAD_APP_OAUTH2_PERMISSION_ID=
 AAD_APP_TENANT_ID=
@@ -21,3 +20,6 @@ M365_CLIENT_ID=
 M365_CLIENT_SECRET=
 M365_TENANT_ID=
 M365_OAUTH_AUTHORITY_HOST=
+
+# Secrets. You can add your own secret value, prefixed with SECRET_
+SECRET_AAD_APP_CLIENT_SECRET=

@@ -41,3 +41,13 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
+
+  - uses: file/updateEnv # Generate runtime environment variables
+    with:
+      target: ./.localSettings
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
-import { getLocalizedString } from "../../../common/localizeUtils";
 import { ComponentNames } from "../../constants";
 
 const AAD_STATE_KEY = ComponentNames.AadApp;

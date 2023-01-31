@@ -58,3 +58,20 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
+
+  - uses: file/updateEnv # Generate runtime environment variables for tab
+    with:
+      target: ./tab/.localSettings
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+
+  - uses: file/updateEnv # Generate runtime environment variables for bot
+    with:
+      target: ./bot/.localSettings
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

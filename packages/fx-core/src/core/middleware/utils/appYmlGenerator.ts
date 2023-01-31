@@ -13,7 +13,6 @@ import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 import { MetadataV3 } from "../../../common/versionMetadata";
-import { Constants } from "../projectMigratorV3";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -120,11 +119,11 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     const teamsAppManifestPath = path.join(
       this.projectPath,
       AppPackageFolderName,
-      Constants.teamsManifestFileName
+      MetadataV3.teamsManifestFileName
     );
     if (await fs.pathExists(teamsAppManifestPath)) {
       const teamsAppManifest = await fs.readJson(
-        path.join(this.projectPath, AppPackageFolderName, Constants.teamsManifestFileName)
+        path.join(this.projectPath, AppPackageFolderName, MetadataV3.teamsManifestFileName)
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }

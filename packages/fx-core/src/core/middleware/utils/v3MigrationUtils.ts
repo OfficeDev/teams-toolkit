@@ -306,7 +306,7 @@ export async function updateAndSaveManifestForSpfx(
   context: MigrationContext,
   manifest: string
 ): Promise<void> {
-  const remoteTemplatePath = path.join(AppPackageFolderName, Constants.teamsManifestFileName);
+  const remoteTemplatePath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
   const localTemplatePath = path.join(AppPackageFolderName, "manifest.local.json");
 
   const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;

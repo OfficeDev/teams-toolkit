@@ -106,7 +106,6 @@ export const Constants = {
     flag: "a+",
   },
   envFilePrefix: ".env.",
-  teamsManifestFileName: "manifest.json",
 };
 
 export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
@@ -333,7 +332,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
   const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
   if (oldManifestExists) {
-    const manifestPath = path.join(AppPackageFolderName, Constants.teamsManifestFileName);
+    const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
     let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
     oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);

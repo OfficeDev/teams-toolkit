@@ -23,7 +23,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore, getUuid } from "../../src";
+import { FxCore, getUuid, ensureBasicFolderStructure } from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
 import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import { environmentManager } from "../../src/core/environment";
@@ -842,5 +842,37 @@ describe("publishInDeveloperPortal", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+  });
+});
+
+describe("ensureBasicFolderStructure", () => {
+  const sandbox = sinon.createSandbox();
+
+  before(() => {
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("SPFx", async () => {
+    const inputs: Inputs = {
+      env: "local",
+      projectPath: "project-path",
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppPackagePath]: "path",
+      ignoreLockByUT: true,
+      capabilities: "TabSPFx",
+    };
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub<any, any>(fs, "readFile").resolves("");
+    const spy = sandbox.stub<any, any>(fs, "writeFile");
+
+    const res = await ensureBasicFolderStructure(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+    sandbox.assert.calledWith(spy.getCall(0), sandbox.match.any, sandbox.match(`"node": "16"`));
   });
 });

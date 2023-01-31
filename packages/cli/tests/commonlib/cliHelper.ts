@@ -6,6 +6,7 @@ import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/f
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { TemplateProject, Resource, ResourceToDeploy, Capability } from "./constants";
 import path from "path";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export class CliHelper {
   static async setSubscription(
@@ -13,6 +14,10 @@ export class CliHelper {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
+    if (isV3Enabled()) {
+      console.log(`[Successfully] V3 skip setting subscription for ${projectPath}`);
+      return;
+    }
     const command = `teamsfx account set --subscription ${subscription}`;
     const timeout = 100000;
     try {

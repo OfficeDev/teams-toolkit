@@ -780,11 +780,9 @@ export function InitDebugProceedQuestion(): SingleSelectQuestion {
           ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
           : false;
         const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
-        fileList = `  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n${
-          inputs["spfx"] === InitOptionYes().id ? "" : "   script/\n    - run.js\n"
-        }   env/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
+        fileList = `  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n  env/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
       } else {
-        fileList = "   env/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
+        fileList = "  env/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
       }
       return getLocalizedString("core.InitGenerateConfirm", fileList);
     },

@@ -106,5 +106,13 @@ jobs:
         with:
           node-version: 14
       - name: Setup project
+        id: setup
         run: 
           npm run setup
+        continue-on-error: true
+      - name: Info 
+        if: steps.setup.outcome != 'success'
+        run: |
+          echo "`npm run setup` failed after detecting that the current project is on CD,\
+           it may be the inconsistency of package dependencies caused by separate release,\
+           please confirm that this problem will not affect the CI of subsequent PRs."

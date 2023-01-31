@@ -411,7 +411,19 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (document.fileName.endsWith("template.json")) {
+    // V3 supports customize aad manifest
+    let isTemplate = true;
+    if (isV3Enabled()) {
+      const content = document.getText();
+      if (content.includes("${{")) {
+        isTemplate = true;
+      } else {
+        isTemplate = false;
+      }
+    } else {
+      isTemplate = document.fileName.endsWith("template.json");
+    }
+    if (isTemplate) {
       this.projectConfigs = undefined;
       return this.computeTemplateCodeLenses(document);
     } else {

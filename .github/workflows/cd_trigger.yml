@@ -91,3 +91,20 @@ jobs:
           azure-pipeline-name: TeamsFx-Dev17-CD
           azure-devops-token: ${{ secrets.VS_ADO_PAT }}
           azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}}'
+  
+  CheckSetupSuccess:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+      - name: Setup project
+        run: 
+          npm run setup

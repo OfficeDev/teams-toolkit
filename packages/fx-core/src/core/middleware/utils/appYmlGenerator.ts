@@ -112,10 +112,10 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.handlebarsContext.aadAppName = aadManifest.name;
     }
 
-    const teamsAppManifestPath = path.join(this.projectPath, "appPackage/manifest.template.json");
+    const teamsAppManifestPath = path.join(this.projectPath, "appPackage/manifest.json");
     if (await fs.pathExists(teamsAppManifestPath)) {
       const teamsAppManifest = await fs.readJson(
-        path.join(this.projectPath, "appPackage/manifest.template.json")
+        path.join(this.projectPath, "appPackage/manifest.json")
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }

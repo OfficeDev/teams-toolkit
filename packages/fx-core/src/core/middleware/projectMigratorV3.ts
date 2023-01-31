@@ -95,7 +95,7 @@ import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 
-const Constants = {
+export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
@@ -106,6 +106,7 @@ const Constants = {
     flag: "a+",
   },
   envFilePrefix: ".env.",
+  teamsManifestFileName: "manifest.json",
 };
 
 export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
@@ -328,11 +329,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const appIdUri = generateAppIdUri(capabilities);
   const isSpfx = isSPFxProject(projectSettings);
 
-  // Read Teams app manifest and save to templates/appPackage/manifest.template.json
+  // Read Teams app manifest and save to templates/appPackage/manifest.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
   const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
   if (oldManifestExists) {
-    const manifestPath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
+    const manifestPath = path.join(AppPackageFolderName, Constants.teamsManifestFileName);
     let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
     oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);

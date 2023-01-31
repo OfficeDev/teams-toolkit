@@ -32,6 +32,7 @@ import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
+import { Constants } from "../projectMigratorV3";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -305,8 +306,8 @@ export async function updateAndSaveManifestForSpfx(
   context: MigrationContext,
   manifest: string
 ): Promise<void> {
-  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+  const remoteTemplatePath = path.join(AppPackageFolderName, Constants.teamsManifestFileName);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.local.json");
 
   const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
   const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;

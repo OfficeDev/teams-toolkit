@@ -531,14 +531,14 @@ describe("manifestsMigration", () => {
     const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
     assert.isTrue(await fs.pathExists(resourcesPath));
 
-    const manifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
     assert.isTrue(await fs.pathExists(manifestPath));
     const manifest = (await fs.readFile(manifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const manifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
@@ -580,28 +580,28 @@ describe("manifestsMigration", () => {
     const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
     assert.isTrue(await fs.pathExists(resourcesPath));
 
-    const remoteManifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    const remoteManifestPath = path.join(appPackageFolderPath, "manifest.json");
     assert.isTrue(await fs.pathExists(remoteManifestPath));
     const remoteManifest = (await fs.readFile(remoteManifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const remoteManifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     assert.equal(remoteManifest, remoteManifestExpeceted);
 
-    const localManifestPath = path.join(appPackageFolderPath, "manifest.template.local.json");
+    const localManifestPath = path.join(appPackageFolderPath, "manifest.local.json");
     assert.isTrue(await fs.pathExists(localManifestPath));
     const localManifest = (await fs.readFile(localManifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const localManifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.local.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.local.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
@@ -627,14 +627,14 @@ describe("manifestsMigration", () => {
     const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
     assert.isTrue(await fs.pathExists(resourcesPath));
 
-    const manifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
     assert.isTrue(await fs.pathExists(manifestPath));
     const manifest = (await fs.readFile(manifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const manifestExpeceted = (
-      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
@@ -1253,35 +1253,15 @@ describe("Migration utils", () => {
 describe("debugMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
-  let runTabScript = "";
-  let runAuthScript = "";
-  let runBotScript = "";
-  let runFunctionScript = "";
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
     sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
-    sinon
-      .stub(debugV3MigrationUtils, "saveRunScript")
-      .callsFake(async (context, filename, script) => {
-        if (filename === "run.tab.js") {
-          runTabScript = script;
-        } else if (filename === "run.auth.js") {
-          runAuthScript = script;
-        } else if (filename === "run.bot.js") {
-          runBotScript = script;
-        } else if (filename === "run.api.js") {
-          runFunctionScript = script;
-        }
-      });
   });
 
   afterEach(async () => {
     await fs.remove(projectPath);
     sinon.restore();
-    runTabScript = "";
-    runBotScript = "";
-    runFunctionScript = "";
   });
 
   const testCases = [
@@ -1300,6 +1280,14 @@ describe("debugMigration", () => {
     "V3.5.0-V4.0.6-command",
   ];
 
+  const simpleAuthPath = path.join(os.homedir(), ".fx", "localauth").replace(/\\/g, "\\\\");
+  const simpleAuthAppsettingsPath = path.join(
+    os.homedir(),
+    ".fx",
+    "localauth",
+    "appsettings.Development.json"
+  );
+
   testCases.forEach((testCase) => {
     it(testCase, async () => {
       const migrationContext = await mockMigrationContext(projectPath);
@@ -1310,25 +1298,18 @@ describe("debugMigration", () => {
 
       assert.equal(
         await fs.readFile(path.join(projectPath, "teamsapp.local.yml"), "utf-8"),
-        await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")
+        (await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")).replace(
+          "SIMPLE_AUTH_APPSETTINGS_PATH",
+          simpleAuthAppsettingsPath
+        )
       );
       assert.equal(
         await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),
-        await fs.readFile(path.join(projectPath, "expected", "tasks.json"), "utf-8")
+        (await fs.readFile(path.join(projectPath, "expected", "tasks.json"), "utf-8")).replace(
+          "SIMPLE_AUTH_PATH",
+          simpleAuthPath
+        )
       );
-
-      const runTabScriptPath = path.join(projectPath, "expected", "run.tab.js");
-      if (await fs.pathExists(runTabScriptPath)) {
-        assert.equal(runTabScript, await fs.readFile(runTabScriptPath, "utf-8"));
-      }
-      const runBotScriptPath = path.join(projectPath, "expected", "run.bot.js");
-      if (await fs.pathExists(runBotScriptPath)) {
-        assert.equal(runBotScript, await fs.readFile(runBotScriptPath, "utf-8"));
-      }
-      const runFunctionScriptPath = path.join(projectPath, "expected", "run.api.js");
-      if (await fs.pathExists(runFunctionScriptPath)) {
-        assert.equal(runFunctionScript, await fs.readFile(runFunctionScriptPath, "utf-8"));
-      }
     });
   });
 });

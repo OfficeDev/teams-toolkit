@@ -3,6 +3,8 @@
 Teams Toolkit checks the following prerequisites during the debug process:
 
 * Node.js, applicable for the following project types:
+  |Project type|Node.js LTS version|
+  | --- | --- |
   | Notification Bot (Restify) | 14, 16, 18 |
   | Notification Bot (Http Trigger / Timer Trigger) | 14, 16, 18 (preview) |
   | Command Bot | 14, 16, 18 |
@@ -13,7 +15,7 @@ Teams Toolkit checks the following prerequisites during the debug process:
   | Tab | 14, 16, 18 |
   | Bot |  14, 16, 18 |
   | Message extension | 14, 16, 18 |
-  
+
 * Microsoft 365 account with valid credentials, the Teams toolkit prompts you to sign in to Microsoft 365 account, if you haven't signed in.
 
 * Custom app uploading or sideloading for your developer tenant is turned on, if not then the local debug terminates .

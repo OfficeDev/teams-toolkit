@@ -269,7 +269,10 @@ export class BotDebugHandler {
       try {
         await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
       } catch (e) {
-        if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && this.hasBotIdInEnvBefore) {
+        if (
+          e.innerError.teamsfxUrlName == "<create-bot-registration>" &&
+          this.hasBotIdInEnvBefore
+        ) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
           return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
         } else {

@@ -96,9 +96,6 @@ export class AppStudioClient {
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
         return;
-      } else {
-        // Potential case when developers switched their M365 accounts.
-        throw new FailedToCreateBotRegistrationError();
       }
     }
 

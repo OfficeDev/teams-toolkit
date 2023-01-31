@@ -1435,6 +1435,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
     "glob": "^8.0.3",

@@ -9,8 +9,8 @@
             "dependsOn": [
                 "Validate prerequisites",
                 "Create resources",
-                "Install tools and Build project",
-                "Start services"
+                "Build project",
+                "Start application"
             ],
             "dependsOrder": "sequence"
         },
@@ -43,9 +43,9 @@
             }
         },
         {
-            // Install tools and Build project.
+            // Build project.
             // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Install tools and Build project",
+            "label": "Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
@@ -54,7 +54,7 @@
             }
         },
         {
-            "label": "Start services",
+            "label": "Start application",
             "dependsOn": [
                 "Start frontend"
             ]

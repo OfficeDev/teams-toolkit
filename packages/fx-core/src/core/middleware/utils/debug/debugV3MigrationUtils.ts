@@ -141,7 +141,7 @@ export function createResourcesTask(label: string): CommentJSONValue {
 
 export function setUpLocalProjectsTask(label: string): CommentJSONValue {
   const comment = `{
-    // Install tools and Build project.
+    // Build project.
     // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
   }`;
   const task = {

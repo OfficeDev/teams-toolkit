@@ -8,14 +8,6 @@
 // Rule Definition
 //------------------------------------------------------------------------------
 
-const expectedComments =
-  "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n";
-const expectedLine1 = "Copyright (c) Microsoft Corporation.";
-const expectedLine2 = "Licensed under the MIT license.";
-const noCaseRegex1 = /Copyright \(c\) Microsoft Corporation\./i;
-const noCaseRegex2 = /Licensed under the MIT license\./i;
-const levenshteinCutoff = 20;
-
 const childProcess = require("child_process");
 
 module.exports = {

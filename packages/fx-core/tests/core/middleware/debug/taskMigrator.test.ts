@@ -530,7 +530,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                // Keep consistency with migrated configuration.
+                // Keep consistency with upgraded configuration.
                 "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                 "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -586,7 +586,7 @@ describe("debugMigration", () => {
               "ngrokPath": "ngrok",
               "env": "local",
               "output": {
-                // Keep consistency with migrated configuration.
+                // Keep consistency with upgraded configuration.
                 "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                 "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -1350,7 +1350,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                  // Keep consistency with migrated configuration.
+                  // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -1406,7 +1406,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                  // Keep consistency with migrated configuration.
+                  // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -1467,7 +1467,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                  // Keep consistency with migrated configuration.
+                  // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }

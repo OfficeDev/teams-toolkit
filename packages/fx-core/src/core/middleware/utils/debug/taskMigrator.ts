@@ -93,7 +93,7 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
     if (isCommentObject(task["args"])) {
       const comment = `
         {
-          // Keep consistency with migrated configuration.
+          // Keep consistency with upgraded configuration.
         }
       `;
       task["args"]["env"] = "local";
@@ -900,7 +900,7 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
     }`;
   const placeholderComment = `
     {
-      // Keep consistency with migrated configuration.
+      // Keep consistency with upgraded configuration.
     }
   `;
   const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {

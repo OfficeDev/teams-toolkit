@@ -38,6 +38,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
+    "@microsoft/eslint-plugin-teamsfx": "file:../eslint-plugin-teamsfx",
     "prettier": "^2.4.1"
   },
   "publishConfig": {

@@ -32,7 +32,7 @@ provision:
       channels:
         - name: msteams
         {{#if isM365}}
-        - name: outlook
+        - name: m365extensions
         {{/if}}
   {{/bot}}
 

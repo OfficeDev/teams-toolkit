@@ -13,6 +13,7 @@ export const MetadataV3 = {
   localConfigFile: "teamsapp.local.yml",
   defaultEnvironmentFolder: "env",
   projectId: "projectId",
+  teamsManifestFileName: "manifest.json",
 };
 
 export const MetadataV2 = {

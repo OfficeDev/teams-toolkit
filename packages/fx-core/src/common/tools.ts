@@ -49,13 +49,6 @@ import { FailedToParseResourceIdError } from "../core/error";
 import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
 import Mustache from "mustache";
 import {
-  Component,
-  sendTelemetryErrorEvent,
-  sendTelemetryEvent,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "./telemetry";
-import {
   HostTypeOptionAzure,
   TabSsoItem,
   BotSsoItem,
@@ -80,6 +73,9 @@ import { getAppStudioEndpoint } from "../component/resource/appManifest/constant
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
 import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
+import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
+import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
+import { parse } from "yaml";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -421,7 +417,7 @@ export function isV3Enabled(): boolean {
 }
 
 export function isMigrationV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3Migration, false);
+  return process.env.TEAMSFX_V3_MIGRATION ? process.env.TEAMSFX_V3_MIGRATION === "true" : false;
 }
 
 export function isVideoFilterEnabled(): boolean {
@@ -438,13 +434,13 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined
 
   if (isAadManifestEnabled()) {
     return (
-      solutionSettings.hostType === HostTypeOptionAzure.id &&
-      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
-        solutionSettings.capabilities.includes(BotSsoItem.id))
+      solutionSettings.hostType === HostTypeOptionAzure().id &&
+      (solutionSettings.capabilities.includes(TabSsoItem().id) ||
+        solutionSettings.capabilities.includes(BotSsoItem().id))
     );
   } else {
     return (
-      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      solutionSettings.hostType === HostTypeOptionAzure().id &&
       // For scaffold, activeResourecPlugins is undefined
       (!solutionSettings.activeResourcePlugins ||
         solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
@@ -473,11 +469,11 @@ export function canAddSso(
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (
     isExistingTabApp(projectSettings) &&
-    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem.id))
+    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem().id))
   ) {
     return ok(Void);
   }
-  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+  if (!(solutionSettings.hostType === HostTypeOptionAzure().id)) {
     return returnError
       ? err(
           new SystemError(
@@ -492,7 +488,7 @@ export function canAddSso(
   // Will throw error if only Messaging Extension is selected
   if (
     solutionSettings.capabilities.length === 1 &&
-    solutionSettings.capabilities[0] === MessageExtensionItem.id
+    solutionSettings.capabilities[0] === MessageExtensionItem().id
   ) {
     return returnError
       ? err(
@@ -507,10 +503,10 @@ export function canAddSso(
 
   // Will throw error if bot host type is Azure Function
   if (
-    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    solutionSettings.capabilities.includes(BotOptionItem().id) &&
     !(
-      solutionSettings.capabilities.includes(TabOptionItem.id) &&
-      !solutionSettings.capabilities.includes(TabSsoItem.id)
+      solutionSettings.capabilities.includes(TabOptionItem().id) &&
+      !solutionSettings.capabilities.includes(TabSsoItem().id)
     )
   ) {
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
@@ -529,10 +525,10 @@ export function canAddSso(
 
   // Check whether SSO is enabled
   const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
-  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
-  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
-  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem().id);
+  const containTab = solutionSettings.capabilities.includes(TabOptionItem().id);
+  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem().id);
+  const containBot = solutionSettings.capabilities.includes(BotOptionItem().id);
   const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
   if (
     ((containTabSsoItem && !containBot) ||
@@ -583,7 +579,7 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
   const isExistingApp =
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure().id &&
     isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;
@@ -879,63 +875,7 @@ export function getAllowedAppMaps(): Record<string, string> {
 }
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
-  const instance = axios.create({
-    baseURL: getAppStudioEndpoint(),
-    timeout: 30000,
-  });
-  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-  let retry = 0;
-  const retryIntervalSeconds = 2;
-  do {
-    let response = undefined;
-    try {
-      response = await instance.get("/api/usersettings/mtUserAppPolicy");
-      let result: boolean | undefined;
-      if (response.status >= 400) {
-        result = undefined;
-      } else {
-        result = response.data?.value?.isSideloadingAllowed as boolean;
-      }
-
-      if (result !== undefined) {
-        sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
-          [TelemetryProperty.IsSideloadingAllowed]: result + "",
-        });
-      } else {
-        sendTelemetryErrorEvent(
-          Component.core,
-          TelemetryEvent.CheckSideloading,
-          new SystemError(
-            "M365Account",
-            "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`
-          ),
-          {
-            [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
-            [TelemetryProperty.CheckSideloadingMethod]: "get",
-            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
-          }
-        );
-      }
-
-      return result;
-    } catch (error) {
-      sendTelemetryErrorEvent(
-        Component.core,
-        TelemetryEvent.CheckSideloading,
-        new SystemError({ error, source: "M365Account" }),
-        {
-          [TelemetryProperty.CheckSideloadingStatusCode]: `${response?.status}`,
-          [TelemetryProperty.CheckSideloadingMethod]: "get",
-          [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
-        }
-      );
-      await waitSeconds((retry + 1) * retryIntervalSeconds);
-    }
-  } while (++retry < 3);
-
-  return undefined;
+  return AppStudioClient.getSideloadingStatus(token);
 }
 
 export function createV2Context(projectSettings: ProjectSettings): v2.Context {
@@ -1004,7 +944,10 @@ export async function getSPFxToken(
  */
 export async function setRegion(authSvcToken: string) {
   const region = await AuthSvcClient.getRegion(authSvcToken);
-  AppStudioClient.SetRegion(region);
+  if (region) {
+    AppStudioClient.setRegion(region);
+    BotAppStudioClient.setRegion(region);
+  }
 }
 
 export function ConvertTokenToJson(token: string): Record<string, unknown> {
@@ -1020,15 +963,16 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
 
   try {
     if (isV3Enabled()) {
-      const settingsPath = path.join(rootPath, SettingsFolderName, SettingsFileName);
+      const settingsPath = getProjectSettingPathV3(rootPath);
 
       if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
         return undefined;
       }
 
-      const settings = fs.readJsonSync(settingsPath);
+      const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+      const settings = parse(settingsContent);
       return {
-        projectId: settings?.trackingId ?? undefined,
+        projectId: settings?.projectId ?? undefined,
       };
     } else {
       const projectSettingsPath = path.join(

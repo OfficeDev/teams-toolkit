@@ -78,7 +78,7 @@ export class SPFxDeployDriver implements StepDriver {
     context: WrapDriverContext
   ): Promise<Map<string, string>> {
     const deployArgs = this.asDeployArgs(args);
-    const progressHandler = context.ui?.createProgressBar(Constants.DeployProgressTitle, 3);
+    const progressHandler = context.ui?.createProgressBar(Constants.DeployProgressTitle(), 3);
     await progressHandler?.start();
     let success = false;
     try {
@@ -92,15 +92,15 @@ export class SPFxDeployDriver implements StepDriver {
 
       let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
       if (appCatalogSite) {
-        await progressHandler?.next(DeployProgressMessage.SkipCreateSPAppCatalog);
+        await progressHandler?.next(DeployProgressMessage.SkipCreateSPAppCatalog());
         SPOClient.setBaseUrl(appCatalogSite);
-        context.addSummary(DeployProgressMessage.SkipCreateSPAppCatalog);
+        context.addSummary(DeployProgressMessage.SkipCreateSPAppCatalog());
       } else {
-        await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog);
+        await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog());
         if (deployArgs.createAppCatalogIfNotExist) {
           try {
             await SPOClient.createAppCatalog(spoToken);
-            context.addSummary(DeployProgressMessage.CreateSPAppCatalog);
+            context.addSummary(DeployProgressMessage.CreateSPAppCatalog());
           } catch (e) {
             throw new CreateAppCatalogFailedError(e as Error);
           }
@@ -141,9 +141,9 @@ export class SPFxDeployDriver implements StepDriver {
       const fileName = path.parse(appPackage).base;
       const bytes = await fs.readFile(appPackage);
       try {
-        await progressHandler?.next(DeployProgressMessage.Upload);
+        await progressHandler?.next(DeployProgressMessage.Upload());
         await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
-        context.addSummary(DeployProgressMessage.Upload);
+        context.addSummary(DeployProgressMessage.Upload());
       } catch (e: any) {
         if (e.response?.status === 403) {
           context.ui?.showMessage(
@@ -158,10 +158,10 @@ export class SPFxDeployDriver implements StepDriver {
         }
       }
 
-      await progressHandler?.next(DeployProgressMessage.Deploy);
+      await progressHandler?.next(DeployProgressMessage.Deploy());
       const appID = await this.getAppID(packageSolutionPath);
       await SPOClient.deployAppPackage(spoToken, appID);
-      context.addSummary(DeployProgressMessage.Deploy);
+      context.addSummary(DeployProgressMessage.Deploy());
       const guidance = getLocalizedString(
         "plugins.spfx.deployNotice",
         appPackage,

@@ -51,6 +51,18 @@ describe("teamsApp/update", async () => {
     }
   });
 
+  it("invalid param error", async () => {
+    const args: ConfigureTeamsAppArgs = {
+      appPackagePath: "",
+    };
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+    }
+  });
+
   it("happy path", async () => {
     const args: ConfigureTeamsAppArgs = {
       appPackagePath: "fakePath",

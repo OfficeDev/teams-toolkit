@@ -20,6 +20,10 @@ export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
 }
 
+export enum PrereleaseState {
+  Version = "teamsToolkit:prerelease:version",
+}
+
 export enum GlobalKey {
   OpenWalkThrough = "fx-extension.openWalkThrough",
   OpenReadMe = "fx-extension.openReadMe",
@@ -42,3 +46,8 @@ export const CLI_FOR_M365 =
 
 export const SwitchToPreReleaseVersionLink =
   "https://code.visualstudio.com/updates/v1_63#_pre-release-extensions";
+
+export const PublishAppLearnMoreLink =
+  "https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-publish-overview";
+
+export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";

@@ -5,7 +5,6 @@ import {
   QTreeNode,
   SingleFileQuestion,
   SingleSelectQuestion,
-  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -14,9 +13,8 @@ import projectsJsonData from "./config/projectsJsonData";
 
 const jsonData = new projectsJsonData();
 
-export const OfficeAddinItems: OptionItem[] = jsonData
-  .getProjectTemplateNames()
-  .map((template) => ({
+export const OfficeAddinItems: () => OptionItem[] = () =>
+  jsonData.getProjectTemplateNames().map((template) => ({
     id: template,
     label: jsonData.getProjectDisplayName(template),
     detail: jsonData.getProjectDetails(template),
@@ -24,13 +22,15 @@ export const OfficeAddinItems: OptionItem[] = jsonData
   }));
 
 // TODO: add localization strings
-export const ImportAddinProjectItem: OptionItem = {
-  id: "import-addin-project",
-  label: "Import Add-in",
-  cliName: "import",
-  detail: "Import an office independent add-in project",
-  groupName: getLocalizedString("core.options.separator.addin"),
-};
+export function ImportAddinProjectItem(): OptionItem {
+  return {
+    id: "import-addin-project",
+    label: "Import Add-in",
+    cliName: "import",
+    detail: "Import an office independent add-in project",
+    groupName: getLocalizedString("core.options.separator.addin"),
+  };
+}
 
 export const OfficeAddinItem: OptionItem = {
   id: "office-addin",
@@ -48,14 +48,6 @@ export enum QuestionName {
   AddinTemplateSelectQuestion = "addin-template-select",
   OfficeHostQuestion = "addin-host",
 }
-
-// TODO: localize the strings
-export const AddinNameQuestion: TextInputQuestion = {
-  type: "text",
-  name: QuestionName.AddinNameQuestion,
-  title: "Add-in name",
-  default: "office addin",
-};
 
 export const AddinLanguageQuestion: SingleSelectQuestion = {
   type: "singleSelect",
@@ -126,8 +118,6 @@ export const getTemplate = (inputs: Inputs): string => {
 };
 
 export const getQuestionsForScaffolding = (): QTreeNode => {
-  const nameNode = new QTreeNode(AddinNameQuestion);
-
   const importNode = new QTreeNode({ type: "group" });
   importNode.condition = {
     validFunc: (input: unknown, inputs?: Inputs) => {
@@ -135,7 +125,7 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
         return "Invalid inputs";
       }
       const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      if (cap === ImportAddinProjectItem.id) {
+      if (cap === ImportAddinProjectItem().id) {
         return undefined;
       }
       return "Office Addin is not selected";
@@ -152,7 +142,7 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
       }
       const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
       const addinOptionIds: string[] = [
-        ...OfficeAddinItems.map((item) => {
+        ...OfficeAddinItems().map((item) => {
           return item.id;
         }),
       ];
@@ -168,7 +158,6 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
   const root = new QTreeNode({ type: "group" });
   root.addChild(importNode);
   root.addChild(templateNode);
-  root.addChild(nameNode);
 
   return root;
 };

@@ -135,7 +135,7 @@ export class Lifecycle implements ILifecycle {
         [TelemetryProperty.Actions]: actions,
       },
     });
-    ctx.logProvider.info(`[${component}]Executing lifecycle ${this.name}`);
+    ctx.logProvider.info(`Executing lifecycle ${this.name}`);
     const resolved: ResolvedPlaceholders = [];
     const unresolved: UnresolvedPlaceholders = [];
     const { result, summaries } = await this.executeImpl(ctx, resolved, unresolved);
@@ -144,29 +144,27 @@ export class Lifecycle implements ILifecycle {
 
     if (result.isOk()) {
       ctx.logProvider.info(
-        `[${component}]Finished Executing lifecycle ${
-          this.name
-        }. Result: ${Lifecycle.stringifyOutput(result.value)}`
+        `Finished Executing lifecycle ${this.name}. Result: ${Lifecycle.stringifyOutput(
+          result.value
+        )}`
       );
     } else {
       if (result.error.kind === "Failure") {
         e = result.error.error;
-        ctx.logProvider.info(
-          `[${component}]Failed to Execute lifecycle ${this.name}. ${e.name}:${e.message}`
-        );
+        ctx.logProvider.info(`Failed to Execute lifecycle ${this.name}. ${e.name}:${e.message}`);
       } else if (result.error.kind === "PartialSuccess") {
         failedAction = this.stringifyDriverDef(result.error.reason.failedDriver);
         const output = Lifecycle.stringifyOutput(result.error.env);
         if (result.error.reason.kind === "DriverError") {
           e = result.error.reason.error;
           ctx.logProvider.info(
-            `[${component}]Failed to Execute lifecycle ${this.name} due to failed action: ${failedAction}. ${e.name}:${e.message}. Env output: ${output}`
+            `Failed to Execute lifecycle ${this.name} due to failed action: ${failedAction}. ${e.name}:${e.message}. Env output: ${output}`
           );
         } else if (result.error.reason.kind === "UnresolvedPlaceholders") {
           // This error is just for telemetry because sendEndEvent() needs an error as parameter.
           e = new UserError(component, "UnresolvedPlaceHolders", "UnresolvedPlaceHolders");
           ctx.logProvider.info(
-            `[${component}]Failed to Execute lifecycle ${
+            `Failed to Execute lifecycle ${
               this.name
             } because there are unresolved placeholders ${JSON.stringify(
               unresolved
@@ -207,14 +205,12 @@ export class Lifecycle implements ILifecycle {
     const summaries: string[][] = [];
     for (const driver of drivers) {
       ctx.logProvider.info(
-        `[${component}]Executing action ${this.stringifyDriverDef(driver)} in lifecycle ${
-          this.name
-        }`
+        `Executing action ${this.stringifyDriverDef(driver)} in lifecycle ${this.name}`
       );
       resolveDriverDef(driver, resolved, unresolved);
       if (unresolved.length > 0) {
         ctx.logProvider.info(
-          `[${component}]Unresolved placeholders(${unresolved}) found for Action ${this.stringifyDriverDef(
+          `Unresolved placeholders(${unresolved}) found for Action ${this.stringifyDriverDef(
             driver
           )} in lifecycle ${this.name}`
         );
@@ -274,7 +270,7 @@ export class Lifecycle implements ILifecycle {
         process.env[envVar] = value;
       }
       ctx.logProvider.info(
-        `[${component}]Action ${this.stringifyDriverDef(driver)} in lifecycle ${
+        `Action ${this.stringifyDriverDef(driver)} in lifecycle ${
           this.name
         } succeeded with output ${Lifecycle.stringifyOutput(result.value)}`
       );
@@ -325,7 +321,7 @@ export class Lifecycle implements ILifecycle {
   }
 
   public resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
-    log.debug(`[${component}]Trying to resolve actions for lifecycle ${this.name}`);
+    log.debug(`Trying to resolve actions for lifecycle ${this.name}`);
     const drivers: DriverInstance[] = [];
     for (const def of this.driverDefs) {
       if (!Container.has(def.uses)) {
@@ -333,9 +329,7 @@ export class Lifecycle implements ILifecycle {
       }
       const driver = Container.get<StepDriver>(def.uses);
       drivers.push({ instance: driver, ...def });
-      log.debug(
-        `[${component}]Action ${this.stringifyDriverDef(def)} found for lifecycle ${this.name}`
-      );
+      log.debug(`Action ${this.stringifyDriverDef(def)} found for lifecycle ${this.name}`);
     }
     return ok(drivers);
   }

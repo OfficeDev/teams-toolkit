@@ -7,7 +7,7 @@
     "private": true,
     "dependencies": {
         "@fluentui/react-northstar": "^0.62.0",
-        "@microsoft/teams-js": "^2.2.0",
+        "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.0.0",
         "@microsoft/teamsfx-react": "^2.0.0",
         "axios": "^0.21.1",
@@ -16,7 +16,11 @@
         "react-router-dom": "^5.1.2",
         "react-scripts": "^5.0.1"
     },
+    "devDependencies": {
+        "env-cmd": "^10.1.0"
+    },
     "scripts": {
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

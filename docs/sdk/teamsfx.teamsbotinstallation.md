@@ -4,7 +4,10 @@
 
 ## TeamsBotInstallation class
 
-A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the `General` channel)
+> Warning: This API is now obsolete.
+> 
+> Use `BotBuilderCloudAdapter.TeamsBotInstallation` instead.
+> 
 
 <b>Signature:</b>
 
@@ -12,10 +15,6 @@ A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot in
 export declare class TeamsBotInstallation implements NotificationTarget 
 ```
 <b>Implements:</b> [NotificationTarget](./teamsfx.notificationtarget.md)
-
-## Remarks
-
-It's recommended to get bot installations from .
 
 ## Constructors
 

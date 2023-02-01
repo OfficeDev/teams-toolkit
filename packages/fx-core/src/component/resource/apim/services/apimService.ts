@@ -16,7 +16,7 @@ import {
   ErrorHandlerResult,
   OpenApiSchemaVersion,
 } from "../constants";
-import { ApimOperationError, AssertNotEmpty, BuildError } from "../error";
+import { ApimOperationError, BuildError } from "../error";
 import { IName } from "../interfaces/IName";
 import { Telemetry } from "../utils/telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
@@ -24,7 +24,6 @@ import { LogMessages } from "../log";
 import { TokenCredential } from "@azure/identity";
 import { OpenAPI } from "openapi-types";
 import { Providers } from "@azure/arm-resources";
-import { AzureScopes, ConvertTokenToJson } from "../../../../common/tools";
 
 export class ApimService {
   private readonly subscriptionId: string;
@@ -95,17 +94,6 @@ export class ApimService {
         )
       : undefined;
     const result = [];
-    for await (const page of this.apimClient.api
-      .listByService(resourceGroupName, serviceName, {
-        expandApiVersionSet: true,
-      })
-      .byPage({ maxPageSize: 100 })) {
-      for (const item of page) {
-        if (!!resourceId && item.apiVersionSet?.id === resourceId) {
-          result.push(item);
-        }
-      }
-    }
     try {
       this.logger?.info(LogMessages.operationStarts(Operation.List, AzureResource.API, resourceId));
       Telemetry.sendApimOperationEvent(
@@ -275,14 +263,17 @@ export class ApimService {
   }
 
   public async getUserId(): Promise<string> {
-    const token = (await this.credential?.getToken(AzureScopes))?.token;
-    const tokenJson = token ? (ConvertTokenToJson(token) as any) : undefined;
-    if (!tokenJson?.userId) {
-      this.logger?.warning(LogMessages.useDefaultUserId);
-      return ApimDefaultValues.userId;
-    } else {
-      return tokenJson.userId;
-    }
+    // Related to CI/CD test, use service principle to login TeamsFx CLI
+    // TODO: fix to get the user id from credential
+    // const token = (await this.credential?.getToken(ApimScopes))?.token;
+    // const tokenJson = token ? (ConvertTokenToJson(token) as any) : undefined;
+    // if (!tokenJson?.userId) {
+    //   this.logger?.warning(LogMessages.useDefaultUserId);
+    //   return ApimDefaultValues.userId;
+    // } else {
+    //   return tokenJson.userId;
+    // }
+    return ApimDefaultValues.userId;
   }
 
   private async execute<T>(

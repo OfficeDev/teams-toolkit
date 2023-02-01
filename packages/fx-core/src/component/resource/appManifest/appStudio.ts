@@ -43,7 +43,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
-import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
+import { ConfigureTeamsAppDriver, outputNames } from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
@@ -852,30 +852,72 @@ export async function updateManifestV3(
   }
 }
 
-export async function updateManifestV3ForPublish(
+export async function updateTeamsAppV3ForPublish(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
-  const envName = process.env.TEAMSFX_ENV;
-  const teamsAppId = process.env.TEAMS_APP_ID;
-  const manifestTemplatePath = inputs[CoreQuestionNames.ManifestPath];
-
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
-  const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
-  const createAppPackageArgs = generateCreateAppPackageArgs(
-    inputs.projectPath,
-    manifestTemplatePath,
-    envName!
-  );
+
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
-    appPackagePath: createAppPackageArgs.outputZipPath,
+    appPackagePath: inputs[CoreQuestionNames.AppPackagePath],
   };
 
-  await envUtil.readEnv(inputs.projectPath!, envName!);
+  const zipEntries = new AdmZip(updateTeamsAppArgs.appPackagePath).getEntries();
+  const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+  let validationError: UserError | undefined;
+  if (manifestFile) {
+    try {
+      const manifestString = manifestFile.getData().toString();
+      const manifest = JSON.parse(manifestString) as TeamsAppManifest;
+      if (!manifest.id || !isUUID(manifest.id)) {
+        validationError = AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message([
+            getLocalizedString("error.appstudio.noManifestId"),
+          ])
+        );
+      } else {
+        const validationResult = await validateManifest(manifest);
+        if (validationResult.isErr()) {
+          validationError = validationResult.error;
+        } else {
+          if (validationResult.value.length > 0) {
+            const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
+            validationError = AppStudioResultFactory.UserError(
+              AppStudioError.ValidationFailedError.name,
+              errMessage
+            );
+          }
+        }
+      }
+    } catch (e) {
+      validationError = AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        AppStudioError.ValidationFailedError.message([(e as any).message])
+      );
+      validationError.stack = (e as any).stack;
+    }
+  } else {
+    // missing manifest file
+    validationError = AppStudioResultFactory.UserError(
+      AppStudioError.ValidationFailedError.name,
+      AppStudioError.ValidationFailedError.message([
+        getLocalizedString("error.appstudio.noManifestError"),
+      ])
+    );
+  }
 
-  const res = await buildDriver.run(createAppPackageArgs, driverContext);
-  if (res.isErr()) {
-    return err(res.error);
+  if (validationError) {
+    const suggestionDefaultMessage = getDefaultString(
+      "error.appstudio.publishInDevPortalSuggestionForValidationError"
+    );
+    const suggestionMessage = getLocalizedString(
+      "error.appstudio.publishInDevPortalSuggestionForValidationError"
+    );
+    validationError.message += ` ${suggestionDefaultMessage}`;
+    validationError.displayMessage += ` ${suggestionMessage}`;
+    ctx.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
+    return err(validationError);
   }
 
   const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
@@ -884,7 +926,7 @@ export async function updateManifestV3ForPublish(
     return err(result.error);
   }
 
-  return ok(teamsAppId);
+  return ok(result.value.get(outputNames.TEAMS_APP_ID));
 }
 
 export async function getAppPackage(
@@ -969,7 +1011,7 @@ function generateCreateAppPackageArgs(
   );
 
   return {
-    manifestTemplatePath: manifestTemplatePath,
+    manifestPath: manifestTemplatePath,
     outputZipPath: path.join(
       projectPath,
       BuildFolderName,

@@ -46,9 +46,9 @@ export class InvokeResponseFactory {
    * The type of the invoke response is `application/vnd.microsoft.activity.message`
    * indicates the request was successfully processed.
    *
-   * @param message A text message included in a invoke response.
+   * @param message - A text message included in a invoke response.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An `InvokeResponse` object.
    */
   public static textMessage(message: string): InvokeResponse {
     if (!message) {
@@ -72,9 +72,9 @@ export class InvokeResponseFactory {
    * the request was successfully processed, and the response includes an adaptive card
    * that the client should display in place of the current one.
    *
-   * @param card The adaptive card JSON payload.
+   * @param card - The adaptive card JSON payload.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An `InvokeResponse` object.
    */
   public static adaptiveCard(card: unknown): InvokeResponse {
     if (!card) {
@@ -97,12 +97,12 @@ export class InvokeResponseFactory {
    * The type of the invoke response is `application/vnd.microsoft.error` indicates
    * the request was failed to processed.
    *
-   * @param errorCode The status code indicates error, available values:
+   * @param errorCode - The status code indicates error, available values:
    *  - 400 (BadRequest): indicate the incoming request was invalid.
    *  - 500 (InternalServerError): indicate an unexpected error occurred.
-   * @param errorMessage The error message.
+   * @param errorMessage - The error message.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An `InvokeResponse` object.
    */
   public static errorResponse(
     errorCode: InvokeResponseErrorCode,
@@ -123,10 +123,10 @@ export class InvokeResponseFactory {
 
   /**
    * Create an invoke response with status code and response value.
-   * @param statusCode The status code.
-   * @param body The value of the response body.
+   * @param statusCode - The status code.
+   * @param body - The value of the response body.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An `InvokeResponse` object.
    */
   public static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse {
     return {

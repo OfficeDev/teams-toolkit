@@ -146,7 +146,7 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<string, FxError>> {
     TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.CreateStart, {
       [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
-      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem.id,
+      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem().id,
     });
 
     const appName = inputs[CoreQuestionNames.AppName] as string;
@@ -166,7 +166,7 @@ export class FxCore implements v3.ICore {
     TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.Create, {
       [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
       [CoreTelemetryProperty.Success]: CoreTelemetrySuccess.Yes,
-      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem.id,
+      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem().id,
     });
     return result;
   }
@@ -612,7 +612,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -645,7 +645,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvInfoLoaderMW_V3(false, true),
     ContextInjectorMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -677,7 +677,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvInfoLoaderMW_V3(false, true),
     ContextInjectorMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -712,7 +712,7 @@ export class FxCore implements v3.ICore {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string | undefined, FxError>> {
-    return ok(ctx?.envInfoV3?.envName);
+    return ok(inputs.env); //work for both v2 and v3
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])

@@ -18,6 +18,7 @@ import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
+export const MigrationSource = "Migration";
 
 export class ProjectFolderExistError extends UserError {
   constructor(path: string) {
@@ -55,11 +56,13 @@ export function ReadFileError(e: Error): SystemError {
   });
 }
 
-export function MigrationReadFileError(e: Error): UserError {
+export function MigrationError(e: Error, name: string, helpLink?: string): UserError {
   return new UserError({
-    name: "MigrationReadFileError",
-    source: CoreSource,
+    name: name,
+    source: MigrationSource,
     error: e,
+    // the link show to user will be helpLink+ # + source + name
+    helpLink: helpLink,
   });
 }
 
@@ -337,6 +340,24 @@ export function UpgradeV3CanceledError(link: string, version: string): UserError
     "UserCancel", // @see tools.isUserCancelError()
     getDefaultString("error.UpgradeV3CanceledError", link, version),
     getLocalizedString("error.UpgradeV3CanceledError", link, version)
+  );
+}
+
+export function ToolkitNotSupportError(): UserError {
+  return new UserError(
+    CoreSource,
+    "ToolkitNotSupport",
+    getDefaultString("core.migrationV3.CreateNewProject"),
+    getLocalizedString("core.migrationV3.CreateNewProject")
+  );
+}
+
+export function AbandonedProjectError(): UserError {
+  return new UserError(
+    CoreSource,
+    "AbandonedProject",
+    getDefaultString("core.migrationV3.abandonedProject"),
+    getLocalizedString("core.migrationV3.abandonedProject")
   );
 }
 

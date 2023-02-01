@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
-import { getLocalizedString } from "../../../common/localizeUtils";
 import { ComponentNames } from "../../constants";
 
 const AAD_STATE_KEY = ComponentNames.AadApp;
@@ -279,6 +278,7 @@ export class APP_STUDIO_API_NAMES {
   public static readonly UPDATE_OWNER = "update-owner";
   public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
   public static readonly GET_APP_PACKAGE = "get-app-package";
+  public static readonly VALIDATE_APP_PACKAGE = "validate-app-package";
 }
 
 /**

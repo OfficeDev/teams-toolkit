@@ -15,6 +15,9 @@ import {
   migrateNgrokStartTask,
   migrateNgrokStartCommand,
   migrateAuthStart,
+  migrateBackendWatch,
+  migrateFrontendStart,
+  migrateBackendStart,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -22,6 +25,8 @@ import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/de
 import { ok, ProjectSettings } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { mockMigrationContext } from "./utils";
+import * as os from "os";
+import * as path from "path";
 
 describe("debugMigration", () => {
   const projectPath = ".";
@@ -525,7 +530,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                // Keep consistency with migrated configuration.
+                // Keep consistency with upgraded configuration.
                 "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                 "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -581,7 +586,7 @@ describe("debugMigration", () => {
               "ngrokPath": "ngrok",
               "env": "local",
               "output": {
-                // Keep consistency with migrated configuration.
+                // Keep consistency with upgraded configuration.
                 "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                 "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -646,7 +651,7 @@ describe("debugMigration", () => {
               "Install npm packages",
               "Start local tunnel",
               "Create resources",
-              "Set up local projects",
+              "Build project",
               "Set up bot",
               "Set up SSO",
               "Build & upload Teams manifest",
@@ -658,7 +663,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -741,7 +746,7 @@ describe("debugMigration", () => {
               "Start local tunnel",
               "Set up tab",
               "Create resources",
-              "Set up local projects",
+              "Build project",
               "Set up SSO",
               "Build & upload Teams manifest",
               "Start services"
@@ -752,7 +757,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -934,7 +939,7 @@ describe("debugMigration", () => {
               "Set up tab",
               "Set up bot",
               "Create resources",
-              "Set up local projects",
+              "Build project",
               "Build & upload Teams manifest",
               "Start services"
           ],
@@ -944,7 +949,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -1083,7 +1088,7 @@ describe("debugMigration", () => {
               "Set up bot",
               "Set up SSO",
               "Create resources",
-              "Set up local projects",
+              "Build project",
               "Start services"
           ],
           "dependsOrder": "sequence"
@@ -1092,7 +1097,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -1112,11 +1117,81 @@ describe("debugMigration", () => {
     });
   });
 
-  describe("migrateAuthStart", () => {
-    beforeEach(() => {
-      sinon.stub(debugV3MigrationUtils, "saveRunScript").callsFake(async () => {});
+  describe("migrateFrontendStart", () => {
+    it("happy path", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "Start Frontend",
+          "dependsOn": [
+              "teamsfx: frontend start",
+              "teamsfx: auth start"
+          ],
+          "dependsOrder": "parallel"
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Frontend",
+          "dependsOn": [
+              "Start frontend",
+              "teamsfx: auth start"
+          ],
+          "dependsOrder": "parallel"
+        },
+        {
+          "label": "Start frontend",
+          "type": "shell",
+          "command": "npx env-cmd --silent -f .localSettings react-scripts start",
+          "isBackground": true,
+          "options": {
+              "cwd": "\${workspaceFolder}/tabs"
+          },
+          "problemMatcher": {
+              "pattern": {
+                  "regexp": "^.*$",
+                  "file": 0,
+                  "location": 1,
+                  "message": 2
+              },
+              "background": {
+                  "activeOnStart": true,
+                  "beginsPattern": ".*",
+                  "endsPattern": "Compiled|Failed|compiled|failed"
+              }
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {
+        solutionSettings: {
+          activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
+        },
+      } as any;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateFrontendStart(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.frontendStart, {
+        sso: true,
+        functionName: undefined,
+      });
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.npmCommands?.length, 1);
+      if (debugContext.appYmlConfig.deploy?.npmCommands) {
+        chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.npmCommands[0], {
+          args: "install -D env-cmd",
+          workingDirectory: ".",
+        });
+      }
     });
+  });
 
+  describe("migrateAuthStart", () => {
     afterEach(() => {
       sinon.restore();
     });
@@ -1142,14 +1217,105 @@ describe("debugMigration", () => {
         {}
       );
       await migrateAuthStart(debugContext);
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.authStart, {
+        appsettingsPath: path.join(
+          os.homedir(),
+          ".fx",
+          "localauth",
+          "appsettings.Development.json"
+        ),
+      });
+    });
+  });
+
+  describe("migrateBackendStart", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy path", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "Start Backend",
+          "dependsOn": "teamsfx: backend start"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateBackendStart(debugContext);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.backendStart, true);
       chai.assert.equal(debugContext.appYmlConfig.deploy?.npmCommands?.length, 1);
       if (debugContext.appYmlConfig.deploy?.npmCommands) {
-        chai.assert.equal(
-          debugContext.appYmlConfig.deploy.npmCommands[0].args,
-          "install -D @microsoft/teamsfx-run-utils@alpha"
-        );
-        chai.assert.equal(debugContext.appYmlConfig.deploy.npmCommands[0].workingDirectory, ".");
+        chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.npmCommands[0], {
+          args: "install -D env-cmd",
+          workingDirectory: ".",
+        });
       }
+    });
+  });
+
+  describe("migrateBackendWatch", () => {
+    it("happy path", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "prepare local environment",
+          "type": "shell",
+          "command": "echo \${command:fx-extension.pre-debug-check}"
+        },
+        {
+          "label": "Start Backend",
+          "dependsOn": [
+              "teamsfx: backend watch"
+          ],
+          "dependsOrder": "sequence"
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "prepare local environment",
+          "type": "shell",
+          "command": "echo \${command:fx-extension.pre-debug-check}"
+        },
+        {
+          "label": "Start Backend",
+          "dependsOn": [
+              "Watch backend"
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          "label": "Watch backend",
+          "type": "shell",
+          "command": "tsc --watch",
+          "isBackground": true,
+          "options": {
+              "cwd": "\${workspaceFolder}/api"
+          },
+          "problemMatcher": "$tsc-watch",
+          "presentation": {
+              "reveal": "silent"
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateBackendWatch(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
     });
   });
 
@@ -1184,7 +1350,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                  // Keep consistency with migrated configuration.
+                  // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -1240,7 +1406,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                  // Keep consistency with migrated configuration.
+                  // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -1301,7 +1467,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                  // Keep consistency with migrated configuration.
+                  // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }

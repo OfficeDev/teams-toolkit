@@ -44,13 +44,10 @@ export class PluginCICD {
 }
 
 export class Suggestions {
-  public static readonly RETRY_THE_CURRENT_STEP = getLocalizedString(
-    "suggestions.retryTheCurrentStep"
-  );
-  public static readonly CREATE_PROJECT_OR_OPEN_EXISTING = getLocalizedString(
-    "plugins.cicd.suggestions.createProjectOrOpenExisting"
-  );
-  public static readonly CHECK_PERMISSION = getLocalizedString(
-    "plugins.cicd.suggestions.checkPermission"
-  );
+  public static readonly RETRY_THE_CURRENT_STEP = () =>
+    getLocalizedString("suggestions.retryTheCurrentStep");
+  public static readonly CREATE_PROJECT_OR_OPEN_EXISTING = () =>
+    getLocalizedString("plugins.cicd.suggestions.createProjectOrOpenExisting");
+  public static readonly CHECK_PERMISSION = () =>
+    getLocalizedString("plugins.cicd.suggestions.checkPermission");
 }

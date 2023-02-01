@@ -25,11 +25,11 @@ import { isLinux, isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType, FuncInstallOptions } from "../depsChecker";
 import { Messages } from "../constant/message";
 import { NodeChecker } from "./nodeChecker";
 
-export enum FuncVersion {
+export enum FuncMajorVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3",
@@ -52,17 +52,29 @@ const FuncNodeVersionWhiteList: { [key: string]: { [key: string]: boolean } } = 
 
 const RecommendedNodeVersion = "16";
 
+interface FuncVersion {
+  majorVersion: FuncMajorVersion;
+  minorVersion: number;
+  patchVersion: number;
+}
+
+const MinNode18FuncVersion: FuncVersion = {
+  majorVersion: FuncMajorVersion.v4,
+  minorVersion: 0,
+  patchVersion: 4670,
+};
+
 type FuncInstallationStatus = {
   isInstalled: boolean;
-  funcVersion: FuncVersion | null;
+  funcVersion: FuncMajorVersion | null;
 };
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Functions Core Tools";
 
-const installVersion = FuncVersion.v4;
-const supportedVersions = [FuncVersion.v4];
-const displayFuncName = `${funcToolName} (v${FuncVersion.v4})`;
+const installVersion = FuncMajorVersion.v4;
+const supportedVersions = [FuncMajorVersion.v4];
+const displayFuncName = `${funcToolName} (v${FuncMajorVersion.v4})`;
 
 const timeout = 5 * 60 * 1000;
 
@@ -102,10 +114,10 @@ export class FuncToolChecker implements DepsChecker {
     };
     try {
       const nodeVersion = await this.getNodeVersion();
-      installationInfo = await this.getInstallationInfo();
+      installationInfo = await this.getInstallationInfo({ nodeVersion: nodeVersion });
       if (!installationInfo.isInstalled) {
-        await this.install();
-        installationInfo = await this.getInstallationInfo();
+        await this.install(nodeVersion);
+        installationInfo = await this.getInstallationInfo({ nodeVersion: nodeVersion });
       }
 
       if (!installationInfo.error && installationInfo.portableFunc.isInstalled) {
@@ -152,12 +164,15 @@ export class FuncToolChecker implements DepsChecker {
     return installationInfo;
   }
 
-  public async getInstallationInfo(): Promise<
+  public async getInstallationInfo(
+    installOptions?: FuncInstallOptions
+  ): Promise<
     DependencyStatus & { globalFunc: FuncInstallationStatus; portableFunc: FuncInstallationStatus }
   > {
-    const globalFunc = await this.checkGlobalFuncVersion();
+    const nodeVersion = installOptions?.nodeVersion ?? (await this.getNodeVersion());
+    const globalFunc = await this.checkGlobalFuncVersion(nodeVersion);
     const isGlobalFuncInstalled = globalFunc.isInstalled;
-    const portableFunc = await this.checkPortableFuncVersion();
+    const portableFunc = await this.checkPortableFuncVersion(nodeVersion);
     const isPortableFuncInstalled = portableFunc.isInstalled;
 
     if (isGlobalFuncInstalled) {
@@ -181,9 +196,9 @@ export class FuncToolChecker implements DepsChecker {
     const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
     if (!nodeVersion) {
       throw new NodeNotFoundError(
-        Messages.NodeNotFound.split("@NodeVersion").join(
-          supportedVersions[supportedVersions.length - 1]
-        ),
+        Messages.NodeNotFound()
+          .split("@NodeVersion")
+          .join(supportedVersions[supportedVersions.length - 1]),
         nodeNotFoundHelpLink
       );
     }
@@ -197,7 +212,7 @@ export class FuncToolChecker implements DepsChecker {
     if (portableFunc.funcVersion) {
       if (!FuncNodeVersionWhiteList[portableFunc.funcVersion.toString()]?.[nodeVersion]) {
         return new PortableFuncNodeNotMatchedError(
-          Messages.portableFuncNodeNotMatched
+          Messages.portableFuncNodeNotMatched()
             .split("@FuncVersion")
             .join(`v${portableFunc.funcVersion}`)
             .split("@NodeVersion")
@@ -220,7 +235,7 @@ export class FuncToolChecker implements DepsChecker {
     if (globalFunc.funcVersion) {
       if (!FuncNodeVersionWhiteList[globalFunc.funcVersion.toString()]?.[nodeVersion]) {
         return new GlobalFuncNodeNotMatchedError(
-          Messages.globalFuncNodeNotMatched
+          Messages.globalFuncNodeNotMatched()
             .split("@FuncVersion")
             .join(`v${globalFunc.funcVersion.toString()}`)
             .split("@NodeVersion")
@@ -234,14 +249,13 @@ export class FuncToolChecker implements DepsChecker {
     return undefined;
   }
 
-  public async checkPortableFuncVersion(): Promise<FuncInstallationStatus> {
+  public async checkPortableFuncVersion(nodeVersion: string): Promise<FuncInstallationStatus> {
     let isVersionSupported = false,
       hasSentinel = false;
     let portableFuncVersion: FuncVersion | null = null;
     try {
       portableFuncVersion = await this.queryFuncVersion(FuncToolChecker.getPortableFuncExecPath());
-      isVersionSupported =
-        portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
+      isVersionSupported = isFuncVersionSupport(portableFuncVersion, nodeVersion);
       // to avoid "func -v" and "func new" work well, but "func start" fail.
       hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
 
@@ -252,27 +266,27 @@ export class FuncToolChecker implements DepsChecker {
       // do nothing
       return {
         isInstalled: false,
-        funcVersion: portableFuncVersion,
+        funcVersion: portableFuncVersion !== null ? portableFuncVersion.majorVersion : null,
       };
     }
     return {
       isInstalled: isVersionSupported && hasSentinel,
-      funcVersion: portableFuncVersion,
+      funcVersion: portableFuncVersion !== null ? portableFuncVersion.majorVersion : null,
     };
   }
 
-  public async checkGlobalFuncVersion(): Promise<FuncInstallationStatus> {
+  public async checkGlobalFuncVersion(nodeVersion: string): Promise<FuncInstallationStatus> {
     const globalFuncVersion = await this.queryGlobalFuncVersion();
     return {
-      isInstalled: globalFuncVersion !== null && supportedVersions.includes(globalFuncVersion),
-      funcVersion: globalFuncVersion,
+      isInstalled: isFuncVersionSupport(globalFuncVersion, nodeVersion),
+      funcVersion: globalFuncVersion !== null ? globalFuncVersion.majorVersion : null,
     };
   }
 
-  public async install(): Promise<void> {
+  public async install(nodeVersion: string): Promise<void> {
     if (isLinux()) {
       throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound.split("@SupportedPackages").join(displayFuncName),
+        Messages.linuxDepsNotFound().split("@SupportedPackages").join(displayFuncName),
         defaultHelpLink
       );
     }
@@ -283,13 +297,13 @@ export class FuncToolChecker implements DepsChecker {
     await this.cleanup();
     await this.installFunc();
 
-    if (!(await this.validate())) {
+    if (!(await this.validate(nodeVersion))) {
       await this.handleInstallFuncFailed();
     }
 
     this._telemetry.sendEvent(DepsCheckerEvent.funcInstallCompleted);
     await this._logger.info(
-      Messages.finishInstallFunctionCoreTool.replace("@NameVersion", displayFuncName)
+      Messages.finishInstallFunctionCoreTool().replace("@NameVersion", displayFuncName)
     );
   }
 
@@ -299,20 +313,20 @@ export class FuncToolChecker implements DepsChecker {
     this._telemetry.sendSystemErrorEvent(
       DepsCheckerEvent.funcInstallError,
       TelemtryMessages.failedToInstallFunc,
-      Messages.failToValidateFuncCoreTool.replace("@NameVersion", displayFuncName)
+      Messages.failToValidateFuncCoreTool().replace("@NameVersion", displayFuncName)
     );
     throw new DepsCheckerError(
-      Messages.failToInstallFuncCoreTool.split("@NameVersion").join(displayFuncName),
+      Messages.failToInstallFuncCoreTool().split("@NameVersion").join(displayFuncName),
       defaultHelpLink
     );
   }
 
-  private async validate(): Promise<boolean> {
+  private async validate(nodeVersion: string): Promise<boolean> {
     let isVersionSupported = false;
     let hasSentinel = false;
     try {
       const portableFunc = await this.queryFuncVersion(FuncToolChecker.getPortableFuncExecPath());
-      isVersionSupported = portableFunc !== null && supportedVersions.includes(portableFunc);
+      isVersionSupported = isFuncVersionSupport(portableFunc, nodeVersion);
       // to avoid "func -v" and "func new" work well, but "func start" fail.
       hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
     } catch (err) {
@@ -335,7 +349,7 @@ export class FuncToolChecker implements DepsChecker {
   private handleNpmNotFound() {
     this._telemetry.sendEvent(DepsCheckerEvent.npmNotFound);
     throw new DepsCheckerError(
-      Messages.needInstallFuncCoreTool.replace("@NameVersion", displayFuncName),
+      Messages.needInstallFuncCoreTool().replace("@NameVersion", displayFuncName),
       defaultHelpLink
     );
   }
@@ -453,16 +467,16 @@ export class FuncToolChecker implements DepsChecker {
       DepsCheckerEvent.funcInstallScriptCompleted,
       async () => {
         await runWithProgressIndicator(
-          async () => await this.doInstallPortableFunc(FuncVersion.v4),
+          async () => await this.doInstallPortableFunc(FuncMajorVersion.v4),
           this._logger
         );
       }
     );
   }
 
-  private async doInstallPortableFunc(version: FuncVersion): Promise<void> {
+  private async doInstallPortableFunc(version: FuncMajorVersion): Promise<void> {
     await this._logger.info(
-      Messages.startInstallFunctionCoreTool.replace("@NameVersion", displayFuncName)
+      Messages.startInstallFunctionCoreTool().replace("@NameVersion", displayFuncName)
     );
 
     try {
@@ -535,16 +549,48 @@ export function mapToFuncToolsVersion(output: string): FuncVersion | null {
     return null;
   }
 
-  switch (match.groups?.major_version) {
-    case FuncVersion.v1:
-      return FuncVersion.v1;
-    case FuncVersion.v2:
-      return FuncVersion.v2;
-    case FuncVersion.v3:
-      return FuncVersion.v3;
-    case FuncVersion.v4:
-      return FuncVersion.v4;
-    default:
-      return null;
+  const majorVersionFunc = (majorVersion: string | undefined) => {
+    switch (majorVersion) {
+      case FuncMajorVersion.v1:
+        return FuncMajorVersion.v1;
+      case FuncMajorVersion.v2:
+        return FuncMajorVersion.v2;
+      case FuncMajorVersion.v3:
+        return FuncMajorVersion.v3;
+      case FuncMajorVersion.v4:
+        return FuncMajorVersion.v4;
+      default:
+        return null;
+    }
+  };
+
+  const majorVersion = majorVersionFunc(match.groups?.major_version);
+  const minorVersion = Number.parseInt(match.groups?.minor_version ?? "");
+  const patchVersion = Number.parseInt(match.groups?.patch_version ?? "");
+
+  if (majorVersion == null || !Number.isInteger(minorVersion) || !Number.isInteger(patchVersion)) {
+    return null;
+  }
+  return {
+    majorVersion: majorVersion,
+    minorVersion: minorVersion,
+    patchVersion: patchVersion,
+  };
+}
+
+export function isFuncVersionSupport(
+  funcVersion: FuncVersion | null,
+  nodeVersion: string
+): boolean {
+  if (Number.parseInt(nodeVersion) >= 18) {
+    return (
+      funcVersion !== null &&
+      funcVersion.majorVersion == MinNode18FuncVersion.majorVersion &&
+      (funcVersion.minorVersion > MinNode18FuncVersion.minorVersion ||
+        (funcVersion.minorVersion === MinNode18FuncVersion.minorVersion &&
+          funcVersion.patchVersion >= MinNode18FuncVersion.patchVersion))
+    );
+  } else {
+    return funcVersion !== null && supportedVersions.includes(funcVersion.majorVersion);
   }
 }

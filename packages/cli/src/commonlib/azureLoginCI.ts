@@ -19,7 +19,11 @@ import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core/build/common/tools";
+import {
+  AzureScopes,
+  ConvertTokenToJson,
+  isV3Enabled,
+} from "@microsoft/teamsfx-core/build/common/tools";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -185,11 +189,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        await this.saveSubscription({
-          subscriptionId: item.subscriptionId,
-          subscriptionName: item.subscriptionName,
-          tenantId: item.tenantId,
-        });
+        if (!isV3Enabled()) {
+          await this.saveSubscription({
+            subscriptionId: item.subscriptionId,
+            subscriptionName: item.subscriptionName,
+            tenantId: item.tenantId,
+          });
+        }
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
         AzureAccountManager.subscriptionName = item.subscriptionName;
@@ -248,6 +254,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    if (isV3Enabled()) {
+      return undefined;
+    }
     const subscriptionFIlePath = await this.getSubscriptionInfoPath();
     if (subscriptionFIlePath === undefined) {
       return undefined;

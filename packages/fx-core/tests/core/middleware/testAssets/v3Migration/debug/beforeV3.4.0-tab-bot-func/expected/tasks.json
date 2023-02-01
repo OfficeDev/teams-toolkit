@@ -49,7 +49,7 @@
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
                 "env": "local",
                 "output": {
-                    // Keep consistency with migrated configuration.
+                    // Keep consistency with upgraded configuration.
                     "endpoint": "PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT",
                     "domain": "PROVISIONOUTPUT__BOTOUTPUT__DOMAIN"
                 }
@@ -67,8 +67,33 @@
         },
         {
             "label": "prepare local environment",
-            "type": "shell",
-            "command": "echo ${command:fx-extension.pre-debug-check}"
+            "dependsOn": [
+                "Create resources",
+                "Build project"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            // Create the debug resources.
+            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+            "label": "Create resources",
+            "type": "teamsfx",
+            "command": "provision",
+            "args": {
+                "template": "${workspaceFolder}/teamsapp.local.yml",
+                "env": "local"
+            }
+        },
+        {
+            // Build project.
+            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+            "label": "Build project",
+            "type": "teamsfx",
+            "command": "deploy",
+            "args": {
+                "template": "${workspaceFolder}/teamsapp.local.yml",
+                "env": "local"
+            }
         },
         {
             "label": "Start Frontend",
@@ -81,10 +106,14 @@
         {
             "label": "Start auth",
             "type": "shell",
-            "command": "node teamsfx/script/run.auth.js . teamsfx/.env.local",
+            "command": "dotnet Microsoft.TeamsFx.SimpleAuth.dll",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "SIMPLE_AUTH_PATH",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development",
+                    "PATH": "${command:fx-extension.get-dotnet-path}${env:PATH}"
+                }
             },
             "problemMatcher": {
                 "pattern": [
@@ -105,7 +134,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node ../teamsfx/script/run.tab.js .. ../teamsfx/.env.local",
+            "command": "npx env-cmd --silent -f .localSettings react-scripts start",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/tabs"
@@ -134,7 +163,37 @@
         },
         {
             "label": "Start Backend",
-            "dependsOn": "teamsfx: backend start"
+            "dependsOn": [
+                "Start backend"
+            ]
+        },
+        {
+            "label": "Start backend",
+            "type": "shell",
+            "command": "npx env-cmd --silent -f .localSettings func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/api",
+                "env": {
+                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                }
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+                    "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+                }
+            },
+            "presentation": {
+                "reveal": "silent"
+            }
         },
         {
             "label": "backend npm install",
@@ -153,7 +212,7 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "node ../teamsfx/script/run.bot.js .. ../teamsfx/.env.local",
+            "command": "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/bot"

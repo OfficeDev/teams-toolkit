@@ -24,6 +24,7 @@ import {
   Void,
   VsCodeEnv,
   PathNotExistError,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -34,7 +35,7 @@ import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import M365TokenInstance from "../../src/commonlib/m365Login";
-import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
+import { DeveloperPortalHomeLink, SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
@@ -62,6 +63,9 @@ import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { assert } from "console";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
+import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
+import { signedIn, signedOut } from "../../src/commonlib/common/constant";
+import { restore } from "sinon";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -140,8 +144,8 @@ describe("handlers", () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
-      .stub(MockCore.prototype, "getSettings")
-      .resolves(ok({ version: "3.0.0" } as ProjectSettings));
+      .stub(MockCore.prototype, "projectVersionCheck")
+      .resolves(ok({ currentVersion: "3.0.0" }));
     const res = await handlers.getSettingsVersion();
     chai.assert.equal(res, "3.0.0");
     sandbox.restore();
@@ -164,19 +168,67 @@ describe("handlers", () => {
     executeCommand.restore();
   });
 
-  it("addFileSystemWatcher", async () => {
+  it("addFileSystemWatcher in valid project", async () => {
     const workspacePath = "test";
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
 
-    const watcher = { onDidCreate: () => ({ dispose: () => undefined }) } as any;
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+    } as any;
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
-    const listener = sinon.stub(watcher, "onDidCreate").resolves();
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const sendTelemetryEventFunc = sinon
+      .stub(ExtTelemetry, "sendTelemetryEvent")
+      .callsFake(() => {});
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.isTrue(createWatcher.calledThrice);
+    chai.assert.isTrue(createListener.calledThrice);
+    chai.assert.isTrue(changeListener.calledOnce);
+    isValidProject.restore();
+    createWatcher.restore();
+    createListener.restore();
+    changeListener.restore();
+    sendTelemetryEventFunc.restore();
+  });
+
+  it("addFileSystemWatcher in invalid project", async () => {
+    const workspacePath = "test";
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(false);
+
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+    } as any;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
 
     handlers.addFileSystemWatcher(workspacePath);
 
     chai.assert.isTrue(createWatcher.calledTwice);
-    chai.assert.isTrue(listener.calledTwice);
+    chai.assert.isTrue(createListener.calledTwice);
+    chai.assert.isTrue(changeListener.notCalled);
+    isValidProject.restore();
     createWatcher.restore();
-    listener.restore();
+    createListener.restore();
+    changeListener.restore();
+  });
+
+  it("sendSDKVersionTelemetry", async () => {
+    const filePath = "test/package-lock.json";
+
+    const readJsonFunc = sinon.stub(fs, "readJson").resolves();
+    const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    handlers.sendSDKVersionTelemetry(filePath);
+
+    chai.assert.isTrue(readJsonFunc.calledOnce);
+    readJsonFunc.restore();
+    sendTelemetryEventFunc.restore();
   });
 
   describe("command handlers", function () {
@@ -371,7 +423,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 14);
+      chai.assert.equal(tutorialOptions.length, 15);
       chai.assert.isTrue(result.isOk());
     });
   });
@@ -710,8 +762,57 @@ describe("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
+  it("openReadMeHandler v3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any as vscode.TextDocument);
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(openTextDocumentStub.calledOnce);
+    chai.assert.isTrue(executeCommands.calledOnce);
+
+    sandbox.restore();
+  });
+
+  it("openReadMeHandler spfx - v2", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    const fake_config_v2 = {
+      isFromSample: false,
+    };
+    sandbox.stub(MockCore.prototype, "getProjectConfig").resolves(ok(fake_config_v2));
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any as vscode.TextDocument);
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(openTextDocumentStub.calledOnce);
+    chai.assert.isTrue(executeCommands.calledOnce);
+
+    sandbox.restore();
+  });
+
   it("signOutM365", async () => {
-    const signOut = sinon.stub(M365TokenInstance, "signout");
+    const signOut = sinon.stub(M365TokenInstance, "signout").resolves(true);
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 
@@ -1372,23 +1473,100 @@ describe("handlers", () => {
   });
 
   describe("publishInDeveloperPortalHandler", async () => {
+    beforeEach(() => {
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+    });
+
     afterEach(() => {
       sinon.restore();
     });
 
     it("publish in developer portal", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon
+        .stub(extension.VS_CODE_UI, "selectFile")
+        .resolves(ok({ type: "success", result: "test.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
 
       const res = await handlers.publishInDeveloperPortalHandler();
       if (res.isErr()) {
         console.log(res.error);
       }
       chai.assert.isTrue(publish.calledOnce);
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("select file error", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(UserCancelError));
+      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
+
+      const res = await handlers.publishInDeveloperPortalHandler();
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isFalse(publish.calledOnce);
+    });
+  });
+
+  describe("openAppManagement", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("open link with loginHint", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(M365TokenInstance, "getStatus").resolves(
+        ok({
+          status: signedIn,
+          token: undefined,
+          accountInfo: { upn: "test" },
+        })
+      );
+      const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const res = await handlers.openAppManagement();
+
+      chai.assert.isTrue(openUrl.calledOnce);
+      chai.assert.isTrue(res.isOk());
+      chai.assert.equal(openUrl.args[0][0], `${DeveloperPortalHomeLink}?login_hint=test`);
+    });
+
+    it("open link without loginHint", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(M365TokenInstance, "getStatus").resolves(
+        ok({
+          status: signedOut,
+          token: undefined,
+          accountInfo: { upn: "test" },
+        })
+      );
+      const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const res = await handlers.openAppManagement();
+
+      chai.assert.isTrue(openUrl.calledOnce);
+      chai.assert.isTrue(res.isOk());
+      chai.assert.equal(openUrl.args[0][0], DeveloperPortalHomeLink);
     });
   });
 
@@ -1463,6 +1641,89 @@ describe("handlers", () => {
       await handlers.checkSideloadingCallback();
 
       chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
+    });
+  });
+
+  describe("validateAzureDependenciesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("skip debugging", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
+    });
+
+    it("should not continue", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
+      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(false));
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
+    });
+
+    it("should continue", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
+      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(true));
+      sinon.stub(debugCommonUtils, "getPortsInUse").returns(Promise.resolve([]));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+    });
+  });
+
+  describe("validateLocalPrerequisitesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("skip debugging", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, "1");
+      sinon.restore();
+    });
+  });
+
+  describe("backendExtensionsInstallHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.backendExtensionsInstallHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
+
+  describe("preDebugCheckHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.preDebugCheckHandler();
+      chai.assert.equal(result, undefined);
       sinon.restore();
     });
   });

@@ -19,6 +19,7 @@ import { cpUtils } from "../../common/deps-checker";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 export class SPFxGenerator {
   @hooks([
@@ -63,7 +64,7 @@ export class SPFxGenerator {
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = camelCase(componentName);
 
-      await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
+      await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyCheck"));
 
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
@@ -72,7 +73,7 @@ export class SPFxGenerator {
       const generatorInstalled = await spGeneratorChecker.isInstalled();
 
       if (!yoInstalled || !generatorInstalled) {
-        await progressHandler?.next(ScaffoldProgressMessage.DependencyInstall);
+        await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyInstall"));
 
         if (isYoCheckerEnabled()) {
           const yoRes = await yoChecker.ensureDependency(context);
@@ -89,7 +90,7 @@ export class SPFxGenerator {
         }
       }
 
-      await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
+      await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.scaffoldProject"));
       if (inputs.platform === Platform.VSCode) {
         (context.logProvider as any).outputChannel.show();
       }
@@ -147,7 +148,7 @@ export class SPFxGenerator {
       const currentPath = path.join(destinationPath, solutionName!);
       await fs.rename(currentPath, newPath);
 
-      await progressHandler?.next(ScaffoldProgressMessage.UpdateManifest);
+      await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.updateManifest"));
       const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
       const manifest = await fs.readFile(manifestPath, "utf8");
       let manifestString = manifest.toString();
@@ -161,7 +162,7 @@ export class SPFxGenerator {
       const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
       const componentId = manifestJson.id;
       if (!context.templateVariables) {
-        context.templateVariables = {};
+        context.templateVariables = Generator.getDefaultVariables(solutionName);
       }
       context.templateVariables["componentId"] = componentId;
       context.templateVariables["webpartName"] = webpartName;

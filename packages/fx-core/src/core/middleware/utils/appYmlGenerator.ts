@@ -1,13 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  ProjectSettings,
+  AppPackageFolderName,
+} from "@microsoft/teamsfx-api";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
+import { MetadataV3 } from "../../../common/versionMetadata";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -29,8 +34,11 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
+    isWebAppBot: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
+    environmentFolder: string | undefined;
+    projectId: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -45,8 +53,11 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
+      isWebAppBot: false,
       isTypescript: false,
       defaultFunctionName: undefined,
+      environmentFolder: undefined,
+      projectId: undefined,
     };
   }
 
@@ -105,10 +116,14 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.handlebarsContext.aadAppName = aadManifest.name;
     }
 
-    const teamsAppManifestPath = path.join(this.projectPath, "appPackage/manifest.template.json");
+    const teamsAppManifestPath = path.join(
+      this.projectPath,
+      AppPackageFolderName,
+      MetadataV3.teamsManifestFileName
+    );
     if (await fs.pathExists(teamsAppManifestPath)) {
       const teamsAppManifest = await fs.readJson(
-        path.join(this.projectPath, "appPackage/manifest.template.json")
+        path.join(this.projectPath, AppPackageFolderName, MetadataV3.teamsManifestFileName)
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }
@@ -119,6 +134,12 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // default function name
     this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
+
+    // projectId
+    this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
+
+    // env folder
+    this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {
@@ -131,6 +152,15 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     ) {
       this.handlebarsContext.isFunctionBot = true;
     }
+    // isWebAppBot and the resourceId in bicep should be "botWebAppResourceId", then map state.fx-resource-bot.botWebAppResourceId
+    if (
+      pluginSettings &&
+      pluginSettings["fx-resource-bot"] &&
+      pluginSettings["fx-resource-bot"]["host-type"] === "app-service" &&
+      this.bicepContent.includes("botWebAppResourceId")
+    ) {
+      this.handlebarsContext.isWebAppBot = true;
+    }
 
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
@@ -139,6 +169,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.indexPath");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
   }

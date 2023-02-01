@@ -52,8 +52,8 @@ import { CoreHookContext } from "../types";
 import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
-import { getTemplateId } from "../../component/developerPortalScaffoldUtils";
 import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
+import { getTemplateId, isFromDevPortalInVSC } from "../../component/developerPortalScaffoldUtils";
 
 /**
  * This middleware will help to collect input from question flow
@@ -114,9 +114,9 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.teamsAppFromTdp) {
+  if (isFromDevPortalInVSC(inputs)) {
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
-    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
+    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
     inputs[CoreQuestionNames.Capabilities] = getTemplateId(inputs.teamsAppFromTdp);
   }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
@@ -124,7 +124,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   // create new
   const createNew = new QTreeNode({ type: "group" });
   node.addChild(createNew);
-  createNew.condition = { equals: ScratchOptionYes.id };
+  createNew.condition = { equals: ScratchOptionYes().id };
 
   // capabilities
   let capNode: QTreeNode;
@@ -144,39 +144,39 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
-    spfxNode.condition = { equals: TabSPFxItem.id };
+    spfxNode.condition = { equals: TabSPFxItem().id };
     capNode.addChild(spfxNode);
   }
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {
     programmingLanguage.condition = {
-      notEquals: ExistingTabOptionItem.id,
+      notEquals: ExistingTabOptionItem().id,
     };
   } else {
     programmingLanguage.condition = {
       minItems: 1,
-      excludes: ExistingTabOptionItem.id,
+      excludes: ExistingTabOptionItem().id,
     };
   }
   capNode.addChild(programmingLanguage);
 
   // existing tab endpoint
   if (isExistingTabAppEnabled()) {
-    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
+    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion());
     existingTabEndpoint.condition = {
-      equals: ExistingTabOptionItem.id,
+      equals: ExistingTabOptionItem().id,
     };
     capNode.addChild(existingTabEndpoint);
   }
 
-  createNew.addChild(new QTreeNode(QuestionRootFolder));
+  createNew.addChild(new QTreeNode(QuestionRootFolder()));
   const defaultName = !inputs.teamsAppFromTdp?.appName
     ? undefined
     : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
-  if (!!inputs.teamsAppFromTdp) {
+  if (isFromDevPortalInVSC(inputs)) {
     const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
     if (updateTabUrls) {
       createNew.addChild(updateTabUrls);
@@ -188,10 +188,10 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     }
   }
   // create from sample
-  const sampleNode = new QTreeNode(SampleSelect);
+  const sampleNode = new QTreeNode(SampleSelect());
   node.addChild(sampleNode);
-  sampleNode.condition = { equals: ScratchOptionNo.id };
-  sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+  sampleNode.condition = { equals: ScratchOptionNo().id };
+  sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
 
   if (isOfficeAddinEnabled()) {
     addOfficeAddinQuestions(node);
@@ -212,14 +212,14 @@ async function getQuestionsForCreateProjectWithDotNet(
 
   if (node) {
     node.condition = {
-      equals: RuntimeOptionNodeJs.id,
+      equals: RuntimeOptionNodeJs().id,
     };
     runtimeNode.addChild(node);
   }
 
   const dotnetNode = new QTreeNode({ type: "group" });
   dotnetNode.condition = {
-    equals: RuntimeOptionDotNet.id,
+    equals: RuntimeOptionDotNet().id,
   };
   runtimeNode.addChild(dotnetNode);
 
@@ -233,7 +233,7 @@ async function getQuestionsForCreateProjectWithDotNet(
   }
   const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
-    spfxNode.condition = { equals: TabSPFxItem.id };
+    spfxNode.condition = { equals: TabSPFxItem().id };
     dotnetCapNode.addChild(spfxNode);
   }
 
@@ -241,7 +241,7 @@ async function getQuestionsForCreateProjectWithDotNet(
 
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {
-    runtimeNode.addChild(new QTreeNode(QuestionRootFolder));
+    runtimeNode.addChild(new QTreeNode(QuestionRootFolder()));
   }
   runtimeNode.addChild(new QTreeNode(createAppNameQuestion()));
 
@@ -300,7 +300,7 @@ export async function getQuestionsForCreateProjectV2(
 
 export function addOfficeAddinQuestions(node: QTreeNode): void {
   const createNewAddin = new QTreeNode({ type: "group" });
-  createNewAddin.condition = { equals: CreateNewOfficeAddinOption.id };
+  createNewAddin.condition = { equals: CreateNewOfficeAddinOption().id };
   node.addChild(createNewAddin);
 
   const capNode = new QTreeNode(createCapabilityForOfficeAddin());
@@ -308,6 +308,6 @@ export function addOfficeAddinQuestions(node: QTreeNode): void {
 
   capNode.addChild(getQuestionsForScaffolding());
 
-  createNewAddin.addChild(new QTreeNode(QuestionRootFolder));
+  createNewAddin.addChild(new QTreeNode(QuestionRootFolder()));
   createNewAddin.addChild(new QTreeNode(createAppNameQuestion()));
 }

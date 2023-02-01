@@ -4,17 +4,16 @@
 
 ## CommandBot class
 
-A command bot for receiving commands and sending responses in Teams.
+> Warning: This API is now obsolete.
+> 
+> Use `BotBuilderCloudAdapter.CommandBot` instead.
+> 
 
 <b>Signature:</b>
 
 ```typescript
 export declare class CommandBot 
 ```
-
-## Remarks
-
-Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
 
 ## Constructors
 

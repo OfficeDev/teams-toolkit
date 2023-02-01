@@ -50,7 +50,7 @@ export class ExistingTemplatesStat {
   }
 
   public availableTemplateOptions(envName: string, provider: string): OptionItem[] {
-    return templateOptions.filter((templateOption) => {
+    return templateOptions().filter((templateOption) => {
       return !this.existence.get(
         ExistingTemplatesStat.genKey(envName, provider, templateOption.id)
       );
@@ -67,7 +67,7 @@ export class ExistingTemplatesStat {
       for (const provider of providerOptions) {
         const providerInstance = CICDProviderFactory.create(provider.id as ProviderKind);
         let providerAllExisting = true;
-        for (const template of templateOptions) {
+        for (const template of templateOptions()) {
           const existing = await fs.pathExists(
             path.join(
               this.projectPath,

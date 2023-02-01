@@ -6,6 +6,11 @@ import {
   TurnContext,
   AdaptiveCardInvokeValue,
   AdaptiveCardInvokeResponse,
+  MessagingExtensionAction,
+  MessagingExtensionQuery,
+  MessagingExtensionResponse,
+  MessagingExtensionActionResponse,
+  AppBasedLinkQuery,
 } from "botbuilder";
 import rawWelcomeCard from "./adaptiveCards/welcome.json";
 import rawLearnCard from "./adaptiveCards/learn.json";
@@ -95,8 +100,8 @@ export class TeamsBot extends TeamsActivityHandler {
   // Action.
   public async handleTeamsMessagingExtensionSubmitAction(
     context: TurnContext,
-    action: any
-  ): Promise<any> {
+    action: MessagingExtensionAction
+  ): Promise<MessagingExtensionActionResponse> {
     switch (action.commandId) {
       case "createCard":
         return createCardCommand(context, action);
@@ -108,7 +113,10 @@ export class TeamsBot extends TeamsActivityHandler {
   }
 
   // Search.
-  public async handleTeamsMessagingExtensionQuery(context: TurnContext, query: any): Promise<any> {
+  public async handleTeamsMessagingExtensionQuery(
+    context: TurnContext,
+    query: MessagingExtensionQuery
+  ): Promise<MessagingExtensionResponse> {
     const searchQuery = query.parameters[0].value;
     const response = await axios.get(
       `http://registry.npmjs.com/-/v1/search?${querystring.stringify({
@@ -141,7 +149,7 @@ export class TeamsBot extends TeamsActivityHandler {
   public async handleTeamsMessagingExtensionSelectItem(
     context: TurnContext,
     obj: any
-  ): Promise<any> {
+  ): Promise<MessagingExtensionResponse> {
     return {
       composeExtension: {
         type: "result",
@@ -152,23 +160,25 @@ export class TeamsBot extends TeamsActivityHandler {
   }
 
   // Link Unfurling.
-  public async handleTeamsAppBasedLinkQuery(context: TurnContext, query: any): Promise<any> {
+  public async handleTeamsAppBasedLinkQuery(
+    context: TurnContext,
+    query: AppBasedLinkQuery
+  ): Promise<MessagingExtensionResponse> {
     const attachment = CardFactory.thumbnailCard("Image Preview Card", query.url, [query.url]);
-
-    const result = {
-      attachmentLayout: "list",
-      type: "result",
-      attachments: [attachment],
+    return {
+      composeExtension: {
+        type: "result",
+        attachmentLayout: "list",
+        attachments: [attachment],
+      },
     };
-
-    const response = {
-      composeExtension: result,
-    };
-    return response;
   }
 }
 
-async function createCardCommand(context: TurnContext, action: any): Promise<any> {
+async function createCardCommand(
+  context: TurnContext,
+  action: MessagingExtensionAction
+): Promise<MessagingExtensionResponse> {
   // The user has chosen to create a card by choosing the 'Create Card' context menu command.
   const data = action.data;
   const heroCard = CardFactory.heroCard(data.title, data.text);
@@ -188,7 +198,10 @@ async function createCardCommand(context: TurnContext, action: any): Promise<any
   };
 }
 
-async function shareMessageCommand(context: TurnContext, action: any): Promise<any> {
+async function shareMessageCommand(
+  context: TurnContext,
+  action: MessagingExtensionAction
+): Promise<MessagingExtensionResponse> {
   // The user has chosen to share a message by choosing the 'Share Message' context menu command.
   let userName = "unknown";
   if (
@@ -217,7 +230,7 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
 
   if (
     action.messagePayload &&
-    action.messagePayload.attachment &&
+    action.messagePayload.attachments &&
     action.messagePayload.attachments.length > 0
   ) {
     // This sample does not add the MessagePayload Attachments.  This is left as an

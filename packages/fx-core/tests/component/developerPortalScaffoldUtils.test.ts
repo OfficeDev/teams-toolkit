@@ -143,6 +143,17 @@ describe("developPortalScaffoldUtils", () => {
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -201,7 +212,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -258,6 +269,17 @@ describe("developPortalScaffoldUtils", () => {
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -315,7 +337,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -334,7 +356,32 @@ describe("developPortalScaffoldUtils", () => {
           throw new Error("not support " + file);
         }
       });
-      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          manifestVersion: "version",
+          id: "mock-app-id",
+          name: { short: "short-name" },
+          description: { short: "", full: "" },
+          version: "version",
+          icons: { outline: "outline.png", color: "color.png" },
+          accentColor: "#ffffff",
+          developer: {
+            privacyUrl: "",
+            websiteUrl: "",
+            termsOfUseUrl: "",
+            name: "developer-name",
+          },
+          staticTabs: [
+            {
+              name: "name0",
+              entityId: "index0",
+              scopes: ["personal"],
+              contentUrl: "contentUrlnew0",
+              websiteUrl: "websiteUrlnew0",
+            },
+          ],
+        })
+      );
 
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -367,6 +414,17 @@ describe("developPortalScaffoldUtils", () => {
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -438,7 +496,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -489,6 +547,17 @@ describe("developPortalScaffoldUtils", () => {
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -571,7 +640,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -623,6 +692,17 @@ describe("developPortalScaffoldUtils", () => {
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -707,7 +787,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -746,6 +826,280 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
       chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
+      chai.assert.isTrue(writeSpy.calledThrice);
+      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
+    });
+
+    it("update manifest if selecting capability from ttk UI", async () => {
+      const ctx = createContextV3();
+      ctx.tokenProvider = {
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
+      };
+      ctx.projectPath = "project-path";
+      const appDefinition: AppDefinition = {
+        appId: "mock-app-id",
+        teamsAppId: "mock-app-id",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
+      };
+      const manifest: TeamsAppManifest = {
+        manifestVersion: "version",
+        id: "mock-app-id",
+        name: { short: "short-name" },
+        description: { short: "", full: "" },
+        version: "version",
+        icons: { outline: "outline.png", color: "color.png" },
+        accentColor: "#ffffff",
+        developer: {
+          privacyUrl: "",
+          websiteUrl: "",
+          termsOfUseUrl: "",
+          name: "developer-name",
+        },
+      };
+
+      const existingManifest: TeamsAppManifest = {
+        manifestVersion: "version",
+        id: "mock-app-id",
+        name: { short: "short-name" },
+        description: { short: "", full: "" },
+        version: "version",
+        icons: { outline: "outline.png", color: "color.png" },
+        accentColor: "#ffffff",
+        developer: {
+          privacyUrl: "",
+          websiteUrl: "",
+          termsOfUseUrl: "",
+          name: "developer-name",
+        },
+        webApplicationInfo: {
+          id: "1",
+        },
+        bots: [
+          {
+            botId: "{{BOT_ID}}",
+            scopes: ["personal", "team"],
+            supportsFiles: false,
+            isNotificationOnly: false,
+            commandLists: [
+              {
+                scopes: ["personal", "team", "groupchat"],
+                commands: [],
+              },
+            ],
+          },
+        ],
+        validDomains: ["valid-domain"],
+      };
+
+      let updateManifest = false;
+      let updateLanguage = false;
+      let updateColor = false;
+      let updateOutline = false;
+      let updatedManifestData = "";
+      sandbox.stub(appStudio, "getAppPackage").resolves(
+        ok({
+          manifest: Buffer.from(
+            JSON.stringify({
+              manifestVersion: "version",
+              id: "mock-app-id",
+              name: { short: "short-name" },
+              description: { short: "", full: "" },
+              version: "version",
+              icons: { outline: "outline.png", color: "color.png" },
+              accentColor: "#ffffff",
+              developer: {
+                privacyUrl: "",
+                websiteUrl: "",
+                termsOfUseUrl: "",
+                name: "developer-name",
+              },
+            })
+          ),
+          icons: { color: Buffer.from(""), outline: Buffer.from("") },
+          languages: { zh: Buffer.from(JSON.stringify({})) },
+        })
+      );
+      sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
+        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+          updateColor = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+          updateOutline = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
+          updateLanguage = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
+          updateManifest = true;
+          updatedManifestData = data;
+        } else {
+          throw new Error("not support " + file);
+        }
+      });
+
+      const mockWriteStream = new MockedWriteStream();
+      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
+      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
+      sandbox.stub(mockWriteStream, "end").resolves();
+      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
+        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
+        } else {
+          throw new Error("not support " + file);
+        }
+      });
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(existingManifest));
+      const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
+
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(updateManifest);
+      chai.assert.isTrue(updateColor);
+      chai.assert.isTrue(updateOutline);
+      chai.assert.isTrue(updateLanguage);
+      const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
+      chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
+      chai.assert.deepEqual(updatedManifest.bots![0], existingManifest.bots![0]);
+      chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
+      chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
+      chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.deepEqual(
+        updatedManifest.webApplicationInfo,
+        existingManifest.webApplicationInfo
+      );
+      chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
+      chai.assert.isTrue(writeSpy.calledThrice);
+      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
+    });
+
+    it("update group chat", async () => {
+      const ctx = createContextV3();
+      ctx.tokenProvider = {
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
+      };
+      ctx.projectPath = "project-path";
+      const appDefinition: AppDefinition = {
+        appId: "mock-app-id",
+        teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const manifest: TeamsAppManifest = {
+        manifestVersion: "version",
+        id: "mock-app-id",
+        name: { short: "short-name" },
+        description: { short: "", full: "" },
+        version: "version",
+        icons: { outline: "outline.png", color: "color.png" },
+        accentColor: "#ffffff",
+        developer: {
+          privacyUrl: "",
+          websiteUrl: "",
+          termsOfUseUrl: "",
+          name: "developer-name",
+        },
+        staticTabs: [
+          {
+            name: "name0",
+            entityId: "index0",
+            scopes: ["personal"],
+            contentUrl: "contentUrl0",
+            websiteUrl: "websiteUrl0",
+          },
+          {
+            name: "name1",
+            entityId: "index1",
+            scopes: ["personal"],
+            contentUrl: "contentUrl1",
+            websiteUrl: "websiteUrl1",
+          },
+        ],
+        configurableTabs: [
+          {
+            configurationUrl: "url",
+            scopes: ["groupChat", "team"] as any,
+          },
+        ],
+        bots: [
+          {
+            botId: "botId",
+            scopes: ["groupChat"] as any,
+          },
+        ],
+      };
+
+      let updateManifest = false;
+      let updateLanguage = false;
+      let updateColor = false;
+      let updateOutline = false;
+      let updatedManifestData = "";
+      sandbox.stub(appStudio, "getAppPackage").resolves(
+        ok({
+          manifest: Buffer.from(JSON.stringify(manifest)),
+          icons: { color: Buffer.from(""), outline: Buffer.from("") },
+          languages: { zh: Buffer.from(JSON.stringify({})) },
+        })
+      );
+      sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
+        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+          updateColor = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+          updateOutline = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
+          updateLanguage = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
+          updateManifest = true;
+          updatedManifestData = data;
+        } else {
+          throw new Error("not support " + file);
+        }
+      });
+
+      const mockWriteStream = new MockedWriteStream();
+      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
+      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
+      sandbox.stub(mockWriteStream, "end").resolves();
+      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
+        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
+        } else {
+          throw new Error("not support " + file);
+        }
+      });
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+
+      const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
+
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(updateManifest);
+      chai.assert.isTrue(updateColor);
+      chai.assert.isTrue(updateOutline);
+      chai.assert.isTrue(updateLanguage);
+      const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
+      chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
+      chai.assert.equal(updatedManifest.staticTabs![0].contentUrl, "contentUrl0");
+      chai.assert.equal(updatedManifest.staticTabs![0].websiteUrl, "websiteUrl0");
+      chai.assert.equal(updatedManifest.staticTabs![1].websiteUrl, "websiteUrl1");
+      chai.assert.equal(updatedManifest.staticTabs![1].contentUrl, "contentUrl1");
+      chai.assert.isTrue(updatedManifest.configurableTabs![0].scopes.includes("groupchat"));
+      chai.assert.isTrue(updatedManifest.bots![0].scopes.includes("groupchat"));
+      chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
+      chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
+      chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.validDomains, undefined);
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
@@ -801,7 +1155,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, TabNonSsoAndDefaultBotItem.id);
+      chai.assert.equal(res, TabNonSsoAndDefaultBotItem().id);
     });
 
     it("return TabNonSso", () => {
@@ -811,7 +1165,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, TabNonSsoItem.id);
+      chai.assert.equal(res, TabNonSsoItem().id);
     });
 
     it("return DefaultBotAndMessageExtension", () => {
@@ -822,7 +1176,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, DefaultBotAndMessageExtensionItem.id);
+      chai.assert.equal(res, DefaultBotAndMessageExtensionItem().id);
     });
 
     it("return MessageExtension", () => {
@@ -832,7 +1186,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, MessageExtensionNewUIItem.id);
+      chai.assert.equal(res, MessageExtensionNewUIItem().id);
     });
 
     it("return bot", () => {
@@ -842,7 +1196,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, BotOptionItem.id);
+      chai.assert.equal(res, BotOptionItem().id);
     });
 
     it("return undefined", () => {

@@ -13,7 +13,7 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType, BaseInstallOptions } from "../depsChecker";
 import { isMacOS, isWindows } from "../util";
 import { Messages, vxTestAppInstallHelpLink } from "../constant";
 
@@ -62,7 +62,7 @@ async function downloadToTempFile(
     response.data.pipe(writer);
     if (response.status !== 200) {
       throw new Error(
-        Messages.failToDownloadFromUrl
+        Messages.failToDownloadFromUrl()
           .replace(/@Url/g, url)
           .replace(/@Status/g, response.status.toString())
       );
@@ -99,11 +99,11 @@ export class VxTestAppChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         new VxTestAppCheckError(
-          Messages.failToValidateVxTestAppInstallOptions,
+          Messages.failToValidateVxTestAppInstallOptions(),
           vxTestAppInstallHelpLink
         )
       );
@@ -128,7 +128,7 @@ export class VxTestAppChecker implements DepsChecker {
     // TODO: need to chmod to add executable permission for non-Windows OS
     if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(Messages.failToValidateVxTestApp, vxTestAppInstallHelpLink)
+        new VxTestAppCheckError(Messages.failToValidateVxTestApp(), vxTestAppInstallHelpLink)
       );
     }
 
@@ -146,11 +146,11 @@ export class VxTestAppChecker implements DepsChecker {
     };
   }
 
-  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async getInstallationInfo(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         new VxTestAppCheckError(
-          Messages.failToValidateVxTestAppInstallOptions,
+          Messages.failToValidateVxTestAppInstallOptions(),
           vxTestAppInstallHelpLink
         )
       );
@@ -226,7 +226,7 @@ export class VxTestAppChecker implements DepsChecker {
   }
 
   private isValidInstallOptions(
-    installOptions?: InstallOptions
+    installOptions?: BaseInstallOptions
   ): installOptions is InstallOptionsSafe {
     return !(installOptions?.projectPath === undefined && installOptions?.version === undefined);
   }

@@ -33,14 +33,14 @@ export namespace AuthSvcClient {
    * @param authSvcToken
    * @returns e.g. apac amer
    */
-  export async function getRegion(authSvcToken: string): Promise<string> {
+  export async function getRegion(authSvcToken: string): Promise<string | undefined> {
     const requester = createRequesterWithToken(authSvcToken);
     try {
       const response = await RetryHandler.Retry(() => requester.post(`/v1.0/users/region`));
-      return response?.data.region as string;
+      return response?.data?.regionGtms?.teamsDevPortal as string;
     } catch (e: any) {
-      const error = wrapException(e, "get-region");
-      throw error;
+      wrapException(e, "get-region");
+      return undefined;
     }
   }
 

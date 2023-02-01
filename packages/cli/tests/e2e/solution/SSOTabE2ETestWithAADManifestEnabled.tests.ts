@@ -74,11 +74,10 @@ describe("SSO Tab with aad manifest enabled", () => {
       expect(await fs.pathExists(permissionJsonFilePath)).to.be.false;
     } else {
       // Assert
-      expect(fs.pathExistsSync(path.join(projectPath, "teamsfx"))).to.be.true;
       expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.bicep"))).to.be.true;
       expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.parameters.json"))).to.be
         .true;
-      expect(fs.pathExistsSync(path.join(projectPath, "teamsfx", "app.yml"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "teamsapp.yml"))).to.be.true;
       expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.template.json"))).to.be.true;
     }
 

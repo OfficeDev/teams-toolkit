@@ -12,9 +12,6 @@
         "start:tab": "cd tab && npm run start",
         "build:tab": "cd tab && npm run build"
     },
-    "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha"
-    },
     "dependencies": {
         "concurrently": "^7.6.0"
     },

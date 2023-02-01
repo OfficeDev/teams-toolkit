@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Yuqi Zhou <yuqzho@microsoft.com>
+ */
+
 import { AppDefinition } from "./resource/appManifest/interfaces/appDefinition";
 import * as appStudio from "./resource/appManifest/appStudio";
 import * as os from "os";
@@ -14,6 +18,7 @@ import {
   Inputs,
   TeamsAppManifest,
   IStaticTab,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import fs from "fs-extra";
@@ -47,7 +52,7 @@ const appPackageFolderName = "appPackage";
 const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
-const manifestFileName = "manifest.template.json";
+const manifestFileName = "manifest.json";
 
 export const answerToRepaceBotId = "bot";
 export const answerToReplaceMessageExtensionBotId = "messageExtension";
@@ -146,6 +151,25 @@ async function updateManifest(
   manifest.icons.color = "resources/color.png";
   manifest.icons.outline = "resources/outline.png";
 
+  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
+  // This is a short-term solution to convert the value to what TTK expects.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      {
+        manifest.configurableTabs[0].scopes = updateScope(
+          manifest.configurableTabs[0].scopes
+        ) as any;
+      }
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      {
+        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
+      }
+    }
+  }
+
   // manifest: tab
   const tabs = manifest.staticTabs;
   let needUpdateStaticTabUrls = false;
@@ -197,6 +221,18 @@ async function updateManifest(
         manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
+  }
+
+  // manifest: no tab, bot or me selected on TDP before
+  if (!getTemplateId(appDefinition)) {
+    // which means user selects a capability through TTK UI.
+    manifest.bots = existingManifestTemplate.bots;
+    manifest.composeExtensions = existingManifestTemplate.composeExtensions;
+    manifest.staticTabs = existingManifestTemplate.staticTabs;
+    manifest.configurableTabs = existingManifestTemplate.configurableTabs;
+    manifest.permissions = existingManifestTemplate.permissions;
+    manifest.validDomains = existingManifestTemplate.validDomains;
+    manifest.webApplicationInfo = existingManifestTemplate.webApplicationInfo;
   }
 
   // manifest: developer
@@ -281,30 +317,38 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
 export function getTemplateId(teamsApp: AppDefinition): string | undefined {
   // tab with bot, tab with message extension, tab with bot and message extension
   if (needTabAndBotCode(teamsApp)) {
-    return TabNonSsoAndDefaultBotItem.id;
+    return TabNonSsoAndDefaultBotItem().id;
   }
 
   // tab only
   if (needTabCode(teamsApp)) {
-    return TabNonSsoItem.id;
+    return TabNonSsoItem().id;
   }
 
   // bot and message extension
   if (isBotAndMessageExtension(teamsApp)) {
-    return DefaultBotAndMessageExtensionItem.id;
+    return DefaultBotAndMessageExtensionItem().id;
   }
 
   // message extension
   if (isMessageExtension(teamsApp)) {
-    return MessageExtensionNewUIItem.id;
+    return MessageExtensionNewUIItem().id;
   }
 
   // bot
   if (isBot(teamsApp)) {
-    return BotOptionItem.id;
+    return BotOptionItem().id;
   }
 
   return undefined;
+}
+
+export function updateScope(scopes: string[]): string[] {
+  return scopes.map((o) => o.toLowerCase());
+}
+
+export function isFromDevPortalInVSC(inputs: Inputs): boolean {
+  return !!inputs.teamsAppFromTdp && inputs.platform === Platform.VSCode;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

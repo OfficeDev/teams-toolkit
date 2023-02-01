@@ -8,7 +8,7 @@
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
-        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run dev",
         "dev": "func start --typescript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
         "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
         "watch:teamsfx": "tsc --watch",
@@ -30,9 +30,9 @@
     "devDependencies": {
         "@azure/functions": "^1.2.3",
         "azurite": "^3.16.0",
+        "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",
-        "shx": "^0.3.4",
-        "@microsoft/teamsfx-run-utils": "alpha"
+        "shx": "^0.3.4"
     }
 }

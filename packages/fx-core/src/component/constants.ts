@@ -663,7 +663,7 @@ export class AddSsoParameters {
   static readonly V3AuthFolder = "TeamsFx-Auth";
   static readonly Readme = "README.md";
   static readonly ReadmeCSharp = "README.txt";
-  static readonly LearnMore = getLocalizedString("core.provision.learnMore");
+  static readonly LearnMore = () => getLocalizedString("core.provision.learnMore");
   static readonly LearnMoreUrl = "https://aka.ms/teamsfx-add-sso-readme";
   static readonly AddSso = "addSso";
   static readonly AppSettings = "appsettings.json";
@@ -698,215 +698,250 @@ export interface ProvisionSubscriptionCheckResult {
 
 export type FillInAzureConfigsResult = ProvisionSubscriptionCheckResult;
 
-export const TabOptionItem: OptionItem = {
-  id: "Tab",
-  label: getLocalizedString("core.TabOption.label"),
-  cliName: "tab",
-  description: getLocalizedString("core.TabOption.description"),
-  detail: getLocalizedString("core.TabOption.detail"),
-};
+export function TabOptionItem(): OptionItem {
+  return {
+    id: "Tab",
+    label: getLocalizedString("core.TabOption.label"),
+    cliName: "tab",
+    description: getLocalizedString("core.TabOption.description"),
+    detail: getLocalizedString("core.TabOption.detail"),
+  };
+}
 
-export const TabNewUIOptionItem: OptionItem = {
-  id: "Tab",
-  label: `$(browser) ${getLocalizedString("core.TabOption.labelNew")}`,
-  cliName: "tab",
-  detail: getLocalizedString("core.TabOption.detailNew"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-tab-with-sso",
-  buttons: [
-    {
-      iconPath: "file-symlink-file",
-      tooltip: getLocalizedString("core.option.github"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
-};
+export function TabNewUIOptionItem(): OptionItem {
+  return {
+    id: "Tab",
+    label: `$(browser) ${getLocalizedString("core.TabOption.labelNew")}`,
+    cliName: "tab",
+    detail: getLocalizedString("core.TabOption.detailNew"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+    data: "https://aka.ms/teamsfx-tab-with-sso",
+    buttons: [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ],
+  };
+}
 
-export const DashboardOptionItem: OptionItem = {
-  id: "dashboard-tab",
-  label: `$(browser) ${getLocalizedString("core.DashboardOption.label")}`,
-  description: getLocalizedString("core.Option.preview"),
-  cliName: "dashboard-tab",
-  detail: getLocalizedString("core.DashboardOption.detail"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-dashboard-app",
-  buttons: [
-    {
-      iconPath: "file-symlink-file",
-      tooltip: getLocalizedString("core.option.github"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
-};
+export function DashboardOptionItem(): OptionItem {
+  return {
+    id: "dashboard-tab",
+    label: `$(browser) ${getLocalizedString("core.DashboardOption.label")}`,
+    description: getLocalizedString("core.Option.preview"),
+    cliName: "dashboard-tab",
+    detail: getLocalizedString("core.DashboardOption.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+    data: "https://aka.ms/teamsfx-dashboard-app",
+    buttons: [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ],
+  };
+}
 
-export const BotOptionItem: OptionItem = {
-  id: "Bot",
-  label: "Bot",
-  cliName: "bot",
-  description: getLocalizedString("core.BotOption.description"),
-  detail: getLocalizedString("core.BotOption.detail"),
-};
+export function BotOptionItem(): OptionItem {
+  return {
+    id: "Bot",
+    label: "Bot",
+    cliName: "bot",
+    description: getLocalizedString("core.BotOption.description"),
+    detail: getLocalizedString("core.BotOption.detail"),
+  };
+}
 
-export const BotNewUIOptionItem: OptionItem = {
-  id: "Bot",
-  label: `$(hubot) ${getLocalizedString("core.BotNewUIOption.label")}`,
-  cliName: "bot",
-  detail: getLocalizedString("core.BotNewUIOption.detail"),
-  groupName: getLocalizedString("core.options.separator.basic"),
-};
+export function BotNewUIOptionItem(): OptionItem {
+  return {
+    id: "Bot",
+    label: `$(hubot) ${getLocalizedString("core.BotNewUIOption.label")}`,
+    cliName: "bot",
+    detail: getLocalizedString("core.BotNewUIOption.detail"),
+    groupName: getLocalizedString("core.options.separator.basic"),
+  };
+}
 
-export const NotificationOptionItem: OptionItem = {
-  // For default option, id and cliName must be the same
-  id: "Notification",
-  label: `$(hubot) ${getLocalizedString("core.NotificationOption.label")}`,
-  description: getLocalizedString("core.Option.recommend"),
-  cliName: "notification",
-  detail: getLocalizedString("core.NotificationOption.detail"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-send-notification",
-  buttons: [
-    {
-      iconPath: "file-symlink-file",
-      tooltip: getLocalizedString("core.option.github"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
-};
+export function NotificationOptionItem(): OptionItem {
+  return {
+    // For default option, id and cliName must be the same
+    id: "Notification",
+    label: `$(hubot) ${getLocalizedString("core.NotificationOption.label")}`,
+    description: getLocalizedString("core.Option.recommend"),
+    cliName: "notification",
+    detail: getLocalizedString("core.NotificationOption.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+    data: "https://aka.ms/teamsfx-send-notification",
+    buttons: [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ],
+  };
+}
 
-export const CommandAndResponseOptionItem: OptionItem = {
-  // id must match cli `yargsHelp`
-  id: "command-bot",
-  label: `$(hubot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
-  description: getLocalizedString("core.Option.recommend"),
-  cliName: "command-bot",
-  detail: getLocalizedString("core.CommandAndResponseOption.detail"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-create-command",
-  buttons: [
-    {
-      iconPath: "file-symlink-file",
-      tooltip: getLocalizedString("core.option.github"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
-};
+export function CommandAndResponseOptionItem(): OptionItem {
+  return {
+    // id must match cli `yargsHelp`
+    id: "command-bot",
+    label: `$(hubot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
+    description: getLocalizedString("core.Option.recommend"),
+    cliName: "command-bot",
+    detail: getLocalizedString("core.CommandAndResponseOption.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+    data: "https://aka.ms/teamsfx-create-command",
+    buttons: [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ],
+  };
+}
 
-export const WorkflowOptionItem: OptionItem = {
-  // id must match cli `yargsHelp`
-  id: "workflow-bot",
-  label: `$(hubot) ${getLocalizedString("core.WorkflowOption.label")}`,
-  description: getLocalizedString("core.Option.recommend"),
-  cliName: "workflow-bot",
-  detail: getLocalizedString("core.WorkflowOption.detail"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-create-workflow",
-  buttons: [
-    {
-      iconPath: "file-symlink-file",
-      tooltip: getLocalizedString("core.option.github"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
-};
+export function WorkflowOptionItem(): OptionItem {
+  return {
+    // id must match cli `yargsHelp`
+    id: "workflow-bot",
+    label: `$(hubot) ${getLocalizedString("core.WorkflowOption.label")}`,
+    description: getLocalizedString("core.Option.recommend"),
+    cliName: "workflow-bot",
+    detail: getLocalizedString("core.WorkflowOption.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+    data: "https://aka.ms/teamsfx-create-workflow",
+    buttons: [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ],
+  };
+}
 
-export const ExistingTabOptionItem: OptionItem = {
-  id: "ExistingTab",
-  label: `$(browser) ${getLocalizedString("core.ExistingTabOption.label")}`,
-  cliName: "existing-tab",
-  detail: getLocalizedString("core.ExistingTabOption.detail"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-embed-existing-web",
-  buttons: [
-    {
-      iconPath: "tasklist",
-      tooltip: getLocalizedString("core.option.tutorial"),
-      command: "fx-extension.openTutorial",
-    },
-  ],
-};
+export function ExistingTabOptionItem(): OptionItem {
+  return {
+    id: "ExistingTab",
+    label: `$(browser) ${getLocalizedString("core.ExistingTabOption.label")}`,
+    cliName: "existing-tab",
+    detail: getLocalizedString("core.ExistingTabOption.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+    data: "https://aka.ms/teamsfx-embed-existing-web",
+    buttons: [
+      {
+        iconPath: "tasklist",
+        tooltip: getLocalizedString("core.option.tutorial"),
+        command: "fx-extension.openTutorial",
+      },
+    ],
+  };
+}
 
-export const MessageExtensionItem: OptionItem = {
-  id: "MessagingExtension",
-  label: getLocalizedString("core.MessageExtensionOption.label"),
-  cliName: "message-extension",
-  description: getLocalizedString("core.MessageExtensionOption.description"),
-  detail: getLocalizedString("core.MessageExtensionOption.detail"),
-};
+export function MessageExtensionItem(): OptionItem {
+  return {
+    id: "MessagingExtension",
+    label: getLocalizedString("core.MessageExtensionOption.label"),
+    cliName: "message-extension",
+    description: getLocalizedString("core.MessageExtensionOption.description"),
+    detail: getLocalizedString("core.MessageExtensionOption.detail"),
+  };
+}
 
-export const MessageExtensionNewUIItem: OptionItem = {
-  id: "MessagingExtension",
-  label: `$(comment-discussion) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
-  cliName: "message-extension",
-  detail: getLocalizedString("core.MessageExtensionOption.detail"),
-  groupName: getLocalizedString("core.options.separator.basic"),
-};
+export function MessageExtensionNewUIItem(): OptionItem {
+  return {
+    id: "MessagingExtension",
+    label: `$(comment-discussion) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
+    cliName: "message-extension",
+    detail: getLocalizedString("core.MessageExtensionOption.detail"),
+    groupName: getLocalizedString("core.options.separator.basic"),
+  };
+}
+export function TabSPFxItem(): OptionItem {
+  return {
+    id: "TabSPFx",
+    label: getLocalizedString("core.TabSPFxOption.label"),
+    cliName: "tab-spfx",
+    description: getLocalizedString("core.TabSPFxOption.description"),
+    detail: getLocalizedString("core.TabSPFxOption.detail"),
+  };
+}
 
-export const TabSPFxItem: OptionItem = {
-  id: "TabSPFx",
-  label: getLocalizedString("core.TabSPFxOption.label"),
-  cliName: "tab-spfx",
-  description: getLocalizedString("core.TabSPFxOption.description"),
-  detail: getLocalizedString("core.TabSPFxOption.detail"),
-};
+export function TabSPFxNewUIItem(): OptionItem {
+  return {
+    id: "TabSPFx",
+    label: `$(browser) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
+    cliName: "tab-spfx",
+    detail: getLocalizedString("core.TabSPFxOption.detailNew"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+  };
+}
 
-export const TabSPFxNewUIItem: OptionItem = {
-  id: "TabSPFx",
-  label: `$(browser) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
-  cliName: "tab-spfx",
-  detail: getLocalizedString("core.TabSPFxOption.detailNew"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-};
+export function TabSsoItem(): OptionItem {
+  return {
+    id: "TabSSO",
+    label: "TabSSO",
+    cliName: "tab-sso",
+    description: getLocalizedString("core.TabSso.description"),
+    detail: getLocalizedString("core.TabSso.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+  };
+}
 
-export const TabSsoItem: OptionItem = {
-  id: "TabSSO",
-  label: "TabSSO",
-  cliName: "tab-sso",
-  description: getLocalizedString("core.TabSso.description"),
-  detail: getLocalizedString("core.TabSso.detail"),
-  groupName: getLocalizedString("core.options.separator.scenario"),
-};
+export function BotSsoItem(): OptionItem {
+  return {
+    id: "BotSSO",
+    label: "BotSSO",
+    cliName: "bot-sso",
+    description: getLocalizedString("core.BotSso.description"),
+    detail: getLocalizedString("core.BotSso.detail"),
+  };
+}
+export function TabNonSsoItem(): OptionItem {
+  return {
+    id: "TabNonSso",
+    label: `$(browser) ${getLocalizedString("core.TabNonSso.label")}`,
+    cliName: "tab-non-sso",
+    detail: getLocalizedString("core.TabNonSso.detail"),
+    groupName: getLocalizedString("core.options.separator.basic"),
+  };
+}
+export function TabNonSsoAndDefaultBotItem(): OptionItem {
+  return {
+    id: "TabNonSsoAndBot",
+    label: "", // No need to set display name as this option won't be shown in UI
+  };
+}
 
-export const BotSsoItem: OptionItem = {
-  id: "BotSSO",
-  label: "BotSSO",
-  cliName: "bot-sso",
-  description: getLocalizedString("core.BotSso.description"),
-  detail: getLocalizedString("core.BotSso.detail"),
-};
-
-export const TabNonSsoItem: OptionItem = {
-  id: "TabNonSso",
-  label: `$(browser) ${getLocalizedString("core.TabNonSso.label")}`,
-  cliName: "tab-non-sso",
-  detail: getLocalizedString("core.TabNonSso.detail"),
-  groupName: getLocalizedString("core.options.separator.basic"),
-};
-
-export const TabNonSsoAndDefaultBotItem: OptionItem = {
-  id: "TabNonSsoAndBot",
-  label: "", // No need to set display name as this option won't be shown in UI
-};
-
-export const DefaultBotAndMessageExtensionItem: OptionItem = {
-  id: "BotAndMessageExtension",
-  label: "", // No need to set display name as this option won't be shown in UI
-};
-
-export const M365SsoLaunchPageOptionItem: OptionItem = {
-  id: "M365SsoLaunchPage",
-  label: `$(browser) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
-  cliName: "sso-launch-page",
-  detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
-  groupName: getLocalizedString("core.options.separator.m365"),
-};
-
-export const M365SearchAppOptionItem: OptionItem = {
-  id: "M365SearchApp",
-  label: `$(comment-discussion) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-  cliName: "search-app",
-  detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
-  groupName: getLocalizedString("core.options.separator.m365"),
-};
+export function DefaultBotAndMessageExtensionItem(): OptionItem {
+  return {
+    id: "BotAndMessageExtension",
+    label: "", // No need to set display name as this option won't be shown in UI
+  };
+}
+export function M365SsoLaunchPageOptionItem(): OptionItem {
+  return {
+    id: "M365SsoLaunchPage",
+    label: `$(browser) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
+    cliName: "sso-launch-page",
+    detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
+    groupName: getLocalizedString("core.options.separator.m365"),
+  };
+}
+export function M365SearchAppOptionItem(): OptionItem {
+  return {
+    id: "M365SearchApp",
+    label: `$(comment-discussion) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+    cliName: "search-app",
+    detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+    groupName: getLocalizedString("core.options.separator.m365"),
+  };
+}
 
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
@@ -923,18 +958,21 @@ export enum AzureSolutionQuestionNames {
   Features = "features",
 }
 
-export const HostTypeOptionAzure: OptionItem = {
-  id: "Azure",
-  label: getLocalizedString("core.HostTypeOptionAzure.label"),
-  cliName: "azure",
-};
+export function HostTypeOptionAzure(): OptionItem {
+  return {
+    id: "Azure",
+    label: getLocalizedString("core.HostTypeOptionAzure.label"),
+    cliName: "azure",
+  };
+}
 
-export const HostTypeOptionSPFx: OptionItem = {
-  id: "SPFx",
-  label: getLocalizedString("core.HostTypeOptionSPFx.label"),
-  cliName: "spfx",
-};
-
+export function HostTypeOptionSPFx(): OptionItem {
+  return {
+    id: "SPFx",
+    label: getLocalizedString("core.HostTypeOptionSPFx.label"),
+    cliName: "spfx",
+  };
+}
 export const AzureResourceSQL: OptionItem = {
   id: "sql",
   label: getLocalizedString("core.AzureResourceSQL.label"),
@@ -1063,22 +1101,22 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
   placeholder: getLocalizedString("core.question.AzureResourcesQuestion.placeholder"),
 };
 
-export const BotFeatureIds = [
-  BotOptionItem.id,
-  NotificationOptionItem.id,
-  CommandAndResponseOptionItem.id,
-  WorkflowOptionItem.id,
-  MessageExtensionItem.id,
-  M365SearchAppOptionItem.id,
+export const BotFeatureIds = () => [
+  BotOptionItem().id,
+  NotificationOptionItem().id,
+  CommandAndResponseOptionItem().id,
+  WorkflowOptionItem().id,
+  MessageExtensionItem().id,
+  M365SearchAppOptionItem().id,
 ];
 
-export const TabFeatureIds = [
-  TabOptionItem.id,
-  TabNonSsoItem.id,
-  M365SsoLaunchPageOptionItem.id,
-  DashboardOptionItem.id,
+export const TabFeatureIds = () => [
+  TabOptionItem().id,
+  TabNonSsoItem().id,
+  M365SsoLaunchPageOptionItem().id,
+  DashboardOptionItem().id,
 ];
 
 export const AadConstants = {
-  DefaultTemplateFileName: "aad.manifest.template.json",
+  DefaultTemplateFileName: "aad.manifest.json",
 };

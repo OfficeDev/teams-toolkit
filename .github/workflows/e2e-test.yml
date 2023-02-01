@@ -11,14 +11,15 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: '0 22 * * *'
-    - cron: '0 4 * * *'
+    - cron: "0 22 * * *"
+    - cron: "0 4 * * *"
   pull_request:
     branches:
       - main
       - dev
       - ga
       - hotfix/**/*
+      - v3-folder-structure-refactor
     types:
       - assigned
       - opened
@@ -163,12 +164,6 @@ jobs:
         run: |
           npm run test:e2e:clean
 
-      - name: Create new test plan
-        if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' }}
-        run: |
-          version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts new cli $version
-
   execute-base-case-v3:
     if: ${{  github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -185,7 +180,8 @@ jobs:
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
       TEAMSFX_V3: "true"
-      TEAMSFX_TEMPLATE_PRERELEASE: "alpha"
+      TEAMSFX_DEBUG_TEMPLATE: "true"
+      NODE_ENV: "development"
     strategy:
       fail-fast: false
       matrix:
@@ -223,12 +219,8 @@ jobs:
             npm run setup
 
       - name: Package CLI
-        working-directory: packages/cli
         run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
-          npm install -g teamsfx-cli.tgz
+          npm link --force
 
       - name: print system info
         run: |
@@ -302,14 +294,9 @@ jobs:
           command: |
             npm run setup
 
-      - name: Download CLI
-        uses: actions/download-artifact@v3
-        with:
-          name: Teamsfx-cli
-
-      - name: Install CLI
+      - name: Link CLI
         run: |
-          npm install -g teamsfx-cli.tgz
+          npm link --force
 
       - name: print system info
         run: |
@@ -332,7 +319,8 @@ jobs:
         working-directory: packages/cli/tests/e2e
         env:
           TEAMSFX_V3: "true"
-          TEAMSFX_TEMPLATE_PRERELEASE: "alpha"
+          TEAMSFX_DEBUG_TEMPLATE: "true"
+          NODE_ENV: "development"
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then
@@ -377,14 +365,8 @@ jobs:
           path: |
             /tmp/.metrics/output.txt
 
-      - name: Sync to Azure DevOps Test Plan
-        if: ${{ always() }}
-        run: |
-          version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
-
   tear-down:
-    if: ${{ always() && github.event_name == 'schedule' }}
+    if: ${{ always() }}
     needs: execute-case
     runs-on: ubuntu-latest
     env:
@@ -425,9 +407,24 @@ jobs:
         run: |
           npm run test:e2e:clean
 
+  rerun:
+    needs: tear-down
+    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 3 }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        run: |
+          curl \
+           -X POST \
+           -H "Accept: application/vnd.github+json" \
+           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+           -H "X-GitHub-Api-Version: 2022-11-28" \
+           https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
+           -d '{"ref":"'${GITHUB_REF##*/}'","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"3"}}'
+
   report:
-    if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
+    if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >=3)) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -524,12 +521,7 @@ jobs:
               target_type=".NET"
             fi
 
-            core_version="V1/V2"
-            if [[ $case == *".v3."* ]]; then
-              core_version="V3"
-            fi
-
-            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: center;\\\">$target_type</td> <td style=\\\"text-align: center;\\\">$core_version</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: center;\\\">$target_type</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"
@@ -539,7 +531,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>TARGET TYPE</th> <th>CORE VERSION</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>SLOW METHOD( > 20ms )</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>SLOW METHOD( > 20ms )</th> </tr> $lists </table> <br />"
 
           total=$((passed+failed))
 

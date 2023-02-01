@@ -7,12 +7,14 @@ on:
       - dev
       - ga
       - hotfix/**/*
+      - v3-folder-structure-refactor
   push:
     branches:
       - main
       - dev
       - ga
       - hotfix/**/*
+      - v3-folder-structure-refactor
  
 jobs:
   unit-test:

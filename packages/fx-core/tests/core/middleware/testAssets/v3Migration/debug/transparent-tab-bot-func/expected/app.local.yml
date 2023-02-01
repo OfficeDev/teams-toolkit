@@ -21,6 +21,8 @@ provision:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
       messagingEndpoint: ${{PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT}}/api/messages
       description: ""
+      channels:
+        - name: msteams
 
 configureApp:
   - uses: file/updateEnv
@@ -32,16 +34,16 @@ configureApp:
 
   - uses: aadApp/update
     with:
-      manifestTemplatePath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.template.json
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   - uses: teamsApp/validate
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json
+      manifestPath: ./appPackage/manifest.json
 
   - uses: teamsApp/zipAppPackage
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json
+      manifestPath: ./appPackage/manifest.json
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
 

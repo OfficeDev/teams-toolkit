@@ -11,7 +11,7 @@
         "@microsoft/mgt-react": "^2.8.0",
         "@microsoft/mgt-teamsfx-provider": "^2.8.0",
         "@microsoft/microsoft-graph-client": "^3.0.1",
-        "@microsoft/teams-js": "^2.2.0",
+        "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.0.0",
         "@microsoft/teamsfx-react": "^2.0.0",
         "axios": "^0.21.1",
@@ -21,10 +21,10 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha"
+        "env-cmd": "^10.1.0"
     },
     "scripts": {
-        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

@@ -24,13 +24,15 @@ describe("Auth Service API Test", () => {
 
     const response = {
       data: {
-        region: "apac",
+        regionGtms: {
+          teamsDevPortal: "https://dev.teams.microsoft.com/amer",
+        },
       },
     };
     sinon.stub(fakeAxiosInstance, "post").resolves(response);
 
     const res = await AuthSvcClient.getRegion("fakeToken");
-    chai.assert.equal(res, response.data.region);
+    chai.assert.equal(res, response.data.regionGtms.teamsDevPortal);
   });
 
   it("API Failure", async () => {

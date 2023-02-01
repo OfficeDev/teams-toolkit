@@ -16,6 +16,7 @@ import * as path from "path";
 import isUUID from "validator/lib/isUUID";
 import { v4 } from "uuid";
 import "reflect-metadata";
+import stripBom from "strip-bom";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { AppStudioError } from "../errors";
@@ -75,7 +76,10 @@ export class ManifestUtils {
         )
       );
     }
-    const content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    // Be compatible with UTF8-BOM encoding
+    // Avoid Unexpected token error at JSON.parse()
+    let content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);
     const manifest = JSON.parse(contentV3) as TeamsAppManifest;
     return ok(manifest);
@@ -95,7 +99,7 @@ export class ManifestUtils {
   async getTeamsAppManifestPath(projectPath: string): Promise<string> {
     const templateFolder = await getProjectTemplatesFolderPath(projectPath);
     const filePath = isV3Enabled()
-      ? path.join(projectPath, "appPackage", "manifest.template.json")
+      ? path.join(projectPath, "appPackage", "manifest.json")
       : path.join(templateFolder, "appPackage", "manifest.template.json");
     return filePath;
   }
@@ -131,7 +135,7 @@ export class ManifestUtils {
               appManifest.staticTabs.push(template);
             } else {
               const tabManifest =
-                inputs.features === DashboardOptionItem.id
+                inputs.features === DashboardOptionItem().id
                   ? STATIC_TABS_TPL_V3[1]
                   : STATIC_TABS_TPL_V3[0];
               const template = cloneDeep(tabManifest);
@@ -169,12 +173,12 @@ export class ManifestUtils {
               if (inputs.features) {
                 const feature = inputs.features;
                 if (
-                  feature === CommandAndResponseOptionItem.id ||
-                  feature == WorkflowOptionItem.id
+                  feature === CommandAndResponseOptionItem().id ||
+                  feature == WorkflowOptionItem().id
                 ) {
                   // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-                } else if (feature === NotificationOptionItem.id) {
+                } else if (feature === NotificationOptionItem().id) {
                   // notification
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
                 } else {

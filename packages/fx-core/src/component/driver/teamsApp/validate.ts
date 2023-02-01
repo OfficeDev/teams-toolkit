@@ -49,9 +49,14 @@ export class ValidateTeamsAppDriver implements StepDriver {
     context: WrapDriverContext,
     withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
+    const result = this.validateArgs(args);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestTemplatePath, context.projectPath),
+      getAbsolutePath(args.manifestPath, context.projectPath),
       state,
       withEmptyCapabilities
     );
@@ -118,5 +123,23 @@ export class ValidateTeamsAppDriver implements StepDriver {
       BOT_DOMAIN: process.env.BOT_DOMAIN,
       ENV_NAME: process.env.TEAMSFX_ENV,
     };
+  }
+
+  private validateArgs(args: ValidateTeamsAppArgs): Result<any, FxError> {
+    const invalidParams: string[] = [];
+    if (!args || !args.manifestPath) {
+      invalidParams.push("manifestPath");
+    }
+    if (invalidParams.length > 0) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.InvalidParameterError.name,
+          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          "https://aka.ms/teamsfx-actions/teamsapp-validate"
+        )
+      );
+    } else {
+      return ok(undefined);
+    }
   }
 }

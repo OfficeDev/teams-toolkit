@@ -57,7 +57,7 @@ export class ManagementClient {
     try {
       for await (const page of this.manager.serverAzureADAdministrators
         .listByServer(this.config.resourceGroup, this.config.sqlServer)
-        .byPage({ maxPageSize: 100 })) {
+        .byPage()) {
         for (const item of page) {
           if (item.login === aadAdmin) {
             return true;

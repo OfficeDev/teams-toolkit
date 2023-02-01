@@ -17,6 +17,7 @@ import {
   getAppSPFxVersion,
   isVideoFilterProject,
   setRegion,
+  ConvertTokenToJson,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -222,7 +223,7 @@ describe("tools", () => {
         solutionSettings: {
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           hostType: "Azure",
-          capabilities: [TabSsoItem.id],
+          capabilities: [TabSsoItem().id],
           azureResources: [],
           name: "test",
         },
@@ -296,13 +297,9 @@ describe("tools", () => {
         TEAMSFX_V3: "true",
       });
       try {
-        const settings: Settings = {
-          trackingId: "tracking-id",
-          version: "0.0.0",
-        };
-
-        sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
-          return settings;
+        sandbox.stub<any, any>(fs, "readFileSync").callsFake((file: string) => {
+          return `version: 1.0.0
+projectId: 00000000-0000-0000-0000-000000000000`;
         });
         sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
           return true;
@@ -310,7 +307,7 @@ describe("tools", () => {
 
         const result = getFixedCommonProjectSettings("root-path");
         chai.assert.isNotEmpty(result);
-        chai.assert.equal(result!.projectId, settings.trackingId);
+        chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
       } finally {
         restore();
       }
@@ -525,6 +522,17 @@ describe("tools", () => {
     it("set region", async () => {
       sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
       await setRegion("fakeToken");
+    });
+  });
+
+  describe("ConvertTokenToJson", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("ConvertTokenToJson", async () => {
+      const res = ConvertTokenToJson("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c");
+      chai.expect(res["userId"]).equal("test@test.com");
     });
   });
 });

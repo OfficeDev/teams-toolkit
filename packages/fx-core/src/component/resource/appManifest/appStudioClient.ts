@@ -14,6 +14,15 @@ import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import {
+  Component,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../../common/telemetry";
+import { waitSeconds } from "../../../common/tools";
+import { IValidationResult } from "./interfaces/IValidationResult";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -21,9 +30,12 @@ export namespace AppStudioClient {
 
   let region: string | undefined;
 
-  export function SetRegion(_region: string) {
-    // TODO: use regionGtms.teamsDevPortal as the correct baseURL
-    // region = _region;
+  /**
+   * Set user region
+   * @param _region e.g. https://dev.teams.microsoft.com/amer
+   */
+  export function setRegion(_region: string) {
+    region = _region;
   }
 
   /**
@@ -31,9 +43,9 @@ export namespace AppStudioClient {
    * @param {string}  appStudioToken
    * @returns {AxiosInstance}
    */
-  function createRequesterWithToken(appStudioToken: string, _region?: string): AxiosInstance {
+  function createRequesterWithToken(appStudioToken: string, _regionalUrl?: string): AxiosInstance {
     const instance = axios.create({
-      baseURL: _region ? `${baseUrl}/${_region}` : baseUrl,
+      baseURL: _regionalUrl ?? baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
     instance.defaults.headers.common["Client-Source"] = "teamstoolkit";
@@ -132,17 +144,19 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<AppDefinition> {
-    const requester = createRequesterWithToken(appStudioToken);
+    let requester: AxiosInstance;
     try {
       let response;
       if (region) {
+        requester = createRequesterWithToken(appStudioToken, region);
         try {
           response = await RetryHandler.Retry(() =>
-            requester.get(`/${region}/api/appdefinitions/${teamsAppId}`)
+            requester.get(`/api/appdefinitions/${teamsAppId}`)
           );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
+            requester = createRequesterWithToken(appStudioToken);
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
             );
@@ -151,6 +165,7 @@ export namespace AppStudioClient {
           }
         }
       } else {
+        requester = createRequesterWithToken(appStudioToken);
         response = await RetryHandler.Retry(() =>
           requester.get(`/api/appdefinitions/${teamsAppId}`)
         );
@@ -408,21 +423,24 @@ export namespace AppStudioClient {
     }
 
     app.userList?.push(newUser);
-    const requester = createRequesterWithToken(appStudioToken);
+    let requester: AxiosInstance;
     try {
       let response;
       if (region) {
         try {
-          response = await requester.post(`/${region}/api/appdefinitions/${teamsAppId}/owner`, app);
+          requester = createRequesterWithToken(appStudioToken, region);
+          response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
+            requester = createRequesterWithToken(appStudioToken);
             response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
           } else {
             throw e;
           }
         }
       } else {
+        requester = createRequesterWithToken(appStudioToken);
         response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
       }
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
@@ -430,6 +448,7 @@ export namespace AppStudioClient {
       }
     } catch (err) {
       if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
+        requester = createRequesterWithToken(appStudioToken, region);
         await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
       } else {
         wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
@@ -462,6 +481,24 @@ export namespace AppStudioClient {
     }
   }
 
+  export async function partnerCenterAppPackageValidation(
+    file: Buffer,
+    appStudioToken: string
+  ): Promise<IValidationResult> {
+    const requester = createRequesterWithToken(appStudioToken, region);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/appdefinitions/partnerCenterAppPackageValidation", file, {
+          headers: { "Content-Type": "application/zip" },
+        })
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
+      throw error;
+    }
+  }
+
   function checkUser(app: AppDefinition, newUser: AppUser): boolean {
     const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
     if (findUser != undefined && findUser >= 0) {
@@ -469,5 +506,77 @@ export namespace AppStudioClient {
     } else {
       return false;
     }
+  }
+
+  export async function getSideloadingStatus(appStudioToken: string): Promise<boolean | undefined> {
+    const apiName = "<check-sideloading-status>";
+    const apiPath = "/api/usersettings/mtUserAppPolicy";
+    const instance = axios.create({
+      baseURL: region ?? getAppStudioEndpoint(),
+      timeout: 30000,
+    });
+    instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
+
+    let retry = 0;
+    const retryIntervalSeconds = 2;
+    do {
+      let response = undefined;
+      try {
+        response = await instance.get(apiPath);
+        let result: boolean | undefined;
+        if (response.status >= 400) {
+          result = undefined;
+        } else {
+          result = response.data?.value?.isSideloadingAllowed as boolean;
+        }
+
+        if (result !== undefined) {
+          sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
+            [TelemetryProperty.IsSideloadingAllowed]: result + "",
+          });
+        } else {
+          sendTelemetryErrorEvent(
+            Component.core,
+            TelemetryEvent.CheckSideloading,
+            new SystemError(
+              "M365Account",
+              "UnknownValue",
+              `AppStudio response code: ${response.status}, body: ${response.data}`
+            ),
+            {
+              [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
+              [TelemetryProperty.CheckSideloadingMethod]: "get",
+              [TelemetryProperty.CheckSideloadingUrl]: apiName,
+            }
+          );
+        }
+
+        return result;
+      } catch (error: any) {
+        sendTelemetryErrorEvent(
+          Component.core,
+          TelemetryEvent.CheckSideloading,
+          new SystemError({
+            error,
+            source: "M365Account",
+            message: AppStudioError.DeveloperPortalAPIFailedError.message(
+              error,
+              error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
+              apiPath,
+              apiName,
+              error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+            )[0],
+          }),
+          {
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
+            [TelemetryProperty.CheckSideloadingMethod]: "get",
+            [TelemetryProperty.CheckSideloadingUrl]: apiName,
+          }
+        );
+        await waitSeconds((retry + 1) * retryIntervalSeconds);
+      }
+    } while (++retry < 3);
+
+    return undefined;
   }
 }

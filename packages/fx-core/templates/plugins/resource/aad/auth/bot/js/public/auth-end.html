@@ -8,33 +8,30 @@
   </head>
 
   <body>
-    <script
-      src="https://statics.teams.cdn.office.net/sdk/v1.6.0/js/MicrosoftTeams.min.js"
-      integrity="sha384-mhp2E+BLMiZLe7rDIzj19WjgXJeI32NkPvrvvZBrMi5IvWup/1NUfS5xuYN5S3VT"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://res.cdn.office.net/teams-js/2.7.1/js/MicrosoftTeams.min.js" integrity="sha384-4Gy2G+qxzDVdrdemcVqKVQvaSK1Ghg3x6xcsaMLPc/pw7KPtiogHGM97LTWF2PWg" crossorigin="anonymous"></script>
     <div id="divError"></div>
     <script type="text/javascript">
-      microsoftTeams.initialize();
-      let hashParams = getHashParameters();
+      microsoftTeams.app.initialize().then(() => {
+        let hashParams = getHashParameters();
 
-      if (hashParams.get("error")) {
-        // Authentication failed
-        handleAuthError(hashParams.get("error"), hashParams);
-      } else if (hashParams.get("code")) {
-        // Get the stored state parameter and compare with incoming state
-        let expectedState = localStorage.getItem("state");
-        if (expectedState !== hashParams.get("state")) {
-          // State does not match, report error
-          handleAuthError("StateDoesNotMatch", hashParams);
+        if (hashParams.get("error")) {
+          // Authentication failed
+          handleAuthError(hashParams.get("error"), hashParams);
+        } else if (hashParams.get("code")) {
+          // Get the stored state parameter and compare with incoming state
+          let expectedState = localStorage.getItem("state");
+          if (expectedState !== hashParams.get("state")) {
+            // State does not match, report error
+            handleAuthError("StateDoesNotMatch", hashParams);
+          } else {
+            microsoftTeams.authentication.notifySuccess();
+          }
         } else {
-          microsoftTeams.authentication.notifySuccess();
+          // Unexpected condition: hash does not contain error or access_token parameter
+          handleAuthError("UnexpectedFailure", hashParams);
         }
-      } else {
-        // Unexpected condition: hash does not contain error or access_token parameter
-        handleAuthError("UnexpectedFailure", hashParams);
-      }
-
+      });
+      
       // Parse hash parameters into key-value pairs
       function getHashParameters() {
         let hashParams = new Map();

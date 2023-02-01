@@ -1,5 +1,5 @@
 /**
- * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
+ * @author Yuqi Zhou <yuqzho@microsoft.com>
  */
 import { err, Inputs, ok, Platform, TeamsAppManifest, UserError } from "@microsoft/teamsfx-api";
 import "mocha";

@@ -206,9 +206,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -225,7 +225,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);
@@ -331,9 +331,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -350,7 +350,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);
@@ -490,9 +490,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -509,7 +509,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);
@@ -634,9 +634,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -653,7 +653,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);
@@ -781,9 +781,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -800,7 +800,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);
@@ -924,9 +924,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -943,7 +943,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);
@@ -1054,9 +1054,9 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
       sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-        if (file === path.join(ctx.projectPath!, "appPackage", "resources", "color.png")) {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
           updateColor = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "resources", "outline.png")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
@@ -1073,7 +1073,7 @@ describe("developPortalScaffoldUtils", () => {
       const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
       sandbox.stub(mockWriteStream, "end").resolves();
       sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "teamsfx", ".env.local")) {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
           return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
         } else {
           throw new Error("not support " + file);

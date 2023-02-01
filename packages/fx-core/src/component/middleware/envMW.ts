@@ -50,31 +50,30 @@ export const envLoaderMWImpl = async (
       ctx.result = err(envListRes.error);
       return;
     }
-    if (envListRes.value.length === 0) {
+    if (withLocalEnv) {
+      question.staticOptions = envListRes.value;
+    } else {
+      question.staticOptions = envListRes.value.filter(
+        (p) => p !== environmentManager.getLocalEnvName()
+      );
+    }
+    if (question.staticOptions.length === 0) {
       // if env folder is not available or env folder is empty, then default env = dev
       inputs.env = environmentManager.getDefaultEnvName();
     } else {
-      if (withLocalEnv) {
-        question.staticOptions = envListRes.value;
-      } else {
-        question.staticOptions = envListRes.value.filter(
-          (p) => p !== environmentManager.getLocalEnvName()
-        );
-      }
-
       const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
       if (res.isErr()) {
         TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
         ctx.result = err(res.error);
         return;
       }
-      if (!inputs.env) {
-        ctx.result = err(UserCancelError);
-        return;
-      }
+      // if (!inputs.env) {
+      //   ctx.result = err(UserCancelError);
+      //   return;
+      // }
     }
   }
-  const res = await envUtil.readEnv(projectPath, inputs.env);
+  const res = await envUtil.readEnv(projectPath, inputs.env!);
   if (res.isErr()) {
     ctx.result = err(res.error);
     return;

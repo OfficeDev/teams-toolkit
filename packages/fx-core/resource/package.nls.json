@@ -1196,6 +1196,8 @@
   "driver.teamsApp.summary.copyAppPackageSuccess": "Teams app %s was successfully copyed to %s.",
   "driver.teamsApp.summary.copyIconSuccess": "%s icon(s) were successfully updated under %s.",
   "driver.teamsApp.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
+  "driver.teamsApp.validate.invalidParameter": "Either manifestPath or appPackagePath parameter should be provided for action %s",
+  "driver.teamsApp.validate.result": "Teams Toolkit has completed checking validation rules against your app package. %s failed, %s passed. Check output window for details.",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.botFramework.description": "creates or updates the bot registration on dev.botframework.com",

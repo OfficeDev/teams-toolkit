@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 
 export interface IValidationResult {
+  /**
+   * Possible values: Accepted, Rejected
+   */
   status: string;
   errors: IAppValidationIssue[];
   warnings: IAppValidationIssue[];

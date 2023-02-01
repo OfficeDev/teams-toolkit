@@ -171,7 +171,6 @@
 /packages/fx-core/src/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
-/packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/component/driver/deploy/azure @siglud @Yukun-dong @hund030 @JerryYangKai @IvanJobs @eriolchan

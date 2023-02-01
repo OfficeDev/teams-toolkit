@@ -53,6 +53,19 @@ describe("AccountCrypto Tests", function () {
     const decrtpyed = await accountCrypto.decrypt(encrypted);
     expect(decrtpyed).equals(content);
   });
+
+  it("Encrypt/Decrypt Content - Unknown key", async () => {
+    const accountCrypto = new AccountCrypto("test");
+    (<any>accountCrypto).keytar = new MockKeytar();
+    (<any>accountCrypto).keytar.getPassword = Promise.reject();
+
+    const content =
+      '{"clientId":"clientId","secret":"secret","tenantId":"3c8f28dd-b990-4925-96a6-3ea9495654b8"}';
+    const noEncrypted = await accountCrypto.encrypt(content);
+    expect(noEncrypted).to.be.eq(content);
+    const noDecrtpyed = await accountCrypto.decrypt(content);
+    expect(noDecrtpyed).to.be.eq(content);
+  });
 });
 
 describe("AccountCrypto Service principal Tests", function () {

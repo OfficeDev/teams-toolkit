@@ -61,7 +61,7 @@ export class UpdateJsonDriver implements StepDriver {
     try {
       this.validateArgs(args);
       const appsettingsPath = getAbsolutePath(args.target, context.projectPath);
-      if (!fs.existsSync(appsettingsPath)) {
+      if (!(await fs.pathExists(appsettingsPath))) {
         // try to copy appsettings.json
         const appsettingsTemplatePath = getAbsolutePath("appsettings.json", context.projectPath);
         if (!fs.existsSync(appsettingsTemplatePath)) {

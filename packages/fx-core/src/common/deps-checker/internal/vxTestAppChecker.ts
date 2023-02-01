@@ -13,7 +13,7 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType, BaseInstallOptions } from "../depsChecker";
 import { isMacOS, isWindows } from "../util";
 import { Messages, vxTestAppInstallHelpLink } from "../constant";
 
@@ -99,7 +99,7 @@ export class VxTestAppChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         new VxTestAppCheckError(
@@ -146,7 +146,7 @@ export class VxTestAppChecker implements DepsChecker {
     };
   }
 
-  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async getInstallationInfo(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         new VxTestAppCheckError(
@@ -226,7 +226,7 @@ export class VxTestAppChecker implements DepsChecker {
   }
 
   private isValidInstallOptions(
-    installOptions?: InstallOptions
+    installOptions?: BaseInstallOptions
   ): installOptions is InstallOptionsSafe {
     return !(installOptions?.projectPath === undefined && installOptions?.version === undefined);
   }

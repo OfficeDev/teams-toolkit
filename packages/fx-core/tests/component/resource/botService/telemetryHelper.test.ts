@@ -27,6 +27,7 @@ import { ErrorNames, TelemetryKeys } from "../../../../src/component/resource/bo
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
 
 describe("Bot service telemetry helper", () => {
   const tools = new MockTools();
@@ -72,6 +73,7 @@ describe("Bot service telemetry helper", () => {
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
     const fxComponent = new TeamsfxCore();
     const res = await fxComponent.provision(context as ResourceContextV3, inputs);
@@ -93,6 +95,7 @@ describe("Bot service telemetry helper", () => {
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
     const fxComponent = new TeamsfxCore();
     const res = await fxComponent.provision(context as ResourceContextV3, inputs);

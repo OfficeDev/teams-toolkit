@@ -1,26 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { M365TokenProvider, ok, ResourceContextV3, TokenRequest } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import { createSandbox } from "sinon";
-import * as utils from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { MockTools } from "../../../core/utils";
-import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import axios from "axios";
-import { ErrorNames, Retry } from "../../../../src/component/resource/botService/constants";
+import { ErrorNames } from "../../../../src/component/resource/botService/constants";
 import { Messages } from "./messages";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
 
 describe("AppStudio Client", () => {
   const tools = new MockTools();
   const sandbox = createSandbox();
-  let context: ResourceContextV3;
   setTools(tools);
   const sampleBot: IBotRegistration = {
     botId: "0cd14903-d43a-47f5-b907-73c523aff076",
@@ -31,19 +28,12 @@ describe("AppStudio Client", () => {
     messagingEndpoint: "https://8075-167-220-255-43.ngrok.io/api/messages",
     callingEndpoint: "",
   };
-  beforeEach(() => {
-    context = utils.createContextV3() as ResourceContextV3;
-    context.tokenProvider.m365TokenProvider = {
-      getAccessToken: async (tokenRequest: TokenRequest) => ok("token"),
-    } as M365TokenProvider;
-    context.envInfo = newEnvInfoV3("local");
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
 
   describe("getBotRegistration", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("Should return a valid bot registration", async () => {
       // Arrange
       sandbox.stub(RetryHandler, "Retry").resolves({
@@ -95,12 +85,15 @@ describe("AppStudio Client", () => {
 
     it("Should throw DeveloperPortalAPIFailed error when other exceptions (500) were throwed out", async () => {
       // Arrange
-      sandbox.stub(RetryHandler, "Retry").resolves({
-        headers: {
-          "x-correlation-id": "anything",
+      sandbox.stub(RetryHandler, "Retry").rejects({
+        response: {
+          headers: {
+            "x-correlation-id": "anything",
+          },
+          status: 500,
         },
-        status: 500,
       });
+      sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
       // Act & Assert
       try {
@@ -113,6 +106,10 @@ describe("AppStudio Client", () => {
   });
 
   describe("createBotRegistration", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("Bot registration should be created successfully", async () => {
       // Arrange
       sandbox.stub(AppStudioClient, "getBotRegistration").resolves(undefined);
@@ -125,7 +122,7 @@ describe("AppStudio Client", () => {
 
       // Act & Assert
       try {
-        await AppStudioClient.createBotRegistration("anything", sampleBot, context);
+        await AppStudioClient.createBotRegistration("anything", sampleBot);
       } catch (e) {
         assert.fail(Messages.ShouldNotReachHere);
       }
@@ -137,7 +134,7 @@ describe("AppStudio Client", () => {
 
       // Act & Assert
       try {
-        await AppStudioClient.createBotRegistration("anything", sampleBot, context);
+        await AppStudioClient.createBotRegistration("anything", sampleBot);
       } catch (e) {
         assert.fail(Messages.ShouldNotReachHere);
       }
@@ -156,7 +153,7 @@ describe("AppStudio Client", () => {
 
       // Act & Assert
       try {
-        await AppStudioClient.createBotRegistration("anything", sampleBot, context);
+        await AppStudioClient.createBotRegistration("anything", sampleBot);
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
@@ -176,7 +173,7 @@ describe("AppStudio Client", () => {
 
       // Act & Assert
       try {
-        await AppStudioClient.createBotRegistration("anything", sampleBot, context);
+        await AppStudioClient.createBotRegistration("anything", sampleBot);
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
@@ -196,7 +193,7 @@ describe("AppStudio Client", () => {
 
       // Act & Assert
       try {
-        await AppStudioClient.createBotRegistration("anything", sampleBot, context);
+        await AppStudioClient.createBotRegistration("anything", sampleBot);
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR);
@@ -206,15 +203,19 @@ describe("AppStudio Client", () => {
     it("DeveloperPortalAPIFailed error should be throwed out (500)", async () => {
       // Arrange
       sandbox.stub(AppStudioClient, "getBotRegistration").resolves(undefined);
-      const mockAxiosInstance = axios.create();
-      sandbox.stub(mockAxiosInstance, "post").resolves({
-        status: 500,
+      sandbox.stub(RetryHandler, "Retry").rejects({
+        response: {
+          headers: {
+            "x-correlation-id": "anything",
+          },
+          status: 500,
+        },
       });
-      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
       // Act & Assert
       try {
-        await AppStudioClient.createBotRegistration("anything", sampleBot, context);
+        await AppStudioClient.createBotRegistration("anything", sampleBot);
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
@@ -223,6 +224,10 @@ describe("AppStudio Client", () => {
   });
 
   describe("updateBotRegistration", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("Bot registration should be updated successfully", async () => {
       // Arrange
       const mockAxiosInstance = axios.create();
@@ -299,11 +304,15 @@ describe("AppStudio Client", () => {
 
     it("DeveloperPortalAPIFailed error should be throwed out (500)", async () => {
       // Arrange
-      const mockAxiosInstance = axios.create();
-      sandbox.stub(mockAxiosInstance, "post").resolves({
-        status: 500,
+      sandbox.stub(RetryHandler, "Retry").rejects({
+        response: {
+          headers: {
+            "x-correlation-id": "anything",
+          },
+          status: 500,
+        },
       });
-      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
       // Act & Assert
       try {
@@ -316,6 +325,10 @@ describe("AppStudio Client", () => {
   });
 
   describe("updateMessageEndpoint", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("Message endpoint should be updated successfully", async () => {
       // Arrange
       sandbox.stub(AppStudioClient, "getBotRegistration").resolves(sampleBot);

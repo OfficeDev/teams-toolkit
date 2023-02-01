@@ -124,7 +124,7 @@ export class BotService extends AzureResource {
       teamsBotState.botPassword = regRes.value.botPassword;
       return ok(undefined);
     } catch (e) {
-      if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && hasBotIdInEnvBefore) {
+      if (e.innerError.teamsfxUrlName == "<create-bot-registration>" && hasBotIdInEnvBefore) {
         throw AlreadyCreatedBotNotExist(botConfig.botId, (e as any).innerError);
       } else {
         throw e;

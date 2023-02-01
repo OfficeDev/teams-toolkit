@@ -29,6 +29,8 @@ import { GraphClient } from "../../../../src/component/resource/botService/botRe
 import { FailedToCreateBotRegistrationError } from "../../../../src/component/resource/botService/errors";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
+import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -74,6 +76,7 @@ describe("Bot service", () => {
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
@@ -92,6 +95,8 @@ describe("Bot service", () => {
       clientSecret: "clientSecret",
     });
     sandbox.stub(RetryHandler, "Retry").resolves(undefined);
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
+
     context.projectSetting.components.push({
       name: ComponentNames.BotService,
       provision: true,
@@ -118,13 +123,21 @@ describe("Bot service", () => {
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
-    sandbox
-      .stub(AppStudioClient, "createBotRegistration")
-      .throwsException(new FailedToCreateBotRegistrationError(""));
+    sandbox.stub(AppStudioClient, "createBotRegistration").throwsException(
+      AppStudioResultFactory.SystemError(
+        AppStudioError.DeveloperPortalAPIFailedError.name,
+        ["", ""],
+        {
+          teamsfxUrlName: "<create-bot-registration>",
+        }
+      )
+    );
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
+
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {

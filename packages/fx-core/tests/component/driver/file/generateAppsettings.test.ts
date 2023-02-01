@@ -14,7 +14,7 @@ import { UpdateJsonDriver } from "../../../../src/component/driver/file/updateJs
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 
-describe("AppsettingsGenerateDriver", () => {
+describe("UpdateJsonDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
   } as DriverContext;
@@ -74,6 +74,7 @@ describe("AppsettingsGenerateDriver", () => {
     });
 
     it("exception", async () => {
+      sinon.stub(fs, "pathExists").rejects(new Error("exception"));
       sinon.stub(fs, "existsSync").throws(new Error("exception"));
       const args: any = {
         target: "path",
@@ -103,6 +104,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -137,6 +139,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -174,6 +177,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -211,6 +215,12 @@ describe("AppsettingsGenerateDriver", () => {
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
         content = data;
         return;
+      });
+      sinon.stub(fs, "pathExists").callsFake(async (path: fs.PathLike) => {
+        if (path.toString().indexOf(target) >= 0) {
+          return false;
+        }
+        return true;
       });
       sinon.stub(fs, "existsSync").callsFake((path) => {
         if (path.toString().indexOf(target) >= 0) {
@@ -253,6 +263,7 @@ describe("AppsettingsGenerateDriver", () => {
       content = data;
       return;
     });
+    sinon.stub(fs, "pathExists").resolves(false);
     sinon.stub(fs, "existsSync").callsFake((path) => {
       return false;
     });

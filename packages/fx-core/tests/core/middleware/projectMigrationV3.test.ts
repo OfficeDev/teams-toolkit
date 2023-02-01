@@ -545,14 +545,14 @@ describe("manifestsMigration", () => {
       .replace(/\n/g, "");
     assert.equal(manifest, manifestExpeceted);
 
-    const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+    const aadManifestPath = path.join(projectPath, "aad.manifest.json");
     assert.isTrue(await fs.pathExists(aadManifestPath));
     const aadManifest = (await fs.readFile(aadManifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const aadManifestExpected = (
-      await fs.readFile(path.join(projectPath, "expected", "aad.manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "aad.manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")

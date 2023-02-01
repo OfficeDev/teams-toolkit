@@ -63,24 +63,27 @@ export class AppStudioClient {
   ): Promise<IBotRegistration | undefined> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
-    return await RetryHandler.Retry(async () => {
-      try {
-        const response = await axiosInstance.get(
-          `${AppStudioClient.baseUrl}/api/botframework/${botId}`
-        );
+    try {
+      const response = await RetryHandler.Retry(() =>
+        axiosInstance.get(`${AppStudioClient.baseUrl}/api/botframework/${botId}`)
+      );
+      if (response && response.data) {
         return <IBotRegistration>response.data;
-      } catch (e) {
-        if (e.response?.status === 404) {
-          return undefined; // Stands for NotFound.
-        } else if (e.response?.status === 401) {
-          throw new BotFrameworkNotAllowedToAcquireTokenError();
-        } else {
-          // Potential live site issue cases.
-          e.teamsfxUrlName = "<get-bot-registration>";
-          throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT) as SystemError;
-        }
+      } else {
+        // Defensive code and it should never reach here.
+        throw new Error("Failed to get data");
       }
-    }, true);
+    } catch (e) {
+      if (e.response?.status === 404) {
+        return undefined; // Stands for NotFound.
+      } else if (e.response?.status === 401) {
+        throw new BotFrameworkNotAllowedToAcquireTokenError();
+      } else {
+        // Potential live site issue cases.
+        e.teamsfxUrlName = "<get-bot-registration>";
+        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT) as SystemError;
+      }
+    }
   }
 
   public static async createBotRegistration(

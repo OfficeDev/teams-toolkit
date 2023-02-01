@@ -12,8 +12,9 @@ export class RetryHandler {
       retries = retries - 1;
       try {
         return await fn();
-      } catch (e) {
-        if (retries <= 0) {
+      } catch (e: any) {
+        // Directly throw 404 error, keep trying for other status code e.g. 503 400 500
+        if (retries <= 0 || [401, 403, 404, 429].includes(e.response?.status)) {
           if (!ignoreError) throw e;
         } else {
           await new Promise((resolve) => setTimeout(resolve, Retry.BACKOFF_TIME_MS));

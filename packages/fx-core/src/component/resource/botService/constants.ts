@@ -11,7 +11,7 @@ export class AADRegistrationConstants {
 }
 
 export class Retry {
-  public static readonly RETRY_TIMES = 10;
+  public static readonly RETRY_TIMES = 6;
   public static readonly BACKOFF_TIME_MS = 5000;
 }
 

@@ -25,8 +25,8 @@ export abstract class BaseDeployImpl {
   protected helpLink: string | undefined = undefined;
   protected abstract summaries: string[];
   protected abstract summaryPrepare: string[];
-  protected abstract progressNames: string[];
-  protected progressPrepare: string[] = [];
+  protected abstract progressNames: (() => string)[];
+  protected progressPrepare: (() => string)[] = [];
   protected abstract progressHandler?: AsyncIterableIterator<void>;
 
   constructor(args: unknown, context: DriverContext) {

@@ -6,8 +6,8 @@
             "dependsOn": [
                 "Validate prerequisites",
                 "Create resources",
-                "Install tools and Build project",
-                "Start services"
+                "Build project",
+                "Start application"
             ],
             "dependsOrder": "sequence"
         },
@@ -31,21 +31,21 @@
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
-            "label": "Install tools and Build project",
+            "label": "Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
-            "label": "Start services",
+            "label": "Start application",
             "dependsOn": [
                 "Start frontend"
             ]

@@ -74,6 +74,8 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
 import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
+import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
+import { parse } from "yaml";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -415,7 +417,7 @@ export function isV3Enabled(): boolean {
 }
 
 export function isMigrationV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3Migration, false);
+  return process.env.TEAMSFX_V3_MIGRATION ? process.env.TEAMSFX_V3_MIGRATION === "true" : false;
 }
 
 export function isVideoFilterEnabled(): boolean {
@@ -961,15 +963,16 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
 
   try {
     if (isV3Enabled()) {
-      const settingsPath = path.join(rootPath, SettingsFolderName, SettingsFileName);
+      const settingsPath = getProjectSettingPathV3(rootPath);
 
       if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
         return undefined;
       }
 
-      const settings = fs.readJsonSync(settingsPath);
+      const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+      const settings = parse(settingsContent);
       return {
-        projectId: settings?.trackingId ?? undefined,
+        projectId: settings?.projectId ?? undefined,
       };
     } else {
       const projectSettingsPath = path.join(

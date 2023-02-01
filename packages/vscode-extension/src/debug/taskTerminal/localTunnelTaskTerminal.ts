@@ -7,16 +7,7 @@ import * as path from "path";
 import * as kill from "tree-kill";
 import * as util from "util";
 import * as vscode from "vscode";
-import {
-  assembleError,
-  err,
-  FxError,
-  ok,
-  Result,
-  SettingsFolderName,
-  UserError,
-  Void,
-} from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
@@ -25,6 +16,7 @@ import {
   LocalTelemetryReporter,
   TaskDefaultValue,
 } from "@microsoft/teamsfx-core/build/common/local";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -349,17 +341,19 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         return ok(result);
       }
 
-      result.file = path.resolve(
-        globalVariables.workspaceUri.fsPath,
-        SettingsFolderName,
-        `.env.${this.args.env}`
-      );
       result.keys = Object.keys(envVars);
       const res = await envUtil.writeEnv(
         globalVariables.workspaceUri.fsPath,
         this.args.env,
         envVars
       );
+      const envFilePathResult = await pathUtils.getEnvFilePath(
+        globalVariables.workspaceUri.fsPath,
+        this.args.env
+      );
+      if (envFilePathResult.isOk()) {
+        result.file = envFilePathResult.value;
+      }
       return res.isOk() ? ok(result) : err(res.error);
     } catch (error: any) {
       return err(LocalTunnelError.TunnelEnvError(error));

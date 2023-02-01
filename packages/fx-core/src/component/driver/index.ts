@@ -20,5 +20,6 @@ import "./script/npmBuildDriver";
 import "./script/npxBuildDriver";
 import "./prerequisite/installDriver";
 import "./file/updateEnv";
-import "./file/appsettingsGenerate";
+import "./file/updateJson";
 import "./botFramework/createOrUpdateBot";
+import "./m365/acquire";

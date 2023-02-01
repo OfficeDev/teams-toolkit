@@ -25,6 +25,7 @@ import {
   CloudResource,
   InputsWithProjectPath,
   v2,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -57,6 +58,7 @@ import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { LocalCrypto } from "./crypto";
 import { envUtil } from "../component/utils/envUtil";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export interface EnvStateFiles {
   envState: string;
@@ -228,7 +230,10 @@ class EnvironmentManager {
     return ok(envNames);
   }
 
-  public async listRemoteEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
+  public async listRemoteEnvConfigs(
+    projectPath: string,
+    returnErrorIfEmpty = false
+  ): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));
     }
@@ -237,19 +242,34 @@ class EnvironmentManager {
       const allEnvsRes = await envUtil.listEnv(projectPath);
       if (allEnvsRes.isErr()) return err(allEnvsRes.error);
       const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
+      if (remoteEnvs.length === 0 && returnErrorIfEmpty)
+        return err(
+          new UserError({
+            source: "EnvironmentManager",
+            name: "NoEnvFilesError",
+            displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+            message: getDefaultString("core.error.NoEnvFilesError"),
+          })
+        );
       return ok(remoteEnvs);
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
-    if (!(await fs.pathExists(envConfigsFolder))) {
-      return ok([]);
-    }
-
-    const configFiles = await fs.readdir(envConfigsFolder);
+    const configFiles = !(await fs.pathExists(envConfigsFolder))
+      ? []
+      : await fs.readdir(envConfigsFolder);
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null && name !== this.getLocalEnvName());
-
+    if (envNames.length === 0 && returnErrorIfEmpty)
+      return err(
+        new UserError({
+          source: "EnvironmentManager",
+          name: "NoEnvFilesError",
+          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+          message: getDefaultString("core.error.NoEnvFilesError"),
+        })
+      );
     return ok(envNames);
   }
 
@@ -280,7 +300,7 @@ class EnvironmentManager {
   }
 
   public getDotEnvPath(envName: string, projectPath: string): string {
-    return path.join(projectPath, "teamsfx", `.env.${envName}`);
+    return path.join(projectPath, "env", `.env.${envName}`);
   }
 
   public getEnvConfigPath(envName: string, projectPath: string): string {

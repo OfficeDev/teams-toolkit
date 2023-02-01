@@ -42,6 +42,19 @@ export class AppLocalYmlConfig {
     };
     ssoBot?: boolean;
     ssoFunction?: boolean;
+    frontendStart?: {
+      sso?: boolean;
+      functionName?: string;
+    };
+    authStart?: {
+      appsettingsPath: string;
+    };
+    botStart?: {
+      tab?: boolean;
+      function?: boolean;
+      sso?: boolean;
+    };
+    backendStart?: boolean;
   };
 }
 

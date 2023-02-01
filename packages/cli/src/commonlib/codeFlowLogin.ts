@@ -253,15 +253,14 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = await loadAccountId(this.accountName);
-    if (accountCache) {
-      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.msalTokenCache?.removeAccount(dataCache);
-      }
+    const accounts = await this.msalTokenCache.getAllAccounts();
+    if (accounts.length > 0) {
+      accounts.forEach(async (accountInfo) => {
+        await this.msalTokenCache.removeAccount(accountInfo);
+      });
     }
-
     await saveAccountId(this.accountName, undefined);
+    this.account = undefined;
     return true;
   }
 
@@ -299,7 +298,6 @@ export class CodeFlowLogin {
               return undefined;
             }
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login(this.scopes);
               return accessToken;
@@ -349,7 +347,6 @@ export class CodeFlowLogin {
           return err(CheckOnlineError());
         }
         await this.logout();
-        (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
           const accessToken = await this.login(scopes);
           return ok(accessToken);

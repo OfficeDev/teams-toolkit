@@ -72,7 +72,7 @@ import {
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-
+import { PrereleasePage } from "./utils/prerelease";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -93,52 +93,7 @@ export async function activate(context: vscode.ExtensionContext) {
   registerInternalCommands(context);
 
   if (isTeamsFxProject) {
-    registerTreeViewCommandsInDevelopment(context);
-    registerTreeViewCommandsInDeployment(context);
-    registerTreeViewCommandsInHelper(context);
-    registerTeamsFxCommands(context);
-    registerMenuCommands(context);
-    handlers.registerAccountMenuCommands(context);
-
-    TreeViewManagerInstance.registerTreeViews(context);
-    accountTreeViewProviderInstance.subscribeToStatusChanges({
-      azureAccountProvider: AzureAccountManager,
-      m365TokenProvider: M365TokenInstance,
-    });
-    // Set region for M365 account every
-    M365TokenInstance.setStatusChangeMap(
-      "set-region",
-      { scopes: AuthSvcScopes },
-      async (status, token, accountInfo) => {
-        if (status === "SignedIn") {
-          const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
-          if (tokenRes.isOk()) {
-            setRegion(tokenRes.value);
-          }
-        }
-      }
-    );
-
-    if (vscode.workspace.isTrusted) {
-      registerCodelensAndHoverProviders(context);
-    }
-
-    registerDebugConfigProviders(context);
-
-    // Register task and debug event handlers, as well as sending telemetries
-    registerTeamsfxTaskAndDebugEvents();
-
-    registerRunIcon();
-
-    // Register teamsfx task provider
-    const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
-    context.subscriptions.push(
-      vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
-    );
-
-    context.subscriptions.push(
-      vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
-    );
+    activateTeamsFxRegistration(context);
   }
 
   // Call activate function of toolkit core.
@@ -163,6 +118,55 @@ export async function deactivate() {
   await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();
+}
+
+function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
+  registerTreeViewCommandsInDevelopment(context);
+  registerTreeViewCommandsInDeployment(context);
+  registerTreeViewCommandsInHelper(context);
+  registerTeamsFxCommands(context);
+  registerMenuCommands(context);
+  handlers.registerAccountMenuCommands(context);
+
+  TreeViewManagerInstance.registerTreeViews(context);
+  accountTreeViewProviderInstance.subscribeToStatusChanges({
+    azureAccountProvider: AzureAccountManager,
+    m365TokenProvider: M365TokenInstance,
+  });
+  // Set region for M365 account every
+  M365TokenInstance.setStatusChangeMap(
+    "set-region",
+    { scopes: AuthSvcScopes },
+    async (status, token, accountInfo) => {
+      if (status === "SignedIn") {
+        const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+        if (tokenRes.isOk()) {
+          setRegion(tokenRes.value);
+        }
+      }
+    }
+  );
+
+  if (vscode.workspace.isTrusted) {
+    registerCodelensAndHoverProviders(context);
+  }
+
+  registerDebugConfigProviders(context);
+
+  // Register task and debug event handlers, as well as sending telemetries
+  registerTeamsfxTaskAndDebugEvents();
+
+  registerRunIcon();
+
+  // Register teamsfx task provider
+  const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
+  context.subscriptions.push(
+    vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
+  );
 }
 
 /**
@@ -714,14 +718,10 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
 
   if (isV3Enabled()) {
     if (isMigrationV3Enabled()) {
-      const versionCheckResult = await handlers.projectVersionCheck();
-      await vscode.commands.executeCommand(
-        "setContext",
-        "fx-extension.canUpgradeV3",
-        versionCheckResult.isOk()
-          ? versionCheckResult.value.isSupport == VersionState.upgradeable
-          : false
-      );
+      const upgradeable = await checkProjectUpgradable();
+      if (upgradeable) {
+        await handlers.checkUpgrade();
+      }
     }
   } else {
     await vscode.commands.executeCommand(
@@ -797,7 +797,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     language: "json",
     scheme: "file",
     pattern: isV3Enabled()
-      ? `**/${AppPackageFolderName}/manifest.template.json`
+      ? `**/${AppPackageFolderName}/manifest.json`
       : `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
   };
   const localManifestTemplateSelector = {
@@ -817,6 +817,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     language: "json",
     scheme: "file",
     pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`,
+  };
+
+  const aadAppTemplateSelectorV3 = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/aad.manifest.json`,
   };
 
   const permissionsJsonFileCodeLensProvider = new PermissionsJsonFileCodeLensProvider();
@@ -872,12 +878,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
-      aadAppTemplateSelector,
-      aadAppTemplateCodeLensProvider
-    )
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
       permissionsJsonFileSelector,
       permissionsJsonFileCodeLensProvider
     )
@@ -889,6 +889,13 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     scheme: "file",
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/aad.*.json`,
   };
+
+  const aadManifestPreviewSelectorV3 = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${BuildFolderName}/aad.*.json`,
+  };
+
   const manifestTemplateHoverProvider = new ManifestTemplateHoverProvider();
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(manifestTemplateSelector, manifestTemplateHoverProvider)
@@ -896,23 +903,51 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
 
   if (isV3Enabled()) {
     context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        aadAppTemplateSelectorV3,
+        aadAppTemplateCodeLensProvider
+      )
+    );
+
+    context.subscriptions.push(
       vscode.languages.registerHoverProvider(
         localManifestTemplateSelector,
         manifestTemplateHoverProvider
       )
     );
+
+    context.subscriptions.push(
+      vscode.languages.registerHoverProvider(
+        aadAppTemplateSelectorV3,
+        manifestTemplateHoverProvider
+      )
+    );
+
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        aadManifestPreviewSelectorV3,
+        aadAppTemplateCodeLensProvider
+      )
+    );
+  } else {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        aadAppTemplateSelector,
+        aadAppTemplateCodeLensProvider
+      )
+    );
+
+    context.subscriptions.push(
+      vscode.languages.registerHoverProvider(aadAppTemplateSelector, manifestTemplateHoverProvider)
+    );
+
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        aadManifestPreviewSelector,
+        aadAppTemplateCodeLensProvider
+      )
+    );
   }
-
-  context.subscriptions.push(
-    vscode.languages.registerHoverProvider(aadAppTemplateSelector, manifestTemplateHoverProvider)
-  );
-
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      aadManifestPreviewSelector,
-      aadAppTemplateCodeLensProvider
-    )
-  );
 }
 
 function registerDebugConfigProviders(context: vscode.ExtensionContext) {
@@ -960,15 +995,24 @@ async function runBackgroundAsyncTasks(
   await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
+  const preview = new PrereleasePage(context);
+  preview.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 
   if (isTeamsFxProject) {
-    await handlers.autoOpenProjectHandler();
-    await handlers.promptSPFxUpgrade();
-    await TreeViewManagerInstance.updateTreeViewsByContent();
-    await AzureAccountManager.updateSubscriptionInfo();
+    await runTeamsFxBackgroundTasks();
   }
+
+  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/teamsapp.yml",
+    false,
+    true,
+    true
+  );
+  ymlFileWatcher.onDidCreate(async (event) => {
+    await detectedTeamsFxProject(context);
+  });
 
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
@@ -982,6 +1026,13 @@ async function runBackgroundAsyncTasks(
     )) as boolean | undefined;
 
   await showDebugChangesNotification();
+}
+
+async function runTeamsFxBackgroundTasks() {
+  await handlers.autoOpenProjectHandler();
+  await handlers.promptSPFxUpgrade();
+  await TreeViewManagerInstance.updateTreeViewsByContent();
+  await AzureAccountManager.updateSubscriptionInfo();
 }
 
 function registerInCommandController(
@@ -999,4 +1050,33 @@ function registerInCommandController(
 
 function runCommand(commandName: string, args: unknown[]) {
   commandController.runCommand(commandName, args);
+}
+
+async function checkProjectUpgradable(): Promise<boolean> {
+  const versionCheckResult = await handlers.projectVersionCheck();
+  const upgradeable = versionCheckResult.isOk()
+    ? versionCheckResult.value.isSupport == VersionState.upgradeable
+    : false;
+  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+  return upgradeable;
+}
+
+async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
+  const wasTeamsFxProject = isTeamsFxProject;
+  initializeGlobalVariables(context);
+  if (isTeamsFxProject && !wasTeamsFxProject) {
+    activateTeamsFxRegistration(context);
+
+    vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+    const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
+
+    aadTemplateWatcher.onDidCreate(async (event) => {
+      await setAadManifestEnabledContext();
+    });
+
+    runTeamsFxBackgroundTasks();
+  }
+
+  await checkProjectUpgradable();
 }

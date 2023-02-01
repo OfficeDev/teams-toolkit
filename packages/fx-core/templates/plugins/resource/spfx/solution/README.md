@@ -15,7 +15,7 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Prerequisites
 
-> - Node.js v16
+> - [Node.js](https://nodejs.org/en/), supported versions: 16
 > - An Microsoft 365 account. Get your own free Microsoft 365 tenant from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 
 ## Solution

@@ -502,13 +502,6 @@ export function MockProjectSettings(appName: string): ProjectSettings {
   };
 }
 
-export function MockSettings(): Settings {
-  return {
-    trackingId: uuid.v4(),
-    version: "3.0.0",
-  };
-}
-
 export function MockSPFxProjectSettings(appName: string): ProjectSettings {
   return {
     appName: appName,

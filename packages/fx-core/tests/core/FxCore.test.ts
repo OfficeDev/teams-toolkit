@@ -198,7 +198,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -231,7 +231,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -258,7 +258,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       const appManifestPath = path.join(
         os.tmpdir(),
         appName,
@@ -295,7 +295,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       const appManifestPath = path.join(
         os.tmpdir(),
         appName,
@@ -344,7 +344,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       const appManifestPath = path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.json");
       await fs.remove(appManifestPath);
       const inputs: Inputs = {
@@ -376,7 +376,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       const inputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
@@ -713,9 +713,9 @@ describe("apply yaml template", async () => {
   });
 });
 
-function mockV3Project(): string {
+async function mockV3Project(): Promise<string> {
   const appName = randomAppName();
-  fs.moveSync(path.join(__dirname, "../samples/samplesv3"), path.join(os.tmpdir(), appName));
+  await fs.move(path.join(__dirname, "../samples/samplesv3"), path.join(os.tmpdir(), appName));
   return appName;
 }
 

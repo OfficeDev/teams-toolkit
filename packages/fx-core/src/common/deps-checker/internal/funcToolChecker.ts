@@ -169,10 +169,10 @@ export class FuncToolChecker implements DepsChecker {
   ): Promise<
     DependencyStatus & { globalFunc: FuncInstallationStatus; portableFunc: FuncInstallationStatus }
   > {
-    const nodeVersion = await this.getNodeVersion();
-    const globalFunc = await this.checkGlobalFuncVersion(installOptions.nodeVersion);
+    const nodeVersion = installOptions.nodeVersion ?? (await this.getNodeVersion());
+    const globalFunc = await this.checkGlobalFuncVersion(nodeVersion);
     const isGlobalFuncInstalled = globalFunc.isInstalled;
-    const portableFunc = await this.checkPortableFuncVersion(installOptions.nodeVersion);
+    const portableFunc = await this.checkPortableFuncVersion(nodeVersion);
     const isPortableFuncInstalled = portableFunc.isInstalled;
 
     if (isGlobalFuncInstalled) {

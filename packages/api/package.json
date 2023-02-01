@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.20.7-rc-hotfix.0",
+  "version": "0.20.6",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -48,7 +48,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",
-    "mocha": "^10.2.0",
+    "mocha": "^9.2.0",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "sinon": "^9.2.2",
@@ -60,7 +60,7 @@
   "dependencies": {
     "@azure/core-http": "^1.2.2",
     "@azure/ms-rest-nodeauth": "^3.1.1",
-    "@microsoft/teams-manifest": "^0.0.8-rc-hotfix.0",
+    "@microsoft/teams-manifest": "^0.0.7",
     "@types/fs-extra": "^9.0.10",
     "axios": "^0.21.2",
     "chai": "^4.3.4",

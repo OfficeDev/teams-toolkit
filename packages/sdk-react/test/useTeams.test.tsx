@@ -9,7 +9,15 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import * as useTeams from "../src/useTeams";
 import { app, pages } from "@microsoft/teams-js";
-import { Flex, Header, Provider } from "@fluentui/react-northstar";
+import { makeStyles, Title1, FluentProvider } from "@fluentui/react-components";
+
+const useStyles = makeStyles({
+  root: {
+    display: "flex",
+    fill: "true",
+  },
+  item: {},
+});
 
 describe("useTeams", () => {
   let spyInitialize: jest.SpyInstance;
@@ -254,11 +262,13 @@ describe("useTeams", () => {
 
     const { container } = render(<App />);
 
-    await waitFor(() => {
-      expect(setThemeHandler).toBeCalledTimes(1);
-    });
-
-    expect(container.textContent).toBe("true, default");
+    await waitFor(
+      () => {
+        expect(setThemeHandler).toBeCalledTimes(1);
+        expect(container.textContent).toBe("true, default");
+      },
+      { interval: 1 }
+    );
   });
 
   it("Should not be fullscreen", async () => {
@@ -312,6 +322,7 @@ describe("useTeams", () => {
 
   it("Should call useEffect and render Fluent UI components", async () => {
     const HooksTab = () => {
+      const styles = useStyles();
       const [{ inTeams, theme }] = useTeams.useTeams({});
       const [message, setMessage] = React.useState("Loading...");
 
@@ -326,13 +337,13 @@ describe("useTeams", () => {
       }, [inTeams]);
 
       return (
-        <Provider theme={theme}>
-          <Flex fill={true}>
-            <Flex.Item>
-              <Header content={message} />
-            </Flex.Item>
-          </Flex>
-        </Provider>
+        <FluentProvider theme={theme}>
+          <div className={styles.root}>
+            <div className={styles.item}>
+              <Title1>{message}</Title1>
+            </div>
+          </div>
+        </FluentProvider>
       );
     };
 
@@ -367,9 +378,12 @@ describe("useTeams", () => {
 
     render(<HooksTab />);
 
-    await waitFor(() => {
-      expect(ping).toBeCalledTimes(3);
-      expect(pingEffect).toBeCalledTimes(2);
-    });
+    await waitFor(
+      () => {
+        expect(ping).toBeCalledTimes(3);
+        expect(pingEffect).toBeCalledTimes(2);
+      },
+      { interval: 1 }
+    );
   });
 });

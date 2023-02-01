@@ -90,23 +90,28 @@ export class ValidateTeamsAppDriver implements StepDriver {
       // logs in output window
       const errors = validationResult.errors
         .map((error) => {
-          return `(x)Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
+          return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
             error.helpUrl
           }`;
         })
         .join(EOL);
       const warnings = validationResult.warnings
         .map((warning) => {
-          return `(!)Warning: ${warning.content} \n${getLocalizedString(
+          return `(!) Warning: ${warning.content} \n${getLocalizedString(
             "core.option.learnMore"
           )}: ${warning.helpUrl}`;
         })
         .join(EOL);
-      const outputMessage = `${EOL}Teams Toolkit is validating your app package:${EOL}${errors}${EOL}${warnings}${EOL}Validation completed.${EOL}Summary:${EOL}${
-        validationResult.errors.length + validationResult.warnings.length
-      } failed, ${
-        validationResult.notes.length
-      }passed ${EOL}A completed log of validations can be found in %s`;
+      const outputMessage =
+        EOL +
+        getLocalizedString(
+          "driver.teamsApp.summary.validate",
+          errors,
+          warnings,
+          validationResult.errors.length + validationResult.warnings.length,
+          validationResult.notes.length,
+          undefined
+        );
       context.logProvider?.info(outputMessage);
 
       const message = getLocalizedString(

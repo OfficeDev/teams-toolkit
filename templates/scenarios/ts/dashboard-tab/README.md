@@ -294,7 +294,10 @@ Open the [`appPackage/manifest.json`](appPackage/manifest.json) file, and add a 
 
 ## How to add a new Graph API call
 
-Please refer to `How-to guides` in `Teams Toolkit` by clicking `Teams Toolkit` in the side bar > `View how-to guides` > `Integrate with Azure Functions`.
+Please follow these two steps:
+1.	Add SSO: Refer to How-to guides in Teams Toolkit by clicking Teams Toolkit in the side bar > `View how-to guides` > `Develop single sign-on experience in Teams`.
+2.	Refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-sdk#microsoft-graph-scenarios:~:text=caught%20and%20transformed.-,Microsoft%20Graph%20Scenarios,-This%20section%20provides) to call a Graph API via TeamsFx SDK.
+
 
 ## Additional resources
 

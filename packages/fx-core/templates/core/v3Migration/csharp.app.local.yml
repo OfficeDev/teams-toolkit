@@ -34,7 +34,7 @@ provision:
       name: {{appName}}
       messagingEndpoint: $\{{BOT_ENDPOINT}}/api/messages
       description: ""
-  - uses: file/updateAppSettings
+  - uses: file/updateJson
     with:
       target: ./appsettings.Development.json
       appsettings:
@@ -58,7 +58,7 @@ configureApp:
         {{placeholderMappings.tabEndpoint}}: https://localhost:44302
         {{placeholderMappings.tabIndexPath}}: '#'
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
-  - uses: file/updateAppSettings
+  - uses: file/updateJson
     with:
       target: ./appsettings.Development.json
       appsettings:

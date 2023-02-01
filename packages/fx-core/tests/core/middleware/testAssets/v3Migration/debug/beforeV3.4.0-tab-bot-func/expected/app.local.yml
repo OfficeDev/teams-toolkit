@@ -85,7 +85,7 @@ deploy:
         REACT_APP_FUNC_ENDPOINT: http://localhost:7071
         REACT_APP_FUNC_NAME: getUserProfile
 
-  - uses: file/updateAppSettings
+  - uses: file/updateJson
     with:
       target: SIMPLE_AUTH_APPSETTINGS_PATH
       appsettings:

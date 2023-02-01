@@ -10,8 +10,7 @@ import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
 import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
-import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
-import { GenerateAppsettingsDriver } from "../../../../src/component/driver/file/appsettingsGenerate";
+import { UpdateJsonDriver } from "../../../../src/component/driver/file/updateJson";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 
@@ -19,7 +18,7 @@ describe("AppsettingsGenerateDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
   } as DriverContext;
-  const driver = new GenerateAppsettingsDriver();
+  const driver = new UpdateJsonDriver();
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
@@ -54,7 +53,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for file/updateAppSettings action: target.";
+          "Following parameter is missing or invalid for file/updateJson action: target.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -69,7 +68,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for file/updateAppSettings action: appsettings.";
+          "Following parameter is missing or invalid for file/updateJson action: appsettings.";
         chai.assert.equal(result.error.message, message);
       }
     });

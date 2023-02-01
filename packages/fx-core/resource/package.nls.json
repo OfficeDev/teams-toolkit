@@ -1148,7 +1148,7 @@
   "driver.file.progressBar.title": "file/updateEnv",
   "driver.file.progressBar.generate": "Generating the environment variables to .env file.",
   "driver.file.updateJson.description": "Add or update appsettings to JSON file.",
-  "driver.file.updateJson.summary.withTarget": "The appsettings has been generated successfully to %s.",
+  "driver.file.updateJson.summary.withTarget": "The value for appsettings has been generated successfully to %s.",
   "driver.env.error.folderNotExist": "Folder %s does not exist.",
   "driver.deploy.error.deployToAzureRemoteFailed": "Remote service error, upload failed.",
   "driver.deploy.error.unknownError": "Unknown error happened: %s",

@@ -25,6 +25,7 @@ import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";
 import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";
+import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 async function resolveStateAndConfigCodeLens(
   lens: vscode.CodeLens,
@@ -414,7 +415,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     // V3 supports customize aad manifest
     if (
       isV3Enabled()
-        ? document.getText().includes("${{")
+        ? document.fileName.endsWith(MetadataV3.aadManifestFileName)
         : document.fileName.endsWith("template.json")
     ) {
       this.projectConfigs = undefined;

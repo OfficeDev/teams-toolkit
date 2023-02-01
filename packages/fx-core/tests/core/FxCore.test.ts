@@ -714,9 +714,8 @@ describe("apply yaml template", async () => {
 });
 
 function mockV3Project(): string {
-  const zip = new AdmZip(path.join(__dirname, "./samples_v3.zip"));
   const appName = randomAppName();
-  zip.extractAllTo(path.join(os.tmpdir(), appName));
+  fs.moveSync(path.join(__dirname, "../samples/samplesv3"), path.join(os.tmpdir(), appName));
   return appName;
 }
 

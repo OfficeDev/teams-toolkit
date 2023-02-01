@@ -1267,7 +1267,7 @@
                 {
                   "name": "bodyContains",
                   "parameters": {
-                    "bodyPattern": "API call to Developer Portal failed: Error, Request failed with status code \\d{3}, API name: (.*), X-Correlation-ID: (.*).",
+                    "bodyPattern": "API call to Developer Portal failed: *,  API name: (.*), X-Correlation-ID: (.*).",
                     "isRegex": true
                   }
                 },

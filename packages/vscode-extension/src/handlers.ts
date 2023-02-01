@@ -168,6 +168,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -206,7 +207,11 @@ export function activate(): Result<Void, FxError> {
     );
   }
   try {
-    const m365Login: M365TokenProvider = M365TokenInstance;
+    let m365Login: M365TokenProvider = M365TokenInstance;
+    const vscodeEnv = detectVsCodeEnv();
+    if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+      m365Login = M365CodeSpaceTokenInstance;
+    }
     const m365NotificationCallback = (
       status: string,
       token: string | undefined,

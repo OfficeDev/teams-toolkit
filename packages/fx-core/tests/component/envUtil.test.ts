@@ -3,7 +3,6 @@ import {
   err,
   FxError,
   Inputs,
-  InputsWithProjectPath,
   ok,
   Platform,
   Result,

@@ -5,11 +5,17 @@ Teams Toolkit checks the following prerequisites during the debug process:
 * Node.js, applicable for the following project types:
   |Project type|Node.js LTS version|
   | --- | --- |
-  |Tab | 14, **16 (recommended)** |
-  |SPFx Tab | **16 (recommended)**|
-  |Bot |  14, **16 (recommended)** |
-  |Message extension | 14, **16 (recommended)** |
-  
+  | Notification Bot (Restify) | 14, 16, 18 |
+  | Notification Bot (Http Trigger / Timer Trigger) | 14, 16, 18 (preview) |
+  | Command Bot | 14, 16, 18 |
+  | Workflow Bot| 14, 16, 18 |
+  | Dashboard Tab | 14, 16, 18 |
+  | SSO-enabled Tab | 14, 16, 18 |
+  | SPFx Tab | 16 |
+  | Tab | 14, 16, 18 |
+  | Bot |  14, 16, 18 |
+  | Message extension | 14, 16, 18 |
+
 * Microsoft 365 account with valid credentials, the Teams toolkit prompts you to sign in to Microsoft 365 account, if you haven't signed in.
 
 * Custom app uploading or sideloading for your developer tenant is turned on, if not then the local debug terminates .
@@ -56,10 +62,16 @@ Go to [the official site](https://nodejs.org/en/about/releases/) to download and
 
 |Project type|Node.js LTS version|
 | --- | --- |
-|Tab | 14, **16 (recommended)** |
-|SPFx Tab | **16 (recommended)**|
-|Bot |  14, **16 (recommended)** |
-|Message extension | 14, **16 (recommended)** |
+| Notification Bot (Restify) | 14, 16, 18 |
+| Notification Bot (Http Trigger / Timer Trigger) | 14, 16, 18 (preview) |
+| Command Bot | 14, 16, 18 |
+| Workflow Bot| 14, 16, 18 |
+| Dashboard Tab | 14, 16, 18 |
+| SSO-enabled Tab | 14, 16, 18 |
+| SPFx Tab | 16 |
+| Tab | 14, 16, 18 |
+| Bot |  14, 16, 18 |
+| Message extension | 14, 16, 18 |
 
 > Note: Please restart all your Visual Studio Code instances after the installation is finished.
 

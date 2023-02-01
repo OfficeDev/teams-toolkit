@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  ProjectSettings,
+  AppPackageFolderName,
+} from "@microsoft/teamsfx-api";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -112,10 +116,14 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.handlebarsContext.aadAppName = aadManifest.name;
     }
 
-    const teamsAppManifestPath = path.join(this.projectPath, "appPackage/manifest.template.json");
+    const teamsAppManifestPath = path.join(
+      this.projectPath,
+      AppPackageFolderName,
+      MetadataV3.teamsManifestFileName
+    );
     if (await fs.pathExists(teamsAppManifestPath)) {
       const teamsAppManifest = await fs.readJson(
-        path.join(this.projectPath, "appPackage/manifest.template.json")
+        path.join(this.projectPath, AppPackageFolderName, MetadataV3.teamsManifestFileName)
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }

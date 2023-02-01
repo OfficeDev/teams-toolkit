@@ -177,7 +177,7 @@ describe("env utils", () => {
     assert.isTrue(decRes.isOk());
     assert.equal(decRes.value, decrypted);
   });
-  it("envUtil.writeEnv to output", async () => {
+  it("envUtil.writeEnv to default path", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
@@ -282,26 +282,6 @@ describe("env utils", () => {
   });
   it("EnvLoaderMW failed for F5 (missing .env file and getEnvFilePath Error)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserError({})));
-    class MyClass {
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        return ok(undefined);
-      }
-    }
-    hooks(MyClass, {
-      myMethod: [EnvLoaderMW(false)],
-    });
-    const my = new MyClass();
-    const inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      env: "dev",
-      isLocalDebug: true,
-    };
-    const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("EnvLoaderMW failed for F5 (getEnvFilePath return undefined)", async () => {
-    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         return ok(undefined);

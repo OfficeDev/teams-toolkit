@@ -212,7 +212,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -337,7 +337,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -496,7 +496,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -640,7 +640,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -787,7 +787,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -930,7 +930,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {
@@ -1060,7 +1060,7 @@ describe("developPortalScaffoldUtils", () => {
           updateOutline = true;
         } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
           updateLanguage = true;
-        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.template.json")) {
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
           updateManifest = true;
           updatedManifestData = data;
         } else {

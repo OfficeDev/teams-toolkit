@@ -141,7 +141,7 @@ export function createResourcesTask(label: string): CommentJSONValue {
 
 export function setUpLocalProjectsTask(label: string): CommentJSONValue {
   const comment = `{
-    // Install tools and Build project.
+    // Build project.
     // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
   }`;
   const task = {
@@ -160,7 +160,7 @@ export function startFrontendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../script/run.tab.js .. ../env/.env.local",
+    command: "npx env-cmd --silent -f .localSettings react-scripts start",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/tabs",
@@ -186,11 +186,12 @@ export function startAuthTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node teamsfx/script/run.auth.js . env/.env.local",
+    command: "dotnet Microsoft.TeamsFx.SimpleAuth.dll",
     isBackground: true,
     options: {
-      cwd: "${workspaceFolder}",
+      cwd: path.join(os.homedir(), ".fx", "localauth"),
       env: {
+        ASPNETCORE_ENVIRONMENT: "Development",
         PATH: "${command:fx-extension.get-dotnet-path}${env:PATH}",
       },
     },
@@ -230,11 +231,13 @@ export function watchBackendTask(label: string): CommentJSONValue {
   return assign(parse("{}"), task);
 }
 
-export function startBackendTask(label: string): CommentJSONValue {
+export function startBackendTask(label: string, programmingLanguage?: string): CommentJSONValue {
+  programmingLanguage = programmingLanguage || "javascript";
+  const command = `npx env-cmd --silent -f .localSettings func start --${programmingLanguage} --language-worker="--inspect=9229" --port "7071" --cors "*"`;
   const task = {
     label,
     type: "shell",
-    command: "node ../script/run.api.js .. ../env/.env.local",
+    command,
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/api",
@@ -263,11 +266,15 @@ export function startBackendTask(label: string): CommentJSONValue {
   return assign(parse("{}"), task);
 }
 
-export function startBotTask(label: string): CommentJSONValue {
+export function startBotTask(label: string, programmingLanguage?: string): CommentJSONValue {
+  const command =
+    programmingLanguage === "typescript"
+      ? "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
+      : "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js";
   const task = {
     label,
     type: "shell",
-    command: "node ../script/run.bot.js .. ../env/.env.local",
+    command,
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/bot",
@@ -289,17 +296,4 @@ export function startBotTask(label: string): CommentJSONValue {
     },
   };
   return assign(parse("{}"), task);
-}
-
-export async function saveRunScript(
-  context: MigrationContext,
-  filename: string,
-  script: string
-): Promise<void> {
-  await context.fsEnsureDir(path.join("script"));
-  const runScriptPath = path.join("script", filename);
-  if (!(await context.fsPathExists(runScriptPath))) {
-    await context.fsCreateFile(runScriptPath);
-  }
-  await context.fsWriteFile(runScriptPath, script);
 }

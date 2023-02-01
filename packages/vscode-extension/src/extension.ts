@@ -72,7 +72,7 @@ import {
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-
+import { PrereleasePage } from "./utils/prerelease";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -797,7 +797,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     language: "json",
     scheme: "file",
     pattern: isV3Enabled()
-      ? `**/${AppPackageFolderName}/manifest.template.json`
+      ? `**/${AppPackageFolderName}/manifest.json`
       : `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
   };
   const localManifestTemplateSelector = {
@@ -995,6 +995,8 @@ async function runBackgroundAsyncTasks(
   await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
+  const preview = new PrereleasePage(context);
+  preview.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 

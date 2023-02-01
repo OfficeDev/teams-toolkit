@@ -6,12 +6,13 @@ import AzureLoginCI from "../../../src/commonlib/azureLoginCI";
 import { expect } from "../utils";
 import fs, { WriteFileOptions } from "fs-extra";
 import azureLoginCI from "../../../src/commonlib/azureLoginCI";
-import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
+import { signedOut } from "../../../src/commonlib/common/constant";
+import { AzureSPConfig, AzureSpCrypto } from "../../../src/commonlib/cacheAccess";
 
 describe("Azure Service Principal login Tests", function () {
   const sandbox = sinon.createSandbox();
 
-  before(async () => {
+  beforeEach(async () => {
     sandbox.stub(fs, "ensureDir").callsFake(async (path: fs.PathLike) => {
       return true;
     });
@@ -42,13 +43,14 @@ describe("Azure Service Principal login Tests", function () {
       });
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
-  beforeEach(() => {});
-
   it("init", async () => {
+    sandbox.stub(AzureSpCrypto, "loadAzureSP").resolves(undefined);
+    sandbox.stub(AzureSpCrypto, "saveAzureSP").resolves();
+    sandbox.stub(AzureSpCrypto, "clearAzureSP").resolves();
     await AzureLoginCI.init("clientId", "secret", "tenantId");
 
     await AzureLoginCI.init("clientId", "~/3.pem", "tenantId");
@@ -57,11 +59,17 @@ describe("Azure Service Principal login Tests", function () {
   });
 
   it("getIdentityCredentialAsync", async () => {
+    sandbox.stub(AzureSpCrypto, "loadAzureSP").resolves(undefined);
+    sandbox.stub(AzureSpCrypto, "saveAzureSP").resolves();
+    sandbox.stub(AzureSpCrypto, "clearAzureSP").resolves();
     await AzureLoginCI.init("clientId", "secret", "tenantId");
     await azureLoginCI.getIdentityCredentialAsync();
   });
 
   it("signout", async () => {
+    sandbox.stub(AzureSpCrypto, "loadAzureSP").resolves({} as AzureSPConfig);
+    sandbox.stub(AzureSpCrypto, "saveAzureSP").resolves();
+    sandbox.stub(AzureSpCrypto, "clearAzureSP").resolves();
     const result = await AzureLoginCI.signout();
     expect(result).equals(true);
 

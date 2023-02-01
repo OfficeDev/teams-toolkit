@@ -12,7 +12,7 @@ We've addressed a number of reported bugs and added major changes in this releas
 - Add custom steps to debugging, provisioning, deploying, publishing, etc.
 
 ### What about my existing Teams Toolkit projects?
-The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you Create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous verison of Teams Toolkit.
+The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
 
 Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).
 
@@ -259,7 +259,7 @@ export default function App() {
 
 ### Step 4: Modify manifest to add a new dashboard tab
 
-Open the [`appPackage/manifest.template.json`](appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
+Open the [`appPackage/manifest.json`](appPackage/manifest.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
 
 ```json
 {

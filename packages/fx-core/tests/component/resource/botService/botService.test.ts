@@ -78,7 +78,7 @@ describe("Bot service", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
     }
   });
   it("send telemetry for app studio error when local debug", async () => {
@@ -106,7 +106,7 @@ describe("Bot service", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       // assert.equal(error.innerError.teamsfxUrlName, "<create-bot-registration>");
     }
     // assert.isTrue(telemetryStub.calledOnce);

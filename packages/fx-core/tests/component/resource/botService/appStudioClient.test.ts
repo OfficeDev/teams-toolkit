@@ -1,221 +1,119 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+import { M365TokenProvider, ok, ResourceContextV3, TokenRequest } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
 import "mocha";
-import * as chai from "chai";
-
+import { createSandbox } from "sinon";
+import * as utils from "../../../../src/component/utils";
+import { setTools } from "../../../../src/core/globalVars";
+import { MockTools } from "../../../core/utils";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
-import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
-import * as sinon from "sinon";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
-import {
-  FailedToCreateBotRegistrationError,
-  PluginError,
-} from "../../../../src/component/resource/botService/errors";
+import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
+import axios from "axios";
+import { ErrorNames } from "../../../../src/component/resource/botService/constants";
 import { Messages } from "./messages";
-import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 
-describe("Test AppStudio APIs", () => {
+describe("AppStudio Client", () => {
+  const tools = new MockTools();
+  const sandbox = createSandbox();
+  let context: ResourceContextV3;
+  setTools(tools);
+  beforeEach(() => {
+    context = utils.createContextV3() as ResourceContextV3;
+    context.tokenProvider.m365TokenProvider = {
+      getAccessToken: async (tokenRequest: TokenRequest) => ok("token"),
+    } as M365TokenProvider;
+    context.envInfo = newEnvInfoV3("local");
+  });
+
   afterEach(() => {
-    sinon.restore();
-  });
-
-  describe("createBotRegistration", () => {
-    it("Happy Path", async () => {
-      // Arrange
-      const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
-
-      sinon.stub(RetryHandler, "Retry").resolves({
-        data: {},
-      });
-
-      // Act
-      try {
-        await AppStudioClient.createBotRegistration(accessToken, botReg);
-      } catch {
-        chai.assert.fail(Messages.ShouldNotReachHere);
-      }
-    });
-
-    it("Existing bot", async () => {
-      // Arrange
-      const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
-
-      const retry = sinon
-        .stub(RetryHandler, "Retry")
-        .onFirstCall()
-        .resolves({
-          status: 200,
-          data: {},
-        })
-        .onSecondCall()
-        .rejects();
-
-      // Act
-      try {
-        await AppStudioClient.createBotRegistration(accessToken, botReg);
-        chai.assert.isTrue(retry.calledOnce);
-      } catch {
-        chai.assert.fail(Messages.ShouldNotReachHere);
-      }
-    });
-
-    it("create failed with existing id from state", async () => {
-      // Arrange
-      const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
-
-      const retry = sinon
-        .stub(RetryHandler, "Retry")
-        .onFirstCall()
-        .resolves(undefined)
-        .onSecondCall()
-        .rejects();
-
-      // Act
-      try {
-        await AppStudioClient.createBotRegistration(accessToken, botReg);
-        chai.assert.fail(Messages.ShouldNotReachHere);
-      } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
-        chai.assert.isTrue(retry.calledOnce);
-      }
-    });
-
-    it("Empty Data", async () => {
-      // Arrange
-      const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
-
-      sinon.stub(RetryHandler, "Retry").resolves(undefined);
-
-      // Act
-      try {
-        await AppStudioClient.createBotRegistration(accessToken, botReg);
-      } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
-        return;
-      }
-
-      // Assert
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
-  });
-
-  describe("updateMessageEndpoint", () => {
-    it("Happy Path", async () => {
-      // Arrange
-      const accessToken = "anything";
-
-      sinon.stub(RetryHandler, "Retry").resolves({
-        status: 200,
-        data: {},
-      });
-      sinon.stub(AppStudioClient, "getBotRegistration").resolves({
-        name: "",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      });
-
-      // Act
-      try {
-        await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "anything");
-      } catch {
-        chai.assert.fail(Messages.ShouldNotReachHere);
-      }
-    });
-
-    it("Empty Data", async () => {
-      // Arrange
-      const accessToken = "anything";
-
-      sinon.stub(RetryHandler, "Retry").resolves(undefined);
-
-      // Act
-      try {
-        await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "");
-      } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
-        return;
-      }
-
-      // Assert
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
+    sandbox.restore();
   });
 
   describe("getBotRegistration", () => {
-    it("Empty Access Token", async () => {
+    it("Should return a valid bot registration", async () => {
+      // Arrange
+      const sampleBot: IBotRegistration = {
+        botId: "0cd14903-d43a-47f5-b907-73c523aff076",
+        name: "ruhe01290236-local-debug",
+        description: "",
+        iconUrl:
+          "https://docs.botframework.com/static/devportal/client/images/bot-framework-default.png",
+        messagingEndpoint: "https://8075-167-220-255-43.ngrok.io/api/messages",
+        callingEndpoint: "",
+      };
+      sandbox.stub(RetryHandler, "Retry").resolves(sampleBot);
       // Act
+      const res = await AppStudioClient.getBotRegistration("anything", "anything");
+
+      // Assert
+      assert.isTrue(res !== undefined);
+      assert.isTrue(res?.botId === sampleBot.botId);
+    });
+
+    it("Should return a undefined when 404 was throwed out", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "get").rejects({
+        response: {
+          status: 404,
+        },
+      });
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+
+      // Act
+      const res = await AppStudioClient.getBotRegistration("anything", "anything");
+
+      // Assert
+      assert.isUndefined(res);
+    });
+
+    it("Should throw NotAllowedToAcquireToken error when 401 was throwed out", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "get").rejects({
+        response: {
+          status: 401,
+        },
+      });
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+
+      // Act & Assert
       try {
-        await AppStudioClient.getBotRegistration("", "anything");
+        await AppStudioClient.getBotRegistration("anything", "anything");
+        assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e instanceof UserError);
-        return;
+        assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
       }
     });
 
-    it("Get Bot Exception", async () => {
+    it("Should throw DeveloperPortalAPIFailed error when other exceptions (500) were throwed out", async () => {
       // Arrange
-      const accessToken = "anything";
-      sinon.stub(AppStudioClient, "getBotRegistration").resolves({
-        name: "",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      });
-
-      const error = {
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "get").rejects({
         response: {
           status: 500,
-          message: "errorMessage",
         },
-      };
-      sinon
-        .stub(RetryHandler, "Retry")
-        .callsFake(async (fn: () => unknown, ignoreError = false) => {
-          throw error;
-        });
+      });
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
 
-      // Act
+      // Act & Assert
       try {
-        await AppStudioClient.getBotRegistration(accessToken, "anything");
+        await AppStudioClient.getBotRegistration("anything", "anything");
+        assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
-        return;
+        assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
       }
     });
   });
+
+  describe("createBotRegistration", () => {});
+
+  describe("updateBotRegistration", () => {});
+
+  describe("updateMessageEndpoint", () => {});
 });

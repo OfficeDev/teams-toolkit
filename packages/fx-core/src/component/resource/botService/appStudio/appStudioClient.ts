@@ -8,7 +8,6 @@ import {
   BotRegistrationNotFoundError,
   ConfigUpdatingError,
   ProvisionError,
-  FailedToCreateBotRegistrationError,
   BotFrameworkNotAllowedToAcquireTokenError,
   BotFrameworkForbiddenResultError,
   BotFrameworkConflictResultError,
@@ -25,7 +24,7 @@ import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient"
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
 
-  private static newAxiosInstance(accessToken: string): AxiosInstance {
+  public static newAxiosInstance(accessToken: string): AxiosInstance {
     accessToken = CheckThrowSomethingMissing(
       FxBotPluginResultFactory.source,
       ConfigNames.APPSTUDIO_TOKEN,

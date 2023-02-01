@@ -9,6 +9,7 @@ import {
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
+import e from "express";
 import _ from "lodash";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { environmentManager } from "../../core/environment";
@@ -59,63 +60,29 @@ export const envLoaderMWImpl = async (
       return;
     }
     if (envListRes.value.length === 0) {
-      ctx.result = err(
-        new UserError({
-          source: "EnvLoaderMW",
-          name: "NoEnvFilesError",
-          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
-          message: getDefaultString("core.error.NoEnvFilesError"),
-        })
-      );
-      return;
-    }
-    if (withLocalEnv) {
-      question.staticOptions = envListRes.value;
+      // if env folder is not available or env folder is empty, then default env = dev
+      inputs.env = environmentManager.getDefaultEnvName();
     } else {
-      question.staticOptions = envListRes.value.filter(
-        (p) => p !== environmentManager.getLocalEnvName()
-      );
-    }
+      if (withLocalEnv) {
+        question.staticOptions = envListRes.value;
+      } else {
+        question.staticOptions = envListRes.value.filter(
+          (p) => p !== environmentManager.getLocalEnvName()
+        );
+      }
 
-    const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
-    if (res.isErr()) {
-      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
-      ctx.result = err(res.error);
-      return;
-    }
-    if (!inputs.env) {
-      ctx.result = err(UserCancelError);
-      return;
+      const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
+      if (res.isErr()) {
+        TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
+        ctx.result = err(res.error);
+        return;
+      }
+      if (!inputs.env) {
+        ctx.result = err(UserCancelError);
+        return;
+      }
     }
   }
-
-  // move create default .env file into writeEnv()
-  // //for F5 scenario, TTK will create a default .env file if the target env file does not exist
-  // if (inputs.isLocalDebug) {
-  //   const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, inputs.env);
-  //   if (dotEnvFilePathRes.isErr()) {
-  //     ctx.result = err(dotEnvFilePathRes.error);
-  //     return;
-  //   }
-  //   const envFilePath = dotEnvFilePathRes.value;
-  //   if (!envFilePath) {
-  //     ctx.result = err(
-  //       new InvalidEnvFolderPath(
-  //         "missing 'environmentFolderPath' field or environment folder not exist"
-  //       )
-  //     );
-  //     return;
-  //   }
-  //   if (!fs.pathExistsSync(envFilePath)) {
-  //     const defaultEnvContent =
-  //       `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n\n` +
-  //       "# Generated during provision, you can also add your own variables\n";
-  //     // "# Secret. You can add your own secret value, prefixed with SECRET_\n";
-  //     await fs.writeFile(envFilePath, defaultEnvContent);
-  //     inputs.createdEnvFile = envFilePath; // record created state for summary report
-  //   }
-  // }
-
   const res = await envUtil.readEnv(projectPath, inputs.env);
   if (res.isErr()) {
     ctx.result = err(res.error);

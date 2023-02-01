@@ -300,9 +300,10 @@ describe("env utils", () => {
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isErr());
   });
-  it("EnvLoaderMW failed: no yml file error", async () => {
+  it("EnvLoaderMW success: no env available, use dev", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(envUtil, "listEnv").resolves(ok([]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         return ok(undefined);
@@ -317,7 +318,7 @@ describe("env utils", () => {
       projectPath: ".",
     };
     const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr());
+    assert.isTrue(res.isOk());
   });
   it("EnvLoaderMW ignoreEnvInfo", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));

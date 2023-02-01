@@ -52,6 +52,11 @@ export class CreateAppPackageDriver implements StepDriver {
     args: CreateAppPackageArgs,
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    const result = this.validateArgs(args);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
     const state = this.loadCurrentState();
 
     let manifestPath = args.manifestPath;
@@ -180,5 +185,29 @@ export class CreateAppPackageDriver implements StepDriver {
       BOT_DOMAIN: process.env.BOT_DOMAIN,
       ENV_NAME: process.env.TEAMSFX_ENV,
     };
+  }
+
+  private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {
+    const invalidParams: string[] = [];
+    if (!args || !args.manifestPath) {
+      invalidParams.push("manifestPath");
+    }
+    if (!args || !args.outputJsonPath) {
+      invalidParams.push("outputJsonPath");
+    }
+    if (!args || !args.outputZipPath) {
+      invalidParams.push("outputZipPath");
+    }
+    if (invalidParams.length > 0) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.InvalidParameterError.name,
+          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+        )
+      );
+    } else {
+      return ok(undefined);
+    }
   }
 }

@@ -38,7 +38,7 @@
             "label": "prepare local environment",
             "dependsOn": [
                 "Create resources",
-                "Set up local projects"
+                "Build project"
             ],
             "dependsOrder": "sequence"
         },
@@ -49,18 +49,18 @@
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
-            // Set up local projects.
+            // Build project.
             // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Set up local projects",
+            "label": "Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
@@ -75,10 +75,14 @@
         {
             "label": "Start auth",
             "type": "shell",
-            "command": "node teamsfx/script/run.auth.js . teamsfx/.env.local",
+            "command": "dotnet Microsoft.TeamsFx.SimpleAuth.dll",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "SIMPLE_AUTH_PATH",
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development",
+                    "PATH": "${command:fx-extension.get-dotnet-path}${env:PATH}"
+                }
             },
             "problemMatcher": {
                 "pattern": [
@@ -99,7 +103,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node ../teamsfx/script/run.tab.js .. ../teamsfx/.env.local",
+            "command": "npx env-cmd --silent -f .localSettings react-scripts start",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/tabs"

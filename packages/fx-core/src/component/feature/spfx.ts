@@ -97,7 +97,7 @@ export async function getAddSPFxQuestionNode(
   const spfx_add_feature = new QTreeNode({
     type: "group",
   });
-  spfx_add_feature.condition = { equals: TabSPFxNewUIItem.id };
+  spfx_add_feature.condition = { equals: TabSPFxNewUIItem().id };
 
   const spfx_version_check = new QTreeNode(versionCheckQuestion);
   spfx_add_feature.addChild(spfx_version_check);

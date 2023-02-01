@@ -4,7 +4,10 @@
 
 ## CardActionBot class
 
-A card action bot to respond to adaptive card universal actions.
+> Warning: This API is now obsolete.
+> 
+> Use `BotBuilderCloudAdapter.CardActionBot` instead.
+> 
 
 <b>Signature:</b>
 

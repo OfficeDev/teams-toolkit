@@ -15,11 +15,11 @@ configureApp:
 
   - uses: teamsApp/validate
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json
+      manifestPath: ./appPackage/manifest.json
 
   - uses: teamsApp/zipAppPackage
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json
+      manifestPath: ./appPackage/manifest.json
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
 

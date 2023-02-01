@@ -29,6 +29,7 @@ import {
   AadValidator,
   BotValidator,
   FrontendValidator,
+  AppStudioValidator,
 } from "../commonlib";
 import {
   StateConfigKey,
@@ -354,7 +355,8 @@ export async function cleanUp(
   hasAadPlugin = true,
   hasBotPlugin = false,
   hasApimPlugin = false,
-  envName = "dev"
+  envName = "dev",
+  teamsAppId?: string
 ) {
   const cleanUpAadAppPromise = cleanUpAadApp(
     projectPath,
@@ -370,6 +372,8 @@ export async function cleanUp(
     cleanUpResourceGroup(appName, envName),
     // remove project
     cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
+    // cancel stagged app
+    AppStudioValidator.cancelStagedAppInTeamsAppCatalog(teamsAppId),
   ]);
 }
 
@@ -411,7 +415,7 @@ export async function readContext(projectPath: string): Promise<any> {
 }
 
 export async function readContextMultiEnvV3(projectPath: string, envName: string): Promise<any> {
-  const envFilePath = path.join(projectPath, "teamsfx", `.env.${envName}`);
+  const envFilePath = path.join(projectPath, "env", `.env.${envName}`);
   const parseResult = dotenvUtil.deserialize(await fs.readFile(envFilePath, { encoding: "utf8" }));
   return parseResult.obj;
 }

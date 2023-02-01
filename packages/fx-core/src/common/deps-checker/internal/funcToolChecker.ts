@@ -181,9 +181,9 @@ export class FuncToolChecker implements DepsChecker {
     const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
     if (!nodeVersion) {
       throw new NodeNotFoundError(
-        Messages.NodeNotFound.split("@NodeVersion").join(
-          supportedVersions[supportedVersions.length - 1]
-        ),
+        Messages.NodeNotFound()
+          .split("@NodeVersion")
+          .join(supportedVersions[supportedVersions.length - 1]),
         nodeNotFoundHelpLink
       );
     }
@@ -197,7 +197,7 @@ export class FuncToolChecker implements DepsChecker {
     if (portableFunc.funcVersion) {
       if (!FuncNodeVersionWhiteList[portableFunc.funcVersion.toString()]?.[nodeVersion]) {
         return new PortableFuncNodeNotMatchedError(
-          Messages.portableFuncNodeNotMatched
+          Messages.portableFuncNodeNotMatched()
             .split("@FuncVersion")
             .join(`v${portableFunc.funcVersion}`)
             .split("@NodeVersion")
@@ -220,7 +220,7 @@ export class FuncToolChecker implements DepsChecker {
     if (globalFunc.funcVersion) {
       if (!FuncNodeVersionWhiteList[globalFunc.funcVersion.toString()]?.[nodeVersion]) {
         return new GlobalFuncNodeNotMatchedError(
-          Messages.globalFuncNodeNotMatched
+          Messages.globalFuncNodeNotMatched()
             .split("@FuncVersion")
             .join(`v${globalFunc.funcVersion.toString()}`)
             .split("@NodeVersion")
@@ -272,7 +272,7 @@ export class FuncToolChecker implements DepsChecker {
   public async install(): Promise<void> {
     if (isLinux()) {
       throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound.split("@SupportedPackages").join(displayFuncName),
+        Messages.linuxDepsNotFound().split("@SupportedPackages").join(displayFuncName),
         defaultHelpLink
       );
     }
@@ -289,7 +289,7 @@ export class FuncToolChecker implements DepsChecker {
 
     this._telemetry.sendEvent(DepsCheckerEvent.funcInstallCompleted);
     await this._logger.info(
-      Messages.finishInstallFunctionCoreTool.replace("@NameVersion", displayFuncName)
+      Messages.finishInstallFunctionCoreTool().replace("@NameVersion", displayFuncName)
     );
   }
 
@@ -299,10 +299,10 @@ export class FuncToolChecker implements DepsChecker {
     this._telemetry.sendSystemErrorEvent(
       DepsCheckerEvent.funcInstallError,
       TelemtryMessages.failedToInstallFunc,
-      Messages.failToValidateFuncCoreTool.replace("@NameVersion", displayFuncName)
+      Messages.failToValidateFuncCoreTool().replace("@NameVersion", displayFuncName)
     );
     throw new DepsCheckerError(
-      Messages.failToInstallFuncCoreTool.split("@NameVersion").join(displayFuncName),
+      Messages.failToInstallFuncCoreTool().split("@NameVersion").join(displayFuncName),
       defaultHelpLink
     );
   }
@@ -335,7 +335,7 @@ export class FuncToolChecker implements DepsChecker {
   private handleNpmNotFound() {
     this._telemetry.sendEvent(DepsCheckerEvent.npmNotFound);
     throw new DepsCheckerError(
-      Messages.needInstallFuncCoreTool.replace("@NameVersion", displayFuncName),
+      Messages.needInstallFuncCoreTool().replace("@NameVersion", displayFuncName),
       defaultHelpLink
     );
   }
@@ -462,7 +462,7 @@ export class FuncToolChecker implements DepsChecker {
 
   private async doInstallPortableFunc(version: FuncVersion): Promise<void> {
     await this._logger.info(
-      Messages.startInstallFunctionCoreTool.replace("@NameVersion", displayFuncName)
+      Messages.startInstallFunctionCoreTool().replace("@NameVersion", displayFuncName)
     );
 
     try {

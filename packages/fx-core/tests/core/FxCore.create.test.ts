@@ -58,9 +58,9 @@ describe("Core basic APIs for v3", () => {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -74,9 +74,9 @@ describe("Core basic APIs for v3", () => {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id, BotOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -89,10 +89,10 @@ describe("Core basic APIs for v3", () => {
       platform: Platform.VS,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       projectPath: projectPath,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id, BotOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -106,9 +106,9 @@ describe("Core basic APIs for v3", () => {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
       [SPFXQuestionNames.framework_type]: "react",
       [SPFXQuestionNames.webpart_name]: "helloworld",
@@ -123,8 +123,8 @@ describe("Core basic APIs for v3", () => {
   it("create from sample (VSC)", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: "hello-world-tab",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
+      [CoreQuestionNames.Samples]: "todo-list-SPFx",
       [CoreQuestionNames.Folder]: os.tmpdir(),
       stage: Stage.create,
     };

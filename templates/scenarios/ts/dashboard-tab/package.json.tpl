@@ -13,7 +13,7 @@
         "@fluentui/react-northstar": "0.62.0",
         "@fluentui/react-theme": "^9.1.3",
         "@microsoft/microsoft-graph-client": "^3.0.1",
-        "@microsoft/teams-js": "^2.2.0",
+        "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.0.1",
         "@microsoft/teamsfx-react": "^2.0.1",
         "@react-hook/resize-observer": "^1.2.6",
@@ -25,7 +25,6 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha",
         "@types/node": "^12.0.0",
         "@types/react": "^16.14.6",
         "@types/react-dom": "^16.9.12",
@@ -35,7 +34,7 @@
         "typescript": "^4.1.2"
     },
     "scripts": {
-        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

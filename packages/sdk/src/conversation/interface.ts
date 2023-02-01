@@ -127,6 +127,7 @@ export interface NotificationTargetStorage {
 
 /**
  * Options to initialize {@link NotificationBot}.
+ * @deprecated Please use BotBuilderCloudAdapter.NotificationOptions instead.
  */
 export interface NotificationOptions {
   /**
@@ -377,6 +378,7 @@ export interface BotSsoConfig {
 
 /**
  * Options to initialize {@link ConversationBot}
+ * @deprecated Please use BotBuilderCloudAdapter.ConversationOptions instead.
  */
 export interface ConversationOptions {
   /**

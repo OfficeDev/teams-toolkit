@@ -151,6 +151,7 @@ fakeCert
           accessToken: fakeToken,
           fromCache: false,
           tokenType: "fake_tokenType",
+          correlationId: "fake_correlation_id",
           expiresOn: new Date(),
         };
         return new Promise<AuthenticationResult>((resolve) => {
@@ -183,6 +184,7 @@ fakeCert
           accessToken: fakeToken,
           fromCache: false,
           tokenType: "fake_tokenType",
+          correlationId: "fake_correlation_id",
           expiresOn: new Date(),
         };
         return new Promise<AuthenticationResult>((resolve) => {

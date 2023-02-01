@@ -13,7 +13,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { join } from "path";
 import {
-  AddinNameQuestion,
   AddinLanguageQuestion,
   OfficeHostQuestion,
   getTemplate,
@@ -30,6 +29,7 @@ import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
+import { CoreQuestionNames } from "../../../core/question";
 
 const childProcessExec = promisify(childProcess.exec);
 
@@ -56,13 +56,14 @@ export class OfficeAddinGenerator {
       return err(result.error);
     }
 
-    const language = inputs[AddinLanguageQuestion.name];
+    // If lang is undefined, it means the project is created from a folder.
+    const lang = inputs[AddinLanguageQuestion.name];
 
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
       templateName,
-      language === "TypeScript" ? "ts" : "js"
+      lang ? (lang === "TypeScript" ? "ts" : "js") : undefined
     );
     if (templateRes.isErr()) return err(templateRes.error);
 
@@ -75,7 +76,7 @@ export class OfficeAddinGenerator {
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
     const template = getTemplate(inputs);
-    const name = inputs[AddinNameQuestion.name];
+    const name = inputs[CoreQuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[AddinProjectFolderQuestion.name];
     const language = inputs[AddinLanguageQuestion.name];

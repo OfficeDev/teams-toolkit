@@ -20,7 +20,7 @@ import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
-const templateVersion = templateConfig.version;
+export const templateVersion = (): string => templateConfig.version;
 const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
@@ -28,7 +28,11 @@ function selectTemplateTag(tags: string[]): string | undefined {
   if (preRelease === "alpha") {
     return templateAlphaVersion;
   }
-  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
+  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion();
+  // To avoid incompatible, alpha release does not download latest template.
+  if (versionPattern === templateAlphaVersion) {
+    return undefined;
+  }
   const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;

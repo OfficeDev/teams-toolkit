@@ -28,6 +28,7 @@ describe("Start a new project", function () {
   let appName: string;
   let testFolder: string;
   let projectPath: string;
+  let teamsAppId: string | undefined;
   beforeEach(async () => {
     testFolder = getTestFolder();
     appName = getUniqueAppName();
@@ -113,10 +114,13 @@ describe("Start a new project", function () {
 
         if (isV3Enabled()) {
           assert.exists(context.TEAMS_APP_ID);
+          teamsAppId = context.TEAMS_APP_ID;
+          AppStudioValidator.setE2ETestProvider();
         } else {
           // Only check Teams App existence
           const appStudio = AppStudioValidator.init(context);
           AppStudioValidator.validateTeamsAppExist(appStudio);
+          teamsAppId = appStudio.teamsAppId;
         }
       }
 
@@ -145,6 +149,18 @@ describe("Start a new project", function () {
         SharepointValidator.init();
         SharepointValidator.validateDeploy(appId);
       }
+
+      // publish
+      result = await execAsyncWithRetry(`teamsfx publish`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
+
+      {
+        // Validate publish result
+        await AppStudioValidator.validatePublish(teamsAppId!);
+      }
     }
   );
 
@@ -152,5 +168,6 @@ describe("Start a new project", function () {
     // clean up
     await cleanUpLocalProject(projectPath);
     await cleanupSharePointPackage(appId);
+    await AppStudioValidator.cancelStagedAppInTeamsAppCatalog(teamsAppId);
   });
 });

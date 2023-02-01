@@ -15,6 +15,7 @@ export class AppLocalYmlConfig {
   provision?: {
     bot?: {
       messagingEndpoint: string;
+      isM365?: boolean;
     };
   };
   configureApp?: {
@@ -41,6 +42,19 @@ export class AppLocalYmlConfig {
     };
     ssoBot?: boolean;
     ssoFunction?: boolean;
+    frontendStart?: {
+      sso?: boolean;
+      functionName?: string;
+    };
+    authStart?: {
+      appsettingsPath: string;
+    };
+    botStart?: {
+      tab?: boolean;
+      function?: boolean;
+      sso?: boolean;
+    };
+    backendStart?: boolean;
   };
 }
 
@@ -79,6 +93,10 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
     if (OldProjectSettingsHelper.includeFunction(this.oldProjectSettings)) {
       functionName =
         OldProjectSettingsHelper.getFunctionName(this.oldProjectSettings) || "getUserProfile";
+    }
+
+    if (this.handlebarsContext.config.provision?.bot) {
+      this.handlebarsContext.config.provision.bot.isM365 = this.oldProjectSettings.isM365;
     }
 
     if (this.handlebarsContext.config.deploy?.sso) {

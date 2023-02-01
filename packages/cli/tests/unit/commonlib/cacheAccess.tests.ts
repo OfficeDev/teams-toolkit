@@ -5,7 +5,9 @@ import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import {
   AccountCrypto,
   AzureSpCrypto,
+  clearCache,
   CryptoCachePlugin,
+  loadAccountId,
 } from "../../../src/commonlib/cacheAccess";
 import { expect } from "../utils";
 import fs, { WriteFileOptions } from "fs-extra";
@@ -50,6 +52,19 @@ describe("AccountCrypto Tests", function () {
     expect(encrypted.includes(content)).to.be.false;
     const decrtpyed = await accountCrypto.decrypt(encrypted);
     expect(decrtpyed).equals(content);
+  });
+
+  it("Encrypt/Decrypt Content - Unknown key", async () => {
+    const accountCrypto = new AccountCrypto("test");
+    (<any>accountCrypto).keytar = new MockKeytar();
+    (<any>accountCrypto).keytar.getPassword = Promise.reject();
+
+    const content =
+      '{"clientId":"clientId","secret":"secret","tenantId":"3c8f28dd-b990-4925-96a6-3ea9495654b8"}';
+    const noEncrypted = await accountCrypto.encrypt(content);
+    expect(noEncrypted).to.be.eq(content);
+    const noDecrtpyed = await accountCrypto.decrypt(content);
+    expect(noDecrtpyed).to.be.eq(content);
   });
 });
 
@@ -98,5 +113,7 @@ describe("AccountCrypto Service principal Tests", function () {
     expect(checkAzureSp).to.be.true;
     await AzureSpCrypto.loadAzureSP();
     await AzureSpCrypto.clearAzureSP();
+    await loadAccountId("abc");
+    await clearCache("abc");
   });
 });

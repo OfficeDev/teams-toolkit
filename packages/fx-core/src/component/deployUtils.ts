@@ -28,6 +28,7 @@ import {
   ViewAadAppHelpLink,
 } from "./constants";
 import { ComponentNames } from "./constants";
+import { DriverContext } from "./driver/interface/commonArgs";
 import { AadApp } from "./resource/aadApp/aadApp";
 import { sendErrorTelemetryThenReturnError } from "./utils";
 import { executeConcurrently } from "./utils/executor";
@@ -179,6 +180,17 @@ export class DeployUtils {
     const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
     const choice = result?.isOk() ? result.value : undefined;
 
+    if (choice === deployOption) {
+      return ok(Void);
+    }
+    return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
+  }
+
+  async askForDeployConsentV3(ctx: DriverContext): Promise<Result<Void, FxError>> {
+    const msg = getLocalizedString("core.deploy.confirmEnvNoticeV3", process.env.TEAMSFX_ENV);
+    const deployOption = getLocalizedString("core.option.deploy");
+    const result = await ctx.ui?.showMessage("warn", msg, true, deployOption);
+    const choice = result?.isOk() ? result.value : undefined;
     if (choice === deployOption) {
       return ok(Void);
     }

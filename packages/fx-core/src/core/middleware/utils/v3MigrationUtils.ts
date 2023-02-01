@@ -18,11 +18,19 @@ import {
 import { CoreHookContext } from "../../types";
 import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
-import { Metadata, MetadataV2, MetadataV3, VersionState } from "../../../common/versionMetadata";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
+import {
+  Metadata,
+  MetadataV2,
+  MetadataV3,
+  MetadataV3Abandoned,
+  VersionInfo,
+  VersionSource,
+  VersionState,
+} from "../../../common/versionMetadata";
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
+import { settingsUtil } from "../../../component/utils/settingsUtil";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -91,7 +99,7 @@ export function jsonObjectNamesConvertV3(
   return returnData;
 }
 
-export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
+export async function getProjectVersion(ctx: CoreHookContext): Promise<VersionInfo> {
   const projectPath = getParameterFromCxt(ctx, "projectPath", "");
   return await getProjectVersionFromPath(projectPath);
 }
@@ -100,14 +108,9 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   if (versionForMigration.platform === Platform.VS) {
     return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
   }
-  const link = getDownloadLinkByVersionAndPlatform(
-    versionForMigration.currentVersion,
-    versionForMigration.platform
-  );
   const res = getLocalizedString(
     "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform],
-    link
+    MetadataV2.platformVersion[versionForMigration.platform]
   );
   return res;
 }
@@ -149,18 +152,42 @@ export function outputCancelMessage(version: string, platform: Platform): void {
   }
 }
 
-export async function getProjectVersionFromPath(projectPath: string): Promise<string> {
+export async function getProjectVersionFromPath(projectPath: string): Promise<VersionInfo> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.version || MetadataV3.projectVersion;
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
+    if (readSettingsResult.isOk()) {
+      return {
+        version: readSettingsResult.value.version || "",
+        source: VersionSource.teamsapp,
+      };
+    } else {
+      throw readSettingsResult.error;
+    }
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {
     const settings = await fs.readJson(v2path);
-    return settings.version || "";
+    return {
+      version: settings.version || "",
+      source: VersionSource.projectSettings,
+    };
   }
-  return "";
+  const abandonedPath = path.resolve(
+    projectPath,
+    MetadataV3Abandoned.configFolder,
+    MetadataV3Abandoned.configFile
+  );
+  if (await fs.pathExists(abandonedPath)) {
+    return {
+      version: MetadataV3Abandoned.configFolder,
+      source: VersionSource.settings,
+    };
+  }
+  return {
+    version: "",
+    source: VersionSource.unknown,
+  };
 }
 
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
@@ -179,13 +206,14 @@ export async function getTrackingIdFromPath(projectPath: string): Promise<string
   return "";
 }
 
-export function getVersionState(version: string): VersionState {
+export function getVersionState(info: VersionInfo): VersionState {
   if (
-    semver.gte(version, MetadataV2.projectVersion) &&
-    semver.lte(version, MetadataV2.projectMaxVersion)
+    info.source === VersionSource.projectSettings &&
+    semver.gte(info.version, MetadataV2.projectVersion) &&
+    semver.lte(info.version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
-  } else if (version === MetadataV3.projectVersion) {
+  } else if (info.source === VersionSource.teamsapp && info.version === MetadataV3.projectVersion) {
     return VersionState.compatible;
   }
   return VersionState.unsupported;
@@ -276,8 +304,8 @@ export async function updateAndSaveManifestForSpfx(
   context: MigrationContext,
   manifest: string
 ): Promise<void> {
-  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+  const remoteTemplatePath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.local.json");
 
   const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
   const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;

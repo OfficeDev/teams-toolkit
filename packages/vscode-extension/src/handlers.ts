@@ -100,6 +100,7 @@ import {
   AzureAssignRoleHelpUrl,
   AzurePortalUrl,
   CLI_FOR_M365,
+  DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
   SpfxManageSiteAdminUrl,
@@ -166,12 +167,6 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import {
-  isPersonalApp,
-  isGroupApp,
-  isBot,
-  isMessageExtension,
-} from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import commandController from "./commandController";
 
@@ -295,7 +290,7 @@ export function activate(): Result<Void, FxError> {
 }
 
 export async function getIsFromSample(projectPath?: string) {
-  if (core) {
+  if (core && !isV3Enabled()) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
 
@@ -338,9 +333,9 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     //   return projectConfig.value?.settings?.version;
     // }
     if (isV3Enabled()) {
-      const settings = await core.getSettings(input as InputsWithProjectPath);
-      if (settings.isOk()) {
-        return settings.value?.version;
+      const versionCheckResult = await projectVersionCheck();
+      if (versionCheckResult.isOk()) {
+        return versionCheckResult.value.currentVersion;
       }
     } else {
       await core.getProjectConfig(input);
@@ -380,6 +375,29 @@ export function addFileSystemWatcher(workspacePath: string) {
 
   backupConfigWatcher.onDidCreate(async (event) => {
     await openBackupConfigMd(workspacePath, event.fsPath);
+  });
+
+  if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
+    const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
+
+    packageLockFileWatcher.onDidCreate(async (event) => {
+      await sendSDKVersionTelemetry(event.fsPath);
+    });
+
+    packageLockFileWatcher.onDidChange(async (event) => {
+      await sendSDKVersionTelemetry(event.fsPath);
+    });
+  }
+}
+
+export async function sendSDKVersionTelemetry(filePath: string) {
+  const packageLockFile = await fs.readJson(filePath).catch(() => {});
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateSDKPackages, {
+    [TelemetryProperty.BotbuilderVersion]: packageLockFile?.dependencies["botbuilder"]?.version,
+    [TelemetryProperty.TeamsFxVersion]:
+      packageLockFile?.dependencies["@microsoft/teamsfx"]?.version,
+    [TelemetryProperty.TeamsJSVersion]:
+      packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
   });
 }
 
@@ -807,7 +825,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -902,7 +920,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -1012,7 +1030,57 @@ export async function publishInDeveloperPortalHandler(
     TelemetryEvent.PublishInDeveloperPortalStart,
     getTriggerFromProperty(args)
   );
-  return await runCommand(Stage.publishInDeveloperPortal);
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const zipDefaultFolder: string | undefined = path.join(
+    workspacePath!,
+    BuildFolderName,
+    AppPackageFolderName
+  );
+
+  let files: string[] = [];
+  if (await fs.pathExists(zipDefaultFolder)) {
+    files = await fs.readdir(zipDefaultFolder);
+    files = files
+      .filter((file) => path.extname(file).toLowerCase() === ".zip")
+      .map((file) => {
+        return path.join(zipDefaultFolder, file);
+      });
+  }
+  const selectFileConfig: SelectFileConfig = {
+    name: "appPackagePath",
+    title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+    placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
+    filters: {
+      "Zip files": ["zip"],
+    },
+    possibleFiles: files.map((file) => {
+      return {
+        id: file,
+        label: file,
+      };
+    }),
+    default: files.length > 0 ? files[0] : undefined,
+  };
+  const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
+  if (selectFileResult.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PublishInDeveloperPortal,
+      selectFileResult.error,
+      getTriggerFromProperty(args)
+    );
+    return ok(null);
+  }
+  const inputs = getSystemInputs();
+  inputs["appPackagePath"] = selectFileResult.value.result;
+  const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
+  if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PublishInDeveloperPortal,
+      res.error,
+      getTriggerFromProperty(args)
+    );
+  }
+  return res;
 }
 
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
@@ -1380,6 +1448,10 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   if (commonUtils.checkAndSkipDebugging()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1467,6 +1539,10 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   const additionalProperties: { [key: string]: string } = {
     [TelemetryProperty.DebugIsTransparentTask]: "false",
   };
@@ -1566,6 +1642,10 @@ export async function validateGetStartedPrerequisitesHandler(
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -1633,6 +1713,10 @@ export async function getDotnetPathHandler(): Promise<string> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
   const result = await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPreCheck,
@@ -1762,8 +1846,12 @@ export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, 
 }
 
 export async function checkUpgrade(args?: any[]) {
-  // just for triggering upgrade check for multi-env && bicep.
-  await runCommand(Stage.listCollaborator);
+  if (isV3Enabled()) {
+    const result = await core.phantomMigrationV3(getSystemInputs());
+  } else {
+    // just for triggering upgrade check for multi-env && bicep.
+    await runCommand(Stage.listCollaborator);
+  }
 }
 
 export async function openSurveyHandler(args?: any[]) {
@@ -1823,39 +1911,51 @@ export async function openReadMeHandler(args: any[]) {
   } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
-    let targetFolder: string | undefined;
-    if (await getIsFromSample()) {
-      openSampleReadmeHandler(args);
-    } else if (globalVariables.isSPFxProject) {
-      targetFolder = `${workspacePath}/SPFx`;
-    } else {
-      const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
-      const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
+    if (isV3Enabled()) {
+      // show README.md or src/README.md(SPFx) in workspace root folder
+      const rootReadmePath = `${workspacePath}/README.md`;
+      const uri = (await fs.pathExists(rootReadmePath))
+        ? Uri.file(rootReadmePath)
+        : Uri.file(`${workspacePath}/src/README.md`);
 
-      if (tabFolder && botFolder) {
-        targetFolder = workspacePath;
-      } else if (tabFolder) {
-        targetFolder = tabFolder;
-      } else if (botFolder) {
-        targetFolder = botFolder;
-      } else {
-        // minimal teamsfx project
-        targetFolder = workspacePath;
-      }
-    }
-    // When tab and bot coexist, readme file would reside in project root folder.
-    // Naming it README.md could accidently overwrite our users' own readme file.
-    // So we name it README-auto-generated.md here.
-    const autoGeneratedReadmePath = `${targetFolder}/${AutoGeneratedReadme}`;
-    const uri = (await fs.pathExists(autoGeneratedReadmePath))
-      ? Uri.file(autoGeneratedReadmePath)
-      : Uri.file(`${targetFolder}/README.md`);
-
-    // Always open README.md in current panel instead of side-by-side.
-    workspace.openTextDocument(uri).then(() => {
+      // Always open README.md in current panel instead of side-by-side.
+      await workspace.openTextDocument(uri);
       const PreviewMarkdownCommand = "markdown.showPreview";
-      commands.executeCommand(PreviewMarkdownCommand, uri);
-    });
+      await commands.executeCommand(PreviewMarkdownCommand, uri);
+    } else {
+      let targetFolder: string | undefined;
+      if (await getIsFromSample()) {
+        openSampleReadmeHandler(args);
+      } else if (globalVariables.isSPFxProject) {
+        targetFolder = `${workspacePath}/SPFx`;
+      } else {
+        const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
+        const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
+
+        if (tabFolder && botFolder) {
+          targetFolder = workspacePath;
+        } else if (tabFolder) {
+          targetFolder = tabFolder;
+        } else if (botFolder) {
+          targetFolder = botFolder;
+        } else {
+          // minimal teamsfx project
+          targetFolder = workspacePath;
+        }
+      }
+      // When tab and bot coexist, readme file would reside in project root folder.
+      // Naming it README.md could accidently overwrite our users' own readme file.
+      // So we name it README-auto-generated.md here.
+      const autoGeneratedReadmePath = `${targetFolder}/${AutoGeneratedReadme}`;
+      const uri = (await fs.pathExists(autoGeneratedReadmePath))
+        ? Uri.file(autoGeneratedReadmePath)
+        : Uri.file(`${targetFolder}/README.md`);
+
+      // Always open README.md in current panel instead of side-by-side.
+      await workspace.openTextDocument(uri);
+      const PreviewMarkdownCommand = "markdown.showPreview";
+      await commands.executeCommand(PreviewMarkdownCommand, uri);
+    }
   }
 }
 
@@ -2080,7 +2180,14 @@ export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxE
 
 export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  return VS_CODE_UI.openUrl("https://dev.teams.microsoft.com/home");
+  const accountRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+
+  if (accountRes.isOk() && accountRes.value.status === signedIn) {
+    const loginHint = accountRes.value.accountInfo?.upn as string;
+    return VS_CODE_UI.openUrl(`${DeveloperPortalHomeLink}?login_hint=${loginHint}`);
+  } else {
+    return VS_CODE_UI.openUrl(DeveloperPortalHomeLink);
+  }
 }
 
 export async function openBotManagement(args?: any[]) {
@@ -2305,11 +2412,9 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
     if (result.isErr()) {
       throw result.error;
     }
-    const grantSucceededMsg = util.format(
-      localize("teamstoolkit.handlers.grantPermissionSucceeded"),
-      inputs.email,
-      env
-    );
+    const grantSucceededMsg = isV3Enabled()
+      ? util.format(localize("teamstoolkit.handlers.grantPermissionSucceededV3"), inputs.email)
+      : util.format(localize("teamstoolkit.handlers.grantPermissionSucceeded"), inputs.email, env);
 
     // Will not show help messages in V3
     if (!isV3Enabled()) {
@@ -2326,6 +2431,9 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       VsCodeLogInstance.warning(
         warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
       );
+    } else {
+      window.showInformationMessage(grantSucceededMsg);
+      VsCodeLogInstance.info(grantSucceededMsg);
     }
   } catch (e) {
     result = wrapError(e);
@@ -2767,7 +2875,12 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);
     return err(res.error);
   }
-  const manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/aad.${envName}.json`;
+
+  let manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/aad.${envName}.json`;
+
+  if (isV3Enabled()) {
+    manifestFile = `${workspacePath}/${BuildFolderName}/aad.${envName}.json`;
+  }
 
   if (fs.existsSync(manifestFile)) {
     workspace.openTextDocument(manifestFile).then((document) => {
@@ -3861,4 +3974,8 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
+}
+
+export async function projectVersionCheck() {
+  return await core.projectVersionCheck(getSystemInputs());
 }

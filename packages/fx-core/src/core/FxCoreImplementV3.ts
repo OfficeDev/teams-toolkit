@@ -13,7 +13,6 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
-  Platform,
   ProjectSettingsV3,
   Result,
   Settings,
@@ -23,8 +22,11 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { AadConstants } from "../component/constants";
-import { environmentManager } from "./environment";
+import {
+  AadConstants,
+  AzureSolutionQuestionNames,
+  SingleSignOnOptionItem,
+} from "../component/constants";
 import {
   ObjectIsUndefinedError,
   NoAadManifestExistError,
@@ -67,12 +69,14 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import {
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
-  getQuestionsForPublishInDeveloperPortal,
-} from "../component/question";
+import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
+import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
+import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { VersionSource } from "../common/versionMetadata";
+import { pathUtils } from "../component/utils/pathUtils";
+import { InvalidEnvFolderPath } from "../component/configManager/error";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -239,20 +243,21 @@ export class FxCoreV3Implement {
       `aad.${inputs.env}.json`
     );
     const inputArgs: UpdateAadAppArgs = {
-      manifestTemplatePath: manifestTemplatePath,
+      manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
-    const contextV3: DriverContext = {
-      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
-      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
-      ui: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      projectPath: inputs.projectPath as string,
-      platform: Platform.VSCode,
-    };
+    const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
-    if (res.isErr()) return err(res.error);
+    if (res.isErr()) {
+      if (res.error instanceof MissingEnvInFileUserError) {
+        res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
+        if (res.error.displayMessage) {
+          res.error.displayMessage +=
+            " " + getLocalizedString("error.UpdateAadManifest.MissingEnvHint");
+        }
+      }
+      return err(res.error);
+    }
     return ok(Void);
   }
 
@@ -311,17 +316,18 @@ export class FxCoreV3Implement {
         outputJsonPath: func.params.outputJsonPath,
       };
       res = await driver.run(args, context);
+    } else if (func.method === "addSso") {
+      inputs.stage = Stage.addFeature;
+      inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
+      const component = Container.get("sso") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      res = await this.previewAadManifest(inputs);
     }
     return res;
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW(getQuestionsForPublishInDeveloperPortal),
-    ConcurrentLockerMW,
-    EnvLoaderMW(false),
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -353,16 +359,17 @@ export class FxCoreV3Implement {
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     const projectPath = (inputs.projectPath as string) || "";
     if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
-      const currentVersion = await getProjectVersionFromPath(projectPath);
-      if (!currentVersion) {
+      const versionInfo = await getProjectVersionFromPath(projectPath);
+      if (!versionInfo.version) {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = getVersionState(currentVersion);
+      const isSupport = getVersionState(versionInfo);
       return ok({
-        currentVersion,
+        currentVersion: versionInfo.version,
         trackingId,
         isSupport,
+        versionSource: VersionSource[versionInfo.source],
       });
     } else {
       return err(new InvalidProjectError());
@@ -410,9 +417,20 @@ export class FxCoreV3Implement {
     sourceEnvName: string,
     projectPath: string
   ): Promise<Result<Void, FxError>> {
-    const sourceDotEnvFile = environmentManager.getDotEnvPath(sourceEnvName, projectPath);
+    let res = await pathUtils.getEnvFilePath(projectPath, sourceEnvName);
+    if (res.isErr()) return err(res.error);
+    const sourceDotEnvFile = res.value;
+
+    res = await pathUtils.getEnvFilePath(projectPath, targetEnvName);
+    if (res.isErr()) return err(res.error);
+    const targetDotEnvFile = res.value;
+    if (!sourceDotEnvFile || !targetDotEnvFile)
+      return err(
+        new InvalidEnvFolderPath(
+          "missing 'environmentFolderPath' field or environment folder not exist"
+        )
+      );
     const source = await fs.readFile(sourceDotEnvFile);
-    const targetDotEnvFile = environmentManager.getDotEnvPath(targetEnvName, projectPath);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
       .toString()
@@ -432,6 +450,24 @@ export class FxCoreV3Implement {
       });
 
     writeStream.end();
+    return ok(Void);
+  }
+
+  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new NoAadManifestExistError(manifestTemplatePath));
+    }
+    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+    const manifestOutputPath: string = path.join(
+      inputs.projectPath!,
+      "build",
+      `aad.${inputs.env}.json`
+    );
+    const contextV3: DriverContext = createDriverContext(inputs);
+    await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
 }

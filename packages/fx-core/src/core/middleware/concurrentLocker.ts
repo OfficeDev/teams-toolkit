@@ -11,7 +11,6 @@ import {
   Func,
   Inputs,
   ProductName,
-  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -43,7 +42,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   }
   let configFolder = "";
   if (isValidProjectV3(inputs.projectPath)) {
-    configFolder = path.join(inputs.projectPath, SettingsFolderName);
+    configFolder = path.join(inputs.projectPath);
   } else if (isValidProjectV2(inputs.projectPath)) {
     configFolder = path.join(inputs.projectPath, `.${ConfigFolderName}`);
   } else {

@@ -46,7 +46,7 @@
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
                 "env": "local",
                 "output": {
-                    // Keep consistency with migrated configuration.
+                    // Keep consistency with upgraded configuration.
                     "endpoint": "PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT",
                     "domain": "PROVISIONOUTPUT__BOTOUTPUT__DOMAIN"
                 }
@@ -99,7 +99,7 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "node ../script/run.bot.js .. ../env/.env.local",
+            "command": "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/bot"

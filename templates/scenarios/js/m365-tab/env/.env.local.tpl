@@ -1,13 +1,11 @@
 # Built-in environment variables
 TEAMSFX_ENV=local
 
-
-# Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
+# Generated during provision, you can also add your own variables.
 TAB_DOMAIN=
 TAB_ENDPOINT=
 TEAMS_APP_ID=
 AAD_APP_CLIENT_ID=
-SECRET_AAD_APP_CLIENT_SECRET=
 AAD_APP_OBJECT_ID=
 AAD_APP_TENANT_ID=
 AAD_APP_OAUTH_AUTHORITY=
@@ -22,3 +20,6 @@ M365_OAUTH_AUTHORITY_HOST=
 # Generated during deploy, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
 SSL_CRT_FILE=
 SSL_KEY_FILE=
+
+# Secrets. You can add your own secret value, prefixed with SECRET_
+SECRET_AAD_APP_CLIENT_SECRET=

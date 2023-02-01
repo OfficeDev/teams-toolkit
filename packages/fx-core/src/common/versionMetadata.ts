@@ -14,6 +14,7 @@ export const MetadataV3 = {
   defaultEnvironmentFolder: "env",
   projectId: "projectId",
   teamsManifestFileName: "manifest.json",
+  aadManifestFileName: "aad.manifest.json",
 };
 
 export const MetadataV2 = {

@@ -822,7 +822,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const aadAppTemplateSelectorV3 = {
     language: "json",
     scheme: "file",
-    pattern: `**/aad.manifest.template.json`,
+    pattern: `**/aad.manifest.json`,
   };
 
   const permissionsJsonFileCodeLensProvider = new PermissionsJsonFileCodeLensProvider();

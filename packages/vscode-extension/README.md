@@ -39,7 +39,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 <table>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/landingPage_nodejs.png"></td>
-        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v14.x or v16.x is required (v16.x is recommended). If you develop SPFx Tab app, please install v14.x (recommended).</td>
+        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v14.x, v16.x or v18.x is required. If you develop SPFx Tab app, please install v16.x.</td>
     </tr>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/landingPage_m365.png"></td>

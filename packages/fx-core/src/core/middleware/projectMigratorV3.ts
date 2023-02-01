@@ -350,7 +350,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
   }
 
-  // Read AAD app manifest and save to ./aad.manifest.template.json
+  // Read AAD app manifest and save to ./aad.manifest.json
   const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
@@ -362,7 +362,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    await context.fsWriteFile("aad.manifest.template.json", aadManifest);
+    await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
   }
 
   await context.fsRemove(oldAppPackageFolderPath);

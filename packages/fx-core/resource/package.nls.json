@@ -725,7 +725,7 @@
   "core.updateBotIdForBot.description": "Update botId %s to \"{{BOT_ID}}\" in manifest.json",
   "_core.updateBotIdForBot.description.comment": "'botId' and '{{BOT_ID}}' should not be localized. 'manifest.json' is the file name which should also not be localized.",
   "core.updateBotIdForMessageExtension.description": "Update botId %s to \"{{BOT_ID}}\" in manifest.json",
-  "_core.updateBotIdForMessageExtension.comment": "'botId' and '{{BOT_ID}}' should not be localized. 'manifest.json' is the file name which should also not be localized.",
+  "_core.updateBotIdForMessageExtension.description.comment": "'botId' and '{{BOT_ID}}' should not be localized. 'manifest.json' is the file name which should also not be localized.",
   "core.updateBotIdForBot.label": "Bot",
   "core.updateBotIdForMessageExtension.label": "Message extension",
   "core.updateContentUrlQuestion.title": "Configure content URL(s) for debugging",

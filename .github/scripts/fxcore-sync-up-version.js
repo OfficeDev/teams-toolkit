@@ -37,3 +37,9 @@ else if(templateVersion.includes("alpha")) {
     templateConfigFile.tagPrefix = "templates-";
     fse.writeFileSync(templateConfig, JSON.stringify(templateConfigFile, null, 4))
 }
+else if(templateVersion.includes("prerelease")) {
+    console.log("sync up template in fx-core as 0.0.0-prerelease")
+    templateConfigFile.version = "0.0.0-prerelease";
+    templateConfigFile.tagPrefix = "templates-";
+    fse.writeFileSync(templateConfig, JSON.stringify(templateConfigFile, null, 4))
+}

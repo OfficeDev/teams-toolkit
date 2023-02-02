@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Kuojian Lu <kuojianlu@gmail.com>
+ */
 import "mocha";
 
 import * as chai from "chai";
@@ -19,7 +22,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { ComponentNames } from "../../../src/component/constants";
+import { ComponentNames, TeamsFxUrlNames } from "../../../src/component/constants";
 import {
   DebugArgumentEmptyError,
   InvalidExistingBotArgsError,
@@ -412,7 +415,7 @@ describe("BotDebugHandler", () => {
           AppStudioError.DeveloperPortalAPIFailedError.name,
           ["", ""],
           {
-            teamsfxUrlName: "<create-bot-registration>",
+            teamsfxUrlName: TeamsFxUrlNames.createBot,
           }
         )
       );

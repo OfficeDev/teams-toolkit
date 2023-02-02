@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import {
   FxError,
   ok,
@@ -16,7 +19,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
-import { BotServiceOutputs, ComponentNames } from "../../constants";
+import { BotServiceOutputs, ComponentNames, TeamsFxUrlNames } from "../../constants";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
 import { ProgressMessages, ProgressTitles } from "../../messages";
@@ -124,7 +127,7 @@ export class BotService extends AzureResource {
       teamsBotState.botPassword = regRes.value.botPassword;
       return ok(undefined);
     } catch (e) {
-      if (e.innerError.teamsfxUrlName == "<create-bot-registration>" && hasBotIdInEnvBefore) {
+      if (e.innerError?.teamsfxUrlName == TeamsFxUrlNames.createBot && hasBotIdInEnvBefore) {
         throw AlreadyCreatedBotNotExist(botConfig.botId, (e as any).innerError);
       } else {
         throw e;

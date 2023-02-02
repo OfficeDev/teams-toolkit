@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import {
   InputsWithProjectPath,
   M365TokenProvider,
@@ -19,7 +22,7 @@ import { setTools } from "../../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { BotService } from "../../../../src/component/resource/botService/botService";
-import { ComponentNames } from "../../../../src/component/constants";
+import { ComponentNames, TeamsFxUrlNames } from "../../../../src/component/constants";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { TeamsfxCore } from "../../../../src/component/core";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
@@ -126,7 +129,7 @@ describe("Bot service", () => {
         AppStudioError.DeveloperPortalAPIFailedError.name,
         ["", ""],
         {
-          teamsfxUrlName: "<create-bot-registration>",
+          teamsfxUrlName: TeamsFxUrlNames.createBot,
         }
       )
     );

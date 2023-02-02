@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan Jobs <ruhe@microsoft.com>
+ */
 import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, default as axios } from "axios";
@@ -22,6 +25,7 @@ import { FxBotPluginResultFactory } from "../result";
 import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient";
 import { isHappyResponse } from "../common";
 import { HttpStatusCode } from "../../../constant/commonConstant";
+import { TeamsFxUrlNames } from "../../../constants";
 
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
@@ -83,7 +87,7 @@ export class AppStudioClient {
         throw new BotFrameworkNotAllowedToAcquireTokenError();
       } else {
         // Potential live site issue cases.
-        e.teamsfxUrlName = "<get-bot-registration>";
+        e.teamsfxUrlName = TeamsFxUrlNames.getBot;
         throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT) as SystemError;
       }
     }
@@ -119,7 +123,7 @@ export class AppStudioClient {
       } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
         throw new BotFrameworkConflictResultError();
       } else {
-        e.teamsfxUrlName = "<create-bot-registration>";
+        e.teamsfxUrlName = TeamsFxUrlNames.createBot;
         throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.CREATE_BOT) as SystemError;
       }
     }
@@ -165,7 +169,7 @@ export class AppStudioClient {
       } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
         throw new BotFrameworkConflictResultError();
       } else {
-        e.teamsfxUrlName = "<update-message-endpoint>";
+        e.teamsfxUrlName = TeamsFxUrlNames.updateEndpoint;
         throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_BOT) as SystemError;
       }
     }

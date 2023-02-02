@@ -734,6 +734,33 @@ describe("handlers", () => {
         .oneOf([VsCodeEnv.remote, VsCodeEnv.codespaceVsCode, VsCodeEnv.codespaceBrowser]);
       getExtension.restore();
     });
+
+    it("Remotely activate", async () => {
+      const expectedResult = {
+        extensionKind: vscode.ExtensionKind.Workspace,
+        id: "",
+        extensionUri: vscode.Uri.file(""),
+        extensionPath: "",
+        isActive: true,
+        packageJSON: {},
+        exports: undefined,
+        activate: sinon.spy(),
+      };
+      const getExtension = sinon
+        .stub(vscode.extensions, "getExtension")
+        .callsFake((name: string) => {
+          return expectedResult;
+        });
+      sinon.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
+      sinon.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
+      sinon.stub(ExtTelemetry, "dispose");
+      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+      const sendTelemetryStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const addSharedPropertyStub = sinon.stub(ExtTelemetry, "addSharedProperty");
+      const result = await handlers.activate();
+      getExtension.restore();
+      sinon.restore();
+    })
   });
 
   it("openWelcomeHandler", async () => {

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Alive-Fish <15262146+Alive-Fish@users.noreply.github.com>
+ */
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
@@ -15,6 +18,7 @@ import {
   CapabilityAddCommandAndResponse,
   CapabilityAddWorkflow,
   CapabilityAddSPFxTab,
+  CapabilityAddSSOTab,
 } from "../../../src/cmds/capability";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
@@ -333,5 +337,10 @@ describe("Capability Command Tests", function () {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
     }
+  });
+
+  it("CapabilityAddSSOTab getNpmInstallExcludeCaps", async () => {
+    const cap = new CapabilityAddSSOTab();
+    cap.getNpmInstallExcludeCaps(undefined);
   });
 });

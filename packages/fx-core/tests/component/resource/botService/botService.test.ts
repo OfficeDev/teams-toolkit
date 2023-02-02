@@ -112,9 +112,7 @@ describe("Bot service", () => {
     if (res.isErr()) {
       const error = res.error;
       assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
-      // assert.equal(error.innerError.teamsfxUrlName, "<create-bot-registration>");
     }
-    // assert.isTrue(telemetryStub.calledOnce);
   });
 
   it("local bot registration error with existing bot id and cannot get bot", async () => {

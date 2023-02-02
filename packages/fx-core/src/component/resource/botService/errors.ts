@@ -251,7 +251,7 @@ export class BotFrameworkNotAllowedToAcquireTokenError extends PluginError {
     super(
       ErrorType.USER,
       ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR,
-      Messages.NotAllowedToAcquireBotFrameworkToken,
+      Messages.NotAllowedToAcquireBotFrameworkToken(),
       [Messages.CheckOutputLogAndTryToFix]
     );
   }
@@ -262,7 +262,7 @@ export class BotFrameworkForbiddenResultError extends PluginError {
     super(
       ErrorType.USER,
       ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR,
-      Messages.BotProvisionReturnsForbiddenResult,
+      Messages.BotProvisionReturnsForbiddenResult(),
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
     );
   }
@@ -273,7 +273,7 @@ export class BotFrameworkConflictResultError extends PluginError {
     super(
       ErrorType.USER,
       ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR,
-      Messages.BotProvisionReturnsConflictResult,
+      Messages.BotProvisionReturnsConflictResult(),
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
     );
   }

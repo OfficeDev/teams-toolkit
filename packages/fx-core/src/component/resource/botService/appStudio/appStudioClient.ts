@@ -20,6 +20,8 @@ import { ResourceContextV3, SystemError } from "@microsoft/teamsfx-api";
 import { CheckThrowSomethingMissing } from "../../../error";
 import { FxBotPluginResultFactory } from "../result";
 import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient";
+import { isHappyResponse } from "../common";
+import { HttpStatusCode } from "../../../constant/commonConstant";
 
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
@@ -67,16 +69,17 @@ export class AppStudioClient {
       const response = await RetryHandler.Retry(() =>
         axiosInstance.get(`${AppStudioClient.baseUrl}/api/botframework/${botId}`)
       );
-      if (response && response.data) {
-        return <IBotRegistration>response.data;
+      if (isHappyResponse(response)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
         throw new Error("Failed to get data");
       }
     } catch (e) {
-      if (e.response?.status === 404) {
+      if (e.response?.status === HttpStatusCode.NOTFOUND) {
         return undefined; // Stands for NotFound.
-      } else if (e.response?.status === 401) {
+      } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
         throw new BotFrameworkNotAllowedToAcquireTokenError();
       } else {
         // Potential live site issue cases.
@@ -105,15 +108,15 @@ export class AppStudioClient {
       const response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework`, registration)
       );
-      if (!response || !response.data || response.status !== 200) {
+      if (!isHappyResponse(response)) {
         throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
       }
     } catch (e) {
-      if (e.response?.status === 401) {
+      if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
         throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else if (e.response?.status === 403) {
+      } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
         throw new BotFrameworkForbiddenResultError();
-      } else if (e.response?.status === 429) {
+      } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
         throw new BotFrameworkConflictResultError();
       } else {
         e.teamsfxUrlName = "<create-bot-registration>";
@@ -151,15 +154,15 @@ export class AppStudioClient {
       const response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
       );
-      if (!response || !response.data || response.status !== 200) {
+      if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
     } catch (e) {
-      if (e.response?.status === 401) {
+      if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
         throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else if (e.response?.status === 403) {
+      } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
         throw new BotFrameworkForbiddenResultError();
-      } else if (e.response?.status === 429) {
+      } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
         throw new BotFrameworkConflictResultError();
       } else {
         e.teamsfxUrlName = "<update-message-endpoint>";

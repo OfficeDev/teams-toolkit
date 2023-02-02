@@ -5,6 +5,10 @@ export enum HttpStatusCode {
   OK = 200,
   CREATED = 201,
   ACCEPTED = 202,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NOTFOUND = 404,
+  TOOMANYREQS = 429,
 }
 
 export class TelemetryConstant {

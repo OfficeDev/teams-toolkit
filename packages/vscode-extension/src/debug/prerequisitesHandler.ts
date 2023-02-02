@@ -14,6 +14,8 @@ import {
   UserErrorOptions,
   Void,
   PathNotExistError,
+  M365TokenProvider,
+  VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -58,7 +60,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools, openAccountHelpHandler } from "../handlers";
+import { tools, openAccountHelpHandler, detectVsCodeEnv } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -95,6 +97,7 @@ import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
 import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
+import M365CodeSpaceTokenInstance from "../commonlib/m365CodeSpaceLogin";
 
 enum Checker {
   NpmInstall = "npm package installation",
@@ -680,7 +683,12 @@ async function ensureM365Account(
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
-      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      let m365Login: M365TokenProvider = M365TokenInstance;
+      const vscodeEnv = detectVsCodeEnv();
+      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+        m365Login = M365CodeSpaceTokenInstance;
+      }
+      let loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
         return err(loginStatusRes.error);
@@ -698,7 +706,7 @@ async function ensureM365Account(
         if (tokenRes.isErr()) {
           return err(tokenRes.error);
         }
-        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+        loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
         if (loginStatusRes.isErr()) {
           return err(loginStatusRes.error);
         }

@@ -49,7 +49,6 @@ import {
 } from "./resource/appManifest/utils/utils";
 
 const appPackageFolderName = "appPackage";
-const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
 const manifestFileName = "manifest.json";
@@ -113,18 +112,8 @@ async function updateManifest(
     return err(new UserError(CoordinatorSource, "CouldNotFoundManifest", msg, msg));
   }
 
-  const colorFilePath = path.join(
-    ctx.projectPath!,
-    appPackageFolderName,
-    resourcesFolderName,
-    colorFileName
-  );
-  const outlineFilePath = path.join(
-    ctx.projectPath!,
-    appPackageFolderName,
-    resourcesFolderName,
-    outlineFileName
-  );
+  const colorFilePath = path.join(ctx.projectPath!, appPackageFolderName, colorFileName);
+  const outlineFilePath = path.join(ctx.projectPath!, appPackageFolderName, outlineFileName);
 
   const manifestTemplatePath = path.join(ctx.projectPath!, appPackageFolderName, manifestFileName);
   const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);

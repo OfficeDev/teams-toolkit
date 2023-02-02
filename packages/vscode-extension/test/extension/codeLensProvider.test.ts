@@ -112,6 +112,24 @@ describe("Manifest codelens", () => {
     chai.expect(res.command?.arguments).to.deep.equal([{ type: "env", from: "aad" }]);
   });
 
+  it("ComputeTemplateCodeLenses for AAD manifest", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+    const document = <vscode.TextDocument>{
+      fileName: "./aad.manifest.json",
+      getText: () => {
+        return "{name: 'test'}";
+      },
+    };
+
+    const aadProvider = new AadAppTemplateCodeLensProvider();
+    const res = await aadProvider.provideCodeLenses(document);
+    chai.assert.isTrue(
+      res != null && res[0].command!.command === "fx-extension.openPreviewAadFile"
+    );
+  });
+
   it("Preview codelens", async () => {
     const document = <vscode.TextDocument>{
       fileName: "manifest.dev.json",

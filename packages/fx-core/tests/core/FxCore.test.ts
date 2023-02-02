@@ -217,7 +217,7 @@ describe("Core basic APIs", () => {
       assert.isNotNull(runSpy.getCall(0).args[0]);
       assert.strictEqual(
         runSpy.getCall(0).args[0].manifestPath,
-        path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.template.json")
+        path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.json")
       );
       runSpy.restore();
     } finally {
@@ -345,12 +345,7 @@ describe("Core basic APIs", () => {
     try {
       const core = new FxCore(tools);
       const appName = mockV3Project();
-      const appManifestPath = path.join(
-        os.tmpdir(),
-        appName,
-        "samples-v3",
-        "aad.manifest.template.json"
-      );
+      const appManifestPath = path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.json");
       await fs.remove(appManifestPath);
       const inputs: Inputs = {
         platform: Platform.VSCode,

@@ -1,7 +1,7 @@
 /**
  * @author huajiezhang <huajiezhang@microsoft.com>
  */
-import { err, FxError, Result, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -24,14 +24,19 @@ export class ScriptStepDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const typedArgs = args as ScriptDriverArgs;
     const res = await execute(typedArgs, context);
-    return err(new UserError({}));
+    if (res.isErr()) return err(res.error);
+    return ok(new Map());
   }
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    return { result: err(new UserError({})), summaries: [] };
+    const res = await this.run(args, ctx);
+    return { result: res, summaries: ["run script"] };
   }
 }
 
-export function execute(args: ScriptDriverArgs, context: DriverContext): Promise<string> {
+export function execute(
+  args: ScriptDriverArgs,
+  context: DriverContext
+): Promise<Result<string, FxError>> {
   return new Promise((resolve, reject) => {
     let workingDir = path.resolve(args.workingDirectory || ".");
     workingDir = path.isAbsolute(workingDir)
@@ -60,7 +65,7 @@ export function execute(args: ScriptDriverArgs, context: DriverContext): Promise
           await context.logProvider.error(
             `Failed to run command: "${command}" on path: "${workingDir}".`
           );
-          reject(error);
+          reject(err(error));
         }
         if (stdout) {
           await context.logProvider.debug(stdout);
@@ -74,7 +79,7 @@ export function execute(args: ScriptDriverArgs, context: DriverContext): Promise
             await fs.appendFile(appendFile, stderr);
           }
         }
-        resolve(stdout);
+        resolve(ok(stdout));
       }
     );
   });

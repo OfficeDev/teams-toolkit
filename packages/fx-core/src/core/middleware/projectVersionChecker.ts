@@ -12,6 +12,7 @@ import { getProjectVersion } from "./utils/v3MigrationUtils";
 import { VersionInfo, VersionSource } from "../../common/versionMetadata";
 import { learnMoreText } from "./projectMigrator";
 import { learnMoreLink } from "./projectMigratorV3";
+import { sendTelemetryEvent, Component, TelemetryEvent } from "../../common/telemetry";
 
 let userCancelFlag = false;
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -35,6 +36,7 @@ async function needToShowUpdateDialog(ctx: CoreHookContext, versionInfo: Version
     }
   } else {
     if (versionInfo.source !== VersionSource.projectSettings) {
+      sendTelemetryEvent(Component.core, TelemetryEvent.OpenAdvancedProjectV3InV2);
       return true;
     }
   }

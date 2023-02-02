@@ -71,6 +71,7 @@ export enum TelemetryEvent {
   CheckSubscription = "check-subscription",
   CheckSideloading = "check-sideloading",
   EnvConfig = "env-config",
+  OpenAdvancedProjectV3InV2 = "open-advanced-project-v3-in-v2",
   ProjectMigratorNotificationStart = "project-migrator-notification-start",
   ProjectMigratorNotification = "project-migrator-notification",
   ProjectMigratorMigrateStart = "project-migrator-migrate-start",

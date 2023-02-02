@@ -37,6 +37,7 @@ describe("AppStudio Client", () => {
     it("Should return a valid bot registration", async () => {
       // Arrange
       sandbox.stub(RetryHandler, "Retry").resolves({
+        status: 200,
         data: sampleBot,
       });
       // Act

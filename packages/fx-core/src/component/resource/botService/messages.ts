@@ -14,7 +14,7 @@ export class Messages {
     localString("plugins.bot.FailedToProvision", resource);
 
   public static readonly FailToUpdateConfigs = (something: string): [string, string] =>
-    localString("plugins.bot.BotRegistrationNotFoundWith", something);
+    localString("plugins.bot.FailedToUpdateConfigs", something);
 
   public static readonly BotRegistrationNotFoundWith = (botId: string): [string, string] =>
     localString("plugins.bot.BotRegistrationNotFoundWith", botId);

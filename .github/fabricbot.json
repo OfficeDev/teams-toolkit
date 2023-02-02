@@ -1267,7 +1267,7 @@
                 {
                   "name": "bodyContains",
                   "parameters": {
-                    "bodyPattern": "API call to Developer Portal failed: *,  API name: (.*), X-Correlation-ID: (.*).",
+                    "bodyPattern": "API call to Developer Portal failed: (.*) API name: (.*), X-Correlation-ID: (.*).",
                     "isRegex": true
                   }
                 },
@@ -1275,7 +1275,7 @@
                   "name": "bodyContains",
                   "parameters": {
                     "isRegex": true,
-                    "bodyPattern": "Failed to * teams app in app studio, due to \\d{3}, *"
+                    "bodyPattern": "Failed to (.*) teams app in app studio, due to \\d{3}, .*"
                   }
                 }
               ]

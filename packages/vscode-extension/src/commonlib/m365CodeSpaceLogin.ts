@@ -1,3 +1,6 @@
+/**
+ * @author Tian Yuan <tiany1992@sina.com>
+ */
 "use strict";
 
 import * as vscode from "vscode";

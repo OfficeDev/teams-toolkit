@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Huajie Zhang <zhjay23@qq.com>
+ */
 "use strict";
 
 import {

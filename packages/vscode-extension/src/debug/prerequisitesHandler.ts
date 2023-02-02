@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Qianhao Dong <qidon@microsoft.com>
+ */
 import {
   assembleError,
   err,

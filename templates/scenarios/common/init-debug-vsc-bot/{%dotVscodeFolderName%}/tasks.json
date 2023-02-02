@@ -10,8 +10,8 @@
                 "Validate prerequisites",
                 "Start local tunnel",
                 "Create resources",
-                "Install tools and Build project",
-                "Start services"
+                "Build project",
+                "Start application"
             ],
             "dependsOrder": "sequence"
         },
@@ -61,23 +61,23 @@
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
-            // Install tools and Build project.
+            // Build project.
             // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Install tools and Build project",
+            "label": "Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
-            "label": "Start services",
+            "label": "Start application",
             "dependsOn": [
                 "Start bot"
             ]
@@ -85,7 +85,8 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "node teamsfx/script/run.js . teamsfx/.env.local",
+            // load teamsfx runtime settings and execute `npm run start`
+            "command": "npx env-cmd --silent -f .localSettings npm run start",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"

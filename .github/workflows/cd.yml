@@ -403,8 +403,8 @@ jobs:
         working-directory: packages/vscode-extension
         run: |
           DATE_WITH_TIME=`date "+%Y%m%d%H"`
-          PACKAGE_VERSION=$(jq -r .version package.json | cut -d '.' -f 1,2)
-          TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
+          PRERELEASE_VERSION=4.99
+          TTK_VERSION=$PRERELEASE_VERSION.$DATE_WITH_TIME
           echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION
 

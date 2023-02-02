@@ -24,6 +24,7 @@ import {
 import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { cwd } from "process";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
+import { MissingEnvInFileUserError } from "../../../../src/component/driver/aad/error/missingEnvInFileError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -67,11 +68,11 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath, outputFilePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
       );
 
     args = {
-      manifestTemplatePath: "./aad.manifest.json",
+      manifestPath: "./aad.manifest.json",
     };
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
@@ -93,7 +94,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
       );
   });
 
@@ -109,11 +110,11 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
       );
 
     args = {
-      manifestTemplatePath: "./aad.manifest.json",
+      manifestPath: "./aad.manifest.json",
       outputFilePath: "",
     };
 
@@ -127,7 +128,7 @@ describe("aadAppUpdate", async () => {
       );
 
     args = {
-      manifestTemplatePath: true,
+      manifestPath: true,
       outputFilePath: true,
     };
 
@@ -137,7 +138,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath, outputFilePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
       );
   });
 
@@ -150,7 +151,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
 
@@ -176,7 +177,7 @@ describe("aadAppUpdate", async () => {
     expect(result.summaries.length).to.equal(1);
     console.log(result.summaries[0]);
     expect(result.summaries).includes(
-      `Applied manifest ${args.manifestTemplatePath} to Azure Active Directory application with object id ${expectedObjectId}`
+      `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
   });
 
@@ -192,7 +193,7 @@ describe("aadAppUpdate", async () => {
       });
 
       const args = {
-        manifestTemplatePath: manifestPath,
+        manifestPath: manifestPath,
         outputFilePath: outputPath,
       };
 
@@ -214,7 +215,7 @@ describe("aadAppUpdate", async () => {
       });
 
       const args = {
-        manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+        manifestPath: path.join(testAssetsRoot, "manifest.json"),
         outputFilePath: path.join(outputRoot, "manifest.output.json"),
       };
 
@@ -233,21 +234,24 @@ describe("aadAppUpdate", async () => {
     });
 
     let args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
-      message:
-        "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID is not set.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
-      source: "aadApp/update",
-    });
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(MissingEnvInFileUserError)
+      .and.include({
+        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in ${path.resolve(
+          args.manifestPath
+        )} have no values.`, // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
+        source: "aadApp/update",
+      });
 
     args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithoutId.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -257,7 +261,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(MissingFieldInManifestUserError)
       .and.include({
-        message: "Field id is missing or invalid in AAD app manifest.", // The manifest does not has an id property
+        message: "Field id is missing or invalid in Azure Active Directory app manifest.", // The manifest does not has an id property
         source: "aadApp/update",
       });
   });
@@ -276,7 +280,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedApp.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedApp.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -306,7 +310,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -326,7 +330,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
 
@@ -352,7 +356,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithNoPermissionId.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithNoPermissionId.json"),
       outputFilePath: outputPath,
     };
 
@@ -385,7 +389,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -417,7 +421,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -461,7 +465,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
     const dirverContext: any = {
@@ -525,7 +529,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
     const dirverContext: any = {
@@ -558,17 +562,20 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithMissingEnv.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithMissingEnv.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
-      message:
-        "Failed to generate AAD app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME is not set.",
-      source: "aadApp/update",
-    });
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(MissingEnvInFileUserError)
+      .and.include({
+        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME referenced in ${path.resolve(
+          args.manifestPath
+        )} have no values.`,
+        source: "aadApp/update",
+      });
   });
 });

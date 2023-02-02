@@ -1,3 +1,21 @@
+# Teams Toolkit v5.0 Pre-release
+
+### What does pre-release mean?
+Pre-release is meant for those who are eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be major.
+
+We've addressed a number of reported bugs and added major changes in this release based on your feedback to make Teams Toolkit more flexible. Some of the key highlights to these changes include:
+
+- Use existing infrastructure, resource groups, and more when provisioning
+- Use an existing Teams app ID
+- Use an existing Azure AD app registration ID
+- Use a different tunneling solution or customize the defaults
+- Add custom steps to debugging, provisioning, deploying, publishing, etc.
+
+### What about my existing Teams Toolkit projects?
+The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+
+Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).
+
 # How to use this Teams Tab app HelloWorld app
 
 > Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application, and perform any sensitive operations from server side code that your client has to authenticate with.
@@ -54,7 +72,7 @@ To check that your manifest file is valid:
 
 ## Package
 
-- From Visual Studio Code: open the command palette and select `Teams: Zip Teams metadata package`.
+- From Visual Studio Code: open the command palette and select `Teams: Zip Teams app package`.
 - Alternatively, from the command line run `teamsfx package` in the project directory.
 
 ## Publish to Teams

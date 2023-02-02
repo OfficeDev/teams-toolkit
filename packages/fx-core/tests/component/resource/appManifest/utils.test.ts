@@ -33,7 +33,7 @@ describe("utils", () => {
     objectId: "objId",
     configurationUrl: "https://url",
     canUpdateConfiguration: false,
-    scopes: [CommandScope.GroupChat],
+    scopes: ["groupchat"],
     context: [MeetingsContext.ChannelTab],
     sharePointPreviewImage: "img",
     supportedSharePointHosts: [],
@@ -61,7 +61,7 @@ describe("utils", () => {
     objectId: "objId",
     configurationUrl: "https://url",
     canUpdateConfiguration: false,
-    scopes: [CommandScope.GroupChat, CommandScope.Team],
+    scopes: ["groupchat", CommandScope.Team],
     context: [MeetingsContext.SidePanel],
     sharePointPreviewImage: "img",
     supportedSharePointHosts: [],
@@ -142,6 +142,25 @@ describe("utils", () => {
         teamsAppId: "mockAppId",
         tenantId: "mockTenantId",
         configurableTabs: [validConfigurableTabForTabCode],
+        bots: [validBot],
+      };
+
+      const needTab = needTabCode(appDefinition);
+
+      chai.assert.isTrue(needTab);
+    });
+
+    it("private chat tab, team scope: returns true", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        configurableTabs: [
+          {
+            ...validConfigurableTabForTabCode,
+            context: [MeetingsContext.PrivateChatTab],
+            scopes: [CommandScope.Team],
+          },
+        ],
         bots: [validBot],
       };
 
@@ -289,6 +308,26 @@ describe("utils", () => {
       chai.assert.isTrue(res);
     });
 
+    it("missing scope: returns false", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        configurableTabs: [
+          {
+            ...validConfigurableTabForMeetingExtension,
+            context: [MeetingsContext.DetailsTab],
+            scopes: [],
+          },
+        ],
+        staticTabs: [],
+        bots: [validBot],
+      };
+
+      const res = hasMeetingExtension(appDefinition);
+
+      chai.assert.isFalse(res);
+    });
+
     it("chat tab: returns true", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mockAppId",
@@ -353,6 +392,27 @@ describe("utils", () => {
             },
           ],
         },
+      };
+
+      const res = containsUnsupportedFeature(appDefinition);
+      chai.assert.isTrue(res);
+    });
+
+    it("contains meeting extension", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        configurableTabs: [
+          {
+            objectId: "81747dd8-0e3c-4a25-beda-604db9699bb8",
+            configurationUrl: "https://www.test.com",
+            canUpdateConfiguration: false,
+            context: ["meetingSidePanel"],
+            scopes: ["groupChat"],
+            sharePointPreviewImage: "",
+            supportedSharePointHosts: [],
+          },
+        ],
       };
 
       const res = containsUnsupportedFeature(appDefinition);

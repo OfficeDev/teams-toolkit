@@ -6,6 +6,7 @@ import { CardData } from "./cardModels";
 
 // Create HTTP server.
 const server = restify.createServer();
+server.use(restify.plugins.bodyParser());
 server.listen(process.env.port || process.env.PORT || 3978, () => {
   console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
 });
@@ -83,6 +84,22 @@ server.post(
       }
       **/
     }
+
+    /** You can also find someone and notify the individual person
+    const member = await bot.notification.findMember(
+      async (m) => m.account.email === "someone@contoso.com"
+    );
+    await member?.sendAdaptiveCard(...);
+    **/
+
+    /** Or find multiple people and notify them
+    const members = await bot.notification.findAllMembers(
+      async (m) => m.account.email?.startsWith("test")
+    );
+    for (const member of members) {
+      await member.sendAdaptiveCard(...);
+    }
+    **/
 
     res.json({});
   }

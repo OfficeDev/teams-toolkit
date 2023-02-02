@@ -61,7 +61,7 @@ export const BuildPackageOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.template.json'",
+      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.json'",
   },
   [OutputZipPathParamName]: {
     type: "string",
@@ -93,7 +93,7 @@ export const TeamsAppManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the Teams app manifest template file path, it's a relative path to project root folder, default to './appPackage/manifest.template.json'",
+      "Enter the Teams app manifest template file path, it's a relative path to project root folder, default to './appPackage/manifest.json'",
   },
 };
 

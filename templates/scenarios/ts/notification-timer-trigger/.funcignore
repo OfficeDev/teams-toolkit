@@ -2,6 +2,7 @@
 .development
 .DS_Store
 .git*
+.localSettings
 .notification.localstore.json
 .vscode
 *.js.map
@@ -13,6 +14,10 @@ local.settings.json
 /node_modules/azurite
 README.md
 tsconfig.json
+teamsapp.yml
+teamsapp.*.yml
+/env/
+/script/
 /appPackage/
 /infra/
 /teamsfx/

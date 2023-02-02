@@ -8,6 +8,7 @@ import {
   createMicrosoftGraphClientWithCredential,
   OnBehalfOfCredentialAuthConfig,
 } from "@microsoft/teamsfx";
+import "isomorphic-fetch";
 
 const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
   authorityHost: process.env.M365_AUTHORITY_HOST,

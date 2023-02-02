@@ -1,6 +1,7 @@
 # TeamsFx files
-teamsfx/.env.*
+env/.env.*
 .DS_Store
+.localSettings
 build
 
 # dependencies

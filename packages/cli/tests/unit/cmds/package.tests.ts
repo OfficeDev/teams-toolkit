@@ -136,7 +136,7 @@ describe("Package Command Tests", function () {
           namespace: "fx-solution-azure",
           method: "buildPackage",
           params: {
-            manifestTemplatePath: `${root}/${AppPackageFolderName}/manifest.template.json`,
+            manifestTemplatePath: `${root}/${AppPackageFolderName}/manifest.json`,
             outputZipPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
             outputJsonPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
             env: inputs.env,

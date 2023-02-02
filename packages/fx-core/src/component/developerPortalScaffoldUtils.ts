@@ -49,10 +49,9 @@ import {
 } from "./resource/appManifest/utils/utils";
 
 const appPackageFolderName = "appPackage";
-const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
-const manifestFileName = "manifest.template.json";
+const manifestFileName = "manifest.json";
 
 export const answerToRepaceBotId = "bot";
 export const answerToReplaceMessageExtensionBotId = "messageExtension";
@@ -113,18 +112,8 @@ async function updateManifest(
     return err(new UserError(CoordinatorSource, "CouldNotFoundManifest", msg, msg));
   }
 
-  const colorFilePath = path.join(
-    ctx.projectPath!,
-    appPackageFolderName,
-    resourcesFolderName,
-    colorFileName
-  );
-  const outlineFilePath = path.join(
-    ctx.projectPath!,
-    appPackageFolderName,
-    resourcesFolderName,
-    outlineFileName
-  );
+  const colorFilePath = path.join(ctx.projectPath!, appPackageFolderName, colorFileName);
+  const outlineFilePath = path.join(ctx.projectPath!, appPackageFolderName, outlineFileName);
 
   const manifestTemplatePath = path.join(ctx.projectPath!, appPackageFolderName, manifestFileName);
   const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -148,8 +137,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-  manifest.icons.color = "resources/color.png";
-  manifest.icons.outline = "resources/outline.png";
 
   // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
   // This is a short-term solution to convert the value to what TTK expects.
@@ -343,7 +330,7 @@ export function getTemplateId(teamsApp: AppDefinition): string | undefined {
   return undefined;
 }
 
-function updateScope(scopes: string[]): string[] {
+export function updateScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
 }
 

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import { Retry } from "./constants";
 export class RetryHandler {
   public static async Retry<T>(

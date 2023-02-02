@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
+ */
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "./interfaces/appDefinition";

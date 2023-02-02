@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export function localString(key: string, ...params: any[]): [string, string] {

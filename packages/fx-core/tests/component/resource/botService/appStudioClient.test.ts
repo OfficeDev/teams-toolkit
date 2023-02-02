@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan Jobs <ruhe@microsoft.com>
+ */
 import { assert } from "chai";
 import "mocha";
 import { createSandbox } from "sinon";

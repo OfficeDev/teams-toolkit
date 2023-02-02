@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import { ErrorNames } from "./constants";
 import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";

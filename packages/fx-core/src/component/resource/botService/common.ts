@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import { Uuid } from "node-ts-uuid";
 import { AxiosResponse } from "axios";
 

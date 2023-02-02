@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Siglud <Siglud@gmail.com>
+ */
 export enum HttpStatusCode {
   OK = 200,
   CREATED = 201,

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 export class RegularExprs {
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z\d]/g;
 }

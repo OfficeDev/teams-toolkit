@@ -88,7 +88,7 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
+import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
@@ -3561,6 +3561,24 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                 },
               ],
             },
+            ...(isOfficeAddinEnabled()
+              ? [
+                  {
+                    id: "addOutlookAddin",
+                    label: `${localize("teamstoolkit.guides.addOutlookAddin.label")}`,
+                    detail: localize("teamstoolkit.guides.addOutlookAddin.detail"),
+                    groupName: localize("teamstoolkit.guide.capability"),
+                    data: "https://aka.ms/teamsfx-add-outlook-add-in",
+                    buttons: [
+                      {
+                        iconPath: "file-symlink-file",
+                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                        command: "fx-extension.openTutorial",
+                      },
+                    ],
+                  },
+                ]
+              : []),
           ]
         : []),
       {

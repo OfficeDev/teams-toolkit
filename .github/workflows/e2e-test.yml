@@ -106,23 +106,12 @@ jobs:
         run: |
           npm config set legacy-peer-deps true
 
-      - name: Setup metrics-ts
-        working-directory: packages/metrics-ts
-        run: |
-          npm install
-
-      - name: Setup eslint-metrics
-        working-directory: packages/eslint-metrics
-        run: |
-          npm install
-
       - name: Setup project
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-            npm run setup
             npm run setup-metrics
 
       - name: Package CLI
@@ -457,7 +446,7 @@ jobs:
           passed=0
           failed=0
 
-          emails="vsciotadt@microsoft.com;v-helzha@microsoft.com;v-ivanchen@microsoft.com"
+          emails="vsciotadt@microsoft.com;v-helzha@microsoft.com;v-ivanchen@microsoft.com;v-annefu@microsoft.com;v-liliu2@microsoft.com"
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then

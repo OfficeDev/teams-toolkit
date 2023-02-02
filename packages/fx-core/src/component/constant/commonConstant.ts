@@ -9,6 +9,7 @@ export enum HttpStatusCode {
   FORBIDDEN = 403,
   NOTFOUND = 404,
   TOOMANYREQS = 429,
+  INTERNAL_SERVER_ERROR = 500,
 }
 
 export class TelemetryConstant {

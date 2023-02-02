@@ -1,3 +1,21 @@
+# Teams Toolkit v5.0 Pre-release
+
+### What does pre-release mean?
+Pre-release is meant for those who are eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be major.
+
+We've addressed a number of reported bugs and added major changes in this release based on your feedback to make Teams Toolkit more flexible. Some of the key highlights to these changes include:
+
+- Use existing infrastructure, resource groups, and more when provisioning
+- Use an existing Teams app ID
+- Use an existing Azure AD app registration ID
+- Use a different tunneling solution or customize the defaults
+- Add custom steps to debugging, provisioning, deploying, publishing, etc.
+
+### What about my existing Teams Toolkit projects?
+The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+
+Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).
+
 # Dashboard Tab
 
 ## Introduction
@@ -260,7 +278,7 @@ export default function App() {
 
 ### Step 4: Modify manifest to add a new dashboard tab
 
-Open the [`appPackage/manifest.template.json`](appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
+Open the [`appPackage/manifest.json`](appPackage/manifest.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
 
 ```json
 {
@@ -276,7 +294,10 @@ Open the [`appPackage/manifest.template.json`](appPackage/manifest.template.json
 
 ## How to add a new Graph API call
 
-Please refer to `How-to guides` in `Teams Toolkit` by clicking `Teams Toolkit` in the side bar > `View how-to guides` > `Integrate with Azure Functions`.
+Please follow these two steps:
+1.	Add SSO: Refer to How-to guides in Teams Toolkit by clicking Teams Toolkit in the side bar > `View how-to guides` > `Develop single sign-on experience in Teams`.
+2.	Refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-sdk#microsoft-graph-scenarios:~:text=caught%20and%20transformed.-,Microsoft%20Graph%20Scenarios,-This%20section%20provides) to call a Graph API via TeamsFx SDK.
+
 
 ## Additional resources
 

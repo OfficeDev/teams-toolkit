@@ -17,14 +17,15 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha",
         "@types/node": "^12.0.0",
         "@types/react": "^16.14.6",
         "@types/react-dom": "^16.9.12",
         "@types/react-router-dom": "^5.1.7",
+        "env-cmd": "^10.1.0",
         "typescript": "^4.1.2"
     },
     "scripts": {
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

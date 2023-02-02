@@ -41,15 +41,15 @@ describe("Core basic APIs - create from sample", () => {
     deleteFolder(projectPath);
   });
 
-  it("create from sample hello-world-tab", async () => {
-    appName = "hello-world-tab";
+  it("create from sample todo-list-SPFx", async () => {
+    appName = "todo-list-SPFx";
     projectPath = path.resolve(os.tmpdir(), appName);
     deleteFolder(projectPath);
     const inputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
-      [CoreQuestionNames.Samples]: "hello-world-tab",
+      [CoreQuestionNames.Samples]: "todo-list-SPFx",
       stage: Stage.create,
     };
     const core = new FxCore(tools);
@@ -69,14 +69,14 @@ describe("Core basic APIs - create from sample", () => {
     sandbox.stub(downloadSample, "downloadSampleHook").resolves();
     sandbox.stub(downloadSample, "saveFilesRecursively").resolves();
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
-    appName = "hello-world-tab";
+    appName = "todo-list-SPFx";
     projectPath = path.resolve(os.tmpdir(), appName);
     deleteFolder(projectPath);
     const inputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
-      [CoreQuestionNames.Samples]: "hello-world-tab",
+      [CoreQuestionNames.Samples]: "todo-list-SPFx",
       stage: Stage.create,
     };
     const res = await downloadSample.downloadSample(inputs);

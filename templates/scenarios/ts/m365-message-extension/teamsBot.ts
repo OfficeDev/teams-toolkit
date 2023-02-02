@@ -1,6 +1,12 @@
 import { default as axios } from "axios";
 import * as querystring from "querystring";
-import { TeamsActivityHandler, CardFactory, TurnContext } from "botbuilder";
+import {
+  TeamsActivityHandler,
+  CardFactory,
+  TurnContext,
+  MessagingExtensionQuery,
+  MessagingExtensionResponse,
+} from "botbuilder";
 
 export interface DataInterface {
   likeCount: number;
@@ -13,7 +19,10 @@ export class TeamsBot extends TeamsActivityHandler {
 
   // Message extension Code
   // Search.
-  public async handleTeamsMessagingExtensionQuery(context: TurnContext, query: any): Promise<any> {
+  public async handleTeamsMessagingExtensionQuery(
+    context: TurnContext,
+    query: MessagingExtensionQuery
+  ): Promise<MessagingExtensionResponse> {
     const searchQuery = query.parameters[0].value;
     const response = await axios.get(
       `http://registry.npmjs.com/-/v1/search?${querystring.stringify({
@@ -46,7 +55,7 @@ export class TeamsBot extends TeamsActivityHandler {
   public async handleTeamsMessagingExtensionSelectItem(
     context: TurnContext,
     obj: any
-  ): Promise<any> {
+  ): Promise<MessagingExtensionResponse> {
     return {
       composeExtension: {
         type: "result",

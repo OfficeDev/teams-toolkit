@@ -88,6 +88,7 @@ fakeCert
           accessToken: accessToken,
           fromCache: false,
           tokenType: "fake_tokenType",
+          correlationId: "fake_correlation_id",
           expiresOn: accessTokenExpDate,
         };
         return new Promise<AuthenticationResult>((resolve) => {

@@ -1118,5 +1118,5 @@ export const TabFeatureIds = () => [
 ];
 
 export const AadConstants = {
-  DefaultTemplateFileName: "aad.manifest.template.json",
+  DefaultTemplateFileName: "aad.manifest.json",
 };

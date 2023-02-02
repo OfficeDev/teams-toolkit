@@ -47,13 +47,13 @@ pipeline {
         }
 
         // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
-        // After provisioning, you should commit necessary files under .fx into the repository.
+        // After provisioning, you should commit necessary files under teamsfx into the repository.
         stage('Provision hosting environment') {        
             environment {
                 AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
             }
             steps {
-                sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}'
+                sh 'npx teamsfx provision --env ${TEAMSFX_ENV_NAME}'
             }
         }
 

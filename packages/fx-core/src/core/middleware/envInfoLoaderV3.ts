@@ -47,17 +47,17 @@ export type CreateEnvCopyInput = {
   sourceEnvName: string;
 };
 
-export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
+export function EnvInfoLoaderMW_V3(skip: boolean, ignoreLocalEnv = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     if (shouldIgnored(ctx)) {
       await next();
       return;
     }
-
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (isV3Enabled()) {
       const envBefore = _.cloneDeep(process.env);
       try {
-        await envLoaderMWImpl(true, ctx, next);
+        await envLoaderMWImpl(inputs.ignoreLocalEnv || ignoreLocalEnv ? false : true, ctx, next);
         return;
       } finally {
         const keys = Object.keys(process.env);
@@ -71,7 +71,6 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
       }
     }
 
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
       return;
@@ -310,7 +309,7 @@ export async function getQuestionsForTargetEnv(
     return err(new NoProjectOpenedError());
   }
 
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath, true);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
@@ -341,7 +340,7 @@ async function getQuestionsForNewEnv(
   const newEnvNameNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
   group.addChild(newEnvNameNode);
 
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath, true);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }

@@ -34,7 +34,7 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     return templatePrereleasePrefix + preRelease;
   }
 
-  const versionPattern = preRelease ?? templateVersion();
+  const versionPattern = preRelease || templateVersion();
   // To avoid incompatible, alpha release does not download latest template.
   if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
     return undefined;
@@ -117,7 +117,7 @@ export async function fetchTemplateZipUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
-  const selectedTag = selectTemplateTag(async () =>
+  const selectedTag = await selectTemplateTag(async () =>
     (await fetchTagList(templateTagListURL, tryLimits, timeoutInMs)).replace(/\r/g, "").split("\n")
   );
   if (!selectedTag) {

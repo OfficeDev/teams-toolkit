@@ -148,14 +148,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
-      - name: update templates prerelease tag
-        uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
-        with:
-          tag_name: "templates-0.0.0-prerelease"
-        env:
-          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
-
       - name: release templates' alpha version to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
         uses: ncipollo/release-action@v1.10.0

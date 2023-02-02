@@ -1,13 +1,10 @@
 "use strict";
 
 module.exports = {
-  root: true,
-  extends: [
-    "eslint:recommended",
-    "plugin:eslint-plugin/recommended",
-    "plugin:node/recommended",
-  ],
+  extends: ["eslint:recommended"],
   env: {
+    browser: true,
+    es6: true,
     node: true,
   },
   overrides: [

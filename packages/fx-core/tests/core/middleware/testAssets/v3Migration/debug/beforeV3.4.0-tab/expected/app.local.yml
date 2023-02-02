@@ -78,7 +78,7 @@ deploy:
         REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}/auth-start.html
         REACT_APP_TEAMSFX_ENDPOINT: http://localhost:55000
 
-  - uses: file/updateAppSettings # Generate runtime environment variables
+  - uses: file/updateJson # Generate runtime environment variables
     with:
       target: SIMPLE_AUTH_APPSETTINGS_PATH
       appsettings:

@@ -198,7 +198,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -208,7 +208,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
 
       const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
@@ -217,7 +217,7 @@ describe("Core basic APIs", () => {
       assert.isNotNull(runSpy.getCall(0).args[0]);
       assert.strictEqual(
         runSpy.getCall(0).args[0].manifestPath,
-        path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.json")
+        path.join(os.tmpdir(), appName, "aad.manifest.json")
       );
       runSpy.restore();
     } finally {
@@ -231,7 +231,7 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -241,10 +241,10 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
       const res = await core.deployAadManifest(inputs);
-      assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "samples-v3", "build")));
+      assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
       await deleteTestProject(appName);
       assert.isTrue(res.isOk());
     } finally {
@@ -258,13 +258,8 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
-      const appManifestPath = path.join(
-        os.tmpdir(),
-        appName,
-        "samples-v3",
-        "aad.manifest.template.json"
-      );
+      const appName = await mockV3Project();
+      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.template.json");
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -273,7 +268,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
       sandbox
         .stub(UpdateAadAppDriver.prototype, "run")
@@ -295,13 +290,8 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
-      const appManifestPath = path.join(
-        os.tmpdir(),
-        appName,
-        "samples-v3",
-        "aad.manifest.template.json"
-      );
+      const appName = await mockV3Project();
+      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.template.json");
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -310,7 +300,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
       sandbox
         .stub(UpdateAadAppDriver.prototype, "run")
@@ -344,8 +334,8 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
-      const appManifestPath = path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.json");
+      const appName = await mockV3Project();
+      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
       await fs.remove(appManifestPath);
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -355,7 +345,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
       const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
       const res = await core.deployAadManifest(inputs);
@@ -376,10 +366,10 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
-      const appName = mockV3Project();
+      const appName = await mockV3Project();
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
       const res = await core.phantomMigrationV3(inputs);
       assert.isTrue(res.isOk());
@@ -713,10 +703,11 @@ describe("apply yaml template", async () => {
   });
 });
 
-function mockV3Project(): string {
-  const zip = new AdmZip(path.join(__dirname, "./samples_v3.zip"));
+async function mockV3Project(): Promise<string> {
   const appName = randomAppName();
-  zip.extractAllTo(path.join(os.tmpdir(), appName));
+  const projectPath = path.join(os.tmpdir(), appName);
+  // await fs.move(path.join(__dirname, "../sampleV3"), path.join(os.tmpdir(), appName));
+  await fs.copy(path.join(__dirname, "../samples/sampleV3/"), path.join(projectPath));
   return appName;
 }
 

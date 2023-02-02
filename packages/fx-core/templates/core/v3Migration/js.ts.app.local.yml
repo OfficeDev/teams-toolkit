@@ -225,7 +225,7 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/updateAppSettings # Generate runtime environment variables
+  - uses: file/updateJson # Generate runtime environment variables
     with:
       target: {{appsettingsPath}}
       appsettings:

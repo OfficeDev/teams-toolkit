@@ -63,7 +63,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
   protected progressHandler: AsyncIterableIterator<void> = progressBarHelper(
     ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS
   );
-  protected progressNames: string[] = ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS;
+  protected progressNames = ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS;
 
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;

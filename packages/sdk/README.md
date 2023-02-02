@@ -68,7 +68,7 @@ or use `createMicrosoftGraphClient` as below (Deprecated):
 // const teamsfx = new TeamsFx(IdentityType.User, {
 //   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
 //   clientId: process.env.REACT_APP_CLIENT_ID,
-// }
+// });
 const teamsfx = new TeamsFx();
 const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
 const profile = await graphClient.api("/me").get(); // Get the profile of current user

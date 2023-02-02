@@ -137,8 +137,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-  manifest.icons.color = "resources/color.png";
-  manifest.icons.outline = "resources/outline.png";
 
   // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
   // This is a short-term solution to convert the value to what TTK expects.

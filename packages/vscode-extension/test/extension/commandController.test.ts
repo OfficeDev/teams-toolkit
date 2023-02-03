@@ -34,7 +34,7 @@ describe("Command Controller", () => {
   });
 
   it("refresh UI when receiving lock events", async () => {
-    const executeCommandStub = sinon.stub(vscode.commands, "executeCommand").resolves();
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
     const setRunningCommandStub = sandbox.stub(TreeViewManagerInstance, "setRunningCommand");
 
     await commandController.lockedByOperation("provisionResources");
@@ -46,7 +46,7 @@ describe("Command Controller", () => {
   });
 
   it("refresh UI when receiving unlock events", async () => {
-    const executeCommandStub = sinon.stub(vscode.commands, "executeCommand").resolves();
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
     const setRunningCommandStub = sandbox.stub(TreeViewManagerInstance, "setRunningCommand");
 
     await commandController.unlockedByOperation("provisionResources");

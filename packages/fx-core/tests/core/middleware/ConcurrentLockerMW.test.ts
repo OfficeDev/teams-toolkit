@@ -184,12 +184,15 @@ describe("Middleware - ConcurrentLockerMW", () => {
     }
     let d = 0;
     const lockCb = () => {
+      console.log("lock");
       d++;
     };
     const unlockCb = () => {
+      console.log("unlock");
       d--;
     };
 
+    CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
     CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
     CallbackRegistry.set(CoreCallbackEvent.unlock, unlockCb);
 

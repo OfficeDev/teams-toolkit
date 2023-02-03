@@ -1,7 +1,7 @@
 /**
  * @author huajiezhang <huajiezhang@microsoft.com>
  */
-import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -9,7 +9,6 @@ import { exec } from "child_process";
 import * as path from "path";
 import fs from "fs-extra";
 import { DotenvOutput } from "../../utils/envUtil";
-import { ObjectIsUndefinedError } from "../../../core/error";
 
 const ACTION_NAME = "script";
 
@@ -70,13 +69,19 @@ export function execute(
     }
     exec(
       command,
-      { shell: shell, cwd: workingDir, env: { ...process.env }, timeout: args.timeout },
+      {
+        shell: shell,
+        cwd: workingDir,
+        encoding: "utf8",
+        env: { ...process.env },
+        timeout: args.timeout,
+      },
       async (error, stdout, stderr) => {
         if (error) {
           await context.logProvider.error(
             `Failed to run command: "${command}" on path: "${workingDir}".`
           );
-          reject(err(error));
+          reject(err(assembleError(error)));
         }
         if (stdout) {
           await context.logProvider.info(maskSecretValues(stdout));

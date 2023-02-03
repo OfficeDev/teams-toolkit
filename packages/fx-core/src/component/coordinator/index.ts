@@ -645,7 +645,7 @@ export class Coordinator {
     if (containsAzure) {
       //ensure RESOURCE_SUFFIX
       if (!process.env.RESOURCE_SUFFIX) {
-        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 8);
+        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 6);
         process.env.RESOURCE_SUFFIX = suffix;
         output.RESOURCE_SUFFIX = suffix;
       }

@@ -25,10 +25,8 @@ export class MissingEnvUserError extends UserError {
       source: actionName,
       name: errorCode,
       message: getDefaultString(additionalMessageKey) + " " + getDefaultString(messageKey, envList),
-      displayMessage: getLocalizedString(additionalMessageKey) + " " + getLocalizedString(
-        messageKey,
-        envList
-      ),
+      displayMessage:
+        getLocalizedString(additionalMessageKey) + " " + getLocalizedString(messageKey, envList),
       helpLink: helpLink,
     });
   }

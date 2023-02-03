@@ -25,16 +25,14 @@ export class MissingEnvInFileUserError extends UserError {
     super({
       source: actionName,
       name: errorCode,
-      message: getDefaultString(additionalMessageKey) + " " +getDefaultString(
-        messageKey,
-        envList,
-        filePath
-      ),
-      displayMessage: getLocalizedString(additionalMessageKey) + " " + getLocalizedString(
-        messageKey,
-        envList,
-        filePath
-      ),
+      message:
+        getDefaultString(additionalMessageKey) +
+        " " +
+        getDefaultString(messageKey, envList, filePath),
+      displayMessage:
+        getLocalizedString(additionalMessageKey) +
+        " " +
+        getLocalizedString(messageKey, envList, filePath),
       helpLink: helpLink,
     });
   }

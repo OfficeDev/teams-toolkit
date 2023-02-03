@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import * as vscode from "vscode";
 import * as versionUtil from "./versionUtil";
 import { SyncedState, UserState } from "../constants";
@@ -6,6 +9,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as folder from "../folder";
 import { localize } from "./localizeUtils";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export class ExtensionUpgrade {
   private context: vscode.ExtensionContext;
@@ -21,8 +25,8 @@ export class ExtensionUpgrade {
     const syncedVersion = this.context.globalState.get<string>(SyncedState.Version);
 
     if (
-      syncedVersion === undefined ||
-      versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1
+      !isV3Enabled() &&
+      (syncedVersion === undefined || versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1)
     ) {
       // if syncedVersion is undefined, then it is not existinig user
       this.context.globalState.update(

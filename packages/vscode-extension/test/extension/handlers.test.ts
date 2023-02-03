@@ -1,3 +1,6 @@
+/**
+ * @author HuihuiWu-Microsoft <73154171+HuihuiWu-Microsoft@users.noreply.github.com>
+ */
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -144,8 +147,8 @@ describe("handlers", () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
-      .stub(MockCore.prototype, "getSettings")
-      .resolves(ok({ version: "3.0.0" } as ProjectSettings));
+      .stub(MockCore.prototype, "projectVersionCheck")
+      .resolves(ok({ currentVersion: "3.0.0" }));
     const res = await handlers.getSettingsVersion();
     chai.assert.equal(res, "3.0.0");
     sandbox.restore();

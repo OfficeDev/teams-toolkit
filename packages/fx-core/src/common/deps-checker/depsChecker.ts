@@ -34,6 +34,7 @@ export interface DepsInfo {
 export enum DepsType {
   AzureNode = "azure-node",
   SpfxNode = "spfx-node",
+  LtsNode = "lts-node",
   ProjectNode = "project-node",
   Dotnet = "dotnet",
   FuncCoreTools = "func-core-tools",
@@ -46,4 +47,8 @@ export interface BaseInstallOptions {
   version?: string;
 }
 
-export type InstallOptions = BaseInstallOptions;
+export interface FuncInstallOptions {
+  nodeVersion?: string;
+}
+
+export type InstallOptions = BaseInstallOptions | FuncInstallOptions;

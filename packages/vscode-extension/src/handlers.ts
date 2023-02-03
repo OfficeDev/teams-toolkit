@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Huajie Zhang <zhjay23@qq.com>
+ */
 "use strict";
 
 import {
@@ -88,7 +91,7 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
+import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
@@ -168,6 +171,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -206,7 +210,11 @@ export function activate(): Result<Void, FxError> {
     );
   }
   try {
-    const m365Login: M365TokenProvider = M365TokenInstance;
+    let m365Login: M365TokenProvider = M365TokenInstance;
+    const vscodeEnv = detectVsCodeEnv();
+    if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+      m365Login = M365CodeSpaceTokenInstance;
+    }
     const m365NotificationCallback = (
       status: string,
       token: string | undefined,
@@ -326,9 +334,9 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     //   return projectConfig.value?.settings?.version;
     // }
     if (isV3Enabled()) {
-      const settings = await core.getSettings(input as InputsWithProjectPath);
-      if (settings.isOk()) {
-        return settings.value?.version;
+      const versionCheckResult = await projectVersionCheck();
+      if (versionCheckResult.isOk()) {
+        return versionCheckResult.value.currentVersion;
       }
     } else {
       await core.getProjectConfig(input);
@@ -818,7 +826,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -913,7 +921,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -3561,6 +3569,24 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                 },
               ],
             },
+            ...(isOfficeAddinEnabled()
+              ? [
+                  {
+                    id: "addOutlookAddin",
+                    label: `${localize("teamstoolkit.guides.addOutlookAddin.label")}`,
+                    detail: localize("teamstoolkit.guides.addOutlookAddin.detail"),
+                    groupName: localize("teamstoolkit.guide.capability"),
+                    data: "https://aka.ms/teamsfx-add-outlook-add-in",
+                    buttons: [
+                      {
+                        iconPath: "file-symlink-file",
+                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                        command: "fx-extension.openTutorial",
+                      },
+                    ],
+                  },
+                ]
+              : []),
           ]
         : []),
       {

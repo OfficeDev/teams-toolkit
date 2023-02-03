@@ -27,7 +27,6 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
 } from "../component/constants";
-import { environmentManager } from "./environment";
 import {
   ObjectIsUndefinedError,
   NoAadManifestExistError,
@@ -121,7 +120,7 @@ export class FxCoreV3Implement {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    if (isFromDevPortalInVSC(inputs)) {
+    if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
         return err(InvalidInputError("Teams app contains unsupported features"));

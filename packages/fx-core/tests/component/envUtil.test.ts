@@ -3,7 +3,6 @@ import {
   err,
   FxError,
   Inputs,
-  InputsWithProjectPath,
   ok,
   Platform,
   Result,
@@ -177,7 +176,7 @@ describe("env utils", () => {
     assert.isTrue(decRes.isOk());
     assert.equal(decRes.value, decrypted);
   });
-  it("envUtil.writeEnv to output", async () => {
+  it("envUtil.writeEnv to default path", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
@@ -300,29 +299,10 @@ describe("env utils", () => {
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isErr());
   });
-  it("EnvLoaderMW failed for F5 (getEnvFilePath return undefined)", async () => {
-    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
-    class MyClass {
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        return ok(undefined);
-      }
-    }
-    hooks(MyClass, {
-      myMethod: [EnvLoaderMW(false)],
-    });
-    const my = new MyClass();
-    const inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      env: "dev",
-      isLocalDebug: true,
-    };
-    const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("EnvLoaderMW failed: no yml file error", async () => {
+  it("EnvLoaderMW success: no env available, use dev", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(envUtil, "listEnv").resolves(ok([]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         return ok(undefined);
@@ -337,7 +317,7 @@ describe("env utils", () => {
       projectPath: ".",
     };
     const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr());
+    assert.isTrue(res.isOk());
   });
   it("EnvLoaderMW ignoreEnvInfo", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));

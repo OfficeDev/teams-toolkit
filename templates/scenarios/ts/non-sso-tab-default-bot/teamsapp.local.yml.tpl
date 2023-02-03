@@ -34,10 +34,10 @@ configureApp:
         TAB_ENDPOINT: https://localhost:53000
   - uses: teamsApp/validate
     with:
-      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
@@ -58,3 +58,20 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
+
+  - uses: file/updateEnv # Generate runtime environment variables for tab
+    with:
+      target: ./tab/.localSettings
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+
+  - uses: file/updateEnv # Generate runtime environment variables for bot
+    with:
+      target: ./bot/.localSettings
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

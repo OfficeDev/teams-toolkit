@@ -160,7 +160,7 @@ import {
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
-import { localize, parseLocale } from "./utils/localizeUtils";
+import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import {
   localTelemetryReporter,
   sendDebugAllEvent,
@@ -172,6 +172,7 @@ import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
+import { ExtensionSurvey } from "./utils/survey";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1856,7 +1857,13 @@ export async function checkUpgrade(args?: any[]) {
 }
 
 export async function openSurveyHandler(args?: any[]) {
-  WebviewPanel.createOrShow(PanelType.Survey);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
+    ...getTriggerFromProperty(args),
+    // eslint-disable-next-line no-secrets/no-secrets
+    message: getDefaultString("teamstoolkit.commandsTreeViewProvider.openSurveyTitle"),
+  });
+  const survey = ExtensionSurvey.getInstance();
+  await survey.openSurveyLink();
 }
 
 export async function autoOpenProjectHandler(): Promise<void> {

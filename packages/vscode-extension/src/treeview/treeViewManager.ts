@@ -45,6 +45,7 @@ class TreeViewManager {
     this.registerDevelopment(disposables);
     this.registerDeployment(disposables);
     this.registerHelper(disposables);
+    // this.registerFeedback(disposables);
 
     context.subscriptions.push(...disposables);
   }
@@ -359,7 +360,10 @@ class TreeViewManager {
     ];
     const helpProvider = new CommandsTreeViewProvider(helpCommand);
     disposables.push(
-      vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)
+      vscode.window.registerTreeDataProvider(
+        isV3Enabled() ? "teamsfx-help" : "teamsfx-help-and-feedback",
+        helpProvider
+      )
     );
     this.storeCommandsIntoMap(helpCommand);
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);

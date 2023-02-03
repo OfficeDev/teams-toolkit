@@ -69,6 +69,7 @@ import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { restore } from "sinon";
+import { ExtensionSurvey } from "../../src/utils/survey";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -751,6 +752,16 @@ describe("handlers", () => {
       "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
     );
     executeCommands.restore();
+    sendTelemetryEvent.restore();
+  });
+
+  it("openSurveyHandler", async () => {
+    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const openLink = sinon.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
+
+    await handlers.openSurveyHandler();
+    chai.assert.isTrue(sendTelemetryEvent.calledOnce);
+    chai.assert.isTrue(openLink.calledOnce);
     sendTelemetryEvent.restore();
   });
 

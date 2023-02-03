@@ -20,7 +20,7 @@ configureApp:
 
   - uses: aadApp/update
     with:
-      manifestPath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.json
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   - uses: teamsApp/validate
@@ -62,7 +62,7 @@ deploy:
         REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}/auth-start.html
         REACT_APP_TEAMSFX_ENDPOINT: http://localhost:55000
 
-  - uses: file/updateAppSettings
+  - uses: file/updateJson
     with:
       target: SIMPLE_AUTH_APPSETTINGS_PATH
       appsettings:

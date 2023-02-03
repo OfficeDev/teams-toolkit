@@ -1,3 +1,6 @@
+/**
+ * @author HuihuiWu-Microsoft <73154171+HuihuiWu-Microsoft@users.noreply.github.com>
+ */
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";

@@ -1,6 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @fileoverview auto add metrics for each method
- * @author Long
+ * @author Long Hao <haolong@microsoft.com>
  */
 "use strict";
 
@@ -10,7 +13,7 @@
 let metricsImportCount = 0;
 
 module.exports = {
-  "add-metrics": {
+  metrics: {
     meta: {
       fixable: "code",
       docs: {

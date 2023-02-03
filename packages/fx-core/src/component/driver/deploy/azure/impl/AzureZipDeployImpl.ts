@@ -26,7 +26,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   protected summaryPrepare: string[];
   protected zipBuffer: Buffer | undefined;
   protected progressHandler?: AsyncIterableIterator<void>;
-  protected progressNames: string[];
+  protected progressNames: (() => string)[];
 
   constructor(
     args: unknown,

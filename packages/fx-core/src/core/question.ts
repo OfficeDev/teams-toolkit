@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Huajie Zhang <zhjay23@qq.com>
+ */
 import {
   FolderQuestion,
   OptionItem,
@@ -824,11 +827,11 @@ export const BotIdsQuestion = (
   const options: OptionItem[] = [];
   if (botId) {
     defaultIds.push(answerToRepaceBotId);
-    options.push(botOptionItem(false));
+    options.push(botOptionItem(false, botId));
   }
   if (messageExtensionBotId) {
     defaultIds.push(answerToReplaceMessageExtensionBotId);
-    options.push(botOptionItem(true));
+    options.push(botOptionItem(true, messageExtensionBotId));
   }
   return {
     type: "multiSelect",
@@ -841,10 +844,15 @@ export const BotIdsQuestion = (
   };
 };
 
-export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
+export const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
-    label: isMessageExtension ? "Message extension" : "Bot",
+    label: isMessageExtension
+      ? getLocalizedString("core.updateBotIdForMessageExtension.label")
+      : getLocalizedString("core.updateBotIdForBot.label"),
+    detail: isMessageExtension
+      ? getLocalizedString("core.updateBotIdForMessageExtension.description", botId)
+      : getLocalizedString("core.updateBotIdForBot.description", botId),
   };
 };
 

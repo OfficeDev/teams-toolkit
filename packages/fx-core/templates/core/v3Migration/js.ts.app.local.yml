@@ -51,7 +51,7 @@ configureApp:
   {{#if aad}}
   - uses: aadApp/update
     with:
-      manifestPath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.json
       outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
 
   {{/if}}
@@ -202,7 +202,7 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/updateAppSettings
+  - uses: file/updateJson
     with:
       target: {{appsettingsPath}}
       appsettings:

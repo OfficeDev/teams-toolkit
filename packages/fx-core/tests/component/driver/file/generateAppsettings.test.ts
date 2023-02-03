@@ -10,16 +10,15 @@ import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
 import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
-import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
-import { GenerateAppsettingsDriver } from "../../../../src/component/driver/file/appsettingsGenerate";
+import { UpdateJsonDriver } from "../../../../src/component/driver/file/updateJson";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 
-describe("AppsettingsGenerateDriver", () => {
+describe("UpdateJsonDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
   } as DriverContext;
-  const driver = new GenerateAppsettingsDriver();
+  const driver = new UpdateJsonDriver();
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
@@ -54,7 +53,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for file/updateAppSettings action: target.";
+          "Following parameter is missing or invalid for file/updateJson action: target.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -69,12 +68,13 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for file/updateAppSettings action: appsettings.";
+          "Following parameter is missing or invalid for file/updateJson action: appsettings.";
         chai.assert.equal(result.error.message, message);
       }
     });
 
     it("exception", async () => {
+      sinon.stub(fs, "pathExists").rejects(new Error("exception"));
       sinon.stub(fs, "existsSync").throws(new Error("exception"));
       const args: any = {
         target: "path",
@@ -104,6 +104,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -138,6 +139,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -175,6 +177,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -212,6 +215,12 @@ describe("AppsettingsGenerateDriver", () => {
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
         content = data;
         return;
+      });
+      sinon.stub(fs, "pathExists").callsFake(async (path: fs.PathLike) => {
+        if (path.toString().indexOf(target) >= 0) {
+          return false;
+        }
+        return true;
       });
       sinon.stub(fs, "existsSync").callsFake((path) => {
         if (path.toString().indexOf(target) >= 0) {
@@ -254,6 +263,7 @@ describe("AppsettingsGenerateDriver", () => {
       content = data;
       return;
     });
+    sinon.stub(fs, "pathExists").resolves(false);
     sinon.stub(fs, "existsSync").callsFake((path) => {
       return false;
     });

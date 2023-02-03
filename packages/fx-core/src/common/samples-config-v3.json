@@ -95,6 +95,16 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false
+        },
+        {
+            "id": "team-central-dashboard",
+            "title": "Team Central Dashboard",
+            "shortDescription": "A single dashboard displaying data chats and content from Microsoft Graph to accelerate team collaboration and personal productivity.",
+            "fullDescription": "A single dashboard displaying data chats and content from Microsoft Graph to accelerate team collaboration and personal productivity.",
+            "tags": ["Tab", "TS", "Azure function", "SSO"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
         }
     ]
 }

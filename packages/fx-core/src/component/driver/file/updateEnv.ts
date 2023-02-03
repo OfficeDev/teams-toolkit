@@ -126,7 +126,7 @@ export class UpdateEnvDriver implements StepDriver {
       invalidParameters.push("envs");
     } else {
       for (const value of Object.values(args.envs)) {
-        if (!value || typeof value === "object") {
+        if (value === undefined || value === null || typeof value === "object") {
           invalidParameters.push("envs");
         }
       }

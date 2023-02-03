@@ -3,27 +3,39 @@ version: 1.0.0
 {{#config.registerApp}}
 registerApp:
   {{#if aad}}
-  - uses: aadApp/create
+  - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
-      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
-      generateClientSecret: true
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # AAD_APP_CLIENT_ID: the client id of AAD app
+    # AAD_APP_CLIENT_SECRET: the client secret of AAD app
+    # AAD_APP_OBJECT_ID: the object id of AAD app
+    # AAD_APP_TENANT_ID: the tenant id of AAD app
+    # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
+    # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
 
   {{/if}}
   {{#if teamsApp}}
-  - uses: teamsApp/create
+  - uses: teamsApp/create # Creates a Teams app
     with:
-      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # TEAMS_APP_ID: the id of Teams app
   {{/if}}
 
 {{/config.registerApp}}
 {{#config.provision}}
 provision:
   {{#bot}}
-  - uses: botAadApp/create
+  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for bot
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: botFramework/create
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: $\{{BOT_ID}}
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -40,7 +52,7 @@ provision:
 {{#config.configureApp}}
 configureApp:
   {{#tab}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
         {{../../placeholderMappings.tabDomain}}: {{domain}}
@@ -49,31 +61,37 @@ configureApp:
 
   {{/tab}}
   {{#if aad}}
-  - uses: aadApp/update
+  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
-      manifestPath: ./aad.manifest.json
+      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
+  # Output: following environment variable will be persisted in current environment's .env file.
+  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   {{/if}}
   {{#teamsApp}}
   {{#if appPackagePath}}
-  - uses: teamsApp/update
+  - uses: teamsApp/update # # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      appPackagePath: {{appPackagePath}}
+      appPackagePath: {{appPackagePath}} # Relative path to this file. This is the path for built zip file.
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # TEAMS_APP_ID: the id of Teams app
   {{else}}
   - uses: teamsApp/validate
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
 
-  - uses: teamsApp/zipAppPackage
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
 
-  - uses: teamsApp/update
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # TEAMS_APP_ID: the id of Teams app
   {{/if}}
   {{/teamsApp}}
 
@@ -81,7 +99,7 @@ configureApp:
 {{#config.deploy}}
 deploy:
   {{#tools}}
-  - uses: prerequisite/install 
+  - uses: prerequisite/install # Install dependencies
     with:
       {{#devCert}}
       devCert:
@@ -93,6 +111,11 @@ deploy:
       {{#dotnet}}
       dotnet: true
       {{/dotnet}}
+    {{#if devCert}}
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # SSL_CRT_FILE: certificate file
+    # SSL_KEY_FILE: certificate key
+    {{/if}}
 
   {{/tools}}
   {{#dotnetCommand}}
@@ -106,7 +129,7 @@ deploy:
 
   {{/dotnetCommand}}
   {{#tab}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -118,7 +141,7 @@ deploy:
 
   {{/tab}}
   {{#if bot}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -127,7 +150,7 @@ deploy:
 
   {{/if}}
   {{#ssoTab}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -140,7 +163,7 @@ deploy:
 
   {{/ssoTab}}
   {{#if ssoBot}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -160,7 +183,7 @@ deploy:
 
   {{/if}}
   {{#if ssoFunction}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./api/.env.teamsfx.local
       envs:
@@ -172,7 +195,7 @@ deploy:
 
   {{/if}}
   {{#npmCommands}}
-  - uses: cli/runNpmCommand
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: {{args}}
       {{#if workingDirectory}}
@@ -181,7 +204,7 @@ deploy:
 
   {{/npmCommands}}
   {{#frontendStart}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.localSettings
       envs:
@@ -202,7 +225,7 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/updateJson
+  - uses: file/updateJson # Generate runtime environment variables
     with:
       target: {{appsettingsPath}}
       appsettings:
@@ -217,7 +240,7 @@ deploy:
 
   {{/authStart}}
   {{#botStart}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.localSettings
       envs:
@@ -241,7 +264,7 @@ deploy:
 
   {{/botStart}}
   {{#if backendStart}}
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./api/.localSettings
       envs:

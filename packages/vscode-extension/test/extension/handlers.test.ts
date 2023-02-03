@@ -758,11 +758,13 @@ describe("handlers", () => {
   it("openSurveyHandler", async () => {
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     const openLink = sinon.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
+    sinon.stub(localizeUtils, "getDefaultString").returns("test");
 
-    await handlers.openSurveyHandler();
+    await handlers.openSurveyHandler([extTelemetryEvents.TelemetryTriggerFrom.TreeView]);
     chai.assert.isTrue(sendTelemetryEvent.calledOnce);
     chai.assert.isTrue(openLink.calledOnce);
     sendTelemetryEvent.restore();
+    openLink.restore();
   });
 
   it("openSamplesHandler", async () => {

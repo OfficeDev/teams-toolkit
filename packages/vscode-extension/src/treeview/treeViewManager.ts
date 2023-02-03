@@ -45,7 +45,6 @@ class TreeViewManager {
     this.registerDevelopment(disposables);
     this.registerDeployment(disposables);
     this.registerHelper(disposables);
-    // this.registerFeedback(disposables);
 
     context.subscriptions.push(...disposables);
   }

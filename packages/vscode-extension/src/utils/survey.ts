@@ -22,11 +22,11 @@ enum ExtensionSurveyStateKeys {
 
 const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 12 weeks
 const TIME_TO_REMIND_ME_LATER = 1000 * 60 * 60 * 24 * 7 * 2; // 2 weeks
-const TIME_TO_SHOW_SURVEY = 1000 * 60 * 1; //1000 * 60 * 15; // 15 minutes
+const TIME_TO_SHOW_SURVEY = 1000 * 60 * 15; // 15 minutes
 const SAMPLE_PERCENTAGE = 25; // 25 percent for public preview
 const V3PREVIEW_SAMPLE_PERCENTAGE = 100; // always pop up survey
 const V3PREVIEW_TIME_TO_DISABLE_SURVEY = -1; // negtive value stands for never show again
-const V3PREVIEW_TIME_TO_REMIND_ME_LATER = 1000 * 60 * 2; //1000 * 60 * 60 * 1; // 1 hour
+const V3PREVIEW_TIME_TO_REMIND_ME_LATER = 1000 * 60 * 60 * 1; // 1 hour
 
 export class ExtensionSurvey {
   private timeToShowSurvey: number;
@@ -69,8 +69,6 @@ export class ExtensionSurvey {
   }
 
   public async activate(): Promise<void> {
-    await globalStateUpdate(ExtensionSurveyStateKeys.DoNotShowAgain, false);
-    await globalStateUpdate(ExtensionSurveyStateKeys.DisableSurveyForTime, 0);
     if (this.needToShow && !this.checkSurveyInterval) {
       this.checkSurveyInterval = setInterval(async () => {
         if (!(await this.shouldShowBanner())) {

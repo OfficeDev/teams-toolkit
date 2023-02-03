@@ -5,16 +5,14 @@ on:
     branches:
       - main
       - dev
-      - ga
       - hotfix/**/*
-      - v3-folder-structure-refactor
+      - prerelease
   push:
     branches:
       - main
       - dev
-      - ga
       - hotfix/**/*
-      - v3-folder-structure-refactor
+      - prerelease
  
 jobs:
   unit-test:

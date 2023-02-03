@@ -7,6 +7,7 @@
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
+import { getDefaultString } from "../../../../src/common/localizeUtils";
 import { ErrorNames } from "../../../../src/component/resource/botService/constants";
 import {
   BotFrameworkConflictResultError,
@@ -14,6 +15,7 @@ import {
   BotFrameworkNotAllowedToAcquireTokenError,
   wrapError,
 } from "../../../../src/component/resource/botService/errors";
+import { Messages } from "../../../../src/component/resource/botService/messages";
 
 describe("wrap error", () => {
   it("wrap empty error", () => {
@@ -53,8 +55,22 @@ describe("wrap error", () => {
     assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
   });
 
-  it("Increase UT - BotFrameworkConflictResultError", () => {
-    const e = new BotFrameworkConflictResultError();
-    assert.isTrue(e.name === ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR);
+  it("Increase UT - genMessage & genDisplayMessage", () => {
+    const e = new BotFrameworkNotAllowedToAcquireTokenError();
+    assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+
+    let expectedMsg = `${Messages.NotAllowedToAcquireBotFrameworkToken()[0]} `;
+    expectedMsg += getDefaultString(
+      "plugins.bot.ErrorSuggestions",
+      [Messages.CheckOutputLogAndTryToFix].join(" ")
+    );
+    assert.isTrue(e.genMessage() === expectedMsg);
+
+    let expectedDisplayMsg = `${Messages.NotAllowedToAcquireBotFrameworkToken()[1]} `;
+    expectedDisplayMsg += getDefaultString(
+      "plugins.bot.ErrorSuggestions",
+      [Messages.CheckOutputLogAndTryToFix].join(" ")
+    );
+    assert.isTrue(e.genDisplayMessage() === expectedDisplayMsg);
   });
 });

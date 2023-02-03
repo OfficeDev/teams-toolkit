@@ -239,12 +239,14 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
-    core.on(CoreCallbackEvent.lock, async (command: string) => {
-      await commandController.lockedByOperation(command);
-    });
-    core.on(CoreCallbackEvent.unlock, async (command: string) => {
-      await commandController.unlockedByOperation(command);
-    });
+    if (isV3Enabled()) {
+      core.on(CoreCallbackEvent.lock, async (command: string) => {
+        await commandController.lockedByOperation(command);
+      });
+      core.on(CoreCallbackEvent.unlock, async (command: string) => {
+        await commandController.unlockedByOperation(command);
+      });
+    }
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);

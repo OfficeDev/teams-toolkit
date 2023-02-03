@@ -21,20 +21,21 @@ import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
-const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
-  ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}`
-  : "";
+const preRelease = (): string =>
+  process.env.TEAMSFX_TEMPLATE_PRERELEASE ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}` : "";
 export const templateVersion = (): string => templateConfig.version;
 const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
-async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
+export async function selectTemplateTag(
+  getTags: () => Promise<string[]>
+): Promise<string | undefined> {
   // Prerelease feature flag has the highest priority.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease)) {
-    return templatePrereleasePrefix + preRelease;
+  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease())) {
+    return templatePrereleasePrefix + preRelease();
   }
 
-  const versionPattern = preRelease || templateVersion();
+  const versionPattern = preRelease() || templateVersion();
   // To avoid incompatible, alpha release does not download latest template.
   if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
     return undefined;

@@ -28,7 +28,10 @@ import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
-import { templateAlphaVersion } from "../../../src/component/generator/constant";
+import {
+  templateAlphaVersion,
+  templatePrereleaseVersion,
+} from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -209,16 +212,35 @@ describe("Generator happy path", async () => {
     mockedEnvRestore();
   });
 
-  it("alpha release should use fallback", async () => {
-    sandbox.stub(generatorUtils, "templateVersion").returns(templateAlphaVersion);
-    sandbox.stub(generatorUtils, "fetchTagList").resolves(templateAlphaVersion);
+  it("correctly select template tag", async () => {
+    sandbox.stub(generatorUtils, "templateVersion").returns("^1.0.0");
+    const url = await generatorUtils.selectTemplateTag(async () => ["1.0.0", "1.2.0"]);
+    assert.include(url, "1.2.0");
+  });
 
-    try {
-      await generatorUtils.fetchTemplateZipUrl("ut");
-    } catch (e) {
-      assert.exists(e);
-      return;
-    }
-    assert.fail("Should not reach here.");
+  it("return prerelease version if feature flag set", async () => {
+    const resolveFn = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "alpha",
+    });
+    const url = await generatorUtils.selectTemplateTag(async () => ["1.0.0", "1.2.0"]);
+    assert.include(url, "alpha");
+    resolveFn();
+  });
+
+  it("alpha release or prerelease should use fallback", async () => {
+    const versions = [templateAlphaVersion, templatePrereleaseVersion];
+    versions.forEach(async (version) => {
+      sandbox.stub(generatorUtils, "templateVersion").returns(version);
+
+      try {
+        await generatorUtils.fetchTemplateZipUrl("ut");
+      } catch (e) {
+        assert.exists(e);
+        sandbox.restore();
+        return;
+      }
+      sandbox.restore();
+      assert.fail("Should not reach here.");
+    });
   });
 });

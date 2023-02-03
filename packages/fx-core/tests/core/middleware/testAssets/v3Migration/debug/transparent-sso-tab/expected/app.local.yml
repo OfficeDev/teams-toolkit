@@ -59,7 +59,7 @@ deploy:
     # SSL_CRT_FILE: certificate file
     # SSL_KEY_FILE: certificate key
 
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -69,7 +69,7 @@ deploy:
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
 
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:

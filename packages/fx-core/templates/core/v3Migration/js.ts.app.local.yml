@@ -129,7 +129,7 @@ deploy:
 
   {{/dotnetCommand}}
   {{#tab}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -141,7 +141,7 @@ deploy:
 
   {{/tab}}
   {{#if bot}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -150,7 +150,7 @@ deploy:
 
   {{/if}}
   {{#ssoTab}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -163,7 +163,7 @@ deploy:
 
   {{/ssoTab}}
   {{#if ssoBot}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -183,7 +183,7 @@ deploy:
 
   {{/if}}
   {{#if ssoFunction}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./api/.env.teamsfx.local
       envs:

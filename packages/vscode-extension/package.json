@@ -489,6 +489,10 @@
         {
           "command": "fx-extension.checkProjectUpgrade",
           "when": "fx-extension.canUpgradeToArmAndMultiEnv || fx-extension.canUpgradeV3"
+        },
+        {
+          "command": "fx-extension.openSurvey",
+          "when": "false"
         }
       ]
     },

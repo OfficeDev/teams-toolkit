@@ -47,13 +47,16 @@ describe("Command Controller", () => {
 
   it("refresh UI when receiving unlock events", async () => {
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
-    const setRunningCommandStub = sandbox.stub(TreeViewManagerInstance, "setRunningCommand");
+    const restoreRunningCommandStub = sandbox.stub(
+      TreeViewManagerInstance,
+      "restoreRunningCommand"
+    );
 
     await commandController.unlockedByOperation("provisionResources");
 
     chai.assert.isTrue(
-      executeCommandStub.calledOnceWithExactly("setContext", "fx-extension.commandLocked", true)
+      executeCommandStub.calledOnceWithExactly("setContext", "fx-extension.commandLocked", false)
     );
-    chai.assert.isTrue(setRunningCommandStub.calledOnce);
+    chai.assert.isTrue(restoreRunningCommandStub.calledOnce);
   });
 });

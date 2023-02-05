@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author FanH <Siglud@gmail.com>
+ */
 import { AzureDeployImpl } from "./impl/azureDeployImpl";
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import {
@@ -113,9 +116,10 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     );
     const responses = await Promise.all(tasks);
     const errorResponse = responses.find((res) => res.errorCode);
-    if (errorResponse?._response.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
+    if (errorResponse?._response?.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
       throw DeployExternalApiCallError.uploadToStorageRemoteError(sourceFolder, errorResponse);
-    } else if (errorResponse) {
+    }
+    if (errorResponse) {
       throw DeployExternalApiCallError.uploadToStorageError(
         sourceFolder,
         errorResponse,
@@ -164,12 +168,13 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
 
     const responses = await Promise.all(deleteJobs);
     const errorResponse = responses.find((res) => res.errorCode);
-    if (errorResponse?._response.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
+    if (errorResponse?._response?.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
       throw DeployExternalApiCallError.clearStorageRemoteError(
         errorResponse?._response.status,
         errorResponse
       );
-    } else if (errorResponse) {
+    }
+    if (errorResponse) {
       throw DeployExternalApiCallError.clearStorageError(
         "delete blob",
         errorResponse.errorCode,

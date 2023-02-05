@@ -69,6 +69,7 @@ import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { restore } from "sinon";
+import { ExtensionSurvey } from "../../src/utils/survey";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -752,6 +753,18 @@ describe("handlers", () => {
     );
     executeCommands.restore();
     sendTelemetryEvent.restore();
+  });
+
+  it("openSurveyHandler", async () => {
+    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const openLink = sinon.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
+    sinon.stub(localizeUtils, "getDefaultString").returns("test");
+
+    await handlers.openSurveyHandler([extTelemetryEvents.TelemetryTriggerFrom.TreeView]);
+    chai.assert.isTrue(sendTelemetryEvent.calledOnce);
+    chai.assert.isTrue(openLink.calledOnce);
+    sendTelemetryEvent.restore();
+    openLink.restore();
   });
 
   it("openSamplesHandler", async () => {

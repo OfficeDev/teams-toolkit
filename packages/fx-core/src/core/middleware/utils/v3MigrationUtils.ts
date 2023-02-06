@@ -126,29 +126,32 @@ export function getDownloadLinkByVersionAndPlatform(version: string, platform: P
 }
 
 export function outputCancelMessage(version: string, platform: Platform): void {
-  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`Upgrade cancelled.`);
   const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on Teams Toolkit sidebar to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
     );
+    TOOLS?.logProvider.warning(`Learn more at ${MetadataV3.v3UpgradeWikiLink}.`);
   } else if (platform === Platform.VS) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
     );
+    TOOLS?.logProvider.warning(`Learn more at ${MetadataV3.v3UpgradeWikiLink}.`);
   } else {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
     );
+    TOOLS?.logProvider.warning(`Learn more at ${MetadataV3.v3UpgradeWikiLink}.`);
   }
 }
 

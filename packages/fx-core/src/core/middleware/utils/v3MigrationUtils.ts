@@ -133,7 +133,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
       `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(
-      `If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on Teams Toolkit sidebar to trigger the upgrade.`
+      `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
       `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`

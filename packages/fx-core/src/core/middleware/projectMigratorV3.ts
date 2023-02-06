@@ -99,7 +99,7 @@ export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
-  reportName: "migrationReport.md",
+  reportName: "upgradeReport.md",
   envWriteOption: {
     // .env.{env} file might be already exist, use append mode (flag: a+)
     encoding: "utf8",

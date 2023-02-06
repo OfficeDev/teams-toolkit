@@ -52,12 +52,12 @@ jobs:
           EOF_HEREDOC
               grep -q 'E2E TEST:'
             ); then
-              echo "::set-output name=passed::true"
+              echo "passed=true" >> $GITHUB_OUTPUT
             else
-              echo "::set-output name=passed::false"
+              echo "passed=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "::set-output name=passed::true"
+            echo "passed=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Search comment
@@ -133,7 +133,7 @@ jobs:
         working-directory: packages/cli/tests/e2e
         run: |
           cases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
-          echo "::set-output name=cases::$cases"
+          echo "cases=$cases" >> $GITHUB_OUTPUT
 
       - name: List cases for dispatch
         id: dispatch-cases
@@ -143,9 +143,9 @@ jobs:
           inputCases='${{ github.event.inputs.cases }}'
           if [ -z "$inputCases" ]; then
             allCases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
-            echo "::set-output name=cases::$allCases"
+            echo "cases=$allCases" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=cases::$inputCases"
+            echo "cases=$inputCases" >> $GITHUB_OUTPUT
           fi
 
       - name: E2E Test clean
@@ -336,7 +336,7 @@ jobs:
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
           name="${name//\//_}"_${{ steps.get-job-id.outputs.jobId }}
-          echo "::set-output name=name::$name"
+          echo "name=$name" >> $GITHUB_OUTPUT
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
@@ -534,9 +534,9 @@ jobs:
             subject="[PASSED] $subject"
           fi
 
-          echo "::set-output name=body::$body"
-          echo "::set-output name=to::$emails"
-          echo "::set-output name=subject::$subject"
+          echo "body=$body" >> $GITHUB_OUTPUT
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master

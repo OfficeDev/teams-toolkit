@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Kuojian Lu <kuojianlu@gmail.com>
+ */
 import "mocha";
 
 import * as chai from "chai";
@@ -19,7 +22,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { ComponentNames } from "../../../src/component/constants";
+import { ComponentNames, TeamsFxUrlNames } from "../../../src/component/constants";
 import {
   DebugArgumentEmptyError,
   InvalidExistingBotArgsError,
@@ -39,6 +42,8 @@ import { AadAppCredentials } from "../../../src/component/resource/botService/Aa
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
 import { FailedToCreateBotRegistrationError } from "../../../src/component/resource/botService/errors";
+import { AppStudioResultFactory } from "../../../src/component/resource/appManifest/results";
+import { AppStudioError } from "../../../src/component/resource/appManifest/errors";
 
 describe("BotDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -405,9 +410,15 @@ describe("BotDebugHandler", () => {
       sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (_token, id) => {
         return undefined;
       });
-      sinon
-        .stub(AppStudioClient, "createBotRegistration")
-        .throws(new FailedToCreateBotRegistrationError(""));
+      sinon.stub(AppStudioClient, "createBotRegistration").throws(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.DeveloperPortalAPIFailedError.name,
+          ["", ""],
+          {
+            teamsfxUrlName: TeamsFxUrlNames.createBot,
+          }
+        )
+      );
       sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");

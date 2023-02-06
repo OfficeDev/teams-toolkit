@@ -148,7 +148,7 @@
   "core.aadManifestMigration.ParsePermissionsFailedWarning": "Cannot parse permissions.json file when migration, and please follow this link to update permissions in aad.template.json file if necessary: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess",
   "core.projectVersionChecker.vscodeUseNewVersion": "The current project is incompatible with the installed Teams Toolkit, please install %s or above and reopen this project.",
   "core.projectVersionChecker.cliUseNewVersion": "[core] Your TeamsFx CLI is too old to support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest",
-  "core.projectVersionChecker.incompatibleProject": "The current project is incompatible with the installed Teams Toolkit.",
+  "core.projectVersionChecker.incompatibleProject": "The current project is incompatible with the installed version of Teams Toolkit.",
   "core.aad.includeAadQuestionTitle": "Whether to deploy aad manifest",
   "core.aad.aadManifestFilePath": "Enter the aad.template.json file path to deploy",
   "core.deployArmTemplates.StartNotice": "[%s] Start deploying ARM templates.",

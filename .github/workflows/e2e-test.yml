@@ -436,11 +436,29 @@ jobs:
         id: list-jobs
         working-directory: packages/cli
         run: |
-          jobs=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }} \
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
+          page=1
+          jobs="[]"
 
-          cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+          while :
+          do
+
+            url=https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
+            resp=`curl -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url`
+
+            new_jobs=`echo $resp | jq -cr '.jobs'`
+
+            jobs=`jq -cr --slurp 'add' <(echo "$jobs") <(echo "$new_jobs")`
+
+            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url | grep -Fi "link:" || true | grep "rel=\"last\"" || true`
+            if [ -z "$has_next" ]; then
+              break
+            fi
+
+            page=$((page+1))
+          done
+
+          cases=`echo $jobs| jq -r '.[] | select(.name | contains("tests.ts")) | .name'`
+
 
           lists=""
           passed=0
@@ -469,14 +487,14 @@ jobs:
               fi
             fi
 
-            status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+            status=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .conclusion'`
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
 
-            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
@@ -495,14 +513,14 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
-            job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
             slow_count=0
             if [ ! -z "$metrics_file" ]; then
               slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
             fi
 
-            url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            url=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">$elegant_path</a>"
 
             target_type="TS/JS"

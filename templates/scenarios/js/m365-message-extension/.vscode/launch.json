@@ -2,6 +2,50 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Remote in Teams (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Teams (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Outlook (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://outlook.office.com/mail?${account-hint}",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Outlook (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://outlook.office.com/mail?${account-hint}",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
             "name": "Launch Bot in Teams (Edge)",
             "type": "pwa-msedge",
             "request": "launch",

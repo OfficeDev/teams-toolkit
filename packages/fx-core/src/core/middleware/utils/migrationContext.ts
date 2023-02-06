@@ -4,11 +4,11 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-extra";
 import path from "path";
+import { MetadataV2 } from "../../../common/versionMetadata";
 import { CoreHookContext } from "../../types";
+import { getParameterFromCxt } from "./v3MigrationUtils";
 
-const teamsfxFolder = "teamsfx";
-const backupFolder = "backup";
-export const V2TeamsfxFolder = ".fx";
+export const backupFolder = ".backup";
 export interface MigrationContext extends CoreHookContext {
   backup(path: string): Promise<boolean>;
   fsEnsureDir(path: string, options?: EnsureOptions | number): Promise<void>;
@@ -38,9 +38,8 @@ export class MigrationContext {
 
   private constructor(ctx: CoreHookContext) {
     Object.assign(this, ctx, {});
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    this.projectPath = inputs.projectPath as string;
-    this.backupPath = path.join(this.projectPath, teamsfxFolder, backupFolder);
+    this.projectPath = getParameterFromCxt(ctx, "projectPath");
+    this.backupPath = path.join(this.projectPath, backupFolder);
   }
 
   async backup(_path: string): Promise<boolean> {
@@ -105,12 +104,12 @@ export class MigrationContext {
     );
   }
 
-  async cleanTeamsfx(): Promise<void> {
-    await this.fsRemove(teamsfxFolder);
+  async cleanBackup(): Promise<void> {
+    await this.fsRemove(backupFolder);
   }
 
   async removeFxV2(): Promise<void> {
-    await this.fsRemove(V2TeamsfxFolder);
+    await this.fsRemove(MetadataV2.configFolder);
   }
 
   async fsPathExists(_path: string): Promise<boolean> {

@@ -7,7 +7,7 @@
 #
 storage: verdaccio/storage
 
-max_body_size: 100mb
+max_body_size: 888mb
 
 # path to a directory with plugins to include
 plugins: ./plugins
@@ -45,7 +45,7 @@ auth:
     file: ./htpasswd
     # Maximum amount of users allowed to register, defaults to "+inf".
     # You can set this to -1 to disable registration.
-    # max_users: 1000
+    max_users: -1
 
 # a list of other known repositories we can talk to
 uplinks:
@@ -57,21 +57,25 @@ packages:
     access: $all
     publish: $all
     unpublish: $all
+    proxy: npmjs
 
   "@microsoft/teamsfx-api":
     access: $all
     publish: $all
     unpublish: $all
+    proxy: npmjs
 
   "@microsoft/teamsfx-core":
     access: $all
     publish: $all
     unpublish: $all
+    proxy: npmjs
 
   "ms-teams-vscode-extension":
     access: $all
     publish: $all
     unpublish: $all
+    proxy: npmjs
 
   "**":
     # allow all users (including non-authenticated users) to read and

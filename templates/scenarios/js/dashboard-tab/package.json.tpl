@@ -25,10 +25,10 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha"
+        "env-cmd": "^10.1.0"
     },
     "scripts": {
-        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

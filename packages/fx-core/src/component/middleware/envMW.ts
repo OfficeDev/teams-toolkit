@@ -1,22 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
-import {
-  err,
-  Inputs,
-  QTreeNode,
-  traverse,
-  UserCancelError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { Middleware, NextFunction } from "@feathersjs/hooks";
+import { err, Inputs, QTreeNode, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import _ from "lodash";
 import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
-import _ from "lodash";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 
 export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -58,17 +50,6 @@ export const envLoaderMWImpl = async (
       ctx.result = err(envListRes.error);
       return;
     }
-    if (envListRes.value.length === 0) {
-      ctx.result = err(
-        new UserError({
-          source: "EnvLoaderMW",
-          name: "NoYmlFileError",
-          displayMessage: getLocalizedString("core.error.NoYmlFileError"),
-          message: getDefaultString("core.error.NoYmlFileError"),
-        })
-      );
-      return;
-    }
     if (withLocalEnv) {
       question.staticOptions = envListRes.value;
     } else {
@@ -76,19 +57,23 @@ export const envLoaderMWImpl = async (
         (p) => p !== environmentManager.getLocalEnvName()
       );
     }
-
-    const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
-    if (res.isErr()) {
-      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
-      ctx.result = err(res.error);
-      return;
-    }
-    if (!inputs.env) {
-      ctx.result = err(UserCancelError);
-      return;
+    if (question.staticOptions.length === 0) {
+      // if env folder is not available or env folder is empty, then default env = dev
+      inputs.env = environmentManager.getDefaultEnvName();
+    } else {
+      const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
+      if (res.isErr()) {
+        TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
+        ctx.result = err(res.error);
+        return;
+      }
+      // if (!inputs.env) {
+      //   ctx.result = err(UserCancelError);
+      //   return;
+      // }
     }
   }
-  const res = await envUtil.readEnv(projectPath, inputs.env);
+  const res = await envUtil.readEnv(projectPath, inputs.env!);
   if (res.isErr()) {
     ctx.result = err(res.error);
     return;

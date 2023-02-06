@@ -28,11 +28,19 @@ export class NodeNotSupportedError extends DepsCheckerError {
   }
 }
 
-export class NodeNotRecommendedError extends DepsCheckerError {
+export class NodeNotLtsError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);
 
-    Object.setPrototypeOf(this, NodeNotRecommendedError.prototype);
+    Object.setPrototypeOf(this, NodeNotLtsError.prototype);
+  }
+}
+
+export class V3NodeNotSupportedError extends DepsCheckerError {
+  constructor(message: string, helpLink: string) {
+    super(message, helpLink);
+
+    Object.setPrototypeOf(this, V3NodeNotSupportedError.prototype);
   }
 }
 

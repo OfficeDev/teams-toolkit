@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureDeployDriver } from "./azureDeployDriver";
+import { AzureDeployImpl } from "./impl/azureDeployImpl";
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import {
   BlobDeleteResponse,
@@ -10,7 +10,7 @@ import {
   BlockBlobParallelUploadOptions,
   ContainerClient,
 } from "@azure/storage-blob";
-import { DeployConstant } from "../../../constant/deployConstant";
+import { DeployConstant, ProgressBarConstant } from "../../../constant/deployConstant";
 import { DeployExternalApiCallError } from "../../../error/deployError";
 import { forEachFileAndDir } from "../../../utils/fileOperation";
 import * as fs from "fs-extra";
@@ -28,12 +28,11 @@ import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
-import { wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
-import { ProgressMessages } from "../../../messages";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { progressBarHelper } from "./impl/progressBarHelper";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -45,18 +44,27 @@ export class AzureStorageDeployDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);
-    return wrapRun(() => impl.run(), undefined, context.logProvider);
+    return (await impl.run()).result;
   }
 
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    return wrapSummary(this.run.bind(this, args, ctx), ["driver.deploy.azureStorageDeploySummary"]);
+    const impl = new AzureStorageDeployDriverImpl(args, ctx);
+    return impl.run();
   }
 }
 
 /**
  * deploy to Azure Storage
  */
-export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
+export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
+  protected summaries: string[] = [getLocalizedString("driver.deploy.azureStorageDeploySummary")];
+  protected summaryPrepare: string[] = [];
+  protected progressHandler: AsyncIterableIterator<void> = progressBarHelper(
+    ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS
+  );
+  protected progressNames = ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS;
+
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
 
@@ -67,20 +75,19 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
-    await this.progressBar?.start();
     await this.context.logProvider.debug("Start deploying to Azure Storage Service");
     await this.context.logProvider.debug("Get Azure Storage Service deploy credential");
-    await this.progressBar?.next(ProgressMessages.getAzureStorageAccountInfo);
+    await this.progressHandler?.next();
     const containerClient = await AzureStorageDeployDriverImpl.createContainerClient(
       azureResource,
       azureCredential
     );
     // delete all existing blobs
-    await this.progressBar?.next(ProgressMessages.clearStorageExistsBlobs);
+    await this.progressHandler?.next();
     await this.deleteAllBlobs(containerClient, azureResource.instanceId, this.context.logProvider);
     await this.context.logProvider.debug("Uploading files to Azure Storage Service");
     // upload all to storage
-    await this.progressBar?.next(ProgressMessages.uploadFilesToStorage);
+    await this.progressHandler?.next();
     const ig = await this.handleIgnore(args, this.context);
     const sourceFolder = this.distDirectory;
     const tasks: Promise<BlobUploadCommonResponse>[] = [];
@@ -113,7 +120,6 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
       );
     }
     await this.context.logProvider.debug("Upload files to Azure Storage Service successfully");
-    await this.progressBar?.end(true);
     return;
   }
 
@@ -166,7 +172,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
   createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
     return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`,
-      3
+      this.progressNames.length
     );
   }
 }

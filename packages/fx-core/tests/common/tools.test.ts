@@ -297,13 +297,9 @@ describe("tools", () => {
         TEAMSFX_V3: "true",
       });
       try {
-        const settings: Settings = {
-          trackingId: "tracking-id",
-          version: "0.0.0",
-        };
-
-        sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
-          return settings;
+        sandbox.stub<any, any>(fs, "readFileSync").callsFake((file: string) => {
+          return `version: 1.0.0
+projectId: 00000000-0000-0000-0000-000000000000`;
         });
         sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
           return true;
@@ -311,7 +307,7 @@ describe("tools", () => {
 
         const result = getFixedCommonProjectSettings("root-path");
         chai.assert.isNotEmpty(result);
-        chai.assert.equal(result!.projectId, settings.trackingId);
+        chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
       } finally {
         restore();
       }

@@ -46,6 +46,7 @@ export enum TelemetryProperty {
   HasSwitchedM365Tenant = "has-switched-m365",
   CustomizeSubscriptionType = "customize-subscription-type",
   IsFromTdp = "is-from-developer-portal",
+  ToolkitVersion = "toolkit-version",
 }
 
 export enum TelemetryEvent {
@@ -71,6 +72,7 @@ export enum TelemetryEvent {
   CheckSubscription = "check-subscription",
   CheckSideloading = "check-sideloading",
   EnvConfig = "env-config",
+  DisplayToolingUpdateNotification = "display-tooling-update-notification",
   ProjectMigratorNotificationStart = "project-migrator-notification-start",
   ProjectMigratorNotification = "project-migrator-notification",
   ProjectMigratorMigrateStart = "project-migrator-migrate-start",

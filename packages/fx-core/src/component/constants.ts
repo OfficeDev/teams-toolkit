@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import { MultiSelectQuestion, OptionItem, UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
 import path from "path";
@@ -315,6 +318,12 @@ export const PathConstants = {
 
 export const RegularExpr = {
   validFunctionNamePattern: /^[a-zA-Z][\w-]{0,126}$/,
+};
+
+export const TeamsFxUrlNames = {
+  createBot: "<create-bot-registration>",
+  getBot: "<get-bot-registration>",
+  updateEndpoint: "<update-message-endpoint>",
 };
 
 /**

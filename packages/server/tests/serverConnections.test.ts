@@ -357,4 +357,23 @@ describe("serverConnections", () => {
         assert.equal(data, ok(false));
       });
   });
+
+  it("publishInDeveloperPortalRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok(Void));
+    sandbox.replace(connection["core"], "publishInDeveloperPortal", fake);
+    const inputs = {
+      platform: "vs",
+      projectPath: "test",
+      appPackage: "appPackage",
+    };
+    const token = {};
+    const res = connection.publishInDeveloperPortalRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
+  });
 });

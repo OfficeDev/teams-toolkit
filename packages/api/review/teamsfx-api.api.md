@@ -983,8 +983,6 @@ export interface Inputs extends Json {
     // (undocumented)
     targetSubscriptionId?: string;
     // (undocumented)
-    taskOrientedTemplateNaming?: boolean;
-    // (undocumented)
     teamsAppFromTdp?: any;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;

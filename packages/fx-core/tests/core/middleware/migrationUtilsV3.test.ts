@@ -394,6 +394,28 @@ describe("Migration: upgrade cancel messages", () => {
       `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`,
       `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit 4.x.x, please find it in https://aka.ms/teamsfx-project-toolkit-match#vscode and install it.`,
     ];
-    assert.equal(messageArray, groundTruth);
+    assert.equal(messageArray.join(""), groundTruth.join(""));
+  });
+
+  it("vs upgrade cancel log messages", () => {
+    v3MigrationUtils.outputCancelMessage("4.2.2", Platform.VS);
+    const groundTruth = [
+      `Upgrade cancelled.`,
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at https://aka.ms/teams-toolkit-5.0-upgrade.`,
+      `If you want to upgrade, please trigger this command again.`,
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit 17.4.x.x, please find it in https://aka.ms/teamsfx-project-toolkit-match#visual-studio and install it.`,
+    ];
+    assert.equal(messageArray.join(""), groundTruth.join(""));
+  });
+
+  it("cli upgrade cancel log messages", () => {
+    v3MigrationUtils.outputCancelMessage("4.2.2", Platform.CLI);
+    const groundTruth = [
+      `Upgrade cancelled.`,
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at https://aka.ms/teams-toolkit-5.0-upgrade.`,
+      `If you want to upgrade, please trigger this command again.`,
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI 1.x.x, please find it in https://aka.ms/teamsfx-project-toolkit-match#cli and install it.`,
+    ];
+    assert.equal(messageArray.join(""), groundTruth.join(""));
   });
 });

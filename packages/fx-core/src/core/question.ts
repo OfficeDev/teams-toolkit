@@ -350,24 +350,6 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const commandAndResponseOptionItem = CommandAndResponseOptionItem();
   const workflowOptionItem = WorkflowOptionItem();
   const dashboardOptionItem = DashboardOptionItem();
-  if (inputs?.taskOrientedTemplateNaming) {
-    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.NotificationOption.label.abTest"
-    )}`;
-    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.CommandAndResponseOption.label.abTest"
-    )}`;
-    commandAndResponseOptionItem.detail = getLocalizedString(
-      "core.CommandAndResponseOption.detail.abTest"
-    );
-    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-    dashboardOptionItem.label = `$(browser) ${getLocalizedString(
-      "core.DashboardOption.label.abTest"
-    )}`;
-    dashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
-  }
 
   // AB test for in product doc
   if (inputs?.inProductDoc) {

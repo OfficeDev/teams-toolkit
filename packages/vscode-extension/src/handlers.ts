@@ -1122,7 +1122,6 @@ export async function runCommand(
 
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
-    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     inputs.inProductDoc = TreatmentVariableValue.inProductDoc;
 
     switch (stage) {
@@ -1276,7 +1275,6 @@ export async function runUserTask(
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
     inputs.env = envName;
-    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);

@@ -41,6 +41,9 @@ describe("resouce group helper test", () => {
       mockResourceManagementClient,
       "rg1"
     );
+    if (res.isErr()) {
+      console.error(res.error);
+    }
     assert.isTrue(res.isOk());
   });
 });

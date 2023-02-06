@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 export class RegularExprs {
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z\d]/g;
 }
@@ -11,7 +14,7 @@ export class AADRegistrationConstants {
 }
 
 export class Retry {
-  public static readonly RETRY_TIMES = 10;
+  public static readonly RETRY_TIMES = 6;
   public static readonly BACKOFF_TIME_MS = 5000;
 }
 
@@ -29,6 +32,9 @@ export class ErrorNames {
 
   // User Exceptions
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
+  public static readonly ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR = "AcquireBotFrameworkTokenError";
+  public static readonly FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR = "ForbiddenResultBotFrameworkError";
+  public static readonly CONFLICT_RESULT_BOT_FRAMEWORK_ERROR = "ConflictResultBotFrameworkError";
 }
 
 export class Links {

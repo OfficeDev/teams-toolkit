@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
+ */
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "./interfaces/appDefinition";
@@ -56,7 +59,7 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  function wrapException(e: any, apiName: string): Error {
+  export function wrapException(e: any, apiName: string): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
@@ -69,7 +72,8 @@ export namespace AppStudioClient {
         requestPath,
         apiName,
         extraData
-      )
+      ),
+      e
     );
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {

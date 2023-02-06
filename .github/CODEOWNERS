@@ -16,6 +16,8 @@
 /packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/README.md @therealjohn @sffamily
+/packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
 
 /packages/cli @chagong @Alive-Fish
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya

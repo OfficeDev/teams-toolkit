@@ -11,6 +11,8 @@ export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
 export const cliTelemetryPrefix = "teamsfx-cli";
 
+export const teamsAppFileName = "teamsapp.yml";
+
 export const RootFolderNode = new QTreeNode({
   type: "folder",
   name: "folder",

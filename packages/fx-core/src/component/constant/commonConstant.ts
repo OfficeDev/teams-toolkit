@@ -1,10 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Siglud <Siglud@gmail.com>
+ */
 export enum HttpStatusCode {
   OK = 200,
   CREATED = 201,
   ACCEPTED = 202,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NOTFOUND = 404,
+  TOOMANYREQS = 429,
   INTERNAL_SERVER_ERROR = 500,
 }
 

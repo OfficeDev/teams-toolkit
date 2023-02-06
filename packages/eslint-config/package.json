@@ -3,10 +3,29 @@
   "version": "0.2.0",
   "description": "Shared ESLint configuration",
   "private": true,
+  "scripts": {
+    "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
+    "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "lint-staged": "^10.5.4",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-no-secrets": "^0.8.9"
+    "eslint": "^7.9.0",
+    "eslint-plugin-no-secrets": "^0.8.9",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
   }
 }

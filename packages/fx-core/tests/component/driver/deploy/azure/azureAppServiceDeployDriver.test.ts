@@ -22,6 +22,7 @@ import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
+import { ProgressMessages } from "../../../../../src/component/messages";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -465,5 +466,47 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.execute(args, context);
     assert.equal(res.result.isOk(), false);
+  });
+
+  it("test process language", async () => {
+    const resource = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "../../../../../resource/package.nls.json"), "utf-8")
+    );
+    assert.equal(
+      ProgressMessages.restartAzureFunctionApp(),
+      resource["core.progress.restartAzureFunctionApp"]
+    );
+    assert.equal(
+      ProgressMessages.getAzureAccountInfoForDeploy(),
+      resource["core.progress.getAzureAccountInfoForDeploy"]
+    );
+    assert.equal(
+      ProgressMessages.getAzureUploadEndpoint(),
+      resource["core.progress.getAzureUploadEndpoint"]
+    );
+    assert.equal(
+      ProgressMessages.uploadZipFileToAzure(),
+      resource["core.progress.uploadZipFileToAzure"]
+    );
+    assert.equal(
+      ProgressMessages.checkAzureDeployStatus(),
+      resource["core.progress.checkAzureDeployStatus"]
+    );
+    assert.equal(
+      ProgressMessages.restartAzureFunctionApp(),
+      resource["core.progress.restartAzureFunctionApp"]
+    );
+    assert.equal(
+      ProgressMessages.getAzureStorageAccountInfo(),
+      resource["core.progress.getAzureStorageDeployCredential"]
+    );
+    assert.equal(
+      ProgressMessages.clearStorageExistsBlobs(),
+      resource["core.progress.clearStorageExistsBlobs"]
+    );
+    assert.equal(
+      ProgressMessages.uploadFilesToStorage(),
+      resource["core.progress.uploadFilesToStorage"]
+    );
   });
 });

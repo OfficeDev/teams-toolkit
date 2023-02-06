@@ -17,12 +17,12 @@ import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
 
-const actionName = "file/updateAppSettings";
-const helpLink = "https://aka.ms/teamsfx-actions/appsettings-generate";
+const actionName = "file/updateJson";
+const helpLink = "https://aka.ms/teamsfx-actions/file-updateJson";
 
 @Service(actionName) // DO NOT MODIFY the service name
-export class GenerateAppsettingsDriver implements StepDriver {
-  description = getLocalizedString("driver.generateAppsettings.description");
+export class UpdateJsonDriver implements StepDriver {
+  description = getLocalizedString("driver.file.updateJson.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -61,7 +61,7 @@ export class GenerateAppsettingsDriver implements StepDriver {
     try {
       this.validateArgs(args);
       const appsettingsPath = getAbsolutePath(args.target, context.projectPath);
-      if (!fs.existsSync(appsettingsPath)) {
+      if (!(await fs.pathExists(appsettingsPath))) {
         // try to copy appsettings.json
         const appsettingsTemplatePath = getAbsolutePath("appsettings.json", context.projectPath);
         if (!fs.existsSync(appsettingsTemplatePath)) {
@@ -75,9 +75,7 @@ export class GenerateAppsettingsDriver implements StepDriver {
       await fs.writeFile(appsettingsPath, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
       return {
         output: new Map<string, string>(),
-        summaries: [
-          getLocalizedString("driver.generateAppsettings.summary.withTarget", args.target),
-        ],
+        summaries: [getLocalizedString("driver.file.updateJson.summary.withTarget", args.target)],
       };
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {

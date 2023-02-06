@@ -1,5 +1,5 @@
 {
-  "common": ["packages/eslint-config"],
+  "common": ["packages/eslint-config", "packages/eslint-plugin-teamsfx"],
   "adaptivecard": ["packages/adaptivecards-tools-sdk"],
   "cli": [
     "packages/manifest",

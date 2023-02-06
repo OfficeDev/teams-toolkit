@@ -67,6 +67,7 @@ import {
   AddSsoParameters,
   UserTaskFunctionName,
 } from "@microsoft/teamsfx-core/build/component/constants";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import {
   askSubscription,
   AppStudioScopes,
@@ -1122,7 +1123,6 @@ export async function runCommand(
 
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
-    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     inputs.inProductDoc = TreatmentVariableValue.inProductDoc;
 
     switch (stage) {
@@ -1276,7 +1276,6 @@ export async function runUserTask(
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
     inputs.env = envName;
-    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
@@ -3018,7 +3017,13 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/${SettingsFolderName}/.env.${env}`);
+      // Load env folder from yml
+      const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
+      if (envFolder.isOk()) {
+        sourcePath = path.resolve(`${envFolder.value}/.env.${env}`);
+      } else {
+        return err(envFolder.error);
+      }
     }
   } else {
     const invalidArgsError = new SystemError(

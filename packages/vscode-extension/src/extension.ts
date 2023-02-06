@@ -1017,14 +1017,6 @@ async function runBackgroundAsyncTasks(
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
 
-  TreatmentVariableValue.taskOrientedTemplateNaming = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.TaskOrientedTemplateNaming,
-      true
-    )) as boolean | undefined;
-
   await showDebugChangesNotification();
 }
 

@@ -100,7 +100,7 @@
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
 
-/templates/tab @hund030 @eriolchan @IvanJobs
+/templates/tab @hund030 @eriolchan @IvanJobs @huimiu
 /templates/function-base @hund030 @eriolchan @IvanJobs
 /templates/function-triggers @hund030 @eriolchan @IvanJobs
 /templates/blazor-base @JerryYangKai @eriolchan @IvanJobs

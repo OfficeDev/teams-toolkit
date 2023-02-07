@@ -36,7 +36,7 @@ Enhancements:
 - Updated pre-requisite checker, applicable app templates and samples to support Node.js 18.
 - Updated comments on Notification bot template for how to send notifications to an individual person.
 - Updated TeamsFx-React SDK to support React 17.
-- Updated TeamsFx SDK, relevant bot app templates and samples to use CloudAdapter.
+- Updated TeamsFx SDK, relevant bot app templates and samples to use [CloudAdapter](https://learn.microsoft.com/javascript/api/botbuilder/cloudadapter).
 - Updated app templates to use TeamsJS SDK v2.7.1.
 
 ## 4.2.0 - Dec 20, 2022

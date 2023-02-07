@@ -347,7 +347,7 @@ describe("Migration: upgrade cancel messages", () => {
 
   beforeEach(() => {
     messageArray = [];
-    sandbox.stub(TOOLS.logProvider, "warning").callsFake(async (message) => {
+    sandbox.stub(TOOLS?.logProvider, "warning").callsFake(async (message) => {
       messageArray.push(message);
       return true;
     });

@@ -1,6 +1,6 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/v3.zip",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.0.0/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v2.0.0.zip",
     "baseFolderName": "TeamsFx-Samples-3",
     "samples": [
         {

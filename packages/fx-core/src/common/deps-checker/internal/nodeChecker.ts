@@ -14,7 +14,7 @@ import {
 } from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DepsCheckerEvent } from "../constant/telemetry";
-import { DependencyStatus, DepsChecker, DepsType, InstallOptions } from "../depsChecker";
+import { DependencyStatus, DepsChecker, DepsType, BaseInstallOptions } from "../depsChecker";
 import {
   DepsCheckerError,
   NodeNotFoundError,
@@ -59,7 +59,7 @@ export abstract class NodeChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async getInstallationInfo(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     let supportedVersions: string[] = [];
     try {
       supportedVersions = await this.getSupportedVersions(installOptions?.projectPath);
@@ -110,7 +110,7 @@ export abstract class NodeChecker implements DepsChecker {
     }
   }
 
-  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
       await this._logger.printDetailLog();
@@ -234,7 +234,7 @@ export class AzureNodeChecker extends NodeChecker {
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16"];
+    return ["14", "16", "18"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {

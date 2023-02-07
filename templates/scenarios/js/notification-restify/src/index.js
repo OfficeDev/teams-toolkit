@@ -67,6 +67,22 @@ server.post(
     }
     **/
 
+    /** You can also find someone and notify the individual person
+    const member = await notificationApp.notification.findMember(
+      async (m) => m.account.email === "someone@contoso.com"
+    );
+    await member?.sendAdaptiveCard(...);
+    **/
+
+    /** Or find multiple people and notify them
+    const members = await notificationApp.notification.findAllMembers(
+      async (m) => m.account.email?.startsWith("test")
+    );
+    for (const member of members) {
+      await member.sendAdaptiveCard(...);
+    }
+    **/
+
     res.json({});
   }
 );

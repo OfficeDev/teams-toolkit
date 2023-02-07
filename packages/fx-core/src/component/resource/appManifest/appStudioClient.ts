@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
+ */
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "./interfaces/appDefinition";
@@ -56,7 +59,7 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  function wrapException(e: any, apiName: string): Error {
+  export function wrapException(e: any, apiName: string): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
@@ -69,7 +72,8 @@ export namespace AppStudioClient {
         requestPath,
         apiName,
         extraData
-      )
+      ),
+      e
     );
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
@@ -509,6 +513,8 @@ export namespace AppStudioClient {
   }
 
   export async function getSideloadingStatus(appStudioToken: string): Promise<boolean | undefined> {
+    const apiName = "<check-sideloading-status>";
+    const apiPath = "/api/usersettings/mtUserAppPolicy";
     const instance = axios.create({
       baseURL: region ?? getAppStudioEndpoint(),
       timeout: 30000,
@@ -520,7 +526,7 @@ export namespace AppStudioClient {
     do {
       let response = undefined;
       try {
-        response = await instance.get("/api/usersettings/mtUserAppPolicy");
+        response = await instance.get(apiPath);
         let result: boolean | undefined;
         if (response.status >= 400) {
           result = undefined;
@@ -544,21 +550,31 @@ export namespace AppStudioClient {
             {
               [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
               [TelemetryProperty.CheckSideloadingMethod]: "get",
-              [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+              [TelemetryProperty.CheckSideloadingUrl]: apiName,
             }
           );
         }
 
         return result;
-      } catch (error) {
+      } catch (error: any) {
         sendTelemetryErrorEvent(
           Component.core,
           TelemetryEvent.CheckSideloading,
-          new SystemError({ error, source: "M365Account" }),
+          new SystemError({
+            error,
+            source: "M365Account",
+            message: AppStudioError.DeveloperPortalAPIFailedError.message(
+              error,
+              error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
+              apiPath,
+              apiName,
+              error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+            )[0],
+          }),
           {
-            [TelemetryProperty.CheckSideloadingStatusCode]: `${response?.status}`,
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
             [TelemetryProperty.CheckSideloadingMethod]: "get",
-            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+            [TelemetryProperty.CheckSideloadingUrl]: apiName,
           }
         );
         await waitSeconds((retry + 1) * retryIntervalSeconds);

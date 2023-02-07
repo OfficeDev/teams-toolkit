@@ -15,12 +15,14 @@ import { TestTelemetry } from "../adapters/testTelemetry";
 import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
 import { VxTestAppChecker } from "../../../../src/common/deps-checker/internal/vxTestAppChecker";
-import { isWindows } from "../../../../src/common/deps-checker/util";
+import { isMacOS, isWindows } from "../../../../src/common/deps-checker/util";
 
 describe("VxTestAppChecker E2E Test", async () => {
   const fakeProjectPath = "fake project path";
   const vxTestAppExecutableName = isWindows()
     ? "video-extensibility-test-app.exe"
+    : isMacOS()
+    ? "video-extensibility-test-app.app"
     : "video-extensibility-test-app";
   let sandbox: sinon.SinonSandbox;
 

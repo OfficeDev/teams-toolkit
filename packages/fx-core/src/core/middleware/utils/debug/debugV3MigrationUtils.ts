@@ -125,7 +125,7 @@ export function generateLabel(base: string, existingLabels: string[]): string {
 export function createResourcesTask(label: string): CommentJSONValue {
   const comment = `{
     // Create the debug resources.
-    // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-tasks/provision to know the details and how to customize the args.
   }`;
   const task = {
     label,
@@ -142,7 +142,7 @@ export function createResourcesTask(label: string): CommentJSONValue {
 export function setUpLocalProjectsTask(label: string): CommentJSONValue {
   const comment = `{
     // Build project.
-    // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
   }`;
   const task = {
     label,

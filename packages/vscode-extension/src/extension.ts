@@ -69,7 +69,7 @@ import {
   isMigrationV3Enabled,
   setRegion,
 } from "@microsoft/teamsfx-core/build/common/tools";
-import { UriHandler } from "./uriHandler";
+import { ext, UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 import { PrereleasePage } from "./utils/prerelease";
@@ -86,6 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
+  ext.uriEventHandler = uriHandler;
   context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
   registerActivateCommands(context);

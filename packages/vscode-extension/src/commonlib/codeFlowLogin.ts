@@ -32,6 +32,9 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { ExtensionErrors } from "../error";
+import { env, Uri } from "vscode";
+import { randomBytes } from "crypto";
+import { getExchangeCode } from "./exchangeCode";
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
@@ -51,6 +54,7 @@ export class CodeFlowLogin {
   msalTokenCache: TokenCache;
   accountName: string;
   status: string | undefined;
+  isCodeSpace: boolean;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -61,6 +65,11 @@ export class CodeFlowLogin {
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
     this.status = loggedOut;
+    this.isCodeSpace = false;
+  }
+
+  public updateIsCodeSpace(isCodeSpace: boolean) {
+    this.isCodeSpace = isCodeSpace;
   }
 
   async reloadCache() {
@@ -78,6 +87,9 @@ export class CodeFlowLogin {
   }
 
   async login(scopes: Array<string>, loginHint?: string): Promise<string> {
+    if (this.isCodeSpace) {
+      return await this.loginInCodeSpace(scopes);
+    }
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
     });
@@ -214,6 +226,54 @@ export class CodeFlowLogin {
     }
 
     return accessToken;
+  }
+
+  async loginInCodeSpace(scopes: Array<string>): Promise<string> {
+    let callbackUri: Uri = await env.asExternalUri(Uri.parse(`${env.uriScheme}://TeamsDevApp.ms-teams-vscode-extension/auth-complete`));
+		const nonce: string = randomBytes(16).toString('base64');
+		const callbackQuery = new URLSearchParams(callbackUri.query);
+		callbackQuery.set('nonce', nonce);
+		callbackUri = callbackUri.with({
+			query: callbackQuery.toString()
+		});
+		const state = encodeURIComponent(callbackUri.toString(true));
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
+      await CodeFlowLogin.sha256(codeVerifier)
+    );
+    const authCodeUrlParameters: AuthorizationUrlRequest = {
+      scopes: scopes,
+      codeChallenge: codeChallenge,
+      codeChallengeMethod: "S256",
+      redirectUri: `https://vscode.dev/redirect`,
+      prompt: "select_account",
+      state: state
+    };
+		const signInUrl: string = await this.pca.getAuthCodeUrl(authCodeUrlParameters);
+		let uri: Uri = Uri.parse(signInUrl);
+		void env.openExternal(uri);
+
+		const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
+			const wait = setTimeout(() => {
+				clearTimeout(wait);
+				reject('Login timed out.');
+			}, 1000 * 60 * 5)
+		});
+
+		const accessCode =  await Promise.race([getExchangeCode(), timeoutPromise]);
+    
+    const tokenRequest = {
+      code: accessCode,
+      scopes: scopes,
+      redirectUri: `https://vscode.dev/redirect`,
+      codeVerifier: codeVerifier,
+    };
+
+    const res = await this.pca
+        .acquireTokenByCode(tokenRequest);
+    return Promise.resolve(res.accessToken);
   }
 
   async logout(): Promise<boolean> {

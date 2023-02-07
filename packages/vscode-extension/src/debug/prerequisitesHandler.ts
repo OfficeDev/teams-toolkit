@@ -100,7 +100,6 @@ import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
 import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
-import M365CodeSpaceTokenInstance from "../commonlib/m365CodeSpaceLogin";
 
 enum Checker {
   NpmInstall = "npm package installation",
@@ -686,11 +685,7 @@ async function ensureM365Account(
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
-      let m365Login: M365TokenProvider = M365TokenInstance;
-      const vscodeEnv = detectVsCodeEnv();
-      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-        m365Login = M365CodeSpaceTokenInstance;
-      }
+      const m365Login: M365TokenProvider = M365TokenInstance;
       let loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";

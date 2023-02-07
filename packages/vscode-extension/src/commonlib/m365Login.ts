@@ -15,6 +15,7 @@ import {
   LoginStatus,
   BasicLogin,
   UserError,
+  VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import { AccountInfo, LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
@@ -42,6 +43,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { detectVsCodeEnv } from "../handlers";
 
 const SERVER_PORT = 0;
 const cachePlugin = new CryptoCachePlugin(m365CacheName);
@@ -121,6 +123,10 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     isInitiatedFromTdp?: boolean
   ): Promise<Result<string, FxError>> {
     if (tokenRequest.showDialog === undefined || tokenRequest.showDialog) {
+      const vscodeEnv = detectVsCodeEnv();
+      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+        M365Login.codeFlowInstance.updateIsCodeSpace(true);
+      }
       let userConfirmation = false;
       if (!isInitiatedFromTdp) {
         userConfirmation = await this.doesUserConfirmLogin();

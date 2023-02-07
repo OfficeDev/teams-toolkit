@@ -9,7 +9,6 @@ import {
 } from "../../../src/core/middleware/utils/MigrationUtils";
 import {
   generateAppIdUri,
-  getDownloadLinkByVersionAndPlatform,
   getTemplateFolderPath,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { randomAppName } from "../utils";
@@ -22,8 +21,7 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import { mockMigrationContext } from "./projectMigrationV3.test";
 import sinon from "sinon";
 import { getPlaceholderMappings } from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { createContextV3 } from "../../../src/component/utils";
-import { MetadataV2, MetadataV3 } from "../../../src/common/versionMetadata";
+import { TOOLS } from "../../../src/core/globalVars";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -349,36 +347,9 @@ describe("Migration: upgrade cancel messages", () => {
 
   beforeEach(() => {
     messageArray = [];
-    sandbox.stub(v3MigrationUtils, "outputCancelMessage").callsFake((version, platform) => {
-      messageArray.push(`Upgrade cancelled.`);
-      const link = getDownloadLinkByVersionAndPlatform(version, platform);
-      if (platform === Platform.VSCode) {
-        messageArray.push(
-          `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
-        );
-        messageArray.push(
-          `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
-        );
-        messageArray.push(
-          `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
-        );
-      } else if (platform === Platform.VS) {
-        messageArray.push(
-          `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
-        );
-        messageArray.push(`If you want to upgrade, please trigger this command again.`);
-        messageArray.push(
-          `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
-        );
-      } else {
-        messageArray.push(
-          `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
-        );
-        messageArray.push(`If you want to upgrade, please trigger this command again.`);
-        messageArray.push(
-          `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
-        );
-      }
+    sandbox.stub(TOOLS.logProvider, "warning").callsFake(async (message) => {
+      messageArray.push(message);
+      return true;
     });
   });
 

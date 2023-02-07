@@ -124,7 +124,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         sideloadingType = SideloadingType.v3M365Local;
       }
 
-      if (host === Host.outlook || host === Host.office) {
+      if (
+        sideloadingType === SideloadingType.unknown &&
+        (host === Host.outlook || host === Host.office)
+      ) {
         sideloadingType =
           typeof debugConfiguration.name === "string" &&
           debugConfiguration.name.startsWith("Launch Remote")

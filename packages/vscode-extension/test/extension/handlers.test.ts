@@ -70,6 +70,7 @@ import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { restore } from "sinon";
 import { ExtensionSurvey } from "../../src/utils/survey";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -506,6 +507,7 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
       });
+      sinon.stub(pathUtils, "getEnvFolderPath").resolves(ok(path.resolve("../../env")));
 
       const res = await handlers.openConfigStateFile([{ type: "env" }]);
       await fs.remove(tmpDir);

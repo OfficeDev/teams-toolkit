@@ -118,7 +118,7 @@ export async function persistConfigBicep(
       const value = configBicep.Modules[module];
       if (value) {
         const filePath = path.join(templateFolder, "teamsFx", `${module}.bicep`);
-        fs.writeFileSync(filePath, value.replace(/\r?\n/g, os.EOL).trim(), { encoding: "utf-8" });
+        fs.outputFileSync(filePath, value.replace(/\r?\n/g, os.EOL).trim(), { encoding: "utf-8" });
       }
     }
   }

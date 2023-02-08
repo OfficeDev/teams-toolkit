@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, ManifestUtil, Platform, Colors } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
@@ -106,10 +106,10 @@ export class ValidateTeamsAppDriver implements StepDriver {
         EOL +
         getLocalizedString(
           "driver.teamsApp.summary.validate",
-          errors,
-          warnings,
           validationResult.errors.length + validationResult.warnings.length,
           validationResult.notes.length,
+          errors,
+          warnings,
           undefined
         );
       context.logProvider?.info(outputMessage);
@@ -117,7 +117,8 @@ export class ValidateTeamsAppDriver implements StepDriver {
       const message = getLocalizedString(
         "driver.teamsApp.validate.result",
         validationResult.errors.length + validationResult.warnings.length,
-        validationResult.notes.length
+        validationResult.notes.length,
+        "command:fx-extension.showOutputChannel"
       );
       context.ui?.showMessage("info", message, false);
       return ok(new Map());

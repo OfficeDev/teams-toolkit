@@ -1,10 +1,11 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
+import { globalVars } from "../../core/globalVars";
 import {
   InvalidEnvFieldError,
   InvalidEnvFolderPath,
-  InvalidLifecycleError,
+  InvalidYmlSchemaError,
   YamlParsingError,
 } from "./error";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
@@ -24,7 +25,7 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     if (name in obj) {
       const value = obj[name];
       if (!Array.isArray(value)) {
-        return err(new InvalidLifecycleError(name));
+        return err(new InvalidYmlSchemaError(name));
       }
       for (const elem of value) {
         if (
@@ -35,7 +36,7 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
             typeof elem["with"] === "object"
           )
         ) {
-          return err(new InvalidLifecycleError(name));
+          return err(new InvalidYmlSchemaError(name));
         }
         if (elem["env"]) {
           if (typeof elem["env"] !== "object" || Array.isArray(elem["env"])) {
@@ -87,6 +88,7 @@ export class YamlParser implements IYamlParser {
         return err(new YamlParsingError(path, new Error(`Invalid yaml format: ${str}`)));
       }
       const value = content as unknown as Record<string, unknown>;
+      globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {
       if (error instanceof Error) {

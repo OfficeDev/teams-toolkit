@@ -5,7 +5,6 @@ import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { pathUtils } from "./pathUtils";
-import { globalVars, TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
 
@@ -30,7 +29,6 @@ export class EnvUtil {
     loadToProcessEnv = true,
     silent = true
   ): Promise<Result<DotenvOutput, FxError>> {
-    globalVars.dotEnvFilePath = undefined;
     // read
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
     if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
@@ -52,7 +50,6 @@ export class EnvUtil {
       }
     }
     // deserialize
-    globalVars.dotEnvFilePath = dotEnvFilePath; // remember .env file path for error handling
     const parseResult = dotenvUtil.deserialize(
       await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
     );

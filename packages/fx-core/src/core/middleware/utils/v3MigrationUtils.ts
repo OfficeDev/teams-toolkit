@@ -108,10 +108,7 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   if (versionForMigration.platform === Platform.VS) {
     return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
   }
-  const res = getLocalizedString(
-    "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform]
-  );
+  const res = getLocalizedString("core.migrationV3.Message");
   return res;
 }
 

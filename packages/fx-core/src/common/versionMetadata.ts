@@ -28,6 +28,7 @@ export const MetadataV2 = {
   },
   configFolder: ".fx",
   configFile: "projectSettings.json",
+  updateToolkitLink: "https://aka.ms/update-teams-toolkit",
 };
 
 export const MetadataV3Abandoned = {

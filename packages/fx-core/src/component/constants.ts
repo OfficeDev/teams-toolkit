@@ -7,6 +7,7 @@ import { MultiSelectQuestion, OptionItem, UserError } from "@microsoft/teamsfx-a
 import { RestError } from "@azure/ms-rest-js";
 import path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
+import { APP_STUDIO_API_NAMES } from "./resource/appManifest/constants";
 
 export const ComponentNames = {
   TeamsTab: "teams-tab",
@@ -320,10 +321,10 @@ export const RegularExpr = {
   validFunctionNamePattern: /^[a-zA-Z][\w-]{0,126}$/,
 };
 
-export const TeamsFxUrlNames = {
-  createBot: "<create-bot-registration>",
-  getBot: "<get-bot-registration>",
-  updateEndpoint: "<update-message-endpoint>",
+export const TeamsFxUrlNames: { [index: string]: string } = {
+  [APP_STUDIO_API_NAMES.CREATE_BOT]: "<create-bot-registration>",
+  [APP_STUDIO_API_NAMES.GET_BOT]: "<get-bot-registration>",
+  [APP_STUDIO_API_NAMES.UPDATE_BOT]: "<update-message-endpoint>",
 };
 
 /**

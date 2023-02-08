@@ -34,6 +34,7 @@ import { RetryHandler } from "../../../../src/component/resource/botService/retr
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
+import { APP_STUDIO_API_NAMES } from "../../../../src/component/resource/appManifest/constants";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -129,7 +130,7 @@ describe("Bot service", () => {
         AppStudioError.DeveloperPortalAPIFailedError.name,
         ["", ""],
         {
-          teamsfxUrlName: TeamsFxUrlNames.createBot,
+          teamsfxUrlName: TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT],
         }
       )
     );

@@ -44,6 +44,7 @@ import * as utils from "../../../src/component/debugHandler/utils";
 import { FailedToCreateBotRegistrationError } from "../../../src/component/resource/botService/errors";
 import { AppStudioResultFactory } from "../../../src/component/resource/appManifest/results";
 import { AppStudioError } from "../../../src/component/resource/appManifest/errors";
+import { APP_STUDIO_API_NAMES } from "../../../src/component/resource/appManifest/constants";
 
 describe("BotDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -415,7 +416,7 @@ describe("BotDebugHandler", () => {
           AppStudioError.DeveloperPortalAPIFailedError.name,
           ["", ""],
           {
-            teamsfxUrlName: TeamsFxUrlNames.createBot,
+            teamsfxUrlName: TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT],
           }
         )
       );

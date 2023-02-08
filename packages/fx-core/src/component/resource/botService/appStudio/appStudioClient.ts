@@ -27,6 +27,21 @@ import { isHappyResponse } from "../common";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { TeamsFxUrlNames } from "../../../constants";
 
+export function handleBotFrameworkError(e: any, apiName: string): void | undefined {
+  if (e.response?.status === HttpStatusCode.NOTFOUND) {
+    return undefined; // Stands for NotFound.
+  } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
+    throw new BotFrameworkNotAllowedToAcquireTokenError();
+  } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
+    throw new BotFrameworkForbiddenResultError();
+  } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
+    throw new BotFrameworkConflictResultError();
+  } else {
+    e.teamsfxUrlName = TeamsFxUrlNames[apiName];
+    throw AppStudio.wrapException(e, apiName) as SystemError;
+  }
+}
+
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
 
@@ -81,15 +96,7 @@ export class AppStudioClient {
         throw new Error("Failed to get data");
       }
     } catch (e) {
-      if (e.response?.status === HttpStatusCode.NOTFOUND) {
-        return undefined; // Stands for NotFound.
-      } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
-        throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else {
-        // Potential live site issue cases.
-        e.teamsfxUrlName = TeamsFxUrlNames.getBot;
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT) as SystemError;
-      }
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
     }
   }
 
@@ -116,16 +123,7 @@ export class AppStudioClient {
         throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
       }
     } catch (e) {
-      if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
-        throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
-        throw new BotFrameworkForbiddenResultError();
-      } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
-        throw new BotFrameworkConflictResultError();
-      } else {
-        e.teamsfxUrlName = TeamsFxUrlNames.createBot;
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.CREATE_BOT) as SystemError;
-      }
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT);
     }
 
     return;
@@ -162,16 +160,7 @@ export class AppStudioClient {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
     } catch (e) {
-      if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
-        throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
-        throw new BotFrameworkForbiddenResultError();
-      } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
-        throw new BotFrameworkConflictResultError();
-      } else {
-        e.teamsfxUrlName = TeamsFxUrlNames.updateEndpoint;
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_BOT) as SystemError;
-      }
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
     }
 
     return;

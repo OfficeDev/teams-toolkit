@@ -46,6 +46,7 @@ import { AppStudioClient } from "../resource/botService/appStudio/appStudioClien
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
 import { AlreadyCreatedBotNotExist } from "../resource/botService/errors";
+import { APP_STUDIO_API_NAMES } from "../resource/appManifest/constants";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -272,7 +273,10 @@ export class BotDebugHandler {
       try {
         await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
       } catch (e) {
-        if (e.innerError?.teamsfxUrlName == TeamsFxUrlNames.createBot && this.hasBotIdInEnvBefore) {
+        if (
+          e.innerError?.teamsfxUrlName == TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT] &&
+          this.hasBotIdInEnvBefore
+        ) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
           return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
         } else {

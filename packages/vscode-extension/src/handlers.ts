@@ -67,6 +67,7 @@ import {
   AddSsoParameters,
   UserTaskFunctionName,
 } from "@microsoft/teamsfx-core/build/component/constants";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import {
   askSubscription,
   AppStudioScopes,
@@ -1671,10 +1672,6 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  */
 export async function getFuncPathHandler(): Promise<string> {
   try {
-    if (!vscodeHelper.isFuncCoreToolsEnabled()) {
-      return `${path.delimiter}`;
-    }
-
     const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
     const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
     if (funcStatus?.details?.binFolders !== undefined) {
@@ -1847,7 +1844,14 @@ export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, 
 
 export async function checkUpgrade(args?: any[]) {
   if (isV3Enabled()) {
-    const result = await core.phantomMigrationV3(getSystemInputs());
+    const triggerFrom = getTriggerFromProperty(args);
+    const input = getSystemInputs();
+    if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
+      input["isNonmodalMessage"] = true;
+    } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
+      input["confirmOnly"] = true;
+    }
+    await core.phantomMigrationV3(input);
   } else {
     // just for triggering upgrade check for multi-env && bicep.
     await runCommand(Stage.listCollaborator);
@@ -3016,7 +3020,13 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/${SettingsFolderName}/.env.${env}`);
+      // Load env folder from yml
+      const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
+      if (envFolder.isOk()) {
+        sourcePath = path.resolve(`${envFolder.value}/.env.${env}`);
+      } else {
+        return err(envFolder.error);
+      }
     }
   } else {
     const invalidArgsError = new SystemError(

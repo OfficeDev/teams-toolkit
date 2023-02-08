@@ -100,7 +100,7 @@ export async function activate(context: vscode.ExtensionContext) {
   handlers.activate();
 
   // Init VSC context key
-  await initializeContextKey(isTeamsFxProject);
+  await initializeContextKey(context, isTeamsFxProject);
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
@@ -695,7 +695,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(specifySubscription);
 }
 
-async function initializeContextKey(isTeamsFxProject: boolean) {
+async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   await vscode.commands.executeCommand(
@@ -712,6 +712,16 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     });
   }
 
+  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/teamsapp.yml",
+    false,
+    true,
+    true
+  );
+  ymlFileWatcher.onDidCreate(async (event) => {
+    await detectedTeamsFxProject(context);
+  });
+
   await setAadManifestEnabledContext();
   await setApiV3EnabledContext();
   await setTDPIntegrationEnabledContext();
@@ -720,7 +730,7 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     if (isMigrationV3Enabled()) {
       const upgradeable = await checkProjectUpgradable();
       if (upgradeable) {
-        await handlers.checkUpgrade();
+        await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
       }
     }
   } else {
@@ -1003,16 +1013,6 @@ async function runBackgroundAsyncTasks(
   if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();
   }
-
-  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/teamsapp.yml",
-    false,
-    true,
-    true
-  );
-  ymlFileWatcher.onDidCreate(async (event) => {
-    await detectedTeamsFxProject(context);
-  });
 
   const survey = ExtensionSurvey.getInstance();
   survey.activate();

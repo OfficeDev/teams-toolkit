@@ -1,9 +1,10 @@
-import { WebResponse } from "botbuilder";
+import { Response } from "botbuilder";
 
 // A wrapper to convert Azure Functions Response to Bot Builder's WebResponse.
-export class ResponseWrapper implements WebResponse {
-  socket?: any;
+export class ResponseWrapper implements Response {
+  socket: any;
   originalResponse?: any;
+  headers?: any;
   body?: any;
 
   constructor(functionResponse?: { [key: string]: any }) {
@@ -13,6 +14,10 @@ export class ResponseWrapper implements WebResponse {
 
   end(...args: any[]) {
     // do nothing since res.end() is deprecated in Azure Functions.
+  }
+
+  header(name: string, value: any) {
+    this.headers[name] = value;
   }
 
   send(body: any) {

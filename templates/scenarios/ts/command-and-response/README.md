@@ -24,7 +24,6 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 
 ## Get Started with the Command bot
 
->
 > **Prerequisites**
 >
 > To run the command bot template in your local dev machine, you will need:
@@ -35,7 +34,6 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > **Note**
 >
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
->
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -49,22 +47,22 @@ The bot will respond to the `helloWorld` command with an Adaptive Card:
 
 ## What's included in the template
 
-| Folder | Contents |
-| - | - |
-| `teamsfx` | Project level settings, configurations, and environment information |
-| `.vscode` | VSCode files for debugging |
-| `src` | The source code for the command and response Teams application |
-| `appPackage` | Templates for the Teams application manifest |
-| `infra` | Templates for provisioning Azure resources |
+| Folder       | Contents                                                            |
+| ------------ | ------------------------------------------------------------------- |
+| `teamsfx`    | Project level settings, configurations, and environment information |
+| `.vscode`    | VSCode files for debugging                                          |
+| `src`        | The source code for the command and response Teams application      |
+| `appPackage` | Templates for the Teams application manifest                        |
+| `infra`      | Templates for provisioning Azure resources                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File | Contents |
-| - | - |
-| `src/index.ts` | Application entry point and `restify` handlers for command and response |
-| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
-| `src/helloworldCommandHandler.ts` | The business logic to handle a command |
-| `src/cardModels.ts` | The default Adaptive Card data model |
+| File                                       | Contents                                                                |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| `src/index.ts`                             | Application entry point and `restify` handlers for command and response |
+| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams                         |
+| `src/helloworldCommandHandler.ts`          | The business logic to handle a command                                  |
+| `src/cardModels.ts`                        | The default Adaptive Card data model                                    |
 
 ## Extend the command bot template with more commands and responses
 
@@ -102,22 +100,22 @@ To respond with an Adaptive Card, define your card in its JSON format. Create a 
 
 ```json
 {
-    "type": "AdaptiveCard",
-    "body": [
-        {
-            "type": "TextBlock",
-            "size": "Medium",
-            "weight": "Bolder",
-            "text": "Your doSomething Command is added!"
-        },
-        {
-            "type": "TextBlock",
-            "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
-            "wrap": true
-        }
-    ],
-    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-    "version": "1.4"
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "size": "Medium",
+      "weight": "Bolder",
+      "text": "Your doSomething Command is added!"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
+      "wrap": true
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4"
 }
 ```
 
@@ -134,31 +132,35 @@ The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to hand
 
 ```typescript
 import { Activity, CardFactory, MessageFactory, TurnContext } from "botbuilder";
-import { CommandMessage, TeamsFxBotCommandHandler, TriggerPatterns, MessageBuilder, } from "@microsoft/teamsfx";
-import doSomethingCard  from "./adaptiveCards/doSomethingCommandResponse.json";
+import {
+  CommandMessage,
+  TeamsFxBotCommandHandler,
+  TriggerPatterns,
+  MessageBuilder,
+} from "@microsoft/teamsfx";
+import doSomethingCard from "./adaptiveCards/doSomethingCommandResponse.json";
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import { CardData } from "./cardModels";
 
 export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
-    triggerPatterns: TriggerPatterns = "doSomething";
+  triggerPatterns: TriggerPatterns = "doSomething";
 
-    async handleCommandReceived(
-        context: TurnContext,
-        message: CommandMessage
-    ): Promise<string | Partial<Activity>> {
-        // verify the command arguments which are received from the client if needed.
-        console.log(`App received message: ${message.text}`);
+  async handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage
+  ): Promise<string | Partial<Activity>> {
+    // verify the command arguments which are received from the client if needed.
+    console.log(`App received message: ${message.text}`);
 
-        const cardData: CardData = {
-          title: "doSomething command is added",
-          body: "Congratulations! You have responded to doSomething command",
-        };
+    const cardData: CardData = {
+      title: "doSomething command is added",
+      body: "Congratulations! You have responded to doSomething command",
+    };
 
-        const cardJson = AdaptiveCards.declare(doSomethingCard).render(cardData);
-        return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
-    }    
+    const cardJson = AdaptiveCards.declare(doSomethingCard).render(cardData);
+    return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
+  }
 }
-
 ```
 
 You can customize what the command does here, including calling an API, process data, etc.
@@ -170,16 +172,15 @@ Each new command needs to be configured in the `ConversationBot`, which powers t
 ```typescript
 import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
 import { DoSomethingCommandHandler } from "../doSomethingCommandHandler";
-import { ConversationBot } from "@microsoft/teamsfx";
+import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
 
 const commandApp = new ConversationBot({
-    //...
-    command: {
-        enabled: true,
-        commands: [ 
-            new HelloWorldCommandHandler(), 
-            new DoSomethingCommandHandler() ],
-    },
+  //...
+  command: {
+    enabled: true,
+    commands: [new HelloWorldCommandHandler(), new DoSomethingCommandHandler()],
+  },
 });
 ```
 

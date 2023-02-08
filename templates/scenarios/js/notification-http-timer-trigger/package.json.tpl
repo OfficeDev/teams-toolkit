@@ -20,8 +20,8 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.0.0",
-        "botbuilder": "^4.17.0"
+        "@microsoft/teamsfx": "^2.2.0",
+        "botbuilder": "^4.18.0"
     },
     "devDependencies": {
         "azurite": "^3.16.0",

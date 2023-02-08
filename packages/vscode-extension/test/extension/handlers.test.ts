@@ -70,6 +70,7 @@ import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { restore } from "sinon";
 import { ExtensionSurvey } from "../../src/utils/survey";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -506,6 +507,7 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
       });
+      sinon.stub(pathUtils, "getEnvFolderPath").resolves(ok(path.resolve("../../env")));
 
       const res = await handlers.openConfigStateFile([{ type: "env" }]);
       await fs.remove(tmpDir);
@@ -1161,6 +1163,52 @@ describe("handlers", () => {
         openTextDocument.calledOnceWith(
           "undefined/templates/appPackage/manifest.template.json" as any
         )
+      );
+    });
+  });
+
+  describe("checkUpgrade V3", function () {
+    const sandbox = sinon.createSandbox();
+    const mockCore = new MockCore();
+
+    beforeEach(() => {
+      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(handlers, "core").value(mockCore);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("calls phantomMigrationV3 with isNonmodalMessage when auto triggered", async () => {
+      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+      chai.assert.isTrue(
+        phantomMigrationV3Stub.calledOnceWith({
+          "function-dotnet-checker-enabled": false,
+          locale: "en-us",
+          platform: "vsc",
+          projectPath: undefined,
+          vscodeEnv: "local",
+          isNonmodalMessage: true,
+        } as Inputs)
+      );
+    });
+
+    it("calls phantomMigrationV3 with confirmOnly when button is clicked", async () => {
+      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
+      chai.assert.isTrue(
+        phantomMigrationV3Stub.calledOnceWith({
+          "function-dotnet-checker-enabled": false,
+          locale: "en-us",
+          platform: "vsc",
+          projectPath: undefined,
+          vscodeEnv: "local",
+          confirmOnly: true,
+        } as Inputs)
       );
     });
   });

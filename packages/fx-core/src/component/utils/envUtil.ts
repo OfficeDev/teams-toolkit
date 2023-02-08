@@ -5,6 +5,7 @@ import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { pathUtils } from "./pathUtils";
+import { TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
 

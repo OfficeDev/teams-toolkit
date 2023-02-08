@@ -342,14 +342,16 @@ describe("Utils Tests", function () {
         if (path.includes("realbuterror")) {
           throw Error("realbuterror");
         } else {
-          if (isV3Enabled()) {
-            return {
-              trackingId: "trackingId",
-              version: "3.0.0",
-            };
-          } else {
-            return {};
-          }
+          return {};
+        }
+      });
+      sandbox.stub(fs, "readFileSync").callsFake((path: any) => {
+        if (path.includes("realbuterror")) {
+          throw Error("realbuterror");
+        } else {
+          return `
+version: 1.0.0
+projectId: 00000000-0000-0000-0000-000000000000`;
         }
       });
     });
@@ -370,8 +372,8 @@ describe("Utils Tests", function () {
       try {
         const result = readSettingsFileSync("real");
         expect(result.isOk() ? result.value : result.error).deep.equals({
-          projectId: "trackingId",
-          version: "3.0.0",
+          projectId: "00000000-0000-0000-0000-000000000000",
+          version: "1.0.0",
         });
       } finally {
         restore();

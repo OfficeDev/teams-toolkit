@@ -95,11 +95,11 @@ import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 
-const Constants = {
+export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
-  reportName: "migrationReport.md",
+  reportName: "upgradeReport.md",
   envWriteOption: {
     // .env.{env} file might be already exist, use append mode (flag: a+)
     encoding: "utf8",
@@ -328,11 +328,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const appIdUri = generateAppIdUri(capabilities);
   const isSpfx = isSPFxProject(projectSettings);
 
-  // Read Teams app manifest and save to templates/appPackage/manifest.template.json
+  // Read Teams app manifest and save to templates/appPackage/manifest.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
   const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
   if (oldManifestExists) {
-    const manifestPath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
+    const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
     let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
     oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
@@ -350,7 +350,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
   }
 
-  // Read AAD app manifest and save to ./aad.manifest.template.json
+  // Read AAD app manifest and save to ./aad.manifest.json
   const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
@@ -362,7 +362,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    await context.fsWriteFile("aad.manifest.template.json", aadManifest);
+    await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
   }
 
   await context.fsRemove(oldAppPackageFolderPath);

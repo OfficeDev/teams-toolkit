@@ -44,7 +44,7 @@
         },
         {
             // Create the debug resources.
-            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+            // See https://aka.ms/teamsfx-tasks/provision to know the details and how to customize the args.
             "label": "Create resources",
             "type": "teamsfx",
             "command": "provision",
@@ -55,7 +55,7 @@
         },
         {
             // Build project.
-            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+            // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
             "label": "Build project",
             "type": "teamsfx",
             "command": "deploy",
@@ -75,11 +75,12 @@
         {
             "label": "Start auth",
             "type": "shell",
-            "command": "node teamsfx/script/run.auth.js . env/.env.local",
+            "command": "dotnet Microsoft.TeamsFx.SimpleAuth.dll",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}",
+                "cwd": "SIMPLE_AUTH_PATH",
                 "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development",
                     "PATH": "${command:fx-extension.get-dotnet-path}${env:PATH}"
                 }
             },
@@ -102,7 +103,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node ../script/run.tab.js .. ../env/.env.local",
+            "command": "npx env-cmd --silent -f .localSettings react-scripts start",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/tabs"

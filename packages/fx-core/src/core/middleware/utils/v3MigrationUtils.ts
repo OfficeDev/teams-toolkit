@@ -27,7 +27,6 @@ import {
   VersionSource,
   VersionState,
 } from "../../../common/versionMetadata";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
@@ -109,10 +108,7 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   if (versionForMigration.platform === Platform.VS) {
     return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
   }
-  const res = getLocalizedString(
-    "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform]
-  );
+  const res = getLocalizedString("core.migrationV3.Message");
   return res;
 }
 
@@ -305,8 +301,8 @@ export async function updateAndSaveManifestForSpfx(
   context: MigrationContext,
   manifest: string
 ): Promise<void> {
-  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+  const remoteTemplatePath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.local.json");
 
   const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
   const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;

@@ -248,24 +248,9 @@ export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  // AB test for notification/command/workflow bot template naming
   const notificationOptionItem = NotificationOptionItem();
   const commandAndResponseOptionItem = CommandAndResponseOptionItem();
   const workflowOptionItem = WorkflowOptionItem();
-  if (inputs?.taskOrientedTemplateNaming) {
-    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.NotificationOption.label.abTest"
-    )}`;
-    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.CommandAndResponseOption.label.abTest"
-    )}`;
-    commandAndResponseOptionItem.detail = getLocalizedString(
-      "core.CommandAndResponseOption.detail.abTest"
-    );
-    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-  }
 
   const question: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.Features,
@@ -780,11 +765,9 @@ export function InitDebugProceedQuestion(): SingleSelectQuestion {
           ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
           : false;
         const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
-        fileList = `  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n${
-          inputs["spfx"] === InitOptionYes().id ? "" : "   script/\n    - run.js\n"
-        }   env/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
+        fileList = `  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n  env/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
       } else {
-        fileList = "   env/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
+        fileList = "  env/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
       }
       return getLocalizedString("core.InitGenerateConfirm", fileList);
     },

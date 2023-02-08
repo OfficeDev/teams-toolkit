@@ -641,11 +641,12 @@ export class Coordinator {
     };
 
     let resolvedSubscriptionId: string | undefined;
+    let resolvedResourceGroupName: string | undefined;
     let azureSubInfo = undefined;
     if (containsAzure) {
       //ensure RESOURCE_SUFFIX
       if (!process.env.RESOURCE_SUFFIX) {
-        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 8);
+        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 6);
         process.env.RESOURCE_SUFFIX = suffix;
         output.RESOURCE_SUFFIX = suffix;
       }
@@ -664,6 +665,13 @@ export class Coordinator {
         }
         if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME"))
           resourceGroupUnresolved = true;
+        else {
+          cycle.driverDefs?.forEach((driver) => {
+            const withObj = driver.with as any;
+            if (withObj && withObj.resourceGroupName && resolvedResourceGroupName === undefined)
+              resolvedResourceGroupName = withObj.resourceGroupName;
+          });
+        }
       }
 
       // ensure subscription, pop up UI to select if necessary
@@ -731,6 +739,7 @@ export class Coordinator {
             output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
           }
         }
+        resolvedResourceGroupName = targetResourceGroupInfo.name;
       }
 
       // consent user
@@ -808,7 +817,7 @@ export class Coordinator {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,
         azureSubInfo.tenantId,
-        resolvedSubscriptionId
+        resolvedResourceGroupName
       );
       if (url && ctx.platform !== Platform.CLI) {
         const title = getLocalizedString("core.provision.viewResources");

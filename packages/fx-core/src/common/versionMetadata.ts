@@ -13,6 +13,8 @@ export const MetadataV3 = {
   localConfigFile: "teamsapp.local.yml",
   defaultEnvironmentFolder: "env",
   projectId: "projectId",
+  teamsManifestFileName: "manifest.json",
+  aadManifestFileName: "aad.manifest.json",
 };
 
 export const MetadataV2 = {
@@ -26,6 +28,7 @@ export const MetadataV2 = {
   },
   configFolder: ".fx",
   configFile: "projectSettings.json",
+  updateToolkitLink: "https://aka.ms/update-teams-toolkit",
 };
 
 export const MetadataV3Abandoned = {

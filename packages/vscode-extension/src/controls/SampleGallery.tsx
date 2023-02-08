@@ -27,6 +27,7 @@ import StockUpdate from "../../img/webview/sample/stock-update.gif";
 import MsgExtSSO from "../../img/webview/sample/message-extension-sso.gif";
 import VideoFilterApp from "../../img/webview/sample/video-filter-app-sample-in-test-app.gif";
 import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
+import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -55,6 +56,7 @@ const imageMapping: { [p: string]: any } = {
   "query-org-user-with-message-extension-sso": MsgExtSSO,
   "teams-videoapp-sample": VideoFilterApp,
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
+  "team-central-dashboard": DashboardTab,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

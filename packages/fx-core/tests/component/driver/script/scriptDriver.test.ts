@@ -11,6 +11,7 @@ import { scriptDriver } from "../../../../src/component/driver/script/scriptDriv
 import { assert } from "chai";
 import { MockUserInteraction } from "../../../core/utils";
 import { err, UserError } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -39,6 +40,23 @@ describe("Script Driver test", () => {
       const output = res.result.value;
       assert.equal(output.get("KEY"), "VALUE");
     }
+  });
+  it("execute success using cmd shell", async () => {
+    sandbox.stub(fs, "appendFile").resolves();
+    const args = {
+      workingDirectory: "./",
+      run: "echo hello",
+      shell: "cmd",
+      redirectTo: "./log",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
   });
   it("execute fail", async () => {
     sandbox.stub(scriptDriver, "executeCommand").resolves(err(new UserError({})));

@@ -28,6 +28,7 @@ describe("Script Driver test", () => {
       workingDirectory: "./",
       shell: "cmd",
       run: "::set-output KEY=VALUE",
+      redirectTo: "./log",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

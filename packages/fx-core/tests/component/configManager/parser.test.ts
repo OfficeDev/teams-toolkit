@@ -54,22 +54,22 @@ describe("v3 yaml parser", () => {
   });
 
   describe("when parsing a file with lifecycle content not being array", () => {
-    it("should return InvalidLifecycleError", async () => {
+    it("should return InvalidYmlSchemaError", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_content.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidLifecycleError");
+      assert(result.isErr() && result.error.name === "InvalidYmlSchemaError");
     });
   });
 
   describe(`when parsing a file with lifecycle content without "uses"`, () => {
-    it("should return InvalidLifecycleError", async () => {
+    it("should return InvalidYmlSchemaError", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_without_with.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidLifecycleError");
+      assert(result.isErr() && result.error.name === "InvalidYmlSchemaError");
     });
   });
 

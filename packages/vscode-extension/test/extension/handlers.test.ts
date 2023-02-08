@@ -1167,6 +1167,52 @@ describe("handlers", () => {
     });
   });
 
+  describe("checkUpgrade V3", function () {
+    const sandbox = sinon.createSandbox();
+    const mockCore = new MockCore();
+
+    beforeEach(() => {
+      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(handlers, "core").value(mockCore);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("calls phantomMigrationV3 with isNonmodalMessage when auto triggered", async () => {
+      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+      chai.assert.isTrue(
+        phantomMigrationV3Stub.calledOnceWith({
+          "function-dotnet-checker-enabled": false,
+          locale: "en-us",
+          platform: "vsc",
+          projectPath: undefined,
+          vscodeEnv: "local",
+          isNonmodalMessage: true,
+        } as Inputs)
+      );
+    });
+
+    it("calls phantomMigrationV3 with confirmOnly when button is clicked", async () => {
+      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
+      chai.assert.isTrue(
+        phantomMigrationV3Stub.calledOnceWith({
+          "function-dotnet-checker-enabled": false,
+          locale: "en-us",
+          platform: "vsc",
+          projectPath: undefined,
+          vscodeEnv: "local",
+          confirmOnly: true,
+        } as Inputs)
+      );
+    });
+  });
+
   it("downloadSample", async () => {
     const inputs: Inputs = {
       scratch: "no",

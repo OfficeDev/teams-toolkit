@@ -5,7 +5,7 @@ import { assembleError, err, FxError, ok, Result } from "@microsoft/teamsfx-api"
 import { Service } from "typedi";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { exec } from "child_process";
+import { exec, ExecException } from "child_process";
 import * as path from "path";
 import fs from "fs-extra";
 import { DotenvOutput } from "../../utils/envUtil";
@@ -34,7 +34,37 @@ export class ScriptDriver implements StepDriver {
     const res = await this.run(args, ctx);
     return { result: res, summaries: ["run script"] };
   }
-
+  async execCallback(
+    resolve: any,
+    error: ExecException | null,
+    stdout: string,
+    stderr: string,
+    command: string,
+    context: DriverContext,
+    workingDir: string,
+    appendFile?: string
+  ) {
+    if (stdout) {
+      await context.logProvider.info(this.maskSecretValues(stdout));
+      if (appendFile) {
+        await fs.appendFile(appendFile, stdout);
+      }
+    }
+    if (stderr) {
+      await context.logProvider.error(this.maskSecretValues(stderr));
+      if (appendFile) {
+        await fs.appendFile(appendFile, stderr);
+      }
+    }
+    if (error) {
+      await context.logProvider.error(
+        `Failed to run command: "${command}" on path: "${workingDir}".`
+      );
+      resolve(err(assembleError(error)));
+    } else {
+      resolve(ok([stdout, {}]));
+    }
+  }
   async executeCommand(
     args: ScriptDriverArgs,
     context: DriverContext
@@ -77,26 +107,36 @@ export class ScriptDriver implements StepDriver {
           timeout: args.timeout,
         },
         async (error, stdout, stderr) => {
-          if (stdout) {
-            await context.logProvider.info(this.maskSecretValues(stdout));
-            if (appendFile) {
-              await fs.appendFile(appendFile, stdout);
-            }
-          }
-          if (stderr) {
-            await context.logProvider.error(this.maskSecretValues(stderr));
-            if (appendFile) {
-              await fs.appendFile(appendFile, stderr);
-            }
-          }
-          if (error) {
-            await context.logProvider.error(
-              `Failed to run command: "${command}" on path: "${workingDir}".`
-            );
-            resolve(err(assembleError(error)));
-          } else {
-            resolve(ok([stdout, {}]));
-          }
+          await this.execCallback(
+            resolve,
+            error,
+            stdout,
+            stderr,
+            command,
+            context,
+            workingDir,
+            appendFile
+          );
+          // if (stdout) {
+          //   await context.logProvider.info(this.maskSecretValues(stdout));
+          //   if (appendFile) {
+          //     await fs.appendFile(appendFile, stdout);
+          //   }
+          // }
+          // if (stderr) {
+          //   await context.logProvider.error(this.maskSecretValues(stderr));
+          //   if (appendFile) {
+          //     await fs.appendFile(appendFile, stderr);
+          //   }
+          // }
+          // if (error) {
+          //   await context.logProvider.error(
+          //     `Failed to run command: "${command}" on path: "${workingDir}".`
+          //   );
+          //   resolve(err(assembleError(error)));
+          // } else {
+          //   resolve(ok([stdout, {}]));
+          // }
         }
       );
     });

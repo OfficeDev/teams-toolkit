@@ -136,7 +136,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
       `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
-      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else if (platform === Platform.VS) {
     TOOLS?.logProvider.warning(
@@ -144,7 +144,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
     );
     TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else {
     TOOLS?.logProvider.warning(
@@ -152,7 +152,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
     );
     TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}.`
     );
   }
 }

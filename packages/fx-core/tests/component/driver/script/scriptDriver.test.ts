@@ -43,7 +43,7 @@ describe("Script Driver test", () => {
       assert.equal(output.get("KEY"), "VALUE");
     }
   });
-  it("execCallback", async () => {
+  it("execCallback with Error", async () => {
     sandbox.stub(fs, "appendFile").resolves();
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -55,6 +55,26 @@ describe("Script Driver test", () => {
     await scriptDriver.execCallback(
       (a: any) => {},
       new Error("error"),
+      "SECRET_MY=VAL",
+      "SECRET_MY=VAL",
+      "",
+      context,
+      "",
+      "./log"
+    );
+  });
+  it("execCallback without Error", async () => {
+    sandbox.stub(fs, "appendFile").resolves();
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    process.env.SECRET_MY = "VAL";
+    await scriptDriver.execCallback(
+      (a: any) => {},
+      null,
       "SECRET_MY=VAL",
       "SECRET_MY=VAL",
       "",

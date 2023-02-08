@@ -26,6 +26,7 @@ describe("Script Driver test", () => {
   it("execute success", async () => {
     const args = {
       workingDirectory: "./",
+      shell: "cmd",
       run: "::set-output KEY=VALUE",
     };
     const context = {

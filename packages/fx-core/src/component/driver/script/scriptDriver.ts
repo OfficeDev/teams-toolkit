@@ -82,10 +82,6 @@ export class ScriptDriver implements StepDriver {
         linux: "bash",
       };
       shell = shell || defaultShellMap[process.platform];
-      if (shell === "cmd") {
-        command = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${args.run}"`;
-      }
-      context.logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
       let appendFile: string | undefined = undefined;
       if (args.redirectTo) {
         appendFile = path.isAbsolute(args.redirectTo)
@@ -97,6 +93,10 @@ export class ScriptDriver implements StepDriver {
         resolve(ok(["", outputs]));
         return;
       }
+      if (shell === "cmd") {
+        command = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${args.run}"`;
+      }
+      context.logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
       exec(
         command,
         {

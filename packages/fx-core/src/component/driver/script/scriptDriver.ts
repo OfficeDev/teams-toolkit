@@ -77,12 +77,6 @@ export class ScriptDriver implements StepDriver {
           timeout: args.timeout,
         },
         async (error, stdout, stderr) => {
-          if (error) {
-            await context.logProvider.error(
-              `Failed to run command: "${command}" on path: "${workingDir}".`
-            );
-            reject(err(assembleError(error)));
-          }
           if (stdout) {
             await context.logProvider.info(this.maskSecretValues(stdout));
             if (appendFile) {
@@ -95,7 +89,14 @@ export class ScriptDriver implements StepDriver {
               await fs.appendFile(appendFile, stderr);
             }
           }
-          resolve(ok([stdout, {}]));
+          if (error) {
+            await context.logProvider.error(
+              `Failed to run command: "${command}" on path: "${workingDir}".`
+            );
+            resolve(err(assembleError(error)));
+          } else {
+            resolve(ok([stdout, {}]));
+          }
         }
       );
     });

@@ -59,6 +59,21 @@ describe("Script Driver test", () => {
     assert.isTrue(res.result.isOk());
   });
   it("execute fail", async () => {
+    const args = {
+      workingDirectory: "./",
+      shell: process.platform === "win32" ? "cmd" : "bash",
+      run: process.platform === "win32" ? "ls" : "dir",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isErr());
+  });
+  it("execute mock fail", async () => {
     sandbox.stub(scriptDriver, "executeCommand").resolves(err(new UserError({})));
     const args = {
       workingDirectory: "./",

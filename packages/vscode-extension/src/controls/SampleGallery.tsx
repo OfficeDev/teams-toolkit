@@ -57,6 +57,7 @@ const imageMapping: { [p: string]: any } = {
   "teams-videoapp-sample": VideoFilterApp,
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
+  "outlook-add-in": DashboardTab,
 };
 
 export default class SampleGallery extends React.Component<any, any> {
@@ -155,24 +156,26 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
   render() {
     const samples = this.props.samples as Array<SampleInfo>;
     if (samples) {
-      return samples.map((sample, index) => {
-        return (
-          <SampleCard
-            url={sample.url}
-            image={imageMapping[sample.id]}
-            tags={sample.tags}
-            time={sample.time}
-            configuration={sample.configuration}
-            title={sample.title}
-            description={sample.fullDescription}
-            sampleAppFolder={sample.id}
-            sampleAppUrl={sample.link}
-            suggested={sample.suggested}
-            order={index + 1}
-            highlightSample={this.props.highlightSample}
-          />
-        );
-      });
+      return samples
+        .filter((s) => (isOfficeAddinEnabled ? true : !s.id.startsWith("outlook")))
+        .map((sample, index) => {
+          return (
+            <SampleCard
+              url={sample.url}
+              image={imageMapping[sample.id]}
+              tags={sample.tags}
+              time={sample.time}
+              configuration={sample.configuration}
+              title={sample.title}
+              description={sample.fullDescription}
+              sampleAppFolder={sample.id}
+              sampleAppUrl={sample.link}
+              suggested={sample.suggested}
+              order={index + 1}
+              highlightSample={this.props.highlightSample}
+            />
+          );
+        });
     }
   }
 }

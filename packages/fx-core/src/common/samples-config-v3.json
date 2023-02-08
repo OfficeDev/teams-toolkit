@@ -105,6 +105,19 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false
+        },
+        {
+          "id": "outlook-hello-world",
+          "title": "Outlook Hello World",
+          "shortDescription": "A simple Outlook add-in with only a manifest, HTML web page, and a logo.",
+          "fullDescription": "A simple Outlook add-in with only a manifest, HTML web page, and a logo. This sample will help you understand the fundamental parts of an Outlook add-in.",
+          "tags": ["Outlook add-in"],
+          "time": "5min to run",
+          "configuration": "Ready for debug",
+          "suggested": false,
+          "url": "https://github.com/OfficeDev/Office-Add-in-samples",
+          "packageLink": "https://github.com/OfficeDev/Office-Add-in-samples/archive/refs/heads/main.zip",
+          "relativePath": "Office-Add-in-samples-main/Samples/hello-world/outlook-hello-world"
         }
     ]
 }

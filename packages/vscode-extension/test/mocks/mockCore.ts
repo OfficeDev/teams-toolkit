@@ -118,4 +118,8 @@ export class MockCore implements Core {
   async projectVersionCheck(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async phantomMigrationV3(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

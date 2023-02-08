@@ -730,7 +730,7 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
     if (isMigrationV3Enabled()) {
       const upgradeable = await checkProjectUpgradable();
       if (upgradeable) {
-        await handlers.checkUpgrade();
+        await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
       }
     }
   } else {

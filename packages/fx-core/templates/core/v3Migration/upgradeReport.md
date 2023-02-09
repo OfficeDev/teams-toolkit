@@ -10,8 +10,8 @@ Visit https://aka.ms/teams-toolkit-5.0-upgrade to learn more about the upgrade.
 
 1. Created `teamsapp.yml` and `teamsapp.local.yml` in your project root folder.
 2. Moved environment files in `.fx` to `.env.{env}` in `env` folder.
-3. Moved `templates/appPackage` to `appPackage` and updated placeholders in it per latest tooling's requirement, and rename `manifest.template.json` to `manifest.json`.
-4. Moved `templates/appPackage/aad.template.json` to `aad.manifest.json` and updated placeholders in it per latest tooling's requirement.
+3. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
+4. If your project contains file `templates/appPackage/aad.template.json`, it will be moved and renamed as `aad.manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
 5. Updated `.vscode/tasks.json` and `.vscode/launch.json`.
 6. Updated `.gitignore` to ignore new environment files.
 7. Removed `.fx` folder.

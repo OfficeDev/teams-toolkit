@@ -606,7 +606,6 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
@@ -614,6 +613,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -671,13 +671,13 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false, true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {

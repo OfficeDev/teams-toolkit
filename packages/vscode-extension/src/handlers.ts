@@ -172,6 +172,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import commandController from "./commandController";
 import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
 import { ExtensionSurvey } from "./utils/survey";
 
@@ -248,6 +249,14 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
+    if (isV3Enabled()) {
+      core.on(CoreCallbackEvent.lock, async (command: string) => {
+        await commandController.lockedByOperation(command);
+      });
+      core.on(CoreCallbackEvent.unlock, async (command: string) => {
+        await commandController.unlockedByOperation(command);
+      });
+    }
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);

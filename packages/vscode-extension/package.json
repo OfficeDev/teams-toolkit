@@ -166,7 +166,7 @@
         },
         {
           "id": "teamsfx-project-and-check-upgradeV3",
-          "name": "Teams Toolkit",
+          "name": "Upgrade",
           "when": "fx-extension.isTeamsFx && fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {

@@ -9,7 +9,7 @@ Visit https://aka.ms/teams-toolkit-5.0-upgrade to learn more about the upgrade.
 ## Important changes to your development flow
 
 There's no immediate action required from you. This part illustrates what's changed to your development flow.
-> If you encountered any errors or issues after upgrade, you could try the following steps or visit [know issues](https://aka.ms/teams-toolkit-5.0-upgrade#known-issues) for details.
+> If you encountered any errors or issues after upgrade, you could try the following steps or visit [known issues](https://aka.ms/teams-toolkit-5.0-upgrade#known-issues) for details.
 
 1. You need to sync `.env/.env.{env}` files between different machines manually. All these files will be gitignored by default. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 2. You need to take some manual steps when creating or provisioning new environments for your old project. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)

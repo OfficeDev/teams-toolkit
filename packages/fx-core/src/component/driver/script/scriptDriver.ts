@@ -32,7 +32,10 @@ export class ScriptDriver implements StepDriver {
   }
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const res = await this.run(args, ctx);
-    return { result: res, summaries: ["run script"] };
+    const summary = `${res.isOk() ? "success" : "failed"} to execute command '${
+      (args as any).run
+    }'`;
+    return { result: res, summaries: [summary] };
   }
   async execCallback(
     resolve: any,

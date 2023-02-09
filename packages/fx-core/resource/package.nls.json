@@ -782,7 +782,7 @@
   "core.NewOfficeAddinOptionVSC.label": "Start with an Outlook add-in",
   "core.NewOfficeAddinOptionVSC.detail": "Use the Teams Toolkit to create a new Office add-in application.",
   "core.summary.actionDescription": "Action %s%s",
-  "core.summary.lifecycleDescription": "Running lifecycle stage: %s(%s step(s) in total). The following actions will be executed %s",
+  "core.summary.lifecycleDescription": "Lifecycle stage: %s(%s step(s) in total). The following actions will be executed: %s",
   "core.summary.lifecycleNotExecuted": "%s Lifecycle stage %s was not executed.",
   "core.summary.lifecycleSucceeded": "%s Lifecycle stage %s was executed successfully.",
   "core.summary.lifecycleFailed": "%s Lifecycle stage %s failed.",

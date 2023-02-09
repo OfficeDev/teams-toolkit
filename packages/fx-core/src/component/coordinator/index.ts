@@ -256,7 +256,7 @@ export class Coordinator {
       }
 
       merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: feature,
+        [TelemetryProperty.Capabilities]: feature,
         [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
     } else if (scratch === CreateNewOfficeAddinOption().id) {

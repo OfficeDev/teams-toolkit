@@ -55,7 +55,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(setStatusStub.callCount, 2);
   });
 
-  it("updateTreeViewsByContent", async () => {
+  it("updateTreeViewsByContent has adaptive cards", async () => {
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
@@ -73,5 +73,25 @@ describe("TreeViewManager", () => {
     await treeViewManager.updateTreeViewsByContent();
 
     chai.assert.equal(commands.length, 7);
+  });
+
+  it("updateTreeViewsByContent that removes project related commands", async () => {
+    sandbox
+      .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
+      .returns(Promise.resolve(true));
+
+    treeViewManager.registerTreeViews({
+      subscriptions: [],
+    } as unknown as vscode.ExtensionContext);
+    const developmentTreeviewProvider = treeViewManager.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+
+    const commands = developmentTreeviewProvider.getCommands();
+    chai.assert.equal(commands.length, 6);
+
+    await treeViewManager.updateTreeViewsByContent(true);
+
+    chai.assert.equal(commands.length, 3);
   });
 });

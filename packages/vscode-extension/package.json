@@ -135,7 +135,7 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "id": "teamsfx-environment",
@@ -145,7 +145,7 @@
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "type": "webview",
@@ -163,6 +163,11 @@
           "id": "teamsfx-deployment-webview",
           "name": "Deployment",
           "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
+        },
+        {
+          "id": "teamsfx-project-and-check-upgradeV3",
+          "name": "Upgrade",
+          "when": "fx-extension.isTeamsFx && fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-help-and-feedback",
@@ -191,11 +196,6 @@
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
-        },
-        {
-          "id": "teamsfx-project-and-check-upgradeV3",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.isTeamsFx && fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-empty-project-new-user",

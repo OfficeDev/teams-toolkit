@@ -126,7 +126,6 @@ export class EnvUtil {
     const content = dotenvUtil.serialize(parsedDotenv);
 
     //persist
-    // TOOLS.logProvider.info(`  Env output:\n${content}\n`);
     if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
     if (!envFileExists) {

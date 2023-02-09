@@ -166,8 +166,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW(getQuestionsForProvisionV3),
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -196,8 +196,8 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -261,7 +261,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -289,7 +289,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
   async executeUserTask(
     func: Func,
     inputs: Inputs,

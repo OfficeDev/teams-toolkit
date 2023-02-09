@@ -23,6 +23,7 @@ export class ResponseWrapper implements Response {
   send(body: any) {
     // record the body to be returned later.
     this.body = body;
+    this.originalResponse.body = body;
   }
 
   status(status: number) {

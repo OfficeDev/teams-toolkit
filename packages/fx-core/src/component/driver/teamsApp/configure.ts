@@ -91,7 +91,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     const capabilities = this.extractCapabilties(archivedFile);
     if (capabilities.isOk()) {
       merge(context.telemetryProperties, {
-        [TelemetryProperty.Capabilities]: capabilities.value.toString(),
+        [TelemetryProperty.Capabilities]: capabilities.value.join(";"),
       });
     } else {
       return err(capabilities.error);
@@ -161,8 +161,10 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     }
   }
 
+  /**
+   * Extract capabilities from zip file
+   */
   private extractCapabilties(archivedFile: Buffer): Result<string[], FxError> {
-    // Extract capabilities from zip file
     const zipEntries = new AdmZip(archivedFile).getEntries();
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
     if (!manifestFile) {

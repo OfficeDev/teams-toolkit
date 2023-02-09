@@ -1102,7 +1102,7 @@
   "driver.aadApp.log.successUpdateAadAppManifest": "Applied manifest %s to Azure Active Directory application with object id %s",
   "configManager.error.driverNotFound": "Driver %s not found for step %s",
   "configManager.error.yamlParsing": "Error parsing yaml file at path %s. Reason: %s",
-  "configManager.error.invalidLifecycle": "The schema of lifecycle %s is invalid. It is expected to be an array of actions. If you want to remove all actions inside it, please remove the whole lifecyle.",
+  "configManager.error.invalidYmlSchema": "The schema of lifecycle %s is invalid in %s.",
   "configManager.error.invalidEnvField": "The env field of action %s in lifecycle %s is invalid.",
   "configManager.error.invalidEnvFolderPath": "The environmentFolderPath field is invalid.",
   "botRegistration.ProgressBar.creatingBotAadApp": "Creating bot aad app.",

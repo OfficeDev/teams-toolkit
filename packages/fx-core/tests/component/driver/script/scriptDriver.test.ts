@@ -116,4 +116,19 @@ describe("Script Driver test", () => {
       assert.deepEqual(output, { KEY: "VALUE" });
     }
   });
+  it("executeCommand failed", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: "abc",
+      shell: "cmd",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    const res = await scriptDriver.executeCommand(args, context);
+    assert.isTrue(res.isErr());
+  });
 });

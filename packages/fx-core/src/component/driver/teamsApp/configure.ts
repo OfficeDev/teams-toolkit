@@ -178,18 +178,14 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     const capabilities = manifestUtils._getCapabilities(manifest);
-    if (capabilities.isOk()) {
-      // Mapping to Tab
-      const result = capabilities.value.map((x) => {
-        if (x == "staticTab" || x == "configurableTab") {
-          return "Tab";
-        } else {
-          return x;
-        }
-      });
-      return ok([...new Set(result)]);
-    } else {
-      return capabilities;
-    }
+    // Mapping to Tab
+    const result = capabilities.map((x) => {
+      if (x == "staticTab" || x == "configurableTab") {
+        return "Tab";
+      } else {
+        return x;
+      }
+    });
+    return ok([...new Set(result)]);
   }
 }

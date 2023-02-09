@@ -107,6 +107,12 @@ describe("teamsApp/update", async () => {
           scopes: ["personal"],
         },
       ];
+      manifest.bots = [
+        {
+          botId: uuid(),
+          scopes: [],
+        },
+      ];
       zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest)));
       zip.addFile("color.png", new Buffer(""));
       zip.addFile("outlie.png", new Buffer(""));

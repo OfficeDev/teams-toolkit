@@ -404,7 +404,7 @@ export class ManifestUtils {
         return false;
     }
   }
-  _getCapabilities(template: TeamsAppManifest): Result<string[], FxError> {
+  _getCapabilities(template: TeamsAppManifest): string[] {
     const capabilities: string[] = [];
     if (template.staticTabs && template.staticTabs!.length > 0) {
       capabilities.push("staticTab");
@@ -418,7 +418,7 @@ export class ManifestUtils {
     if (template.composeExtensions) {
       capabilities.push("MessageExtension");
     }
-    return ok(capabilities);
+    return capabilities;
   }
   /**
    * Only works for manifest.template.json
@@ -430,7 +430,7 @@ export class ManifestUtils {
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    return this._getCapabilities(manifestRes.value);
+    return ok(this._getCapabilities(manifestRes.value));
   }
 
   async getManifest(
@@ -448,11 +448,8 @@ export class ManifestUtils {
 
     //adjust template for samples with unnecessary placeholders
     const capabilities = this._getCapabilities(templateJson);
-    if (capabilities.isErr()) {
-      return err(capabilities.error);
-    }
     const hasFrontend =
-      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+      capabilities.includes("staticTab") || capabilities.includes("configurableTab");
     const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint;
     const hasUnresolvedPlaceholders =
       JSON.stringify(templateJson.developer).match(manifestStateDataRegex) !== null;

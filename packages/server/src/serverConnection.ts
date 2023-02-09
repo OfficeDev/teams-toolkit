@@ -173,7 +173,7 @@ export default class ServerConnection implements IServerConnection {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
     if (isV3Enabled()) {
-      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.template.json`;
+      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.json`;
       func = {
         namespace: "fx-solution-azure",
         method: "buildPackage",

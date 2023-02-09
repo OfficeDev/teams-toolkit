@@ -1848,6 +1848,8 @@ export async function checkUpgrade(args?: any[]) {
     const input = getSystemInputs();
     if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
       input["isNonmodalMessage"] = true;
+      core.phantomMigrationV3(input);
+      return;
     } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
       input["confirmOnly"] = true;
     }

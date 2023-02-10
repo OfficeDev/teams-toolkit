@@ -730,8 +730,8 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
     if (isMigrationV3Enabled()) {
       const upgradeable = await checkProjectUpgradable();
       if (upgradeable) {
+        await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
         await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
-        await TreeViewManagerInstance.updateTreeViewsByContent(true);
       }
     }
   } else {
@@ -1022,9 +1022,10 @@ async function runBackgroundAsyncTasks(
 }
 
 async function runTeamsFxBackgroundTasks() {
+  const upgradeable = isV3Enabled() && isMigrationV3Enabled() && (await checkProjectUpgradable());
   await handlers.autoOpenProjectHandler();
   await handlers.promptSPFxUpgrade();
-  await TreeViewManagerInstance.updateTreeViewsByContent();
+  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   await AzureAccountManager.updateSubscriptionInfo();
 }
 
@@ -1050,7 +1051,6 @@ async function checkProjectUpgradable(): Promise<boolean> {
   const upgradeable = versionCheckResult.isOk()
     ? versionCheckResult.value.isSupport == VersionState.upgradeable
     : false;
-  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
   return upgradeable;
 }
 
@@ -1071,5 +1071,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
     runTeamsFxBackgroundTasks();
   }
 
-  await checkProjectUpgradable();
+  const upgradeable = await checkProjectUpgradable();
+  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
 }

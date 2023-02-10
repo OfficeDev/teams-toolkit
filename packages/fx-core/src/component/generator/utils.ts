@@ -19,12 +19,12 @@ import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
-const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
+export const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 export const templateVersion = (): string => templateConfig.version;
-const templateTagPrefix = templateConfig.tagPrefix;
+export const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
-function selectTemplateTag(tags: string[]): string | undefined {
+export function selectTemplateTag(tags: string[]): string | undefined {
   if (preRelease === "alpha") {
     return templateAlphaVersion;
   }

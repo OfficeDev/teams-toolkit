@@ -43,6 +43,27 @@ describe("Generator utils", () => {
     }
   });
 
+  it("selecte tag should return alpha if set env", async () => {
+    sandbox.replace(generatorUtils, "preRelease", "alpha");
+    const tag = generatorUtils.selectTemplateTag(["1.0.0"]);
+    assert.equal(tag, templateAlphaVersion);
+  });
+
+  it("select tag should return undefined to use fallback if template config use alpha version", async () => {
+    sandbox.replace(generatorUtils, "preRelease", "");
+    sandbox.stub(templateConfig, "version").value(templateAlphaVersion);
+    const tag = generatorUtils.selectTemplateTag(["1.0.0"]);
+    assert.equal(tag, undefined);
+  });
+
+  it("select tag should return correct version", async () => {
+    sandbox.replace(generatorUtils, "preRelease", "");
+    sandbox.stub(templateConfig, "version").value("^2.0.0");
+    sandbox.replace(generatorUtils, "templateTagPrefix", "templates@");
+    const tag = generatorUtils.selectTemplateTag(["1.0.0", "2.0.0", "2.1.0", "2.1.1", "3.0.0"]);
+    assert.equal(tag, "templates@2.1.1");
+  });
+
   it("fetch zip from url", async () => {
     sandbox.stub(axios, "get").resolves({ status: 200, data: new AdmZip().toBuffer() });
     const url = "ut";

@@ -4,13 +4,13 @@
 import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 import { TeamsFxTelemetryReporter } from "../../utils/teamsFxTelemetryReporter";
-import { DriverContext } from "../interface/commonArgs";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { ExecutionResult } from "../interface/stepDriver";
 
 // Based on fx-core's design that a component should always return FxError instead of throw exception, no error handling is added
 export function addStartAndEndTelemetry(eventName: string, componentName: string): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
-    const driverContext = ctx.arguments[1] as DriverContext;
+    const driverContext = ctx.arguments[1] as WrapDriverContext;
     let telemetryReporter: TeamsFxTelemetryReporter | undefined = undefined;
     if (driverContext.telemetryReporter) {
       telemetryReporter = new TeamsFxTelemetryReporter(driverContext.telemetryReporter, {
@@ -30,9 +30,15 @@ export function addStartAndEndTelemetry(eventName: string, componentName: string
     }
 
     if (result.isOk()) {
-      telemetryReporter?.sendEndEvent({ eventName });
+      telemetryReporter?.sendEndEvent({
+        eventName: eventName,
+        properties: driverContext.telemetryProperties,
+      });
     } else {
-      telemetryReporter?.sendEndEvent({ eventName }, result.error);
+      telemetryReporter?.sendEndEvent(
+        { eventName: eventName, properties: driverContext.telemetryProperties },
+        result.error
+      );
     }
   };
 }

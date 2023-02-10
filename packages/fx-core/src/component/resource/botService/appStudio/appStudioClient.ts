@@ -96,11 +96,12 @@ export class AppStudioClient {
   public static async createBotRegistration(
     token: string,
     registration: IBotRegistration,
+    checkExistence = true,
     context?: ResourceContextV3
   ): Promise<void> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
-    if (registration.botId) {
+    if (registration.botId && checkExistence) {
       const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));

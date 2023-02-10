@@ -172,6 +172,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import commandController from "./commandController";
 import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
 import { ExtensionSurvey } from "./utils/survey";
 
@@ -248,6 +249,14 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
+    if (isV3Enabled()) {
+      core.on(CoreCallbackEvent.lock, async (command: string) => {
+        await commandController.lockedByOperation(command);
+      });
+      core.on(CoreCallbackEvent.unlock, async (command: string) => {
+        await commandController.unlockedByOperation(command);
+      });
+    }
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);
@@ -1672,10 +1681,6 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  */
 export async function getFuncPathHandler(): Promise<string> {
   try {
-    if (!vscodeHelper.isFuncCoreToolsEnabled()) {
-      return `${path.delimiter}`;
-    }
-
     const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
     const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
     if (funcStatus?.details?.binFolders !== undefined) {
@@ -1848,7 +1853,16 @@ export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, 
 
 export async function checkUpgrade(args?: any[]) {
   if (isV3Enabled()) {
-    const result = await core.phantomMigrationV3(getSystemInputs());
+    const triggerFrom = getTriggerFromProperty(args);
+    const input = getSystemInputs();
+    if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
+      input["isNonmodalMessage"] = true;
+      core.phantomMigrationV3(input);
+      return;
+    } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
+      input["confirmOnly"] = true;
+    }
+    await core.phantomMigrationV3(input);
   } else {
     // just for triggering upgrade check for multi-env && bicep.
     await runCommand(Stage.listCollaborator);

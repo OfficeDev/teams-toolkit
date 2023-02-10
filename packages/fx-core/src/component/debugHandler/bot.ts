@@ -271,7 +271,7 @@ export class BotDebugHandler {
       };
 
       try {
-        await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+        await AppStudioClient.createBotRegistration(tokenResult.value, botReg, false);
       } catch (e) {
         if (
           e.innerError?.teamsfxUrlName == TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT] &&

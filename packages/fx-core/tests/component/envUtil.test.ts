@@ -524,9 +524,9 @@ describe("env utils", () => {
 
   it("dotenvUtil deserialize & serialize", async () => {
     const original =
-      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
     const expected =
-      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"\nKEY5="VALUE5#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"\nKEY5="VALUE5#"';
     const parsed = dotenvUtil.deserialize(original);
     assert.deepEqual(parsed, {
       lines: [

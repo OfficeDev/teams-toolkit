@@ -6,7 +6,7 @@
  */
 export enum BotChannelType {
   MicrosoftTeams = "msteams",
-  Outlook = "outlook",
+  M365Extensions = "m365extensions",
 }
 
 export interface IBotRegistration {

@@ -5,16 +5,28 @@ const restify = require("restify");
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-const { BotFrameworkAdapter } = require("botbuilder");
+const {
+  CloudAdapter,
+  ConfigurationServiceClientCredentialFactory,
+  ConfigurationBotFrameworkAuthentication,
+} = require("botbuilder");
 const { TeamsBot } = require("./teamsBot");
 const config = require("./config");
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
-const adapter = new BotFrameworkAdapter({
-  appId: config.botId,
-  appPassword: config.botPassword,
+const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
+  MicrosoftAppId: config.botId,
+  MicrosoftAppPassword: config.botPassword,
+  MicrosoftAppType: "MultiTenant",
 });
+
+const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
+  {},
+  credentialsFactory
+);
+
+const adapter = new CloudAdapter(botFrameworkAuthentication);
 
 adapter.onTurnError = async (context, error) => {
   // This check writes out errors to console log .vs. app insights.
@@ -33,13 +45,14 @@ const bot = new TeamsBot();
 
 // Create HTTP server.
 const server = restify.createServer();
+server.use(restify.plugins.bodyParser());
 server.listen(process.env.port || process.env.PORT || 3978, function () {
   console.log(`\nBot started, ${server.name} listening to ${server.url}`);
 });
 
 // Listen for incoming requests.
 server.post("/api/messages", async (req, res) => {
-  await adapter.processActivity(req, res, async (context) => {
+  await adapter.process(req, res, async (context) => {
     await bot.run(context);
   });
 });

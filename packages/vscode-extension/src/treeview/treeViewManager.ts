@@ -148,7 +148,7 @@ class TreeViewManager {
   private registerDevelopment(disposables: vscode.Disposable[]) {
     const developmentCommands = [
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.createProjectTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
         "createProject",
@@ -207,7 +207,7 @@ class TreeViewManager {
           ]
         : [
             new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
+              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitle"),
               localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
               "fx-extension.openManifest",
               "manifestEditor",
@@ -274,7 +274,7 @@ class TreeViewManager {
         { name: "export", custom: false }
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
         "fx-extension.build",
         "buildPackage",

@@ -49,7 +49,7 @@ export class DevelopmentView extends React.Component<any, any> {
     return (
       <div>
         <TreeItem
-          label={localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew")}
+          label={localize("teamstoolkit.commandsTreeViewProvider.createProjectTitle")}
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription")}
           icon="codicon codicon-new-folder"
           customized={false}
@@ -65,7 +65,7 @@ export class DevelopmentView extends React.Component<any, any> {
           command="fx-extension.openSamples"
         ></TreeItem>
         <TreeItem
-          label={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew")}
+          label={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitle")}
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription")}
           icon="codicon codicon-edit"
           customized={false}

@@ -5,7 +5,7 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import {
   getSampleInfoFromName,
   renderTemplateFileData,
@@ -32,6 +32,7 @@ import {
   templateAlphaVersion,
   templatePrereleaseVersion,
 } from "../../../src/component/generator/constant";
+import templateConfig from "../../../src/common/templates-config.json";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -42,6 +43,93 @@ describe("Generator utils", () => {
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
+  });
+
+  it("select tag should return alpha if set env", async () => {
+    sandbox.stub(generatorUtils, "preRelease").returns("alpha");
+    // sandbox.replace(generatorUtils, "preRelease", "alpha");
+    const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
+    assert.equal(tag, templateAlphaVersion);
+  });
+
+  it("select tag should return undefined to use fallback if template config use alpha version", async () => {
+    sandbox.stub(generatorUtils, "preRelease").returns("");
+    sandbox.stub(templateConfig, "version").value(templateAlphaVersion);
+    const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
+    assert.equal(tag, undefined);
+  });
+
+  it("select tag should return correct version", async () => {
+    sandbox.stub(generatorUtils, "preRelease").returns("");
+    sandbox.stub(templateConfig, "version").value("^2.0.0");
+    sandbox.replace(generatorUtils, "templateTagPrefix", "templates@");
+    const tag = await generatorUtils.selectTemplateTag(async () => [
+      "1.0.0",
+      "2.0.0",
+      "2.1.0",
+      "2.1.1",
+      "3.0.0",
+    ]);
+    assert.equal(tag, "templates@2.1.1");
+  });
+
+  it("sendRequestWithRetry throw error if requestFn returns error status code", async () => {
+    const requestFn = async () => {
+      return { status: 400 } as AxiosResponse;
+    };
+    try {
+      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithRetry throw error if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    try {
+      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithTimeout throw error if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    try {
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithTimeout throw request timeout if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    sandbox.stub(axios, "isCancel").returns(true);
+    try {
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 2);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("fetch template zip url", async () => {
+    sandbox.stub(generatorUtils, "selectTemplateTag").resolves(templateAlphaVersion);
+    const url = await generatorUtils.fetchTemplateZipUrl("test");
+    assert.exists(url);
   });
 
   it("fetch zip from url", async () => {
@@ -69,6 +157,25 @@ describe("Generator utils", () => {
     );
     const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
     assert.equal(content, "test");
+  });
+
+  it("unzip .gitignore", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    const outputDir = path.join(tmpDir, "output");
+    await fs.ensureDir(inputDir);
+    await fs.ensureDir(outputDir);
+    const fileData = "fileData";
+    await fs.writeFile(path.join(inputDir, ".gitignore"), fileData);
+    await fs.writeFile(path.join(outputDir, ".gitignore"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
+    await generatorUtils.unzip(
+      new AdmZip(path.join(tmpDir, "test.zip")),
+      outputDir,
+      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
+      (fileName: string, fileData: Buffer) => renderTemplateFileData(fileName, fileData, {})
+    );
   });
 
   it("unzip with relative path", async () => {

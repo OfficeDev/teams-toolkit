@@ -51,12 +51,12 @@ jobs:
           EOF_HEREDOC
               grep -q 'E2E TEST:'
             ); then
-              echo "::set-output name=passed::true"
+              echo "passed=true" >> $GITHUB_OUTPUT
             else
-              echo "::set-output name=passed::false"
+              echo "passed=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "::set-output name=passed::true"
+            echo "passed=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Search comment
@@ -132,7 +132,7 @@ jobs:
         working-directory: packages/cli/tests/e2e
         run: |
           cases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
-          echo "::set-output name=cases::$cases"
+          echo "cases=$cases" >> $GITHUB_OUTPUT
 
       - name: List cases for dispatch
         id: dispatch-cases
@@ -142,9 +142,9 @@ jobs:
           inputCases='${{ github.event.inputs.cases }}'
           if [ -z "$inputCases" ]; then
             allCases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
-            echo "::set-output name=cases::$allCases"
+            echo "cases=$allCases" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=cases::$inputCases"
+            echo "cases=$inputCases" >> $GITHUB_OUTPUT
           fi
 
       - name: E2E Test clean
@@ -335,7 +335,7 @@ jobs:
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
           name="${name//\//_}"_${{ steps.get-job-id.outputs.jobId }}
-          echo "::set-output name=name::$name"
+          echo "name=$name" >> $GITHUB_OUTPUT
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
@@ -435,11 +435,29 @@ jobs:
         id: list-jobs
         working-directory: packages/cli
         run: |
-          jobs=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }} \
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
+          page=1
+          jobs="[]"
 
-          cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+          while :
+          do
+
+            url=https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
+            resp=`curl -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url`
+
+            new_jobs=`echo $resp | jq -cr '.jobs'`
+
+            jobs=`jq -cr --slurp 'add' <(echo "$jobs") <(echo "$new_jobs")`
+
+            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url | grep -Fi "link:" | grep "rel=\"last\"" || true`
+            if [ -z "$has_next" ]; then
+              break
+            fi
+
+            page=$((page+1))
+          done
+
+          cases=`echo $jobs| jq -r '.[] | select(.name | contains("tests.ts")) | .name'`
+
 
           lists=""
           passed=0
@@ -468,14 +486,14 @@ jobs:
               fi
             fi
 
-            status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+            status=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .conclusion'`
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
 
-            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
@@ -494,14 +512,14 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
-            job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
             slow_count=0
             if [ ! -z "$metrics_file" ]; then
               slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
             fi
 
-            url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            url=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">$elegant_path</a>"
 
             target_type="TS/JS"
@@ -533,9 +551,9 @@ jobs:
             subject="[PASSED] $subject"
           fi
 
-          echo "::set-output name=body::$body"
-          echo "::set-output name=to::$emails"
-          echo "::set-output name=subject::$subject"
+          echo "body=$body" >> $GITHUB_OUTPUT
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master

@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Kuojian Lu <kuojianlu@gmail.com>
+ */
 "use strict";
 
 import fs from "fs-extra";
@@ -35,7 +38,7 @@ import { ErrorNames, MaxLengths } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
 import { genUUID } from "../resource/botService/common";
 import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
-import { ComponentNames } from "../constants";
+import { ComponentNames, TeamsFxUrlNames } from "../constants";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
@@ -267,9 +270,9 @@ export class BotDebugHandler {
       };
 
       try {
-        await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+        await AppStudioClient.createBotRegistration(tokenResult.value, botReg, false);
       } catch (e) {
-        if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && this.hasBotIdInEnvBefore) {
+        if (e.innerError?.teamsfxUrlName == TeamsFxUrlNames.createBot && this.hasBotIdInEnvBefore) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
           return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
         } else {

@@ -30,6 +30,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { CoreQuestionNames } from "../../../core/question";
+import { convertProject } from "office-addin-project";
 
 const childProcessExec = promisify(childProcess.exec);
 
@@ -86,6 +87,7 @@ export class OfficeAddinGenerator {
     process.chdir(addinRoot);
     try {
       if (!fromFolder) {
+        // from template
         const jsonData = new projectsJsonData();
         const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
 
@@ -109,12 +111,17 @@ export class OfficeAddinGenerator {
           );
         }
       } else {
+        // from existing project
         HelperMethods.copyAddinFiles(fromFolder, addinRoot);
-        const manifestFile: string = inputs[AddinProjectManifestQuestion.name];
+        const sourceManifestFile: string = inputs[AddinProjectManifestQuestion.name];
+        let manifestFile: string = sourceManifestFile.replace(fromFolder, addinRoot);
+        if (manifestFile.endsWith(".xml")) {
+          // Need to convert to json project first
+          await convertProject(manifestFile);
+          manifestFile = manifestFile.replace(/\.xml$/, ".json");
+        }
         inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
         HelperMethods.updateManifest(destinationPath, manifestFile);
-        // TODO: After able to sideload using shared manifest we can then delete manifest file in subfolder
-        // => join(addinRoot, "manifest.json"); but figure out the actual path in the new location
       }
       process.chdir(workingDir);
       return ok(undefined);

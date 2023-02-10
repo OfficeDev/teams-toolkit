@@ -45,6 +45,7 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import EventEmitter from "events";
+import proxyquire from "proxyquire";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -140,7 +141,7 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(result.isOk()).to.eq(true);
   });
 
-  it("should copy addin files and updateManifest if addin folder is specified", async () => {
+  it("should copy addin files and updateManifest if addin folder is specified with json manifest", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -177,6 +178,58 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(result.isOk()).to.eq(true);
     chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
     chai.expect(updateManifestStub.calledOnce).to.be.true;
+    chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
+  });
+
+  it("should copy addin files and convert manifest if addin folder is specified with xml manifest", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    inputs["capabilities"] = ["taskpane"];
+    inputs[AddinProjectFolderQuestion.name] = "somepath";
+    inputs[AddinLanguageQuestion.name] = "TypeScript";
+    inputs[AddinProjectManifestQuestion.name] = "manifest.xml";
+
+    const copyAddinFilesStub = sinon
+      .stub(HelperMethods, "copyAddinFiles")
+      .callsFake((from: string, to: string) => {
+        return;
+      });
+    const updateManifestStub = sinon
+      .stub(HelperMethods, "updateManifest")
+      .callsFake(async (destination: string, manifestPath: string) => {
+        return;
+      });
+    const convertProjectStub = sinon
+      .stub()
+      .callsFake(async (manifestPath?: string, backupPath?: string) => {
+        return;
+      });
+
+    const generator = proxyquire("../../../src/component/generator/officeAddin/generator", {
+      "office-addin-project": {
+        convertProject: convertProjectStub,
+      },
+    });
+
+    sinon.stub<any, any>(ManifestUtil, "loadFromPath").resolves({
+      extensions: [
+        {
+          requirements: {
+            scopes: ["mail"],
+          },
+        },
+      ],
+    });
+
+    const result = await generator.OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+    chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
+    chai.expect(updateManifestStub.calledOnce).to.be.true;
+    chai.expect(convertProjectStub.calledOnce).to.be.true;
     chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
   });
 

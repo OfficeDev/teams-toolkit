@@ -183,7 +183,9 @@ describe("Middleware - ConcurrentLockerMW", () => {
       }
     }
     let d = 0;
-    const lockCb = () => {
+    let functionName = "";
+    const lockCb = (operation: string) => {
+      functionName = operation;
       d++;
     };
     const unlockCb = () => {
@@ -207,6 +209,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
       await my.myMethod(inputs);
       expect(d).eql(1);
+      expect(functionName).eql("myMethod");
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }

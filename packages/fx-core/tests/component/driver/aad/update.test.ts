@@ -246,7 +246,7 @@ describe("aadAppUpdate", async () => {
       .and.include({
         message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in ${path.resolve(
           args.manifestPath
-        )} have no values.`, // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
+        )} has no value.`, // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
         source: "aadApp/update",
       });
 
@@ -574,7 +574,7 @@ describe("aadAppUpdate", async () => {
       .and.include({
         message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME referenced in ${path.resolve(
           args.manifestPath
-        )} have no values.`,
+        )} has no value.`,
         source: "aadApp/update",
       });
   });

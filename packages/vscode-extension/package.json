@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -123,6 +123,11 @@
         "view": "teamsfx-project-and-check-upgradeV3",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content%",
         "enablement": "fx-extension.initialized"
+      },
+      {
+        "view": "teamsfx-feedback",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-feedback.content%",
+        "enablement": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
       }
     ],
     "views": {
@@ -130,7 +135,7 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "id": "teamsfx-environment",
@@ -140,7 +145,7 @@
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "type": "webview",
@@ -160,9 +165,26 @@
           "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
         },
         {
+          "id": "teamsfx-project-and-check-upgradeV3",
+          "name": "Upgrade",
+          "when": "fx-extension.isTeamsFx && fx-extension.canUpgradeV3 && isWorkspaceTrusted"
+        },
+        {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled",
+          "visibility": "visible"
+        },
+        {
+          "id": "teamsfx-help",
+          "name": "Help",
+          "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
+          "visibility": "visible"
+        },
+        {
+          "id": "teamsfx-feedback",
+          "name": "Feedback",
+          "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
           "visibility": "visible"
         },
         {
@@ -174,11 +196,6 @@
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
-        },
-        {
-          "id": "teamsfx-project-and-check-upgradeV3",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.isTeamsFx && fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-empty-project-new-user",
@@ -370,6 +387,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.debug",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "false"
         },
@@ -472,6 +493,10 @@
         {
           "command": "fx-extension.checkProjectUpgrade",
           "when": "fx-extension.canUpgradeToArmAndMultiEnv || fx-extension.canUpgradeV3"
+        },
+        {
+          "command": "fx-extension.openSurvey",
+          "when": "false"
         }
       ]
     },
@@ -479,6 +504,7 @@
       {
         "command": "fx-extension.create",
         "title": "%teamstoolkit.commands.createProject.title%",
+        "enablement": "!fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -530,7 +556,7 @@
       {
         "command": "fx-extension.addEnvironment",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -542,13 +568,13 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
         "command": "fx-extension.build",
         "title": "%teamstoolkit.commands.zipPackage.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -564,9 +590,15 @@
         "enablement": "fx-extension.initialized"
       },
       {
+        "command": "fx-extension.debug",
+        "title": "%teamstoolkit.commands.debug.title%",
+        "enablement": "!fx-extension.commandLocked",
+        "category": "Teams"
+      },
+      {
         "command": "fx-extension.deploy",
         "title": "%teamstoolkit.commands.deploy.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -596,13 +628,13 @@
       {
         "command": "fx-extension.publishInDeveloperPortal",
         "title": "%teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isTDPIntegrationEnabled",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isTDPIntegrationEnabled && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
         "command": "fx-extension.openManifest",
         "title": "%teamstoolkit.commands.editManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -614,13 +646,13 @@
       {
         "command": "fx-extension.provision",
         "title": "%teamstoolkit.commands.provision.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
         "command": "fx-extension.publish",
         "title": "%teamstoolkit.commands.publish.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -666,7 +698,7 @@
       {
         "command": "fx-extension.manageCollaborator",
         "title": "%teamstoolkit.commands.manageCollaborator.title%",
-        "enablement": "fx-extension.isV3Enabled",
+        "enablement": "fx-extension.isV3Enabled && !fx-extension.commandLocked",
         "category": "Teams"
       },
       {
@@ -767,6 +799,10 @@
         "command": "fx-extension.specifySubscription",
         "title": "%teamstoolkit.commands.specifySubscription.title%",
         "icon": "$(list-selection)"
+      },
+      {
+        "command": "fx-extension.openSurvey",
+        "title": "%teamstoolkit.commandsTreeViewProvider.openSurveyTitle%"
       }
     ],
     "taskDefinitions": [
@@ -1482,8 +1518,8 @@
     "@azure/identity": "^3.1.3",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
-    "@microsoft/teamsfx-api": "^0.22.0",
-    "@microsoft/teamsfx-core": "^1.22.0-rc.0",
+    "@microsoft/teamsfx-api": "^0.22.1",
+    "@microsoft/teamsfx-core": "^1.23.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

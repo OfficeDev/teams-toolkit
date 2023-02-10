@@ -89,8 +89,8 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
           if (channel.name === BotChannelType.MicrosoftTeams) {
             callingEndpoint = (channel as MicrosoftTeamsChannelSettings).callingWebhook;
             configuredChannels.push(BotChannelType.MicrosoftTeams);
-          } else if (channel.name === BotChannelType.Outlook) {
-            configuredChannels.push(BotChannelType.Outlook);
+          } else if (channel.name === BotChannelType.M365Extensions) {
+            configuredChannels.push(BotChannelType.M365Extensions);
           }
         }
       }
@@ -174,7 +174,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
             !channel.name ||
             typeof channel.name !== "string" ||
             (channel.name !== BotChannelType.MicrosoftTeams &&
-              channel.name !== BotChannelType.Outlook)
+              channel.name !== BotChannelType.M365Extensions)
           ) {
             invalidParameters.push("channels");
             break;

@@ -23,7 +23,7 @@ provision:
       description: ""
       channels:
         - name: msteams
-        - name: outlook
+        - name: m365extensions
 
 configureApp:
   - uses: teamsApp/validate

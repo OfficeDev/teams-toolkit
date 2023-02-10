@@ -38,7 +38,7 @@ export function selectTemplateTag(tags: string[]): string | undefined {
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 
-async function sendRequestWithRetry<T>(
+export async function sendRequestWithRetry<T>(
   requestFn: () => Promise<AxiosResponse<T>>,
   tryLimits: number
 ): Promise<AxiosResponse<T>> {
@@ -67,7 +67,7 @@ async function sendRequestWithRetry<T>(
   throw error;
 }
 
-async function sendRequestWithTimeout<T>(
+export async function sendRequestWithTimeout<T>(
   requestFn: (cancelToken: CancelToken) => Promise<AxiosResponse<T>>,
   timeoutInMs: number,
   tryLimits = 1

@@ -491,6 +491,7 @@ export async function buildTeamsAppPackage(
 export async function validateManifest(
   manifest: TeamsAppManifest
 ): Promise<Result<string[], FxError>> {
+  /*
   // Corner case: SPFx project validate without provision
   if (!isUUID(manifest.id)) {
     manifest.id = v4();
@@ -525,7 +526,8 @@ export async function validateManifest(
         HelpLinks.WhyNeedProvision
       )
     );
-  }
+  }*/
+  return ok([]);
 }
 
 export async function updateManifest(

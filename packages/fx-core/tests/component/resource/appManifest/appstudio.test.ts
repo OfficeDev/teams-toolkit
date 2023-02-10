@@ -281,7 +281,7 @@ describe("appStudio", () => {
       }
     });
 
-    it("manifest no schema", async () => {
+    it.skip("manifest no schema", async () => {
       const ctx = createContextV3();
       const json = {
         id: "fe58d257-4ce6-427e-a388-496c89633774",

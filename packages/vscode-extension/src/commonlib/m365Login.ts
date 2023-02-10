@@ -123,10 +123,6 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     isInitiatedFromTdp?: boolean
   ): Promise<Result<string, FxError>> {
     if (tokenRequest.showDialog === undefined || tokenRequest.showDialog) {
-      const vscodeEnv = detectVsCodeEnv();
-      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-        M365Login.codeFlowInstance.updateIsCodeSpace(true);
-      }
       let userConfirmation = false;
       if (!isInitiatedFromTdp) {
         userConfirmation = await this.doesUserConfirmLogin();

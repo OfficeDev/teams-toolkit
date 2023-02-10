@@ -22,7 +22,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
-import { loggedIn, loggedOut, loggingIn } from "./common/constant";
+import { loggedIn, loggedOut, loggingIn, vscodeRedirect } from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryErrorType,
@@ -54,7 +54,6 @@ export class CodeFlowLogin {
   msalTokenCache: TokenCache;
   accountName: string;
   status: string | undefined;
-  isCodeSpace: boolean;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -65,11 +64,6 @@ export class CodeFlowLogin {
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
     this.status = loggedOut;
-    this.isCodeSpace = false;
-  }
-
-  public updateIsCodeSpace(isCodeSpace: boolean) {
-    this.isCodeSpace = isCodeSpace;
   }
 
   async reloadCache() {
@@ -87,7 +81,7 @@ export class CodeFlowLogin {
   }
 
   async login(scopes: Array<string>, loginHint?: string): Promise<string> {
-    if (this.isCodeSpace) {
+    if (process.env.CODESPACES == "true") {
       return await this.loginInCodeSpace(scopes);
     }
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
@@ -229,14 +223,16 @@ export class CodeFlowLogin {
   }
 
   async loginInCodeSpace(scopes: Array<string>): Promise<string> {
-    let callbackUri: Uri = await env.asExternalUri(Uri.parse(`${env.uriScheme}://TeamsDevApp.ms-teams-vscode-extension/auth-complete`));
-		const nonce: string = randomBytes(16).toString('base64');
-		const callbackQuery = new URLSearchParams(callbackUri.query);
-		callbackQuery.set('nonce', nonce);
-		callbackUri = callbackUri.with({
-			query: callbackQuery.toString()
-		});
-		const state = encodeURIComponent(callbackUri.toString(true));
+    let callbackUri: Uri = await env.asExternalUri(
+      Uri.parse(`${env.uriScheme}://TeamsDevApp.ms-teams-vscode-extension/auth-complete`)
+    );
+    const nonce: string = randomBytes(16).toString("base64");
+    const callbackQuery = new URLSearchParams(callbackUri.query);
+    callbackQuery.set("nonce", nonce);
+    callbackUri = callbackUri.with({
+      query: callbackQuery.toString(),
+    });
+    const state = encodeURIComponent(callbackUri.toString(true));
     const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
       crypto.randomBytes(32).toString("base64")
     );
@@ -247,32 +243,31 @@ export class CodeFlowLogin {
       scopes: scopes,
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
-      redirectUri: `https://vscode.dev/redirect`,
+      redirectUri: vscodeRedirect,
       prompt: "select_account",
-      state: state
+      state: state,
     };
-		const signInUrl: string = await this.pca.getAuthCodeUrl(authCodeUrlParameters);
-		let uri: Uri = Uri.parse(signInUrl);
-		void env.openExternal(uri);
+    const signInUrl: string = await this.pca.getAuthCodeUrl(authCodeUrlParameters);
+    const uri: Uri = Uri.parse(signInUrl);
+    void env.openExternal(uri);
 
-		const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
-			const wait = setTimeout(() => {
-				clearTimeout(wait);
-				reject('Login timed out.');
-			}, 1000 * 60 * 5)
-		});
+    const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
+      const wait = setTimeout(() => {
+        clearTimeout(wait);
+        reject("Login timed out.");
+      }, 1000 * 60 * 5);
+    });
 
-		const accessCode =  await Promise.race([getExchangeCode(), timeoutPromise]);
-    
+    const accessCode = await Promise.race([getExchangeCode(), timeoutPromise]);
+
     const tokenRequest = {
       code: accessCode,
       scopes: scopes,
-      redirectUri: `https://vscode.dev/redirect`,
+      redirectUri: vscodeRedirect,
       codeVerifier: codeVerifier,
     };
 
-    const res = await this.pca
-        .acquireTokenByCode(tokenRequest);
+    const res = await this.pca.acquireTokenByCode(tokenRequest);
     return Promise.resolve(res.accessToken);
   }
 

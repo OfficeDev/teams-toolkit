@@ -6,10 +6,6 @@ import * as util from "util";
 import { SwitchToPreReleaseVersionLink } from "./constants";
 import { EventEmitter, Uri } from "vscode";
 
-export namespace ext {
-  export let uriEventHandler: UriHandler;
-}
-
 enum Referrer {
   DeveloperPortal = "developerportal",
 }
@@ -22,7 +18,7 @@ interface QueryParams {
 let isRunning = false;
 export class UriHandler extends EventEmitter<Uri> implements vscode.UriHandler {
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
-    if (uri.path === '/auth-complete') {
+    if (uri.path === "/auth-complete") {
       this.fire(uri);
       return;
     }

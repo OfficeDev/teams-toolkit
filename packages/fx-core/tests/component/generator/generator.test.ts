@@ -102,6 +102,26 @@ describe("Generator utils", () => {
     assert.fail("Should not reach here.");
   });
 
+  it("sendRequestWithTimeout throw request timeout if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    sandbox.stub(axios, "isCancel").returns(true);
+    try {
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("fetch template zip url", async () => {
+    sandbox.stub(generatorUtils, "selectTemplateTag").resolves(["templateAlphaVersion"]);
+    const url = await generatorUtils.fetchTemplateZipUrl("test");
+    assert.exists(url);
+  });
+
   it("fetch zip from url", async () => {
     sandbox.stub(axios, "get").resolves({ status: 200, data: new AdmZip().toBuffer() });
     const url = "ut";

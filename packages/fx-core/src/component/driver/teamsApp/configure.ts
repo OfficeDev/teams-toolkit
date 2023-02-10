@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, Platform } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import AdmZip from "adm-zip";
 import { hooks } from "@feathersjs/hooks/lib";
+import { merge } from "lodash";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
@@ -11,10 +13,13 @@ import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
+import { Constants } from "../../resource/appManifest/constants";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
+import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 
@@ -82,6 +87,16 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     }
     const archivedFile = await fs.readFile(appPackagePath);
 
+    // Add capabilities to telemetry properties
+    const capabilities = this.extractCapabilties(archivedFile);
+    if (capabilities.isOk()) {
+      merge(context.telemetryProperties, {
+        [TelemetryProperty.Capabilities]: capabilities.value.join(";"),
+      });
+    } else {
+      return err(capabilities.error);
+    }
+
     const progressHandler = context.ui?.createProgressBar(
       getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppTitle"),
       1
@@ -144,5 +159,33 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     } else {
       return ok(undefined);
     }
+  }
+
+  /**
+   * Extract capabilities from zip file
+   */
+  private extractCapabilties(archivedFile: Buffer): Result<string[], FxError> {
+    const zipEntries = new AdmZip(archivedFile).getEntries();
+    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+    if (!manifestFile) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+        )
+      );
+    }
+    const manifestString = manifestFile.getData().toString();
+    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
+    const capabilities = manifestUtils._getCapabilities(manifest);
+    // Mapping to Tab
+    const result = capabilities.map((x) => {
+      if (x == "staticTab" || x == "configurableTab") {
+        return "Tab";
+      } else {
+        return x;
+      }
+    });
+    return ok([...new Set(result)]);
   }
 }

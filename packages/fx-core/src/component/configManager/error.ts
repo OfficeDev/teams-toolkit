@@ -3,6 +3,7 @@
 
 import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { globalVars } from "../../core/globalVars";
 import { LifecycleName } from "./interface";
 
 const component = "ConfigManager";
@@ -36,20 +37,19 @@ export class YamlParsingError extends UserError {
   }
 }
 
-export class InvalidLifecycleError extends UserError {
+export class InvalidYmlSchemaError extends UserError {
   constructor(lifecycle: LifecycleName) {
-    const key = "configManager.error.invalidLifecycle";
+    const key = "configManager.error.invalidYmlSchema";
     const errorOptions: UserErrorOptions = {
       source: component,
-      name: "InvalidLifecycleError",
-      message: getDefaultString(key, lifecycle),
-      displayMessage: getLocalizedString(key, lifecycle),
+      name: "InvalidYmlSchemaError",
+      message: getDefaultString(key, lifecycle, globalVars.ymlFilePath),
+      displayMessage: getLocalizedString(key, lifecycle, globalVars.ymlFilePath),
     };
     errorOptions.helpLink = "https://aka.ms/teamsfx-actions/invalid-lifecycle-error";
     super(errorOptions);
   }
 }
-
 export class InvalidEnvFolderPath extends UserError {
   constructor(reason?: string) {
     const key = "configManager.error.invalidEnvFolderPath";

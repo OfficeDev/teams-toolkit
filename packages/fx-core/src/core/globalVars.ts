@@ -37,5 +37,6 @@ export class GlobalVars {
   teamsAppId = "";
   m365TenantId = "";
   trackingId?: string;
+  ymlFilePath?: string;
 }
 export const globalVars = new GlobalVars();

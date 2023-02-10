@@ -5,13 +5,13 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import {
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
-import { assert } from "chai";
+import { assert, should } from "chai";
 import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
@@ -43,7 +43,7 @@ describe("Generator utils", () => {
     }
   });
 
-  it("selecte tag should return alpha if set env", async () => {
+  it("select tag should return alpha if set env", async () => {
     sandbox.replace(generatorUtils, "preRelease", "alpha");
     const tag = generatorUtils.selectTemplateTag(["1.0.0"]);
     assert.equal(tag, templateAlphaVersion);
@@ -62,6 +62,45 @@ describe("Generator utils", () => {
     sandbox.replace(generatorUtils, "templateTagPrefix", "templates@");
     const tag = generatorUtils.selectTemplateTag(["1.0.0", "2.0.0", "2.1.0", "2.1.1", "3.0.0"]);
     assert.equal(tag, "templates@2.1.1");
+  });
+
+  it("sendRequestWithRetry throw error if requestFn returns error status code", async () => {
+    const requestFn = async () => {
+      return { status: 400 } as AxiosResponse;
+    };
+    try {
+      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithRetry throw error if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    try {
+      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithTimeout throw error if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    try {
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
   });
 
   it("fetch zip from url", async () => {

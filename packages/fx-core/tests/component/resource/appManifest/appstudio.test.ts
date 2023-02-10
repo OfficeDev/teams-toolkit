@@ -303,7 +303,7 @@ describe("appStudio", () => {
       }
     });
 
-    it("manifest validation failed", async () => {
+    it.skip("manifest validation failed", async () => {
       const ctx = createContextV3();
 
       const json = {

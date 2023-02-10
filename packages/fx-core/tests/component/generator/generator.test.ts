@@ -11,7 +11,7 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
-import { assert, should } from "chai";
+import { assert } from "chai";
 import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
@@ -29,7 +29,6 @@ import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
-import { version } from "os";
 import { templateAlphaVersion } from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {

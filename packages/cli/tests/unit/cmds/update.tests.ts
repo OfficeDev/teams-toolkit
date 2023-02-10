@@ -77,7 +77,7 @@ describe("Update Aad Manifest Command Tests", function () {
     const args = {
       folder: "fake_test",
       env: "dev",
-      "manifest-file-path": "./aad.manifest.template.json",
+      "manifest-file-path": "./aad.manifest.json",
     };
     await updateAadManifest!.handler(args);
     expect(telemetryEvents).deep.equals([
@@ -96,7 +96,7 @@ describe("Update Aad Manifest Command Tests", function () {
     const args = {
       folder: "fake_test",
       env: "dev",
-      "manifest-file-path": "./aad.manifest.template.json",
+      "manifest-file-path": "./aad.manifest.json",
     };
     try {
       await updateAadManifest!.handler(args);

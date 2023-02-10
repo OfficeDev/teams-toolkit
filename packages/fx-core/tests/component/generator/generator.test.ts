@@ -108,7 +108,7 @@ describe("Generator utils", () => {
     };
     sandbox.stub(axios, "isCancel").returns(true);
     try {
-      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 1);
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 2);
     } catch (e) {
       assert.exists(e);
       return;
@@ -147,6 +147,25 @@ describe("Generator utils", () => {
     );
     const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
     assert.equal(content, "test");
+  });
+
+  it("unzip .gitignore", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    const outputDir = path.join(tmpDir, "output");
+    await fs.ensureDir(inputDir);
+    await fs.ensureDir(outputDir);
+    const fileData = "fileData";
+    await fs.writeFile(path.join(inputDir, ".gitignore"), fileData);
+    await fs.writeFile(path.join(outputDir, ".gitignore"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
+    await generatorUtils.unzip(
+      new AdmZip(path.join(tmpDir, "test.zip")),
+      outputDir,
+      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
+      (fileName: string, fileData: Buffer) => renderTemplateFileData(fileName, fileData, {})
+    );
   });
 
   it("unzip with relative path", async () => {

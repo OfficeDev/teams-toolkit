@@ -457,7 +457,9 @@ export async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
@@ -496,7 +498,9 @@ export async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   const answer = await popupMessageNonmodal(versionForMigration);
   if (answer === learnMoreText) {
     TOOLS?.ui!.openUrl(learnMoreLink);
@@ -518,7 +522,9 @@ export async function showNonmodalNotification(
 }
 
 export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   const res = await TOOLS?.ui.showMessage(
     "info",
     getLocalizedString("core.migrationV3.confirmOnly.Message"),

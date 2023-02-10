@@ -49,13 +49,16 @@ class TreeViewManager {
     context.subscriptions.push(...disposables);
   }
 
-  public async updateTreeViewsByContent(): Promise<void> {
+  public async updateTreeViewsByContent(removeProjectRelatedCommands = false): Promise<void> {
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
     const developmentTreeviewProvider = this.getTreeView(
       "teamsfx-development"
     ) as CommandsTreeViewProvider;
     const developmentCommands = developmentTreeviewProvider.getCommands();
-    if (hasAdaptiveCard) {
+    if (removeProjectRelatedCommands) {
+      developmentCommands.splice(3);
+      developmentTreeviewProvider.refresh();
+    } else if (hasAdaptiveCard) {
       // after "Preview your Teams app" command, the adaptive card will be shown
       const previewCommandIndex = developmentCommands.findIndex(
         (command) => command.commandId === "fx-extension.debug"

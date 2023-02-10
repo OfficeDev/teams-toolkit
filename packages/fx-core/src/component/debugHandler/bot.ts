@@ -270,7 +270,7 @@ export class BotDebugHandler {
       };
 
       try {
-        await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+        await AppStudioClient.createBotRegistration(tokenResult.value, botReg, false);
       } catch (e) {
         if (e.innerError?.teamsfxUrlName == TeamsFxUrlNames.createBot && this.hasBotIdInEnvBefore) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;

@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
+import { merge } from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
@@ -117,7 +118,6 @@ export class PublishAppPackageDriver implements StepDriver {
     }
 
     let result;
-    const telemetryProps: { [key: string]: string } = {};
 
     const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1");
     progressHandler?.next(message);
@@ -157,8 +157,10 @@ export class PublishAppPackageDriver implements StepDriver {
           appStudioTokenRes.value
         );
         result = new Map([[outputKeys.publishedAppId, appId]]);
-        // TODO: how to send telemetry with own properties
-        telemetryProps[TelemetryPropertyKey.updateExistingApp] = "true";
+        merge(context.telemetryProperties, {
+          [TelemetryPropertyKey.updateExistingApp]: "true",
+          [TelemetryPropertyKey.publishedAppId]: appId,
+        });
       } else {
         progressHandler?.end(true);
         return err(UserCancelError);
@@ -176,7 +178,9 @@ export class PublishAppPackageDriver implements StepDriver {
         appStudioTokenRes.value
       );
       result = new Map([[outputKeys.publishedAppId, appId]]);
-      telemetryProps[TelemetryPropertyKey.updateExistingApp] = "false";
+      merge(context.telemetryProperties, {
+        [TelemetryPropertyKey.updateExistingApp]: "false",
+      });
     }
 
     progressHandler?.end(true);

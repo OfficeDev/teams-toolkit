@@ -21,6 +21,7 @@ class ResponseWrapper {
   send(body) {
     // record the body to be returned later.
     this.body = body;
+    this.originalResponse.body = body;
   }
 
   status(status) {

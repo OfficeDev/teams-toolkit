@@ -234,6 +234,11 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Capabilities]: feature,
+        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
+      });
+
       if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
@@ -254,11 +259,6 @@ export class Coordinator {
           if (res.isErr()) return err(res.error);
         }
       }
-
-      merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: feature,
-        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
-      });
     } else if (scratch === CreateNewOfficeAddinOption().id) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));

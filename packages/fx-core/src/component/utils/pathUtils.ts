@@ -9,7 +9,6 @@ import {
 import * as path from "path";
 import fs from "fs-extra";
 import { yamlParser } from "../configManager/parser";
-import { InvalidEnvFolderPath } from "../configManager/error";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { InvalidProjectError } from "../../core/error";
 

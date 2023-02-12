@@ -73,6 +73,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";configManager.error.invalidEnvFolderPath" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The environmentFolderPath field is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[environmentFolderPath フィールドが無効です。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";configManager.error.invalidLifecycle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The schema of lifecycle %s is invalid. It is expected to be an array of actions. If you want to remove all actions inside it, please remove the whole lifecyle.]]></Val>
@@ -651,10 +660,13 @@
       </Item>
       <Item ItemId=";core.NewOfficeAddinOptionVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a new Office add-in]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Start with an Outlook add-in]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[新しい Office アドインの作成]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a new Office add-in]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -978,10 +990,13 @@
       </Item>
       <Item ItemId=";core.ScratchOptionYesVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a new Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Start with a Teams capability]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[新しい Teams アプリを作成する]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a new Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2224,6 +2239,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.deploy.confirmEnvNoticeV3" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do you want to deploy resources in %s environment?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 環境にリソースをデプロイしますか?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.deploy.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[fail to deploy '%s'!]]></Val>
@@ -2508,6 +2532,15 @@
           <Val><![CDATA[Failed to create resource group '%s': the resource group exists]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[リソース グループ '%s' を作成できませんでした: リソース グループが存在します]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.error.NoEnvFilesError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to find .env files.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[.env ファイルが見つかりませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2821,14 +2854,23 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.migrationV3.CreateNewProject" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams toolkit's pre-released version supports new project configuration and is incompatible with previous versions. Please try it by creating a new project, auto upgrade support will be added in the coming release.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ツールキットのプレリリース バージョンは、新しいプロジェクト構成をサポートしており、以前のバージョンと互換性がありません。新しいプロジェクトを作成して、もう一度お試しください。自動アップグレードのサポートは、今後のリリースで追加されます。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. You can also download from this link %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. Click Learn More to get more information.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Teams ツールキット関連の構成が古いバージョンです。続行するには、プロジェクトのアップグレードが必要です。TeamsFx 構成のアップグレードに同意することをご確認ください。]A;アップグレードはビジネス ソース コードには影響しませんが、Teams ツールキットで使用される構成のみに影響し、元に戻すためのバックアップが生成されます。アップグレードに同意しない場合は、Teams ツールキットの以前のバージョン %s をダウンロードして、現在の構成で作業を続けることができます。このリンク %s からダウンロードすることもできます。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
+            <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. You can also download from this link %s.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2838,6 +2880,15 @@
           <Val><![CDATA[The installed version of Teams Toolkit (%s) requires configuration changes to this project that can be done automatically. Before upgrading, select Learn more to read about the required changes or select Upgrade to perform the changes automatically.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[インストールされているバージョンの Teams Toolkit (%s) では、自動的に実行できるこのプロジェクトの構成の変更が必要です。アップグレードする前に、[詳細情報]5D; を選択して必要な変更について確認するか、[アップグレード]5D; を選択して変更を自動的に実行してください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.migrationV3.abandonedProject" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This project is only for previewing and will not be supported by Teams Toolkit. Please try Teams Toolkit by creating a new project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[このプロジェクトはプレビュー専用であり、Teams ツールキットではサポートされません。新しいプロジェクトを作成して、Teams ツールキットをお試しください]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3318,12 +3369,12 @@
       </Item>
       <Item ItemId=";core.projectVersionChecker.vscodeUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Your Teams Toolkit extension no longer supports the current project, please upgrade the extension to the latest version and try to open this project again.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[The current project is incompatible with the installed Teams Toolkit, please install %s or above and reopen this project.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Teams ツールキットの拡張機能が現在のプロジェクトをサポートしていまん。拡張機能を最新バージョンにアップグレードして、もう一度このプロジェクトを開いてみてください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Your Teams Toolkit extension is too old to support current project, please update the extension to latest version and try to open this project again]]></Val>
+            <Val><![CDATA[Your Teams Toolkit extension no longer supports the current project, please upgrade the extension to the latest version and try to open this project again.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3622,23 +3673,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.question.appPackageForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select your manifest file]]></Val>
+          <Val><![CDATA[Select your Teams app package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェスト ファイルを選択してください]]></Val>
+            <Val><![CDATA[Teams アプリ パッケージの選択]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Select your mainifest file]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.question.appPackageForPublishInDeveloperPortal.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Manifest file]]></Val>
+          <Val><![CDATA[Teams App Package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェスト ファイル]]></Val>
+            <Val><![CDATA[Teams アプリ パッケージ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3682,74 +3730,122 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.updateBotIdsQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.updateBotIdForBot.description" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unselect to keep with the original one.]]></Val>
+          <Val><![CDATA[Update botId %s to "${{BOT_ID}}" in manifest.json]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[manifest.json で botId %s を "${{BOT_ID}}" に更新する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.updateBotIdForBot.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ボット]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.updateBotIdForMessageExtension.description" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update botId %s to "${{BOT_ID}}" in manifest.json]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[manifest.json で botId %s を "${{BOT_ID}}" に更新する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.updateBotIdForMessageExtension.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Message extension]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[メッセージ拡張機能]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.updateBotIdsQuestion.placeholder" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unselect to keep with the original value of botId]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[オリジナルで保持する場合は選択を解除します。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unselect to keep with the original one.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateBotIdsQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[We will create a new bot for you to get started with Teams Toolkit]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Create new bot(s) for debugging]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Teams Toolkit を使い始めるために新しいボットを作成します]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[We will create a new bot for you to get started with Teams Toolkit]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateContentUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[update the content url from %s to %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Update the content URL from %s to %s]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[コンテンツの URL を %s から %s に更新します]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[update the content url from %s to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateContentUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[We will update the following tabs' content url for you to get start with Teams Toolkit]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Configure content URL(s) for debugging]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Teams Toolkit を使い始めるために次のタブのコンテンツ URL を更新します]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Select all personal apps to update content urls to %s]]></Val>
+            <Val><![CDATA[We will update the following tabs' content url for you to get start with Teams Toolkit]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateUrlQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unselect to keep with the original url]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Unselect to keep with the original URL]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[元の URL で保持する場合は選択を解除します]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Select any number of options you like]]></Val>
+            <Val><![CDATA[Unselect to keep with the original url]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateWebsiteUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[update the website url from %s to %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Update the website URL from %s to %s]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Web サイトの URL を %s から %s に更新する]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[update the website url from %s to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateWebsiteUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[We will update the following tabs' website url for you to get started with Teams Toolkit]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Configure website URL(s) for debugging]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Teams Toolkit を使い始めるために次のタブの Web サイト URL を更新します]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Select all personal apps to update website urls to %s]]></Val>
+            <Val><![CDATA[We will update the following tabs' website url for you to get started with Teams Toolkit]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3793,11 +3889,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.NodeNotRecommended" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";depChecker.NodeNotLts" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). It may cause problems if you continue to debug.]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
+          <Val><![CDATA[Node.js (%s) is not a LTS version (%s). Go to https://nodejs.org/about/releases/ to install a LTS Node.js.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js (@CurrentVersion) がサポートされているバージョン一覧 (@SupportedVersions) にありません。デバッグを続けると、問題が発生する可能性があります。]A;]A;サポートされている Node.js バージョンの詳細については "詳細情報" をクリックしてください。]A;]A; (Node.js (@SupportedVersions) をインストールしたばかりの場合は、変更を有効にするために Visual Studio Code を再起動してください)。]]></Val>
+            <Val><![CDATA[Node.js (%s) は LTS バージョン (%s) ではありません。https://nodejs.org/about/releases/ に移動して LTS Node.js をインストールしてください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3807,6 +3903,15 @@
           <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Node.js (@CurrentVersion) がサポートされているバージョン一覧 (@SupportedVersions) にありません。]A;]A;サポートされている Node.js バージョンの詳細については "詳細情報" をクリックしてください。]A;]A; (Node.js (@SupportedVersions) をインストールしたばかりの場合は、変更を有効にするために Visual Studio Code を再起動してください)。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";depChecker.V3NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Node.js (%s) は、公式にサポートされているバージョン (%s) ではありません。プロジェクトは引き続き動作する可能性がありますが、サポートされているバージョンをインストールすることをお勧めします。サポートされているノードのバージョンは、package.json で指定されています。https://nodejs.org/about/releases/ に移動して、サポートされている Node.js をインストールしてください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4113,28 +4218,37 @@
       </Item>
       <Item ItemId=";driver.aadApp.description.create" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create an AAD app to authenticate users]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Create an Azure Active Directory app to authenticate users]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[ユーザーを認証する AAD アプリの作成]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create an AAD app to authenticate users]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.description.update" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Apply AAD app manifest to an existing AAD app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Apply Azure Active Directory app manifest to an existing app]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[既存の AAD アプリに AAD アプリ マニフェストを適用する]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Apply AAD app manifest to an existing AAD app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.error.generateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to generate AAD app manifest.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Failed to generate Azure Active Directory app manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリ マニフェストを生成できませんでした。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to generate AAD app manifest.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4149,10 +4263,13 @@
       </Item>
       <Item ItemId=";driver.aadApp.error.invalidFieldInManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Field %s is missing or invalid in AAD app manifest.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Field %s is missing or invalid in Azure Active Directory app manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリ マニフェストでフィールド %s がないか、無効です。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Field %s is missing or invalid in AAD app manifest.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4167,9 +4284,21 @@
       </Item>
       <Item ItemId=";driver.aadApp.error.missingEnv" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s Environment variable %s is not set.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Environment variable %s is not set.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[%s 環境変数 %s が設定されていません。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[%s Environment variable %s is not set.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.error.missingEnvInFile" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Environment variable %s referenced in %s has no value.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[環境変数 %s (%s で参照) に値がありません。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4194,37 +4323,49 @@
       </Item>
       <Item ItemId=";driver.aadApp.log.outputAadAppManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[AAD app manifest content is written to %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Build Azure Active Directory app manifest completed, and app manifest content is written to %s]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリ マニフェストのコンテンツが %s に書き込まれます]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[AAD app manifest content is written to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.skipCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Environment variable %s already exist, skipping new AAD app creation step.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Environment variable %s already exist, skipping new Azure Active Directory app creation step.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[環境変数 %s が既に存在します。新しい AAD アプリ作成ステップをスキップしています。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Environment variable %s already exist, skipping new AAD app creation step.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.skipGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Environment variable %s already exist, skipping AAD app client secret generation step.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Environment variable %s already exist, skipping Azure Active Directory app client secret generation step.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[環境変数 %s が既に存在します。AAD アプリ のクライアント シークレット生成手順をスキップしています。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Environment variable %s already exist, skipping AAD app client secret generation step.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.startCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Environment variable %s does not exist, creating a new AAD app...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Environment variable %s does not exist, creating a new Azure Active Directory app...]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[環境変数 %s が存在しません。新しい AAD アプリを作成しています...]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Environment variable %s does not exist, creating a new AAD app...]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4239,10 +4380,13 @@
       </Item>
       <Item ItemId=";driver.aadApp.log.startGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Environment variable %s does not exist, generating client secret for AAD app...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Environment variable %s does not exist, generating client secret for Azure Active Directory app...]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[環境変数 %s が存在しません。AAD アプリのクライアント シークレットを生成しています...]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Environment variable %s does not exist, generating client secret for AAD app...]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4290,19 +4434,25 @@
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.createAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Creating AAD application]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Creating Azure Active Directory application]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリケーションを作成しています]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Creating AAD application]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.createAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Creating AAD application]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Creating Azure Active Directory application]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリケーションを作成しています]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Creating AAD application]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4317,19 +4467,25 @@
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.updateAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Updating AAD application]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Updating Azure Active Directory application]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリケーションを更新しています]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Updating AAD application]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.updateAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Updating AAD application]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Updating Azure Active Directory application]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[AAD アプリケーションを更新しています]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Updating AAD application]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4594,6 +4750,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.notice.deployDryRunComplete" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preparations of deployment are complete. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[デプロイの準備が完了しました。 ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.deploy.zipDeploymentRemoteStartError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zip Deploy success but remote start failed.]]></Val>
@@ -4675,6 +4840,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.file.updateJson.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add or update appsettings to JSON file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[JSON ファイルに appsettings を追加または更新します。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.updateJson.summary.withTarget" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value for appsettings has been generated successfully to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[appsettings の値が %s に正常に生成されました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.generateAppsettings.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add or update environment variables to appsettings file.]]></Val>
@@ -4689,6 +4872,69 @@
           <Val><![CDATA[The environment variables has been generated successfully to %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[環境変数が %s に正常に生成されました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.acquire.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[acquire an M365 title with the app package]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[アプリ パッケージを使用して M365 タイトルを取得する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.acquire.progress.message" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Acquiring M365 title with the app package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[アプリ パッケージを使用して M365 タイトルを取得しています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.acquire.progress.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[m365Title/acquire]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[m365Title/acquire]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.acquire.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The M365 title has been acquired successfully (%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[M365 タイトルが正常に取得されました (%s)。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.error.fileNotFound" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The input file not found for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s アクションの入力ファイルが見つかりません: %s。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.error.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[次のパラメーターが指定されていないか、%s アクションに対して無効です: %s。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365.error.unhandledError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unhandled error happened in %s action: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s アクションでハンドルされないエラーが発生しました: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5013,6 +5259,15 @@
           <Val><![CDATA[validate a Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams アプリを検証します。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[次のパラメーターが指定されていないか、%s アクションに対して無効です: %s。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5664,6 +5919,15 @@
           <Val><![CDATA[VS publish is not supposed to run on platform %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[VS 発行はプラットフォーム %s で実行されるものではありません]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.UpdateAadManifest.MissingEnvHint" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ツールキットで作成された新しいプロジェクトを使用して開発している場合、プロビジョニングまたはデバッグを実行すると、これらの環境変数の正しい値が登録されます。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6367,6 +6631,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.appstudio.BotProvisionReturnsConflictResult" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Botframework provisioning returns conflict result from attempting to create bot registration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Botframework プロビジョニングは、ボット登録の作成試行から競合する結果を返します。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.BotProvisionReturnsForbiddenResult" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Botframework provisioning returns forbidden result from attempting to create bot registration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Botframework プロビジョニングは、ボット登録の作成試行から禁止された結果を返します。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.NotAllowedToAcquireBotFrameworkToken" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The current account is not allowed to acquire botframework token.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[現在のアカウントでは、botframework トークンを取得できません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API call to Developer Portal failed: %s, %s, Request path: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
@@ -6381,6 +6672,15 @@
           <Val><![CDATA[API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[開発者ポータルへの API 呼び出しに失敗しました: %s、%s、API 名: %s、X-Correlation-ID: %s。これは、断続的なサービス エラーから発生した可能性があります。数分待ってから、現在の手順をもう一度お試しください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.authServiceApiFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API call to Developer Portal failed: %s, %s, Request path: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[開発者ポータルへの API 呼び出しに失敗しました: %s、%s、要求パス: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6469,29 +6769,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.incorrectLocalConfig" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Missing configuration data for manifest.  %s Please remove the state.local.json file and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェストの構成データがありません。 %s state.local.json ファイルを削除して、もう一度お試しください。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";error.appstudio.invalidCapability" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid capability: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[無効な機能: %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.invalidManifest" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to parse manifest string, dut to error: %s. This might be caused by invalid configurations. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェスト文字列を解析できませんでした。エラーが発生しました: %s。これは、無効な構成が原因である可能性があります。%s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6502,39 +6784,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[コラボレーターの一覧表示に失敗しました。理由: %s]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.loadManifest" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to read manifest file. Error: %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェスト ファイルの読み取りがエラーによって失敗しました: %s。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.localTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to create debug Teams app in Developer Portal, due to %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s が原因で、開発者ポータルでデバッグ Teams アプリを作成できませんでした]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to create local debug Teams app in Developer Portal, due to %s]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.localTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to update debug Teams app in Developer Portal, due to %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s が原因で、開発者ポータルでデバッグ Teams アプリを更新できませんでした]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to update local debug Teams app in Developer Portal, due to %s]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6556,20 +6805,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.notADirectoryError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.noManifestError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s is not a directory.]]></Val>
+          <Val><![CDATA[Could not find manifest file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s はディレクトリではありません。]]></Val>
+            <Val><![CDATA[マニフェスト ファイルが見つかりませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.publishCancelled" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.noManifestId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Publish Teams app with name %s has been cancelled.]]></Val>
+          <Val><![CDATA[Invalid id found in manifest find.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s という名前の Teams アプリの発行が取り消されました。]]></Val>
+            <Val><![CDATA[マニフェスト検索で無効な ID が見つかりました。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6583,35 +6832,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.remoteTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.publishInDevPortalSuggestionForValidationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create remote Teams app in Developer Portal, due to %s]]></Val>
+          <Val><![CDATA[Please try to generate package from "Zip Teams app package" and try again.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s が原因で、開発者ポータルでリモート Teams アプリを作成できませんでした]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to create remote teams app in app studio, due to %s, %s]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.remoteTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to update remote Teams app in Developer Portal, due to %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s が原因で、開発者ポータルでリモート Teams アプリを更新できませんでした]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to update remote teams app in app studio, due to %s, %s]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.scaffoldFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams app scaffold failed!]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams アプリのスキャフォールディングに失敗しました!]]></Val>
+            <Val><![CDATA["Zip Teams アプリ パッケージ" からパッケージを生成して、もう一度お試しください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6652,15 +6877,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Failed to create teams app in app studio, due to %s, %s]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.appstudio.teamsAppNotFound" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot found teams app with id %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ID %s のチーム アプリが見つかりません]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -9178,12 +9394,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Cannot create bot with id %s which may be taken by an existing bot. Visit %s to learn more.]A;Or API call to Developer Portal failed: Error, Request failed with status code 500, API name: create-bot, X-Correlation-ID: undefined. This may come from some intermittent service error. Please wait for a few minutes and retry.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[以前に作成された ID %s のボットを取得できませんでした。]A;これは、ボットが別のアカウントによって作成された場合に発生する可能性があります。詳細については、%s にアクセスしてください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

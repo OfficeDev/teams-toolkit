@@ -14,6 +14,8 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  AzureSolutionSettings,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -131,6 +133,7 @@ export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
+  aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
 const migrationMessageButtons = [learnMoreText, upgradeButton];
 
@@ -383,7 +386,18 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );
-  if (oldAadManifestExists) {
+
+  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
+    .activeResourcePlugins;
+  const component = (projectSettings as ProjectSettingsV3).components;
+  const aadRequired =
+    (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
+    (component &&
+      component.findIndex((component, index, obj) => {
+        component.name == "aad-app";
+      }) >= 0);
+
+  if (oldAadManifestExists && aadRequired) {
     let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
@@ -391,6 +405,12 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
+  } else if (aadRequired && !oldAadManifestExists) {
+    throw MigrationError(
+      new Error(getLocalizedString("core.migrationV3.aadManifestNotExist")),
+      errorNames.aadManifestTemplateNotExist,
+      learnMoreLink
+    );
   }
 
   await context.fsRemove(oldAppPackageFolderPath);

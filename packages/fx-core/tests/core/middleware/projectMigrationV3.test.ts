@@ -623,6 +623,22 @@ describe("manifestsMigration", () => {
     await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
 
     // Action
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "AadManifestTemplateNotExist");
+    }
+  });
+
+  it("happy path: projects created before 4.0.0", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathWithoutSso, projectPath);
+    await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
+
+    // Action
     await manifestsMigration(migrationContext);
 
     // Assert
@@ -1498,6 +1514,7 @@ const Constants = {
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsapp.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
+  manifestsMigrationHappyPathWithoutSso: "manifestsHappyPathWithoutSso",
   manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
   launchJsonPath: ".vscode/launch.json",
   happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",

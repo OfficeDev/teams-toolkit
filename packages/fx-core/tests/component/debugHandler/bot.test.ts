@@ -22,7 +22,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { ComponentNames, TeamsFxUrlNames } from "../../../src/component/constants";
+import { ComponentNames } from "../../../src/component/constants";
 import {
   DebugArgumentEmptyError,
   InvalidExistingBotArgsError,
@@ -45,6 +45,7 @@ import { FailedToCreateBotRegistrationError } from "../../../src/component/resou
 import { AppStudioResultFactory } from "../../../src/component/resource/appManifest/results";
 import { AppStudioError } from "../../../src/component/resource/appManifest/errors";
 import { APP_STUDIO_API_NAMES } from "../../../src/component/resource/appManifest/constants";
+import { TeamsFxUrlNames } from "../../../src/component/resource/botService/constants";
 
 describe("BotDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");

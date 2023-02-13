@@ -34,11 +34,11 @@ import {
   loadProjectSettingsByProjectPath,
 } from "../../core/middleware/projectSettingsLoader";
 import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
-import { ErrorNames, MaxLengths } from "../resource/botService/constants";
+import { ErrorNames, MaxLengths, TeamsFxUrlNames } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
 import { genUUID } from "../resource/botService/common";
 import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
-import { ComponentNames, TeamsFxUrlNames } from "../constants";
+import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";

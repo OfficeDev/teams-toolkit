@@ -292,7 +292,8 @@ export class CodeFlowLogin {
           .catch(async (error) => {
             CliCodeLogInstance.necessaryLog(
               LogLevel.Error,
-              "[Login] silent acquire token : " + error.message
+              "[Login] silent acquire token. If you encounter this problem multi times, you can try to remove `~/.fx/account` and try again. " +
+                error.message
             );
             if (!(await checkIsOnline())) {
               return undefined;

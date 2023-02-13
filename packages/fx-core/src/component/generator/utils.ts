@@ -10,6 +10,8 @@ import {
   placeholderDelimiters,
   templateAlphaVersion,
   templateFileExt,
+  templatePrereleasePrefix,
+  templatePrereleaseVersion,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
@@ -19,21 +21,27 @@ import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
-const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
+const preRelease = (): string =>
+  process.env.TEAMSFX_TEMPLATE_PRERELEASE ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}` : "";
 export const templateVersion = (): string => templateConfig.version;
 const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
-function selectTemplateTag(tags: string[]): string | undefined {
-  if (preRelease === "alpha") {
-    return templateAlphaVersion;
+export async function selectTemplateTag(
+  getTags: () => Promise<string[]>
+): Promise<string | undefined> {
+  // Prerelease feature flag has the highest priority.
+  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease())) {
+    return templatePrereleasePrefix + preRelease();
   }
-  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion();
+
+  const versionPattern = preRelease() || templateVersion();
   // To avoid incompatible, alpha release does not download latest template.
-  if (versionPattern === templateAlphaVersion) {
+  if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
     return undefined;
   }
-  const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
+
+  const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
@@ -110,8 +118,9 @@ export async function fetchTemplateZipUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
-  const tags = await fetchTagList(templateTagListURL, tryLimits, timeoutInMs);
-  const selectedTag = selectTemplateTag(tags.replace(/\r/g, "").split("\n"));
+  const selectedTag = await selectTemplateTag(async () =>
+    (await fetchTagList(templateTagListURL, tryLimits, timeoutInMs)).replace(/\r/g, "").split("\n")
+  );
   if (!selectedTag) {
     throw new Error(`Failed to find valid template for ${name}`);
   }

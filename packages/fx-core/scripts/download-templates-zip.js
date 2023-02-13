@@ -91,6 +91,9 @@ async function downloadTemplates(version) {
 }
 
 function selectVersion(tagList) {
+  if (semver.prerelease(config.version)) {
+    return config.version;
+  }
   const versionList = tagList
     .filter((tag) => tag.startsWith(config.tagPrefix))
     .map((tag) => tag.replace(config.tagPrefix, ""));

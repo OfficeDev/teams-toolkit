@@ -394,7 +394,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
       component.findIndex((component, index, obj) => {
-        component.name == "aad-app";
+        return component.name == "aad-app";
       }) >= 0);
 
   if (oldAadManifestExists && aadRequired) {

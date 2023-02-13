@@ -5,4 +5,4 @@ TEAMSFX_ENV=local
 TEAMS_APP_ID=
 TAB_ENDPOINT=
 
-# Secrets. You can add your own secret value, prefixed with SECRET_
+# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.

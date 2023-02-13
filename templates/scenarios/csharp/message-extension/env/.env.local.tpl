@@ -5,5 +5,5 @@ TEAMSFX_ENV=local
 BOT_ID=
 TEAMS_APP_ID=
 
-# Secrets. You can add your own secret value, prefixed with SECRET_
+# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
 SECRET_BOT_PASSWORD=

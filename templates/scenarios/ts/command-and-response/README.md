@@ -75,7 +75,7 @@ Follow the steps below to add more commands and responses to extend the command 
 
 ### Step 1: Add a command definition in manifest
 
-You can edit the manifest template file `appPackage\manifest.template.json` to include definitions of a `doSomething` command with its title and description in the `commands` array:
+You can edit the manifest template file `appPackage\manifest.json` to include definitions of a `doSomething` command with its title and description in the `commands` array:
 
 ```json
 "commandLists": [

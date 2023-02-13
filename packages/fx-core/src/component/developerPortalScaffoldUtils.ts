@@ -357,8 +357,8 @@ export function updateScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
 }
 
-export function isFromDevPortalInVSC(inputs: Inputs): boolean {
-  return !!inputs.teamsAppFromTdp && inputs.platform === Platform.VSCode;
+export function isFromDevPortal(inputs: Inputs): boolean {
+  return !!inputs.teamsAppFromTdp;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

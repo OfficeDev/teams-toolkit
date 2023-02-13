@@ -57,7 +57,7 @@ export class DevelopmentView extends React.Component<any, any> {
           command="fx-extension.create"
         ></TreeItem>
         <TreeItem
-          label={localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew")}
+          label={localize("teamstoolkit.commandsTreeViewProvider.samplesTitle")}
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.samplesDescription")}
           icon="codicon codicon-library"
           customized={false}

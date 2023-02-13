@@ -30,6 +30,7 @@ import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
 import {
   templateAlphaVersion,
+  templatePrereleasePrefix,
   templatePrereleaseVersion,
 } from "../../../src/component/generator/constant";
 import templateConfig from "../../../src/common/templates-config.json";
@@ -46,10 +47,9 @@ describe("Generator utils", () => {
   });
 
   it("select tag should return alpha if set env", async () => {
-    sandbox.stub(generatorUtils, "preRelease").returns("alpha");
-    // sandbox.replace(generatorUtils, "preRelease", "alpha");
+    sandbox.stub(generatorUtils, "preRelease").returns(templateAlphaVersion);
     const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
-    assert.equal(tag, templateAlphaVersion);
+    assert.equal(tag, templatePrereleasePrefix + templateAlphaVersion);
   });
 
   it("select tag should return undefined to use fallback if template config use alpha version", async () => {

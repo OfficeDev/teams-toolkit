@@ -168,7 +168,7 @@ export async function askManifestFilePath(): Promise<Result<string, FxError>> {
   const config: InputTextConfig = {
     name: AadManifestFilePathName,
     title: "Enter the AAD app manifest template path",
-    default: "./aad.manifest.template.json",
+    default: "./aad.manifest.json",
   };
   const filePathInput = await CLIUIInstance.inputText(config);
   if (filePathInput.isErr()) {

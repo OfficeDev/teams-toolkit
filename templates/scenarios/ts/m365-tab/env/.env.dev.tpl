@@ -21,5 +21,5 @@ M365_CLIENT_SECRET=
 M365_TENANT_ID=
 M365_OAUTH_AUTHORITY_HOST=
 
-# Secrets. You can add your own secret value, prefixed with SECRET_
+# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
 SECRET_AAD_APP_CLIENT_SECRET=

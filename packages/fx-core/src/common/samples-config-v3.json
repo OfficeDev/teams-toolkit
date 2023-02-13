@@ -1,7 +1,7 @@
 {
     "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.0.0/",
     "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v2.0.0.zip",
-    "baseFolderName": "TeamsFx-Samples-3",
+    "baseFolderName": "TeamsFx-Samples-2.0.0",
     "samples": [
         {
             "id": "hello-world-tab-with-backend",
@@ -124,6 +124,16 @@
             "tags": ["Tab", "TS", "Azure function", "SSO"],
             "time": "5min to run",
             "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "graph-connector-app",
+            "title": "Graph Connector App",
+            "shortDescription": "Showcases how to build custom Graph Connector",
+            "fullDescription": "This sample app showcases how to build custom Graph Connector with Azure Functions and query data using Microsoft Graph Client and TeamsFx SDK.",
+            "tags": ["Tab", "Azure function", "TS", "SSO"],
+            "time": "10min to run",
+            "configuration": "Manual configurations required",
             "suggested": false
         }
     ]

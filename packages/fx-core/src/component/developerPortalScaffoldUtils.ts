@@ -122,6 +122,10 @@ async function updateManifest(
   }
   const existingManifestTemplate = manifestRes.value;
 
+  if (!existingManifestTemplate) {
+    return err(new ObjectIsUndefinedError("manifest.json downloaded from template"));
+  }
+
   // icons
   const icons = appPackage.icons;
   if (icons) {
@@ -165,7 +169,12 @@ async function updateManifest(
     inputs[CoreQuestionNames.ReplaceContentUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
-    updateTabUrl(inputs[CoreQuestionNames.ReplaceContentUrl], TabUrlType.ContentUrl, tabs);
+    updateTabUrl(
+      inputs[CoreQuestionNames.ReplaceContentUrl],
+      TabUrlType.ContentUrl,
+      tabs,
+      existingManifestTemplate.staticTabs
+    );
   }
 
   if (
@@ -173,7 +182,12 @@ async function updateManifest(
     inputs[CoreQuestionNames.ReplaceWebsiteUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
-    updateTabUrl(inputs[CoreQuestionNames.ReplaceWebsiteUrl], TabUrlType.WebsiteUrl, tabs);
+    updateTabUrl(
+      inputs[CoreQuestionNames.ReplaceWebsiteUrl],
+      TabUrlType.WebsiteUrl,
+      tabs,
+      existingManifestTemplate.staticTabs
+    );
   }
 
   if (needUpdateStaticTabUrls) {
@@ -276,19 +290,28 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
   return ok(undefined);
 }
 
-function updateTabUrl(answers: string[], tabUrlType: TabUrlType, tabs: IStaticTab[] | undefined) {
+function updateTabUrl(
+  answers: string[],
+  tabUrlType: TabUrlType,
+  tabs: IStaticTab[] | undefined,
+  existingManifestStaticTabs: IStaticTab[] | undefined
+) {
   if (!tabs || tabs.length === 0) {
     return err(new ObjectIsUndefinedError("static tabs"));
+  }
+
+  if (!existingManifestStaticTabs || existingManifestStaticTabs.length === 0) {
+    return err(new ObjectIsUndefinedError("static tabs in manifest.json"));
   }
   answers.forEach((answer: string) => {
     const tabToUpdate = findTabBasedOnName(answer, tabs);
     if (tabToUpdate) {
       switch (tabUrlType) {
         case TabUrlType.ContentUrl:
-          tabToUpdate.contentUrl = "${{TAB_ENDPOINT}}/index.html#/tab";
+          tabToUpdate.contentUrl = existingManifestStaticTabs[0].contentUrl;
           break;
         case TabUrlType.WebsiteUrl:
-          tabToUpdate.websiteUrl = "${{TAB_ENDPOINT}}/index.html#/tab";
+          tabToUpdate.websiteUrl = existingManifestStaticTabs[0].websiteUrl;
           break;
         default:
           break;

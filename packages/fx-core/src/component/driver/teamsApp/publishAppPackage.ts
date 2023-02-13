@@ -123,67 +123,75 @@ export class PublishAppPackageDriver implements StepDriver {
     progressHandler?.next(message);
     context.addSummary(message);
 
-    const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
-    if (existApp) {
-      context.addSummary(
-        getLocalizedString("driver.teamsApp.summary.publishTeamsAppExists", manifest.id)
+    try {
+      const existApp = await AppStudioClient.getAppByTeamsAppId(
+        manifest.id,
+        appStudioTokenRes.value
       );
-      let executePublishUpdate = false;
-      let description = getLocalizedString(
-        "plugins.appstudio.pubWarn",
-        existApp.displayName,
-        existApp.publishingState
-      );
-      if (existApp.lastModifiedDateTime) {
+      if (existApp) {
+        context.addSummary(
+          getLocalizedString("driver.teamsApp.summary.publishTeamsAppExists", manifest.id)
+        );
+        let executePublishUpdate = false;
+        let description = getLocalizedString(
+          "plugins.appstudio.pubWarn",
+          existApp.displayName,
+          existApp.publishingState
+        );
+        if (existApp.lastModifiedDateTime) {
+          description =
+            description +
+            getLocalizedString(
+              "plugins.appstudio.lastModified",
+              existApp.lastModifiedDateTime?.toLocaleString()
+            );
+        }
         description =
-          description +
-          getLocalizedString(
-            "plugins.appstudio.lastModified",
-            existApp.lastModifiedDateTime?.toLocaleString()
-          );
-      }
-      description = description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
-      const confirm = getLocalizedString("core.option.confirm");
-      const res = await context.ui?.showMessage("warn", description, true, confirm);
-      if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
+          description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
+        const confirm = getLocalizedString("core.option.confirm");
+        const res = await context.ui?.showMessage("warn", description, true, confirm);
+        if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
 
-      if (executePublishUpdate) {
-        const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
+        if (executePublishUpdate) {
+          const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
+          progressHandler?.next(message);
+          context.addSummary(message);
+          const appId = await AppStudioClient.publishTeamsAppUpdate(
+            manifest.id,
+            archivedFile,
+            appStudioTokenRes.value
+          );
+          result = new Map([[outputKeys.publishedAppId, appId]]);
+          merge(context.telemetryProperties, {
+            [TelemetryPropertyKey.updateExistingApp]: "true",
+            [TelemetryPropertyKey.publishedAppId]: appId,
+          });
+        } else {
+          return err(UserCancelError);
+        }
+      } else {
+        context.addSummary(
+          getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
+        );
+        const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
         progressHandler?.next(message);
         context.addSummary(message);
-        const appId = await AppStudioClient.publishTeamsAppUpdate(
+        const appId = await AppStudioClient.publishTeamsApp(
           manifest.id,
           archivedFile,
           appStudioTokenRes.value
         );
         result = new Map([[outputKeys.publishedAppId, appId]]);
         merge(context.telemetryProperties, {
-          [TelemetryPropertyKey.updateExistingApp]: "true",
-          [TelemetryPropertyKey.publishedAppId]: appId,
+          [TelemetryPropertyKey.updateExistingApp]: "false",
         });
-      } else {
-        progressHandler?.end(true);
-        return err(UserCancelError);
       }
-    } else {
-      context.addSummary(
-        getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
-      );
-      const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
-      progressHandler?.next(message);
-      context.addSummary(message);
-      const appId = await AppStudioClient.publishTeamsApp(
-        manifest.id,
-        archivedFile,
-        appStudioTokenRes.value
-      );
-      result = new Map([[outputKeys.publishedAppId, appId]]);
-      merge(context.telemetryProperties, {
-        [TelemetryPropertyKey.updateExistingApp]: "false",
-      });
+    } catch (e: any) {
+      await progressHandler?.end(false);
+      return err(e);
+    } finally {
+      await progressHandler?.end(true);
     }
-
-    progressHandler?.end(true);
 
     context.logProvider.info(`Publish success!`);
     context.addSummary(

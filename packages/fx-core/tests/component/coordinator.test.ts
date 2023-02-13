@@ -464,7 +464,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
-    sandbox.stub(fs, "pathExistsSync").returns(false);
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     sandbox.stub(fs, "writeFile").resolves();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -542,6 +542,8 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -620,7 +622,8 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
-
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -698,7 +701,8 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
-
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -752,6 +756,8 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const stubShowMessage = sandbox.stub(tools.ui, "showMessage");
 
     const inputs: Inputs = {
@@ -1248,6 +1254,8 @@ describe("component coordinator test", () => {
       subscriptionName: "mockSubName",
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: ".",
@@ -1311,6 +1319,8 @@ describe("component coordinator test", () => {
       subscriptionName: "mockSubName",
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1457,7 +1467,8 @@ describe("component coordinator test", () => {
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(undefined);
-
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1546,7 +1557,8 @@ describe("component coordinator test", () => {
     sandbox
       .stub(resourceGroupHelper, "checkResourceGroupExistence")
       .resolves(err(new SystemError("test", "test", "", "")));
-
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1670,6 +1682,8 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1773,6 +1787,8 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1947,6 +1963,8 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -2371,6 +2389,8 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",

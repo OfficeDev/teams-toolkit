@@ -731,6 +731,7 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
       const upgradeable = await checkProjectUpgradable();
       if (upgradeable) {
         await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
+        await TreeViewManagerInstance.updateTreeViewsByContent(true);
       }
     }
   } else {

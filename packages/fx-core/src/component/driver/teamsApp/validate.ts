@@ -54,7 +54,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
     context: WrapDriverContext,
     withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
-    const result = this.validateArgs(args);
+    /*const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -181,7 +181,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
       context.logProvider.info(validationSuccess);
     } else {
       context.ui?.showMessage("info", validationSuccess, false);
-    }
+    }*/
     return ok(new Map());
   }
 

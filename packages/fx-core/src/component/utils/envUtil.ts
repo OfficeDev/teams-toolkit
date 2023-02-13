@@ -126,7 +126,6 @@ export class EnvUtil {
     const content = dotenvUtil.serialize(parsedDotenv);
 
     //persist
-    TOOLS.logProvider.info(`  Env output:\n${content}\n`);
     if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
     if (!envFileExists) {
@@ -197,12 +196,11 @@ export class DotenvUtil {
             value = value.replace(NEW_LINE_RE, NEW_LINE);
           }
         } else {
-          value = value.trim();
           //try to match comment starter
           const index = value.indexOf("#");
           if (index >= 0) {
             inlineComment = value.substring(index);
-            value = value.substring(0, index).trim();
+            value = value.substring(0, index);
           }
         }
         if (value) obj[key] = value;
@@ -237,7 +235,7 @@ export class DotenvUtil {
           }
           array.push(
             `${line.key}=${line.quote ? line.quote + line.value + line.quote : line.value}${
-              line.comment ? " " + line.comment : ""
+              line.comment ? line.comment : ""
             }`
           );
         }
@@ -254,21 +252,3 @@ export class DotenvUtil {
 }
 
 export const dotenvUtil = new DotenvUtil();
-// const original = `# Built-in environment variables
-// TEAMSFX_ENV=dev2
-// AZURE_SUBSCRIPTION_ID=
-// AZURE_RESOURCE_GROUP_NAME=
-// RESOURCE_SUFFIX=
-
-// # Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
-// BOT_ID=
-// SECRET_BOT_PASSWORD=
-// TEAMS_APP_ID=
-// BOT_AZURE_FUNCTION_APP_RESOURCE_ID=
-// BOT_DOMAIN=
-// BOT_FUNCTION_ENDPOINT=
-// TEAMS_APP_TENANT_ID=
-// `;
-
-// const parsed = dotenvUtil.deserialize(original);
-// console.log(parsed)

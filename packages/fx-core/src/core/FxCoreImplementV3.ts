@@ -13,6 +13,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
+  Platform,
   ProjectSettingsV3,
   Result,
   Settings,
@@ -74,9 +75,10 @@ import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils"
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { VersionSource } from "../common/versionMetadata";
+import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 import { InvalidEnvFolderPath } from "../component/configManager/error";
+import { isV3Enabled } from "../common/tools";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -166,8 +168,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW(getQuestionsForProvisionV3),
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -196,8 +198,8 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -261,7 +263,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -289,7 +291,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
   async executeUserTask(
     func: Func,
     inputs: Inputs,
@@ -364,7 +366,17 @@ export class FxCoreV3Implement {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = getVersionState(versionInfo);
+      let isSupport: VersionState;
+      // As projectVersionCheck is a v3 interface, v3 not enabled case is an exception and only called by vs platform
+      if (!isV3Enabled() && inputs.platform === Platform.VS) {
+        if (versionInfo.source === VersionSource.projectSettings) {
+          isSupport = VersionState.compatible;
+        } else {
+          isSupport = VersionState.unsupported;
+        }
+      } else {
+        isSupport = getVersionState(versionInfo);
+      }
       return ok({
         currentVersion: versionInfo.version,
         trackingId,

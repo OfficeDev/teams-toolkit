@@ -1214,6 +1214,7 @@
   "driver.teamsApp.summary.publishTeamsAppSuccess": "Teams app %s successfully published to the admin portal.",
   "driver.teamsApp.summary.copyAppPackageSuccess": "Teams app %s was successfully copyed to %s.",
   "driver.teamsApp.summary.copyIconSuccess": "%s icon(s) were successfully updated under %s.",
+  "driver.teamsApp.validate.skip": "%s action is currently skipped, will be updated in the future version.",
   "driver.teamsApp.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s",

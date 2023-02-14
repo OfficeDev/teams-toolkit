@@ -64,7 +64,7 @@ configureApp:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage

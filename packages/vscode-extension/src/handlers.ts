@@ -1857,12 +1857,20 @@ export async function checkUpgrade(args?: any[]) {
     const input = getSystemInputs();
     if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
       input["isNonmodalMessage"] = true;
-      core.phantomMigrationV3(input);
+      // not await here to avoid blocking the UI.
+      core.phantomMigrationV3(input).then((result) => {
+        if (result.isErr()) {
+          showError(result.error);
+        }
+      });
       return;
     } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
       input["confirmOnly"] = true;
     }
-    await core.phantomMigrationV3(input);
+    const result = await core.phantomMigrationV3(input);
+    if (result.isErr()) {
+      showError(result.error);
+    }
   } else {
     // just for triggering upgrade check for multi-env && bicep.
     await runCommand(Stage.listCollaborator);

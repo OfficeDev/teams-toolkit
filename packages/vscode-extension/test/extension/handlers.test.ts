@@ -1824,4 +1824,27 @@ describe("handlers", () => {
       sinon.restore();
     });
   });
+
+  describe("openDocumentHandler", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("opens upgrade guide when clicked from sidebar", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const openUrl = sandbox.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      await handlers.openDocumentHandler([
+        extTelemetryEvents.TelemetryTriggerFrom.SideBar,
+        "learnmore",
+      ]);
+
+      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
+      chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
+    });
+  });
 });

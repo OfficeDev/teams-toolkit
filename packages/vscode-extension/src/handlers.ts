@@ -1756,11 +1756,19 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
 }
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  let documentName = "general";
+  if (args && args.length >= 2) {
+    documentName = args[1];
+  }
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
-    [TelemetryProperty.DocumentationName]: "general",
+    [TelemetryProperty.DocumentationName]: documentName,
   });
-  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-build-first-app");
+  let url = "https://aka.ms/teamsfx-build-first-app";
+  if (isV3Enabled() && documentName === "learnmore") {
+    url = "https://aka.ms/teams-toolkit-5.0-upgrade";
+  }
+  return VS_CODE_UI.openUrl(url);
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {

@@ -39,6 +39,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import { getColorizedString } from "../utils";
+import os from "os";
 
 export class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
@@ -342,7 +343,9 @@ export class CodeFlowLogin {
       } catch (error) {
         CliCodeLogInstance.necessaryLog(
           LogLevel.Error,
-          "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can try to delete `/home/myusername/.fx/account` and try again. " +
+          "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can try to delete `" +
+            path.join(os.homedir(), ".fx", "account") +
+            "` and try again. " +
             error.message
         );
         if (!(await checkIsOnline())) {
@@ -384,7 +387,10 @@ export class CodeFlowLogin {
         } else {
           CliCodeLogInstance.necessaryLog(
             LogLevel.Error,
-            "[Login] getTenantToken acquireTokenSilent : " + error.message
+            "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can try to delete `" +
+              path.join(os.homedir(), ".fx", "account") +
+              "` and try again. " +
+              error.message
           );
           if (!(await checkIsOnline())) {
             return err(CheckOnlineError());
@@ -430,7 +436,10 @@ export class CodeFlowLogin {
             } else {
               CliCodeLogInstance.necessaryLog(
                 LogLevel.Error,
-                "[Login] getTenantToken acquireTokenSilent : " + error.message
+                "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can try to delete `" +
+                  path.join(os.homedir(), ".fx", "account") +
+                  "` and try again. " +
+                  error.message
               );
               if (!(await checkIsOnline())) {
                 return undefined;

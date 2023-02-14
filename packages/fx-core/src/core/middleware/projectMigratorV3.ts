@@ -130,6 +130,8 @@ export const TelemetryPropertyValue = {
 };
 
 export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+
+// MigrationError provides learnMoreLink as helplink for user. Remember add related error message in learnMoreLink when adding new error.
 export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
@@ -564,11 +566,17 @@ export async function popupMessage(
   versionForMigration: VersionForMigration,
   isModal: boolean
 ): Promise<string | undefined> {
+  let buttons: string[];
+  if (!isModal) {
+    buttons = [upgradeButton, learnMoreText];
+  } else {
+    buttons = migrationMessageButtons;
+  }
   const res = await TOOLS?.ui.showMessage(
     "warn",
     migrationNotificationMessage(versionForMigration),
     isModal,
-    ...migrationMessageButtons
+    ...buttons
   );
   return res?.isOk() ? res.value : undefined;
 }

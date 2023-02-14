@@ -106,7 +106,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     try {
       let message = getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage");
       progressHandler?.next(message);
-      context.addSummary(message);
 
       const appDefinition = await AppStudioClient.importApp(
         archivedFile,

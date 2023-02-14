@@ -81,7 +81,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
       debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
 
-      if (debugConfiguration.url === undefined) {
+      if (debugConfiguration.url === undefined || debugConfiguration.url === null) {
         return debugConfiguration;
       }
       let url: string = debugConfiguration.url as string;

@@ -71,7 +71,6 @@ import {
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
-import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";

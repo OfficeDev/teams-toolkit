@@ -292,7 +292,7 @@ export class CodeFlowLogin {
           .catch(async (error) => {
             CliCodeLogInstance.necessaryLog(
               LogLevel.Error,
-              "[Login] Failed to retrieve token silently. If you encounter this problem multi times, you can try to delete `~/.fx/account` and try again. " +
+              "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can try to delete `/home/myusername/.fx/account` and try again. " +
                 error.message
             );
             if (!(await checkIsOnline())) {
@@ -342,7 +342,8 @@ export class CodeFlowLogin {
       } catch (error) {
         CliCodeLogInstance.necessaryLog(
           LogLevel.Error,
-          "[Login] silent acquire token : " + error.message
+          "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can try to delete `/home/myusername/.fx/account` and try again. " +
+            error.message
         );
         if (!(await checkIsOnline())) {
           return err(CheckOnlineError());

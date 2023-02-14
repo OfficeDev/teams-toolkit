@@ -60,6 +60,7 @@ The following files can be customized and demonstrate an example implementation 
 | File                                       | Contents                                                                |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
 | `src/index.ts`                             | Application entry point and `restify` handlers for command and response |
+| `src/teamsBot.ts`                          | An empty teams activity handler for bot customization                   |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams                         |
 | `src/helloworldCommandHandler.ts`          | The business logic to handle a command                                  |
 | `src/cardModels.ts`                        | The default Adaptive Card data model                                    |

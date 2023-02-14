@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author zhijie <zhihuan@microsoft.com>
+ * @author Ivan He <ruhe@microsoft.com>
  */
 import {
   FxError,
@@ -19,7 +19,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
-import { BotServiceOutputs, ComponentNames, TeamsFxUrlNames } from "../../constants";
+import { BotServiceOutputs, ComponentNames } from "../../constants";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
 import { ProgressMessages, ProgressTitles } from "../../messages";
@@ -30,10 +30,11 @@ import { CheckThrowSomethingMissing } from "../../error";
 import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
-import { ErrorNames, MaxLengths } from "./constants";
+import { ErrorNames, MaxLengths, TeamsFxUrlNames } from "./constants";
 import { CommonStrings, PluginLocalDebug } from "./strings";
 import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
 import { normalizeName } from "../../utils";
+import { APP_STUDIO_API_NAMES } from "../appManifest/constants";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {
@@ -127,7 +128,10 @@ export class BotService extends AzureResource {
       teamsBotState.botPassword = regRes.value.botPassword;
       return ok(undefined);
     } catch (e) {
-      if (e.innerError?.teamsfxUrlName == TeamsFxUrlNames.createBot && hasBotIdInEnvBefore) {
+      if (
+        e.innerError?.teamsfxUrlName == TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT] &&
+        hasBotIdInEnvBefore
+      ) {
         throw AlreadyCreatedBotNotExist(botConfig.botId, (e as any).innerError);
       } else {
         throw e;

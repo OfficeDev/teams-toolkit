@@ -348,7 +348,7 @@
     "teamstoolkit.migrateTeamsTabApp.selectFolderConfig.title": "Select Teams Tab App to Upgrade",
     "teamstoolkit.migrateTeamsTabApp.success": "Successfully upgraded the Teams Tab app %s.",
     "teamstoolkit.migrateTeamsTabApp.updateCodeError": "Failed to update file %s, code: %s, message: %s.",
-    "teamstoolkit.migrateTeamsTabApp.updateCodesErrorMessage": "Failed to update %d files: %s, etc. Please refer to output channel for more details.",
+    "teamstoolkit.migrateTeamsTabApp.updateCodesErrorMessage": "Failed to update %d files: %s, etc. Please refer to [output channel](command:fx-extension.showOutputChannel) for more details.",
     "teamstoolkit.migrateTeamsTabApp.updateCodesErrorOutput": "Failed to update %d files: %s.",
     "teamstoolkit.migrateTeamsTabApp.updatePackageJsonWarning": "No @microsoft/teams-js dependency found in %s. Nothing to upgrade.",
     "teamstoolkit.migrateTeamsTabApp.updatingCode": "Updating %s code in %s.",

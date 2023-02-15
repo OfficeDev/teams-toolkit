@@ -586,15 +586,15 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
     ```
    
     The complete code will be like
-   
- ```ts
-    // Create HTTP server.
- const server = restify.createServer();
-    server.use(restify.plugins.bodyParser());
-    server.listen(process.env.port || process.env.PORT || 3978, () => {
-      console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
- });
-    ```
+
+     ```ts
+        // Create HTTP server.
+     const server = restify.createServer();
+        server.use(restify.plugins.bodyParser());
+        server.listen(process.env.port || process.env.PORT || 3978, () => {
+          console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
+     });
+     ```
 
 3. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
 

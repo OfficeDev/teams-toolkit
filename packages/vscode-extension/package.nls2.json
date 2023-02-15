@@ -1,4 +1,0 @@
-{
-    "teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.",
-    "teamstoolkit.accountTree.m365AccountTooltip2": "Microsoft 365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered."
-}

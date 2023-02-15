@@ -293,7 +293,7 @@ export class CodeFlowLogin {
           .catch(async (error) => {
             CliCodeLogInstance.necessaryLog(
               LogLevel.Error,
-              "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can try to delete `" +
+              "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
                 path.join(os.homedir(), ".fx", "account") +
                 "` and try again. " +
                 error.message
@@ -345,7 +345,7 @@ export class CodeFlowLogin {
       } catch (error) {
         CliCodeLogInstance.necessaryLog(
           LogLevel.Error,
-          "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can try to delete `" +
+          "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
             path.join(os.homedir(), ".fx", "account") +
             "` and try again. " +
             error.message
@@ -389,7 +389,7 @@ export class CodeFlowLogin {
         } else {
           CliCodeLogInstance.necessaryLog(
             LogLevel.Error,
-            "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can try to delete `" +
+            "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can delete `" +
               path.join(os.homedir(), ".fx", "account") +
               "` and try again. " +
               error.message
@@ -438,7 +438,7 @@ export class CodeFlowLogin {
             } else {
               CliCodeLogInstance.necessaryLog(
                 LogLevel.Error,
-                "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can try to delete `" +
+                "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can delete `" +
                   path.join(os.homedir(), ".fx", "account") +
                   "` and try again. " +
                   error.message

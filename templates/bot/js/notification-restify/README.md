@@ -45,6 +45,7 @@ The following files can be customized and demonstrate an example implementation 
 | File | Contents |
 | - | - |
 | `src/index.js` | Application entry point and `restify` handlers for notifications |
+| `src/teamsBot.js`| An empty teams activity handler for bot customization |
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
 
 ## Extend the notification bot template

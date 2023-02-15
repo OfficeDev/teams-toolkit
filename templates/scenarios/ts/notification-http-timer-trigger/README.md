@@ -65,6 +65,7 @@ The following files can be customized and demonstrate an example implementation 
 | - | - |
 | `*Trigger/function.json` | Azure Function bindings for the notification trigger |
 | `src/*Trigger.ts` | Notification trigger implementation |
+| `src/teamsBot.ts`| An empty teams activity handler for bot customization |
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
 | `src/cardModels.ts` | The default Adaptive Card data model |
 

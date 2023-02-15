@@ -1,6 +1,7 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { bot } = require("./internal/initialize");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { TeamsBot } = require("./teamsBot");
 const restify = require("restify");
 
 // Create HTTP server.
@@ -88,6 +89,9 @@ server.post(
 );
 
 // Bot Framework message handler.
+const teamsBot = new TeamsBot();
 server.post("/api/messages", async (req, res) => {
-  await bot.requestHandler(req, res);
+  await bot.requestHandler(req, res, async (context) => {
+    await teamsBot.run(context);
+  });
 });

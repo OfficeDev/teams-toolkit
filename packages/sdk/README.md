@@ -560,11 +560,12 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
 2. Update the import of `ConversationBot` and create a new `ConversationBot` as follows.
 
     ```ts
-    const { BotBuilderCloudAdapter } = require("@microsoft/teamsfx");
-    const ConversationBot = BotBuilderCloudAdapter.ConversationBot;
-    const config = require("./config");
+    import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
+    import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+    import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+    import config from "./config";
 
-    const commandBot = new ConversationBot({
+    export const commandBot = new ConversationBot({
       // The bot id and password to create CloudAdapter.
       // See https://aka.ms/about-bot-adapter to learn more about adapters.
       adapterConfig: {

@@ -63,5 +63,7 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
-          npx codecov --disable=gcov
 
+      - uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true

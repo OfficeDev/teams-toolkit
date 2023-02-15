@@ -588,7 +588,7 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
     The complete code will be like
 
      ```ts
-        // Create HTTP server.
+     // Create HTTP server.
      const server = restify.createServer();
         server.use(restify.plugins.bodyParser());
         server.listen(process.env.port || process.env.PORT || 3978, () => {

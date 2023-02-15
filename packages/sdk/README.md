@@ -584,7 +584,7 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
     ```ts
     server.use(restify.plugins.bodyParser());
     ```
-   
+
     The complete code will be like
 
      ```ts
@@ -596,7 +596,7 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
      });
      ```
 
-3. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
+4. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
 
     ```ts
     import { Response } from "botbuilder";

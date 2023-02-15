@@ -604,15 +604,11 @@
       },
       {
         "command": "fx-extension.migrateTeamsManifest",
-        "title": "%teamstoolkit.commands.migrateManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
-        "category": "Teams"
+        "title": "%teamstoolkit.commands.migrateManifest.title%"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
-        "title": "%teamstoolkit.commands.migrateApp.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
-        "category": "Teams"
+        "title": "%teamstoolkit.commands.migrateApp.title%"
       },
       {
         "command": "fx-extension.openAppManagement",

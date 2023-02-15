@@ -1,4 +1,4 @@
-// A wrapper to convert Azure Functions Response to Bot Builder's WebResponse.
+// A wrapper to convert Azure Functions Response to Bot Builder's Response.
 class ResponseWrapper {
   socket;
   originalResponse;

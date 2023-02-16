@@ -31,7 +31,6 @@ export class Sql {
       const teamsApi = Container.get(ComponentNames.TeamsApi) as any;
       const res = await teamsApi.add(context, inputs);
       if (res.isErr()) return err(res.error);
-      addedResources.push(AzureResourceFunction.id);
     }
     const projectSettings = context.projectSetting;
     const remarks: string[] = [];

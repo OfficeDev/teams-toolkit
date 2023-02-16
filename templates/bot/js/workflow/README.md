@@ -50,6 +50,7 @@ The following files can be customized and demonstrate an example implementation 
 | File | Contents |
 | - | - |
 | `src/index.js` | Application entry point and `restify` handlers for the Workflow bot |
+| `src/teamsBot.js`| An empty teams activity handler for bot customization |
 | `src/commands/helloworldCommandHandler.js` | Implementation that handles responding to a chat command |
 | `src/adaptiveCards/helloworldCommandResponse.json` | Defines the Adaptive Card (UI) that is displayed in response to a chat command |
 | `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |

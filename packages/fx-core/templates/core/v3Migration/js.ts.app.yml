@@ -116,6 +116,9 @@ deploy:
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
+  - uses: prerequisite/install # Install dependencies
+    with:      
+      dotnet: true
   - uses: cli/runNpmCommand
     with:
       workingDirectory: api

@@ -53,7 +53,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: ${{DOTNET_PATH}}
+      execPath: ${{DOTNET_PATH}} # Use dotnet installed by prerequisite/install action
   - uses: azureFunctions/deploy
     with:
       workingDirectory: api

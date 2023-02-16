@@ -148,14 +148,14 @@ class TreeViewManager {
   private registerDevelopment(disposables: vscode.Disposable[]) {
     const developmentCommands = [
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.createProjectTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.createProjectTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
         "fx-extension.create",
         "createProject",
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.samplesTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",
         undefined,
@@ -207,7 +207,7 @@ class TreeViewManager {
           ]
         : [
             new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
+              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitle"),
               localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
               "fx-extension.openManifest",
               "manifestEditor",
@@ -253,7 +253,7 @@ class TreeViewManager {
     const isTdpIntegration = isTDPIntegrationEnabled();
     const deployCommand = [
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.provisionTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.provisionDescription"),
         "fx-extension.provision",
         "provision",
@@ -274,7 +274,7 @@ class TreeViewManager {
         { name: "export", custom: false }
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
         "fx-extension.build",
         "buildPackage",
@@ -285,7 +285,7 @@ class TreeViewManager {
     if (!isTdpIntegration) {
       deployCommand.push(
         new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitle"),
           localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
           "fx-extension.openAppManagement",
           undefined,
@@ -352,7 +352,7 @@ class TreeViewManager {
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
         "fx-extension.openReportIssues",
         undefined,

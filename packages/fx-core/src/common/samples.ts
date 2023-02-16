@@ -38,9 +38,10 @@ class SampleProvider {
             configuration: sample.configuration,
             link: (sample as any).packageLink ?? sampleConfigV3.defaultPackageLink,
             suggested: sample.suggested,
-            url: (sample as any).relativePath
-              ? (sample as any).url
-              : (sample as any).url ?? sampleConfigV3.baseUrl,
+            url:
+              (sample as any).relativePath && (sample as any).url
+                ? (sample as any).url
+                : sampleConfigV3.baseUrl,
             relativePath: (sample as any).relativePath,
           } as SampleInfo;
         });

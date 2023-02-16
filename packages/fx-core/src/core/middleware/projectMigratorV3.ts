@@ -88,7 +88,7 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
+import { isSPFxProject, isV3Enabled } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -136,7 +136,7 @@ export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
 };
-const migrationMessageButtons = [learnMoreText, upgradeButton];
+const migrationMessageButtons = [upgradeButton, learnMoreText];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -170,7 +170,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
-    if (!isMigrationV3Enabled()) {
+    if (!isV3Enabled()) {
       await TOOLS?.ui.showMessage(
         "warn",
         getLocalizedString("core.migrationV3.CreateNewProject"),
@@ -566,17 +566,11 @@ export async function popupMessage(
   versionForMigration: VersionForMigration,
   isModal: boolean
 ): Promise<string | undefined> {
-  let buttons: string[];
-  if (!isModal) {
-    buttons = [upgradeButton, learnMoreText];
-  } else {
-    buttons = migrationMessageButtons;
-  }
   const res = await TOOLS?.ui.showMessage(
     "warn",
     migrationNotificationMessage(versionForMigration),
     isModal,
-    ...buttons
+    ...migrationMessageButtons
   );
   return res?.isOk() ? res.value : undefined;
 }

@@ -116,6 +116,7 @@ export class AppStudioClient {
       const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
         return;
       }
     }

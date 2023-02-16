@@ -73,7 +73,7 @@ describe("ProjectMigratorMW", () => {
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3_MIGRATION: "true",
+      TEAMSFX_V3: "true",
     });
   });
 
@@ -158,7 +158,7 @@ describe("ProjectMigratorMW", () => {
   });
 });
 
-describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
+describe("ProjectMigratorMW with no TEAMSFX_V3", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -167,7 +167,7 @@ describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3_MIGRATION: "false",
+      TEAMSFX_V3: "false",
     });
   });
 
@@ -177,7 +177,7 @@ describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
     mockedEnvRestore();
   });
 
-  it("TEAMSFX_V3_MIGRATION is false", async () => {
+  it("TEAMSFX_V3 is false", async () => {
     sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok(""));
     const tools = new MockTools();
     setTools(tools);

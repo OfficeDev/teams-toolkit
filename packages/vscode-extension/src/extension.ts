@@ -64,11 +64,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import {
-  AuthSvcScopes,
-  isMigrationV3Enabled,
-  setRegion,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
@@ -727,12 +723,10 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
   await setTDPIntegrationEnabledContext();
 
   if (isV3Enabled()) {
-    if (isMigrationV3Enabled()) {
-      const upgradeable = await checkProjectUpgradable();
-      if (upgradeable) {
-        await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
-        await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
-      }
+    const upgradeable = await checkProjectUpgradable();
+    if (upgradeable) {
+      await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
+      await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
     }
   } else {
     await vscode.commands.executeCommand(
@@ -1022,7 +1016,7 @@ async function runBackgroundAsyncTasks(
 }
 
 async function runTeamsFxBackgroundTasks() {
-  const upgradeable = isV3Enabled() && isMigrationV3Enabled() && (await checkProjectUpgradable());
+  const upgradeable = isV3Enabled() && (await checkProjectUpgradable());
   await handlers.autoOpenProjectHandler();
   await handlers.promptSPFxUpgrade();
   await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);

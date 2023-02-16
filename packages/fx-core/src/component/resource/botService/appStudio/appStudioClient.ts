@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IBotRegistration } from "./interfaces/IBotRegistration";
+import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
@@ -131,6 +131,9 @@ export class AppStudioClient {
     }
 
     botReg.messagingEndpoint = endpoint;
+    if (botReg.configuredChannels === undefined || botReg.configuredChannels.length === 0) {
+      botReg.configuredChannels = [BotChannelType.MicrosoftTeams];
+    }
 
     await AppStudioClient.updateBotRegistration(token, botReg);
 

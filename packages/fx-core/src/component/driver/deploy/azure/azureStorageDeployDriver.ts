@@ -65,7 +65,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
   protected summaries: string[] = [getLocalizedString("driver.deploy.azureStorageDeploySummary")];
   protected summaryPrepare: string[] = [];
   protected progressHandler: AsyncIterableIterator<void> = progressBarHelper(
-    ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS
+    ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS,
+    this.progressBar
   );
   protected progressNames = ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS;
 

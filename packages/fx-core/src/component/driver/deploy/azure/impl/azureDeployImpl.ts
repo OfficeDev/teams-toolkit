@@ -68,7 +68,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       this.progressNames = this.progressPrepare;
     }
     this.progressBar = this.createProgressBar(this.ui);
-    this.progressHandler = progressBarHelper(this.progressNames);
+    this.progressHandler = progressBarHelper(this.progressNames, this.progressBar);
     await this.progressBar?.start();
 
     if (args.dryRun && this.prepare) {

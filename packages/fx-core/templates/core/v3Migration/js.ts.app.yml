@@ -127,6 +127,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
+      execPath: $\{{ {{~dotnetPath~}} }}
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
     with:

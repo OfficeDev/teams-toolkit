@@ -53,6 +53,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
+      execPath: ${{DOTNET_PATH}}
   - uses: cli/runNpmCommand
     with:
       workingDirectory: api

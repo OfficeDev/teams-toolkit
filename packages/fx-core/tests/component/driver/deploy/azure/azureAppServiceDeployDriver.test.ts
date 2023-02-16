@@ -1,27 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as sinon from "sinon";
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
-import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import * as appService from "@azure/arm-appservice";
+import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/tools";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
+import * as appService from "@azure/arm-appservice";
+import * as Models from "@azure/arm-appservice/src/models";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { expect, assert } from "chai";
 import * as fs from "fs-extra";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
-import * as Models from "@azure/arm-appservice/src/models";
-import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
-import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 import { ProgressMessages } from "../../../../../src/component/messages";
 
 describe("Azure App Service Deploy Driver test", () => {
@@ -222,28 +224,6 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-  });
-
-  it("zip deploy need acceleration", async () => {
-    const args = {
-      workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
-      ignoreFile: "./ignore",
-      resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
-    } as DeployArgs;
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-    } as DriverContext;
-    context.logProvider.info = async (msg: string | Array<any>) => {
-      console.log(msg);
-      return Promise.resolve(true);
-    };
-    const deploy = new AzureZipDeployImpl(args, context, "", "", [], []);
-    sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
-    await deploy.run();
   });
 
   it("should thrown when deploy remote 500 error", async () => {

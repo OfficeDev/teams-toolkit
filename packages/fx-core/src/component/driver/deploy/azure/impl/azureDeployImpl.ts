@@ -27,6 +27,8 @@ import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
 import { progressBarHelper } from "./progressBarHelper";
+import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
+import { getLocalizedString } from "../../../../../common/localizeUtils";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -135,7 +137,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
             await logger?.error(
               `Deployment is failed with error message: ${JSON.stringify(res.data)}`
             );
-            throw DeployExternalApiCallError.deployRemoteStatusError();
+            throw DeployExternalApiCallError.deployRemoteStatusError(res);
           }
           return res.data;
         } else {
@@ -160,20 +162,19 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
-    this.managementClient = new appService.WebSiteManagementClient(
+    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
       azureCredential,
       azureResource.subscriptionId
+    ));
+    const listResponse = await wrapAzureOperation(
+      () =>
+        managementClient.webApps.beginListPublishingCredentialsAndWait(
+          azureResource.resourceGroupName,
+          azureResource.instanceId
+        ),
+      (e) => DeployExternalApiCallError.listPublishingCredentialsRemoteError(e, this.helpLink),
+      (e) => DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink)
     );
-    let listResponse;
-    try {
-      listResponse = await this.managementClient.webApps.beginListPublishingCredentialsAndWait(
-        azureResource.resourceGroupName,
-        azureResource.instanceId
-      );
-    } catch (e) {
-      throw DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink);
-    }
-
     const publishingUserName = listResponse.publishingUserName ?? "";
     const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCredentials: string = Base64.encode(
@@ -200,7 +201,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
         azureResource.instanceId
       );
     } catch (e) {
-      throw DeployExternalApiCallError.restartWebAppError(e, this.helpLink);
+      this.logger?.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
     }
   }
 }

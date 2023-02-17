@@ -380,6 +380,14 @@ jobs:
           echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION
 
+      - name: set vsc version for prerelease
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: version
+          value: ${{ steps.preview-version.outputs.version }}
+
       - name: pack vsix for preview
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
         env:

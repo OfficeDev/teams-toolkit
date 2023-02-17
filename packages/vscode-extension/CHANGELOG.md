@@ -4,8 +4,8 @@
 
 Incremental version for Teams Toolkit with multiple bug fixes.
 
-- Fixed an unexpected string change in the create new app flow.
-- Fixed an issue where there's no response when click on the Get Started button.
+- Fixed an unexpected string change in the `create new app` flow.
+- Fixed an issue where there's no response when clicking on the `Get Started` button.
 - Fixed an issue where you might see `Something went wrong` when adding the bot app on Teams during a debug session.
 
 ## 4.2.2 - Feb 7, 2023

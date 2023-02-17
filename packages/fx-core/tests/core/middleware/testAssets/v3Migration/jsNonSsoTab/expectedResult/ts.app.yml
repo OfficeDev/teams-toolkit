@@ -24,10 +24,12 @@ provision:
 
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install tab dependencies
     with:
       workingDirectory: tabs
       args: install
   - uses: cli/runNpmCommand # Run npm command
+    name: build tab app
     with:
       workingDirectory: tabs
       args: run build --if-present

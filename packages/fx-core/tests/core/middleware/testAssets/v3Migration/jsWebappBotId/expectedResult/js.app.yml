@@ -24,6 +24,7 @@ provision:
 
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install bot dependencies
     with:
       workingDirectory: bot
       args: install

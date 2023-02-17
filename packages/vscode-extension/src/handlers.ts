@@ -3080,7 +3080,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         message
       );
       const provision = {
-        title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
+        title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitle"),
         run: async (): Promise<void> => {
           Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
         },
@@ -3101,8 +3101,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         )
         .then((selection) => {
           if (
-            selection?.title ===
-              localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew") ||
+            selection?.title === localize("teamstoolkit.commandsTreeViewProvider.provisionTitle") ||
             selection?.title === localize("teamstoolkit.handlers.localDebugTitle")
           ) {
             selection.run();

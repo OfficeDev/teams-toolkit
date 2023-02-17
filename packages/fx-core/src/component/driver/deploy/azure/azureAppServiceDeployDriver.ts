@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Siglud <siglud@gmail.com>
+ */
 
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { Service } from "typedi";

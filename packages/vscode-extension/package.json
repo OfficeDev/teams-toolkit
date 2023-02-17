@@ -605,13 +605,13 @@
       {
         "command": "fx-extension.migrateTeamsManifest",
         "title": "%teamstoolkit.commands.migrateManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
         "title": "%teamstoolkit.commands.migrateApp.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "isWorkspaceTrusted",
         "category": "Teams"
       },
       {

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author FanH <Siglud@gmail.com>
+ */
 import { AzureDeployImpl } from "./impl/azureDeployImpl";
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import {
@@ -30,9 +33,10 @@ import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
-import { TelemetryConstant } from "../../../constant/commonConstant";
+import { HttpStatusCode, TelemetryConstant } from "../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { progressBarHelper } from "./impl/progressBarHelper";
+import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -61,7 +65,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
   protected summaries: string[] = [getLocalizedString("driver.deploy.azureStorageDeploySummary")];
   protected summaryPrepare: string[] = [];
   protected progressHandler: AsyncIterableIterator<void> = progressBarHelper(
-    ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS
+    ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS,
+    this.progressBar
   );
   protected progressNames = ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS;
 
@@ -112,6 +117,9 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     );
     const responses = await Promise.all(tasks);
     const errorResponse = responses.find((res) => res.errorCode);
+    if (errorResponse?._response?.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
+      throw DeployExternalApiCallError.uploadToStorageRemoteError(sourceFolder, errorResponse);
+    }
     if (errorResponse) {
       throw DeployExternalApiCallError.uploadToStorageError(
         sourceFolder,
@@ -128,13 +136,19 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     azureCredential: TokenCredential
   ): Promise<ContainerClient> {
     const blobServiceClient = await createBlobServiceClient(azureResource, azureCredential);
-    const container = blobServiceClient.getContainerClient(
-      DeployConstant.AZURE_STORAGE_CONTAINER_NAME
+    return await wrapAzureOperation(
+      async () => {
+        const container = blobServiceClient.getContainerClient(
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME
+        );
+        if (!(await container.exists())) {
+          await container.create();
+        }
+        return container;
+      },
+      (e) => DeployExternalApiCallError.getStorageContainerRemoteError(e),
+      (e) => DeployExternalApiCallError.getStorageContainerError(e)
     );
-    if (!(await container.exists())) {
-      await container.create();
-    }
-    return container;
   }
 
   private async deleteAllBlobs(
@@ -155,6 +169,12 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
 
     const responses = await Promise.all(deleteJobs);
     const errorResponse = responses.find((res) => res.errorCode);
+    if (errorResponse?._response?.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
+      throw DeployExternalApiCallError.clearStorageRemoteError(
+        errorResponse?._response.status,
+        errorResponse
+      );
+    }
     if (errorResponse) {
       throw DeployExternalApiCallError.clearStorageError(
         "delete blob",

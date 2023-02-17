@@ -100,6 +100,7 @@ import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
+import { MetadataV3 } from "../../common/versionMetadata";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -279,8 +280,8 @@ export class Coordinator {
       }
     }
 
-    // generate unique projectId in projectSettings.json (optional)
-    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    // generate unique projectId in teamsapp.yaml (optional)
+    const ymlPath = path.join(projectPath, MetadataV3.configFile);
     if (fs.pathExistsSync(ymlPath)) {
       const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
       if (ensureRes.isErr()) return err(ensureRes.error);

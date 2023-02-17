@@ -352,14 +352,6 @@ jobs:
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
 
-      - name: Update Preview TTK ai Key
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/vscode-extension/package.json
-          field: aiKey
-          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
-
       - name: Calculate Version Num
         if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
         id: preview-version
@@ -370,6 +362,14 @@ jobs:
           TTK_VERSION=$PRERELEASE_VERSION.$DATE_WITH_TIME
           echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION
+
+      - name: set vsc version for prerelease
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: version
+          value: ${{ steps.preview-version.outputs.version }}
 
       - name: pack vsix for preview
         if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}

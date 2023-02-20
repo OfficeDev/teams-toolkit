@@ -100,12 +100,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
-  await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 
   VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
   runBackgroundAsyncTasks(context, isTeamsFxProject);
+  await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 }
 
 // this method is called when your extension is deactivated

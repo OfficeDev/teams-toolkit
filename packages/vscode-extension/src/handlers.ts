@@ -3485,7 +3485,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
         detail: localize("teamstoolkit.guides.cardActionResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-card-action-response",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-workflow-new"
+          : "https://aka.ms/teamsfx-card-action-response",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3499,7 +3501,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.sendNotification.label")}`,
         detail: localize("teamstoolkit.guides.sendNotification.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-notification",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-notification-new"
+          : "https://aka.ms/teamsfx-notification",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3513,7 +3517,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.guides.commandAndResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-command-response",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-command-new"
+          : "https://aka.ms/teamsfx-command-response",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3527,7 +3533,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
         detail: localize("teamstoolkit.guides.dashboardApp.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-dashboard-app",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-dashboard-new"
+          : "https://aka.ms/teamsfx-dashboard-app",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3635,7 +3643,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.connectApi.label")}`,
         detail: localize("teamstoolkit.guides.connectApi.detail"),
         groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-add-api-connection",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-add-api-connection-new"
+          : "https://aka.ms/teamsfx-add-api-connection",
         buttons: [
           {
             iconPath: "file-symlink-file",

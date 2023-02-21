@@ -5,6 +5,7 @@ import { Result, FxError, err, ok, Void } from "@microsoft/teamsfx-api";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
+import { strings } from "../resource";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -18,13 +19,13 @@ import { YargsCommand } from "../yargsCommand";
 export default class Upgrade extends YargsCommand {
   public readonly commandHead = `upgrade`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Upgrade the project to the latest version of Teams Toolkit.";
+  public readonly description = strings.command.upgrade.description;
 
   public readonly forceParam = "force";
 
   builder(yargs: Argv): Argv<any> {
     yargs.option(this.forceParam, {
-      description: "Force upgrade the project to the latest version of Teams Toolkit.",
+      description: strings.command.upgrade.options.force,
       type: "boolean",
     });
     return yargs.version(false).hide("interactive");
@@ -53,7 +54,7 @@ export default class Upgrade extends YargsCommand {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Upgrade, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
-    await userInteraction.showMessage("info", "Upgrade successfully.", false);
+    await userInteraction.showMessage("info", strings.command.upgrade.success, false);
     return ok(Void);
   }
 }

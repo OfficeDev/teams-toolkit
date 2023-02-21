@@ -1,0 +1,14 @@
+{
+  "error": {
+    "NotAllowedMigrationErrorMessage": "Teams toolkit's pre-released version supports new project configuration and is incompatible with previous versions. Please try it by creating a new project or run \"teamsfx upgrade\" to upgrade your project first."
+  },
+  "command": {
+    "upgrade": {
+      "description": "Upgrade the project to the latest version of Teams Toolkit.",
+      "options": {
+        "force": "Force to upgrade the project to the latest version of Teams Toolkit."
+      },
+      "success": "Upgrade project successfully."
+    }
+  }
+}

@@ -5,6 +5,7 @@
 
 import { ConfigFolderName, StatesFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
+import { strings } from "./resource";
 
 export function NotSupportedProjectType(): UserError {
   return new UserError(
@@ -174,8 +175,7 @@ export class NotAllowedMigrationError extends UserError {
   constructor() {
     super({
       source: constants.cliSource,
-      message: `Teams toolkit's pre-released version supports new project configuration and is incompatible with previous versions. \
-Please try it by creating a new project or run "teamsfx upgrade" to upgrade your project first.`,
+      message: strings.error.NotAllowedMigrationErrorMessage,
     });
   }
 }

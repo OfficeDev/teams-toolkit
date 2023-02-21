@@ -1536,7 +1536,8 @@
     "tree-kill": "^1.2.2",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47"
+    "vscode-tas-client": "^0.1.47",
+    "yaml": "^2.2.1"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account"

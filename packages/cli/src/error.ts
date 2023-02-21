@@ -169,3 +169,13 @@ export class InvalidTemplateName extends UserError {
     });
   }
 }
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: constants.cliSource,
+      message: `Teams toolkit's pre-released version supports new project configuration and is incompatible with previous versions. \
+Please try it by creating a new project or run "teamsfx upgrade" to upgrade your project first.`,
+    });
+  }
+}

@@ -21,7 +21,7 @@ jobs:
       - name: Create AZDO Item 
         uses: ./actions/milestoned
         with:
-          token: ${{secrets.TEAMSFX_BOT}}
+          token: ${{secrets.GITHUB_TOKEN}}
           milestone-prefix: "CY"
           devops-token: ${{secrets.ADO_PAT}}
           devops-org: "msazure"

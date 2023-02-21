@@ -82,7 +82,7 @@ describe("Init Command Tests", () => {
     expect(registeredCommands).deep.equals(["upgrade"]);
   });
 
-  it("Command Running Check - init infra", async () => {
+  it("Command Running Check", async () => {
     const cmd = new Upgrade();
     const args = {
       folder: TestFolder,
@@ -92,7 +92,7 @@ describe("Init Command Tests", () => {
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
-  it("Command Running Check - init infra - error", async () => {
+  it("Command Running Check - error", async () => {
     const cmd = new Upgrade();
     const args = {
       folder: "fake",

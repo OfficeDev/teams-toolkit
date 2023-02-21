@@ -344,11 +344,11 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
-      false
-    );
+    // context.userInteraction.showMessage(
+    //   "info",
+    //   "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
+    //   false
+    // );
     return ok(undefined);
   }
 
@@ -429,11 +429,11 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
-      false
-    );
+    // context.userInteraction.showMessage(
+    //   "info",
+    //   "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
+    //   false
+    // );
     return ok(undefined);
   }
 

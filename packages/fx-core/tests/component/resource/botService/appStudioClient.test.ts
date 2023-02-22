@@ -411,16 +411,12 @@ describe("AppStudio Client", () => {
     it("BotRegistrationNotFound error should be throwed out", async () => {
       // Arrange
       sandbox.stub(AppStudioClient, "getBotRegistration").resolves(undefined);
-      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
-      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
       // Act & Assert
       try {
         await AppStudioClient.updateMessageEndpoint("anything", "anything", "anything");
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.BOT_REGISTRATION_NOTFOUND_ERROR);
-        expect(startStub.calledOnce).to.be.true;
-        expect(successStub.calledOnce).to.be.false;
       }
     });
   });

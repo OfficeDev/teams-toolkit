@@ -157,7 +157,7 @@ export class AppStudioClient {
     token: string,
     botReg: IBotRegistration
   ): Promise<void> {
-    sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -167,7 +167,7 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
-      sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     } catch (e) {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
     }

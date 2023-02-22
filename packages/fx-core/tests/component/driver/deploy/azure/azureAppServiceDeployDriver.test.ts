@@ -72,6 +72,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const ui = new MockUserInteraction();
     sandbox.stub(ui, "createProgressBar").returns(progressHandler);
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+    const progressEndCaller = sandbox.stub(progressHandler, "end").resolves();
 
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -113,6 +114,7 @@ describe("Azure App Service Deploy Driver test", () => {
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
     // progress bar have 6 steps
     expect(progressNextCaller.callCount).to.equal(6);
+    expect(progressEndCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
@@ -374,6 +376,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const ui = new MockUserInteraction();
     sandbox.stub(ui, "createProgressBar").returns(progressHandler);
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+    const progressEndCaller = sandbox.stub(progressHandler, "end").resolves();
 
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -416,6 +419,7 @@ describe("Azure App Service Deploy Driver test", () => {
     assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
     // dry run will have only one progress step
     assert.equal(progressNextCaller.callCount, 1);
+    expect(progressEndCaller.callCount).to.equal(1);
   });
 
   it("list credential error", async () => {

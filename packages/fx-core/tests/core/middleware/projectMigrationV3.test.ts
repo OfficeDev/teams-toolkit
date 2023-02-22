@@ -732,7 +732,7 @@ describe("manifestsMigration", () => {
       assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
-        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit < v3.8.0. Please install Teams Toolkit v4.2.2 and run upgrade first."
+        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first."
       );
     }
   });

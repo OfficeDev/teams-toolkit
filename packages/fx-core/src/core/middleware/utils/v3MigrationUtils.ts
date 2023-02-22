@@ -94,7 +94,13 @@ export function jsonObjectNamesConvertV3(
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
-    if (res.isOk()) return res.value + "=" + obj + EOL;
+    if (res.isOk()) {
+      let stateValue = obj;
+      if (typeof obj === "string" && obj.includes("#")) {
+        stateValue = `"${obj}"`;
+      }
+      return res.value + "=" + stateValue + EOL;
+    }
   } else return "";
   return returnData;
 }

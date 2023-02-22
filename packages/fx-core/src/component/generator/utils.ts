@@ -16,26 +16,23 @@ import {
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
-import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
-export const preRelease = (): string =>
-  process.env.TEAMSFX_TEMPLATE_PRERELEASE ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}` : "";
-export const templateVersion = (): string => templateConfig.version;
-export const templateTagPrefix = templateConfig.tagPrefix;
-const templateTagListURL = templateConfig.tagListURL;
+async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
+  const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
+    ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}`
+    : "";
+  const templateVersion = templateConfig.version;
+  const templateTagPrefix = templateConfig.tagPrefix;
 
-export async function selectTemplateTag(
-  getTags: () => Promise<string[]>
-): Promise<string | undefined> {
   // Prerelease feature flag has the highest priority.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease())) {
-    return templatePrereleasePrefix + preRelease();
+  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease)) {
+    return templatePrereleasePrefix + preRelease;
   }
+  const versionPattern = preRelease || templateVersion;
 
-  const versionPattern = preRelease() || templateVersion();
   // To avoid incompatible, alpha release does not download latest template.
   if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
     return undefined;
@@ -96,11 +93,7 @@ export async function sendRequestWithTimeout<T>(
   }
 }
 
-export async function fetchTagList(
-  url: string,
-  tryLimits: number,
-  timeoutInMs: number
-): Promise<string> {
+async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number): Promise<string> {
   const res: AxiosResponse<string> = await sendRequestWithTimeout(
     async (cancelToken) => {
       return await axios.get(url, {
@@ -118,6 +111,7 @@ export async function fetchTemplateZipUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
+  const templateTagListURL = templateConfig.tagListURL;
   const selectedTag = await selectTemplateTag(async () =>
     (await fetchTagList(templateTagListURL, tryLimits, timeoutInMs)).replace(/\r/g, "").split("\n")
   );
@@ -153,8 +147,7 @@ export async function unzip(
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
-  relativePath?: string,
-  filesInAppendMode = [".gitignore"]
+  relativePath?: string
 ): Promise<void> {
   let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
   if (relativePath) {
@@ -174,14 +167,8 @@ export async function unzip(
       : rawEntryData;
     const filePath: string = path.join(dstPath, entryName);
     const dirPath: string = path.dirname(filePath);
-
     await fs.ensureDir(dirPath);
-    if (filesInAppendMode.includes(entryName) && (await fs.pathExists(filePath))) {
-      await fs.appendFile(filePath, EOL);
-      await fs.appendFile(filePath, entryData);
-    } else {
-      await fs.writeFile(filePath, entryData);
-    }
+    await fs.writeFile(filePath, entryData);
   }
 }
 

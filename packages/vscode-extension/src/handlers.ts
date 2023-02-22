@@ -2554,6 +2554,7 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
     result = wrapError(e);
   }
 
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaborator);
   return result;
 }
 

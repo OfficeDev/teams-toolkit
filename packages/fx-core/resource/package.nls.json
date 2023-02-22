@@ -106,7 +106,6 @@
   "core.error.programmingLanguageInvalid": "Invalid programming language found in project settings.",
   "core.Notification.ReadMore": "Read more",
   "core.AppStudioJsonUndefined": "App Studio JSON is undefined",
-  "core.localDebug.tenantConfirmNotice": "You already run debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched Mirosoft 365 account to re-use the previous debug resource. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.",
   "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount": "You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.",
   "core.migrationToArmAndMultiEnv.Message": "Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version <= 2.10.0",
   "core.migrationV3.confirmOnly.Message": "Please confirm the upgrade",

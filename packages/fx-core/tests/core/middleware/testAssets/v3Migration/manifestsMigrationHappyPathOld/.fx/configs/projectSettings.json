@@ -15,7 +15,8 @@
             "fx-resource-appstudio",
             "fx-resource-cicd",
             "fx-resource-api-connector",
-            "fx-resource-frontend-hosting"
+            "fx-resource-frontend-hosting",
+            "fx-resource-aad-app-for-teams"
         ]
     }
 }

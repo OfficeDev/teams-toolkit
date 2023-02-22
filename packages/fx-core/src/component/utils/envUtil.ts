@@ -238,7 +238,6 @@ export class DotenvUtil {
           }
           let value = line.value;
           if (line.quote) {
-            value = line.quote === "'" ? value.replace(/'/g, "\\'") : value.replace(/"/g, '\\"');
             value = `${line.quote}${value}${line.quote}`;
           }
           array.push(`${line.key}=${value}${line.comment ? line.comment : ""}`);

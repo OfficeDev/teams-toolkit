@@ -33,7 +33,10 @@ import {
   getProjectSettingsPath,
   loadProjectSettingsByProjectPath,
 } from "../../core/middleware/projectSettingsLoader";
-import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
+import {
+  BotChannelType,
+  IBotRegistration,
+} from "../resource/botService/appStudio/interfaces/IBotRegistration";
 import { ErrorNames, MaxLengths, TeamsFxUrlNames } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
 import { genUUID } from "../resource/botService/common";
@@ -268,6 +271,7 @@ export class BotDebugHandler {
         iconUrl: "",
         messagingEndpoint: "",
         callingEndpoint: "",
+        configuredChannels: [BotChannelType.MicrosoftTeams],
       };
 
       try {

@@ -166,6 +166,8 @@ const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
 const NEW_LINE_RE = /\\n/g;
 const NEW_LINE_SPLITTER = /\r?\n/;
 const NEW_LINE = "\n";
+const LINE_RE =
+  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
@@ -180,6 +182,29 @@ export class DotenvUtil {
     const obj: DotenvOutput = {};
     const stringLines = src.toString().split(NEW_LINE_SPLITTER);
     for (const line of stringLines) {
+      const match = LINE_RE.exec(line);
+      if (match) {
+        const key = match[1];
+
+        // Default undefined or null to empty string
+        let value = match[2] || "";
+
+        // Remove whitespace
+        value = value.trim();
+
+        // Check if double quoted
+        const maybeQuote = value[0];
+
+        // Remove surrounding quotes
+        value = value.replace(/^(['"`])([\s\S]*)\1$/gm, "$2");
+
+        // Expand newlines if double quoted
+        if (maybeQuote === '"') {
+          value = value.replace(/\\n/g, "\n");
+          value = value.replace(/\\r/g, "\r");
+        }
+      } else {
+      }
       const kvMatchArray = line.match(KEY_VALUE_PAIR_RE);
       if (kvMatchArray !== null) {
         // match key-value pair

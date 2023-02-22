@@ -959,9 +959,8 @@ export class Coordinator {
         // show message box after deploy
         const botTroubleShootMsg = getBotTroubleShootMessage(false);
         const msg =
-          getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+          getLocalizedString("core.common.LifecycleComplete", "deploy") +
           botTroubleShootMsg.textForLogging;
-        ctx.logProvider.info(msg);
         ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();

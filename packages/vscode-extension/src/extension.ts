@@ -4,7 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
-
+import * as fs from "fs-extra";
 import {
   AdaptiveCardsFolderName,
   AppPackageFolderName,
@@ -105,6 +105,22 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
+
+  // Set default log folder path
+  const logFolder = vscode.workspace.getConfiguration("fx-extension.folderPath").get("log");
+  if (!logFolder || logFolder === "") {
+    const defaultExtensionLogPath = context.logUri.path;
+    if (!(await fs.pathExists(defaultExtensionLogPath))) {
+      await fs.mkdir(defaultExtensionLogPath);
+    }
+    await vscode.workspace
+      .getConfiguration("fx-extension")
+      .update(
+        "folderPath",
+        { log: defaultExtensionLogPath },
+        vscode.ConfigurationTarget.WorkspaceFolder
+      );
+  }
 
   VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 

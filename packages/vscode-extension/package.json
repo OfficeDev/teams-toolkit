@@ -1314,6 +1314,25 @@
             }
           }
         }
+      },
+      {
+        "title": "Folder path configurations",
+        "order": 3,
+        "properties": {
+          "fx-extension.folderPath": {
+            "type": "object",
+            "properties": {
+              "log": {
+                "type": "string",
+                "description": "Default log folder path."
+              }
+            },
+            "additionalProperties": false,
+            "default": {
+              "log": ""
+            }
+          }
+        }
       }
     ],
     "languages": [

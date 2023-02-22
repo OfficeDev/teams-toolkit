@@ -1133,16 +1133,16 @@ export enum LogLevel {
 // @public (undocumented)
 export interface LogProvider {
     debug(message: string): Promise<boolean>;
-    error(message: string): Promise<boolean>;
+    error(message: string, appendToFile?: boolean): Promise<boolean>;
     fatal(message: string): Promise<boolean>;
-    info(message: string): Promise<boolean>;
+    info(message: string, appendToFile?: boolean): Promise<boolean>;
     info(message: Array<{
         content: string;
         color: Colors;
     }>): Promise<boolean>;
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
-    warning(message: string): Promise<boolean>;
+    warning(message: string, appendToFile?: boolean): Promise<boolean>;
 }
 
 // @public

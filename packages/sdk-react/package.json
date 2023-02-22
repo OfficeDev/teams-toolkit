@@ -51,6 +51,7 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-react": "^7.26.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "isomorphic-fetch": "^3.0.0",
     "jest": "^28.1.0",
     "jest-environment-jsdom": "^28.1.0",

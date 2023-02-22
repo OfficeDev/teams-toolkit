@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Huajie Zhang <zhjay23@qq.com>
+ */
 import {
   FolderQuestion,
   OptionItem,
@@ -347,24 +350,6 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const commandAndResponseOptionItem = CommandAndResponseOptionItem();
   const workflowOptionItem = WorkflowOptionItem();
   const dashboardOptionItem = DashboardOptionItem();
-  if (inputs?.taskOrientedTemplateNaming) {
-    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.NotificationOption.label.abTest"
-    )}`;
-    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.CommandAndResponseOption.label.abTest"
-    )}`;
-    commandAndResponseOptionItem.detail = getLocalizedString(
-      "core.CommandAndResponseOption.detail.abTest"
-    );
-    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-    dashboardOptionItem.label = `$(browser) ${getLocalizedString(
-      "core.DashboardOption.label.abTest"
-    )}`;
-    dashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
-  }
 
   // AB test for in product doc
   if (inputs?.inProductDoc) {
@@ -827,11 +812,11 @@ export const BotIdsQuestion = (
   const options: OptionItem[] = [];
   if (botId) {
     defaultIds.push(answerToRepaceBotId);
-    options.push(botOptionItem(false));
+    options.push(botOptionItem(false, botId));
   }
   if (messageExtensionBotId) {
     defaultIds.push(answerToReplaceMessageExtensionBotId);
-    options.push(botOptionItem(true));
+    options.push(botOptionItem(true, messageExtensionBotId));
   }
   return {
     type: "multiSelect",
@@ -844,10 +829,15 @@ export const BotIdsQuestion = (
   };
 };
 
-export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
+export const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
-    label: isMessageExtension ? "Message extension" : "Bot",
+    label: isMessageExtension
+      ? getLocalizedString("core.updateBotIdForMessageExtension.label")
+      : getLocalizedString("core.updateBotIdForBot.label"),
+    detail: isMessageExtension
+      ? getLocalizedString("core.updateBotIdForMessageExtension.description", botId)
+      : getLocalizedString("core.updateBotIdForBot.description", botId),
   };
 };
 

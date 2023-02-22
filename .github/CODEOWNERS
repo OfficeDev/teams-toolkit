@@ -16,8 +16,13 @@
 /packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/README.md @therealjohn @sffamily
+/packages/vscode-extension/CHANGELOG.md @therealjohn @sffamily
+/packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
+/packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
 /packages/cli @chagong @Alive-Fish
+/packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
@@ -96,7 +101,7 @@
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
 
-/templates/tab @hund030 @eriolchan @IvanJobs
+/templates/tab @hund030 @eriolchan @IvanJobs @huimiu
 /templates/function-base @hund030 @eriolchan @IvanJobs
 /templates/function-triggers @hund030 @eriolchan @IvanJobs
 /templates/blazor-base @JerryYangKai @eriolchan @IvanJobs

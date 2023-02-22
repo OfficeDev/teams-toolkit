@@ -100,6 +100,7 @@ import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
+import { MetadataV3 } from "../../common/versionMetadata";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -234,6 +235,11 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Capabilities]: feature,
+        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
+      });
+
       if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
@@ -254,11 +260,6 @@ export class Coordinator {
           if (res.isErr()) return err(res.error);
         }
       }
-
-      merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: feature,
-        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
-      });
     } else if (scratch === CreateNewOfficeAddinOption().id) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
@@ -279,10 +280,14 @@ export class Coordinator {
       }
     }
 
-    // generate unique projectId in projectSettings.json
-    const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    inputs.projectId = ensureRes.value;
+    // generate unique projectId in teamsapp.yaml (optional)
+    const ymlPath = path.join(projectPath, MetadataV3.configFile);
+    if (fs.pathExistsSync(ymlPath)) {
+      const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
+      if (ensureRes.isErr()) return err(ensureRes.error);
+      inputs.projectId = ensureRes.value;
+    }
+
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
@@ -339,11 +344,11 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
-      false
-    );
+    // context.userInteraction.showMessage(
+    //   "info",
+    //   "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
+    //   false
+    // );
     return ok(undefined);
   }
 
@@ -424,11 +429,11 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
-      false
-    );
+    // context.userInteraction.showMessage(
+    //   "info",
+    //   "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
+    //   false
+    // );
     return ok(undefined);
   }
 
@@ -641,11 +646,12 @@ export class Coordinator {
     };
 
     let resolvedSubscriptionId: string | undefined;
+    let resolvedResourceGroupName: string | undefined;
     let azureSubInfo = undefined;
     if (containsAzure) {
       //ensure RESOURCE_SUFFIX
       if (!process.env.RESOURCE_SUFFIX) {
-        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 8);
+        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 6);
         process.env.RESOURCE_SUFFIX = suffix;
         output.RESOURCE_SUFFIX = suffix;
       }
@@ -664,6 +670,13 @@ export class Coordinator {
         }
         if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME"))
           resourceGroupUnresolved = true;
+        else {
+          cycle.driverDefs?.forEach((driver) => {
+            const withObj = driver.with as any;
+            if (withObj && withObj.resourceGroupName && resolvedResourceGroupName === undefined)
+              resolvedResourceGroupName = withObj.resourceGroupName;
+          });
+        }
       }
 
       // ensure subscription, pop up UI to select if necessary
@@ -731,6 +744,7 @@ export class Coordinator {
             output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
           }
         }
+        resolvedResourceGroupName = targetResourceGroupInfo.name;
       }
 
       // consent user
@@ -808,7 +822,7 @@ export class Coordinator {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,
         azureSubInfo.tenantId,
-        resolvedSubscriptionId
+        resolvedResourceGroupName
       );
       if (url && ctx.platform !== Platform.CLI) {
         const title = getLocalizedString("core.provision.viewResources");

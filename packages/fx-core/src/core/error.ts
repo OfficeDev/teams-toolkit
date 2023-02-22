@@ -18,7 +18,7 @@ import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
-export const MigrationSource = "Migration";
+export const UpgradeSource = "Upgrade";
 
 export class ProjectFolderExistError extends UserError {
   constructor(path: string) {
@@ -59,7 +59,7 @@ export function ReadFileError(e: Error): SystemError {
 export function MigrationError(e: Error, name: string, helpLink?: string): UserError {
   return new UserError({
     name: name,
-    source: MigrationSource,
+    source: UpgradeSource,
     error: e,
     // the link show to user will be helpLink+ # + source + name
     helpLink: helpLink,
@@ -423,7 +423,6 @@ export class NoCapabilityFoundError extends UserError {
       source: CoreSource,
       message: getDefaultString("core.deploy.noCapabilityFound", operation),
       displayMessage: getLocalizedString("core.deploy.noCapabilityFound", operation),
-      helpLink: HelpLinks.HowToAddCapability,
     });
   }
 }

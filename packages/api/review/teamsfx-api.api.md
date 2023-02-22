@@ -586,7 +586,7 @@ export enum CoreCallbackEvent {
 }
 
 // @public (undocumented)
-export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
 // @public
 export interface CryptoProvider {
@@ -982,8 +982,6 @@ export interface Inputs extends Json {
     targetResourceLocationName?: string;
     // (undocumented)
     targetSubscriptionId?: string;
-    // (undocumented)
-    taskOrientedTemplateNaming?: boolean;
     // (undocumented)
     teamsAppFromTdp?: any;
     // (undocumented)

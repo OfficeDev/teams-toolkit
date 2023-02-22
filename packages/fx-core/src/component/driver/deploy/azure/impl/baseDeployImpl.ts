@@ -10,7 +10,7 @@ import * as fs from "fs-extra";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { asBoolean, asFactory, asOptional, asString } from "../../../../utils/common";
 import { ExecutionResult } from "../../../interface/stepDriver";
-import { ok, err, IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
+import { ok, err, IProgressHandler, UserInteraction, LogProvider } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../../../interface/commonArgs";
 
 export abstract class BaseDeployImpl {
@@ -19,14 +19,15 @@ export abstract class BaseDeployImpl {
   workingDirectory: string;
   distDirectory: string;
   dryRun = false;
+  protected logger?: LogProvider;
   protected ui?: UserInteraction;
   protected progressBar?: IProgressHandler;
   protected static readonly emptyMap = new Map<string, string>();
   protected helpLink: string | undefined = undefined;
   protected abstract summaries: string[];
   protected abstract summaryPrepare: string[];
-  protected abstract progressNames: string[];
-  protected progressPrepare: string[] = [];
+  protected abstract progressNames: (() => string)[];
+  protected progressPrepare: (() => string)[] = [];
   protected abstract progressHandler?: AsyncIterableIterator<void>;
 
   constructor(args: unknown, context: DriverContext) {
@@ -34,6 +35,7 @@ export abstract class BaseDeployImpl {
     this.workingDirectory = context.projectPath;
     this.distDirectory = "";
     this.ui = context.ui;
+    this.logger = context.logProvider;
     this.context = {
       azureAccountProvider: context.azureAccountProvider,
       progressBar: this.progressBar,

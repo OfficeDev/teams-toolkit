@@ -100,7 +100,7 @@ export async function activate(context: vscode.ExtensionContext) {
   handlers.activate();
 
   // Init VSC context key
-  await initializeContextKey(isTeamsFxProject);
+  await initializeContextKey(context, isTeamsFxProject);
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
@@ -246,6 +246,20 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
+
+  // Upgrade command to update Teams manifest
+  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsManifest",
+    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+  );
+  context.subscriptions.push(migrateTeamsManifestCmd);
+
+  // Upgrade command to update Teams Client SDK
+  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsTabApp",
+    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+  );
+  context.subscriptions.push(migrateTeamsTabAppCmd);
 }
 
 /**
@@ -290,7 +304,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(installAppInTeamsCmd);
 
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
-    Correlator.run(handlers.openSurveyHandler, args)
+    Correlator.run(handlers.openSurveyHandler, [TelemetryTriggerFrom.TreeView])
   );
   context.subscriptions.push(openSurveyCmd);
 
@@ -429,18 +443,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
   context.subscriptions.push(updateAadAppManifest);
-
-  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
-    "fx-extension.migrateTeamsManifest",
-    () => Correlator.run(handlers.migrateTeamsManifestHandler)
-  );
-  context.subscriptions.push(migrateTeamsManifestCmd);
-
-  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
-    "fx-extension.migrateTeamsTabApp",
-    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
-  );
-  context.subscriptions.push(migrateTeamsTabAppCmd);
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",
@@ -695,7 +697,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(specifySubscription);
 }
 
-async function initializeContextKey(isTeamsFxProject: boolean) {
+async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   await vscode.commands.executeCommand(
@@ -712,6 +714,16 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     });
   }
 
+  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/teamsapp.yml",
+    false,
+    true,
+    true
+  );
+  ymlFileWatcher.onDidCreate(async (event) => {
+    await detectedTeamsFxProject(context);
+  });
+
   await setAadManifestEnabledContext();
   await setApiV3EnabledContext();
   await setTDPIntegrationEnabledContext();
@@ -720,7 +732,8 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     if (isMigrationV3Enabled()) {
       const upgradeable = await checkProjectUpgradable();
       if (upgradeable) {
-        await handlers.checkUpgrade();
+        await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
+        await TreeViewManagerInstance.updateTreeViewsByContent(true);
       }
     }
   } else {
@@ -1004,26 +1017,8 @@ async function runBackgroundAsyncTasks(
     await runTeamsFxBackgroundTasks();
   }
 
-  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/teamsapp.yml",
-    false,
-    true,
-    true
-  );
-  ymlFileWatcher.onDidCreate(async (event) => {
-    await detectedTeamsFxProject(context);
-  });
-
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
-
-  TreatmentVariableValue.taskOrientedTemplateNaming = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.TaskOrientedTemplateNaming,
-      true
-    )) as boolean | undefined;
 
   await showDebugChangesNotification();
 }

@@ -95,6 +95,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "fs-extra": "^9.1.0",
     "got": "^11.8.2",
     "isomorphic-fetch": "^3.0.0",

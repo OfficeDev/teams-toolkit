@@ -19,12 +19,12 @@ import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
-const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
+export const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 export const templateVersion = (): string => templateConfig.version;
-const templateTagPrefix = templateConfig.tagPrefix;
+export const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
-function selectTemplateTag(tags: string[]): string | undefined {
+export function selectTemplateTag(tags: string[]): string | undefined {
   if (preRelease === "alpha") {
     return templateAlphaVersion;
   }
@@ -38,7 +38,7 @@ function selectTemplateTag(tags: string[]): string | undefined {
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 
-async function sendRequestWithRetry<T>(
+export async function sendRequestWithRetry<T>(
   requestFn: () => Promise<AxiosResponse<T>>,
   tryLimits: number
 ): Promise<AxiosResponse<T>> {
@@ -67,7 +67,7 @@ async function sendRequestWithRetry<T>(
   throw error;
 }
 
-async function sendRequestWithTimeout<T>(
+export async function sendRequestWithTimeout<T>(
   requestFn: (cancelToken: CancelToken) => Promise<AxiosResponse<T>>,
   timeoutInMs: number,
   tryLimits = 1

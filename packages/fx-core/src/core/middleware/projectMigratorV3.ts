@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import {
   AppPackageFolderName,
   err,
   FxError,
   ok,
   ProjectSettings,
-  SettingsFolderName,
   SystemError,
   UserError,
   InputConfigsFolderName,
   Platform,
-  Inputs,
-  Stage,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -23,11 +23,9 @@ import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
   Component,
-  ProjectMigratorStatus,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
-  TelemetryProperty,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
@@ -99,13 +97,34 @@ export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
-  reportName: "migrationReport.md",
+  reportName: "upgradeReport.md",
   envWriteOption: {
     // .env.{env} file might be already exist, use append mode (flag: a+)
     encoding: "utf8",
     flag: "a+",
   },
   envFilePrefix: ".env.",
+};
+
+export const Parameters = {
+  skipUserConfirm: "skipUserConfirm",
+  isNonmodalMessage: "isNonmodalMessage",
+  confirmOnly: "confirmOnly",
+};
+
+export const TelemetryPropertyKey = {
+  status: "status",
+  mode: "mode",
+};
+
+export const TelemetryPropertyValue = {
+  ok: "ok",
+  learnMore: "learn-more",
+  cancel: "cancel",
+  modal: "modal",
+  nonmodal: "nonmodal",
+  confirmOnly: "confirm-only",
+  skipUserConfirm: "skip-user-confirm",
 };
 
 export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
@@ -141,6 +160,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       true
     );
     ctx.result = err(AbandonedProjectError());
+    return;
   } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
@@ -156,13 +176,21 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       return false;
     }
 
-    const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
-    if (!skipUserConfirm && !(await askUserConfirm(ctx, versionForMigration))) {
-      return;
+    const isRunMigration = await showNotification(ctx, versionForMigration);
+    if (isRunMigration) {
+      const isNonmodalMessage = getParameterFromCxt(ctx, Parameters.isNonmodalMessage);
+      if (isNonmodalMessage) {
+        const versionForMigration = await checkVersionForMigration(ctx);
+        if (versionForMigration.state !== VersionState.upgradeable) {
+          ctx.result = ok(undefined);
+          return;
+        }
+      }
+      const migrationContext = await MigrationContext.create(ctx);
+      await wrapRunMigration(migrationContext, migrate);
+      ctx.result = ok(undefined);
     }
-    const migrationContext = await MigrationContext.create(ctx);
-    await wrapRunMigration(migrationContext, migrate);
-    ctx.result = ok(undefined);
+    return;
   } else {
     // continue next step only when:
     // 1. no need to upgrade the project;
@@ -176,12 +204,12 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStartV3);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
     await exec(context);
     await showSummaryReport(context);
     sendTelemetryEvent(
       Component.core,
-      TelemetryEvent.ProjectMigratorMigrateV3,
+      TelemetryEvent.ProjectMigratorMigrate,
       context.telemetryProperties
     );
   } catch (error: any) {
@@ -202,7 +230,7 @@ export async function wrapRunMigration(
     }
     sendTelemetryErrorEvent(
       Component.core,
-      TelemetryEvent.ProjectMigratorV3Error,
+      TelemetryEvent.ProjectMigratorError,
       fxError,
       context.telemetryProperties
     );
@@ -350,7 +378,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
   }
 
-  // Read AAD app manifest and save to ./aad.manifest.template.json
+  // Read AAD app manifest and save to ./aad.manifest.json
   const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
@@ -362,7 +390,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    await context.fsWriteFile("aad.manifest.template.json", aadManifest);
+    await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
   }
 
   await context.fsRemove(oldAppPackageFolderPath);
@@ -397,6 +425,29 @@ export async function azureParameterMigration(context: MigrationContext): Promis
   }
 }
 
+export async function showNotification(
+  ctx: CoreHookContext,
+  versionForMigration: VersionForMigration
+): Promise<boolean> {
+  const isNonmodalMessage = getParameterFromCxt(ctx, Parameters.isNonmodalMessage);
+  if (isNonmodalMessage) {
+    return await showNonmodalNotification(ctx, versionForMigration);
+  }
+  const confirmOnly = getParameterFromCxt(ctx, Parameters.confirmOnly);
+  if (confirmOnly) {
+    return await showConfirmOnlyNotification(ctx);
+  }
+  const skipUserConfirm = getParameterFromCxt(ctx, Parameters.skipUserConfirm);
+  if (skipUserConfirm) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.skipUserConfirm,
+    });
+    return true;
+  }
+  return await askUserConfirm(ctx, versionForMigration);
+}
+
 export async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
@@ -404,14 +455,19 @@ export async function askUserConfirm(
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   let answer;
   do {
-    answer = await popupMessage(versionForMigration);
+    answer = await popupMessageModal(versionForMigration);
     if (answer === learnMoreText) {
       TOOLS?.ui!.openUrl(learnMoreLink);
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+        [TelemetryPropertyKey.status]: TelemetryPropertyValue.learnMore,
+        [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
+      });
     }
   } while (answer === learnMoreText);
   if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+      [TelemetryPropertyKey.status]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
     const link = getDownloadLinkByVersionAndPlatform(
       versionForMigration.currentVersion,
@@ -422,18 +478,78 @@ export async function askUserConfirm(
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-    [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+    [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+    [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
   });
   return true;
 }
 
-export async function popupMessage(
+export async function showNonmodalNotification(
+  ctx: CoreHookContext,
   versionForMigration: VersionForMigration
+): Promise<boolean> {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  const answer = await popupMessageNonmodal(versionForMigration);
+  if (answer === learnMoreText) {
+    TOOLS?.ui!.openUrl(learnMoreLink);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.status]: TelemetryPropertyValue.learnMore,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
+    });
+    return false;
+  } else if (answer === upgradeButton) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
+    });
+    return true;
+  }
+  return false;
+}
+
+export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  const res = await TOOLS?.ui.showMessage(
+    "info",
+    getLocalizedString("core.migrationV3.confirmOnly.Message"),
+    true,
+    "OK"
+  );
+  if (res?.isOk() && res.value === "OK") {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
+    });
+    return true;
+  } else {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.status]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
+    });
+    return false;
+  }
+}
+
+export async function popupMessageModal(
+  versionForMigration: VersionForMigration
+): Promise<string | undefined> {
+  return await popupMessage(versionForMigration, true);
+}
+
+export async function popupMessageNonmodal(
+  versionForMigration: VersionForMigration
+): Promise<string | undefined> {
+  return await popupMessage(versionForMigration, false);
+}
+
+export async function popupMessage(
+  versionForMigration: VersionForMigration,
+  isModal: boolean
 ): Promise<string | undefined> {
   const res = await TOOLS?.ui.showMessage(
     "warn",
     migrationNotificationMessage(versionForMigration),
-    true,
+    isModal,
     ...migrationMessageButtons
   );
   return res?.isOk() ? res.value : undefined;

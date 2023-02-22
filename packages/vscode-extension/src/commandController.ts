@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 import { Mutex } from "async-mutex";
+import { commands } from "vscode";
 
 import { FxError, Result } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { VS_CODE_UI } from "./extension";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
@@ -24,6 +26,8 @@ class CommandController {
   private static instance: CommandController;
 
   private commandMap: Map<string, TeamsFxCommand>;
+  // mapping between fx-core API and vscode command
+  private commandNameMap: Map<string, string>;
   private exclusiveCommands: Set<string>;
   private runningCommand: string | undefined;
   private mutex: Mutex;
@@ -32,16 +36,37 @@ class CommandController {
     this.commandMap = new Map<string, TeamsFxCommand>();
     this.mutex = new Mutex();
     this.exclusiveCommands = new Set([
-      "fx-extension.create",
-      "fx-extension.init",
+      "fx-extension.addEnvironment",
       "fx-extension.addFeature",
+      "fx-extension.build",
+      "fx-extension.create",
+      "fx-extension.debug",
+      "fx-extension.deploy",
+      "fx-extension.manageCollaborator",
+      "fx-extension.openFromTdp",
       "fx-extension.openManifest",
       "fx-extension.provision",
-      "fx-extension.build",
-      "fx-extension.deploy",
       "fx-extension.publish",
-      "fx-extension.openFromTdp",
       "fx-extension.publishInDeveloperPortal",
+    ]);
+    this.commandNameMap = new Map<string, string>([
+      // V3
+      ["create", "fx-extension.create"],
+      ["createEnv", "fx-extension.addEnvironment"],
+      ["deployArtifacts", "fx-extension.deploy"],
+      ["executeUserTask buildPackage", "fx-extension.build"],
+      ["executeUserTaskOld getManifestTemplatePath", "fx-extension.openManifest"],
+      ["grantPermission", "fx-extension.manageCollaborator"],
+      ["listCollaborator", "fx-extension.manageCollaborator"],
+      ["provisionResources", "fx-extension.provision"],
+      ["publishApplication", "fx-extension.publish"],
+      ["publishInDeveloperPortal", "fx-extension.publishInDeveloperPortal"],
+      // V2
+      // ["createEnvOld", "fx-extension.addEnvironment"],
+      // ["deployArtifactsOld", "fx-extension.deploy"],
+      // ["executeUserTaskOld addFeature", "fx-extension.addFeature"],
+      // ["provisionResourcesOld", "fx-extension.provision"],
+      // ["publishApplicationOld", "fx-extension.publish"],
     ]);
   }
 
@@ -71,7 +96,7 @@ class CommandController {
   }
 
   public async runCommand(commandName: string, args: unknown[]) {
-    if (!this.exclusiveCommands.has(commandName)) {
+    if (isV3Enabled() || !this.exclusiveCommands.has(commandName)) {
       return this.runNonBlockingCommand(commandName, args);
     }
     if (this.runningCommand) {
@@ -107,6 +132,25 @@ class CommandController {
     }
     this.runningCommand = undefined;
     await treeViewManager.restoreRunningCommand(blockedCommands);
+  }
+
+  public async lockedByOperation(operation: string) {
+    await commands.executeCommand("setContext", "fx-extension.commandLocked", true);
+    const commandName = this.commandNameMap.get(operation);
+    if (commandName) {
+      const command = this.commandMap.get(commandName);
+      const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);
+      await treeViewManager.setRunningCommand(commandName, blockedCommands, command?.blockTooltip);
+    }
+  }
+
+  public async unlockedByOperation(operation: string) {
+    await commands.executeCommand("setContext", "fx-extension.commandLocked", false);
+    const commandName = this.commandNameMap.get(operation);
+    if (commandName) {
+      const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);
+      await treeViewManager.restoreRunningCommand(blockedCommands);
+    }
   }
 
   public dispose() {}

@@ -24,12 +24,9 @@ export class MissingEnvUserError extends UserError {
     super({
       source: actionName,
       name: errorCode,
-      message: getDefaultString(messageKey, getDefaultString(additionalMessageKey), envList),
-      displayMessage: getLocalizedString(
-        messageKey,
-        getLocalizedString(additionalMessageKey),
-        envList
-      ),
+      message: getDefaultString(additionalMessageKey) + " " + getDefaultString(messageKey, envList),
+      displayMessage:
+        getLocalizedString(additionalMessageKey) + " " + getLocalizedString(messageKey, envList),
       helpLink: helpLink,
     });
   }

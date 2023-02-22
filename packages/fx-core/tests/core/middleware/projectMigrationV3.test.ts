@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import { hooks } from "@feathersjs/hooks/lib";
 import { err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -56,8 +59,10 @@ import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug
 import { VersionForMigration } from "../../../src/core/middleware/types";
 import { isMigrationV3Enabled } from "../../../src/common/tools";
 import * as loader from "../../../src/core/middleware/projectSettingsLoader";
+import { SettingsUtils } from "../../../src/component/utils/settingsUtil";
 
 let mockedEnvRestore: () => void;
+const mockedId = "00000000-0000-0000-0000-000000000000";
 
 describe("ProjectMigratorMW", () => {
   const sandbox = sinon.createSandbox();
@@ -545,14 +550,14 @@ describe("manifestsMigration", () => {
       .replace(/\n/g, "");
     assert.equal(manifest, manifestExpeceted);
 
-    const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+    const aadManifestPath = path.join(projectPath, "aad.manifest.json");
     assert.isTrue(await fs.pathExists(aadManifestPath));
     const aadManifest = (await fs.readFile(aadManifestPath, "utf-8"))
       .replace(/\s/g, "")
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     const aadManifestExpected = (
-      await fs.readFile(path.join(projectPath, "expected", "aad.manifest.template.json"), "utf-8")
+      await fs.readFile(path.join(projectPath, "expected", "aad.manifest.json"), "utf-8")
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
@@ -1157,16 +1162,30 @@ describe("Migration utils", () => {
       }
       return true;
     });
-    sandbox.stub(fs, "readJson").resolves({ projectId: MetadataV2.projectMaxVersion });
+    sandbox.stub(fs, "readJson").resolves({ projectId: mockedId });
     const trackingId = await getTrackingIdFromPath(projectPath);
-    assert.equal(trackingId, MetadataV2.projectMaxVersion);
+    assert.equal(trackingId, mockedId);
   });
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves({ trackingId: MetadataV3.projectVersion });
+    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+      ok({
+        version: MetadataV3.projectVersion,
+        trackingId: mockedId,
+      })
+    );
     const trackingId = await getTrackingIdFromPath(projectPath);
-    assert.equal(trackingId, MetadataV3.projectVersion);
+    assert.equal(trackingId, mockedId);
+  });
+
+  it("getTrackingIdFromPath: V3 failed", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox
+      .stub(SettingsUtils.prototype, "readSettings")
+      .resolves(err(new Error("mocked error") as FxError));
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
   });
 
   it("getTrackingIdFromPath: empty", async () => {
@@ -1247,6 +1266,80 @@ describe("Migration utils", () => {
   it("isMigrationV3Enabled", () => {
     const enabled = isMigrationV3Enabled();
     assert.isFalse(enabled);
+  });
+});
+
+describe("Migration show notification", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+  const inputs: Inputs = {
+    platform: Platform.VSCode,
+    ignoreEnvInfo: true,
+    projectPath: projectPath,
+  };
+  const coreCtx = {
+    arguments: [inputs],
+  };
+  const version: VersionForMigration = {
+    currentVersion: "2.0.0",
+    source: VersionSource.projectSettings,
+    state: VersionState.upgradeable,
+    platform: Platform.VSCode,
+  };
+
+  beforeEach(async () => {
+    inputs["isNonmodalMessage"] = "";
+    inputs["confirmOnly"] = "";
+    inputs["skipUserConfirm"] = "";
+    sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("nonmodal case and click upgrade", async () => {
+    inputs.isNonmodalMessage = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isTrue(res);
+  });
+
+  it("nonmodal case and click learn more", async () => {
+    inputs.isNonmodalMessage = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Learn more"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isFalse(res);
+  });
+
+  it("nonmodal case and click nothing", async () => {
+    inputs.isNonmodalMessage = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok(""));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isFalse(res);
+  });
+
+  it("confirmOnly case and click OK", async () => {
+    inputs.confirmOnly = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isTrue(res);
+  });
+
+  it("confirmOnly case and click cancel", async () => {
+    inputs.confirmOnly = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("cancel"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isFalse(res);
+  });
+
+  it("skipUserConfirm case", async () => {
+    inputs.skipUserConfirm = "true";
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isTrue(res);
   });
 });
 

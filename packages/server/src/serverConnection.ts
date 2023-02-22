@@ -65,6 +65,7 @@ export default class ServerConnection implements IServerConnection {
       this.getProjectComponents.bind(this),
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
+      this.publishInDeveloperPortalRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -172,7 +173,7 @@ export default class ServerConnection implements IServerConnection {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
     if (isV3Enabled()) {
-      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.template.json`;
+      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.json`;
       func = {
         namespace: "fx-solution-azure",
         method: "buildPackage",
@@ -353,5 +354,18 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return res.isErr() ? standardizeResult(err(res.error)) : ok(res.value === Void);
+  }
+
+  public async publishInDeveloperPortalRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.publishInDeveloperPortal(inputs),
+      inputs
+    );
+    return standardizeResult(res);
   }
 }

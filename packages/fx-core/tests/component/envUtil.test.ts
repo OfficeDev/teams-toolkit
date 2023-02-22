@@ -528,9 +528,9 @@ describe("env utils", () => {
 
   it("dotenvUtil deserialize & serialize", async () => {
     const original =
-      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"#COMMENT3';
     const expected =
-      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"\nKEY5="VALUE5#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"#COMMENT3\nKEY4="VALUE4"\nKEY5="VALUE5#"';
     const parsed = dotenvUtil.deserialize(original);
     console.log(parsed);
     assert.deepEqual(parsed, {
@@ -541,7 +541,7 @@ describe("env utils", () => {
         { key: "KEY1", value: "VALUE1", comment: "#COMMENT2" },
         { key: "KEY2", value: "VALUE2", quote: "'" },
         { key: "KEY3", value: "VALUE3#", quote: '"' },
-        { key: "indexPath", value: "/index.html#", quote: '"' },
+        { key: "indexPath", value: "/index.html#", quote: '"', comment: "#COMMENT3" },
       ],
       obj: { KEY1: "VALUE1", KEY2: "VALUE2", KEY3: "VALUE3#", indexPath: "/index.html#" },
     });

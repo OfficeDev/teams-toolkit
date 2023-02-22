@@ -163,8 +163,6 @@ export class EnvUtil {
 export const envUtil = new EnvUtil();
 
 const NEW_LINE_SPLITTER = /\r?\n/;
-const LINE_RE =
-  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
@@ -179,14 +177,17 @@ export class DotenvUtil {
     const obj: DotenvOutput = {};
     const stringLines = src.toString().replace(/\r\n?/gm, "\n").split(NEW_LINE_SPLITTER);
     for (const line of stringLines) {
-      const match = LINE_RE.exec(line);
+      const match =
+        /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm.exec(
+          line
+        );
       if (match) {
         let inlineComment;
-        // extract key
+        //key
         const key = match[1];
-        // extract value
+        //value
         let value = match[2] || "";
-        // try to find comments
+        //comment
         const valueIndex = match[0].indexOf(value);
         if (valueIndex >= 0) {
           const remaining = match[0].substring(valueIndex + value.length).trim();
@@ -194,7 +195,7 @@ export class DotenvUtil {
             inlineComment = remaining;
           }
         }
-        // trim
+        //trim
         value = value.trim();
         //quote
         const firstChar = value[0];

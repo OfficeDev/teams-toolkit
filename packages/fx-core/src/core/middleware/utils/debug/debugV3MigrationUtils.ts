@@ -132,7 +132,6 @@ export function createResourcesTask(label: string): CommentJSONValue {
     type: "teamsfx",
     command: "provision",
     args: {
-      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -149,7 +148,6 @@ export function setUpLocalProjectsTask(label: string): CommentJSONValue {
     type: "teamsfx",
     command: "deploy",
     args: {
-      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };

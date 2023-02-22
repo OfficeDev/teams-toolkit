@@ -58,7 +58,6 @@
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
@@ -69,7 +68,6 @@
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },

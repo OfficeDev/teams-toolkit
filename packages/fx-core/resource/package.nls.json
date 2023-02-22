@@ -105,7 +105,6 @@
   "core.log.updateFunctionAppSettings": "Updating Azure Function app settings.",
   "core.error.programmingLanguageInvalid": "Invalid programming language found in project settings.",
   "core.Notification.ReadMore": "Read more",
-  "core.AppStudioJsonUndefined": "App Studio JSON is undefined",
   "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount": "You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.",
   "core.migrationToArmAndMultiEnv.Message": "Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version <= 2.10.0",
   "core.migrationV3.confirmOnly.Message": "Please confirm the upgrade",
@@ -313,7 +312,6 @@
   "plugins.cicd.suggestions.createProjectOrOpenExisting": "You can create a new project or open an existing one.",
   "error.cicd.FailedToListMultiEnv": "Failed to list multi env: %s.",
   "error.cicd.PreconditionNotMet": "Some preconditions of inputs are not met.",
-  "error.cicd.NoProjectOpened.details": "No project opened.",
   "plugins.apiConnector.getQuestionApiName.title": "Enter a friendly name for your API.",
   "plugins.apiConnector.getQuestionApiName.placeholder": "API alias will be used to generate app setting names.",
   "plugins.apiConnector.getQuestionEndpoint.title": "Enter an API endpoint for debugging.",
@@ -369,7 +367,6 @@
   "error.UpgradeCanceledError": "If you don't want to upgrade your project, install another version of Teams Toolkit (version <= 2.10.0).",
   "error.UpgradeV3CanceledError": "If you don't want to upgrade your project, install another version of Teams Toolkit in %s based on the project version %s.",
   "error.ConsolidateCanceledError": "If you don't want to upgrade your project, install another version of Teams Toolkit (version <= 3.7.0).",
-  "error.OperationNotSupportedForExistingAppError": "Operation is not supported for existing app: %s.",
   "error.OperationNotPermittedError": "Operation is not permitted: %s",
   "error.InvalidInputError": "Failed to update context: %s",
   "error.ContextUpgradeError": "Invalid inputs: %s",
@@ -1018,5 +1015,4 @@
   "driver.botFramework.progressBar.title": "botFramework/create",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
   "driver.generateAppsettings.description": "Add or update environment variables to appsettings file.",
-  "driver.generateAppsettings.summary.withTarget": "The environment variables has been generated successfully to %s."
 }

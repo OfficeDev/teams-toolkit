@@ -1115,6 +1115,29 @@ describe("handlers", () => {
       chai.expect(result.isOk()).equals(true);
     });
 
+    it("happy path: list collaborator throws error", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
+      });
+      sandbox.stub(MockCore.prototype, "listCollaborator").throws(new Error("Error"));
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isErr()).equals(true);
+    });
+
     it("User Cancel", async () => {
       sandbox.stub(handlers, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({

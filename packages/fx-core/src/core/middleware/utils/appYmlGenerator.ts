@@ -39,6 +39,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     defaultFunctionName: string | undefined;
     environmentFolder: string | undefined;
     projectId: string | undefined;
+    dotnetPath: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -58,6 +59,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       defaultFunctionName: undefined,
       environmentFolder: undefined,
       projectId: undefined,
+      dotnetPath: "DOTNET_PATH",
     };
   }
 

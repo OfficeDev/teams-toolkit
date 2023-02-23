@@ -10,7 +10,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
     with:
       manifestPath: ./appPackage/manifest.local.json # Path to manifest template
 

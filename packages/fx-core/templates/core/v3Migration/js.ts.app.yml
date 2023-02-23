@@ -116,6 +116,9 @@ deploy:
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
+  - uses: prerequisite/install # Install dependencies
+    with:      
+      dotnet: true
   - uses: cli/runNpmCommand
     with:
       workingDirectory: api
@@ -124,6 +127,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
+      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by prerequisite/install action
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
     with:

@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -127,7 +127,7 @@
       {
         "view": "teamsfx-feedback",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-feedback.content%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -179,13 +179,13 @@
           "id": "teamsfx-help",
           "name": "Help",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "visible"
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-feedback",
           "name": "Feedback",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "visible"
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",
@@ -605,13 +605,13 @@
       {
         "command": "fx-extension.migrateTeamsManifest",
         "title": "%teamstoolkit.commands.migrateManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
         "title": "%teamstoolkit.commands.migrateApp.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "isWorkspaceTrusted",
         "category": "Teams"
       },
       {
@@ -1514,7 +1514,7 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
     "@microsoft/teamsfx-api": "^0.22.1",
-    "@microsoft/teamsfx-core": "^1.23.0",
+    "@microsoft/teamsfx-core": "^1.23.1",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

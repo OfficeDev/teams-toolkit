@@ -17,9 +17,8 @@ on:
     branches:
       - main
       - dev
-      - ga
+      - prerelease
       - hotfix/**/*
-      - v3-folder-structure-refactor
     types:
       - assigned
       - opened

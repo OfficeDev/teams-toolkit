@@ -109,8 +109,9 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
 import "../component/driver/index";
+import "../component/driver/script/scriptDriver";
+import "reflect-metadata";
 import { DriverContext } from "../component/driver/interface/commonArgs";
-import { coordinator } from "../component/coordinator";
 import { envUtil } from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";

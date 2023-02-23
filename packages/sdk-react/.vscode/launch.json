@@ -2,34 +2,34 @@
   "version": "0.2.0",
   "configurations": [
     {
-        "name": "Jest Debug AllFile",
-        "type": "node",
-        "request": "launch",
-        "protocol": "inspector",
-        "program": "${workspaceRoot}/node_modules/jest/bin/jest",
-        "stopOnEntry": false,
-        "args": ["--runInBand", "--env=jsdom"],
-        "runtimeArgs": [
-            "--inspect-brk"
-        ],
-        "cwd": "${workspaceRoot}",
-        "sourceMaps": true,
-        "console": "integratedTerminal"
+      "type": "node",
+      "request": "launch",
+      "name": "Jest run all",
+      "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+      "args": [
+        "--ci",
+        "--reporters=jest-junit",
+        "--reporters=default",
+        "--coverage",
+        "--coverageDirectory='coverage'",
+        "--collectCoverageFrom='src/*.{ts,tsx,js}'"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     },
     {
-        "name": "Jest Debug File",
-        "type": "node",
-        "request": "launch",
-        "protocol": "inspector",
-        "program": "${workspaceRoot}/node_modules/jest/bin/jest",
-        "stopOnEntry": false,
-        "args": ["--runInBand", "--env=jsdom", "${fileBasename}"],
-        "runtimeArgs": [
-            "--inspect-brk"
-        ],
-        "cwd": "${workspaceRoot}",
-        "sourceMaps": true,
-        "console": "integratedTerminal"
+      "type": "node",
+      "request": "launch",
+      "name": "Jest run current file",
+      "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+      "args": [
+        "${fileBasename}",
+        "--ci",
+        "--verbose",
+        "--no-cache",
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     },
- ]
+  ]
 }

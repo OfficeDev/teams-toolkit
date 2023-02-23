@@ -19,7 +19,7 @@
     "typeRoots": ["node_modules/@types"],
     "types": [
       "jest", "node", "@types/jest"
-    ],
+    ]
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/test/*"],

@@ -619,8 +619,7 @@ describe("manifestsMigration", () => {
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
-    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
-    await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
+    await copyTestProject(Constants.manifestsMigrationHappyPathWithoutAad, projectPath);
 
     // Action
     await manifestsMigration(migrationContext);
@@ -648,6 +647,42 @@ describe("manifestsMigration", () => {
 
     const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
     assert.isFalse(await fs.pathExists(aadManifestPath));
+  });
+
+  it("happy path: project created with ttk <= 4.0.0 with single teams app manifest", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathOld, projectPath);
+
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, errorNames.aadManifestTemplateNotExist);
+    }
+  });
+
+  it("happy path: project created with ttk <= 4.0.0 with two teams app manifest", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathOld, projectPath);
+    await fs.rename(
+      path.join(projectPath, "templates", "appPackage", "manifest.template.json"),
+      path.join(projectPath, "templates", "appPackage", "manifest.local.template.json")
+    );
+    await fs.copy(
+      path.join(projectPath, "templates", "appPackage", "manifest.local.template.json"),
+      path.join(projectPath, "templates", "appPackage", "manifest.remote.template.json")
+    );
+
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, errorNames.manifestTemplateNotExist);
+    }
   });
 
   it("migrate manifests failed: appPackage does not exist", async () => {
@@ -697,7 +732,7 @@ describe("manifestsMigration", () => {
       assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
-        "templates/appPackage/manifest.template.json does not exist"
+        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first."
       );
     }
   });
@@ -1498,7 +1533,9 @@ const Constants = {
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsapp.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
+  manifestsMigrationHappyPathWithoutAad: "manifestsHappyPathWithoutAad",
   manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
+  manifestsMigrationHappyPathOld: "manifestsMigrationHappyPathOld",
   launchJsonPath: ".vscode/launch.json",
   happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
   happyPathAadManifestTemplateExist:

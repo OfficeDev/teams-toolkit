@@ -127,7 +127,7 @@
       {
         "view": "teamsfx-feedback",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-feedback.content%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -179,13 +179,13 @@
           "id": "teamsfx-help",
           "name": "Help",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "visible"
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-feedback",
           "name": "Feedback",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "visible"
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",

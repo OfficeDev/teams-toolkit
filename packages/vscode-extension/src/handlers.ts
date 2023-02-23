@@ -1756,11 +1756,19 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
 }
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  let documentName = "general";
+  if (args && args.length >= 2) {
+    documentName = args[1];
+  }
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
-    [TelemetryProperty.DocumentationName]: "general",
+    [TelemetryProperty.DocumentationName]: documentName,
   });
-  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-build-first-app");
+  let url = "https://aka.ms/teamsfx-build-first-app";
+  if (isV3Enabled() && documentName === "learnmore") {
+    url = "https://aka.ms/teams-toolkit-5.0-upgrade";
+  }
+  return VS_CODE_UI.openUrl(url);
 }
 
 export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
@@ -1857,12 +1865,20 @@ export async function checkUpgrade(args?: any[]) {
     const input = getSystemInputs();
     if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
       input["isNonmodalMessage"] = true;
-      core.phantomMigrationV3(input);
+      // not await here to avoid blocking the UI.
+      core.phantomMigrationV3(input).then((result) => {
+        if (result.isErr()) {
+          showError(result.error);
+        }
+      });
       return;
     } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
       input["confirmOnly"] = true;
     }
-    await core.phantomMigrationV3(input);
+    const result = await core.phantomMigrationV3(input);
+    if (result.isErr()) {
+      showError(result.error);
+    }
   } else {
     // just for triggering upgrade check for multi-env && bicep.
     await runCommand(Stage.listCollaborator);

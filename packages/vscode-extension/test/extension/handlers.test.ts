@@ -1183,7 +1183,9 @@ describe("handlers", () => {
     });
 
     it("calls phantomMigrationV3 with isNonmodalMessage when auto triggered", async () => {
-      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      const phantomMigrationV3Stub = sandbox
+        .stub(mockCore, "phantomMigrationV3")
+        .resolves(ok(undefined));
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
@@ -1198,7 +1200,9 @@ describe("handlers", () => {
     });
 
     it("calls phantomMigrationV3 with confirmOnly when button is clicked", async () => {
-      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      const phantomMigrationV3Stub = sandbox
+        .stub(mockCore, "phantomMigrationV3")
+        .resolves(ok(undefined));
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
@@ -1210,6 +1214,35 @@ describe("handlers", () => {
           confirmOnly: true,
         } as Inputs)
       );
+    });
+
+    it("shows error message when phantomMigrationV3 fails", async () => {
+      const error = new UserError(
+        "test source",
+        "test name",
+        "test message",
+        "test displayMessage"
+      );
+      error.helpLink = "test helpLink";
+      const phantomMigrationV3Stub = sandbox
+        .stub(mockCore, "phantomMigrationV3")
+        .resolves(err(error));
+      sinon.stub(localizeUtils, "localize").returns("");
+      const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
+      sinon.stub(vscode.commands, "executeCommand");
+
+      await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
+      chai.assert.isTrue(
+        phantomMigrationV3Stub.calledOnceWith({
+          "function-dotnet-checker-enabled": false,
+          locale: "en-us",
+          platform: "vsc",
+          projectPath: undefined,
+          vscodeEnv: "local",
+          confirmOnly: true,
+        } as Inputs)
+      );
+      chai.assert.isTrue(showErrorMessageStub.calledOnce);
     });
   });
 
@@ -1789,6 +1822,29 @@ describe("handlers", () => {
       const result = await handlers.preDebugCheckHandler();
       chai.assert.equal(result, undefined);
       sinon.restore();
+    });
+  });
+
+  describe("openDocumentHandler", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("opens upgrade guide when clicked from sidebar", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const openUrl = sandbox.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      await handlers.openDocumentHandler([
+        extTelemetryEvents.TelemetryTriggerFrom.SideBar,
+        "learnmore",
+      ]);
+
+      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
+      chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
     });
   });
 });

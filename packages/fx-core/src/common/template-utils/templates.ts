@@ -11,9 +11,6 @@ export const tagListURL = config.tagListURL;
 export const alphaVersion = "templates-0.0.0-alpha";
 
 export function selectTag(tags: string[]): string | undefined {
-  if (preRelease === "alpha") {
-    return alphaVersion;
-  }
   // To avoid incompatible, alpha release does not download latest template.
   if (tagPrefix + templatesVersion === alphaVersion) {
     return undefined;

@@ -226,6 +226,7 @@ export class ProvisionUtils {
       try {
         const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
         if (!subscriptionInAccount) {
+          // this case will not happen actually
           return err(
             new UserError(
               CoordinatorSource,

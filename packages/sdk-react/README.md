@@ -141,6 +141,12 @@ const { loading, theme, themeString, teamsUserCredential } = useTeamsUserCredent
 This hook function leverage `useData` to call Graph API. It will execute the fetchGraphDataAsync function that the developer passes in first.
 If user has not consented to the scopes of AAD resources, `useGraph()`, `useGraphWithCredential` will automatically call login function to pop up the consent dialog. So, developers can focus on the business logic of how to fetch Microsoft Graph data.
 
+### BaseDashboard
+The BaseDashboard is a React component that provides a basic dashboard layout implementation for developers to quickly build a dashboard tab for Microsoft Teams. You can inherit this class and override some methods to customize your own dashboard. For example, define the layout of the widget in your dashboard by overriding the `layout()` method, and customize the dashboard style by overriding the `styling()` method.
+
+### BaseWidget
+The BaseWidget is a React component that provides a basic widget layout implementation for developers to quickly build a widget. You can inherit this class and override some methods to customize your own widget. For example, define the header of the widget by overriding the `header()` method, and get data needed for the widget by overriding the `getData()` method, etc.
+
 ## Next steps
 
 Please take a look at the [Samples](https://github.com/OfficeDev/TeamsFx-Samples) project for detailed examples on how to use this library.

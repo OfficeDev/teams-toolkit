@@ -28,9 +28,9 @@
     "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
-    "@fluentui/react": "^8.99.2",
+    "@fluentui/react": "^8.106.1",
     "@fluentui/react-northstar": "^0.62.0",
-    "@fluentui/react-components": "^9.7.1",
+    "@fluentui/react-components": "^9.15.6",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",
@@ -72,9 +72,9 @@
     "typescript": "latest"
   },
   "peerDependencies": {
-    "@fluentui/react": "^8.99.2",
+    "@fluentui/react": "^8.106.1",
     "@fluentui/react-northstar": "^0.62.0",
-    "@fluentui/react-components": "^9.7.1",
+    "@fluentui/react-components": "^9.15.6",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",
     "@microsoft/teamsfx": ">2.0.0-alpha",

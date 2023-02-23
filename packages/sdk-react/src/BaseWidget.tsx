@@ -16,7 +16,7 @@ export const widgetStyle = mergeStyleSets({
     gap: "1rem",
     gridTemplateRows: "max-content 1fr max-content",
   },
-  header: {
+  headerLayout: {
     display: "grid",
     alignItems: "center",
     height: "max-content",
@@ -27,7 +27,7 @@ export const widgetStyle = mergeStyleSets({
     gridTemplateColumns: "1fr min-content",
     alignItems: "center",
   },
-  headerContent: {
+  plentyHeader: {
     display: "grid",
     gap: "8px",
     gridTemplateColumns: "min-content 1fr min-content",
@@ -46,25 +46,24 @@ export const widgetStyle = mergeStyleSets({
   },
 });
 
-interface WidgetState {
+interface BaseWidgetState {
   loading?: boolean;
 }
 
 /**
- * Defined a widget, it's also a react component.
- * For more information about react component, please refer to https://reactjs.org/docs/react-component.html
- * T is the model type of the widget.
+ * The base class for widget implementation. I
+ * It's also a react component, for more information about react component, please refer to https://reactjs.org/docs/react-component.html
+ * @param P the type of props.
+ * @param S the type of state.
  */
-export class BaseWidget<T> extends Component<any, T & WidgetState> {
-  constructor(props: any) {
+export class BaseWidget<P, S> extends Component<P, S & BaseWidgetState> {
+  constructor(props: Readonly<P>) {
     super(props);
-    type L = T & WidgetState;
-    this.state = { loading: undefined } as L;
+    this.state = { loading: undefined } as S & BaseWidgetState;
   }
 
   /**
    * This method is invoked immediately after a component is mounted.
-   * It's a good place to fetch data from server.
    * For more information about react lifecycle, please refer to https://reactjs.org/docs/react-component.html#componentdidmount
    */
   async componentDidMount() {
@@ -72,18 +71,19 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
   }
 
   /**
-   * Define your widget layout, you can edit the code here to customize your widget.
+   * Define the basic layout of a widget
    */
   render() {
+    const { root, headerLayout } = widgetStyle;
     return (
-      <div className={mergeStyles(widgetStyle.root, this.genClassName())} style={this.genStyle()}>
-        {this.headerContent() && <div className={widgetStyle.header}>{this.headerContent()}</div>}
-        {this.state.loading !== false && this.loadingContent() !== undefined ? (
-          this.loadingContent()
+      <div className={mergeStyles(root, this.genClassName())} style={this.genStyle()}>
+        {this.header() && <div className={headerLayout}>{this.header()}</div>}
+        {this.state.loading !== false && this.loading() !== undefined ? (
+          this.loading()
         ) : (
           <>
-            {this.bodyContent() !== undefined && this.bodyContent()}
-            {this.footerContent() !== undefined && this.footerContent()}
+            {this.body() !== undefined && this.body()}
+            {this.footer() !== undefined && this.footer()}
           </>
         )}
       </div>
@@ -91,10 +91,10 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
   }
 
   /**
-   * Get data required by the widget, you can get data from a api call or static data stored in a file. Override this method according to your needs.
+   * Get data required by the widget
    * @returns data for the widget
    */
-  protected async getData(): Promise<T> {
+  protected async getData(): Promise<S> {
     return undefined;
   }
 
@@ -102,7 +102,7 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
    * Override this method to customize the widget header.
    * @returns JSX component for the widget body
    */
-  protected headerContent(): JSX.Element | undefined {
+  protected header(): JSX.Element | undefined {
     return undefined;
   }
 
@@ -110,7 +110,7 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
    * Override this method to customize the widget body.
    * @returns JSX component for the widget body
    */
-  protected bodyContent(): JSX.Element | undefined {
+  protected body(): JSX.Element | undefined {
     return undefined;
   }
 
@@ -118,14 +118,14 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
    * Override this method to customize the widget footer.
    * @returns react node for the widget footer
    */
-  protected footerContent(): JSX.Element | undefined {
+  protected footer(): JSX.Element | undefined {
     return undefined;
   }
 
   /**
    * Override this method to customize what the widget will look like when it is loading.
    */
-  protected loadingContent(): JSX.Element | undefined {
+  protected loading(): JSX.Element | undefined {
     return undefined;
   }
 
@@ -133,7 +133,7 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
    * Override this method to customize the widget style.
    * @returns custom style for the widget
    */
-  protected stylingWidget(): CSSProperties | string {
+  protected styling(): CSSProperties | string {
     return "";
   }
 
@@ -142,9 +142,7 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
    * @returns CSSProperties object
    */
   private genStyle(): CSSProperties {
-    return typeof this.stylingWidget() === "string"
-      ? undefined
-      : (this.stylingWidget() as CSSProperties);
+    return typeof this.styling() === "string" ? undefined : (this.styling() as CSSProperties);
   }
 
   /**
@@ -152,6 +150,6 @@ export class BaseWidget<T> extends Component<any, T & WidgetState> {
    * @returns className for styling the widget
    */
   private genClassName(): string {
-    return typeof this.stylingWidget() === "string" ? (this.stylingWidget() as string) : "";
+    return typeof this.styling() === "string" ? (this.styling() as string) : "";
   }
 }

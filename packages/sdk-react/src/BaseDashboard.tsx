@@ -2,49 +2,48 @@ import React, { Component, CSSProperties } from "react";
 
 import { mergeStyles } from "@fluentui/react";
 
-const dashboardStyle = (isMobile?: boolean, rowHeighs?: string, columnWidths?: string) => {
+const dashboardStyle = (isMobile?: boolean) => {
   return mergeStyles({
     display: "grid",
     gap: "20px",
     padding: "20px",
-    ...(rowHeighs !== undefined ? { gridTemplateRows: rowHeighs } : { gridTemplateRows: "1fr" }),
-    ...(columnWidths !== undefined
-      ? { gridTemplateColumns: columnWidths }
-      : { gridTemplateColumns: "4fr 6fr" }),
+    gridTemplateRows: "1fr",
+    gridTemplateColumns: "4fr 6fr",
     ...(isMobile === true ? { gridTemplateColumns: "1fr", gridTemplateRows: "1fr" } : {}),
   });
 };
 
-interface IDashboardState {
+interface BaseDashboardState {
   isMobile?: boolean;
   showLogin?: boolean;
   observer?: ResizeObserver;
 }
 
 /**
- * The base class for all dashboard components.
+ * The base class for dashboard implementation.
+ * It's also a react component, for more information about react component, please refer to https://reactjs.org/docs/react-component.html
+ * @param P The type of props.
+ * @param S The type of state.
  */
-export class BaseDashboard extends Component<any, IDashboardState> {
+export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   private ref: React.RefObject<HTMLDivElement>;
 
   /**
    * Constructor for the dashboard class.
-   * Initializes the dashboard state.
    * @param props The properties for the dashboard.
    */
-  constructor(props: any) {
+  constructor(props: Readonly<P>) {
     super(props);
     this.state = {
       isMobile: undefined,
       showLogin: undefined,
       observer: undefined,
-    };
+    } as S & BaseDashboardState;
     this.ref = React.createRef<HTMLDivElement>();
   }
 
   /**
    * This method is invoked immediately after a component is mounted.
-   * It's a good place to fetch data from server.
    * For more information about react lifecycle, please refer to https://reactjs.org/docs/react-component.html#componentdidmount
    */
   async componentDidMount() {
@@ -53,7 +52,7 @@ export class BaseDashboard extends Component<any, IDashboardState> {
       for (const entry of entries) {
         if (entry.target === this.ref.current) {
           const { width } = entry.contentRect;
-          this.setState({ isMobile: width < 600 });
+          this.setState({ isMobile: width < 600 } as S & BaseDashboardState);
         }
       }
     });
@@ -61,8 +60,7 @@ export class BaseDashboard extends Component<any, IDashboardState> {
   }
 
   /**
-   * This method is invoked immediately when a component will be unmounted.
-   * It's a good place to clean up the resources.
+   * This method is invoked immediately when a component will be unmounted. It's a good place to clean up the resources.
    */
   componentWillUnmount(): void {
     // Unobserve the dashboard div for resize events
@@ -72,51 +70,33 @@ export class BaseDashboard extends Component<any, IDashboardState> {
   }
 
   /**
-   * Define thie dashboard default layout, you can edit the code here to customize your dashboard layout.
+   * Define thie dashboard default layout.
    */
   render() {
-    const root = dashboardStyle(this.state.isMobile, this.rowHeights(), this.columnWidths());
+    const root = dashboardStyle(this.state.isMobile);
     return (
       <div
         ref={this.ref}
         className={mergeStyles(root, this.genClassName())}
         style={this.genStyle()}
       >
-        {this.dashboardLayout()}
+        {this.layout()}
       </div>
     );
   }
 
   /**
-   * Implement this method to define the row heights of the dashboard.
-   * For example, if you want to have 3 rows, and the height of the first row is 100px, the height of the second row is 200px, and the height of the third row is 300px, you can return "100px 200px 300px".
-   * @returns The row heights of the dashboard.
+   * Override this method to define the layout of the widget in the dashboard.
    */
-  protected rowHeights(): string | undefined {
-    return undefined;
-  }
-
-  /**
-   * Implement this method to define the column widths of the dashboard.
-   * For example, if you want to have 3 columns, and each column occupies 1/3 of the full width, you can return "1fr 1fr 1fr".
-   * @returns The column widths of the dashboard.
-   */
-  protected columnWidths(): string | undefined {
-    return undefined;
-  }
-
-  /**
-   * Implement this method to define the dashboard layout.
-   */
-  protected dashboardLayout(): JSX.Element | undefined {
+  protected layout(): JSX.Element | undefined {
     return undefined;
   }
 
   /**
    * Override this method to customize the dashboard style.
-   * @returns custom style for the dashboard
+   * @returns The style for the dashboard
    */
-  protected styingDashboard(): CSSProperties | string {
+  protected styling(): CSSProperties | string {
     return {};
   }
 
@@ -125,9 +105,9 @@ export class BaseDashboard extends Component<any, IDashboardState> {
    * @returns CSSProperties object
    */
   private genStyle(): CSSProperties {
-    return typeof this.styingDashboard() === "string"
+    return typeof this.styling() === "string"
       ? ({} as CSSProperties)
-      : (this.styingDashboard() as CSSProperties);
+      : (this.styling() as CSSProperties);
   }
 
   /**
@@ -135,6 +115,6 @@ export class BaseDashboard extends Component<any, IDashboardState> {
    * @returns className for styling the dashboard
    */
   private genClassName(): string {
-    return typeof this.styingDashboard() === "string" ? (this.styingDashboard() as string) : "";
+    return typeof this.styling() === "string" ? (this.styling() as string) : "";
   }
 }

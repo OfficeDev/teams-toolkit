@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan Jobs <ruhe@microsoft.com>
+ */
 import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, default as axios } from "axios";

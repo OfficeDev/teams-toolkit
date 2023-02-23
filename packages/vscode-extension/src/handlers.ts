@@ -2570,7 +2570,7 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
     result = wrapError(e);
   }
 
-  await processResult(TelemetryEvent.ManageCollaborator, result);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaborator);
   return result;
 }
 

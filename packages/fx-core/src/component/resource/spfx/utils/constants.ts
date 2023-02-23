@@ -21,7 +21,7 @@ export class Constants {
     "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
   public static readonly CREATE_APP_CATALOG_GUIDE =
     "https://docs.microsoft.com/en-us/sharepoint/use-app-catalog#create-the-app-catalog";
-  public static readonly SPFX_VERSION = "1.16.0";
+  public static readonly SPFX_VERSION = "1.16.1";
   public static readonly SUPPORTED_NODE_VERSION = ["16"];
   public static readonly SUPPORTED_NPM_VERSION = ["7", "8"];
   public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";

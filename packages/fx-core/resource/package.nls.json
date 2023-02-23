@@ -613,6 +613,7 @@
   "core.options.separator.additional": "Additional features",
   "core.options.separator.m365": "Extended Teams apps across Microsoft 365",
   "core.options.separator.addin": "Office Add-ins",
+  "core.common.LifecycleComplete": "Executed lifecycle %s.",
   "core.common.TeamsMobileDesktopClientName": "Teams desktop, mobile client id",
   "core.common.TeamsWebClientName": "Teams web client id",
   "core.common.OfficeDesktopClientName": "Office desktop client id",

@@ -90,7 +90,7 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
+import { isSPFxProject, isV3Enabled } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -115,8 +115,9 @@ export const Parameters = {
 };
 
 export const TelemetryPropertyKey = {
-  status: "status",
+  button: "button",
   mode: "mode",
+  upgradeVersion: "upgrade-version",
 };
 
 export const TelemetryPropertyValue = {
@@ -127,15 +128,18 @@ export const TelemetryPropertyValue = {
   nonmodal: "nonmodal",
   confirmOnly: "confirm-only",
   skipUserConfirm: "skip-user-confirm",
+  upgradeVersion: "5.0",
 };
 
 export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+
+// MigrationError provides learnMoreLink as helplink for user. Remember add related error message in learnMoreLink when adding new error.
 export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-const migrationMessageButtons = [learnMoreText, upgradeButton];
+const migrationMessageButtons = [upgradeButton, learnMoreText];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -169,7 +173,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
-    if (!isMigrationV3Enabled()) {
+    if (!isV3Enabled()) {
       await TOOLS?.ui.showMessage(
         "warn",
         getLocalizedString("core.migrationV3.CreateNewProject"),
@@ -207,7 +211,9 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart, {
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    });
     await exec(context);
     await showSummaryReport(context);
     sendTelemetryEvent(
@@ -460,7 +466,8 @@ export async function showNotification(
   const skipUserConfirm = getParameterFromCxt(ctx, Parameters.skipUserConfirm);
   if (skipUserConfirm) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.skipUserConfirm,
     });
     return true;
@@ -472,21 +479,25 @@ export async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
     if (answer === learnMoreText) {
       TOOLS?.ui!.openUrl(learnMoreLink);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-        [TelemetryPropertyKey.status]: TelemetryPropertyValue.learnMore,
+        [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
+        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
   } while (answer === learnMoreText);
   if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
     const link = getDownloadLinkByVersionAndPlatform(
@@ -498,7 +509,8 @@ export async function askUserConfirm(
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-    [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+    [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
     [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
   });
   return true;
@@ -508,18 +520,22 @@ export async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   const answer = await popupMessageNonmodal(versionForMigration);
   if (answer === learnMoreText) {
     TOOLS?.ui!.openUrl(learnMoreLink);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.learnMore,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return false;
   } else if (answer === upgradeButton) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return true;
@@ -528,7 +544,9 @@ export async function showNonmodalNotification(
 }
 
 export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   const res = await TOOLS?.ui.showMessage(
     "info",
     getLocalizedString("core.migrationV3.confirmOnly.Message"),
@@ -537,13 +555,15 @@ export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise
   );
   if (res?.isOk() && res.value === "OK") {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return true;
   } else {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return false;

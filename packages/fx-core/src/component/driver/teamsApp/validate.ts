@@ -105,13 +105,13 @@ export class ValidateTeamsAppDriver implements StepDriver {
         "https://aka.ms/teamsfx-actions/teamsapp-validate"
       );
       return err(validationFailed);
-    }
-    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-    if (context.platform === Platform.VS) {
-      context.logProvider.info(validationSuccess);
-    } else {
-      context.ui?.showMessage("info", validationSuccess, false);
     }*/
+    const validationNotice = getLocalizedString("driver.teamsApp.validate.skip", actionName);
+    if (context.platform === Platform.VS) {
+      context.logProvider.warning(validationNotice);
+    } else {
+      context.ui?.showMessage("warn", validationNotice, false);
+    }
     return ok(new Map());
   }
 

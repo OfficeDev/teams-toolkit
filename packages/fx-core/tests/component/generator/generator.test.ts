@@ -28,8 +28,12 @@ import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
+import {
+  templateAlphaVersion,
+  templatePrereleasePrefix,
+  templatePrereleaseVersion,
+} from "../../../src/component/generator/constant";
 import templateConfig from "../../../src/common/templates-config.json";
-import { templateAlphaVersion } from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -43,23 +47,29 @@ describe("Generator utils", () => {
   });
 
   it("select tag should return alpha if set env", async () => {
-    sandbox.replace(generatorUtils, "preRelease", "alpha");
-    const tag = generatorUtils.selectTemplateTag(["1.0.0"]);
-    assert.equal(tag, templateAlphaVersion);
+    sandbox.stub(generatorUtils, "preRelease").returns(templateAlphaVersion);
+    const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
+    assert.equal(tag, templatePrereleasePrefix + templateAlphaVersion);
   });
 
   it("select tag should return undefined to use fallback if template config use alpha version", async () => {
-    sandbox.replace(generatorUtils, "preRelease", "");
+    sandbox.stub(generatorUtils, "preRelease").returns("");
     sandbox.stub(templateConfig, "version").value(templateAlphaVersion);
-    const tag = generatorUtils.selectTemplateTag(["1.0.0"]);
+    const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
     assert.equal(tag, undefined);
   });
 
   it("select tag should return correct version", async () => {
-    sandbox.replace(generatorUtils, "preRelease", "");
+    sandbox.stub(generatorUtils, "preRelease").returns("");
     sandbox.stub(templateConfig, "version").value("^2.0.0");
     sandbox.replace(generatorUtils, "templateTagPrefix", "templates@");
-    const tag = generatorUtils.selectTemplateTag(["1.0.0", "2.0.0", "2.1.0", "2.1.1", "3.0.0"]);
+    const tag = await generatorUtils.selectTemplateTag(async () => [
+      "1.0.0",
+      "2.0.0",
+      "2.1.0",
+      "2.1.1",
+      "3.0.0",
+    ]);
     assert.equal(tag, "templates@2.1.1");
   });
 
@@ -117,7 +127,7 @@ describe("Generator utils", () => {
   });
 
   it("fetch template zip url", async () => {
-    sandbox.stub(generatorUtils, "selectTemplateTag").resolves(["templateAlphaVersion"]);
+    sandbox.stub(generatorUtils, "selectTemplateTag").resolves(templateAlphaVersion);
     const url = await generatorUtils.fetchTemplateZipUrl("test");
     assert.exists(url);
   });
@@ -309,16 +319,35 @@ describe("Generator happy path", async () => {
     mockedEnvRestore();
   });
 
-  it("alpha release should use fallback", async () => {
-    sandbox.stub(generatorUtils, "templateVersion").resolves(templateAlphaVersion);
-    sandbox.stub(generatorUtils, "fetchTagList").resolves(templateAlphaVersion);
+  it("correctly select template tag", async () => {
+    sandbox.stub(generatorUtils, "templateVersion").returns("^1.0.0");
+    const url = await generatorUtils.selectTemplateTag(async () => ["1.0.0", "1.2.0"]);
+    assert.include(url, "1.2.0");
+  });
 
-    try {
-      await generatorUtils.fetchTemplateZipUrl("ut");
-    } catch (e) {
-      assert.exists(e);
-      return;
-    }
-    assert.fail("Should not reach here.");
+  it("return prerelease version if feature flag set", async () => {
+    const resolveFn = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "alpha",
+    });
+    const url = await generatorUtils.selectTemplateTag(async () => ["1.0.0", "1.2.0"]);
+    assert.include(url, "alpha");
+    resolveFn();
+  });
+
+  it("alpha release or prerelease should use fallback", async () => {
+    const versions = [templateAlphaVersion, templatePrereleaseVersion];
+    versions.forEach(async (version) => {
+      sandbox.stub(generatorUtils, "templateVersion").returns(version);
+
+      try {
+        await generatorUtils.fetchTemplateZipUrl("ut");
+      } catch (e) {
+        assert.exists(e);
+        sandbox.restore();
+        return;
+      }
+      sandbox.restore();
+      assert.fail("Should not reach here.");
+    });
   });
 });

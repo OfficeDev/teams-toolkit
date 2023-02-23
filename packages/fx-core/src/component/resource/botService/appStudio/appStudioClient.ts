@@ -26,7 +26,6 @@ import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient"
 import { isHappyResponse } from "../common";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { TeamsFxUrlNames } from "../constants";
-import { sendStartEvent, sendSuccessEvent } from "../../../telemetry";
 
 export function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {

@@ -423,7 +423,6 @@ export class NoCapabilityFoundError extends UserError {
       source: CoreSource,
       message: getDefaultString("core.deploy.noCapabilityFound", operation),
       displayMessage: getLocalizedString("core.deploy.noCapabilityFound", operation),
-      helpLink: HelpLinks.HowToAddCapability,
     });
   }
 }

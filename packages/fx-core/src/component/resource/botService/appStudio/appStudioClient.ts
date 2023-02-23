@@ -82,6 +82,7 @@ export class AppStudioClient {
     token: string,
     botId: string
   ): Promise<IBotRegistration | undefined> {
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.GET_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -90,6 +91,7 @@ export class AppStudioClient {
       );
       if (isHappyResponse(response)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.GET_BOT);
         return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
@@ -106,12 +108,14 @@ export class AppStudioClient {
     checkExistence = true,
     context?: ResourceContextV3
   ): Promise<void> {
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     if (registration.botId && checkExistence) {
       const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
         return;
       }
     }
@@ -123,6 +127,7 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
       }
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     } catch (e) {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT);
     }
@@ -154,6 +159,7 @@ export class AppStudioClient {
     token: string,
     botReg: IBotRegistration
   ): Promise<void> {
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -163,6 +169,7 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     } catch (e) {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
     }

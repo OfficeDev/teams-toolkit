@@ -54,6 +54,21 @@ describe("Existing Tab test for v3", () => {
     const res = await fx.create(context, inputs);
     assert.isTrue(res.isOk());
     assert.equal(context.projectSetting!.appName, appName);
+    assert.equal(context.projectPath, projectPath);
     assert.deepEqual(context.projectSetting.components, []);
+  });
+
+  it("create existing app - CLI", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.CLI,
+      "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
+      capabilities: ExistingTabOptionItem().id,
+      [CoreQuestionNames.ExistingTabEndpoint]: "https://localhost:3000",
+      scratch: "yes",
+    };
+    const res = await fx.create(context, inputs);
+    assert.isFalse(res.isOk());
   });
 });

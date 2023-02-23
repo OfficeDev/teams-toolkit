@@ -1115,6 +1115,29 @@ describe("handlers", () => {
       chai.expect(result.isOk()).equals(true);
     });
 
+    it("happy path: list collaborator throws error", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
+      });
+      sandbox.stub(MockCore.prototype, "listCollaborator").throws(new Error("Error"));
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isErr()).equals(true);
+    });
+
     it("User Cancel", async () => {
       sandbox.stub(handlers, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
@@ -1183,7 +1206,9 @@ describe("handlers", () => {
     });
 
     it("calls phantomMigrationV3 with isNonmodalMessage when auto triggered", async () => {
-      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      const phantomMigrationV3Stub = sandbox
+        .stub(mockCore, "phantomMigrationV3")
+        .resolves(ok(undefined));
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
@@ -1198,7 +1223,9 @@ describe("handlers", () => {
     });
 
     it("calls phantomMigrationV3 with confirmOnly when button is clicked", async () => {
-      const phantomMigrationV3Stub = sandbox.stub(mockCore, "phantomMigrationV3");
+      const phantomMigrationV3Stub = sandbox
+        .stub(mockCore, "phantomMigrationV3")
+        .resolves(ok(undefined));
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
@@ -1210,6 +1237,35 @@ describe("handlers", () => {
           confirmOnly: true,
         } as Inputs)
       );
+    });
+
+    it("shows error message when phantomMigrationV3 fails", async () => {
+      const error = new UserError(
+        "test source",
+        "test name",
+        "test message",
+        "test displayMessage"
+      );
+      error.helpLink = "test helpLink";
+      const phantomMigrationV3Stub = sandbox
+        .stub(mockCore, "phantomMigrationV3")
+        .resolves(err(error));
+      sinon.stub(localizeUtils, "localize").returns("");
+      const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
+      sinon.stub(vscode.commands, "executeCommand");
+
+      await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
+      chai.assert.isTrue(
+        phantomMigrationV3Stub.calledOnceWith({
+          "function-dotnet-checker-enabled": false,
+          locale: "en-us",
+          platform: "vsc",
+          projectPath: undefined,
+          vscodeEnv: "local",
+          confirmOnly: true,
+        } as Inputs)
+      );
+      chai.assert.isTrue(showErrorMessageStub.calledOnce);
     });
   });
 
@@ -1789,6 +1845,29 @@ describe("handlers", () => {
       const result = await handlers.preDebugCheckHandler();
       chai.assert.equal(result, undefined);
       sinon.restore();
+    });
+  });
+
+  describe("openDocumentHandler", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("opens upgrade guide when clicked from sidebar", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const openUrl = sandbox.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      await handlers.openDocumentHandler([
+        extTelemetryEvents.TelemetryTriggerFrom.SideBar,
+        "learnmore",
+      ]);
+
+      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
+      chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
     });
   });
 });

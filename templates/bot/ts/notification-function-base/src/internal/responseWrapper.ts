@@ -1,6 +1,6 @@
 import { Response } from "botbuilder";
 
-// A wrapper to convert Azure Functions Response to Bot Builder's WebResponse.
+// A wrapper to convert Azure Functions Response to Bot Builder's Response.
 export class ResponseWrapper implements Response {
   socket: any;
   originalResponse?: any;

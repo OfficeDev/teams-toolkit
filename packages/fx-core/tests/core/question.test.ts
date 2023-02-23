@@ -7,6 +7,7 @@ import {
   createAppNameQuestion,
   handleSelectionConflict,
   ProgrammingLanguageQuestion,
+  ScratchOptionYesVSC,
 } from "../../src/core/question";
 import { FuncValidation, Inputs, Platform, QTreeNode } from "@microsoft/teamsfx-api";
 import {
@@ -29,6 +30,7 @@ import {
 } from "../../src/component/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel";
+import * as featureFlags from "../../src/common/featureFlags";
 
 describe("Programming Language Questions", async () => {
   it("should return csharp on VS platform", async () => {
@@ -293,11 +295,34 @@ describe("App name question", async () => {
 });
 
 describe("addOfficeAddinQuestions()", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("should add questions", () => {
     const parent = new QTreeNode({
       type: "group",
     });
     addOfficeAddinQuestions(parent);
     chai.assert(parent.children?.length != undefined && parent.children.length > 0);
+  });
+
+  it("should show in scratch option when feature flag is on", () => {
+    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(true);
+
+    const officeAddinOption = ScratchOptionYesVSC();
+    chai.assert.equal(
+      officeAddinOption.label,
+      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")}`
+    );
+  });
+
+  it("should not show in scratch option when feature flag is off", () => {
+    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(false);
+    const originOption = ScratchOptionYesVSC();
+    chai.assert.equal(
+      originOption.label,
+      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`
+    );
   });
 });

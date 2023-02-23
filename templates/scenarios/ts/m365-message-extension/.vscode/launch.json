@@ -147,7 +147,7 @@
                 "Launch Bot in Outlook (Edge)",
                 "Attach to Bot"
             ],
-            "preLaunchTask": "Start Teams App Locally & Install App",
+            "preLaunchTask": "Start Teams App Locally",
             "presentation": {
                 "group": "group 2: Outlook",
                 "order": 1
@@ -160,7 +160,7 @@
                 "Launch Bot in Outlook (Chrome)",
                 "Attach to Bot"
             ],
-            "preLaunchTask": "Start Teams App Locally & Install App",
+            "preLaunchTask": "Start Teams App Locally",
             "presentation": {
                 "group": "group 2: Outlook",
                 "order": 2

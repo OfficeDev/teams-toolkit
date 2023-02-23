@@ -17,7 +17,7 @@ const ACTION_NAME = "cli/runNpxCommand";
 export class NpxBuildDriver extends BaseBuildStepDriver {
   readonly description: string = getLocalizedString("driver.script.npxDescription");
 
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return super.run(args, context);
   }

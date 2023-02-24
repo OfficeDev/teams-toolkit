@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-         repository: "OfficeDev/teamsfx-issue-triage-bot"
+         repository: "devdiv-azure-service-dmitryr/teamsfx-issue-triage-bot"
          ref: main 
          path: ./actions
-         token: ${{secrets.TEAMSFX_BOT}}
+         token: ${{secrets.GHEC_BOT_PAT}}
       - name: Install Actions
         run: npm install --production --prefix ./actions
 

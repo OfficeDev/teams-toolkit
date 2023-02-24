@@ -385,7 +385,7 @@
   "error.NoSubscriptionFound": "Failed to find a subscription.",
   "error.TrustCertificateCancelError": "User canceled. For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.",
   "error.NoTeamsAppTenantId": "Failed to get Teams app tenant id",
-  "error.NoM365Token": "Failed to get M365 token Json object",
+  "error.NoM365Token": "Failed to get M365 token JSON object",
   "error.FailedToCreateResourceGroup": "Failed to create resource group \"%s\": the resource group exists",
   "error.FailedToListResourceGroupLocation": "Failed to list resource group locations",
   "error.BicepGenerationError": "Failed to generate Bicep file %s. Reason: %s",

@@ -807,6 +807,10 @@
       {
         "command": "fx-extension.openSurvey",
         "title": "%teamstoolkit.commandsTreeViewProvider.openSurveyTitle%"
+      },
+      {
+        "command": "fx-extension.addWebpart",
+        "title": "%teamstoolkit.commmands.addWebpart.title%"
       }
     ],
     "taskDefinitions": [

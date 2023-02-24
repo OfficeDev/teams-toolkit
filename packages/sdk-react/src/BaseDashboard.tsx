@@ -2,7 +2,7 @@ import React, { Component, CSSProperties } from "react";
 
 import { mergeStyles } from "@fluentui/react";
 
-const dashboardStyle = (isMobile?: boolean) => {
+function dashboardStyle(isMobile?: boolean) {
   return mergeStyles({
     display: "grid",
     gap: "20px",
@@ -11,7 +11,7 @@ const dashboardStyle = (isMobile?: boolean) => {
     gridTemplateColumns: "4fr 6fr",
     ...(isMobile === true ? { gridTemplateColumns: "1fr", gridTemplateRows: "1fr" } : {}),
   });
-};
+}
 
 interface BaseDashboardState {
   isMobile?: boolean;

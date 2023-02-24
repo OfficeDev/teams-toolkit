@@ -1125,6 +1125,17 @@ export async function openFolderHandler(args?: any[]): Promise<Result<any, FxErr
   return ok(null);
 }
 
+export async function addWebpart(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addWebpart",
+  };
+
+  return await runUserTask(func, TelemetryEvent.AddWebpart, true);
+}
+
 export async function runCommand(
   stage: Stage,
   defaultInputs?: Inputs

@@ -484,6 +484,11 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
+  const addWebpartCmd = vscode.commands.registerCommand("fx-extension.addWebpart", (...args) =>
+    Correlator.run(handlers.addWebpart, args)
+  );
+  context.subscriptions.push(addWebpartCmd);
+
   const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
     await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });

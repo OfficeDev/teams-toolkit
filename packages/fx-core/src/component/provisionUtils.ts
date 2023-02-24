@@ -746,8 +746,8 @@ export class ProvisionUtils {
         new SystemError(
           SolutionSource,
           SolutionError.NoAppStudioToken,
-          getDefaultString("error.NoAppStudioToken"),
-          getLocalizedString("error.NoAppStudioToken")
+          getDefaultString("error.NoM365Token"),
+          getLocalizedString("error.NoM365Token")
         )
       );
     }

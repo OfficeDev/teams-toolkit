@@ -57,7 +57,6 @@ import {
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../src/core/middleware/types";
-import { isMigrationV3Enabled } from "../../../src/common/tools";
 import * as loader from "../../../src/core/middleware/projectSettingsLoader";
 import { SettingsUtils } from "../../../src/component/utils/settingsUtil";
 
@@ -1296,11 +1295,6 @@ describe("Migration utils", () => {
     migrationNotificationMessage(version);
     version.platform = Platform.CLI;
     migrationNotificationMessage(version);
-  });
-
-  it("isMigrationV3Enabled", () => {
-    const enabled = isMigrationV3Enabled();
-    assert.isFalse(enabled);
   });
 });
 

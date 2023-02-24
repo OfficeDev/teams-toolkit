@@ -8,12 +8,10 @@ const widgetStyle = mergeStyleSets({
     display: "grid",
     padding: "1.25rem 2rem 1.25rem 2rem",
     backgroundColor: tokens.colorNeutralBackground1,
-    borderWidth: "1px",
-    borderStyle: "solid",
-    borderColor: tokens.colorTransparentStroke,
+    border: "1px solid var(--colorTransparentStroke)",
     boxShadow: tokens.shadow4,
     borderRadius: tokens.borderRadiusMedium,
-    gap: "1rem",
+    gap: tokens.spacingHorizontalL,
     gridTemplateRows: "max-content 1fr max-content",
   },
   header: {
@@ -21,7 +19,7 @@ const widgetStyle = mergeStyleSets({
     height: "max-content",
     "& div": {
       display: "grid",
-      gap: "8px",
+      gap: tokens.spacingHorizontalS,
       alignItems: "center",
       gridTemplateColumns: "min-content 1fr min-content",
     },
@@ -79,7 +77,7 @@ export class BaseWidget<P, S> extends Component<P, S & BaseWidgetState> {
         ) : (
           <>
             {this.body() !== undefined && this.body()}
-            {this.footer() !== undefined && <div className={footer}>this.footer()</div>}
+            {this.footer() !== undefined && <div className={footer}>{this.footer()}</div>}
           </>
         )}
       </div>

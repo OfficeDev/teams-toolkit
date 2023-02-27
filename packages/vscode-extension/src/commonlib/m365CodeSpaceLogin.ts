@@ -19,7 +19,11 @@ import {
 import { getDefaultString } from "../utils/localizeUtils";
 import { UserCancelError } from "./codeFlowLogin";
 
-const CodeSpacesScopes = [
+// By using `VSCODE_CLIENT_ID:<aad-app-id>` in the `vscode.authentication` API,
+// we can override the scope with our own first-party AAD app.
+// Check https://www.eliostruyf.com/microsoft-authentication-provider-visual-studio-code/ for more details.
+// https://github.com/microsoft/vscode/blob/0f9d0328ebe1eccd28e4de11ece14f4b0db3e818/extensions/microsoft-authentication/src/AADHelper.ts#L603
+const TeamsFxAadScopes = [
   "VSCODE_CLIENT_ID:7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
   "VSCODE_TENANT:common",
 ];
@@ -83,7 +87,7 @@ export class M365CodeSpaceLogin extends BasicLogin implements M365TokenProvider 
     scopes: Array<string>
   ): Promise<vscode.AuthenticationSession | undefined> {
     return vscode.authentication
-      .getSession("microsoft", CodeSpacesScopes.concat(scopes), { createIfNone: createIfNone })
+      .getSession("microsoft", TeamsFxAadScopes.concat(scopes), { createIfNone: createIfNone })
       .then((session: vscode.AuthenticationSession | undefined) => {
         return session;
       });

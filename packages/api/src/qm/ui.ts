@@ -389,6 +389,7 @@ export interface UserInteraction {
     workingDirectory?: string;
     shell?: string;
     timeout?: number;
+    env?: { [k: string]: string };
   }): Promise<Result<string, FxError>>;
 }
 

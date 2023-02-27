@@ -1,5 +1,7 @@
 # Changelog
 
+## 4.2.4 - Feb 28, 2023
+
 ## 4.2.3 - Feb 17, 2023
 
 Incremental version for Teams Toolkit with multiple bug fixes.

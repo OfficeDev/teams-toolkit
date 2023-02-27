@@ -379,6 +379,17 @@ export interface UserInteraction {
    * @returns A promise indicating if open was successful.
    */
   openFile?(filePath: string): Promise<Result<boolean, FxError>>;
+
+  /**
+   * run a user defined command in terminals of UI
+   * @param args
+   */
+  runCommand?(args: {
+    cmd: string;
+    workingDirectory?: string;
+    shell?: string;
+    timeout?: number;
+  }): Promise<Result<string, FxError>>;
 }
 
 export interface IProgressHandler {

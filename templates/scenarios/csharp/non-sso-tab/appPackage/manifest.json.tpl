@@ -49,8 +49,5 @@
     "permissions": [
         "identity",
         "messageTeamMembers"
-    ],
-    "validDomains": [
-        "${{TAB_DOMAIN}}"
     ]
 }

@@ -14,13 +14,17 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
 import * as path from "path";
-import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import {
+  loadProjectSettingsByProjectPathV2,
+  loadProjectSettingsByProjectPathV3,
+} from "./projectSettingsLoader";
 import {
   Component,
   sendTelemetryErrorEvent,
@@ -280,7 +284,7 @@ export async function checkVersionForMigration(ctx: CoreHookContext): Promise<Ve
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
   const bicepContent: string = await readBicepContent(context);
-  const oldProjectSettings = await loadProjectSettings(context.projectPath);
+  const oldProjectSettings = await loadProjectSettingsV3(context.projectPath);
   const appYmlGenerator = new AppYmlGenerator(
     oldProjectSettings,
     bicepContent,
@@ -312,6 +316,15 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
 
 async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
   const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
+  if (oldProjectSettings.isOk()) {
+    return oldProjectSettings.value;
+  } else {
+    throw oldProjectSettings.error;
+  }
+}
+
+async function loadProjectSettingsV3(projectPath: string): Promise<ProjectSettingsV3> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV3(projectPath, true, true);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {
@@ -743,7 +756,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateNgrokStartCommand,
   ];
 
-  const oldProjectSettings = await loadProjectSettings(context.projectPath);
+  const oldProjectSettings = await loadProjectSettingsV3(context.projectPath);
   const placeholderMappings = await getPlaceholderMappings(context);
 
   const debugContext = new DebugMigrationContext(

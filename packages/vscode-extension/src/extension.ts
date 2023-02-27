@@ -64,11 +64,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import {
-  AuthSvcScopes,
-  isMigrationV3Enabled,
-  setRegion,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
@@ -104,12 +100,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
-  await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 
   VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
   runBackgroundAsyncTasks(context, isTeamsFxProject);
+  await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 }
 
 // this method is called when your extension is deactivated
@@ -729,12 +725,10 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
   await setTDPIntegrationEnabledContext();
 
   if (isV3Enabled()) {
-    if (isMigrationV3Enabled()) {
-      const upgradeable = await checkProjectUpgradable();
-      if (upgradeable) {
-        await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
-        await TreeViewManagerInstance.updateTreeViewsByContent(true);
-      }
+    const upgradeable = await checkProjectUpgradable();
+    if (upgradeable) {
+      await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
+      await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
     }
   } else {
     await vscode.commands.executeCommand(
@@ -1024,9 +1018,10 @@ async function runBackgroundAsyncTasks(
 }
 
 async function runTeamsFxBackgroundTasks() {
+  const upgradeable = isV3Enabled() && (await checkProjectUpgradable());
   await handlers.autoOpenProjectHandler();
   await handlers.promptSPFxUpgrade();
-  await TreeViewManagerInstance.updateTreeViewsByContent();
+  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   await AzureAccountManager.updateSubscriptionInfo();
 }
 
@@ -1052,7 +1047,6 @@ async function checkProjectUpgradable(): Promise<boolean> {
   const upgradeable = versionCheckResult.isOk()
     ? versionCheckResult.value.isSupport == VersionState.upgradeable
     : false;
-  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
   return upgradeable;
 }
 
@@ -1073,5 +1067,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
     runTeamsFxBackgroundTasks();
   }
 
-  await checkProjectUpgradable();
+  const upgradeable = await checkProjectUpgradable();
+  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
 }

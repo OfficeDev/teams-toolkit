@@ -19,6 +19,11 @@ import {
 import { getDefaultString } from "../utils/localizeUtils";
 import { UserCancelError } from "./codeFlowLogin";
 
+const CodeSpacesScopes = [
+  "VSCODE_CLIENT_ID:7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+  "VSCODE_TENANT:common",
+];
+
 // this login to work for code space only
 export class M365CodeSpaceLogin extends BasicLogin implements M365TokenProvider {
   private static instance: M365CodeSpaceLogin;
@@ -78,7 +83,7 @@ export class M365CodeSpaceLogin extends BasicLogin implements M365TokenProvider 
     scopes: Array<string>
   ): Promise<vscode.AuthenticationSession | undefined> {
     return vscode.authentication
-      .getSession("microsoft", scopes, { createIfNone: createIfNone })
+      .getSession("microsoft", CodeSpacesScopes.concat(scopes), { createIfNone: createIfNone })
       .then((session: vscode.AuthenticationSession | undefined) => {
         return session;
       });

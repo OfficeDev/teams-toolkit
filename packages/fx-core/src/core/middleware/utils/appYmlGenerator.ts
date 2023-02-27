@@ -38,6 +38,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     appName: string | undefined;
     isFunctionBot: boolean;
     isWebAppBot: boolean;
+    useBotWebAppResourceId: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
     environmentFolder: string | undefined;
@@ -58,6 +59,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       appName: undefined,
       isFunctionBot: false,
       isWebAppBot: false,
+      useBotWebAppResourceId: false,
       isTypescript: false,
       defaultFunctionName: undefined,
       environmentFolder: undefined,
@@ -154,8 +156,9 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.projectPath
     );
     this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
-    this.handlebarsContext.isWebAppBot =
-      hasWebAppBot(projectSettings) && this.bicepContent.includes("botWebAppResourceId");
+    this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings); // maybe use ResourceId
+    this.handlebarsContext.useBotWebAppResourceId =
+      this.handlebarsContext.isWebAppBot && this.bicepContent.includes("botWebAppResourceId"); // isWebAppBot and use botWebAppResourceId
 
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");

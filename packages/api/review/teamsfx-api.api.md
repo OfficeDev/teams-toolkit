@@ -2135,6 +2135,9 @@ export interface UserInteraction {
         workingDirectory?: string;
         shell?: string;
         timeout?: number;
+        env?: {
+            [k: string]: string;
+        };
     }): Promise<Result<string, FxError>>;
     runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;

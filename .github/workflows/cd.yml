@@ -148,6 +148,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
+       - name: release templates' prerelease version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          tag: "templates-0.0.0-prerelease"
+          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          allowUpdates: true
+          removeArtifacts: true
+
       - name: update template rc tag
         uses: richardsimko/update-tag@v1
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}

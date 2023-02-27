@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   AppPackageFolderName,
   ProjectSettingsV3,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
@@ -14,10 +15,11 @@ import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 import { MetadataV3 } from "../../../common/versionMetadata";
 import { hasFunctionBot, hasWebAppBot } from "../../../common/projectSettingsHelperV3";
+import { convertProjectSettingsV2ToV3 } from "../../../component/migrate";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
-  constructor(protected oldProjectSettings: ProjectSettingsV3) {}
+  constructor(protected oldProjectSettings: ProjectSettings) {}
 
   protected async buildHandlebarsTemplate(templateName: string): Promise<string> {
     const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", templateName);
@@ -43,7 +45,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     dotnetPath: string | undefined;
   };
   constructor(
-    oldProjectSettings: ProjectSettingsV3,
+    oldProjectSettings: ProjectSettings,
     private bicepContent: string,
     private projectPath: string
   ) {
@@ -147,7 +149,10 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
   private async generateAzureHandlebarsContext(): Promise<void> {
     // isFunctionBot
-    const projectSettings: ProjectSettingsV3 = this.oldProjectSettings;
+    const projectSettings: ProjectSettingsV3 = convertProjectSettingsV2ToV3(
+      this.oldProjectSettings,
+      this.projectPath
+    );
     this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
     this.handlebarsContext.isWebAppBot =
       hasWebAppBot(projectSettings) && this.bicepContent.includes("botWebAppResourceId");

@@ -15,7 +15,6 @@ import {
   ok,
   ProjectSettings,
   ProjectSettingsFileName,
-  ProjectSettingsV3,
   Result,
   Settings,
   SettingsFileName,
@@ -129,32 +128,6 @@ export async function loadProjectSettingsByProjectPathV2(
   isMultiEnvEnabled = false,
   onlyV2 = false
 ): Promise<Result<ProjectSettings, FxError>> {
-  let settingsFile;
-  if (onlyV2) {
-    settingsFile = getProjectSettingPathV2(projectPath);
-  } else {
-    settingsFile = isMultiEnvEnabled
-      ? getProjectSettingsPath(projectPath)
-      : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
-  }
-
-  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-  if (!projectSettings.projectId) {
-    projectSettings.projectId = uuid.v4();
-    sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
-      [TelemetryProperty.ProjectId]: projectSettings.projectId,
-    });
-  }
-  globalVars.isVS = isVSProject(projectSettings);
-  return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
-}
-
-// export this for V2 -> V3 migration purpose and result type is ProjectSettingsV3
-export async function loadProjectSettingsByProjectPathV3(
-  projectPath: string,
-  isMultiEnvEnabled = false,
-  onlyV2 = false
-): Promise<Result<ProjectSettingsV3, FxError>> {
   let settingsFile;
   if (onlyV2) {
     settingsFile = getProjectSettingPathV2(projectPath);

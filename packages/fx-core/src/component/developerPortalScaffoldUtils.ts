@@ -190,6 +190,12 @@ async function updateManifest(
     );
   }
 
+  if (needUpdateStaticTabUrls) {
+    const validDomains = manifest.validDomains ?? [];
+    validDomains.push("${{TAB_DOMAIN}}");
+    manifest.validDomains = validDomains;
+  }
+
   // manifest: bot
   if (inputs[CoreQuestionNames.ReplaceBotIds]) {
     if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {

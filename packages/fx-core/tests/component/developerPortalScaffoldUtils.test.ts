@@ -338,6 +338,7 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.isTrue(updatedManifest.validDomains?.includes("${{TAB_DOMAIN}}"));
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
@@ -540,6 +541,7 @@ describe("developPortalScaffoldUtils", () => {
             commands: [],
           },
         ],
+        validDomains: [],
       };
 
       const existingManifest: TeamsAppManifest = {
@@ -557,6 +559,7 @@ describe("developPortalScaffoldUtils", () => {
           name: "developer-name",
         },
         bots: [],
+        validDomains: ["valid-domain"],
       };
 
       let updateManifest = false;
@@ -614,6 +617,7 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.validDomains?.length, 0);
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
@@ -671,6 +675,7 @@ describe("developPortalScaffoldUtils", () => {
             commands: [],
           },
         ],
+        validDomains: [],
       };
 
       const existingManifest: TeamsAppManifest = {
@@ -699,6 +704,7 @@ describe("developPortalScaffoldUtils", () => {
             ],
           },
         ],
+        validDomains: ["valid-domain"],
       };
 
       let updateManifest = false;
@@ -757,6 +763,7 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.validDomains?.length, 0);
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
@@ -814,6 +821,7 @@ describe("developPortalScaffoldUtils", () => {
             commands: [],
           },
         ],
+        validDomains: [],
       };
 
       const existingManifest: TeamsAppManifest = {
@@ -844,6 +852,7 @@ describe("developPortalScaffoldUtils", () => {
             ],
           },
         ],
+        validDomains: ["valid-domain"],
       };
 
       let updateManifest = false;
@@ -903,6 +912,7 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.validDomains?.length, 0);
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
@@ -1036,7 +1046,6 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.isTrue(updateLanguage);
       const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
       chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
-      chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
       chai.assert.deepEqual(updatedManifest.bots![0], existingManifest.bots![0]);
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
@@ -1045,6 +1054,7 @@ describe("developPortalScaffoldUtils", () => {
         updatedManifest.webApplicationInfo,
         existingManifest.webApplicationInfo
       );
+      chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });

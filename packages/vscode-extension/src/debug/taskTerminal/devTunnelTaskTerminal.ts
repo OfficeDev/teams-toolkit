@@ -258,7 +258,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         envVars[this.args.output.id] = id;
       }
 
-      if (Object.entries(envVars).length == 0) {
+      if (Object.entries(envVars).length === 0) {
         return ok(result);
       }
 

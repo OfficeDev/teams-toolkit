@@ -1527,6 +1527,7 @@
     "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
+    "node-rsa": "^1.1.1",
     "open": "^8.4.0",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
@@ -1537,8 +1538,7 @@
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.47",
-    "yaml": "^2.2.1",
-    "node-rsa": "^1.1.1"
+    "yaml": "^2.2.1"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account"

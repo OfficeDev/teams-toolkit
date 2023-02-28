@@ -70,13 +70,11 @@ const customTasks = Object.freeze({
   },
   [TaskCommand.startLocalTunnel]: {
     createTerminal: async (d: vscode.TaskDefinition) => {
-      if (d?.args?.type === TunnelType.devTunnel && isV3Enabled()) {
-        return new DevTunnelTaskTerminal(d);
-      } else if (d?.args?.type === TunnelType.ngrok || typeof d?.args?.type === "undefined") {
-        // TODO: type can not be empty in V5
+      if (d?.args?.type === TunnelType.ngrok || typeof d?.args?.type === "undefined") {
         return new NgrokTunnelTaskTerminal(d);
       } else {
-        throw BaseTaskTerminal.taskDefinitionError("args.type");
+        // If the value of type is not TunnelType.ngrok / TunnelType.devTunnel, resolveArgs in the BaseTunnelTaskTerminal will throw error.
+        return new DevTunnelTaskTerminal(d);
       }
     },
     presentationReveal: vscode.TaskRevealKind.Silent,

@@ -38,7 +38,7 @@ import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { performance } from "perf_hooks";
-import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
+import { NgrokTunnelTaskTerminal } from "./taskTerminal/ngrokTunnelTaskTerminal";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -505,7 +505,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
     }
   }
   allRunningTeamsfxTasks.clear();
-  LocalTunnelTaskTerminal.stopAll();
+  NgrokTunnelTaskTerminal.stopAll();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {

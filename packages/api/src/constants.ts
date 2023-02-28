@@ -64,6 +64,7 @@ export enum Stage {
   getProjectConfig = "getProjectConfig",
   init = "init",
   addFeature = "addFeature",
+  addWebpart = "addWebpart",
   addResource = "addResource",
   addCapability = "addCapability",
   addCiCdFlow = "addCiCdFlow",

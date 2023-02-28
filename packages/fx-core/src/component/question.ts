@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AppPackageFolderName,
   CLIPlatforms,
   ContextV3,
   DynamicPlatforms,
   err,
+  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -18,6 +20,7 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -81,7 +84,7 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import { CoreQuestionNames, ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -817,4 +820,58 @@ export function getQuestionsForInit(
     );
   }
   return ok(group);
+}
+
+export function spfxFolderQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: CoreQuestionNames.SPFxFolder,
+    title: getLocalizedString("core.spfxFolder.title"),
+    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, "src");
+    },
+  };
+}
+
+export function manifestFileQuestion(): SingleFileQuestion {
+  return {
+    type: "singleFile",
+    name: CoreQuestionNames.ManifestFilePath,
+    title: "core.manifestPath.title",
+    placeholder: "core.manifestPath.placeholder",
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.json");
+    },
+  };
+}
+
+export function localManifestFileQuestion(): SingleFileQuestion {
+  return {
+    type: "singleFile",
+    name: CoreQuestionNames.ManifestFilePath,
+    title: "core.localManifestPath.title",
+    placeholder: "core.localManifestPath.placeholder",
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.local.json");
+    },
+  };
+}
+
+export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  const addWebpart = new QTreeNode({ type: "group" });
+
+  const webpartName = new QTreeNode(webpartNameQuestion);
+  addWebpart.addChild(webpartName);
+
+  const spfxFolder = new QTreeNode(spfxFolderQuestion());
+  webpartName.addChild(spfxFolder);
+
+  const manifestFile = new QTreeNode(manifestFileQuestion());
+  spfxFolder.addChild(manifestFile);
+
+  const localManifestFile = new QTreeNode(localManifestFileQuestion());
+  manifestFile.addChild(localManifestFile);
+
+  return ok(addWebpart);
 }

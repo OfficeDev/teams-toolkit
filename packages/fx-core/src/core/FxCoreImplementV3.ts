@@ -70,7 +70,11 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
+import {
+  getQuestionsForAddWebpart,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+} from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -333,17 +337,27 @@ export class FxCoreV3Implement {
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "buildAadManifest") {
       res = await this.previewAadManifest(inputs);
-    } else if (func.method === "addWebpart") {
-      // const driver: AddWebPartDriver = Container.get("spfx/add");
-      // const args: AddWebPartArgs = {
-      //   manifestPath: inputs.manifestTemplatePath,
-      //   localManifestPath: inputs.localManifestTemplatePath,
-      //   spfxFolder: inputs.spfxFolder,
-      //   webpartName: inputs.webpartName
-      // };
-      // res = await driver.run(args, context);
     }
     return res;
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW(getQuestionsForAddWebpart),
+    ProjectMigratorMWV3,
+    ContextInjectorMW,
+    ConcurrentLockerMW,
+  ])
+  async AddWebPartDriver(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    // const driver: AddWebPartDriver = Container.get("spfx/add");
+    // const args: AddWebPartArgs = {
+    //   manifestPath: inputs.manifestTemplatePath,
+    //   localManifestPath: inputs.localManifestTemplatePath,
+    //   spfxFolder: inputs.spfxFolder,
+    //   webpartName: inputs.webpartName
+    // };
+    // res = await driver.run(args, context);
+    return ok(Void);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])

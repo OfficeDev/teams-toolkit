@@ -1199,12 +1199,7 @@ export async function openFolderHandler(args?: any[]): Promise<Result<any, FxErr
 export async function addWebpart(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
 
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "addWebpart",
-  };
-
-  return await runUserTask(func, TelemetryEvent.AddWebpart, true);
+  return await runCommand(Stage.addFeature);
 }
 
 export async function runCommand(
@@ -1285,6 +1280,10 @@ export async function runCommand(
       }
       case Stage.publishInDeveloperPortal: {
         result = await core.publishInDeveloperPortal(inputs);
+        break;
+      }
+      case Stage.addWebpart: {
+        result = await core.addWebpart(inputs);
         break;
       }
       default:

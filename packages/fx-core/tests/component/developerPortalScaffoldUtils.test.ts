@@ -541,7 +541,6 @@ describe("developPortalScaffoldUtils", () => {
             commands: [],
           },
         ],
-        validDomains: [],
       };
 
       const existingManifest: TeamsAppManifest = {
@@ -617,7 +616,7 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
-      chai.assert.equal(updatedManifest.validDomains?.length, 0);
+      chai.assert.isUndefined(updatedManifest.validDomains);
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });

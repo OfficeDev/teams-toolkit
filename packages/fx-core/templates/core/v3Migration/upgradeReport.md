@@ -13,7 +13,7 @@ There's no immediate action required from you. This part illustrates what's chan
 
 1. You need to sync `.env/.env.{env}` files between different machines manually. All these files will be gitignored by default. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 2. You need to take some manual steps when creating or provisioning new environments for your old project. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
-3. You need to manually update `.vscode/launch.json` when launching your app for a certain environment. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
+3. You need to manually update `.vscode/launch.json` when launching your app for a certain environment if your current project contains it. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
 4. You need to provide values to `APIM__PUBLISHEREMAIL` and `APIM__PUBLISHERNAME` environment variable if your current project uses APIM. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)
 
 You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-changes-that-impact-your-development-flow) to learn more changes to Teams Toolkit.
@@ -24,7 +24,7 @@ You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-chang
 2. Moved environment files in `.fx` to `.env.{env}` in `env` folder.
 3. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
 4. If your project contains file `templates/appPackage/aad.template.json`, it will be moved and renamed as `aad.manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
-5. Updated `.vscode/tasks.json` and `.vscode/launch.json`.
+5. If your project contains file `.vscode/tasks.json` and `.vscode/launch.json`, they will be updated.
 6. Updated `.gitignore` to ignore new environment files.
 7. Removed `.fx` folder.
 

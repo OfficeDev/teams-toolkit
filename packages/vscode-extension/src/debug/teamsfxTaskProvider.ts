@@ -53,7 +53,6 @@ import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import * as globalVariables from "../globalVariables";
 import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
 import { TunnelType } from "./taskTerminal/baseTunnelTaskTerminal";
-import { BaseTaskTerminal } from "./taskTerminal/baseTaskTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {

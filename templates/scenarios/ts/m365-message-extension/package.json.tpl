@@ -21,7 +21,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "botbuilder": "~4.14.0",
+        "botbuilder": "^4.18.0",
         "restify": "^10.0.0"
     },
     "devDependencies": {

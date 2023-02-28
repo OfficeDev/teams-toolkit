@@ -1,5 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
 import * as utils from "../common";
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 

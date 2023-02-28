@@ -32,6 +32,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { ExtensionErrors } from "../error";
+import * as os from "os";
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
@@ -273,6 +274,7 @@ export class CodeFlowLogin {
               "[Login] " +
                 stringUtil.format(
                   localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+                  path.join(os.homedir(), ".fx", "account"),
                   error.message
                 )
             );
@@ -325,6 +327,7 @@ export class CodeFlowLogin {
           "[Login] " +
             stringUtil.format(
               localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+              path.join(os.homedir(), ".fx", "account"),
               error.message
             )
         );

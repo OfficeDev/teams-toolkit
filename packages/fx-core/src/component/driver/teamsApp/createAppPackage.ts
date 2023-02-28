@@ -93,7 +93,7 @@ export class CreateAppPackageDriver implements StepDriver {
       const error = AppStudioResultFactory.UserError(
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(colorFile),
-        "https://aka.ms/teamsfx-actions/teamsapp-createAppPackage"
+        "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
       );
       return err(error);
     }
@@ -103,7 +103,7 @@ export class CreateAppPackageDriver implements StepDriver {
       const error = AppStudioResultFactory.UserError(
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(outlineFile),
-        "https://aka.ms/teamsfx-actions/teamsapp-createAppPackage"
+        "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
       );
       return err(error);
     }
@@ -131,7 +131,7 @@ export class CreateAppPackageDriver implements StepDriver {
             throw AppStudioResultFactory.UserError(
               AppStudioError.FileNotFoundError.name,
               AppStudioError.FileNotFoundError.message(fileName),
-              "https://aka.ms/teamsfx-actions/teamsapp-createAppPackage"
+              "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
             );
           }
           const dir = path.dirname(file);

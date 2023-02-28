@@ -825,7 +825,7 @@ export function getQuestionsForInit(
 export function spfxFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
-    name: CoreQuestionNames.SPFxFolder,
+    name: "spfxFolder",
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
     default: (inputs: Inputs) => {
@@ -837,7 +837,7 @@ export function spfxFolderQuestion(): FolderQuestion {
 export function manifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
-    name: CoreQuestionNames.ManifestFilePath,
+    name: "manifestPath",
     title: "core.manifestPath.title",
     placeholder: "core.manifestPath.placeholder",
     default: (inputs: Inputs) => {
@@ -849,7 +849,7 @@ export function manifestFileQuestion(): SingleFileQuestion {
 export function localManifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
-    name: CoreQuestionNames.ManifestFilePath,
+    name: "localManifestPath",
     title: "core.localManifestPath.title",
     placeholder: "core.localManifestPath.placeholder",
     default: (inputs: Inputs) => {

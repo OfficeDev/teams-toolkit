@@ -20,7 +20,7 @@ Actions required - update your code to add SSO authentication
 Note: This part is for `command and response bot`.
 
 1. Please upgrade your SDK and make sure your SDK version:
-   TeamsFx: >= 2.2.0
+   TeamsFx: >= 1.1.0
    Microsoft.Bot.Builder >= 4.17.1
 
 2. Create "Pages" folder and move files in `Auth/bot/Pages` folder to `Pages`

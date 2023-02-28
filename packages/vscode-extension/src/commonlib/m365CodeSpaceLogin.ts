@@ -32,6 +32,15 @@ const TeamsFxAadScopes = [
 export class M365CodeSpaceLogin extends BasicLogin implements M365TokenProvider {
   private static instance: M365CodeSpaceLogin;
 
+  private constructor() {
+    super();
+    vscode.authentication.onDidChangeSessions(async (e) => {
+      if (e.provider.id === "microsoft") {
+        this.notifyStatus({ scopes: AppStudioScopes });
+      }
+    });
+  }
+
   /**
    * Gets instance
    * @returns instance

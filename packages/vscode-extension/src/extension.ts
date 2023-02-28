@@ -29,7 +29,6 @@ import {
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import M365TokenInstance from "./commonlib/m365Login";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { localSettingsJsonName } from "./debug/constants";
@@ -127,21 +126,25 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   TreeViewManagerInstance.registerTreeViews(context);
   accountTreeViewProviderInstance.subscribeToStatusChanges({
     azureAccountProvider: AzureAccountManager,
-    m365TokenProvider: M365TokenInstance,
+    m365TokenProvider: handlers.getM365LoginInstance(),
   });
   // Set region for M365 account every
-  M365TokenInstance.setStatusChangeMap(
-    "set-region",
-    { scopes: AuthSvcScopes },
-    async (status, token, accountInfo) => {
-      if (status === "SignedIn") {
-        const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
-        if (tokenRes.isOk()) {
-          setRegion(tokenRes.value);
+  handlers
+    .getM365LoginInstance()
+    .setStatusChangeMap(
+      "set-region",
+      { scopes: AuthSvcScopes },
+      async (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          const tokenRes = await handlers
+            .getM365LoginInstance()
+            .getAccessToken({ scopes: AuthSvcScopes });
+          if (tokenRes.isOk()) {
+            setRegion(tokenRes.value);
+          }
         }
       }
-    }
-  );
+    );
 
   if (vscode.workspace.isTrusted) {
     registerCodelensAndHoverProviders(context);

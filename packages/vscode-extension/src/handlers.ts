@@ -213,11 +213,6 @@ export function activate(): Result<Void, FxError> {
     );
   }
   try {
-    let m365Login: M365TokenProvider = M365TokenInstance;
-    const vscodeEnv = detectVsCodeEnv();
-    if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-      m365Login = M365CodeSpaceTokenInstance;
-    }
     const m365NotificationCallback = (
       status: string,
       token: string | undefined,
@@ -231,7 +226,7 @@ export function activate(): Result<Void, FxError> {
       return Promise.resolve();
     };
 
-    M365TokenInstance.setStatusChangeMap(
+    getM365LoginInstance().setStatusChangeMap(
       "successfully-sign-in-m365",
       { scopes: AppStudioScopes },
       m365NotificationCallback,
@@ -241,7 +236,7 @@ export function activate(): Result<Void, FxError> {
       logProvider: VsCodeLogInstance,
       tokenProvider: {
         azureAccountProvider: AzureAccountManager,
-        m365TokenProvider: m365Login,
+        m365TokenProvider: getM365LoginInstance(),
       },
       telemetryReporter: ExtTelemetry.reporter,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
@@ -1332,8 +1327,7 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
         message: localize("teamstoolkit.handlers.provisionBeforeGrantOrListPermission"),
       });
     }
-
-    const tokenJsonObjectRes = await M365TokenInstance.getJsonObject({
+    const tokenJsonObjectRes = await getM365LoginInstance().getJsonObject({
       scopes: AppStudioScopes,
       showDialog: true,
     });
@@ -2217,7 +2211,7 @@ export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxE
 
 export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  const accountRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  const accountRes = await getM365LoginInstance().getStatus({ scopes: AppStudioScopes });
 
   if (accountRes.isOk() && accountRes.value.status === signedIn) {
     const loginHint = accountRes.value.accountInfo?.upn as string;
@@ -2767,7 +2761,7 @@ export async function cmpAccountsHandler(args: any[]) {
 
   const quickItemOptionArray: VscQuickPickItem[] = [];
 
-  const m365AccountRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  const m365AccountRes = await getM365LoginInstance().getStatus({ scopes: AppStudioScopes });
   const m365Account = m365AccountRes.isOk() ? m365AccountRes.value : undefined;
   if (m365Account && m365Account.status === "SignedIn") {
     const accountInfo = m365Account.accountInfo;
@@ -3244,7 +3238,7 @@ export async function signOutM365(isFromTreeView: boolean) {
   });
   const vscodeEnv = detectVsCodeEnv();
   let result = false;
-  result = await M365TokenInstance.signout();
+  result = await (getM365LoginInstance() as any).signout();
   if (result) {
     accountTreeViewProviderInstance.m365AccountNode.setSignedOut();
     envTreeProviderInstance.refreshRemoteEnvWarning();
@@ -3874,7 +3868,7 @@ export async function signinM365Callback(args?: any[]): Promise<Result<null, FxE
 }
 
 export async function refreshSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
-  const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  const status = await getM365LoginInstance().getStatus({ scopes: AppStudioScopes });
   if (status.isOk() && status.value.token !== undefined) {
     accountTreeViewProviderInstance.m365AccountNode.updateSideloading(status.value.token);
   }
@@ -4048,4 +4042,13 @@ export async function scaffoldFromDeveloperPortalHandler(
 
 export async function projectVersionCheck() {
   return await core.projectVersionCheck(getSystemInputs());
+}
+
+export function getM365LoginInstance() {
+  let m365Login: M365TokenProvider = M365TokenInstance;
+  const vscodeEnv = detectVsCodeEnv();
+  if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+    m365Login = M365CodeSpaceTokenInstance;
+  }
+  return m365Login;
 }

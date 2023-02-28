@@ -810,7 +810,9 @@
       },
       {
         "command": "fx-extension.addWebpart",
-        "title": "%teamstoolkit.commmands.addWebpart.title%"
+        "title": "%teamstoolkit.commmands.addWebpart.title%",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isV3Enabled && !fx-extension.commandLocked",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [

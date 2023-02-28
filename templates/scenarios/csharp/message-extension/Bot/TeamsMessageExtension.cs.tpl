@@ -198,14 +198,13 @@ public class TeamsMessageExtension : TeamsActivityHandler
         // The code has set a cache policy and removed the cache for the app.
         var action = new CardAction
         {
-			Type = "setCachePolicy",
-			Value = "{\"type\":\"no-cache\"}",
-		};
-
-		var attachments = new MessagingExtensionAttachment(HeroCard.ContentType, null, heroCard);
+            Type = "setCachePolicy",
+            Value = "{\"type\":\"no-cache\"}",
+        };
+        
+        var attachments = new MessagingExtensionAttachment(HeroCard.ContentType, null, heroCard);
         var suggestedActions = new MessagingExtensionSuggestedAction(new[] { action });
-		var result = new MessagingExtensionResult("list", "result", new[] { attachments }, suggestedActions);
-
+        var result = new MessagingExtensionResult("list", "result", new[] { attachments }, suggestedActions);
         return Task.FromResult(new MessagingExtensionResponse(result));
     }
 

@@ -610,7 +610,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getSubscriptionInfoPath(): Promise<string | undefined> {
-    if (globalVariables.workspaceUri) {
+    if (!isV3Enabled() && globalVariables.workspaceUri) {
       const workspacePath: string = globalVariables.workspaceUri.fsPath;
       if (!globalVariables.isTeamsFxProject) {
         return undefined;

@@ -112,7 +112,7 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<VersionIn
 
 export function migrationNotificationMessage(versionForMigration: VersionForMigration): string {
   if (versionForMigration.platform === Platform.VS) {
-    return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
+    return getLocalizedString("core.migrationV3.VS.Message");
   }
   const res = getLocalizedString("core.migrationV3.Message");
   return res;

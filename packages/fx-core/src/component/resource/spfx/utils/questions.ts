@@ -39,7 +39,7 @@ export const webpartNameQuestion: Question = {
   type: "text",
   name: SPFXQuestionNames.webpart_name,
   title: "Web Part Name",
-  default: "helloworld",
+  default: Constants.DEFAULT_WEBPART_NAME,
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
       const schema = {

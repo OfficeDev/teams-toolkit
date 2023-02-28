@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 // Licensed under the MIT license.
@@ -33,6 +36,7 @@ export class Constants {
   public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";
   public static readonly YeomanPackageName = "yo";
   public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
+  public static readonly DEFAULT_WEBPART_NAME = "helloworld";
 }
 
 export class PlaceHolders {

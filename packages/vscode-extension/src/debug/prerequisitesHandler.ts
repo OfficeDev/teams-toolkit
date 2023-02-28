@@ -63,7 +63,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools, openAccountHelpHandler, detectVsCodeEnv, getM365LoginInstance } from "../handlers";
+import { tools, openAccountHelpHandler, getM365LoginInstance } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -702,7 +702,7 @@ async function ensureM365Account(
         if (tokenRes.isErr()) {
           return err(tokenRes.error);
         }
-        loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
+        loginStatusRes = await getM365LoginInstance().getStatus({ scopes: AppStudioScopes });
         if (loginStatusRes.isErr()) {
           return err(loginStatusRes.error);
         }

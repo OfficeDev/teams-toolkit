@@ -6,9 +6,9 @@ const InstallNodeV3 =
   "The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.";
 
 export const doctorConstant = {
-  Tick: "√",
-  Cross: "×",
-  Exclamation: "!",
+  Tick: "(√) Done:",
+  Cross: "(×) Error:",
+  Exclamation: "(!) Warning:",
   WhiteSpace: "   ",
   RestartVSCode:
     "Restart all your Visual Studio Code instances after the installation is finished.",

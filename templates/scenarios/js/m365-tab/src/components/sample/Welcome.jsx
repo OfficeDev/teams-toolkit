@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Image, Menu } from "@fluentui/react-northstar";
+import { Image, TabList, Tab } from "@fluentui/react-components";
 import "./Welcome.css";
 import { EditCode } from "./EditCode";
 import { app } from "@microsoft/teams-js";
@@ -23,21 +23,6 @@ export function Welcome(props) {
       azure: "Azure environment",
     }[environment] || "local environment";
 
-  const steps = ["local", "azure", "publish"];
-  const friendlyStepsName = {
-    local: "1. Build your app locally",
-    azure: "2. Provision and Deploy to the Cloud",
-    publish: "3. Publish to Teams",
-  };
-  const [selectedMenuItem, setSelectedMenuItem] = useState("local");
-  const items = steps.map((step) => {
-    return {
-      key: step,
-      content: friendlyStepsName[step] || "",
-      onClick: () => setSelectedMenuItem(step),
-    };
-  });
-
   const { teamsUserCredential } = useContext(TeamsFxContext);
   const { loading, data, error } = useData(async () => {
     if (teamsUserCredential) {
@@ -51,6 +36,11 @@ export function Welcome(props) {
     const context = await app.getContext();
     return context.app.host.name;
   })?.data;
+  const [selectedValue, setSelectedValue] = useState("local");
+
+  const onTabSelect = (event, data) => {
+    setSelectedValue(data.value);
+  };
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
@@ -58,26 +48,39 @@ export function Welcome(props) {
         <h1 className="center">Congratulations{userName ? ", " + userName : ""}!</h1>
         {hubName && <p className="center">Your app is running in {hubName}</p>}
         <p className="center">Your app is running in your {friendlyEnvironmentName}</p>
-        <Menu defaultActiveIndex={0} items={items} underlined secondary />
-        <div className="sections">
-          {selectedMenuItem === "local" && (
-            <div>
-              <EditCode showFunction={showFunction} />
-              <CurrentUser userName={userName} />
-              <Graph />
-              {showFunction && <AzureFunctions />}
-            </div>
-          )}
-          {selectedMenuItem === "azure" && (
-            <div>
-              <Deploy />
-            </div>
-          )}
-          {selectedMenuItem === "publish" && (
-            <div>
-              <Publish />
-            </div>
-          )}
+
+        <div className="tabList">
+          <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
+            <Tab id="Local" value="local">
+              1. Build your app locally
+            </Tab>
+            <Tab id="Azure" value="azure">
+              2. Provision and Deploy to the Cloud
+            </Tab>
+            <Tab id="Publish" value="publish">
+              3. Publish to Teams
+            </Tab>
+          </TabList>
+          <div>
+            {selectedValue === "local" && (
+              <div>
+                <EditCode showFunction={showFunction} />
+                <CurrentUser userName={userName} />
+                <Graph />
+                {showFunction && <AzureFunctions />}
+              </div>
+            )}
+            {selectedValue === "azure" && (
+              <div>
+                <Deploy />
+              </div>
+            )}
+            {selectedValue === "publish" && (
+              <div>
+                <Publish />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

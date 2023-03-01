@@ -70,8 +70,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
       </Button>
       {loading && (
         <pre className="fixed">
-          {" "}
-          <Spinner />{" "}
+          <Spinner />
         </pre>
       )}
       {!loading && !!data && !error && <pre className="fixed">{JSON.stringify(data, null, 2)}</pre>}

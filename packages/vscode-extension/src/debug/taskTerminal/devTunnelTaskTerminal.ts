@@ -42,6 +42,7 @@ import { ExtensionErrors, ExtensionSource } from "../../error";
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams Toolkit" };
 const DevTunnelTimeout = 2147483647; // 2^31-1, max timeout ms
+
 const DevTunnelTag = "TeamsToolkitCreatedTag";
 
 export interface IDevTunnelArgs extends IBaseTunnelArgs {
@@ -74,6 +75,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
   private tunnel: Tunnel | undefined;
   private isOutputSummary: boolean;
+  private cancel: (() => void) | undefined;
 
   constructor(taskDefinition: vscode.TaskDefinition) {
     super(taskDefinition, 1);
@@ -108,6 +110,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         this.tunnel = undefined;
         await this.tunnelManagementClientImpl.deleteTunnel(deleteTunnel);
       }
+
+      if (this.cancel) {
+        this.cancel();
+      }
       super.stop(error);
     }
   }
@@ -133,7 +139,15 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     // TODO: delete the last debug tunnel if it is not deleted
     const res = await this.start();
     if (res.isOk()) {
-      await new Promise((resolve) => setTimeout(resolve, DevTunnelTimeout));
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          resolve();
+        }, DevTunnelTimeout);
+        this.cancel = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+      });
     }
     return res;
   }
@@ -167,10 +181,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       const host = new TunnelRelayTunnelHost(this.tunnelManagementClientImpl);
       host.trace = (level, eventId, msg, err) => {
         if (msg) {
-          this.writeEmitter.fire(`${msg}"\r\n"`);
+          this.writeEmitter.fire(`${msg}\r\n`);
         }
         if (err) {
-          this.writeEmitter.fire(`${err}"\r\n"`);
+          this.writeEmitter.fire(`${err}\r\n`);
         }
       };
       await host.start(tunnelInstance);

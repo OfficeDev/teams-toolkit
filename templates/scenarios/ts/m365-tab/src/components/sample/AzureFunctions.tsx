@@ -66,7 +66,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
         response:
       </p>
       <Button appearance="primary" disabled={loading} onClick={reload}>
-        Call Azure Function{" "}
+        Call Azure Function
       </Button>
       {loading && (
         <pre className="fixed">

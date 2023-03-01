@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Button, Loader } from "@fluentui/react-northstar";
+import { Button, Spinner } from "@fluentui/react-components";
 import { useData } from "@microsoft/teamsfx-react";
 import * as axios from "axios";
 import { BearerTokenAuthProvider, createApiClient, TeamsUserCredential } from "@microsoft/teamsfx";
@@ -65,11 +65,12 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
         An Azure Functions app is running. Authorize this app and click below to call it for a
         response:
       </p>
-      <Button primary content="Call Azure Function" disabled={loading} onClick={reload} />
+      <Button appearance="primary" disabled={loading} onClick={reload}>
+        Call Azure Function
+      </Button>
       {loading && (
         <pre className="fixed">
-          {" "}
-          <Loader />{" "}
+          <Spinner />
         </pre>
       )}
       {!loading && !!data && !error && <pre className="fixed">{JSON.stringify(data, null, 2)}</pre>}

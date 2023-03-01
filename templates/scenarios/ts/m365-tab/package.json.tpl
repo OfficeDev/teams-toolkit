@@ -26,7 +26,6 @@
         "@types/react-dom": "^18.0.0",
         "@types/react-router-dom": "^5.3.3",
         "env-cmd": "^10.1.0",
-        "scheduler": "^0.20.0",
         "typescript": "^4.1.2"
     },
     "scripts": {

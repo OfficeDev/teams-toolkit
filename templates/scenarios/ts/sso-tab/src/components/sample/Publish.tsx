@@ -1,6 +1,6 @@
 import React from "react";
 import "./Publish.css";
-import { Image } from "@fluentui/react-northstar";
+import { Image } from "@fluentui/react-components";
 
 export function Publish(props: { docsUrl?: string }) {
   const { docsUrl } = {

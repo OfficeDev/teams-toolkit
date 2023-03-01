@@ -4,14 +4,17 @@
 import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
+import fs from "fs-extra";
 import { ValidateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/validate";
 import { ValidateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
 import {
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
+import * as tools from "../../../../src/common/tools";
 import { Platform } from "@microsoft/teamsfx-api";
 
 describe("teamsApp/validate", async () => {
@@ -27,9 +30,10 @@ describe("teamsApp/validate", async () => {
     sinon.restore();
   });
 
-  it.skip("should throw error if file not exists", async () => {
+  it("file not found", async () => {
+    sinon.stub(tools, "isValidationEnabled").resolves(true);
     const args: ValidateTeamsAppArgs = {
-      manifestPath: "fakepath",
+      appPackagePath: "fakepath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
@@ -39,10 +43,9 @@ describe("teamsApp/validate", async () => {
     }
   });
 
-  it.skip("invalid param error", async () => {
-    const args: ValidateTeamsAppArgs = {
-      manifestPath: "",
-    };
+  it("invalid param error", async () => {
+    sinon.stub(tools, "isValidationEnabled").resolves(true);
+    const args: ValidateTeamsAppArgs = {};
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
@@ -85,6 +88,50 @@ describe("teamsApp/validate", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isOk());
+  });
+
+  it("happy path - partnerCenterValidation", async () => {
+    sinon.stub(tools, "isValidationEnabled").resolves(true);
+    sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
+      errors: [
+        {
+          id: "fakeId",
+          content: "Reserved Tab Name property should not be specified.",
+          filePath: "",
+          helpUrl: "https://docs.microsoft.com",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+      ],
+      status: "Rejected",
+      warnings: [
+        {
+          id: "fakeId",
+          content: "Valid domains cannot contain a hosting site with a wildcard.",
+          filePath: "",
+          helpUrl: "https://docs.microsoft.com",
+          shortCodeNumber: 123,
+          validationCategory: "domain",
+          title: "valid domain",
+        },
+      ],
+      notes: [],
+      addInDetails: {
+        displayName: "fake name",
+        developerName: "fake name",
+        version: "1.14.1",
+        manifestVersion: "1.14.1",
+      },
+    });
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+
+    const args: ValidateTeamsAppArgs = {
+      appPackagePath: "fakePath",
+    };
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
   });

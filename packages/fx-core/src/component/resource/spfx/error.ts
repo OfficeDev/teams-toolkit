@@ -182,3 +182,12 @@ export function NoConfigurationError(): SystemError {
     helpLink: Constants.SPFX_HELP_LINK,
   });
 }
+
+export function CannotFindPackageGlobally(packageName: string): SystemError {
+  return new UserError(
+    Constants.PLUGIN_NAME,
+    "CannotFind" + packageName + "Globally",
+    getDefaultString("plugins.spfx.error.npmInstallFailed"), // TODO(yuqzho): update message
+    getLocalizedString("plugins.spfx.error.npmInstallFailed") // TODO(yuqzho): update message
+  );
+}

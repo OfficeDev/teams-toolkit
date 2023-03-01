@@ -22,18 +22,20 @@ import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-ap
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import VsCodeLogInstance from "../../commonlib/log";
 import { tools } from "../../handlers";
-import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getLocalDebugSession } from "../commonUtils";
 import { devTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
-import { localTelemetryReporter } from "../localTelemetryReporter";
+import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,
   IBaseTunnelArgs,
   OutputInfo,
   TunnelError,
+  TunnelType,
 } from "./baseTunnelTaskTerminal";
 import { ExtensionErrors, ExtensionSource } from "../../error";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams Toolkit" };
@@ -47,7 +49,7 @@ export interface IDevTunnelArgs extends IBaseTunnelArgs {
   access?: string;
   // TODO: add tunnel name into dev tunnel args
   // name?: string;
-  output: {
+  output?: {
     endpoint?: string;
     domain?: string;
     id?: string;
@@ -118,11 +120,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     return Correlator.runWithId(getLocalDebugSession().id, () =>
       localTelemetryReporter.runWithTelemetryProperties(
         TelemetryEvent.DebugStartLocalTunnelTask,
-        {
-          // TODO: add dev tunnel telemetry
-          // [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          // [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
-        },
+        this.generateTelemetries(),
         () => this._do()
       )
     );
@@ -238,9 +236,25 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  // TODO: generate task args telemetry
-  protected generateTaskArgsTelemetry(): string {
-    return "";
+  protected generateTelemetries(): { [key: string]: string } {
+    return {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        type: maskValue(this.args.type, Object.values(TunnelType)),
+        port: maskValue(
+          this.args.port?.toString(),
+          Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
+        ),
+        protocol: maskValue(this.args.protocol, Object.values(Protocol)),
+        access: maskValue(this.args.access, Object.values(Access)),
+        env: maskValue(this.args.env, ["local"]),
+        output: {
+          endpoint: maskValue(this.args.output?.endpoint, ["BOT_ENDPOINT"]),
+          domain: maskValue(this.args.output?.domain, ["BOT_DOMAIN"]),
+          id: maskValue(this.args.output?.id, ["DEV_TUNNEL_ID"]),
+        },
+      }),
+    };
   }
 
   private async saveOutputToEnv(

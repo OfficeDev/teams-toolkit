@@ -89,10 +89,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     return Correlator.runWithId(getLocalDebugSession().id, () =>
       localTelemetryReporter.runWithTelemetryProperties(
         TelemetryEvent.DebugStartLocalTunnelTask,
-        {
-          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
-        },
+        this.generateTelemetries(),
         () => this._do()
       )
     );
@@ -308,20 +305,28 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     await this.progressHandler.next(ngrokTunnelDisplayMessages.startMessage);
   }
 
-  protected generateTaskArgsTelemetry(): string {
-    return JSON.stringify({
-      ngrokArgs: maskValue(
-        Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
-        [
-          {
-            value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
-            mask: DefaultPlaceholder,
-          },
-        ]
-      ),
-      ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
-      tunnelInspection: maskValue(this.args.tunnelInspection),
-    });
+  protected generateTelemetries(): { [key: string]: string } {
+    return {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        ngrokArgs: maskValue(
+          Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
+          [
+            {
+              value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+              mask: DefaultPlaceholder,
+            },
+          ]
+        ),
+        ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
+        tunnelInspection: maskValue(this.args.tunnelInspection),
+        env: maskValue(this.args.env, ["local"]),
+        output: {
+          endpoint: maskValue(this.args.output?.endpoint, ["BOT_ENDPOINT"]),
+          domain: maskValue(this.args.output?.domain, ["BOT_DOMAIN"]),
+        },
+      }),
+    };
   }
 
   // TODO: remove getNgrokEndpoint after v3 enabled

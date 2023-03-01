@@ -176,11 +176,10 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
 
     localTelemetryReporter.sendTelemetryEvent(
       TelemetryEvent.DebugStartLocalTunnelTaskStarted,
-      {
-        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
-      },
+      Object.assign(
+        { [TelemetryProperty.Success]: TelemetrySuccess.Yes },
+        this.generateTelemetries()
+      ),
       {
         [LocalTelemetryReporter.PropertyDuration]: duration ?? -1,
       }
@@ -214,18 +213,19 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     localTelemetryReporter.sendTelemetryErrorEvent(
       TelemetryEvent.DebugStartLocalTunnelTaskStarted,
       fxError,
-      {
-        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-        [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
-      },
+      Object.assign(
+        {
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+        },
+        this.generateTelemetries()
+      ),
       {
         [LocalTelemetryReporter.PropertyDuration]: this.getDurationInSeconds() ?? -1,
       }
     );
   }
 
-  protected abstract generateTaskArgsTelemetry(): string;
+  protected abstract generateTelemetries(): { [key: string]: string };
 
   protected async savePropertiesToEnv(
     env: string | undefined,

@@ -34,7 +34,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
       [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
         template: maskValue(this.args.template),
-        env: maskValue(this.args.env),
+        env: maskValue(this.args.env, ["local"]),
       }),
       [TelemetryProperty.DebugLifecycle]: this.stage,
     };

@@ -13,15 +13,13 @@ import * as util from "util";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvManager, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";
-import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { getLocalDebugSession } from "../commonUtils";
 import {
   ngrokTunnelDisplayMessages,
   openTerminalDisplayMessage,
@@ -29,7 +27,7 @@ import {
 } from "../constants";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localTelemetryReporter";
+import { DefaultPlaceholder, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,
@@ -85,17 +83,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  do(): Promise<Result<Void, FxError>> {
-    return Correlator.runWithId(getLocalDebugSession().id, () =>
-      localTelemetryReporter.runWithTelemetryProperties(
-        TelemetryEvent.DebugStartLocalTunnelTask,
-        this.generateTelemetries(),
-        () => this._do()
-      )
-    );
-  }
-
-  private async _do(): Promise<Result<Void, FxError>> {
+  protected async _do(): Promise<Result<Void, FxError>> {
     await this.outputStartMessage(ngrokTunnelDisplayMessages);
     await this.resolveArgs(this.args);
     let ngrokPath;

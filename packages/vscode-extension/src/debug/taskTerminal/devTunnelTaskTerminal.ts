@@ -19,13 +19,11 @@ import {
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import VsCodeLogInstance from "../../commonlib/log";
 import { tools } from "../../handlers";
-import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { getLocalDebugSession } from "../commonUtils";
+import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { devTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
-import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
+import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,
@@ -116,17 +114,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  do(): Promise<Result<Void, FxError>> {
-    return Correlator.runWithId(getLocalDebugSession().id, () =>
-      localTelemetryReporter.runWithTelemetryProperties(
-        TelemetryEvent.DebugStartLocalTunnelTask,
-        this.generateTelemetries(),
-        () => this._do()
-      )
-    );
-  }
-
-  private async _do(): Promise<Result<Void, FxError>> {
+  protected async _do(): Promise<Result<Void, FxError>> {
     await this.outputStartMessage(devTunnelDisplayMessages);
     await this.outputStartDevTunnelStepMessage(devTunnelDisplayMessages);
     await this.resolveArgs(this.args);

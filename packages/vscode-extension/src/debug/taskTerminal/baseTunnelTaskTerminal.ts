@@ -8,8 +8,9 @@
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { assembleError, err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
@@ -23,7 +24,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { Step } from "../commonUtils";
+import { getLocalDebugSession, Step } from "../commonUtils";
 import { ngrokTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
@@ -82,11 +83,24 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     this.outputMessageList = [];
   }
 
+  public do(): Promise<Result<Void, FxError>> {
+    return Correlator.runWithId(getLocalDebugSession().id, () =>
+      localTelemetryReporter.runWithTelemetryProperties(
+        TelemetryEvent.DebugStartLocalTunnelTask,
+        this.generateTelemetries(),
+        () => this._do()
+      )
+    );
+  }
+
   public static async stopAll(): Promise<void> {
     for (const task of BaseTunnelTaskTerminal.tunnelTaskTerminals.values()) {
       task.close();
     }
   }
+
+  protected abstract generateTelemetries(): { [key: string]: string };
+  protected abstract _do(): Promise<Result<Void, FxError>>;
 
   protected async resolveArgs(args: IBaseTunnelArgs): Promise<void> {
     if (!args) {
@@ -224,8 +238,6 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       }
     );
   }
-
-  protected abstract generateTelemetries(): { [key: string]: string };
 
   protected async savePropertiesToEnv(
     env: string | undefined,

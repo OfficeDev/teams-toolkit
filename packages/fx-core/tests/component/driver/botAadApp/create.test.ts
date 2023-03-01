@@ -3,7 +3,7 @@
 
 import "mocha";
 import * as sinon from "sinon";
-import { RestoreFn } from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateBotAadAppDriver } from "../../../../src/component/driver/botAadApp/create";
 import { MockedM365Provider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 import * as chai from "chai";
@@ -186,13 +186,10 @@ describe("botAadAppCreate", async () => {
   });
 
   it("should be good when reusing existing bot in env", async () => {
-    const originalValues = {
-      BOT_ID: process.env.BOT_ID,
-      SECRET_BOT_PASSWORD: process.env.SECRET_BOT_PASSWORD,
-    };
-    // mock env
-    process.env.BOT_ID = expectedClientId;
-    process.env.SECRET_BOT_PASSWORD = expectedSecretText;
+    envRestore = mockedEnv({
+      [outputKeys.BOT_ID]: expectedClientId,
+      [outputKeys.SECRET_BOT_PASSWORD]: expectedSecretText,
+    });
 
     const args: any = {
       name: expectedDisplayName,
@@ -207,8 +204,5 @@ describe("botAadAppCreate", async () => {
     expect(
       result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
     ).to.be.equal(expectedSecretText);
-    // restore env
-    process.env.BOT_ID = originalValues.BOT_ID;
-    process.env.SECRET_BOT_PASSWORD = originalValues.SECRET_BOT_PASSWORD;
   });
 });

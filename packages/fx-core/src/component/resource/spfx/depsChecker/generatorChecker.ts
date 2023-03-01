@@ -108,12 +108,14 @@ export class GeneratorChecker implements DependencyChecker {
     )}"`;
   }
 
-  public async findGloballyInstalledVersion(): Promise<string | undefined> {
-    return await Utils.findGloballyInstalledVersion(this._logger, name);
+  public async findGloballyInstalledVersion(
+    timeoutInMinutes?: number
+  ): Promise<string | undefined> {
+    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInMinutes ?? 0);
   }
 
-  public async findLatestVersion(): Promise<string> {
-    return await Utils.findLatestVersion(this._logger, name);
+  public async findLatestVersion(timeoutInMinutes?: number): Promise<string> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInMinutes ?? 0);
   }
 
   private async validate(): Promise<boolean> {

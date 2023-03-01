@@ -143,9 +143,10 @@ export class Utils {
 
   static async findGloballyInstalledVersion(
     logger: LogProvider,
-    packageName: string
+    packageName: string,
+    timeoutInMinutes: number
   ): Promise<string | undefined> {
-    const timeout = 1 * 60 * 1000;
+    const timeout = timeoutInMinutes * 60 * 1000;
     try {
       const output = await cpUtils.executeCommand(
         undefined,
@@ -167,13 +168,16 @@ export class Utils {
       }
     } catch (error) {
       logger.error(`Failed to execute "npm ls ${packageName}"`);
-      //throw NpmInstallError(error as Error);
       throw error;
     }
   }
 
-  static async findLatestVersion(logger: LogProvider, packageName: string): Promise<string> {
-    const timeout = 1 * 60 * 1000;
+  static async findLatestVersion(
+    logger: LogProvider,
+    packageName: string,
+    timeoutInMinutes: number
+  ): Promise<string> {
+    const timeout = timeoutInMinutes * 60 * 1000;
     const defaultOutput = "latest";
     try {
       const output = await cpUtils.executeCommand(
@@ -188,7 +192,7 @@ export class Utils {
 
       const regex = new RegExp("(?<version>\\d+\\.\\d+\\.\\d)"); // in case user has installed any -alpha, -beta version
       const match = regex.exec(output.toString());
-      //const match2 = regex.exec(input11);
+
       if (match && match.groups) {
         return match.groups.version;
       } else {

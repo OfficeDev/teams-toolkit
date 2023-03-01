@@ -93,6 +93,16 @@ export class YoChecker implements DependencyChecker {
     return [defaultPath, path.join(defaultPath, "node_modules", ".bin")];
   }
 
+  public async findGloballyInstalledVersion(
+    timeoutInMinutes?: number
+  ): Promise<string | undefined> {
+    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInMinutes ?? 0);
+  }
+
+  public async findLatestVersion(timeoutInMinutes: number): Promise<string> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInMinutes);
+  }
+
   private async validate(): Promise<boolean> {
     return await this.isInstalled();
   }

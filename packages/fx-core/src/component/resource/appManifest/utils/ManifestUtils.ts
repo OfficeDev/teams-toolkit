@@ -608,27 +608,6 @@ export class ManifestUtils {
       manifest.id = v4();
     }
 
-    // dynamically set validDomains for manifest, which can be refactored by static manifest templates
-    if (isLocalDebug || manifest.validDomains?.length === 0) {
-      const validDomains: string[] = [];
-      const tabEndpoint = state.TAB_ENDPOINT;
-      const tabDomain = state.TAB_DOMAIN;
-      const botDomain = state.BOT_DOMAIN;
-      if (tabDomain) {
-        validDomains.push(tabDomain);
-      }
-      if (tabEndpoint && isLocalDebug) {
-        validDomains.push(tabEndpoint.slice(8));
-      }
-      if (botDomain) {
-        validDomains.push(botDomain);
-      }
-      for (const domain of validDomains) {
-        if (manifest.validDomains?.indexOf(domain) == -1) {
-          manifest.validDomains.push(domain);
-        }
-      }
-    }
     return ok(manifest);
   }
 

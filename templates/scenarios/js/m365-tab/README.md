@@ -38,21 +38,12 @@ Follow below instructions to get started with this application template for loca
 
 1. Press `F5` or use the `Run and Debug Activity Panel` in Visual Studio Code.
 1. Select a target Microsoft 365 application where the personal tabs can run: `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
-1. If you select `Debug in Outlook` or `Debug in Office`, follow the instructions in a Visual Studio Code pop-up dialog.
-1. Click **Install in Teams** first and install the app in a Teams web client.
-1. After installing the app in Teams, come back and click **Continue** to continue to debug the app in Outlook web client or office.com.
-
-    ![Debug pop up VSC](https://user-images.githubusercontent.com/11220663/167839258-0ee73600-ce32-4c8f-9876-826d90716510.png)
 
 ### Test your application with TeamsFx CLI
 
-1. Start debugging the project by executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams`, `outlook` or `office`.
-1. If you select `m365-host` as `outlook` or `office`, follow the instructions in the command dialog.
-
-    ![Debug pop up CLI](https://user-images.githubusercontent.com/11220663/167839636-de3a71db-caa6-4571-91a4-05428779b1fa.png)
-
-1. Select **Install in Teams** first and install the app in a Teams web client.
-1. After installed the app in Teams, come back and select **Continue** to continue to debug the app in Outlook web client or office.com.
+1. Executing the command `teamsfx provision --env local` in your project directory.
+1. Executing the command `teamsfx deploy --env local` in your project directory.
+1. Executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
 
 ## References
 

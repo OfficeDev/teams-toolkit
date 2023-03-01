@@ -481,8 +481,6 @@ jobs:
               email=""
               if grep -q "@owner" $file; then
                 email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
-              else
-                continue
               fi
             fi
 

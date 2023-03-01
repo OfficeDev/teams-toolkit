@@ -1152,53 +1152,8 @@
     ],
     "configuration": [
       {
-        "title": "Prerequisite Check",
-        "order": 2,
-        "properties": {
-          "fx-extension.prerequisiteCheck": {
-            "type": "object",
-            "markdownDescription": "**[Obsolete]** Only work for `${command:fx-extension.validate-local-prerequisites}`",
-            "properties": {
-              "node": {
-                "type": "boolean",
-                "description": "Ensure Node.js is installed."
-              },
-              "dotnetSdk": {
-                "type": "boolean",
-                "description": "Ensure .NET SDK is installed."
-              },
-              "funcCoreTools": {
-                "type": "boolean",
-                "description": "Ensure Azure Functions Core Tools is installed."
-              },
-              "bicep": {
-                "type": "boolean",
-                "description": "Ensure Bicep CLI is installed."
-              },
-              "ngrok": {
-                "type": "boolean",
-                "description": "Ensure Ngrok is installed and started."
-              },
-              "devCert": {
-                "type": "boolean",
-                "description": "Ensure development certificate is trusted."
-              }
-            },
-            "additionalProperties": false,
-            "default": {
-              "node": true,
-              "dotnetSdk": true,
-              "funcCoreTools": true,
-              "bicep": true,
-              "ngrok": true,
-              "devCert": true
-            }
-          }
-        }
-      },
-      {
         "title": "SPFx Configuration",
-        "order": 2,
+        "order": 1,
         "properties": {
           "fx-extension.SPFxPrerequisiteCheck": {
             "type": "object",

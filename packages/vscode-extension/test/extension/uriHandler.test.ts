@@ -68,8 +68,14 @@ describe("uri handler", () => {
   });
 
   it("valid code spaces callback uri", async () => {
-    const handler = new UriHandler();
-    const uri = vscode.Uri.parse("vscode://auth-complete?code=abc");
-    await handler.handleUri(uri);
+    try {
+      const handler = new UriHandler();
+      const uri = vscode.Uri.parse(
+        "vscode://TeamsDevApp.ms-teams-vscode-extension/auth-complete?code=abc"
+      );
+      await handler.handleUri(uri);
+    } catch (e) {
+      chai.assert.isTrue(false);
+    }
   });
 });

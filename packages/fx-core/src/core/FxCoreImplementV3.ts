@@ -348,7 +348,7 @@ export class FxCoreV3Implement {
     ContextInjectorMW,
     ConcurrentLockerMW,
   ])
-  async AddWebPartDriver(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     // const driver: AddWebPartDriver = Container.get("spfx/add");
     // const args: AddWebPartArgs = {
     //   manifestPath: inputs.manifestTemplatePath,

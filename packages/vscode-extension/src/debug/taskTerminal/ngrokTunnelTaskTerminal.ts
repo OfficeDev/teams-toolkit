@@ -215,8 +215,8 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     try {
       const matches = data.match(ngrokEndpointRegex);
       if (matches && matches?.length > 3) {
-        const ngrokTunnelInfo = { src: matches[2], dist: matches[3] };
-        const saveEnvRes = await this.saveNgrokEndpointToEnv(ngrokTunnelInfo.dist);
+        const ngrokTunnelInfo = { src: matches[2], dest: matches[3] };
+        const saveEnvRes = await this.saveNgrokEndpointToEnv(ngrokTunnelInfo.dest);
         if (saveEnvRes.isErr()) {
           return err(saveEnvRes.error);
         }
@@ -255,7 +255,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       const webServiceUrl = this.getWebServiceUrl();
       const endpoint = await localEnvManager.getNgrokTunnelFromApi(webServiceUrl);
       if (endpoint) {
-        const saveEnvRes = await this.saveNgrokEndpointToEnv(endpoint.dist);
+        const saveEnvRes = await this.saveNgrokEndpointToEnv(endpoint.dest);
         if (saveEnvRes.isErr()) {
           return err(saveEnvRes.error);
         }

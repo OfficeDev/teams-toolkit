@@ -160,11 +160,8 @@ export class Utils {
 
       console.log(output);
 
-      //const input11 = "C:\\Users\\yuqzho\\AppData\\Roaming\\npm\n`-- yo@4.3.1-beta.0\n\n";
       const regex = new RegExp(packageName + "@" + "(?<version>\\d+\\.\\d+\\.\\d+[\\w-.]*)"); // in case user has installed any -alpha, -beta version
-      const regex2 = /yo@(?<majorVersion>\d+)(\.\d+\.\d+)/;
       const match = regex.exec(output.toString());
-      //const match2 = regex.exec(input11);
       if (match && match.groups) {
         return match.groups.version;
       } else {
@@ -190,8 +187,6 @@ export class Utils {
         `${packageName}`,
         "version"
       );
-
-      console.log(output);
 
       const regex = new RegExp("(?<version>\\d+\\.\\d+\\.\\d)"); // in case user has installed any -alpha, -beta version
       const match = regex.exec(output.toString());

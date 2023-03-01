@@ -16,6 +16,7 @@ import {
   Platform,
   AzureSolutionSettings,
   ProjectSettingsV3,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -36,6 +37,7 @@ import {
   MigrationError,
   AbandonedProjectError,
   ToolkitNotSupportError,
+  NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -64,6 +66,8 @@ import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
   getPlaceholderMappings,
   isCommentObject,
+  launchRemote,
+  OldProjectSettingsHelper,
   readJsonCommentFile,
 } from "./utils/debug/debugV3MigrationUtils";
 import {
@@ -94,6 +98,7 @@ import { isSPFxProject, isV3Enabled } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
 
 export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -181,6 +186,12 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       );
       ctx.result = err(ToolkitNotSupportError());
       return false;
+    }
+
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    if (inputs.nonInteractive) {
+      ctx.result = err(new NotAllowedMigrationError());
+      return;
     }
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
@@ -310,11 +321,56 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
   if (await fs.pathExists(launchJsonPath)) {
     await context.backup(Constants.launchJsonPath);
-    const launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    let launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    const oldProjectSettings = await loadProjectSettings(context.projectPath);
+    if (oldProjectSettings.isM365) {
+      const jsonObject = JSON.parse(launchJsonContent);
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.edge, "Edge", LaunchUrl.teamsRemote, 1)
+      );
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.chrome, "Chrome", LaunchUrl.teamsRemote, 1)
+      );
+      if (OldProjectSettingsHelper.includeTab(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteTab, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteTab,
+            2
+          )
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.edge, "Edge", LaunchUrl.officeRemoteTab, 3)
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.chrome, "Chrome", LaunchUrl.officeRemoteTab, 3)
+        );
+      } else if (OldProjectSettingsHelper.includeBot(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteBot, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteBot,
+            2
+          )
+        );
+      }
+      launchJsonContent = JSON.stringify(jsonObject, null, 4);
+    }
     const result = launchJsonContent
       .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
       .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
-      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
+      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}") // For M365 apps
+      .replace(/\${teamsAppInternalId}/g, "${dev:teamsAppInternalId}");
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }

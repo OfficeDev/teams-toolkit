@@ -53,6 +53,7 @@
     "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
+    "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project"
   ],
   "capabilities": {

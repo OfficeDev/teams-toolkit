@@ -338,7 +338,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     if (!terminalStatus.status.endpoint) {
       throw NgrokTunnelError.TunnelServiceNotStartedError();
     }
-    return terminalStatus.status.endpoint.dist;
+    return terminalStatus.status.endpoint.dest;
   }
 
   private static async getNgrokPath(): Promise<string> {

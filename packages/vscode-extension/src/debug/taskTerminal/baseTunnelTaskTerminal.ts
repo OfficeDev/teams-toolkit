@@ -50,7 +50,7 @@ export type OutputInfo = {
 
 export type EndpointInfo = {
   src: string;
-  dist: string;
+  dest: string;
 };
 
 export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
@@ -67,8 +67,8 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   constructor(taskDefinition: vscode.TaskDefinition, stepNumber: number) {
     super(taskDefinition);
 
-    for (const task of BaseTunnelTaskTerminal.tunnelTaskTerminals.values()) {
-      task.close();
+    for (const terminal of BaseTunnelTaskTerminal.tunnelTaskTerminals.values()) {
+      terminal.close();
     }
 
     BaseTunnelTaskTerminal.tunnelTaskTerminals.set(this.taskTerminalId, this);
@@ -149,7 +149,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine(
       `${doctorConstant.Tick} ${tunnelDisplayMessages.successSummary(
         ngrokTunnel.src,
-        ngrokTunnel.dist,
+        ngrokTunnel.dest,
         envs.file,
         envs.keys
       )}`
@@ -165,7 +165,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     }
 
     this.writeEmitter.fire(
-      `\r\n${tunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dist)}\r\n`
+      `\r\n${tunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dest)}\r\n`
     );
     if (envs.file !== undefined) {
       this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.saveEnvs(envs.file, envs.keys)}\r\n`);
@@ -242,7 +242,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
         return ok(result);
       }
 
-      if (Object.entries(envVars).length == 0) {
+      if (Object.entries(envVars).length === 0) {
         return ok(result);
       }
 

@@ -198,7 +198,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       this.isOutputSummary = true;
       await this.outputSuccessSummary(
         devTunnelDisplayMessages,
-        { src: `${this.args.protocol}://localhost:${this.args.port}`, dist: tunnelDistUri },
+        { src: `${this.args.protocol}://localhost:${this.args.port}`, dest: tunnelDistUri },
         saveEnvRes.value
       );
       return ok(Void);

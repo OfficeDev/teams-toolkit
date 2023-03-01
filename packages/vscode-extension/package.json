@@ -814,32 +814,21 @@
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
               },
               {
-                "const": "debug-npm-install",
-                "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
-              },
-              {
                 "const": "debug-start-local-tunnel",
                 "description": "%teamstoolkit.taskDefinitions.command.startLocalTunnel.description%"
               },
               {
-                "const": "debug-set-up-tab",
-                "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
+                "const": "provision",
+                "description": "%teamstoolkit.taskDefinitions.command.provision.description%"
               },
               {
-                "const": "debug-set-up-bot",
-                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
-              },
-              {
-                "const": "debug-set-up-sso",
-                "description": "%teamstoolkit.taskDefinitions.command.sso.description%"
-              },
-              {
-                "const": "debug-prepare-manifest",
-                "description": "%teamstoolkit.taskDefinitions.command.manifest.description%"
+                "const": "deploy",
+                "description": "%teamstoolkit.taskDefinitions.command.deploy.description%"
               }
             ]
           },
           "args": {
+            "description": "The arguments of the command.",
             "anyOf": [
               {
                 "type": "object",
@@ -860,22 +849,6 @@
                         {
                           "const": "m365Account",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
-                        },
-                        {
-                          "const": "devCert",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle%"
-                        },
-                        {
-                          "const": "func",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.funcTitle%"
-                        },
-                        {
-                          "const": "ngrok",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle%"
-                        },
-                        {
-                          "const": "dotnet",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
                           "const": "portOccupancy",
@@ -918,120 +891,6 @@
               {
                 "type": "object",
                 "required": [
-                  "projects"
-                ],
-                "properties": {
-                  "projects": {
-                    "type": "array",
-                    "description": "%teamstoolkit.taskDefinitions.args.projects.title%",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "cwd"
-                      ],
-                      "properties": {
-                        "cwd": {
-                          "type": "string",
-                          "description": "%teamstoolkit.taskDefinitions.args.projects.cwd.title%"
-                        },
-                        "npmInstallArgs": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "description": "%teamstoolkit.taskDefinitions.args.projects.npmInstallArgs.title%"
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "forceUpdate": {
-                    "type": "boolean",
-                    "title": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
-                    "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
-                    "default": false,
-                    "oneOf": [
-                      {
-                        "const": false,
-                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
-                      },
-                      {
-                        "const": true,
-                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
-                      }
-                    ]
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
-                  "baseUrl"
-                ],
-                "properties": {
-                  "baseUrl": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.tab.baseUrlTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
-                  "botMessagingEndpoint"
-                ],
-                "properties": {
-                  "botId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.bot.botIdTitle%"
-                  },
-                  "botPassword": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.bot.botPasswordTitle%"
-                  },
-                  "botMessagingEndpoint": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "objectId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.objectIdTitle%"
-                  },
-                  "clientId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientIdTitle%"
-                  },
-                  "clientSecret": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientSecretTitle%"
-                  },
-                  "accessAsUserScopeId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "appPackagePath": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
                   "ngrokArgs"
                 ],
                 "properties": {
@@ -1062,9 +921,55 @@
                       },
                       {}
                     ]
+                  },
+                  "env": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
+                    "anyOf": [
+                      {
+                        "const": "local"
+                      },
+                      {}
+                    ]
+                  },
+                  "output": {
+                    "type": "object",
+                    "description": "%teamstoolkit.taskDefinitions.args.output.title%",
+                    "properties": {
+                      "domain": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.domain.title%"
+                      },
+                      "endpoint": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                      }
+                    }
                   }
                 },
                 "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "env"
+                ],
+                "properties": {
+                  "env": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
+                    "anyOf": [
+                      {
+                        "const": "local"
+                      },
+                      {}
+                    ]
+                  },
+                  "template": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.template.title%"
+                  }
+                }
               }
             ]
           }

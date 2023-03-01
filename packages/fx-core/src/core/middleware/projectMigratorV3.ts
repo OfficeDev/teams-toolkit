@@ -16,6 +16,7 @@ import {
   Platform,
   AzureSolutionSettings,
   ProjectSettingsV3,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -36,6 +37,7 @@ import {
   MigrationError,
   AbandonedProjectError,
   ToolkitNotSupportError,
+  NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -184,6 +186,12 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       );
       ctx.result = err(ToolkitNotSupportError());
       return false;
+    }
+
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    if (inputs.nonInteractive) {
+      ctx.result = err(new NotAllowedMigrationError());
+      return;
     }
 
     const isRunMigration = await showNotification(ctx, versionForMigration);

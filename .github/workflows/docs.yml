@@ -53,7 +53,7 @@ jobs:
         run: |
           files=(*)
           lists=""
-          emails="vsciotadt@microsoft.com;v-helzha@microsoft.com;v-ivanchen@microsoft.com;v-annefu@microsoft.com;v-liliu2@microsoft.com;zhshang@microsoft.com;junjieli@microsoft.com;zhany@microsoft.com;donji@microsoft.com"
+          emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;zhshang@microsoft.com;zhididr@microsoft.com;v-liliu2@microsoft.com;"
           valid=0
           invalid=0
 

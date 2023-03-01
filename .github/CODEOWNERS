@@ -22,6 +22,7 @@
 /packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
 /packages/cli @chagong @Alive-Fish
+/packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
@@ -113,6 +114,29 @@
 /templates/bot/ts/m365 @kuojianlu @swatDong @kimizhu
 /packages/fx-core/src/common/template-utils @hund030 @IvanJobs @eriolchan
 /packages/fx-core/tests/common/templateFetch.test.ts @hund030 @IvanJobs @eriolchan
+
+/templates/scenarios/js/command-and-response @kimizhu @dooriya @swatDong
+/templates/scenarios/js/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/js/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/js/notification-restify @kimizhu @dooriya @swatDong
+/templates/scenarios/js/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/js/workflow @kimizhu @dooriya @swatDong
+/templates/scenarios/js/m365-message-extension @kimizhu @swatDong @kuojianlu
+/templates/scenarios/js/m365-tab @kimizhu @swatDong @kuojianlu
+/templates/scenarios/ts/command-and-response @kimizhu @dooriya @swatDong
+/templates/scenarios/ts/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/ts/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/ts/notification-restify @kimizhu @dooriya @swatDong
+/templates/scenarios/ts/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/ts/workflow @kimizhu @dooriya @swatDong
+/templates/scenarios/ts/m365-message-extension @kimizhu @swatDong @kuojianlu
+/templates/scenarios/ts/m365-tab @kimizhu @swatDong @kuojianlu
+/templates/scenarios/csharp/command-and-response @kimizhu @dooriya @swatDong
+/templates/scenarios/csharp/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/csharp/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/csharp/notification-webapi @kimizhu @dooriya @swatDong
+/templates/scenarios/csharp/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/scenarios/csharp/workflow @kimizhu @dooriya @swatDong
 
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey

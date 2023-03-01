@@ -55,9 +55,10 @@ class TreeViewManager {
       "teamsfx-development"
     ) as CommandsTreeViewProvider;
     const developmentCommands = developmentTreeviewProvider.getCommands();
+    developmentCommands.splice(0);
+    developmentCommands.push(...this.getDevelopmentCommands());
     if (removeProjectRelatedCommands) {
       developmentCommands.splice(3);
-      developmentTreeviewProvider.refresh();
     } else if (hasAdaptiveCard) {
       // after "Preview your Teams app" command, the adaptive card will be shown
       const previewCommandIndex = developmentCommands.findIndex(
@@ -76,8 +77,8 @@ class TreeViewManager {
           )
         );
       }
-      developmentTreeviewProvider.refresh();
     }
+    developmentTreeviewProvider.refresh();
   }
 
   public getTreeView(viewName: string) {
@@ -145,8 +146,8 @@ class TreeViewManager {
     this.treeviewMap.set("teamsfx-environment", envTreeProviderInstance);
   }
 
-  private registerDevelopment(disposables: vscode.Disposable[]) {
-    const developmentCommands = [
+  private getDevelopmentCommands(): TreeViewCommand[] {
+    return [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.createProjectTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
@@ -215,6 +216,10 @@ class TreeViewManager {
             ),
           ]),
     ];
+  }
+
+  private registerDevelopment(disposables: vscode.Disposable[]) {
+    const developmentCommands = this.getDevelopmentCommands();
 
     const developmentProvider = new CommandsTreeViewProvider(developmentCommands);
     disposables.push(

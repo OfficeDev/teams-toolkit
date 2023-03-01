@@ -73,6 +73,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
 
     if (args.dryRun && this.prepare) {
       await this.prepare(inputs);
+      await this.progressBar?.end(true);
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);

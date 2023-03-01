@@ -27,13 +27,9 @@ import { AppStudioClient } from "../../../../src/component/resource/botService/a
 import { TeamsfxCore } from "../../../../src/component/core";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { provisionUtils } from "../../../../src/component/provisionUtils";
-import {
-  ErrorNames,
-  TeamsFxUrlNames,
-  TelemetryKeys,
-} from "../../../../src/component/resource/botService/constants";
+import { TeamsFxUrlNames } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import { FailedToCreateBotRegistrationError } from "../../../../src/component/resource/botService/errors";
+import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
@@ -59,6 +55,8 @@ describe("Bot service", () => {
       getAccessToken: async (tokenRequest: TokenRequest) => ok("token"),
     } as M365TokenProvider;
     context.envInfo = newEnvInfoV3("local");
+    sandbox.stub(AppStudio, "sendStartEvent").returns();
+    sandbox.stub(AppStudio, "sendSuccessEvent").returns();
   });
 
   afterEach(() => {

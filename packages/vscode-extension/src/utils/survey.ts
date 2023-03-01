@@ -75,7 +75,7 @@ export class ExtensionSurvey {
           return;
         }
 
-        if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri!.fsPath)) {
+        if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri?.fsPath)) {
           this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
         }
       }, 2000);

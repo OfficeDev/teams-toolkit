@@ -9,6 +9,9 @@ import { exec, ExecException } from "child_process";
 import * as path from "path";
 import fs from "fs-extra";
 import { DotenvOutput } from "../../utils/envUtil";
+import { hooks } from "@feathersjs/hooks";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { TelemetryConstant } from "../../constant/commonConstant";
 
 const ACTION_NAME = "script";
 
@@ -22,6 +25,7 @@ interface ScriptDriverArgs {
 
 @Service(ACTION_NAME)
 export class ScriptDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const typedArgs = args as ScriptDriverArgs;
     const res = await this.executeCommand(typedArgs, context);
@@ -30,6 +34,8 @@ export class ScriptDriver implements StepDriver {
     const kvArray: [string, string][] = Object.keys(outputs).map((k) => [k, outputs[k]]);
     return ok(new Map(kvArray));
   }
+
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const res = await this.run(args, ctx);
     const summary = `${res.isOk() ? "success" : "failed"} to execute command '${

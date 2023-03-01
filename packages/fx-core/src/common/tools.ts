@@ -416,10 +416,6 @@ export function isV3Enabled(): boolean {
   return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : false;
 }
 
-export function isMigrationV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3_MIGRATION ? process.env.TEAMSFX_V3_MIGRATION === "true" : false;
-}
-
 export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }

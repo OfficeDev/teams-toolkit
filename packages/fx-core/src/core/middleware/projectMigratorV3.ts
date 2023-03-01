@@ -14,6 +14,9 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  AzureSolutionSettings,
+  ProjectSettingsV3,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -34,6 +37,7 @@ import {
   MigrationError,
   AbandonedProjectError,
   ToolkitNotSupportError,
+  NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -62,6 +66,8 @@ import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
   getPlaceholderMappings,
   isCommentObject,
+  launchRemote,
+  OldProjectSettingsHelper,
   readJsonCommentFile,
 } from "./utils/debug/debugV3MigrationUtils";
 import {
@@ -88,10 +94,11 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
+import { isSPFxProject, isV3Enabled } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
 
 export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -113,8 +120,9 @@ export const Parameters = {
 };
 
 export const TelemetryPropertyKey = {
-  status: "status",
+  button: "button",
   mode: "mode",
+  upgradeVersion: "upgrade-version",
 };
 
 export const TelemetryPropertyValue = {
@@ -125,14 +133,18 @@ export const TelemetryPropertyValue = {
   nonmodal: "nonmodal",
   confirmOnly: "confirm-only",
   skipUserConfirm: "skip-user-confirm",
+  upgradeVersion: "5.0",
 };
 
 export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+
+// MigrationError provides learnMoreLink as helplink for user. Remember add related error message in learnMoreLink when adding new error.
 export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
+  aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-const migrationMessageButtons = [learnMoreText, upgradeButton];
+const migrationMessageButtons = [upgradeButton, learnMoreText];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -166,7 +178,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
-    if (!isMigrationV3Enabled()) {
+    if (!isV3Enabled()) {
       await TOOLS?.ui.showMessage(
         "warn",
         getLocalizedString("core.migrationV3.CreateNewProject"),
@@ -174,6 +186,12 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       );
       ctx.result = err(ToolkitNotSupportError());
       return false;
+    }
+
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    if (inputs.nonInteractive) {
+      ctx.result = err(new NotAllowedMigrationError());
+      return;
     }
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
@@ -204,7 +222,9 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart, {
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    });
     await exec(context);
     await showSummaryReport(context);
     sendTelemetryEvent(
@@ -301,11 +321,56 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
   if (await fs.pathExists(launchJsonPath)) {
     await context.backup(Constants.launchJsonPath);
-    const launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    let launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    const oldProjectSettings = await loadProjectSettings(context.projectPath);
+    if (oldProjectSettings.isM365) {
+      const jsonObject = JSON.parse(launchJsonContent);
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.edge, "Edge", LaunchUrl.teamsRemote, 1)
+      );
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.chrome, "Chrome", LaunchUrl.teamsRemote, 1)
+      );
+      if (OldProjectSettingsHelper.includeTab(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteTab, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteTab,
+            2
+          )
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.edge, "Edge", LaunchUrl.officeRemoteTab, 3)
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.chrome, "Chrome", LaunchUrl.officeRemoteTab, 3)
+        );
+      } else if (OldProjectSettingsHelper.includeBot(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteBot, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteBot,
+            2
+          )
+        );
+      }
+      launchJsonContent = JSON.stringify(jsonObject, null, 4);
+    }
     const result = launchJsonContent
       .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
       .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
-      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
+      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}") // For M365 apps
+      .replace(/\${teamsAppInternalId}/g, "${dev:teamsAppInternalId}");
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }
@@ -372,7 +437,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw MigrationError(
-      new Error("templates/appPackage/manifest.template.json does not exist"),
+      new Error(getLocalizedString("core.migrationV3.manifestNotExist")),
       errorNames.manifestTemplateNotExist,
       learnMoreLink
     );
@@ -383,7 +448,18 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );
-  if (oldAadManifestExists) {
+
+  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
+    .activeResourcePlugins;
+  const component = (projectSettings as ProjectSettingsV3).components;
+  const aadRequired =
+    (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
+    (component &&
+      component.findIndex((component, index, obj) => {
+        return component.name == "aad-app";
+      }) >= 0);
+
+  if (oldAadManifestExists && aadRequired) {
     let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
@@ -391,6 +467,12 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
+  } else if (aadRequired && !oldAadManifestExists) {
+    throw MigrationError(
+      new Error(getLocalizedString("core.migrationV3.aadManifestNotExist")),
+      errorNames.aadManifestTemplateNotExist,
+      learnMoreLink
+    );
   }
 
   await context.fsRemove(oldAppPackageFolderPath);
@@ -440,7 +522,8 @@ export async function showNotification(
   const skipUserConfirm = getParameterFromCxt(ctx, Parameters.skipUserConfirm);
   if (skipUserConfirm) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.skipUserConfirm,
     });
     return true;
@@ -452,21 +535,25 @@ export async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
     if (answer === learnMoreText) {
       TOOLS?.ui!.openUrl(learnMoreLink);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-        [TelemetryPropertyKey.status]: TelemetryPropertyValue.learnMore,
+        [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
+        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
   } while (answer === learnMoreText);
   if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
     const link = getDownloadLinkByVersionAndPlatform(
@@ -478,7 +565,8 @@ export async function askUserConfirm(
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-    [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+    [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
     [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
   });
   return true;
@@ -488,18 +576,22 @@ export async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   const answer = await popupMessageNonmodal(versionForMigration);
   if (answer === learnMoreText) {
     TOOLS?.ui!.openUrl(learnMoreLink);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.learnMore,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return false;
   } else if (answer === upgradeButton) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return true;
@@ -508,7 +600,9 @@ export async function showNonmodalNotification(
 }
 
 export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   const res = await TOOLS?.ui.showMessage(
     "info",
     getLocalizedString("core.migrationV3.confirmOnly.Message"),
@@ -517,13 +611,15 @@ export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise
   );
   if (res?.isOk() && res.value === "OK") {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return true;
   } else {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryPropertyKey.status]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return false;

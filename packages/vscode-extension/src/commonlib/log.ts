@@ -14,7 +14,11 @@ export class VsCodeLogProvider implements LogProvider {
   private static instance: VsCodeLogProvider;
 
   private constructor() {
-    this.outputChannel = vscode.window.createOutputChannel(outputChannelDisplayName);
+    this.outputChannel = vscode.window.createOutputChannel(
+      outputChannelDisplayName,
+      // Align with languages:id in package.json for colorized output.
+      "teamsfx-toolkit-output"
+    );
   }
 
   /**

@@ -40,7 +40,7 @@ test-folder
 .env
 
 resource
-!resource/*Param.json
+!src/resource
 !src/cmds/preview/depsChecker/resource/
 templates
 *.tgz

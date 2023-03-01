@@ -226,6 +226,7 @@ export class ProvisionUtils {
       try {
         const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
         if (!subscriptionInAccount) {
+          // this case will not happen actually
           return err(
             new UserError(
               CoordinatorSource,
@@ -745,8 +746,8 @@ export class ProvisionUtils {
         new SystemError(
           SolutionSource,
           SolutionError.NoAppStudioToken,
-          getDefaultString("error.NoAppStudioToken"),
-          getLocalizedString("error.NoAppStudioToken")
+          getDefaultString("error.NoM365Token"),
+          getLocalizedString("error.NoM365Token")
         )
       );
     }

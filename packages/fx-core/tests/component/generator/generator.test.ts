@@ -28,7 +28,6 @@ import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
-import { templateAlphaVersion } from "../../../src/component/generator/constant";
 import templateConfig from "../../../src/common/templates-config.json";
 
 describe("Generator utils", () => {
@@ -44,14 +43,14 @@ describe("Generator utils", () => {
     mockedEnvRestore();
   });
 
-  it("return alpha if set env alpha", async () => {
+  it("return rc if set env rc", async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_TEMPLATE_PRERELEASE: "alpha",
+      TEAMSFX_TEMPLATE_PRERELEASE: "rc",
     });
-    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     const url = await generatorUtils.fetchTemplateZipUrl("templateName");
-    assert.isTrue(url.includes(templateAlphaVersion));
+    assert.isTrue(url.includes("0.0.0-rc"));
   });
 
   it("alpha or prerelease should return error to use fallback", async () => {

@@ -447,3 +447,14 @@ export class VideoFilterAppRemoteNotSupportedError extends UserError {
     });
   }
 }
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: CoreSource,
+      name: NotAllowedMigrationError.name,
+      message: getLocalizedString("core.migrationV3.notAllowedMigration"),
+      displayMessage: getLocalizedString("core.migrationV3.notAllowedMigration"),
+    });
+  }
+}

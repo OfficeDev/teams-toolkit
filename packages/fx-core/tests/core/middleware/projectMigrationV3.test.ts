@@ -39,7 +39,7 @@ import {
   errorNames,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { UpgradeCanceledError } from "../../../src/core/error";
+import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../src/core/error";
 import {
   Metadata,
   MetadataV2,
@@ -154,6 +154,31 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
+  });
+
+  it("happy path run error - notAllowedMigrationError", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [ProjectMigratorMWV3],
+    });
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true, nonInteractive: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+      assert.instanceOf((res as any).error, NotAllowedMigrationError);
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
   });
 });
 

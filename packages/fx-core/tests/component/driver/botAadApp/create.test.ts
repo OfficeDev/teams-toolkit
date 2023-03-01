@@ -184,4 +184,31 @@ describe("botAadAppCreate", async () => {
       }
     );
   });
+
+  it("should be good when reusing existing bot in env", async () => {
+    const originalValues = {
+      BOT_ID: process.env.BOT_ID,
+      SECRET_BOT_PASSWORD: process.env.SECRET_BOT_PASSWORD,
+    };
+    // mock env
+    process.env.BOT_ID = expectedClientId;
+    process.env.SECRET_BOT_PASSWORD = expectedSecretText;
+
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result.isOk() && result.result.value.get(outputKeys.BOT_ID)).to.be.equal(
+      expectedClientId
+    );
+    expect(
+      result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
+    ).to.be.equal(expectedSecretText);
+    // restore env
+    process.env.BOT_ID = originalValues.BOT_ID;
+    process.env.SECRET_BOT_PASSWORD = originalValues.SECRET_BOT_PASSWORD;
+  });
 });

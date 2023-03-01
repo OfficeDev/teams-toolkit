@@ -7,6 +7,7 @@ import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 import { cpUtils, DebugLogger } from "../../../../common/deps-checker/util/cpUtils";
+import * as os from "os";
 
 export class Utils {
   static async configure(configurePath: string, map: Map<string, string>): Promise<void> {
@@ -139,8 +140,82 @@ export class Utils {
       return undefined;
     }
   }
+
+  static async findGloballyInstalledVersion(
+    logger: LogProvider,
+    packageName: string
+  ): Promise<string | undefined> {
+    const timeout = 1 * 60 * 1000;
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        logger,
+        { timeout: timeout, shell: false },
+        getExecCommand("npm"),
+        "ls",
+        `${packageName}`,
+        "-g",
+        "--depth=0"
+      );
+
+      console.log(output);
+
+      //const input11 = "C:\\Users\\yuqzho\\AppData\\Roaming\\npm\n`-- yo@4.3.1-beta.0\n\n";
+      const regex = new RegExp(packageName + "@" + "(?<version>\\d+\\.\\d+\\.\\d+[\\w-.]*)"); // in case user has installed any -alpha, -beta version
+      const regex2 = /yo@(?<majorVersion>\d+)(\.\d+\.\d+)/;
+      const match = regex.exec(output.toString());
+      //const match2 = regex.exec(input11);
+      if (match && match.groups) {
+        return match.groups.version;
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      logger.error(`Failed to execute "npm ls ${packageName}"`);
+      //throw NpmInstallError(error as Error);
+      throw error;
+    }
+  }
+
+  static async findLatestVersion(logger: LogProvider, packageName: string): Promise<string> {
+    const timeout = 1 * 60 * 1000;
+    const defaultOutput = "latest";
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        logger,
+        { timeout: timeout, shell: false },
+        getExecCommand("npm"),
+        "view",
+        `${packageName}`,
+        "version"
+      );
+
+      console.log(output);
+
+      const regex = new RegExp("(?<version>\\d+\\.\\d+\\.\\d)"); // in case user has installed any -alpha, -beta version
+      const match = regex.exec(output.toString());
+      //const match2 = regex.exec(input11);
+      if (match && match.groups) {
+        return match.groups.version;
+      } else {
+        return defaultOutput;
+      }
+    } catch (error) {
+      logger.error(`Failed to execute "npm view ${packageName} version"`);
+      return defaultOutput;
+    }
+  }
 }
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function getExecCommand(command: string): string {
+  return isWindows() ? `${command}.cmd` : command;
+}
+
+function isWindows(): boolean {
+  return os.type() === "Windows_NT";
 }

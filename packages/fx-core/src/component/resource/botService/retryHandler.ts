@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author zhijie <zhihuan@microsoft.com>
+ * @author Ivan He <ruhe@microsoft.com>
  */
 import { Retry } from "./constants";
 export class RetryHandler {

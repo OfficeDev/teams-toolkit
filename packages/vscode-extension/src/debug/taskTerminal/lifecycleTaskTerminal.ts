@@ -49,10 +49,6 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
   }
 
   private async _do(): Promise<Result<Void, FxError>> {
-    if (!this.args?.template) {
-      throw BaseTaskTerminal.taskDefinitionError("template");
-    }
-
     if (!this.args?.env) {
       throw BaseTaskTerminal.taskDefinitionError("env");
     }
@@ -60,10 +56,12 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
     inputs.isLocalDebug = true;
-    inputs.workflowFilePath = path.resolve(
-      globalVariables.workspaceUri?.fsPath ?? "",
-      BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
-    );
+    if (this.args.template) {
+      inputs.workflowFilePath = path.resolve(
+        globalVariables.workspaceUri?.fsPath ?? "",
+        BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
+      );
+    }
 
     const res = await runCommand(this.stage, inputs);
     return res.isErr() ? err(res.error) : ok(Void);

@@ -49,7 +49,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
     context: WrapDriverContext,
     withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
-    const result = this.validateArgs(args);
+    /*const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -105,12 +105,12 @@ export class ValidateTeamsAppDriver implements StepDriver {
         "https://aka.ms/teamsfx-actions/teamsapp-validate"
       );
       return err(validationFailed);
-    }
-    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
+    }*/
+    const validationNotice = getLocalizedString("driver.teamsApp.validate.skip", actionName);
     if (context.platform === Platform.VS) {
-      context.logProvider.info(validationSuccess);
+      context.logProvider.warning(validationNotice);
     } else {
-      context.ui?.showMessage("info", validationSuccess, false);
+      context.ui?.showMessage("warn", validationNotice, false);
     }
     return ok(new Map());
   }

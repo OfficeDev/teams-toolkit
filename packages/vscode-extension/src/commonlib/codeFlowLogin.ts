@@ -42,7 +42,7 @@ import { ExtensionErrors } from "../error";
 import { env, Uri } from "vscode";
 import { randomBytes } from "crypto";
 import { getExchangeCode } from "./exchangeCode";
-
+import * as os from "os";
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
   reject: (reason: any) => void;
@@ -335,6 +335,7 @@ export class CodeFlowLogin {
               "[Login] " +
                 stringUtil.format(
                   localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+                  path.join(os.homedir(), ".fx", "account"),
                   error.message
                 )
             );
@@ -387,6 +388,7 @@ export class CodeFlowLogin {
           "[Login] " +
             stringUtil.format(
               localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+              path.join(os.homedir(), ".fx", "account"),
               error.message
             )
         );

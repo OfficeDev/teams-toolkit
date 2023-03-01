@@ -122,6 +122,10 @@ async function updateManifest(
   }
   const existingManifestTemplate = manifestRes.value;
 
+  if (!existingManifestTemplate) {
+    return err(new ObjectIsUndefinedError("manifest.json downloaded from template"));
+  }
+
   // icons
   const icons = appPackage.icons;
   if (icons) {
@@ -165,7 +169,12 @@ async function updateManifest(
     inputs[CoreQuestionNames.ReplaceContentUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
-    updateTabUrl(inputs[CoreQuestionNames.ReplaceContentUrl], TabUrlType.ContentUrl, tabs);
+    updateTabUrl(
+      inputs[CoreQuestionNames.ReplaceContentUrl],
+      TabUrlType.ContentUrl,
+      tabs,
+      existingManifestTemplate.staticTabs
+    );
   }
 
   if (
@@ -173,7 +182,12 @@ async function updateManifest(
     inputs[CoreQuestionNames.ReplaceWebsiteUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
-    updateTabUrl(inputs[CoreQuestionNames.ReplaceWebsiteUrl], TabUrlType.WebsiteUrl, tabs);
+    updateTabUrl(
+      inputs[CoreQuestionNames.ReplaceWebsiteUrl],
+      TabUrlType.WebsiteUrl,
+      tabs,
+      existingManifestTemplate.staticTabs
+    );
   }
 
   if (needUpdateStaticTabUrls) {
@@ -187,11 +201,9 @@ async function updateManifest(
     if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
       if (existingManifestTemplate.bots && existingManifestTemplate.bots.length > 0) {
         manifest.bots = existingManifestTemplate.bots;
-        manifest.validDomains = existingManifestTemplate.validDomains;
       } else {
         manifest.bots = BOTS_TPL_V3;
         manifest.bots[0].botId = "${{BOT_ID}}";
-        manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
 
@@ -201,11 +213,9 @@ async function updateManifest(
         existingManifestTemplate.composeExtensions.length > 0
       ) {
         manifest.composeExtensions = existingManifestTemplate.composeExtensions;
-        manifest.validDomains = existingManifestTemplate.validDomains;
       } else {
         manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
         manifest.composeExtensions[0].botId = "${{BOT_ID}}";
-        manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
   }
@@ -276,19 +286,28 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
   return ok(undefined);
 }
 
-function updateTabUrl(answers: string[], tabUrlType: TabUrlType, tabs: IStaticTab[] | undefined) {
+function updateTabUrl(
+  answers: string[],
+  tabUrlType: TabUrlType,
+  tabs: IStaticTab[] | undefined,
+  existingManifestStaticTabs: IStaticTab[] | undefined
+) {
   if (!tabs || tabs.length === 0) {
     return err(new ObjectIsUndefinedError("static tabs"));
+  }
+
+  if (!existingManifestStaticTabs || existingManifestStaticTabs.length === 0) {
+    return err(new ObjectIsUndefinedError("static tabs in manifest.json"));
   }
   answers.forEach((answer: string) => {
     const tabToUpdate = findTabBasedOnName(answer, tabs);
     if (tabToUpdate) {
       switch (tabUrlType) {
         case TabUrlType.ContentUrl:
-          tabToUpdate.contentUrl = "${{TAB_ENDPOINT}}/index.html#/tab";
+          tabToUpdate.contentUrl = existingManifestStaticTabs[0].contentUrl;
           break;
         case TabUrlType.WebsiteUrl:
-          tabToUpdate.websiteUrl = "${{TAB_ENDPOINT}}/index.html#/tab";
+          tabToUpdate.websiteUrl = existingManifestStaticTabs[0].websiteUrl;
           break;
         default:
           break;
@@ -334,8 +353,8 @@ export function updateScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
 }
 
-export function isFromDevPortalInVSC(inputs: Inputs): boolean {
-  return !!inputs.teamsAppFromTdp && inputs.platform === Platform.VSCode;
+export function isFromDevPortal(inputs: Inputs): boolean {
+  return !!inputs.teamsAppFromTdp;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

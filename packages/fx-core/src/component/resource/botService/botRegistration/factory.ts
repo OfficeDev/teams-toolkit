@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
 import { BotRegistration } from "./botRegistration";
 import { LocalBotRegistration } from "./localBotRegistration";
 import { RemoteBotRegistration } from "./remoteBotRegistration";

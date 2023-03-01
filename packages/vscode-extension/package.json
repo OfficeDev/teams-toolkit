@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -20,7 +20,7 @@
     ]
   },
   "engines": {
-    "vscode": "^1.65.0"
+    "vscode": "^1.66.0"
   },
   "license": "MIT",
   "keywords": [
@@ -40,7 +40,6 @@
     "out/**/*"
   ],
   "activationEvents": [
-    "onStartupFinished",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.createFromWalkthrough",
     "onCommand:fx-extension.openDeploymentTreeview",
@@ -54,6 +53,7 @@
     "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
+    "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project"
   ],
   "capabilities": {
@@ -127,7 +127,7 @@
       {
         "view": "teamsfx-feedback",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-feedback.content%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -179,13 +179,13 @@
           "id": "teamsfx-help",
           "name": "Help",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "visible"
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-feedback",
           "name": "Feedback",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "visible"
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",
@@ -213,12 +213,7 @@
         },
         {
           "command": "fx-extension.deployManifestFromCtxMenu",
-          "when": "resourceFilename =~ /^manifest.(local|remote).template.json$/ && !fx-extension.isConfigUnifyEnabled",
-          "group": "deploy@0"
-        },
-        {
-          "command": "fx-extension.deployManifestFromCtxMenu",
-          "when": "resourceFilename == manifest.template.json && fx-extension.isConfigUnifyEnabled",
+          "when": "resourceFilename == manifest.template.json",
           "group": "deploy@0"
         }
       ],
@@ -610,13 +605,13 @@
       {
         "command": "fx-extension.migrateTeamsManifest",
         "title": "%teamstoolkit.commands.migrateManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
         "title": "%teamstoolkit.commands.migrateApp.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "isWorkspaceTrusted",
         "category": "Teams"
       },
       {
@@ -1323,10 +1318,7 @@
     ],
     "languages": [
       {
-        "id": "teamsfx-toolkit-output",
-        "mimetypes": [
-          "text/x-code-output"
-        ]
+        "id": "teamsfx-toolkit-output"
       }
     ],
     "grammars": [
@@ -1432,6 +1424,7 @@
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -1455,7 +1448,7 @@
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/validator": "^13.1.1",
-    "@types/vscode": "^1.65.0",
+    "@types/vscode": "^1.66.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vscode/codicons": "0.0.21",
@@ -1471,7 +1464,6 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
     "glob": "^8.0.3",
@@ -1519,7 +1511,7 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
     "@microsoft/teamsfx-api": "^0.22.1",
-    "@microsoft/teamsfx-core": "^1.23.0",
+    "@microsoft/teamsfx-core": "^1.23.1",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",
@@ -1541,7 +1533,8 @@
     "tree-kill": "^1.2.2",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47"
+    "vscode-tas-client": "^0.1.47",
+    "yaml": "^2.2.1"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account"

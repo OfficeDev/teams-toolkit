@@ -31,7 +31,7 @@ import {
   TelemetryEvent,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
-import { TOOLS } from "../globalVars";
+import { globalVars, TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,
@@ -60,6 +60,7 @@ import {
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
   getVersionState,
+  getTrackingIdFromPath,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -188,11 +189,14 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       return false;
     }
 
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (inputs.nonInteractive) {
+    // in cli non interactive scenario, migration will return an error instead of popup dialog.
+    const nonInteractive = getParameterFromCxt(ctx, "nonInteractive");
+    if (nonInteractive) {
       ctx.result = err(new NotAllowedMigrationError());
       return;
     }
+
+    await ensureTrackingIdInGlobal(ctx);
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
     if (isRunMigration) {
@@ -656,6 +660,12 @@ export async function generateLocalConfig(context: MigrationContext): Promise<vo
     const oldProjectSettings = await loadProjectSettings(context.projectPath);
     await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
   }
+}
+
+export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
+  const projectPath = getParameterFromCxt(context, "projectPath", "");
+  const projectId = await getTrackingIdFromPath(projectPath);
+  globalVars.trackingId = projectId; // set trackingId to globalVars
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {

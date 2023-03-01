@@ -148,7 +148,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
-       - name: release templates' prerelease version to github
+      - name: release templates' prerelease version to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
         uses: ncipollo/release-action@v1.10.0
         with:

@@ -292,7 +292,7 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
       configurations: ["Attach to Frontend in the Microsoft 365 app (Edge)"],
       preLaunchTask: TaskOverallLabel.TransparentM365,
       presentation: {
-        group: "group3: Microsoft 365 app",
+        group: "group3: the Microsoft 365 app",
         order: edgeOrder + 4,
       },
       stopAll: true,

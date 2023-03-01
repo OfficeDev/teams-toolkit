@@ -18,7 +18,6 @@ import {
   Void,
   PathNotExistError,
   M365TokenProvider,
-  VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -63,7 +62,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools, openAccountHelpHandler, detectVsCodeEnv } from "../handlers";
+import { tools, openAccountHelpHandler } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,

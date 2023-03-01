@@ -1,4 +1,4 @@
-import { Disposable, EventEmitter, Uri, UriHandler } from "vscode";
+import { Disposable, Uri } from "vscode";
 import { uriEventHandler } from "../globalVariables";
 
 export async function getExchangeCode(): Promise<string> {

@@ -15,7 +15,6 @@ import {
   LoginStatus,
   BasicLogin,
   UserError,
-  VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import { AccountInfo, LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
@@ -43,7 +42,6 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import { detectVsCodeEnv } from "../handlers";
 
 const SERVER_PORT = 0;
 const cachePlugin = new CryptoCachePlugin(m365CacheName);

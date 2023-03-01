@@ -5,6 +5,7 @@ import { localize } from "./utils/localizeUtils";
 import * as util from "util";
 import { SwitchToPreReleaseVersionLink } from "./constants";
 import { EventEmitter, Uri } from "vscode";
+import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 
 enum Referrer {
   DeveloperPortal = "developerportal",
@@ -18,7 +19,7 @@ interface QueryParams {
 let isRunning = false;
 export class UriHandler extends EventEmitter<Uri> implements vscode.UriHandler {
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
-    if (uri.path === "/auth-complete") {
+    if (uri.path === "/" + codeSpacesAuthComplete) {
       this.fire(uri);
       return;
     }

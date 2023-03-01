@@ -19,5 +19,5 @@ export const stateDefaultJsonFile = "state.dev.json";
 export const m365CacheName = "appStudio";
 
 export const extensionID = "TeamsDevApp.ms-teams-vscode-extension";
-export const authComplete = "auth-complete";
+export const codeSpacesAuthComplete = "auth-complete";
 export const vscodeRedirect = "https://vscode.dev/redirect";

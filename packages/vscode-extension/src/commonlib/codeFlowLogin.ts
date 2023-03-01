@@ -22,7 +22,14 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
-import { loggedIn, loggedOut, loggingIn, vscodeRedirect } from "./common/constant";
+import {
+  codeSpacesAuthComplete,
+  extensionID,
+  loggedIn,
+  loggedOut,
+  loggingIn,
+  vscodeRedirect,
+} from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryErrorType,
@@ -224,7 +231,7 @@ export class CodeFlowLogin {
 
   async loginInCodeSpace(scopes: Array<string>): Promise<string> {
     let callbackUri: Uri = await env.asExternalUri(
-      Uri.parse(`${env.uriScheme}://TeamsDevApp.ms-teams-vscode-extension/auth-complete`)
+      Uri.parse(`${env.uriScheme}://${extensionID}/${codeSpacesAuthComplete}`)
     );
     const nonce: string = randomBytes(16).toString("base64");
     const callbackQuery = new URLSearchParams(callbackUri.query);

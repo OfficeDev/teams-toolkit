@@ -1128,7 +1128,7 @@ export async function openFolderHandler(args?: any[]): Promise<Result<any, FxErr
 export async function addWebpart(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
 
-  return await runCommand(Stage.addFeature);
+  return await runCommand(Stage.addWebpart);
 }
 
 export async function runCommand(

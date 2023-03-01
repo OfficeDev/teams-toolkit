@@ -838,8 +838,8 @@ export function manifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: "manifestPath",
-    title: "core.manifestPath.title",
-    placeholder: "core.manifestPath.placeholder",
+    title: getLocalizedString("core.manifestPath.title"),
+    placeholder: getLocalizedString("core.manifestPath.placeholder"),
     default: (inputs: Inputs) => {
       return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.json");
     },
@@ -850,8 +850,8 @@ export function localManifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: "localManifestPath",
-    title: "core.localManifestPath.title",
-    placeholder: "core.localManifestPath.placeholder",
+    title: getLocalizedString("core.localManifestPath.title"),
+    placeholder: getLocalizedString("core.localManifestPath.placeholder"),
     default: (inputs: Inputs) => {
       return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.local.json");
     },

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
@@ -12,14 +12,12 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateTeamsAppArgs } from "./interfaces/ValidateTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { HelpLinks } from "../../../common/constants";
-import { AppStudioScopes } from "../../../common/tools";
-import { getAbsolutePath } from "../../utils/common";
+import { AppStudioScopes, isValidationEnabled } from "../../../common/tools";
 
 const actionName = "teamsApp/validate";
 
@@ -51,15 +49,15 @@ export class ValidateTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async validate(
     args: ValidateTeamsAppArgs,
-    context: WrapDriverContext,
-    withEmptyCapabilities?: boolean
+    context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    /*const result = this.validateArgs(args);
+    TelemetryUtils.init(context);
+    const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
     }
 
-    if (args.appPackagePath) {
+    if (isValidationEnabled() && args.appPackagePath) {
       let appPackagePath = args.appPackagePath;
       if (!path.isAbsolute(appPackagePath)) {
         appPackagePath = path.join(context.projectPath, appPackagePath);
@@ -123,7 +121,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
       context.ui?.showMessage("info", message, false);
       return ok(new Map());
     }
-
+    /*
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
       getAbsolutePath(args.manifestPath!, context.projectPath),

@@ -19,12 +19,8 @@ import {
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-
 import VsCodeLogInstance from "../../commonlib/log";
-import * as globalVariables from "../../globalVariables";
 import { tools } from "../../handlers";
 import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { getLocalDebugSession } from "../commonUtils";
@@ -252,14 +248,6 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     endpoint: string
   ): Promise<Result<OutputInfo, FxError>> {
     try {
-      const result: OutputInfo = {
-        file: undefined,
-        keys: [],
-      };
-      if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !this.args.env) {
-        return ok(result);
-      }
-
       const url = new URL(endpoint);
       const envVars: { [key: string]: string } = {};
       if (this.args?.output?.endpoint) {
@@ -272,24 +260,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         envVars[this.args.output.id] = id;
       }
 
-      if (Object.entries(envVars).length === 0) {
-        return ok(result);
-      }
-
-      result.keys = Object.keys(envVars);
-      const res = await envUtil.writeEnv(
-        globalVariables.workspaceUri.fsPath,
-        this.args.env,
-        envVars
-      );
-      const envFilePathResult = await pathUtils.getEnvFilePath(
-        globalVariables.workspaceUri.fsPath,
-        this.args.env
-      );
-      if (envFilePathResult.isOk()) {
-        result.file = envFilePathResult.value;
-      }
-      return res.isOk() ? ok(result) : err(res.error);
+      return this.savePropertiesToEnv(this.args.env, envVars);
     } catch (error: any) {
       return err(TunnelError.TunnelEnvError(error));
     }

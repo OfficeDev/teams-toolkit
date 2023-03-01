@@ -8,12 +8,14 @@
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { assembleError, UserError } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { assembleError, err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
+import * as globalVariables from "../../globalVariables";
 import { ProgressHandler } from "../../progressHandler";
 import {
   TelemetryEvent,
@@ -224,6 +226,40 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   protected abstract generateTaskArgsTelemetry(): string;
+
+  protected async savePropertiesToEnv(
+    env: string | undefined,
+    envVars: {
+      [key: string]: string;
+    }
+  ): Promise<Result<OutputInfo, FxError>> {
+    try {
+      const result: OutputInfo = {
+        file: undefined,
+        keys: [],
+      };
+      if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
+        return ok(result);
+      }
+
+      if (Object.entries(envVars).length == 0) {
+        return ok(result);
+      }
+
+      result.keys = Object.keys(envVars);
+      const res = await envUtil.writeEnv(globalVariables.workspaceUri.fsPath, env, envVars);
+      const envFilePathResult = await pathUtils.getEnvFilePath(
+        globalVariables.workspaceUri.fsPath,
+        env
+      );
+      if (envFilePathResult.isOk()) {
+        result.file = envFilePathResult.value;
+      }
+      return res.isOk() ? ok(result) : err(res.error);
+    } catch (error: any) {
+      return err(TunnelError.TunnelEnvError(error));
+    }
+  }
 }
 
 export const TunnelError = Object.freeze({

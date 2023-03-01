@@ -1,6 +1,6 @@
 import React from "react";
 import "./Deploy.css";
-import { Image } from "@fluentui/react-northstar";
+import { Image } from "@fluentui/react-components";
 
 export function Deploy(props: { docsUrl?: string }) {
   const { docsUrl } = {

@@ -166,7 +166,7 @@ export function OnlyLaunchPageSupportedInOffice(): UserError {
   return new UserError(
     constants.cliSource,
     "OnlyLaunchPageSupportedByOffice",
-    "Only launch page is supported in Microsoft 365 app. Message extension is not supported in Microsoft 365 app."
+    "Only launch page is supported in the Microsoft 365 app. Message extension is not supported in the Microsoft 365 app."
   );
 }
 

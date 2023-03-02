@@ -189,8 +189,18 @@ export class ValidateTeamsAppDriver implements StepDriver {
         AppStudioResultFactory.UserError(
           AppStudioError.InvalidParameterError.name,
           [
-            getDefaultString("driver.teamsApp.validate.invalidParameter", actionName),
-            getLocalizedString("driver.teamsApp.validate.invalidParameter", actionName),
+            getDefaultString(
+              "driver.teamsApp.validate.invalidParameter",
+              "manifestPath",
+              "appPackagePath",
+              actionName
+            ),
+            getLocalizedString(
+              "driver.teamsApp.validate.invalidParameter",
+              "manifestPath",
+              "appPackagePath",
+              actionName
+            ),
           ],
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )

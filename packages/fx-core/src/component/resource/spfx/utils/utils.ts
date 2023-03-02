@@ -190,7 +190,7 @@ export class Utils {
         "version"
       );
 
-      const regex = new RegExp("(?<version>\\d+\\.\\d+\\.\\d)"); // in case user has installed any -alpha, -beta version
+      const regex = new RegExp("(?<version>\\d+\\.\\d+\\.\\d)");
       const match = regex.exec(output.toString());
 
       if (match && match.groups) {

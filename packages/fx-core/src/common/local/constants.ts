@@ -98,6 +98,7 @@ export const TaskCommand = Object.freeze({
   setUpBot: "debug-set-up-bot",
   setUpSSO: "debug-set-up-sso",
   prepareManifest: "debug-prepare-manifest",
+  launchTeamsWebClient: "debug-launch-teams-client",
   provision: "provision",
   deploy: "deploy",
 });

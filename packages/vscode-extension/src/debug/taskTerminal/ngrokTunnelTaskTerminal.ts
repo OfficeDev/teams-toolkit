@@ -35,6 +35,7 @@ import {
   IBaseTunnelArgs,
   OutputInfo,
   TunnelError,
+  TunnelType,
 } from "./baseTunnelTaskTerminal";
 
 const ngrokTimeout = 1 * 60 * 1000;
@@ -297,6 +298,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     return {
       [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
       [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        type: maskValue(this.args.type, Object.values(TunnelType)),
         ngrokArgs: maskValue(
           Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
           [

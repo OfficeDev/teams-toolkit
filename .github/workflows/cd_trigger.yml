@@ -25,6 +25,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
       zipLink: ${{ steps.downloadUrl.outputs.result }}
+      pre_id: ${{ steps.preid.outputs.result }}
+      server_version: ${{ steps.version.outputs.result }}
     steps:
       - name: Download artifact
         id: downloadUrl
@@ -39,7 +41,47 @@ jobs:
             let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "release"
             })[0];
+            let download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: matchArtifact.id,
+              archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/release.zip`, Buffer.from(download.data));
             return matchArtifact.url
+
+      - name: Unzip artifact
+        run: unzip release.zip
+
+      - name: Get teamsfx-server version
+        id: version
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let rawData = require('fs').readFileSync('./versions.json', {encoding:'utf8', flag:'r'});
+            let pkgs = JSON.parse(rawData);
+            let server = pkgs.find(item => item.name === "@microsoft/teamsfx-server")
+            console.log("==================", server.version)
+            return server.version
+      - run: npm install semver
+      - name: Get teamsfx-server preid
+        id: preid
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let rawData = require('fs').readFileSync('./versions.json', {encoding:'utf8', flag:'r'});
+            let pkgs = JSON.parse(rawData);
+            let server = pkgs.find(item => item.name === "@microsoft/teamsfx-server")
+            let semver = require('semver')
+            if(semver.prerelease(server.version)) {
+              console.log("===========", semver.prerelease(server.version)[0])
+              return semver.prerelease(server.version)[0]
+            } else {
+              console.log("=========== stable")
+              return "stable"
+            }
+        
             
   CallAzurePipeline:
     runs-on: ubuntu-latest
@@ -52,7 +94,7 @@ jobs:
           azure-devops-project-url: https://devdiv.visualstudio.com/InternalTools
           azure-pipeline-name: TeamsFx-Dev17-CD
           azure-devops-token: ${{ secrets.VS_ADO_PAT }}
-          azure-pipeline-variables: '{"zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}}'
+          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}}'
   
   CheckSetupSuccess:
     runs-on: ubuntu-latest

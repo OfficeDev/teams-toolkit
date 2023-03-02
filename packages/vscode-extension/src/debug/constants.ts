@@ -72,7 +72,7 @@ export const trustDevCertRetiredNotification =
 export enum Hub {
   teams = "Teams",
   outlook = "Outlook",
-  office = "Office",
+  office = "the Microsoft 365 app",
 }
 
 export enum Host {

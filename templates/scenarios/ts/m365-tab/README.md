@@ -18,7 +18,7 @@ Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0
 
 # Personal tab across Microsoft 365
 
-Personal tabs provide a great way to enhance the Microsoft Teams experience. Using personal tabs, you can provide a user access to their application right within Teams, without the user having to leave the experience or sign in again. Now, personal tabs can light up within other Microsoft 365 applications. You can build and run your personal tabs in Teams, both Outlook desktop and web experiences, and also Office on the web (office.com).
+Personal tabs provide a great way to enhance the Microsoft Teams experience. Using personal tabs, you can provide a user access to their application right within Teams, without the user having to leave the experience or sign in again. Now, personal tabs can light up within other Microsoft 365 applications. You can build and run your personal tabs in Teams, both Outlook desktop and web experiences, and also the Microsoft 365 app on the web.
 
 ![Personal tab demo](https://user-images.githubusercontent.com/11220663/167839153-0aef6adc-450e-4b8c-a28f-7d27005d1093.png)
 
@@ -37,7 +37,7 @@ Follow below instructions to get started with this application template for loca
 ### Test your application with Visual Studio Code
 
 1. Press `F5` or use the `Run and Debug Activity Panel` in Visual Studio Code.
-1. Select a target Microsoft 365 application where the personal tabs can run: `Debug in Teams`, `Debug in Outlook` or `Debug in Office` and click the `Run and Debug` green arrow button.
+1. Select a target Microsoft 365 application where the personal tabs can run: `Debug in Teams`, `Debug in Outlook` or `Debug in the Microsoft 365 app` and click the `Run and Debug` green arrow button.
 
 ### Test your application with TeamsFx CLI
 

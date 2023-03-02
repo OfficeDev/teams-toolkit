@@ -309,6 +309,8 @@ jobs:
 
       - name: pack vsix
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref != 'refs/heads/prerelease' }}
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -372,6 +374,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
         env:
           RELEASE: preview
+          NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

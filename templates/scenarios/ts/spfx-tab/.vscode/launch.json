@@ -176,7 +176,7 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "group1: Teams",
+                "group": "forteams",
                 "order": 1
             },
             "stopAll": true
@@ -188,7 +188,7 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "group1: Teams",
+                "group": "forteams",
                 "order": 2
             },
             "stopAll": true

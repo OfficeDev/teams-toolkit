@@ -1,4 +1,4 @@
-import React, { Component, CSSProperties } from "react";
+import React, { Component } from "react";
 
 import { mergeStyles } from "@fluentui/react";
 
@@ -26,7 +26,7 @@ interface BaseDashboardState {
  * @param S The type of state.
  */
 export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
-  private ref: React.RefObject<HTMLDivElement>;
+  protected ref: React.RefObject<HTMLDivElement>;
 
   /**
    * Constructor for the dashboard class.
@@ -73,12 +73,10 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
    * Define thie dashboard default layout.
    */
   render() {
-    const root = dashboardStyle(this.state.isMobile);
     return (
       <div
         ref={this.ref}
-        className={mergeStyles(root, this.genClassName())}
-        style={this.genStyle()}
+        className={mergeStyles(dashboardStyle(this.state.isMobile), this.styling())}
       >
         {this.layout()}
       </div>
@@ -94,27 +92,9 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
 
   /**
    * Override this method to customize the dashboard style.
-   * @returns The style for the dashboard
+   * @returns The className for the dashboard
    */
-  protected styling(): CSSProperties | string {
-    return {};
-  }
-
-  /**
-   * Construct CSSProperties object for styling the dashboard.
-   * @returns CSSProperties object
-   */
-  private genStyle(): CSSProperties {
-    return typeof this.styling() === "string"
-      ? ({} as CSSProperties)
-      : (this.styling() as CSSProperties);
-  }
-
-  /**
-   * Construct className string for styling the dashboard.
-   * @returns className for styling the dashboard
-   */
-  private genClassName(): string {
-    return typeof this.styling() === "string" ? (this.styling() as string) : "";
+  protected styling(): string {
+    return null;
   }
 }

@@ -1,9 +1,16 @@
-import React, { Component, CSSProperties } from "react";
+import React, { Component } from "react";
 
 import { mergeStyles, mergeStyleSets } from "@fluentui/react";
 import { tokens } from "@fluentui/react-components";
 
-const widgetStyle = mergeStyleSets({
+export interface IWidgetClassNames {
+  root?: string;
+  header?: string;
+  body?: string;
+  footer?: string;
+}
+
+const classNames: IWidgetClassNames = mergeStyleSets({
   root: {
     display: "grid",
     padding: "1.25rem 2rem 1.25rem 2rem",
@@ -68,16 +75,21 @@ export class BaseWidget<P, S> extends Component<P, S & BaseWidgetState> {
    * Define the basic layout of a widget
    */
   render() {
-    const { root, header, footer } = widgetStyle;
+    const { root, header, body, footer } = this.styling();
+    const showLoading = this.state.loading !== false && this.loading() !== undefined;
     return (
-      <div className={mergeStyles(root, this.genClassName())} style={this.genStyle()}>
-        {this.header() && <div className={header}>{this.header()}</div>}
-        {this.state.loading !== false && this.loading() !== undefined ? (
+      <div className={mergeStyles(classNames.root, root)}>
+        {this.header() && (
+          <div className={mergeStyles(classNames.header, header)}>{this.header()}</div>
+        )}
+        {showLoading ? (
           this.loading()
         ) : (
           <>
-            {this.body() !== undefined && this.body()}
-            {this.footer() !== undefined && <div className={footer}>{this.footer()}</div>}
+            {this.body() !== undefined && <div className={body}>{this.body()}</div>}
+            {this.footer() !== undefined && (
+              <div className={mergeStyles(classNames.footer, footer)}>{this.footer()}</div>
+            )}
           </>
         )}
       </div>
@@ -127,23 +139,7 @@ export class BaseWidget<P, S> extends Component<P, S & BaseWidgetState> {
    * Override this method to customize the widget style.
    * @returns custom style for the widget
    */
-  protected styling(): CSSProperties | string {
-    return "";
-  }
-
-  /**
-   * Construct CSSProperties object for styling the widget.
-   * @returns CSSProperties object
-   */
-  private genStyle(): CSSProperties {
-    return typeof this.styling() === "string" ? undefined : (this.styling() as CSSProperties);
-  }
-
-  /**
-   * Construct className string for styling the widget.
-   * @returns className for styling the widget
-   */
-  private genClassName(): string {
-    return typeof this.styling() === "string" ? (this.styling() as string) : "";
+  protected styling(): IWidgetClassNames {
+    return {};
   }
 }

@@ -7,4 +7,4 @@ export { useTeamsFx, TeamsFxContext } from "./useTeamsFx";
 export { useTeamsUserCredential, TeamsContextWithCredential } from "./useTeamsUserCredential";
 export { useGraph, useGraphWithCredential } from "./useGraph";
 export { BaseDashboard } from "./BaseDashboard";
-export { BaseWidget } from "./BaseWidget";
+export { BaseWidget, IWidgetClassNames } from "./BaseWidget";

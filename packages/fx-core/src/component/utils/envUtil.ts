@@ -126,7 +126,6 @@ export class EnvUtil {
     const content = dotenvUtil.serialize(parsedDotenv);
 
     //persist
-    TOOLS.logProvider.info(`  Env output:\n${content}\n`);
     if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
     if (!envFileExists) {
@@ -163,10 +162,7 @@ export class EnvUtil {
 
 export const envUtil = new EnvUtil();
 
-const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
-const NEW_LINE_RE = /\\n/g;
 const NEW_LINE_SPLITTER = /\r?\n/;
-const NEW_LINE = "\n";
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
@@ -179,36 +175,41 @@ export class DotenvUtil {
   deserialize(src: string | Buffer): DotenvParseResult {
     const lines: DotenvParsedLine[] = [];
     const obj: DotenvOutput = {};
-    const stringLines = src.toString().split(NEW_LINE_SPLITTER);
+    const stringLines = src.toString().replace(/\r\n?/gm, "\n").split(NEW_LINE_SPLITTER);
     for (const line of stringLines) {
-      const kvMatchArray = line.match(KEY_VALUE_PAIR_RE);
-      if (kvMatchArray !== null) {
-        // match key-value pair
-        const key = kvMatchArray[1];
-        let value = kvMatchArray[2] || "";
+      const match =
+        /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm.exec(
+          line
+        );
+      if (match) {
         let inlineComment;
-        const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
-        const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
-        let quote: '"' | "'" | undefined = undefined;
-        if (sQuoted || dQuoted) {
-          quote = dQuoted ? '"' : "'";
-          value = value.substring(1, value.length - 1);
-          if (dQuoted) {
-            value = value.replace(NEW_LINE_RE, NEW_LINE);
-          }
-        } else {
-          value = value.trim();
-          //try to match comment starter
-          const index = value.indexOf("#");
-          if (index >= 0) {
-            inlineComment = value.substring(index);
-            value = value.substring(0, index).trim();
+        //key
+        const key = match[1];
+        //value
+        let value = match[2] || "";
+        //comment
+        const valueIndex = match[0].indexOf(value);
+        if (valueIndex >= 0) {
+          const remaining = match[0].substring(valueIndex + value.length).trim();
+          if (remaining.startsWith("#")) {
+            inlineComment = remaining;
           }
         }
+        //trim
+        value = value.trim();
+        //quote
+        const firstChar = value[0];
+        value = value.replace(/^(['"`])([\s\S]*)\1$/gm, "$2");
+        //de-escape
+        if (firstChar === '"') {
+          value = value.replace(/\\n/g, "\n");
+          value = value.replace(/\\r/g, "\r");
+        }
+        //output
         if (value) obj[key] = value;
         const parsedLine: DotenvParsedLine = { key: key, value: value };
         if (inlineComment) parsedLine.comment = inlineComment;
-        if (quote) parsedLine.quote = quote;
+        if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar as '"' | "'";
         lines.push(parsedLine);
       } else {
         lines.push(line);
@@ -231,15 +232,15 @@ export class DotenvUtil {
             line.value = obj[line.key];
             delete obj[line.key];
           }
-          if (line.value.includes("#")) {
+          if (line.value.includes("#") && !line.quote) {
             // if value contains '#', need add quote
             line.quote = '"';
           }
-          array.push(
-            `${line.key}=${line.quote ? line.quote + line.value + line.quote : line.value}${
-              line.comment ? " " + line.comment : ""
-            }`
-          );
+          let value = line.value;
+          if (line.quote) {
+            value = `${line.quote}${value}${line.quote}`;
+          }
+          array.push(`${line.key}=${value}${line.comment ? line.comment : ""}`);
         }
       });
     }
@@ -254,21 +255,3 @@ export class DotenvUtil {
 }
 
 export const dotenvUtil = new DotenvUtil();
-// const original = `# Built-in environment variables
-// TEAMSFX_ENV=dev2
-// AZURE_SUBSCRIPTION_ID=
-// AZURE_RESOURCE_GROUP_NAME=
-// RESOURCE_SUFFIX=
-
-// # Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
-// BOT_ID=
-// SECRET_BOT_PASSWORD=
-// TEAMS_APP_ID=
-// BOT_AZURE_FUNCTION_APP_RESOURCE_ID=
-// BOT_DOMAIN=
-// BOT_FUNCTION_ENDPOINT=
-// TEAMS_APP_TENANT_ID=
-// `;
-
-// const parsed = dotenvUtil.deserialize(original);
-// console.log(parsed)

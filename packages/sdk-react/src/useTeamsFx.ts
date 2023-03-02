@@ -3,7 +3,7 @@
 
 import { LogLevel, setLogLevel, setLogFunction, TeamsFx, IdentityType } from "@microsoft/teamsfx";
 import { useTeams } from "./useTeams";
-import { ThemePrepared } from "@fluentui/react-northstar";
+import { Theme } from "@fluentui/react-components";
 import { useData } from "./useData";
 
 export type TeamsFxContext = {
@@ -26,7 +26,7 @@ export type TeamsFxContext = {
   /**
    * Teams theme.
    */
-  theme: ThemePrepared;
+  theme: Theme;
   /**
    * Teams theme string.
    */

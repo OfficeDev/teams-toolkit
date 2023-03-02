@@ -223,7 +223,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
             callingWebhook: "",
           },
           {
-            name: "outlook",
+            name: "m365extensions",
           },
         ],
       };

@@ -20,6 +20,7 @@ import { Uri } from "vscode";
 import * as tmp from "tmp";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import { expect } from "chai";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -283,17 +284,47 @@ describe("CommonUtils", () => {
     afterEach(() => {
       sandbox.restore();
     });
-    it("get app name successfully", () => {
+    it("get app name successfully - v2", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").returns('{ "appName": "name"}');
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
 
       const res = commonUtils.getAppName();
       expect(res).equal("name");
     });
 
-    it("throw exception", () => {
+    it("throw exception - v2", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").throws();
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
+    });
+
+    it("get app name successfully - v3", () => {
+      const ymlData = `# Triggered when 'teamsfx provision' is executed
+      registerApp:
+        - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
+          with:
+            name: appNameTest-aad
+      
+        - uses: teamsApp/create # Creates a Teams app
+          with:
+            name: appNameTest-\${{TEAMSFX_ENV}} # Teams app name
+      `;
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").returns(ymlData);
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal("appNameTest");
+    });
+
+    it("throw exception - v3", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").throws();
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
       const res = commonUtils.getAppName();
       expect(res).equal(undefined);

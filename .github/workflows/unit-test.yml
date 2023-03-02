@@ -5,16 +5,14 @@ on:
     branches:
       - main
       - dev
-      - ga
       - hotfix/**/*
-      - v3-folder-structure-refactor
+      - prerelease
   push:
     branches:
       - main
       - dev
-      - ga
       - hotfix/**/*
-      - v3-folder-structure-refactor
+      - prerelease
  
 jobs:
   unit-test:
@@ -54,7 +52,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x 
+          dotnet-version: 3.1.x
 
       - name: Setup project
         run: |
@@ -63,4 +61,7 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
-          npx codecov
+
+      - uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true

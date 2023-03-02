@@ -101,6 +101,9 @@ export enum TelemetryEvent {
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
+
+  UpgradeStart = "upgrade-start",
+  Upgrade = "upgrade",
 }
 
 export enum TelemetryProperty {

@@ -624,9 +624,12 @@ export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
 }
 
 export function ScratchOptionYesVSC(): OptionItem {
+  const label = isOfficeAddinEnabled()
+    ? getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")
+    : getLocalizedString("core.ScratchOptionYesVSC.label");
   return {
     id: "yes",
-    label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
+    label: `$(new-folder) ${label}`,
     detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
   };
 }

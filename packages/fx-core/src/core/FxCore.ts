@@ -109,8 +109,9 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
 import "../component/driver/index";
+import "../component/driver/script/scriptDriver";
+import "reflect-metadata";
 import { DriverContext } from "../component/driver/interface/commonArgs";
-import { coordinator } from "../component/coordinator";
 import { envUtil } from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -606,7 +607,6 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
@@ -614,6 +614,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -671,13 +672,13 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false, true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {

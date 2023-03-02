@@ -4,25 +4,32 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha All",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "name": "Jest run all",
+      "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
       "args": [
-        "-r",
-        "ts-node/register",
-        "-r",
-        "jsdom-global/register",
-        "-r",
-        "init.js",
-        "--no-timeouts",
-        "--colors",
-        "${workspaceFolder}/test/useGraph.test.ts"
+        "--ci",
+        "--reporters=jest-junit",
+        "--reporters=default",
+        "--coverage",
+        "--coverageDirectory='coverage'",
+        "--collectCoverageFrom='src/*.{ts,tsx,js}'"
       ],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "env": {
-        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
-      }
-    }
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Jest run current file",
+      "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+      "args": [
+        "${fileBasename}",
+        "--ci",
+        "--verbose",
+        "--no-cache",
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
   ]
 }

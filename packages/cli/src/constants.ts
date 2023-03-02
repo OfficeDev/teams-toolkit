@@ -85,7 +85,7 @@ export const AadManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.template.json'",
+      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.json'",
   },
 };
 

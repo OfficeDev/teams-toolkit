@@ -19,6 +19,8 @@ import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
 import { ProgressMessages } from "../../../messages";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
+import { DeployExternalApiCallError } from "../../../error/deployError";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -107,7 +109,11 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       },
     } as BlobServiceProperties;
 
-    await azureBlobClient.setProperties(properties);
+    await wrapAzureOperation(
+      () => azureBlobClient.setProperties(properties),
+      (e) => DeployExternalApiCallError.enableContainerStaticWebsiteRemoteError(e),
+      (e) => DeployExternalApiCallError.enableContainerStaticWebsiteError(e)
+    );
     await progressBar?.end(true);
     return Promise.resolve(AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE);
   }
@@ -120,7 +126,11 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     await context.logProvider.debug(
       `Checking if static website feature is enabled in Azure Storage account '${azureInfo.instanceId}'.`
     );
-    return (await azureBlobClient.getProperties()).staticWebsite?.enabled === true;
+    return await wrapAzureOperation(
+      async () => (await azureBlobClient.getProperties()).staticWebsite?.enabled === true,
+      (e) => DeployExternalApiCallError.checkContainerStaticWebsiteRemoteError(e),
+      (e) => DeployExternalApiCallError.checkContainerStaticWebsiteError(e)
+    );
   }
 
   /**

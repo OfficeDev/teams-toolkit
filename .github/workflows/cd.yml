@@ -4,13 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       preid:
-        description: "preid name(alpha, rc, stable)"
+        description: "preid name(alpha, prerelease, rc, stable)"
         required: true
         default: "rc"
-      isPreview:
-        description: "ensure release ttk for preview(yes or no)"
-        required: false
-        default: 'no'
       skip-version-rc:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
@@ -28,9 +24,9 @@ jobs:
 
     steps:
       - name: Validate CD branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/prerelease' }}
         run: |
-          echo It's not allowed to run CD on other branch except main, dev.
+          echo It's not allowed to run CD on other branch except main, dev and prerelease.
           exit 1
 
       - name: Validate inputs for main or hotfix
@@ -43,12 +39,6 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid != 'alpha' }}
         run: |
           echo It's only allowed to alpha on dev branch.
-          exit 1
-
-      - name: Validate preview on dev branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/dev' && github.event.inputs.isPreview != 'no' }}
-        run: |
-          echo It's only allowed to release preview on dev branch
           exit 1
 
       - name: Validate schedule
@@ -90,7 +80,7 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
-        env: 
+        env:
           REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: Setup git
@@ -99,9 +89,9 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release alpha npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/dev' }}
+        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease' }}
         run: |
-          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
+          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
@@ -150,14 +140,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
-      - name: release templates' alpha version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
+      - name: update templates prerelease tag
+        uses: richardsimko/update-tag@v1
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
+        with:
+          tag_name: "templates-0.0.0-prerelease"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
+
+      - name: release templates' prerelease version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
-          tag: "templates-0.0.0-alpha"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          tag: "templates-0.0.0-prerelease"
+          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -226,14 +224,14 @@ jobs:
           git commit -m "chore: replace sideloading placeholders"
 
       - name: publish alpha release to npm org
-        if: ${{ github.ref == 'refs/heads/dev' }}
+        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease' }}
         run: |
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch ${GITHUB_REF#refs/*/}
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
 
       - name: update cli ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/cli/package.json
@@ -241,7 +239,7 @@ jobs:
           value: ${{ secrets.CLI_PUBLIC_AIKEY }}
 
       - name: update extension ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/vscode-extension/package.json
@@ -249,24 +247,24 @@ jobs:
           value: ${{ secrets.EXT_PUBLIC_AIKEY }}
 
       - name: commit change on local
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
         run: |
-          git add .
+          git add ./packages/cli/package.json ./packages/vscode-extension/package.json
           git commit -m "chore: update ai key"
 
       - name: publish rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
           npx lerna publish from-package --dist-tag=rc --yes
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
 
       - name: publish stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna publish from-package --yes
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
 
       - name: pack server bits
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}
@@ -281,7 +279,7 @@ jobs:
             npm run package
 
       - name: release alpha server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.ref == 'refs/heads/dev' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease') }}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
@@ -310,7 +308,7 @@ jobs:
           artifactErrorsFailBuild: true
 
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref != 'refs/heads/prerelease' }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -352,16 +350,7 @@ jobs:
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
 
-      - name: Update Preview TTK ai Key
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/vscode-extension/package.json
-          field: aiKey
-          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
-
       - name: Calculate Version Num
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
         id: preview-version
         working-directory: packages/vscode-extension
         run: |
@@ -371,8 +360,16 @@ jobs:
           echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION
 
+      - name: set vsc version for prerelease
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: version
+          value: ${{ steps.preview-version.outputs.version }}
+
       - name: pack vsix for preview
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
         env:
           RELEASE: preview
         uses: nick-invision/retry@v2
@@ -389,7 +386,7 @@ jobs:
             npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
 
       - name: release preview TTK to github release page
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}

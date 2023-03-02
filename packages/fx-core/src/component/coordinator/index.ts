@@ -100,6 +100,7 @@ import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
+import { MetadataV3 } from "../../common/versionMetadata";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -234,6 +235,11 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Capabilities]: feature,
+        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
+      });
+
       if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
@@ -254,11 +260,6 @@ export class Coordinator {
           if (res.isErr()) return err(res.error);
         }
       }
-
-      merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: feature,
-        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
-      });
     } else if (scratch === CreateNewOfficeAddinOption().id) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
@@ -279,10 +280,14 @@ export class Coordinator {
       }
     }
 
-    // generate unique projectId in projectSettings.json
-    const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    inputs.projectId = ensureRes.value;
+    // generate unique projectId in teamsapp.yaml (optional)
+    const ymlPath = path.join(projectPath, MetadataV3.configFile);
+    if (fs.pathExistsSync(ymlPath)) {
+      const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
+      if (ensureRes.isErr()) return err(ensureRes.error);
+      inputs.projectId = ensureRes.value;
+    }
+
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
@@ -339,11 +344,6 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
-      false
-    );
     return ok(undefined);
   }
 
@@ -424,11 +424,6 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
-      false
-    );
     return ok(undefined);
   }
 
@@ -954,9 +949,8 @@ export class Coordinator {
         // show message box after deploy
         const botTroubleShootMsg = getBotTroubleShootMessage(false);
         const msg =
-          getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+          getLocalizedString("core.common.LifecycleComplete", "deploy") +
           botTroubleShootMsg.textForLogging;
-        ctx.logProvider.info(msg);
         ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();

@@ -26,10 +26,12 @@ import {
 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import * as extensionPackage from "../../package.json";
-import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants";
+import { CONFIGURATION_PREFIX, ConfigurationKey, YmlEnvNamePlaceholder } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
+import * as yaml from "yaml";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -125,18 +127,35 @@ export function getProjectId(): string | undefined {
 }
 
 export function getAppName(): string | undefined {
-  const ws = globalVariables.workspaceUri!.fsPath;
-  const settingsJsonPathNew = path.join(
-    ws,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
-  try {
-    const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
-    return settingsJson.appName;
-  } catch (e) {}
-  return undefined;
+  if (isV3Enabled()) {
+    const yamlFilPath = path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.yml");
+    try {
+      const settings = yaml.parse(fs.readFileSync(yamlFilPath, "utf-8"));
+      for (const action of settings?.registerApp) {
+        if (action?.uses === "teamsApp/create") {
+          const name = action?.with?.name;
+          if (name) {
+            return name.replace(YmlEnvNamePlaceholder, "");
+          }
+        }
+      }
+      return undefined;
+    } catch (e) {}
+    return undefined;
+  } else {
+    const ws = globalVariables.workspaceUri!.fsPath;
+    const settingsJsonPathNew = path.join(
+      ws,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+    try {
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
+      return settingsJson.appName;
+    } catch (e) {}
+    return undefined;
+  }
 }
 
 export function openFolderInExplorer(folderPath: string): void {

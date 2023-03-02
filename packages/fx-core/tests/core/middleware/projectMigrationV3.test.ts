@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import { hooks } from "@feathersjs/hooks/lib";
 import { err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -36,7 +39,7 @@ import {
   errorNames,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { UpgradeCanceledError } from "../../../src/core/error";
+import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../src/core/error";
 import {
   Metadata,
   MetadataV2,
@@ -54,10 +57,11 @@ import {
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../src/core/middleware/types";
-import { isMigrationV3Enabled } from "../../../src/common/tools";
 import * as loader from "../../../src/core/middleware/projectSettingsLoader";
+import { SettingsUtils } from "../../../src/component/utils/settingsUtil";
 
 let mockedEnvRestore: () => void;
+const mockedId = "00000000-0000-0000-0000-000000000000";
 
 describe("ProjectMigratorMW", () => {
   const sandbox = sinon.createSandbox();
@@ -68,7 +72,7 @@ describe("ProjectMigratorMW", () => {
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3_MIGRATION: "true",
+      TEAMSFX_V3: "true",
     });
   });
 
@@ -151,9 +155,34 @@ describe("ProjectMigratorMW", () => {
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
   });
+
+  it("happy path run error - notAllowedMigrationError", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [ProjectMigratorMWV3],
+    });
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true, nonInteractive: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+      assert.instanceOf((res as any).error, NotAllowedMigrationError);
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
+  });
 });
 
-describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
+describe("ProjectMigratorMW with no TEAMSFX_V3", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -162,7 +191,7 @@ describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3_MIGRATION: "false",
+      TEAMSFX_V3: "false",
     });
   });
 
@@ -172,7 +201,7 @@ describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
     mockedEnvRestore();
   });
 
-  it("TEAMSFX_V3_MIGRATION is false", async () => {
+  it("TEAMSFX_V3 is false", async () => {
     sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok(""));
     const tools = new MockTools();
     setTools(tools);
@@ -614,8 +643,7 @@ describe("manifestsMigration", () => {
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
-    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
-    await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
+    await copyTestProject(Constants.manifestsMigrationHappyPathWithoutAad, projectPath);
 
     // Action
     await manifestsMigration(migrationContext);
@@ -643,6 +671,42 @@ describe("manifestsMigration", () => {
 
     const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
     assert.isFalse(await fs.pathExists(aadManifestPath));
+  });
+
+  it("happy path: project created with ttk <= 4.0.0 with single teams app manifest", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathOld, projectPath);
+
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, errorNames.aadManifestTemplateNotExist);
+    }
+  });
+
+  it("happy path: project created with ttk <= 4.0.0 with two teams app manifest", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathOld, projectPath);
+    await fs.rename(
+      path.join(projectPath, "templates", "appPackage", "manifest.template.json"),
+      path.join(projectPath, "templates", "appPackage", "manifest.local.template.json")
+    );
+    await fs.copy(
+      path.join(projectPath, "templates", "appPackage", "manifest.local.template.json"),
+      path.join(projectPath, "templates", "appPackage", "manifest.remote.template.json")
+    );
+
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, errorNames.manifestTemplateNotExist);
+    }
   });
 
   it("migrate manifests failed: appPackage does not exist", async () => {
@@ -692,7 +756,7 @@ describe("manifestsMigration", () => {
       assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
-        "templates/appPackage/manifest.template.json does not exist"
+        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first."
       );
     }
   });
@@ -1157,16 +1221,30 @@ describe("Migration utils", () => {
       }
       return true;
     });
-    sandbox.stub(fs, "readJson").resolves({ projectId: MetadataV2.projectMaxVersion });
+    sandbox.stub(fs, "readJson").resolves({ projectId: mockedId });
     const trackingId = await getTrackingIdFromPath(projectPath);
-    assert.equal(trackingId, MetadataV2.projectMaxVersion);
+    assert.equal(trackingId, mockedId);
   });
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves({ trackingId: MetadataV3.projectVersion });
+    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+      ok({
+        version: MetadataV3.projectVersion,
+        trackingId: mockedId,
+      })
+    );
     const trackingId = await getTrackingIdFromPath(projectPath);
-    assert.equal(trackingId, MetadataV3.projectVersion);
+    assert.equal(trackingId, mockedId);
+  });
+
+  it("getTrackingIdFromPath: V3 failed", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox
+      .stub(SettingsUtils.prototype, "readSettings")
+      .resolves(err(new Error("mocked error") as FxError));
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
   });
 
   it("getTrackingIdFromPath: empty", async () => {
@@ -1243,10 +1321,79 @@ describe("Migration utils", () => {
     version.platform = Platform.CLI;
     migrationNotificationMessage(version);
   });
+});
 
-  it("isMigrationV3Enabled", () => {
-    const enabled = isMigrationV3Enabled();
-    assert.isFalse(enabled);
+describe("Migration show notification", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+  const inputs: Inputs = {
+    platform: Platform.VSCode,
+    ignoreEnvInfo: true,
+    projectPath: projectPath,
+  };
+  const coreCtx = {
+    arguments: [inputs],
+  };
+  const version: VersionForMigration = {
+    currentVersion: "2.0.0",
+    source: VersionSource.projectSettings,
+    state: VersionState.upgradeable,
+    platform: Platform.VSCode,
+  };
+
+  beforeEach(async () => {
+    inputs["isNonmodalMessage"] = "";
+    inputs["confirmOnly"] = "";
+    inputs["skipUserConfirm"] = "";
+    sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("nonmodal case and click upgrade", async () => {
+    inputs.isNonmodalMessage = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isTrue(res);
+  });
+
+  it("nonmodal case and click learn more", async () => {
+    inputs.isNonmodalMessage = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Learn more"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isFalse(res);
+  });
+
+  it("nonmodal case and click nothing", async () => {
+    inputs.isNonmodalMessage = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok(""));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isFalse(res);
+  });
+
+  it("confirmOnly case and click OK", async () => {
+    inputs.confirmOnly = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isTrue(res);
+  });
+
+  it("confirmOnly case and click cancel", async () => {
+    inputs.confirmOnly = "true";
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("cancel"));
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isFalse(res);
+  });
+
+  it("skipUserConfirm case", async () => {
+    inputs.skipUserConfirm = "true";
+    const res = await MigratorV3.showNotification(coreCtx, version);
+    assert.isTrue(res);
   });
 });
 
@@ -1405,7 +1552,9 @@ const Constants = {
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsapp.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
+  manifestsMigrationHappyPathWithoutAad: "manifestsHappyPathWithoutAad",
   manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
+  manifestsMigrationHappyPathOld: "manifestsMigrationHappyPathOld",
   launchJsonPath: ".vscode/launch.json",
   happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
   happyPathAadManifestTemplateExist:

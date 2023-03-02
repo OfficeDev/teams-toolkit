@@ -547,24 +547,94 @@ Also see [TeamsFx class](#teamsfx-class) for furthur description.
 
 From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter` is recommended to be used instead. You can import `ConversationBot` from `BotBuilderCloudAdapter` to use the latest SDK implemented with `CloudAdapter`.
 
-```ts
-const { BotBuilderCloudAdapter } = require("@microsoft/teamsfx");
-const ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+1. Install `@microsoft/teamsfx @^2.2.0`, `botbuilder @^4.18.0`, (and `@types/node @^14.0.0` for TS projects) via `npm install` as follows.
 
-const commandBot = new ConversationBot({
-  // The bot id and password to create CloudAdapter.
-  // See https://aka.ms/about-bot-adapter to learn more about adapters.
-  adapterConfig: {
-    MicrosoftAppId: config.botId,
-    MicrosoftAppPassword: config.botPassword,
-    MicrosoftAppType: "MultiTenant",
-  },
-  command: {
-    enabled: true,
-    commands: [new HelloWorldCommandHandler()],
-  },
-});
-```
+    ```sh
+    npm install @microsoft/teamsfx
+    npm install botbuilder
+    
+    // For TS projects only
+    npm install --save-dev @types/node
+    ```
+
+2. Update the import of `ConversationBot` and create a new `ConversationBot` as follows.
+
+    ```ts
+    import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
+    import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+    import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+    import config from "./config";
+
+    export const commandBot = new ConversationBot({
+      // The bot id and password to create CloudAdapter.
+      // See https://aka.ms/about-bot-adapter to learn more about adapters.
+      adapterConfig: {
+        MicrosoftAppId: config.botId,
+        MicrosoftAppPassword: config.botPassword,
+        MicrosoftAppType: "MultiTenant",
+      },
+      command: {
+        enabled: true,
+        commands: [new HelloWorldCommandHandler()],
+      },
+    });
+    ```
+
+3. If the project is using `restify` to create a server, please add the following line after `restify.createServer()`.
+
+    ```ts
+    server.use(restify.plugins.bodyParser());
+    ```
+
+    The complete code will be like
+
+     ```ts
+     // Create HTTP server.
+     const server = restify.createServer();
+        server.use(restify.plugins.bodyParser());
+        server.listen(process.env.port || process.env.PORT || 3978, () => {
+          console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
+     });
+     ```
+
+4. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
+
+    ```ts
+    import { Response } from "botbuilder";
+    
+    // A wrapper to convert Azure Functions Response to Bot Builder's Response.
+    export class ResponseWrapper implements Response {
+      socket: any;
+      originalResponse?: any;
+      headers?: any;
+      body?: any;
+    
+      constructor(functionResponse?: { [key: string]: any }) {
+        this.socket = undefined;
+        this.originalResponse = functionResponse;
+      }
+      
+      end(...args: any[]) {
+        // do nothing since res.end() is deprecated in Azure Functions.
+      }
+    
+      header(name: string, value: any) {
+        this.headers[name] = value;
+      }
+    
+      send(body: any) {
+        // record the body to be returned later.
+        this.body = body;
+        this.originalResponse.body = body;
+      }
+      status(status: number) {
+        // call Azure Functions' res.status().
+        return this.originalResponse?.status(status);
+      }
+    }
+    ```
+
+
 
 ## Next steps
 

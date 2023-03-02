@@ -1,6 +1,9 @@
 {
     "name": "{%appName%}",
     "version": "0.0.1",
+    "engines": {
+        "node": "14 || 16 || 18"
+    },
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {

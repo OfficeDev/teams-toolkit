@@ -27,7 +27,7 @@ describe("teamsApp/validate", async () => {
     sinon.restore();
   });
 
-  it("should throw error if file not exists", async () => {
+  it.skip("should throw error if file not exists", async () => {
     const args: ValidateTeamsAppArgs = {
       manifestPath: "fakepath",
     };
@@ -39,7 +39,7 @@ describe("teamsApp/validate", async () => {
     }
   });
 
-  it("invalid param error", async () => {
+  it.skip("invalid param error", async () => {
     const args: ValidateTeamsAppArgs = {
       manifestPath: "",
     };

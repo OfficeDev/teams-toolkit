@@ -77,7 +77,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       NgrokTunnelTaskTerminal.tunnelTaskTerminals.delete(this.taskTerminalId);
       if (!this.isOutputSummary) {
         this.isOutputSummary = true;
-        await this.outputFailureSummary(baseTunnelDisplayMessages, error);
+        await this.outputFailureSummary(ngrokTunnelDisplayMessages, error);
       }
       if (this.childProc) {
         kill(this.childProc.pid);
@@ -224,7 +224,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         this.isOutputSummary = true;
         this.status.endpoint = ngrokTunnelInfo;
         await this.outputSuccessSummary(
-          baseTunnelDisplayMessages,
+          ngrokTunnelDisplayMessages,
           ngrokTunnelInfo,
           saveEnvRes.value
         );

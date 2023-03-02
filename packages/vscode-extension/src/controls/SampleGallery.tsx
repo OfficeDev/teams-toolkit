@@ -57,7 +57,7 @@ const imageMapping: { [p: string]: any } = {
   "teams-videoapp-sample": VideoFilterApp,
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
-  "outlook-hello-world": DashboardTab,
+  "hello-world-teams-tab-and-outlook-add-in": DashboardTab,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

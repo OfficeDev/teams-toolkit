@@ -516,6 +516,46 @@ describe("PreviewEnv Steps", () => {
     expect(openRes.isOk()).to.be.true;
     expect(logs.length).equals(1);
   });
+
+  it("launchBrowser: outlook - use m365 title", async () => {
+    CLIUIInstance.interactive = false;
+    sandbox.stub(teamsAppInstallation, "getTeamsAppInternalId").resolves("test-internal-id");
+    sandbox.stub(launch, "openHubWebClient").resolves();
+
+    const previewEnv = new PreviewEnvTest();
+    const openRes = await previewEnv.launchBrowser(
+      "local",
+      {
+        M365_TITLE_ID: "test-title-id",
+        M365_APP_ID: "test-app-id",
+      },
+      constants.Hub.outlook,
+      constants.Browser.default,
+      []
+    );
+    expect(openRes.isOk()).to.be.true;
+    expect(logs.length).equals(2);
+  });
+
+  it("launchBrowser: office - use m365 title", async () => {
+    CLIUIInstance.interactive = false;
+    sandbox.stub(teamsAppInstallation, "getTeamsAppInternalId").resolves("test-internal-id");
+    sandbox.stub(launch, "openHubWebClient").resolves();
+
+    const previewEnv = new PreviewEnvTest();
+    const openRes = await previewEnv.launchBrowser(
+      "local",
+      {
+        M365_TITLE_ID: "test-title-id",
+        M365_APP_ID: "test-app-id",
+      },
+      constants.Hub.office,
+      constants.Browser.default,
+      []
+    );
+    expect(openRes.isOk()).to.be.true;
+    expect(logs.length).equals(2);
+  });
 });
 
 class MockProgressHandler implements IProgressHandler {

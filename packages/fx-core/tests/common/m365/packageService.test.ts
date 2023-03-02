@@ -9,10 +9,13 @@ import chaiAsPromised from "chai-as-promised";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { PackageService } from "../../../src/common/m365/packageService";
+import { MockLogProvider } from "../../core/utils";
+
 chai.use(chaiAsPromised);
 
 describe("Package Service", () => {
   const sandbox = sinon.createSandbox();
+  const logger = new MockLogProvider();
   let axiosDeleteResponses: Record<string, unknown> = {};
   let axiosGetResponses: Record<string, unknown> = {};
   let axiosPostResponses: Record<string, unknown> = {};
@@ -84,8 +87,19 @@ describe("Package Service", () => {
       },
     };
 
-    const packageService = new PackageService("test-endpoint");
+    let packageService = new PackageService("test-endpoint");
     let actualError: Error | undefined;
+    try {
+      const result = await packageService.sideLoading("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+
+    packageService = new PackageService("test-endpoint", logger);
     try {
       const result = await packageService.sideLoading("test-token", "test-path");
       chai.assert.equal(result[0], "test-title-id");
@@ -105,8 +119,18 @@ describe("Package Service", () => {
     };
     axiosPostResponses["/dev/v1/users/packages"] = new Error("test-post");
 
-    const packageService = new PackageService("test-endpoint");
+    let packageService = new PackageService("test-endpoint");
     let actualError: Error | undefined;
+    try {
+      await packageService.sideLoading("test-token", "test-path");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.equal(actualError?.message, "test-post");
+
+    packageService = new PackageService("test-endpoint", logger);
     try {
       await packageService.sideLoading("test-token", "test-path");
     } catch (error: any) {
@@ -129,8 +153,18 @@ describe("Package Service", () => {
     };
     axiosPostResponses["/dev/v1/users/packages"] = expectedError;
 
-    const packageService = new PackageService("test-endpoint");
+    let packageService = new PackageService("test-endpoint");
     let actualError: any;
+    try {
+      await packageService.sideLoading("test-token", "test-path");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.deepEqual(actualError.innerError, expectedError);
+
+    packageService = new PackageService("test-endpoint", logger);
     try {
       await packageService.sideLoading("test-token", "test-path");
     } catch (error: any) {

@@ -23,6 +23,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryE
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession } from "../commonUtils";
 import {
+  baseTunnelDisplayMessages,
   ngrokTunnelDisplayMessages,
   openTerminalDisplayMessage,
   openTerminalMessage,
@@ -76,7 +77,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       NgrokTunnelTaskTerminal.tunnelTaskTerminals.delete(this.taskTerminalId);
       if (!this.isOutputSummary) {
         this.isOutputSummary = true;
-        await this.outputFailureSummary(ngrokTunnelDisplayMessages, error);
+        await this.outputFailureSummary(baseTunnelDisplayMessages, error);
       }
       if (this.childProc) {
         kill(this.childProc.pid);
@@ -223,7 +224,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         this.isOutputSummary = true;
         this.status.endpoint = ngrokTunnelInfo;
         await this.outputSuccessSummary(
-          ngrokTunnelDisplayMessages,
+          baseTunnelDisplayMessages,
           ngrokTunnelInfo,
           saveEnvRes.value
         );
@@ -261,7 +262,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         }
         this.isOutputSummary = true;
         this.status.endpoint = endpoint;
-        await this.outputSuccessSummary(ngrokTunnelDisplayMessages, endpoint, saveEnvRes.value);
+        await this.outputSuccessSummary(baseTunnelDisplayMessages, endpoint, saveEnvRes.value);
         return ok(true);
       }
     } catch {
@@ -292,20 +293,20 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   private async outputInstallNgrokStepMessage(): Promise<void> {
     VsCodeLogInstance.outputChannel.appendLine(
-      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.checkNgrokMessage} ... `
+      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.checkNgrokMessage()} ... `
     );
-    await this.progressHandler.next(ngrokTunnelDisplayMessages.checkNgrokMessage);
+    await this.progressHandler.next(ngrokTunnelDisplayMessages.checkNgrokMessage());
   }
 
   private async outputStartNgrokStepMessage(ngrokArgs: string[], ngrokPath: string): Promise<void> {
     VsCodeLogInstance.outputChannel.appendLine(
-      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.startMessage} ... `
+      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.startNgrokMessage()} ... `
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`${NgrokTunnelTaskTerminal.command(ngrokArgs, ngrokPath)}\r\n\r\n`);
 
-    await this.progressHandler.next(ngrokTunnelDisplayMessages.startMessage);
+    await this.progressHandler.next(ngrokTunnelDisplayMessages.startNgrokMessage());
   }
 
   protected generateTaskArgsTelemetry(): string {

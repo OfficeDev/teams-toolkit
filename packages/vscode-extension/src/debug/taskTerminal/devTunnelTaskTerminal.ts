@@ -18,13 +18,13 @@ import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
-import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import VsCodeLogInstance from "../../commonlib/log";
 import { tools } from "../../handlers";
 import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { getLocalDebugSession } from "../commonUtils";
-import { devTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
+import { devTunnelDisplayMessages } from "../constants";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
@@ -33,7 +33,6 @@ import {
   OutputInfo,
   TunnelError,
 } from "./baseTunnelTaskTerminal";
-import { ExtensionErrors, ExtensionSource } from "../../error";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams Toolkit" };
@@ -130,7 +129,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   private async _do(): Promise<Result<Void, FxError>> {
     await this.outputStartMessage(devTunnelDisplayMessages);
-    await this.outputStartDevTunnelStepMessage(devTunnelDisplayMessages);
+    await this.outputStartDevTunnelStepMessage();
     await this.resolveArgs(this.args);
     // TODO: delete the last debug tunnel if it is not deleted
     const res = await this.start();
@@ -187,7 +186,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       const tunnelDistUri = host.tunnel?.ports?.[0].portForwardingUris?.[0];
       const tunnelDisplayId = `${host.tunnel?.tunnelId}.${host.tunnel?.clusterId}`;
       if (!host.tunnel || !tunnelDistUri || !tunnelDisplayId) {
-        return err(DevTunnelError.DevTunnelStartError());
+        return err(TunnelError.StartTunnelError());
       }
       this.tunnel = host.tunnel;
       const saveEnvRes = await this.saveOutputToEnv(tunnelDisplayId, tunnelDistUri);
@@ -203,7 +202,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       );
       return ok(Void);
     } catch (error: any) {
-      return err(DevTunnelError.DevTunnelStartError(error));
+      return err(TunnelError.StartTunnelError(error));
     }
   }
 
@@ -266,25 +265,15 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  private async outputStartDevTunnelStepMessage(
-    tunnelDisplayMessages: TunnelDisplayMessages
-  ): Promise<void> {
+  private async outputStartDevTunnelStepMessage(): Promise<void> {
     VsCodeLogInstance.outputChannel.appendLine(
-      `${this.step.getPrefix()} ${tunnelDisplayMessages.startMessage} ... `
+      `${this.step.getPrefix()} ${devTunnelDisplayMessages.startDevTunnelMessage()} ... `
     );
     VsCodeLogInstance.outputChannel.appendLine("");
+    this.writeEmitter.fire(
+      `${devTunnelDisplayMessages.createDevTunnelTerminalMessage(DevTunnelTag)}\r\n`
+    );
 
-    await this.progressHandler.next(tunnelDisplayMessages.startMessage);
+    await this.progressHandler.next(devTunnelDisplayMessages.startDevTunnelMessage());
   }
 }
-
-const DevTunnelError = Object.freeze({
-  DevTunnelStartError: (error?: any) =>
-    new UserError(
-      ExtensionSource,
-      ExtensionErrors.DevTunnelStartError,
-      // TODO: add error message
-      "",
-      ""
-    ),
-});

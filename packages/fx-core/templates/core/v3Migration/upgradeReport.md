@@ -34,7 +34,8 @@ For more detailed changes, please refer to this [wiki](https://aka.ms/teams-tool
 
 1. If your project only contains a bot, you may meet error that complains `STATE__FX_RESOURCE_FRONTEND_HOSTING__ENDPOINT` is missing when executing commands. Replace this placeholder with a valid URL in `appPackage/manifest.template.json` to fix it. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#state__fx_resource_frontend_hosting__endpoint-missing-error-in-some-projects)
 
-2. If your project is created with VS version < 17.4.0, you may meet error `InvalidParameter: Following parameter is missing or invalid for aadApp/create action: name` when executing commands. Please follow the steps in [How to roll back](#how-to-roll-back) to roll back and install VS 17.4 and run upgrade first.
+2. If your project is created with VS version < 17.4, you may meet error `InvalidParameter: Following parameter is missing or invalid for aadApp/create action: name` when executing commands. Please follow the steps in [How to roll back](#how-to-roll-back) to roll back, install VS 17.4 and run upgrade first.
+
 ## How to roll back
 
 If you want to restore your project configuration after the upgrade is successful and continue to use old version Teams Toolkit, you can follow these steps:

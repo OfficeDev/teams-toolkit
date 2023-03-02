@@ -306,12 +306,16 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             },
           ]
         ),
-        ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
+        ngrokPath: maskValue(this.args.ngrokPath, [TaskDefaultValue.startLocalTunnel.ngrokPath]),
         tunnelInspection: maskValue(this.args.tunnelInspection),
-        env: maskValue(this.args.env, ["local"]),
+        env: maskValue(this.args.env, [TaskDefaultValue.env]),
         output: {
-          endpoint: maskValue(this.args.output?.endpoint, ["BOT_ENDPOINT"]),
-          domain: maskValue(this.args.output?.domain, ["BOT_DOMAIN"]),
+          endpoint: maskValue(this.args.output?.endpoint, [
+            TaskDefaultValue.startLocalTunnel.output.endpoint,
+          ]),
+          domain: maskValue(this.args.output?.domain, [
+            TaskDefaultValue.startLocalTunnel.output.domain,
+          ]),
         },
       }),
     };

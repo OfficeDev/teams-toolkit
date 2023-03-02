@@ -7,13 +7,11 @@
  */
 import * as util from "util";
 import * as vscode from "vscode";
-
 import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";

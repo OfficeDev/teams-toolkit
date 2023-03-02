@@ -9,4 +9,3 @@ declare const panelType: string;
 declare const isSupportedNode: boolean;
 declare const isMacPlatform: boolean;
 declare const containerType: string;
-declare const isOfficeAddinEnabled: boolean;

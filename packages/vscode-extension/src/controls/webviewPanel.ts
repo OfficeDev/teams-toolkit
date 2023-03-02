@@ -18,7 +18,6 @@ import {
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
 import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import { isOfficeAddinEnabled } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "../commonlib/azureLogin";
 import M365TokenInstance from "../commonlib/m365Login";
@@ -384,7 +383,6 @@ export class WebviewPanel {
               const panelType = '${panelType}';
               const isSupportedNode = ${this.isValidNode()};
               const isMacPlatform = ${isMacOS()};
-              const isOfficeAddinEnabled = ${isOfficeAddinEnabled()};
             </script>
             <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
           </body>

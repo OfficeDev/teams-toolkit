@@ -54,14 +54,12 @@ export const webpartNameQuestion: Question = {
         );
       }
 
-      if (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath) {
-        const webpartFolder = path.join(
-          previousInputs?.projectPath,
-          "SPFx",
-          "src",
-          "webparts",
-          input
-        );
+      if (
+        previousInputs &&
+        previousInputs.stage === Stage.addWebpart &&
+        previousInputs["spfxFolder"]
+      ) {
+        const webpartFolder = path.join(previousInputs["spfxFolder"], "src", "webparts", input);
         if (await fs.pathExists(webpartFolder)) {
           return getLocalizedString(
             "plugins.spfx.questions.webpartName.error.duplicate",

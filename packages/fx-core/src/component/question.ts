@@ -861,14 +861,14 @@ export function localManifestFileQuestion(): SingleFileQuestion {
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
 
-  const webpartName = new QTreeNode(webpartNameQuestion);
-  addWebpart.addChild(webpartName);
-
   const spfxFolder = new QTreeNode(spfxFolderQuestion());
-  webpartName.addChild(spfxFolder);
+  addWebpart.addChild(spfxFolder);
+
+  const webpartName = new QTreeNode(webpartNameQuestion);
+  spfxFolder.addChild(webpartName);
 
   const manifestFile = new QTreeNode(manifestFileQuestion());
-  spfxFolder.addChild(manifestFile);
+  webpartName.addChild(manifestFile);
 
   const localManifestFile = new QTreeNode(localManifestFileQuestion());
   manifestFile.addChild(localManifestFile);

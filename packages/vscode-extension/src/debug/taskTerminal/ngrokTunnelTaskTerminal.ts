@@ -23,7 +23,6 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryE
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession } from "../commonUtils";
 import {
-  baseTunnelDisplayMessages,
   ngrokTunnelDisplayMessages,
   openTerminalDisplayMessage,
   openTerminalMessage,

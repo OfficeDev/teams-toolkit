@@ -270,15 +270,6 @@ jobs:
             cd ./packages/server
             npm run package
 
-      - name: release stable server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
-          artifacts: ./packages/server/lib/*.exe
-          artifactErrorsFailBuild: true
-
       - name: pack vsix
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref != 'refs/heads/prerelease' }}
         env:
@@ -293,6 +284,7 @@ jobs:
             cd ./packages/vscode-extension
             npm install --only=production
             npx vsce package
+
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0

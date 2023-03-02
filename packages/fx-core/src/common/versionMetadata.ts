@@ -15,6 +15,7 @@ export const MetadataV3 = {
   projectId: "projectId",
   teamsManifestFileName: "manifest.json",
   aadManifestFileName: "aad.manifest.json",
+  v3UpgradeWikiLink: "https://aka.ms/teams-toolkit-5.0-upgrade",
 };
 
 export const MetadataV2 = {

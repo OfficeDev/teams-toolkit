@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import { ErrorNames } from "./constants";
 import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
@@ -242,6 +245,39 @@ export class FailedToCreateBotRegistrationError extends PluginError {
       Messages.FailToProvisionSomeResource(CommonStrings.APP_STUDIO_BOT_REGISTRATION),
       [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
+    );
+  }
+}
+
+export class BotFrameworkNotAllowedToAcquireTokenError extends PluginError {
+  constructor() {
+    super(
+      ErrorType.USER,
+      ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR,
+      Messages.NotAllowedToAcquireBotFrameworkToken(),
+      [Messages.CheckOutputLogAndTryToFix]
+    );
+  }
+}
+
+export class BotFrameworkForbiddenResultError extends PluginError {
+  constructor() {
+    super(
+      ErrorType.USER,
+      ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR,
+      Messages.BotProvisionReturnsForbiddenResult(),
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
+    );
+  }
+}
+
+export class BotFrameworkConflictResultError extends PluginError {
+  constructor() {
+    super(
+      ErrorType.USER,
+      ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR,
+      Messages.BotProvisionReturnsConflictResult(),
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
     );
   }
 }

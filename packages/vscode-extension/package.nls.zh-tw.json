@@ -444,7 +444,7 @@
   "teamstoolkit.taskDefinitions.command.tab.description": "設定索引標籤。\n 請參閱 https://aka.ms/teamsfx-debug-set-up-tab-task，以了解如何自訂下列引數。",
   "teamstoolkit.taskDefinitions.command.bot.description": "設定 Bot。\n 請參閱 https://aka.ms/teamsfx-debug-set-up-bot-task，以了解如何自訂下列引數。",
   "teamstoolkit.taskDefinitions.command.sso.description": "設定 SSO。\n 請參閱 https://aka.ms/teamsfx-debug-set-up-sso-task，以了解如何自訂下列引數。",
-  "teamstoolkit.taskDefinitions.command.manifest.description": "建立和上傳 Teams 資訊清單。\n 請參閱 https://aka.ms/teamsfx-debug-prepare-manifest，以了解如何自訂下列引數。",
+  "teamstoolkit.taskDefinitions.command.manifest.description": "建立和上傳 Teams 資訊清單。\n 請參閱 https://aka.ms/teamsfx-debug-prepare-manifest-task，以了解如何自訂下列引數。",
   "teamstoolkit.taskDefinitions.args.prerequisites.title": "已啟用的必要條件。",
   "teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle": "驗證是否已安裝 Node.js。",
   "teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle": "Microsoft 365 帳戶的登入提示，然後驗證帳戶是否啟用側載權限。",
@@ -464,7 +464,7 @@
   "teamstoolkit.taskDefinitions.args.ngrokPath.title": "ngrok 路徑。\n如果未定義，請使用 Teams Toolkit ngrok，否則請使用提供的 ngrok。\n例如 \"ngrokPath\": \"ngrok\" | \"C:/sample/path/ngrok\" | \"./bot/node_modules/ngrok/bin/ngrok\"",
   "teamstoolkit.taskDefinitions.args.tunnelInspection.title": "通道檢查。\n若未定義，請先從記錄檔取得端點，然後從預設檢查取得第一個 PublicURL \"http://127.0.0.1:4040/api/tunnels\"\n否則，請使用提供的檢查 (第一個 PublicURL)。",
   "teamstoolkit.taskDefinitions.command.npmInstall.description": "安裝 npm 套件。\n 請參閱 https://aka.ms/teamsfx-npm-package-task，以了解如何自訂下列引數。",
-  "teamstoolkit.taskDefinitions.command.startLocalTunnel.description": "啟動本機通道服務。\n 請參閱 https://aka.ms/teamsfx-debug-prepare-manifest，以了解如何自訂下列引數。",
+  "teamstoolkit.taskDefinitions.command.startLocalTunnel.description": "啟動本機通道服務。\n 請參閱 https://aka.ms/teamsfx-debug-prepare-manifest-task，以了解如何自訂下列引數。",
   "teamstoolkit.taskDefinitions.args.tab.baseUrlTitle": "將託管於索引標籤應用程式的基礎 URL",
   "teamstoolkit.taskDefinitions.args.bot.botIdTitle": "適用於 Bot 的 AAD 應用程式用戶端識別碼",
   "teamstoolkit.taskDefinitions.args.bot.botPasswordTitle": "適用於 Bot 的 AAD 應用程式用戶端祕密",
@@ -498,3 +498,4 @@
   "teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title": "在本機預覽您的 Teams 應用程式",
   "teamstoolkit.walkthroughs.title": "開始使用 Teams Toolkit"
 }
+

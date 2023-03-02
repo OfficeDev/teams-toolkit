@@ -76,8 +76,14 @@ export default class PreviewEnv extends YargsCommand {
         description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
         string: true,
       })
+      .options("open-only", {
+        description:
+          "Work for 'local' environment only. If true, directly open web client without launching local service.",
+        boolean: true,
+        default: false,
+      })
       .options("m365-host", {
-        description: "Preview the application in Teams, Outlook or Office",
+        description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
         string: true,
         choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
         default: constants.Hub.teams,
@@ -106,6 +112,7 @@ export default class PreviewEnv extends YargsCommand {
     const env = (args.env as string) ?? "";
     const runCommand: string | undefined = args["run-command"] as string;
     const runningPattern = args["running-pattern"] as string;
+    const openOnly = args["open-only"] as boolean;
     const hub = args["m365-host"] as constants.Hub;
     const browser = args.browser as constants.Browser;
     const browserArguments = (args["browser-arg"] as string[]) ?? [];
@@ -124,6 +131,7 @@ export default class PreviewEnv extends YargsCommand {
           env,
           runCommand,
           runningPattern,
+          openOnly,
           hub,
           browser,
           browserArguments
@@ -143,6 +151,7 @@ export default class PreviewEnv extends YargsCommand {
     env: string,
     runCommand: string | undefined,
     runningPattern: string,
+    openOnly: boolean,
     hub: constants.Hub,
     browser: constants.Browser,
     browserArguments: string[]
@@ -168,7 +177,11 @@ export default class PreviewEnv extends YargsCommand {
     }
 
     // 3. detect project type and set run-command, running-pattern
-    if (runCommand === undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
+    if (
+      !openOnly &&
+      runCommand === undefined &&
+      env.toLowerCase() === environmentManager.getLocalEnvName()
+    ) {
       const runCommandRes = await this.detectRunCommand(workspaceFolder);
       if (runCommandRes.isErr()) {
         return err(runCommandRes.error);

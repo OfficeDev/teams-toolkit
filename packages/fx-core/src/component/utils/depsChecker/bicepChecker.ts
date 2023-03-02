@@ -135,6 +135,8 @@ class BicepChecker {
     this._version = version;
     this._axios = axios.create({
       headers: { "content-type": "application/json" },
+      timeout: timeout,
+      timeoutErrorMessage: "Failed to download bicep by http request timeout",
     });
   }
 
@@ -261,8 +263,6 @@ class BicepChecker {
     const axiosResponse = await this._axios.get(
       `https://github.com/Azure/bicep/releases/download/${selectedVersion}/${this.getBicepBitSuffixName()}`,
       {
-        timeout: timeout,
-        timeoutErrorMessage: "Failed to download bicep by http request timeout",
         responseType: "stream",
       }
     );
@@ -278,8 +278,19 @@ class BicepChecker {
 
   private async writeBicepBits(writer: Writable, reader: Readable): Promise<void> {
     return new Promise((resolve: (value: void) => void, reject: (e: Error) => void): void => {
+      reader.on("error", (err) => {
+        // Handles reader error.
+        writer.end();
+        reject(err);
+      });
+
+      // https://nodejs.org/api/stream.html#readablepipedestination-options
+      // If the Readable stream emits an error during processing, the Writable destination is **NOT** closed.
       reader.pipe(writer);
       finished(writer, (err?: NodeJS.ErrnoException | null) => {
+        // Handles writer end and writer error.
+        // By handling writer end, it implicitly handles reader end because of reader.pipe(writer).
+        // But reader error is not handled here.
         if (err) reject(err);
         else resolve();
       });

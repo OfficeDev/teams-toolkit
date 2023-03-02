@@ -72,7 +72,7 @@ export const trustDevCertRetiredNotification =
 export enum Hub {
   teams = "Teams",
   outlook = "Outlook",
-  office = "Office",
+  office = "the Microsoft 365 app",
 }
 
 export enum Host {
@@ -211,13 +211,13 @@ export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
     `${stepPrefix(n)} Teams Toolkit is checking the required prerequisites.`,
   summary: "Summary:",
   learnMore: (link: string) => `Visit ${link} to learn more about 'Validate prerequisites' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
+  learnMoreHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   showDetailMessage: openOutputMessage,
   showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
+  errorHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
   durationMessage: (duration: number) =>
     `Finished 'Validate prerequisites' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
@@ -242,7 +242,7 @@ export const npmInstallDisplayMessages: DisplayMessages = {
     `Finished 'Install npm packages' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
-export const localTunnelDisplayMessages = Object.freeze({
+export const ngrokTunnelDisplayMessages = Object.freeze({
   taskName: "Start local tunnel",
   title: "Running 'Start local tunnel' Visual Studio Code task.",
   checkNumber: (n: number) =>
@@ -268,6 +268,10 @@ export const localTunnelDisplayMessages = Object.freeze({
   durationMessage: (duration: number) =>
     `Started local tunnel service in ${duration.toFixed(2)} seconds.`,
 });
+
+// TODO: update devTunnelDisplayMessages
+export type TunnelDisplayMessages = typeof ngrokTunnelDisplayMessages;
+export const devTunnelDisplayMessages: TunnelDisplayMessages = ngrokTunnelDisplayMessages;
 
 export const setUpTabDisplayMessages: DisplayMessages = {
   taskName: "Set up tab",

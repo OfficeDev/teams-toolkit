@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import { MultiSelectQuestion, OptionItem, UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
 import path from "path";

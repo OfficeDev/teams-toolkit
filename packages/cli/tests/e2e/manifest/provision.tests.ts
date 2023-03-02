@@ -13,6 +13,7 @@ import { execAsync } from "../commonUtils";
 
 import { AppStudioValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("teamsfx provision manifest command", function () {
   const testAppPkgPath = path.resolve(__dirname, "appPackage.dev.zip");
@@ -31,6 +32,9 @@ describe("teamsfx provision manifest command", function () {
     `should create Teams App then update it successfully`,
     { testPlanCaseId: 13395709 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       await execAsync(`teamsfx provision manifest --file-path ${testAppPkgPath}`);
 
       AppStudioValidator.setE2ETestProvider();

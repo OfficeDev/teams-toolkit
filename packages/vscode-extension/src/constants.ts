@@ -51,3 +51,5 @@ export const PublishAppLearnMoreLink =
   "https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-publish-overview";
 
 export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
+
+export const YmlEnvNamePlaceholder = "-${{TEAMSFX_ENV}}";

@@ -1,21 +1,33 @@
 version: 1.0.0
 
 registerApp:
-  - uses: aadApp/create
+  - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
-      generateClientSecret: true
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # AAD_APP_CLIENT_ID: the client id of AAD app
+    # AAD_APP_CLIENT_SECRET: the client secret of AAD app
+    # AAD_APP_OBJECT_ID: the object id of AAD app
+    # AAD_APP_TENANT_ID: the tenant id of AAD app
+    # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
+    # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
 
-  - uses: teamsApp/create
+  - uses: teamsApp/create # Creates a Teams app
     with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # TEAMS_APP_ID: the id of Teams app
 
 provision:
-  - uses: botAadApp/create
+  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for bot
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: botFramework/create
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -25,39 +37,46 @@ provision:
         - name: msteams
 
 configureApp:
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: localhost:53000
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
 
-  - uses: aadApp/update
+  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
-      manifestPath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
+  # Output: following environment variable will be persisted in current environment's .env file.
+  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   - uses: teamsApp/validate
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
 
-  - uses: teamsApp/zipAppPackage
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
 
-  - uses: teamsApp/update
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: prerequisite/install 
+  - uses: prerequisite/install # Install dependencies
     with:
       devCert:
         trust: true
       func: true
       dotnet: true
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # SSL_CRT_FILE: certificate file
+    # SSL_KEY_FILE: certificate key
 
   - uses: cli/runDotnetCommand
     with:
@@ -65,7 +84,7 @@ deploy:
       workingDirectory: ./api
       execPath: ${{DOTNET_PATH}}
 
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -75,14 +94,14 @@ deploy:
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
 
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -91,7 +110,7 @@ deploy:
         REACT_APP_FUNC_ENDPOINT: http://localhost:7071
         REACT_APP_FUNC_NAME: getUserProfile
 
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -103,7 +122,7 @@ deploy:
         M365_APPLICATION_ID_URI: api://${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/botid-${{BOT_ID}}
         API_ENDPOINT: http://localhost:7071
 
-  - uses: file/updateEnv
+  - uses: file/updateEnv # Generate runtime environment variables
     with:
       target: ./api/.env.teamsfx.local
       envs:
@@ -113,17 +132,17 @@ deploy:
         M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
         ALLOWED_APP_IDS: 1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3
 
-  - uses: cli/runNpmCommand
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
       workingDirectory: ./tabs
 
-  - uses: cli/runNpmCommand
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
       workingDirectory: ./api
 
-  - uses: cli/runNpmCommand
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
       workingDirectory: ./bot

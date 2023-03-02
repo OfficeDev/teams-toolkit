@@ -99,7 +99,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         throw createRes.error;
       }
 
-      const isReusingExisting = botConfig.botId && botConfig.botPassword;
+      const isReusingExisting = !(!botConfig.botId || !botConfig.botPassword);
       const successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
         createRes.value.botId
@@ -115,7 +115,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
       context.telemetryReporter.sendTelemetryEvent(successRegisterBotAad, {
-        [propertyKeys.reusingExistingBotAad]: isReusingExisting,
+        [propertyKeys.reusingExistingBotAad]: isReusingExisting.toString(),
         [propertyKeys.registerBotAadTime]: timeResult.milliseconds.toString(),
       });
       return {

@@ -94,7 +94,13 @@ export function jsonObjectNamesConvertV3(
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
-    if (res.isOk()) return res.value + "=" + obj + EOL;
+    if (res.isOk()) {
+      let stateValue = obj;
+      if (typeof obj === "string" && obj.includes("#")) {
+        stateValue = `"${obj}"`;
+      }
+      return res.value + "=" + stateValue + EOL;
+    }
   } else return "";
   return returnData;
 }
@@ -108,10 +114,7 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   if (versionForMigration.platform === Platform.VS) {
     return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
   }
-  const res = getLocalizedString(
-    "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform]
-  );
+  const res = getLocalizedString("core.migrationV3.Message");
   return res;
 }
 
@@ -126,28 +129,33 @@ export function getDownloadLinkByVersionAndPlatform(version: string, platform: P
 }
 
 export function outputCancelMessage(version: string, platform: Platform): void {
-  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`Upgrade cancelled.`);
   const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
+    );
+    TOOLS?.logProvider.warning(
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else if (platform === Platform.VS) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
+    TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
+    TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}.`
     );
   }
 }
@@ -193,8 +201,12 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.trackingId || "";
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
+    if (readSettingsResult.isOk()) {
+      return readSettingsResult.value.trackingId;
+    } else {
+      return "";
+    }
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {

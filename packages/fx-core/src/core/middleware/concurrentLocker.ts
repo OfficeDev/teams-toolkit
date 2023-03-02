@@ -53,8 +53,10 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   const lockFileDir = getLockFolder(inputs.projectPath);
   const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
   await fs.ensureDir(lockFileDir);
-  const taskName = `${ctx.method} ${
-    ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+  const taskName = `${ctx.method}${
+    ctx.method === "executeUserTask" || ctx.method === "executeUserTaskOld"
+      ? ` ${(ctx.arguments[0] as Func).method}`
+      : ""
   }`;
   let acquired = false;
   let retryNum = 0;
@@ -66,7 +68,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
       );
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
-        f();
+        f(taskName);
       }
       try {
         doingTask = taskName;
@@ -83,7 +85,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       } finally {
         await unlock(configFolder, { lockfilePath: lockfilePath });
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
-          f();
+          f(taskName);
         }
         TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
         doingTask = undefined;

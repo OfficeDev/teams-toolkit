@@ -45,6 +45,7 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  setUriEventHandler,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -64,11 +65,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import {
-  AuthSvcScopes,
-  isMigrationV3Enabled,
-  setRegion,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
@@ -86,6 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
+  setUriEventHandler(uriHandler);
   context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
   registerActivateCommands(context);
@@ -100,7 +98,7 @@ export async function activate(context: vscode.ExtensionContext) {
   handlers.activate();
 
   // Init VSC context key
-  await initializeContextKey(isTeamsFxProject);
+  await initializeContextKey(context, isTeamsFxProject);
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
@@ -246,6 +244,20 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
+
+  // Upgrade command to update Teams manifest
+  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsManifest",
+    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+  );
+  context.subscriptions.push(migrateTeamsManifestCmd);
+
+  // Upgrade command to update Teams Client SDK
+  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsTabApp",
+    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+  );
+  context.subscriptions.push(migrateTeamsTabAppCmd);
 }
 
 /**
@@ -290,7 +302,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(installAppInTeamsCmd);
 
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
-    Correlator.run(handlers.openSurveyHandler, args)
+    Correlator.run(handlers.openSurveyHandler, [TelemetryTriggerFrom.TreeView])
   );
   context.subscriptions.push(openSurveyCmd);
 
@@ -429,18 +441,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
   context.subscriptions.push(updateAadAppManifest);
-
-  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
-    "fx-extension.migrateTeamsManifest",
-    () => Correlator.run(handlers.migrateTeamsManifestHandler)
-  );
-  context.subscriptions.push(migrateTeamsManifestCmd);
-
-  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
-    "fx-extension.migrateTeamsTabApp",
-    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
-  );
-  context.subscriptions.push(migrateTeamsTabAppCmd);
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",
@@ -695,7 +695,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(specifySubscription);
 }
 
-async function initializeContextKey(isTeamsFxProject: boolean) {
+async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   await vscode.commands.executeCommand(
@@ -712,16 +712,25 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     });
   }
 
+  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/teamsapp.yml",
+    false,
+    true,
+    true
+  );
+  ymlFileWatcher.onDidCreate(async (event) => {
+    await detectedTeamsFxProject(context);
+  });
+
   await setAadManifestEnabledContext();
   await setApiV3EnabledContext();
   await setTDPIntegrationEnabledContext();
 
   if (isV3Enabled()) {
-    if (isMigrationV3Enabled()) {
-      const upgradeable = await checkProjectUpgradable();
-      if (upgradeable) {
-        await handlers.checkUpgrade();
-      }
+    const upgradeable = await checkProjectUpgradable();
+    if (upgradeable) {
+      await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
+      await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
     }
   } else {
     await vscode.commands.executeCommand(
@@ -1004,34 +1013,17 @@ async function runBackgroundAsyncTasks(
     await runTeamsFxBackgroundTasks();
   }
 
-  const ymlFileWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/teamsapp.yml",
-    false,
-    true,
-    true
-  );
-  ymlFileWatcher.onDidCreate(async (event) => {
-    await detectedTeamsFxProject(context);
-  });
-
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
-
-  TreatmentVariableValue.taskOrientedTemplateNaming = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.TaskOrientedTemplateNaming,
-      true
-    )) as boolean | undefined;
 
   await showDebugChangesNotification();
 }
 
 async function runTeamsFxBackgroundTasks() {
+  const upgradeable = isV3Enabled() && (await checkProjectUpgradable());
   await handlers.autoOpenProjectHandler();
   await handlers.promptSPFxUpgrade();
-  await TreeViewManagerInstance.updateTreeViewsByContent();
+  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   await AzureAccountManager.updateSubscriptionInfo();
 }
 
@@ -1057,7 +1049,6 @@ async function checkProjectUpgradable(): Promise<boolean> {
   const upgradeable = versionCheckResult.isOk()
     ? versionCheckResult.value.isSupport == VersionState.upgradeable
     : false;
-  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
   return upgradeable;
 }
 
@@ -1078,5 +1069,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
     runTeamsFxBackgroundTasks();
   }
 
-  await checkProjectUpgradable();
+  const upgradeable = await checkProjectUpgradable();
+  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
 }

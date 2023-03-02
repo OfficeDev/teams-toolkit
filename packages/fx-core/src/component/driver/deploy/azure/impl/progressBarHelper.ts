@@ -4,10 +4,10 @@
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 export async function* progressBarHelper(
-  titles: string[],
+  titles: (() => string)[],
   progressBar?: IProgressHandler
 ): AsyncIterableIterator<void> {
   for (const title of titles) {
-    yield progressBar?.next(title);
+    yield progressBar?.next(title());
   }
 }

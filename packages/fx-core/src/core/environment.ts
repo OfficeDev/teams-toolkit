@@ -300,7 +300,7 @@ class EnvironmentManager {
   }
 
   public getDotEnvPath(envName: string, projectPath: string): string {
-    return path.join(projectPath, "teamsfx", `.env.${envName}`);
+    return path.join(projectPath, "env", `.env.${envName}`);
   }
 
   public getEnvConfigPath(envName: string, projectPath: string): string {

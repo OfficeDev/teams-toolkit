@@ -235,7 +235,7 @@ export async function setFrontendDomainToConfig(projectPath: string, envName: st
 }
 
 export async function setAadManifestIdentifierUrisV3(projectPath: string, identifierUri: string) {
-  const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+  const aadManifestPath = path.join(projectPath, "aad.manifest.json");
   const aadTemplate = await fs.readJson(aadManifestPath);
   aadTemplate.identifierUris = [identifierUri];
   await fs.writeJson(aadManifestPath, aadTemplate, { spaces: 4 });

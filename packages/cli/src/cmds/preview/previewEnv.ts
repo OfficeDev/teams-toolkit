@@ -402,8 +402,7 @@ export default class PreviewEnv extends YargsCommand {
     }
 
     // launch Outlook or Office
-    let internalId: string | undefined =
-      hub === constants.Hub.outlook ? envs["M365_TITLE_ID"] : envs["M365_APP_ID"];
+    let internalId: string | undefined = envs["M365_APP_ID"];
     if (!internalId) {
       if (CLIUIInstance.interactive) {
         const shouldContinue = await showInstallAppInTeamsMessage(

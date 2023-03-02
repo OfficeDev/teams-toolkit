@@ -67,7 +67,7 @@ describe("Package Service", () => {
       data: {
         operationId: "test-operation-id",
         titlePreview: {
-          titleId: "test-title-id",
+          titleId: "test-title-id-preview",
         },
       },
     };
@@ -78,15 +78,18 @@ describe("Package Service", () => {
     };
     axiosGetResponses["/dev/v1/users/packages/status/test-status-id"] = {
       status: 200,
-    };
-    axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = {
-      data: {},
+      data: {
+        titleId: "test-title-id",
+        appId: "test-app-id",
+      },
     };
 
     const packageService = new PackageService("test-endpoint");
     let actualError: Error | undefined;
     try {
-      await packageService.sideLoading("test-token", "test-path");
+      const result = await packageService.sideLoading("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
     } catch (error: any) {
       actualError = error;
     }

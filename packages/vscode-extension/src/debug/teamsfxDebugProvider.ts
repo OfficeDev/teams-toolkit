@@ -232,9 +232,11 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               break;
             case SideloadingType.v3M365Local:
               {
-                const internalId =
-                  (await commonUtils.getV3M365TitleId(folder.uri.fsPath, env!)) ??
-                  (await getTeamsAppInternalId(appId));
+                let internalId =
+                  host === Host.outlook
+                    ? await commonUtils.getV3M365TitleId(folder.uri.fsPath, env!)
+                    : await commonUtils.getV3M365AppId(folder.uri.fsPath, env!);
+                internalId = internalId ?? (await getTeamsAppInternalId(appId));
                 if (internalId !== undefined) {
                   url = url.replace(v3M365MatchPattern, internalId);
                 }
@@ -242,7 +244,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               break;
             case SideloadingType.v3M365Remote:
               {
-                let internalId = await commonUtils.getV3M365TitleId(folder.uri.fsPath, env!);
+                let internalId =
+                  host === Host.outlook
+                    ? await commonUtils.getV3M365TitleId(folder.uri.fsPath, env!)
+                    : await commonUtils.getV3M365AppId(folder.uri.fsPath, env!);
                 if (internalId === undefined) {
                   const shouldContinue = await showInstallAppInTeamsMessage(env!, appId);
                   if (!shouldContinue) {

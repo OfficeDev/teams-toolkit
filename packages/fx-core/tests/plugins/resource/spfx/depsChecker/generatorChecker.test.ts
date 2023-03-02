@@ -68,8 +68,8 @@ describe("generator checker", () => {
       const info = GeneratorChecker.getDependencyInfo();
 
       chai.expect(info).to.be.deep.equal({
-        supportedVersion: "1.16.0",
-        displayName: "@microsoft/generator-sharepoint@1.16.0",
+        supportedVersion: "1.16.1",
+        displayName: "@microsoft/generator-sharepoint@1.16.1",
       });
     });
 

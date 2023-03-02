@@ -90,7 +90,8 @@ export class PackageService {
         if (resCode === 200) {
           const titleId: string = statusResponse.data.titleId;
           const appId: string = statusResponse.data.appId;
-          this.logger?.info(`Acquire done. App TitleId: ${titleId}, AppId: ${appId}`);
+          this.logger?.info(`TitleId: ${titleId}`);
+          this.logger?.info(`AppId: ${appId}`);
           this.logger?.info("Sideloading done.");
           return [titleId, appId];
         } else {

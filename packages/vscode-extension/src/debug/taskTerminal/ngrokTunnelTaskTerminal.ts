@@ -262,7 +262,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         }
         this.isOutputSummary = true;
         this.status.endpoint = endpoint;
-        await this.outputSuccessSummary(baseTunnelDisplayMessages, endpoint, saveEnvRes.value);
+        await this.outputSuccessSummary(ngrokTunnelDisplayMessages, endpoint, saveEnvRes.value);
         return ok(true);
       }
     } catch {

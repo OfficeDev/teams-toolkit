@@ -756,7 +756,7 @@ describe("manifestsMigration", () => {
       assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
-        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by VS Code Teams Toolkit 3.X / TeamsFx CLI 0.X / Visual Studio 2022 17.3. Please install VS Code Teams Toolkit 4.X / TeamsFx CLI 1.X / Visual Studio 2022 17.4 and run upgrade first."
+        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first."
       );
     }
   });

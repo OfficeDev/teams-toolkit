@@ -188,7 +188,7 @@
         },
         {
           "id": "hello-world-teams-tab-and-outlook-add-in",
-          "title": "Hello World Teams tab and Outlook add-in",
+          "title": "Hello World Teams Tab and Outlook add-in",
           "shortDescription": "A hello world project that contains both Teams tab and Outlook Add-in capability",
           "fullDescription": "A hello world project that contains both Teams tab and Outlook Add-in capability",
           "tags": ["Tab", "Outlook add-in"],

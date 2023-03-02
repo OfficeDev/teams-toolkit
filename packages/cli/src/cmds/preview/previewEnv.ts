@@ -163,7 +163,7 @@ export default class PreviewEnv extends YargsCommand {
     }
     const envs = envRes.value;
     if (envs.TEAMS_APP_ID === undefined) {
-      return err(errors.TeamsAppIdNotExists());
+      return err(errors.TeamsAppIdNotExistsV3());
     }
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = envs.TEAMS_APP_ID as string;
 

@@ -514,7 +514,7 @@
   "core.TabSPFxOption.labelNew": "SPFx tab",
   "core.TabSPFxOption.description": "Client-side app with SharePoint Framework",
   "core.TabSPFxOption.detail": "Auto-hosted SPFx web part tightly integrated with Microsoft Teams",
-  "core.TabSPFxOption.detailNew": "Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams",
+  "core.TabSPFxOption.detailNew": "SPFx components hosted in Microsoft 365 and embeded in Microsoft Teams",
   "core.TabSso.description": "Single Sign On for Tab",
   "core.TabSso.detail": "Enable Single Sign On in your Teams Tab app",
   "core.BotSso.description": "Single Sign On for Bot",

@@ -134,7 +134,7 @@ export default class Preview extends YargsCommand {
   public builder(yargs: Argv): Argv<any> {
     if (isM365AppEnabled()) {
       yargs.option("m365-host", {
-        description: "Preview the application in Teams, Outlook or Office",
+        description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
         string: true,
         choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
         default: constants.Hub.teams,

@@ -132,14 +132,6 @@ jobs:
         run: |
           .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3
 
-      - name: update templates alpha tag
-        uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
-        with:
-          tag_name: "templates-0.0.0-alpha"
-        env:
-          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
-
       - name: update templates prerelease tag
         uses: richardsimko/update-tag@v1
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
@@ -278,37 +270,10 @@ jobs:
             cd ./packages/server
             npm run package
 
-      - name: release alpha server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease') }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: "@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}"
-          artifacts: ./packages/server/lib/*.exe
-          prerelease: true
-          artifactErrorsFailBuild: true
-
-      - name: release RC server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
-          artifacts: ./packages/server/lib/*.exe
-          prerelease: true
-          artifactErrorsFailBuild: true
-
-      - name: release stable server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
-          artifacts: ./packages/server/lib/*.exe
-          artifactErrorsFailBuild: true
-
       - name: pack vsix
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref != 'refs/heads/prerelease' }}
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -319,26 +284,6 @@ jobs:
             cd ./packages/vscode-extension
             npm install --only=production
             npx vsce package
-
-      - name: release alpha VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/dev' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: "vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}"
-          artifacts: ./packages/**/*.vsix
-          prerelease: true
-          artifactErrorsFailBuild: true
-
-      - name: release RC VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
-          artifacts: ./packages/**/*.vsix
-          prerelease: true
-          artifactErrorsFailBuild: true
 
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -372,6 +317,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
         env:
           RELEASE: preview
+          NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -385,22 +331,14 @@ jobs:
             npm install --only=production
             npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
 
-      - name: release preview TTK to github release page
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/prerelease' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: "vscode-extension-V3-${{ steps.preview-version.outputs.version }}"
-          artifacts: ./packages/vscode-extension/*.vsix
-          artifactErrorsFailBuild: true
-          prerelease: true
-
       - name: save release info
         run: |
           rm -f changed.txt
           rm -f versions.json
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
+          mv ./packages/vscode-extension/*.vsix .
+          mv ./packages/server/lib/*.exe server.exe
 
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3
@@ -409,3 +347,5 @@ jobs:
           path: |
             changed.txt
             versions.json
+            *.vsix
+            *.exe

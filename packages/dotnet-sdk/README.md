@@ -435,7 +435,7 @@ If there is an existing project created in VS2022 17.1 Preview, you can use the 
 
 ### Upgrade from 1.1.0 to 1.2.0 (Update projects to use TeamsJS V.2.0)
 
-Teams Toolkit provides users with a template `TeamsJSBlazorInterop.js`, which consists of multiple commonly used Teams JS SDK API. Users can add more APIs if needed. As suggested, even if you intend your app to only run in Teams (and not Office and Outlook), best practice is to start referencing the latest TeamsJS (_v.2.0_ or later) as soon as convenient, in order to benefit from the latest improvements, new features, and support (even for Teams-only apps).
+Teams Toolkit provides users with a template `TeamsJSBlazorInterop.js`, which consists of multiple commonly used Teams JS SDK API. Users can add more APIs if needed. As suggested, even if you intend your app to only run in Teams (and not Outlook and the Microsoft 365 app), best practice is to start referencing the latest TeamsJS (_v.2.0_ or later) as soon as convenient, in order to benefit from the latest improvements, new features, and support (even for Teams-only apps).
 
 Starting from TeamsFx .NET SDK 1.2.0, TeamsJS V2 are referenced. Though previously scaffolded projects still work with TeamsFx .NET SDK 1.2.0, we suggest you replace the `TeamsJSBlazorInterop.js` under `./wwwroot/js` with the latest one from [here](https://github.com/OfficeDev/TeamsFx/blob/main/templates/tab/csharp/default/wwwroot/js/TeamsJsBlazorInterop.js). Two APIs in the file are updated with new function name to align with renamed TeamsJS APIs. `initializeWithContext()` is removed.
 

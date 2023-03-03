@@ -195,7 +195,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       internalConsoleOptions: "neverOpen",
     },
     {
-      name: "Attach to Frontend in Office (Edge)",
+      name: "Attach to Frontend in the Microsoft 365 app (Edge)",
       type: "pwa-msedge",
       request: "launch",
       url: LaunchUrl.officeLocalTab,
@@ -215,7 +215,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       internalConsoleOptions: "neverOpen",
     },
     {
-      name: "Attach to Frontend in Office (Chrome)",
+      name: "Attach to Frontend in the Microsoft 365 app (Chrome)",
       type: "pwa-chrome",
       request: "launch",
       url: LaunchUrl.officeLocalTab,
@@ -288,21 +288,21 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
       stopAll: true,
     },
     {
-      name: "Office workbench (Edge)",
-      configurations: ["Attach to Frontend in Office (Edge)"],
+      name: "The Microsoft 365 app workbench (Edge)",
+      configurations: ["Attach to Frontend in the Microsoft 365 app (Edge)"],
       preLaunchTask: TaskOverallLabel.TransparentM365,
       presentation: {
-        group: "group3: Office",
+        group: "group3: the Microsoft 365 app",
         order: edgeOrder + 4,
       },
       stopAll: true,
     },
     {
-      name: "Office workbench (Chrome)",
-      configurations: ["Attach to Frontend in Office (Chrome)"],
+      name: "The Microsoft 365 app workbench (Chrome)",
+      configurations: ["Attach to Frontend in the Microsoft 365 app (Chrome)"],
       preLaunchTask: TaskOverallLabel.TransparentM365,
       presentation: {
-        group: "group3: Office",
+        group: "group3: the Microsoft 365 app",
         order: chromeOrder + 4,
       },
       stopAll: true,

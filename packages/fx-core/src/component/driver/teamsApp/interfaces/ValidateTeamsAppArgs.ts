@@ -3,7 +3,11 @@
 
 export interface ValidateTeamsAppArgs {
   /**
-   * Teams app manifest template path
+   * Teams app manifest path
    */
-  manifestPath: string;
+  manifestPath?: string;
+  /**
+   * Teams app package path
+   */
+  appPackagePath?: string;
 }

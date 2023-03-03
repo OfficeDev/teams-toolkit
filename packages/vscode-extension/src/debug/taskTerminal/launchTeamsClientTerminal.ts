@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
-import * as cp from "child_process";
 import * as util from "util";
+import * as open from "open";
 import * as commonUtils from "../commonUtils";
 import * as globalVariables from "../../globalVariables";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
@@ -39,7 +39,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   do(): Promise<Result<Void, FxError>> {
     return Correlator.runWithId(getLocalDebugSession().id, () =>
       localTelemetryReporter.runWithTelemetryProperties(
-        TelemetryEvent.DebugLaunchTeamsClientTask,
+        TelemetryEvent.LaunchWebClientTask,
         {
           [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
           [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
@@ -81,14 +81,8 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   }
 
   private openUrl(url: string): Promise<Result<Void, FxError>> {
-    return new Promise<Result<Void, FxError>>((resolve, reject) => {
-      const options: cp.SpawnOptions = {
-        cwd: globalVariables.workspaceUri?.fsPath ?? "",
-        shell: true,
-        detached: false,
-      };
-
-      const childProc = cp.spawn("npx", ["open-cli", url], options);
+    return new Promise<Result<Void, FxError>>(async (resolve, reject) => {
+      const childProc = await open(url);
 
       childProc.stdout?.setEncoding("utf-8");
       childProc.stdout?.on("data", (data: string | Buffer) => {

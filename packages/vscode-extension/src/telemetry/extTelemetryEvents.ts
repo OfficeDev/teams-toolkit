@@ -138,8 +138,8 @@ export enum TelemetryEvent {
   DebugSetUpBotTask = "debug-set-up-bot-task",
   DebugSetUpSSOTask = "debug-set-up-sso-task",
   DebugPrepareManifestTask = "debug-prepare-manifest-task",
-  DebugLaunchTeamsClientTask = "debug-launch-teams-client",
   DebugLifecycleTask = "debug-lifecycle-task",
+  LaunchWebClientTask = "launch-web-client",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",

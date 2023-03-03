@@ -170,7 +170,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         clusterId: idArr[1],
       });
 
-      if (tunnelInstance) {
+      if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
         await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
       }
     } catch {

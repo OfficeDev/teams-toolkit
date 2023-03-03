@@ -53,6 +53,7 @@ import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import * as globalVariables from "../globalVariables";
 import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
 import { TunnelType } from "./taskTerminal/baseTunnelTaskTerminal";
+import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -100,6 +101,12 @@ const customTasks = Object.freeze({
   },
   [TaskCommand.prepareManifest]: {
     createTerminal: async (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.launchWebClient]: {
+    createTerminal: async (d: vscode.TaskDefinition) => new LaunchTeamsClientTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,

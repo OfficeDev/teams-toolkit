@@ -58,7 +58,7 @@ jobs:
         run: |
           files=(*)
           lists=""
-          emails="haolong@microsoft.com;"
+          emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;zhshang@microsoft.com;zhididr@microsoft.com;v-liliu2@microsoft.com;"
           valid=0
           invalid=0
 
@@ -76,7 +76,7 @@ jobs:
                 invalid=$((invalid+1))
                 label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
               elif [[ $redirect == *"white list"* ]];
-              then 
+              then
                 valid=$((valid+1))
                 label="<span style=\\\"background-color:#b58900;color:white;font-weight:bold;\\\">SKIPPED</span>"
               else

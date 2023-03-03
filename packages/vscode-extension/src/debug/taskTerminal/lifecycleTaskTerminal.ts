@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as vscode from "vscode";
-import { err, ok, FxError, Result, Stage, Void } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import * as globalVariables from "../../globalVariables";
 import { getSystemInputs, runCommand } from "../../handlers";
@@ -34,7 +35,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
       [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
         template: maskValue(this.args.template),
-        env: maskValue(this.args.env),
+        env: maskValue(this.args.env, [TaskDefaultValue.env]),
       }),
       [TelemetryProperty.DebugLifecycle]: this.stage,
     };

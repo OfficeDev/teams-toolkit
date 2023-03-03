@@ -26,9 +26,14 @@ jobs:
         run: |
           links=`git grep -hEo "https://aka[a-zA-Z0-9./?=_%:-]*[a-zA-Z0-9]"  | sort -nr | uniq`
 
-          akas='{}'
+          white_list="https://aka.ms/teamsfx-debug-prepare-manifest;https://aka.ms/teamsfx-node;"
+
           while IFS= read -r link;
           do
+            if [[ $white_list == *"$link"* ]]; then
+              echo $link "=>" "white list" >> akas.data
+              continue
+            fi
             redirect=`curl -LIs -o /dev/null -w %{url_effective} $link`
             echo $link "=>" $redirect >> akas.data
           done <<< $links
@@ -70,6 +75,10 @@ jobs:
               then
                 invalid=$((invalid+1))
                 label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
+              elif [[ $redirect == *"white list"* ]];
+              then
+                valid=$((valid+1))
+                label="<span style=\\\"background-color:#b58900;color:white;font-weight:bold;\\\">SKIPPED</span>"
               else
                 valid=$((valid+1))
                 label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">VALID</span>"

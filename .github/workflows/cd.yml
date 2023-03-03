@@ -223,7 +223,7 @@ jobs:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
 
       - name: update cli ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/prerelease' ) }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/cli/package.json
@@ -231,7 +231,7 @@ jobs:
           value: ${{ secrets.CLI_PUBLIC_AIKEY }}
 
       - name: update extension ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/prerelease' ) }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/vscode-extension/package.json
@@ -239,7 +239,7 @@ jobs:
           value: ${{ secrets.EXT_PUBLIC_AIKEY }}
 
       - name: commit change on local
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/prerelease' ) }}
         run: |
           git add ./packages/cli/package.json ./packages/vscode-extension/package.json
           git commit -m "chore: update ai key"
@@ -337,6 +337,8 @@ jobs:
           rm -f versions.json
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
+          mv ./packages/vscode-extension/*.vsix .
+          mv ./packages/server/lib/*.exe server.exe
 
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3
@@ -345,5 +347,5 @@ jobs:
           path: |
             changed.txt
             versions.json
-            ./packages/vscode-extension/*.vsix
-            ./packages/server/lib/*.exe
+            *.vsix
+            *.exe

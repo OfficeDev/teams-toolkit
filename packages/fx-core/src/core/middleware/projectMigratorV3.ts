@@ -286,7 +286,7 @@ export async function migrate(context: MigrationContext): Promise<void> {
   }
 }
 
-async function preMigration(context: MigrationContext): Promise<void> {
+export async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(MetadataV2.configFolder);
   if (await context.fsPathExists(context.envRelativePath)) {
     if (await context.fsPathExists(Constants.alternativeEnvFolder)) {

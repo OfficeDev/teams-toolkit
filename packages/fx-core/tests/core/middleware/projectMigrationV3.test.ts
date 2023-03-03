@@ -27,6 +27,7 @@ import {
   updateLaunchJson,
   migrate,
   wrapRunMigration,
+  preMigration,
   checkVersionForMigration,
   configsMigration,
   generateApimPluginEnvContent,
@@ -37,12 +38,12 @@ import {
   checkapimPluginExists,
   ProjectMigratorMWV3,
   errorNames,
+  Constants as migrationConstants,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../src/core/error";
 import {
   Metadata,
-  MetadataV2,
   MetadataV3,
   VersionSource,
   VersionState,
@@ -1394,6 +1395,39 @@ describe("Migration show notification", () => {
     inputs.skipUserConfirm = "true";
     const res = await MigratorV3.showNotification(coreCtx, version);
     assert.isTrue(res);
+  });
+});
+
+describe("preMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("alternative env folder", async () => {
+    await fs.ensureDir(path.join(projectPath, MetadataV3.defaultEnvironmentFolder));
+    await preMigration(migrationContext);
+    assert.equal(migrationContext.envRelativePath, migrationConstants.alternativeEnvFolder);
+  });
+
+  it("error for existing env folders", async () => {
+    await fs.ensureDir(path.join(projectPath, MetadataV3.defaultEnvironmentFolder));
+    await fs.ensureDir(path.join(projectPath, migrationConstants.alternativeEnvFolder));
+    try {
+      await preMigration(migrationContext);
+    } catch (err) {
+      assert.equal(err.name, errorNames.envPathAlreadyExist);
+      return;
+    }
+    assert.fail("it should throw an envPathAlreadyExist error");
   });
 });
 

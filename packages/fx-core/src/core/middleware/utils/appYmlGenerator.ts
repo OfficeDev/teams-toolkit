@@ -145,9 +145,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // projectId
     this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
-
-    // env folder
-    this.handlebarsContext.environmentFolder = this.handlebarsContext.environmentFolder;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {

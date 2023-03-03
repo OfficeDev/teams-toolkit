@@ -13,15 +13,13 @@ import * as util from "util";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvManager, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";
-import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { getLocalDebugSession } from "../commonUtils";
 import {
   ngrokTunnelDisplayMessages,
   openTerminalDisplayMessage,
@@ -29,7 +27,7 @@ import {
 } from "../constants";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localTelemetryReporter";
+import { DefaultPlaceholder, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,
@@ -37,6 +35,7 @@ import {
   IBaseTunnelArgs,
   OutputInfo,
   TunnelError,
+  TunnelType,
 } from "./baseTunnelTaskTerminal";
 
 const ngrokTimeout = 1 * 60 * 1000;
@@ -85,20 +84,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  do(): Promise<Result<Void, FxError>> {
-    return Correlator.runWithId(getLocalDebugSession().id, () =>
-      localTelemetryReporter.runWithTelemetryProperties(
-        TelemetryEvent.DebugStartLocalTunnelTask,
-        {
-          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
-        },
-        () => this._do()
-      )
-    );
-  }
-
-  private async _do(): Promise<Result<Void, FxError>> {
+  protected async _do(): Promise<Result<Void, FxError>> {
     await this.outputStartMessage(ngrokTunnelDisplayMessages);
     await this.resolveArgs(this.args);
     let ngrokPath;
@@ -308,20 +294,33 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     await this.progressHandler.next(ngrokTunnelDisplayMessages.startMessage);
   }
 
-  protected generateTaskArgsTelemetry(): string {
-    return JSON.stringify({
-      ngrokArgs: maskValue(
-        Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
-        [
-          {
-            value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
-            mask: DefaultPlaceholder,
-          },
-        ]
-      ),
-      ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
-      tunnelInspection: maskValue(this.args.tunnelInspection),
-    });
+  protected generateTelemetries(): { [key: string]: string } {
+    return {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        type: maskValue(this.args.type, Object.values(TunnelType)),
+        ngrokArgs: maskValue(
+          Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
+          [
+            {
+              value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+              mask: DefaultPlaceholder,
+            },
+          ]
+        ),
+        ngrokPath: maskValue(this.args.ngrokPath, [TaskDefaultValue.startLocalTunnel.ngrokPath]),
+        tunnelInspection: maskValue(this.args.tunnelInspection),
+        env: maskValue(this.args.env, [TaskDefaultValue.env]),
+        output: {
+          endpoint: maskValue(this.args.output?.endpoint, [
+            TaskDefaultValue.startLocalTunnel.output.endpoint,
+          ]),
+          domain: maskValue(this.args.output?.domain, [
+            TaskDefaultValue.startLocalTunnel.output.domain,
+          ]),
+        },
+      }),
+    };
   }
 
   // TODO: remove getNgrokEndpoint after v3 enabled

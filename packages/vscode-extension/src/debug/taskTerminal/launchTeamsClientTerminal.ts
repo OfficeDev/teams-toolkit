@@ -90,30 +90,18 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
         this.writeEmitter.fire(line);
       });
 
-      childProc.stderr?.setEncoding("utf-8");
-      childProc.stderr?.on("data", (data: string | Buffer) => {
-        const line = data.toString().replace(/\n/g, "\r\n");
-        this.writeEmitter.fire(line);
-      });
-
       childProc.on("error", (error) => {
         resolve(
           err(
             new UserError(
               SolutionSource,
               ExtensionErrors.LaunchTeamsWebClientError,
-              util.format(
-                getDefaultString("teamstoolkit.localDebug.launchTeamsWebClientError"),
+              `${getDefaultString("teamstoolkit.localDebug.launchTeamsWebClientError")} ${
                 error?.message ?? ""
-              ) +
-                " " +
-                openTerminalMessage(),
-              util.format(
-                localize("teamstoolkit.localDebug.launchTeamsWebClientError"),
+              }  ${openTerminalDisplayMessage()}`,
+              `${localize("teamstoolkit.localDebug.launchTeamsWebClientError")} ${
                 error?.message ?? ""
-              ) +
-                " " +
-                openTerminalDisplayMessage()
+              }  ${openTerminalDisplayMessage()}`
             )
           )
         );

@@ -337,6 +337,8 @@ jobs:
           rm -f versions.json
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
+          mv ./packages/vscode-extension/*.vsix .
+          mv ./packages/server/lib/*.exe server.exe
 
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3
@@ -345,5 +347,5 @@ jobs:
           path: |
             changed.txt
             versions.json
-            ./packages/vscode-extension/*.vsix
-            ./packages/server/lib/*.exe
+            *.vsix
+            *.exe

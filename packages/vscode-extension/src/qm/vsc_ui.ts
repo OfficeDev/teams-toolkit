@@ -164,7 +164,6 @@ export class VsCodeUI implements UserInteraction {
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
       quickPick.title = option.title;
-      // quickPick.busy = true;
       const buttons: QuickInputButton[] = option.buttons
         ? option.buttons.map((button) => {
             return {

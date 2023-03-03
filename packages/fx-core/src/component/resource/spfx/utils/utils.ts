@@ -160,8 +160,6 @@ export class Utils {
         "--depth=0"
       );
 
-      await sleep(10000);
-
       const regex = new RegExp(packageName + "@" + "(?<version>\\d+\\.\\d+\\.\\d+[\\w-.]*)"); // in case user has installed any -alpha, -beta version
       const match = regex.exec(output.toString());
       if (match && match.groups) {

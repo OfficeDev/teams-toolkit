@@ -20,7 +20,7 @@ import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import {
   frameworkQuestion,
-  loadDataQuestion,
+  loadPackageVersions,
   spfxPackageSelectQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
@@ -86,10 +86,10 @@ export function getSPFxScaffoldQuestion(): QTreeNode {
   });
   let spfx_first_question;
   if (isSpfxDecoupleEnabled()) {
-    const q1 = new QTreeNode(loadDataQuestion);
-    spfx_frontend_host.addChild(q1);
+    const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
+    spfx_frontend_host.addChild(spfx_load_package_versions);
     spfx_first_question = new QTreeNode(spfxPackageSelectQuestion);
-    q1.addChild(spfx_first_question);
+    spfx_load_package_versions.addChild(spfx_first_question);
   } else {
     spfx_first_question = new QTreeNode(versionCheckQuestion);
     spfx_frontend_host.addChild(spfx_first_question);

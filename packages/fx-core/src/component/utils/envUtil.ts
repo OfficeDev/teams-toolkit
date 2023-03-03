@@ -1,6 +1,6 @@
 import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { cloneDeep, has, merge } from "lodash";
+import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
@@ -10,7 +10,6 @@ import * as path from "path";
 import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
-import { and } from "ajv/dist/compile/codegen";
 
 export type DotenvOutput = {
   [k: string]: string;

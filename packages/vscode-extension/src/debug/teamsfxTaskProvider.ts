@@ -105,7 +105,7 @@ const customTasks = Object.freeze({
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
-  [TaskCommand.launchTeamsWebClient]: {
+  [TaskCommand.launchWebClient]: {
     createTerminal: async (d: vscode.TaskDefinition) => new LaunchTeamsClientTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,

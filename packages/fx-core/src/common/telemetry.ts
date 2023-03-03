@@ -47,6 +47,7 @@ export enum TelemetryProperty {
   CustomizeSubscriptionType = "customize-subscription-type",
   IsFromTdp = "is-from-developer-portal",
   ToolkitVersion = "toolkit-version",
+  YmlName = "yml-name",
 }
 
 export enum TelemetryEvent {
@@ -124,6 +125,7 @@ export enum TelemetryEvent {
   InstallScriptNotFound = "install-script-not-found",
   SkipDeploy = "skip-deploy",
   PublishInDeveloperPortal = "publish-in-developer-portal",
+  MetaData = "metadata",
 }
 
 export enum TelemetrySuccess {

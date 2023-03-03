@@ -1,6 +1,6 @@
 import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { cloneDeep, merge } from "lodash";
+import { cloneDeep, has, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
@@ -8,9 +8,25 @@ import { pathUtils } from "./pathUtils";
 import { TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
+import { TelemetryEvent } from "../../common/telemetry";
+import { createHash } from "crypto";
+import { and } from "ajv/dist/compile/codegen";
 
 export type DotenvOutput = {
   [k: string]: string;
+};
+
+interface EligibleKeySettings {
+  [key: string]: boolean;
+}
+
+const EligibleKeys: EligibleKeySettings = {
+  TEAMSFX_ENV: true,
+  AZURE_SUBSCRIPTION_ID: false,
+  BOT_ID: false,
+  TEAMS_APP_ID: false,
+  TAB_ENDPOINT: true,
+  TEAMS_APP_TENANT_ID: false,
 };
 
 export class EnvUtil {
@@ -76,6 +92,24 @@ export class EnvUtil {
     if (loadToProcessEnv) {
       merge(process.env, parseResult.obj);
     }
+
+    const props: { [key: string]: string } = {};
+    const prefix = "env.";
+    for (const key of Object.keys(parseResult.obj)) {
+      if (Object.keys(EligibleKeys).includes(key)) {
+        const value = parseResult.obj[key];
+        if (key === "TEAMSFX_ENV" && (value === "dev" || value === "local")) {
+          props[prefix + key] = value;
+        } else {
+          props[prefix + key] = EligibleKeys[key]
+            ? createHash("sha256").update(value).digest("hex")
+            : value;
+        }
+      }
+    }
+
+    TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
+
     return ok(parseResult.obj);
   }
 

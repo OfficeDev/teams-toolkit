@@ -21,6 +21,7 @@ import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
+import { getExecCommand, Utils } from "../utils/utils";
 
 const name = "yo";
 const supportedVersion = "4.3.1";
@@ -92,6 +93,16 @@ export class YoChecker implements DependencyChecker {
     return [defaultPath, path.join(defaultPath, "node_modules", ".bin")];
   }
 
+  public async findGloballyInstalledVersion(
+    timeoutInMinutes?: number
+  ): Promise<string | undefined> {
+    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInMinutes ?? 0);
+  }
+
+  public async findLatestVersion(timeoutInMinutes: number): Promise<string> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInMinutes);
+  }
+
   private async validate(): Promise<boolean> {
     return await this.isInstalled();
   }
@@ -159,7 +170,7 @@ export class YoChecker implements DependencyChecker {
         undefined,
         this._logger,
         { timeout: timeout, shell: false },
-        this.getExecCommand("npm"),
+        getExecCommand("npm"),
         "install",
         `${name}@${supportedVersion}`,
         "--prefix",
@@ -173,13 +184,5 @@ export class YoChecker implements DependencyChecker {
       this._logger.error("Failed to execute npm install yo");
       throw NpmInstallError(error as Error);
     }
-  }
-
-  private getExecCommand(command: string): string {
-    return this.isWindows() ? `${command}.cmd` : command;
-  }
-
-  private isWindows(): boolean {
-    return os.type() === "Windows_NT";
   }
 }

@@ -32,7 +32,7 @@ This app also supported teams different themes, including dark theme and high co
 
 ## Prerequisites
 
-- [NodeJS](https://nodejs.org/en/), fully tested on NodeJS 14, 16
+- [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
 - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 

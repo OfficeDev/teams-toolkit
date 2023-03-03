@@ -59,6 +59,14 @@ export function TeamsAppIdNotExists(): UserError {
   return new UserError(constants.cliSource, "TeamsAppIdNotExists", "Teams app id does not exists.");
 }
 
+export function TeamsAppIdNotExistsV3(): UserError {
+  return new UserError(
+    constants.cliSource,
+    "TeamsAppIdNotExists",
+    "Teams app id does not exists. See https://aka.ms/teamsfx-cli-v5.0#teamsfx-preview for details."
+  );
+}
+
 export function PortsAlreadyInUse(portsInUse: number[]): UserError {
   const message =
     portsInUse.length > 1
@@ -166,7 +174,7 @@ export function OnlyLaunchPageSupportedInOffice(): UserError {
   return new UserError(
     constants.cliSource,
     "OnlyLaunchPageSupportedByOffice",
-    "Only launch page is supported in Office. Message extension is not supported in Office."
+    "Only launch page is supported in the Microsoft 365 app. Message extension is not supported in the Microsoft 365 app."
   );
 }
 

@@ -26,11 +26,6 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
-
-  // Prerelease feature flag has the highest priority.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease)) {
-    return templatePrereleasePrefix + preRelease;
-  }
   const versionPattern = preRelease || templateVersion;
 
   // To avoid incompatible, alpha release does not download latest template.
@@ -126,16 +121,12 @@ export async function fetchZipFromUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
-  const res: AxiosResponse<any> = await sendRequestWithTimeout(
-    async (cancelToken) => {
-      return await axios.get(url, {
-        responseType: "arraybuffer",
-        cancelToken: cancelToken,
-      });
-    },
-    timeoutInMs,
-    tryLimits
-  );
+  const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+    return await axios.get(url, {
+      responseType: "arraybuffer",
+      timeout: timeoutInMs,
+    });
+  }, tryLimits);
 
   const zip = new AdmZip(res.data);
   return zip;

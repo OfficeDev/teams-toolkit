@@ -519,9 +519,9 @@ export class CLIUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    if (!this.interactive && items.includes("Upgrade")) {
-      throw new NotAllowedMigrationError();
-    }
+    // if (!this.interactive && items.includes("Upgrade")) {
+    //   throw new NotAllowedMigrationError();
+    // }
     let plainText: string;
     if (message instanceof Array) {
       plainText = message.map((x) => x.content).join("");

@@ -120,21 +120,23 @@ export const doctorResult = {
 
 export const installApp = {
   description:
-    "To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.",
+    "To continue to preview your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.",
   finish: "Once you have finished the installation, please come back and click 'Continue'.",
   guide: "Click 'Install in Teams' will pop up Teams web client for you to install the app.",
   installInTeams: "Install in Teams",
   installInTeamsDescription: "Pop up Teams web client for you to install the app.",
   continue: "Continue",
-  continueDescription: "Continue to preview in Outlook or Office.",
+  continueDescription: "Continue to preview in Outlook or the Microsoft 365 app.",
   cancel: "Cancel",
   cancelDescription: "Stop preview.",
-  installAppTitle: "Install app in Teams or continue to Outlook or Office",
+  installAppTitle: "Install app in Teams or continue to Outlook or the Microsoft 365 app",
   nonInteractive: {
     notInstalled:
       "We detected that you have not yet installed the app in Teams first, please run 'teamsfx preview %s --m365-host teams' to install app.",
     manifestChanges:
       "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
+    manifestChangesV3:
+      "If you changed the manifest file, please run 'teamsfx provision %s' to install app again.",
   },
   bot: {
     description:

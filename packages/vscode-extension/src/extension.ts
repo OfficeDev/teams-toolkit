@@ -45,6 +45,7 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  setUriEventHandler,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -82,6 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
+  setUriEventHandler(uriHandler);
   context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
   registerActivateCommands(context);

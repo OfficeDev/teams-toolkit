@@ -3,7 +3,7 @@
 
 import "mocha";
 import * as sinon from "sinon";
-import { RestoreFn } from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateBotAadAppDriver } from "../../../../src/component/driver/botAadApp/create";
 import { MockedM365Provider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 import * as chai from "chai";
@@ -183,5 +183,26 @@ describe("botAadAppCreate", async () => {
         expect(error instanceof UnhandledSystemError).to.be.true;
       }
     );
+  });
+
+  it("should be good when reusing existing bot in env", async () => {
+    envRestore = mockedEnv({
+      [outputKeys.BOT_ID]: expectedClientId,
+      [outputKeys.SECRET_BOT_PASSWORD]: expectedSecretText,
+    });
+
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result.isOk() && result.result.value.get(outputKeys.BOT_ID)).to.be.equal(
+      expectedClientId
+    );
+    expect(
+      result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
+    ).to.be.equal(expectedSecretText);
   });
 });

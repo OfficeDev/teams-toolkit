@@ -40,7 +40,7 @@ export class PackageService {
     }
   }
 
-  public async sideLoading(token: string, manifestPath: string): Promise<string> {
+  public async sideLoading(token: string, manifestPath: string): Promise<[string, string]> {
     try {
       const data = await fs.readFile(manifestPath);
       const content = new FormData();
@@ -59,8 +59,7 @@ export class PackageService {
       );
 
       const operationId = uploadResponse.data.operationId;
-      const titleId = uploadResponse.data.titlePreview.titleId;
-      this.logger?.debug(`Package uploaded. OperationId: ${operationId}, TitleId: ${titleId}`);
+      this.logger?.debug(`Package uploaded. OperationId: ${operationId}`);
 
       this.logger?.info("Acquiring package ...");
       const acquireResponse = await this.axiosInstance.post(
@@ -79,7 +78,6 @@ export class PackageService {
       const statusId = acquireResponse.data.statusId;
       this.logger?.debug(`Acquiring package with statusId: ${statusId} ...`);
 
-      let complete = false;
       do {
         const statusResponse = await this.axiosInstance.get(
           `/dev/v1/users/packages/status/${statusId}`,
@@ -90,32 +88,16 @@ export class PackageService {
         );
         const resCode = statusResponse.status;
         if (resCode === 200) {
-          complete = true;
+          const titleId: string = statusResponse.data.titleId;
+          const appId: string = statusResponse.data.appId;
+          this.logger?.info(`TitleId: ${titleId}`);
+          this.logger?.info(`AppId: ${appId}`);
+          this.logger?.info("Sideloading done.");
+          return [titleId, appId];
         } else {
           await waitSeconds(2);
         }
-      } while (complete === false);
-
-      this.logger?.info(`Acquire done. App TitleId: ${titleId}`);
-
-      this.logger?.info("Checking acquired package ...");
-      const launchInfo = await this.axiosInstance.get(
-        `/catalog/v1/users/titles/${titleId}/launchInfo`,
-        {
-          baseURL: serviceUrl,
-          params: {
-            SupportedElementTypes:
-              // eslint-disable-next-line no-secrets/no-secrets
-              "Extension,OfficeAddIn,ExchangeAddIn,FirstPartyPages,Dynamics,AAD,LineOfBusiness,LaunchPage,MessageExtension,Bot",
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      this.logger?.debug(JSON.stringify(launchInfo.data));
-      this.logger?.info("Sideloading done.");
-      return titleId;
+      } while (true);
     } catch (error: any) {
       this.logger?.error("Sideloading failed.");
       if (error.response) {

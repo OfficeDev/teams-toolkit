@@ -1,7 +1,7 @@
 import * as jsonschema from "jsonschema";
 import fs from "fs-extra";
 import * as path from "path";
-import { Inputs, Question, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   NodeVersionNotSupportedError,
@@ -16,6 +16,7 @@ export enum SPFXQuestionNames {
   webpart_name = "spfx-webpart-name",
   webpart_desp = "spfx-webpart-desp",
   version_check = "spfx-version-check",
+  use_global_package_or_install_local = "spfx-use-global-package-or-install-local",
 }
 
 export const frameworkQuestion: Question = {
@@ -104,3 +105,72 @@ export const versionCheckQuestion: Question = {
     return undefined;
   },
 };
+
+let options: OptionItem[] = [];
+
+export const loadDataQuestion: Question = {
+  type: "func",
+  name: "loadQuestion",
+  title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+  func: async (inputs: Inputs) => {
+    await getDynamicOptions();
+    return undefined;
+  },
+};
+
+export const spfxPackageSelectQuestion: Question = {
+  type: "singleSelect",
+  name: SPFXQuestionNames.use_global_package_or_install_local,
+  title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+  staticOptions: options,
+  // [
+  // {
+  //   id: "globalPackage",
+  //   label: getLocalizedString("plugins.spfx.questions.packageSelect.useGlobalPackage.label"),  // todo: get version
+  //   detail: getLocalizedString("plugins.spfx.questions.packageSelect.useGlobalPackage.detail", Constants.RecommenLowestSpfxVersion)
+  // },
+  // { id: "installLocally",
+  // label: getLocalizedString("plugins.spfx.questions.packageSelect.installLocally.label")}, // todo: get version
+  //],
+  placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
+  dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    return options;
+  },
+};
+
+async function getDynamicOptions(): Promise<OptionItem[]> {
+  let versions: (string | undefined)[] = [undefined, undefined];
+
+  versions = await Promise.all([
+    Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 5, false),
+    Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 10),
+  ]);
+
+  const result: OptionItem[] = [
+    {
+      id: "globalPackage",
+      label:
+        versions[0] !== undefined
+          ? getLocalizedString(
+              "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label",
+              versions[0]
+            )
+          : getLocalizedString(
+              "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
+            ),
+      detail: getLocalizedString(
+        "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
+        Constants.RecommenLowestSpfxVersion
+      ),
+    },
+    {
+      id: "installLocally",
+      label: getLocalizedString(
+        "plugins.spfx.questions.packageSelect.installLocally.label",
+        versions[1]
+      ),
+    },
+  ];
+  options = result;
+  return result;
+}

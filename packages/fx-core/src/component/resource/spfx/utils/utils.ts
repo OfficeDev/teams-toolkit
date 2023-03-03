@@ -142,11 +142,12 @@ export class Utils {
   }
 
   static async findGloballyInstalledVersion(
-    logger: LogProvider,
+    logger: LogProvider | undefined,
     packageName: string,
-    timeoutInMinutes: number
+    timeoutInSeconds: number,
+    shouldThrowIfNotFound = true
   ): Promise<string | undefined> {
-    const timeout = timeoutInMinutes * 60 * 1000;
+    const timeout = timeoutInSeconds * 1000;
     try {
       const output = await cpUtils.executeCommand(
         undefined,
@@ -159,6 +160,8 @@ export class Utils {
         "--depth=0"
       );
 
+      await sleep(10000);
+
       const regex = new RegExp(packageName + "@" + "(?<version>\\d+\\.\\d+\\.\\d+[\\w-.]*)"); // in case user has installed any -alpha, -beta version
       const match = regex.exec(output.toString());
       if (match && match.groups) {
@@ -167,17 +170,19 @@ export class Utils {
         return undefined;
       }
     } catch (error) {
-      logger.error(`Failed to execute "npm ls ${packageName}"`);
-      throw error;
+      logger?.error(`Failed to execute "npm ls ${packageName}"`);
+      if (shouldThrowIfNotFound) {
+        throw error;
+      }
     }
   }
 
   static async findLatestVersion(
-    logger: LogProvider,
+    logger: LogProvider | undefined,
     packageName: string,
-    timeoutInMinutes: number
+    timeoutInSeconds: number
   ): Promise<string> {
-    const timeout = timeoutInMinutes * 60 * 1000;
+    const timeout = timeoutInSeconds * 1000;
     const defaultOutput = "latest";
     try {
       const output = await cpUtils.executeCommand(
@@ -199,7 +204,7 @@ export class Utils {
         return defaultOutput;
       }
     } catch (error) {
-      logger.error(`Failed to execute "npm view ${packageName} version"`);
+      logger?.error(`Failed to execute "npm view ${packageName} version"`);
       return defaultOutput;
     }
   }

@@ -89,6 +89,7 @@ export class FeatureFlagName {
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly Validate = "TEAMSFX_VALIDATE_ENABLE";
+  static readonly SpfxDecouple = "TEAMSFX_SPFX_DECOUPLE";
 }
 
 export class ManifestVariables {

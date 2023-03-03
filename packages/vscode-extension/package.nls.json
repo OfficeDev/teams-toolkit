@@ -334,7 +334,7 @@
     "teamstoolkit.guides.addSpfxTab.detail": "Teams-aware web pages with SharePoint Framework embedded in Microsoft Teams.",
     "teamstoolkit.guides.addSpfxTab.label": "Configure SPFx-based Tab Capability",
     "teamstoolkit.guides.addOutlookAddin.detail": "Outlook add-ins are web apps that extend the functionality of Outlook.",
-    "teamstoolkit.guides.addOutlookAddin.label": "Configure Outlook Add-in Capability",
+    "teamstoolkit.guides.addOutlookAddin.label": "Configure Outlook add-in Capability",
     "teamstoolkit.guides.addSso.detail": "Develop a single sign-on feature for the Teams Launch pages and Bot capability.",
     "teamstoolkit.guides.addSso.label": "Develop Single Sign-on Experience in Teams",
     "teamstoolkit.guides.addTab.detail": "Teams-aware web pages embedded in Microsoft Teams.",

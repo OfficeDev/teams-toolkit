@@ -121,16 +121,12 @@ export async function fetchZipFromUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
-  const res: AxiosResponse<any> = await sendRequestWithTimeout(
-    async (cancelToken) => {
-      return await axios.get(url, {
-        responseType: "arraybuffer",
-        cancelToken: cancelToken,
-      });
-    },
-    timeoutInMs,
-    tryLimits
-  );
+  const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+    return await axios.get(url, {
+      responseType: "arraybuffer",
+      timeout: timeoutInMs,
+    });
+  }, tryLimits);
 
   const zip = new AdmZip(res.data);
   return zip;

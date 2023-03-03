@@ -47,5 +47,5 @@ export function isTDPIntegrationEnabled(): boolean {
 }
 
 export function isOfficeAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
+  return isV3Enabled();
 }

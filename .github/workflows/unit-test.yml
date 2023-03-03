@@ -62,14 +62,14 @@ jobs:
         run: |
           xvfb-run -a npx lerna run test:unit --stream
 
-      - name: CodeCov report #1
+      - name: CodeCov report attempt 1
         id: codecov1
         continue-on-error: true
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
 
-      - name: CodeCov report #2
+      - name: CodeCov report attempt 2
         id: codecov2
         if: steps.codecov1.outcome == 'failure'
         continue-on-error: true
@@ -77,7 +77,7 @@ jobs:
         with:
           fail_ci_if_error: true
 
-      - name: CodeCov report #3
+      - name: CodeCov report attempt 3
         id: codecov3
         if: steps.codecov2.outcome == 'failure'
         continue-on-error: true

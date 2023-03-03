@@ -48,7 +48,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
   constructor(
     oldProjectSettings: ProjectSettings,
     private bicepContent: string,
-    private projectPath: string
+    private projectPath: string,
+    envRelativePath: string
   ) {
     super(oldProjectSettings);
     this.handlebarsContext = {
@@ -62,7 +63,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       useBotWebAppResourceId: false,
       isTypescript: false,
       defaultFunctionName: undefined,
-      environmentFolder: undefined,
+      environmentFolder: envRelativePath,
       projectId: undefined,
       dotnetPath: "DOTNET_PATH",
     };
@@ -146,7 +147,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
 
     // env folder
-    this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
+    this.handlebarsContext.environmentFolder = this.handlebarsContext.environmentFolder;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {

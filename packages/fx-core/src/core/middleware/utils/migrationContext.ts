@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs } from "@microsoft/teamsfx-api";
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-extra";
 import path from "path";
-import { MetadataV2 } from "../../../common/versionMetadata";
+import { MetadataV2, MetadataV3 } from "../../../common/versionMetadata";
 import { CoreHookContext } from "../../types";
 import { TelemetryPropertyKey, TelemetryPropertyValue } from "../projectMigratorV3";
 import { getParameterFromCxt } from "./v3MigrationUtils";
@@ -28,8 +30,9 @@ export class MigrationContext {
   private modifiedPaths: string[] = [];
   private reports: string[] = [];
   telemetryProperties: Record<string, string> = {};
-  backupPath = "";
-  projectPath = "";
+  backupPath: string;
+  projectPath: string;
+  envRelativePath: string;
 
   static async create(ctx: CoreHookContext): Promise<MigrationContext> {
     const context = new MigrationContext(ctx);
@@ -44,6 +47,7 @@ export class MigrationContext {
     Object.assign(this, ctx, {});
     this.projectPath = getParameterFromCxt(ctx, "projectPath");
     this.backupPath = path.join(this.projectPath, backupFolder);
+    this.envRelativePath = MetadataV3.defaultEnvironmentFolder;
   }
 
   async backup(_path: string): Promise<boolean> {

@@ -267,7 +267,7 @@
     "teamstoolkit.localDebug.tunnelServiceNotStartedError": "The tunnel service hasn't been started. Please wait for a moment or restart the local tunnel task.",
     "teamstoolkit.localDebug.tunnelEndpointNotFoundError": "Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.",
     "teamstoolkit.localDebug.tunnelEnvError": "Failed to save environment variables. %s",
-    "teamstoolkit.localDebug.startTunnelError": "Task to start local tunneling failed. %s",
+    "teamstoolkit.localDebug.startTunnelError": "Task to start local tunneling service failed. %s",
     "teamstoolkit.localDebug.output.tunnel.title": "Running Visual Studio Code task: 'Start local tunnel'",
     "teamstoolkit.localDebug.output.tunnel.checkNumber": "Teams Toolkit is starting the local tunneling service to forward public URL to local port and inspect traffic. Open terminal window to see the running details.",
     "teamstoolkit.localDebug.output.summary": "Summary:",

@@ -141,7 +141,5 @@
         "identity",
         "messageTeamMembers"
     ],
-    "validDomains": [
-        "${{BOT_DOMAIN}}"
-    ]
+    "validDomains": []
 }

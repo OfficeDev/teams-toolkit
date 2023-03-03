@@ -237,7 +237,7 @@ export class Coordinator {
 
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Capabilities]: feature,
-        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
+        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp.toString(),
       });
 
       if (feature === TabSPFxNewUIItem().id) {

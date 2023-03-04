@@ -1,6 +1,7 @@
 import { err, FxError, LogProvider, ok, Result, SystemError } from "@microsoft/teamsfx-api";
-import { expect, assert } from "chai";
+import { assert } from "chai";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { TelemetryEvent, TelemetryProperty } from "../../../src/common/telemetry";
 import {
@@ -32,7 +33,7 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
 }
 
 describe("metadata util", () => {
-  let sandbox: sinon.SinonSandbox;
+  const sandbox = sinon.createSandbox();
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
   const mockProjectModel: ProjectModel = {
     registerApp: {
@@ -63,15 +64,22 @@ describe("metadata util", () => {
     },
     environmentFolderPath: "./envs",
   };
-  const tools = new MockTools();
-  setTools(tools);
+  let mockedEnvRestore: RestoreFn | undefined;
+  let tools: MockTools;
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
+    tools = new MockTools();
+    setTools(tools);
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
   });
 
   it("should return YamlParsingError", async () => {

@@ -34,8 +34,8 @@
       <Item ItemId=";teamstoolkit.accountTree.noSubscriptions" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No Subscriptions Discovered]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Abonelik bulunamadı]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abonelik Bulunamadı]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No subscriptions discovered]]></Val>
@@ -76,8 +76,8 @@
       <Item ItemId=";teamstoolkit.accountTree.sideloadingPass" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sideloading Enabled]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Dışarıdan yükleme etkin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dışarıdan Yükleme Etkin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Sideloading enabled]]></Val>
@@ -97,8 +97,8 @@
       <Item ItemId=";teamstoolkit.accountTree.sideloadingStatusUnknown" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sideloading Check Failed]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Dışarıdan yükleme denetimi başarısız oldu]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dışarıdan Yükleme Denetimi Başarısız Oldu]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Sideloading check failed]]></Val>
@@ -118,8 +118,8 @@
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sideloading Disabled]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Dışarıdan yükleme devre dışı]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dışarıdan Yükleme Devre Dışı]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Sideloading disabled]]></Val>
@@ -181,8 +181,8 @@
       <Item ItemId=";teamstoolkit.appStudioLogin.createM365TestingTenant" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a Microsoft 365 Testing Tenant]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Microsoft 365 test kiracısı oluşturun]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365 Test Kiracısı Oluştur]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
@@ -244,8 +244,8 @@
       <Item ItemId=";teamstoolkit.azureLogin.selectSubscription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a Subscription]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Abonelik seçin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abonelik Seçin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select a subscription]]></Val>
@@ -451,8 +451,8 @@
       <Item ItemId=";teamstoolkit.codeFlowLogin.silentAcquireToken" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `%s`, close all Visual Studio Code instances and try again. %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Belirteç sessizce alınamadı: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Belirteç sessizce alınamadı. Bu sorunla birden çok kez karşılaşırsanız '%s' öğesini silip tüm Visual Studio Code örneklerini kapatarak yeniden deneyebilirsiniz. %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to retrieve token silently: %s]]></Val>
@@ -484,8 +484,8 @@
       <Item ItemId=";teamstoolkit.commands.accountsLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More About Accounts]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Hesaplar hakkında daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hesaplar Hakkında Daha Fazla Bilgi Edinin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more about accounts]]></Val>
@@ -508,8 +508,8 @@
       <Item ItemId=";teamstoolkit.commands.addFeature.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add Features]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Özellik ekle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Özellik Ekle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add features]]></Val>
@@ -520,8 +520,8 @@
       <Item ItemId=";teamstoolkit.commands.azureAccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Portal]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure portal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Portal]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure portal]]></Val>
@@ -562,8 +562,8 @@
       <Item ItemId=";teamstoolkit.commands.createAccount.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create an Account]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Hesap oluşturun]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hesap Oluştur]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create an account]]></Val>
@@ -574,8 +574,8 @@
       <Item ItemId=";teamstoolkit.commands.createEnvironment.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create New Environment]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yeni ortam oluştur]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeni Ortam Oluştur]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create new environment]]></Val>
@@ -586,8 +586,8 @@
       <Item ItemId=";teamstoolkit.commands.createProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a New App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yeni uygulama oluşturun]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeni Uygulama Oluştur]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new app]]></Val>
@@ -622,8 +622,8 @@
       <Item ItemId=";teamstoolkit.commands.deployManifest.ctxMenu.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Teams App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulamasını güncelleştirme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulamasını Güncelleştir]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Update Teams app]]></Val>
@@ -634,8 +634,8 @@
       <Item ItemId=";teamstoolkit.commands.deploymentLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More About Deployment]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Dağıtım hakkında daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dağıtım Hakkında Daha Fazla Bilgi Edinin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more about deployment]]></Val>
@@ -658,8 +658,8 @@
       <Item ItemId=";teamstoolkit.commands.developmentLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More About Development]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Geliştirme hakkında daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Geliştirme Hakkında Daha Fazla Bilgi Edinin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more about development]]></Val>
@@ -682,8 +682,8 @@
       <Item ItemId=";teamstoolkit.commands.editManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Edit Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bildirim dosyasını düzenle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bildirim Dosyasını Düzenle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Edit manifest file]]></Val>
@@ -694,8 +694,8 @@
       <Item ItemId=";teamstoolkit.commands.environmentsLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More About Environments]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ortamlar hakkında daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ortamlar Hakkında Daha Fazla Bilgi Edinin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more about environments]]></Val>
@@ -706,8 +706,8 @@
       <Item ItemId=";teamstoolkit.commands.feedbackLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More About Help and Feedback]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yardım ve geri bildirim hakkında daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yardım ve Geri Bildirim Hakkında Daha Fazla Bilgi Edinin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more about help and feedback]]></Val>
@@ -754,7 +754,7 @@
       <Item ItemId=";teamstoolkit.commands.m365AccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft 365 Portal]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Microsoft 365 Portalı]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -775,8 +775,8 @@
       <Item ItemId=";teamstoolkit.commands.migrateApp.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Teams JS SDK and Code References]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams JS SDK ve kod referanslarını yükseltin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams JS SDK’yi ve Kod Başvurularını Yükselt]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Teams JS SDK and code references]]></Val>
@@ -787,8 +787,8 @@
       <Item ItemId=";teamstoolkit.commands.migrateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Teams Manifest]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams bildirimini yükseltin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Bildirimini Yükselt]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Teams manifest]]></Val>
@@ -799,8 +799,8 @@
       <Item ItemId=";teamstoolkit.commands.openDocumentLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Daha fazla bilgi edinin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Daha Fazla Bilgi Edinin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Learn more]]></Val>
@@ -820,8 +820,8 @@
       <Item ItemId=";teamstoolkit.commands.openManifestSchema.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open Manifest Schema]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bildirim şemasını aç]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bildirim Şemasını Aç]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open manifest schema]]></Val>
@@ -832,8 +832,8 @@
       <Item ItemId=";teamstoolkit.commands.previewAadManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preview AAD Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[AAD bildirim dosyasını önizleme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD Bildirim Dosyasını Önizle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Preview AAD manifest file]]></Val>
@@ -853,8 +853,8 @@
       <Item ItemId=";teamstoolkit.commands.previewManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preview Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bildirim dosyasının önizlemesini görüntüle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bildirim Dosyasını Önizle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Preview manifest file]]></Val>
@@ -898,8 +898,8 @@
       <Item ItemId=";teamstoolkit.commands.reportIssue.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Report Issues on GitHub]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[GitHub'da sorunları bildirin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[GitHub'da Sorunları Bildirin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Report issues on GitHub]]></Val>
@@ -931,8 +931,8 @@
       <Item ItemId=";teamstoolkit.commands.specifySubscription.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Specify Subscription]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Abonelik belirtin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aboneliği Belirtin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Specify subscription]]></Val>
@@ -943,8 +943,8 @@
       <Item ItemId=";teamstoolkit.commands.updateAadAppManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Azure Active Directory App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Active Directory uygulamasını güncelleştirme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory Uygulamasını Güncelleştir]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Update Azure Active Directory app]]></Val>
@@ -955,8 +955,8 @@
       <Item ItemId=";teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Azure Active Directory App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Active Directory uygulamasını güncelleştirme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory Uygulamasını Güncelleştir]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Update Azure Active Directory app]]></Val>
@@ -967,8 +967,8 @@
       <Item ItemId=";teamstoolkit.commands.updateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Teams App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulamasını güncelleştirme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulamasını Güncelleştir]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Update Teams app]]></Val>
@@ -979,8 +979,8 @@
       <Item ItemId=";teamstoolkit.commands.upgradeProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Project]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Projeyi yükselt]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Projeyi Yükselt]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade project]]></Val>
@@ -991,8 +991,8 @@
       <Item ItemId=";teamstoolkit.commands.validateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bildirim dosyasını doğrula]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bildirim Dosyasını Doğrula]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Validate manifest file]]></Val>
@@ -1003,8 +1003,8 @@
       <Item ItemId=";teamstoolkit.commands.viewSamples.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View Samples]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Örnekleri görüntüle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Örnekleri Görüntüle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[View samples]]></Val>
@@ -1015,8 +1015,8 @@
       <Item ItemId=";teamstoolkit.commands.zipPackage.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zip Teams App Package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams meta veri paketini sıkıştır]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zip Teams Uygulama Paketi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zip Teams metadata package]]></Val>
@@ -1075,8 +1075,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeatureTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add Features]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Özellik ekle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Özellik Ekle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add features]]></Val>
@@ -1132,8 +1132,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.buildPackageTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Zip Teams App Package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Paketi Oluştur]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zip Teams Uygulama Paketi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Build Teams Package]]></Val>
@@ -1153,8 +1153,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProject.running" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating a new app...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yeni bir Teams uygulaması oluşturuluyor...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeni uygulama oluşturuluyor...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Creating a new Teams app...]]></Val>
@@ -1165,8 +1165,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new app from scratch or start from a sample app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Sıfırdan yeni bir Teams uygulaması oluşturun veya örnek bir uygulamayla başlayın]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sıfırdan yeni bir uygulama oluşturun veya örnek bir uygulamayla başlayın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app from scratch or start from a sample app]]></Val>
@@ -1177,8 +1177,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a New App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yeni Proje Oluştur]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeni Uygulama Oluştur]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create New Project]]></Val>
@@ -1255,8 +1255,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartedTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Get Started]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Kullanmaya başlayın]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kullanmaya Başlayın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Get started]]></Val>
@@ -1276,8 +1276,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.guideTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View How-to Guides]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Nasıl yapılır kılavuzları]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nasıl Yapılır Kılavuzlarını Görüntüleyin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[View how-to guides]]></Val>
@@ -1408,8 +1408,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditorTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Edit Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bildirim Düzenleyicisi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bildirim Dosyasını Düzenle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Manifest Editor]]></Val>
@@ -1429,8 +1429,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.openSurveyTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[We Would Love Your Feedback]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Geri bildiriminizi almak isteriz]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Geri Bildiriminizi Almak İsteriz]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[We would love your feedback]]></Val>
@@ -1474,8 +1474,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewTitle" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preview Your Teams App (F5)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulamanızın önizlemesini görüntüleyin (F5)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulamanızı Önizleyin (F5)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Preview your Teams app (F5)]]></Val>
@@ -1549,8 +1549,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Publish to your org in Developer Portal]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Geliştirici Portalında Görüntüleme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Geliştirici Portalı'nda kuruluşunuza yayımlayın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Publish in Developer Portal]]></Val>
@@ -1561,8 +1561,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open Developer Portal to Publish]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Geliştirici Portalında Görüntüleme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yayımlamak için Geliştirici Portalı’nı Açın]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Publish in Developer Portal]]></Val>
@@ -1591,8 +1591,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.reportIssuesTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Report Issues on GitHub]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Sorunları bildir]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[GitHub'da Sorunları Bildirin]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Report issues]]></Val>
@@ -1612,8 +1612,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.samplesTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View Samples]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Örnekler]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Örnekleri Görüntüle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Samples]]></Val>
@@ -1780,8 +1780,8 @@
       <Item ItemId=";teamstoolkit.devPortalIntegration.switchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Switch Account]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Hesap değiştir]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hesap Değiştir]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Switch account]]></Val>
@@ -1852,8 +1852,8 @@
       <Item ItemId=";teamstoolkit.guide.capability" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulaması yetenek kılavuzları]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yetenek]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app capability guides]]></Val>
@@ -1864,8 +1864,8 @@
       <Item ItemId=";teamstoolkit.guide.cloudServiceIntegration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cloud service integration]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bulut hizmeti tümleştirme kılavuzları]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bulut hizmeti tümleştirmesi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cloud service integration guides]]></Val>
@@ -1876,8 +1876,8 @@
       <Item ItemId=";teamstoolkit.guide.development" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Development]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulama geliştirme kılavuzları]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Geliştirme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app development guides]]></Val>
@@ -1888,8 +1888,8 @@
       <Item ItemId=";teamstoolkit.guide.scenario" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scenario]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulama senaryosu kılavuzları]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Senaryo]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app scenario guides]]></Val>
@@ -1999,8 +1999,8 @@
       <Item ItemId=";teamstoolkit.guides.addBot.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure Bot Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Bot özelliğini yapılandırma]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bot Yeteneğini Yapılandırma]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Configure bot capability]]></Val>
@@ -2020,8 +2020,8 @@
       <Item ItemId=";teamstoolkit.guides.addME.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure Messaging Extension Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Mesajlaşma uzantısı özelliğini yapılandırma]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mesajlaşma Uzantısı Yeteneğini Yapılandırma]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Configure messaging extension capability]]></Val>
@@ -2041,8 +2041,8 @@
       <Item ItemId=";teamstoolkit.guides.addOutlookAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure Outlook Add-in Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Outlook eklentisi yeteneğini yapılandırın]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Outlook Eklentisi Yeteneğini Yapılandırma]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Configure Outlook add-in capability]]></Val>
@@ -2062,8 +2062,8 @@
       <Item ItemId=";teamstoolkit.guides.addSpfxTab.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure SPFx-based Tab Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SPFx tabanlı sekme özelliğini yapılandırma]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx tabanlı Sekme Yeteneğini Yapılandırma]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Configure SPFx-based tab capability]]></Val>
@@ -2083,8 +2083,8 @@
       <Item ItemId=";teamstoolkit.guides.addSso.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Develop Single Sign-on Experience in Teams]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams'de çoklu oturum açma deneyimi geliştirme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'de Çoklu Oturum Açma Deneyimi Geliştirme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Develop single sign-on experience in Teams]]></Val>
@@ -2104,8 +2104,8 @@
       <Item ItemId=";teamstoolkit.guides.addTab.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure Tab Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Sekme özelliğini yapılandırma]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sekme Yeteneğini Yapılandırma]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Configure tab capability]]></Val>
@@ -2125,8 +2125,8 @@
       <Item ItemId=";teamstoolkit.guides.cardActionResponse.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Initiate Sequential Workflows in Teams]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams'de sıralı iş akışları başlatma]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'de Sıralı İş Akışlarını Başlatma]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Initiate sequential workflows in Teams]]></Val>
@@ -2146,8 +2146,8 @@
       <Item ItemId=";teamstoolkit.guides.cicdPipeline.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Automate CI/CD Pipelines]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ci/cd işlem hatlarını otomatikleştirme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[CI/CD İşlem Hatlarını Otomatikleştirme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Automate ci/cd pipelines]]></Val>
@@ -2167,8 +2167,8 @@
       <Item ItemId=";teamstoolkit.guides.commandAndResponse.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Respond to Chat Commands in Teams]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams'de sohbet komutlarını yanıtlama]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'de Sohbet Komutlarını Yanıtlama]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Respond to chat commands in Teams]]></Val>
@@ -2206,8 +2206,8 @@
       <Item ItemId=";teamstoolkit.guides.dashboardApp.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Embed a Dashboard Canvas in Teams]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams'de pano tuvali ekleme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'de Pano Tuvali Ekleme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Embed a dashboard canvas in Teams]]></Val>
@@ -2227,8 +2227,8 @@
       <Item ItemId=";teamstoolkit.guides.sendNotification.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Send Notifications to Teams]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams'e bildirim gönderme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams'e Bildirim Gönderme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Send notifications to Teams]]></Val>
@@ -2470,8 +2470,8 @@
       <Item ItemId=";teamstoolkit.handlers.localPreviewTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Local Preview]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Yerel önizleme]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yerel Önizleme]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Local preview]]></Val>
@@ -2545,8 +2545,8 @@
       <Item ItemId=";teamstoolkit.handlers.openFolderTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open Folder]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Klasörü aç]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Klasörü Aç]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open folder]]></Val>
@@ -2935,8 +2935,8 @@
       <Item ItemId=";teamstoolkit.localDebug.openSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open Settings]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ayarları aç]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ayarları Aç]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Open settings]]></Val>
@@ -3154,8 +3154,8 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.grantPermission.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add App Owners]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Uygulama sahipleri ekleyin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uygulama Sahipleri Ekle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add app owners]]></Val>
@@ -3178,8 +3178,8 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.listCollaborator.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[List App Owners]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Uygulama sahiplerini listeleyin]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uygulama Sahiplerini Listele]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[List app owners]]></Val>
@@ -3226,8 +3226,8 @@
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.updateManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Teams Manifest.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams bildirimini güncelleştirin.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Bildirimini güncelleştirin.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Update Teams manifest.]]></Val>
@@ -3301,8 +3301,8 @@
       <Item ItemId=";teamstoolkit.migrateTeamsTabApp.updateCodesErrorMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%d dosyaları güncelleştirilemedi: %s, vb. Daha fazla ayrıntı için lütfen çıkış kanalına bakın.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%d dosyaları güncelleştirilemedi: %s vb. Daha fazla ayrıntı için [çıkış kanalına]5D;(command:fx-extension.showOutputChannel) başvurun.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to output channel for more details.]]></Val>
@@ -3439,8 +3439,8 @@
       <Item ItemId=";teamstoolkit.preview.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preview Teams App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulamasının önizlemesini görüntüle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulamasını Önizle]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Preview Teams app]]></Val>
@@ -3499,8 +3499,8 @@
       <Item ItemId=";teamstoolkit.publishInDevPortal.selectFile.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams App Package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams uygulama paketi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Uygulama Paketi]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app package]]></Val>
@@ -3565,8 +3565,8 @@
       <Item ItemId=";teamstoolkit.survey.banner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Tell us what you think about Teams Toolkit.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Araç Seti uzantısı hakkında geri bildiriminiz var mı?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti hakkındaki görüşlerinizi bize bildirin.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Do you have any feedback on the Teams Toolkit extension?]]></Val>
@@ -3631,7 +3631,7 @@
       <Item ItemId=";teamstoolkit.survey.takeSurvey.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Take the Survey]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ankete Katılın]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4045,8 +4045,8 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back.]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version <=2.10.0.]A;[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Doğrudan Teams Araç Seti’ni kullanmaya başlayın ve temel özelliklerle ilgili genel bir bakış edinin.]A;[Kullanmaya Başlayın]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Bir proje oluşturun veya örneklerimizi keşfedin.]A;[Yeni uygulama oluşturun]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Örnekleri görüntüleyin]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Gerçek bir Teams uygulaması oluşturmak için adımları izleyin.]A;[Belgeler]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Nasıl yapılır kılavuzları]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;En son özellikleri kullanmak için projeyi yeni yapılandırma dosyalarına yükseltmeniz gerekir. Yükseltme işlemi özel kodunuzu değiştirmez ve geri döndürme gerekirse yedekleme dosyaları oluşturur.]A;Bu yükseltme Teams Araç Seti'nin mevcut sürümünü kullanmaya devam etmek için gereklidir. Yükseltmeye hazır değilseniz ve Teams Araç Seti’nin eski sürümünü kullanmaya devam etmek istiyorsanız lütfen Uzantı'da Teams Araç Seti'ni bulun ve <=2.10.0 sürümünü yükleyin.]A;[Projeyi yükselt]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hemen Teams Araç Seti’ni kullanmaya başlayın ve temel özelliklere dair genel bir bakış edinin. Daha fazla bilgi için [Kullanmaya Başlayın]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D) sayfasını ziyaret edin.]A;Gerçek bir Teams uygulaması oluşturmak için adımları izleyin.]A;[Belgeler]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Nasıl Yapılır Kılavuzları]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Bir proje oluşturun veya örneklerimizi keşfedin.]A;[Yeni Uygulama Oluştur]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Örnekleri Görüntüle]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;En son özellikleri kullanmak için projeyi yeni yapılandırma dosyalarına yükseltmeniz gerekir. Yükseltme işlemi özel kodunuzu değiştirmez. İstediğinizde geri alabilmeniz için yedekleme dosyaları oluşturur.]A;Teams Araç Seti’nin mevcut sürümünü kullanmaya devam etmeniz için bu yükseltme zorunludur. Şimdi yükseltmek istemiyorsanız Teams Araç Seti’nin 2.10.0 veya daha eski sürümlerini kullanmaya devam edin.]A;[Projeyi Yükselt]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
@@ -4057,8 +4057,8 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Doğrudan Teams Araç Seti'ni kullanmaya başlayın ve temel özelliklere genel bir bakış edinin.]A;[Kullanmaya Başlayın]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Bir proje oluşturun veya örneklerimizi keşfedin.]A;[Yeni uygulama oluşturun]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Örnekleri görüntüleyin]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Gerçek bir Teams uygulaması oluşturmak için adımları izleyin.]A;[Belgeler]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Nasıl yapılır kılavuzları]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Hemen Teams Araç Seti'ni kullanmaya başlayın ve temel özelliklere dair genel bir bakış edinin.]A;[Kullanmaya Başlayın]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Bir proje oluşturun veya örneklerimizi keşfedin.]A;[Yeni Uygulama Oluştur]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Örnekleri Görüntüle]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Gerçek bir Teams uygulaması oluşturmak için adımları izleyin.]A;[Belgeler]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Nasıl Yapılır Kılavuzları]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
@@ -4078,8 +4078,8 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-feedback.content" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We Would Love Your Feedback]5D;(command:fx-extension.openSurvey)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Geliştirmemize yardımcı olmak için 2 dakikanızı ayırın, geri bildiriminiz önemlidir!]A;[Geri bildiriminizi duymak isteriz]5D;(command:fx-extension.openSurvey)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uygulamayı iyileştirmemize yardımcı olmak için 2 dakikanızı ayırın, geri bildiriminiz bizim için önemlidir!]A;[Geri Bildiriminizi Almak İsteriz]5D;(command:fx-extension.openSurvey)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We would love your feedback]5D;(command:fx-extension.openSurvey)]]></Val>
@@ -4090,8 +4090,8 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You need to upgrade the project to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back. [Learn more]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version 4.x.x.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Toolkit'e atlayın ve temellere genel bir bakış alın. Daha fazla bilgi için [Başla]5D;'yı ziyaret edin (command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Gerçek dünyadaki bir Teams uygulaması oluşturmak için adımları izleyin.]A;[Belgeler]5D; (command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Nasıl Yapılır Kılavuzları]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Bir proje oluşturun veya örneklerimizi keşfedin.]A;[Yeni bir uygulama oluştur]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Örnekleri görüntüle]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;En son özellikleri kullanmak için projeyi yeni yapılandırma dosyalarına yükseltmeniz gerekir. Yükseltme işlemi özel kodunuzu değiştirmez ve geri dönme gerektiğinde yedekleme dosyalarını oluşturmaz.]A;Bu yükseltmenin mevcut sürüm ekipleri araç setini kullanmaya devam etmek için olması gereken bir şey olduğuna dikkat edin. Yükseltmeye hazır değilseniz ve eski sürüm Teams Toolkit kullanmaya devam etmek istiyorsanız, lütfen Teams Toolkit’i Uzantıda bulun ve 4.x.x sürümünü yükleyin.]A;[Yükseltme Projesi]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[En son özellikleri kullanmak için projeyi yükseltmeniz gerekir. Yükseltme işlemi özel kodunuzu değiştirmez. İstediğinizde geri alabilmeniz için yedekleme dosyaları oluşturur. [Daha fazla bilgi edinin]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;[Projeyi yükselt]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Teams Araç Seti'nin geçerli sürümünü kullanmaya devam etmek için bu yükseltme zorunludur. Şimdi yükseltmek istemiyorsanız Teams Araç Seti’nin 4.x.x sürümünü kullanmaya devam edin.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version 4.x.x.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
@@ -4111,8 +4111,8 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Choose [Teams app capabilities]5D;(https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a new Teams app]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[[Teams uygulama özelliklerini]5D;(https://aka.ms/teamsfx-capabilities-overview) seçin ve ilk Teams uygulamanızı oluşturun.]A;Sıfırdan oluşturabilir veya gerçek örnekler ile kod yapılarını hızlı bir şekilde kullanmaya başlamanıza yardımcı olan örneklerimizi keşfedebilirsiniz.]A;[Yeni Teams uygulaması oluştur]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[Teams uygulama yetenekleri]5D;(https://aka.ms/teamsfx-capabilities-overview) seçeneğini belirleyin ve ilk Teams uygulamanızı oluşturun.]A;Sıfırdan uygulama oluşturabilir veya gerçek örneklerle kod yapılarını hızlı bir şekilde kullanmaya başlamanıza yardımcı olması için örneklerimizi keşfedebilirsiniz.]A;[Yeni Teams uygulaması oluştur]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[Örnekleri Görüntüle]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Choose [Teams app capabilities]5D;(https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a new Teams app]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
@@ -4168,8 +4168,8 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Developing Teams application with JavaScript or TypeScript requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run prerequisite checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Araç Seti öncelikle NPM ve Node.js gerektirir. Ortamınızı denetleyin ve ilk Teams uygulama geliştirmeniz için hazır olun.]A;[Önkoşul denetleyicisini çalıştırın]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[JavaScript veya TypeScript ile Teams uygulaması geliştirmek için NPM ve Node.js gerekir. Ortamınızı denetleyin ve ilk Teams uygulamanızı geliştirmeye hazır olun.]A;[Önkoşul denetleyicisini çalıştır]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit primarily requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run prerequisite checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
@@ -4198,8 +4198,8 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Araç Seti ile yolculuğunuza devam etmek için bazı öneriler:]A; • [Nasıl kullanılır kılavuzlarını]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) keşfedin ve daha fazla kullanışlı kılavuz edinin]A; • Bu uygulamayı nasıl geliştireceğinizi anlamak için  [Readme.md]5D;[Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) öğesini açın]A; • [Belgelerimizi]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D) okuyun]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti ile yolculuğunuza devam etmeniz için bazı öneriler:]A; • [Nasıl Yapılır Kılavuzlarını]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) keşfedin ve daha fazla pratik rehberlik edinin]A; • Bu uygulamayı nasıl geliştireceğinizi anlamak için [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) dosyasını açın]A; • [Belgelerimizi]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D) okuyun]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>

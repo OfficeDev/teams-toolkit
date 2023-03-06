@@ -85,6 +85,9 @@
       <Item ItemId=";configManager.error.invalidYmlSchema" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The schema of lifecycle %s is invalid in %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le schéma du cycle de vie %s n’est pas valide dans %s.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -118,8 +121,8 @@
       <Item ItemId=";core.AzureResourceApim.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Functions App will be also selected to be published as an API]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Function App sera également sélectionné pour être publié en tant qu’API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions App sera également sélectionné pour être publié en tant qu’API]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure Function App will be also selected to be published as an API]]></Val>
@@ -139,8 +142,8 @@
       <Item ItemId=";core.AzureResourceApimNewUI.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A hybrid, multi-cloud management platform for APIs across all environments]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Plateforme de gestion hybride et multi-cloud pour les API dans tous les environnements]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Une plateforme de gestion hybride et multicloud pour les API dans tous les environnements]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[A hybrid, multicloud management platform for APIs across all environments]]></Val>
@@ -160,8 +163,8 @@
       <Item ItemId=";core.AzureResourceFunction.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Functions App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Application de fonction Azure]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Application Azure Functions]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure Function App]]></Val>
@@ -226,8 +229,8 @@
       <Item ItemId=";core.AzureResourceSQL.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Functions App will be also selected to access Azure SQL Database]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Azure Function App sera également sélectionné pour accéder à Azure SQL Database]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions App sera également sélectionné pour accéder à Azure SQL Database]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure Function App will be also selected to access Azure SQL Database]]></Val>
@@ -613,8 +616,8 @@
       <Item ItemId=";core.NewOfficeAddinOptionVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start with an Outlook add-in]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Créer un nouveau complément Office]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Commencer par un complément Outlook]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Office add-in]]></Val>
@@ -919,6 +922,9 @@
       <Item ItemId=";core.ScratchOptionYesVSC.officeAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start with a Teams capability]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Commencez par une fonctionnalité Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1264,8 +1270,8 @@
       <Item ItemId=";core.addSso.functionNotSupport" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['Add SSO' is not supported for Bot hosted on Azure Functions]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[L’ajout de SSO n’est pas pris en charge pour le bot hébergé sur Azure Function.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’ajout de SSO n’est pas pris en charge pour le bot hébergé sur Azure Functions]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add SSO is not supported for Bot hosted on Azure Function]]></Val>
@@ -1429,7 +1435,7 @@
       <Item ItemId=";core.collaboration.AzureTip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[]A;If added user cannot access Azure resources, you need to manually setup access policy via Azure portal, refer to this link for more details: ]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[]A;Si l’utilisateur ajouté ne peut pas accéder aux ressources Azure, vous devez configurer manuellement la politique d’accès via le portail Microsoft Azure, veuillez vous référer à ce lien pour plus de détails : ]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -1441,7 +1447,7 @@
       <Item ItemId=";core.collaboration.CannotFindUserInCurrentTenant" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot find user in current tenant, check whether your email address is correct]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Impossible de trouver l’utilisateur dans le locataire actuel, veuillez vérifier si votre adresse e-mail est correcte]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -1570,7 +1576,7 @@
       <Item ItemId=";core.collaboration.SharePointTip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[]A;If added user is not a SharePoint App Catalog site admin, you need to manually setup access policy via SharePoint admin center, refer to this link for more details: ]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[]A;Si l’utilisateur ajouté n’est pas un administrateur du site SharePoint App Online Catalog, vous devez configurer manuellement la politique d’accès via le centre d’administration SharePoint, veuillez vous référer à ce lien pour plus de détails : ]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -1684,7 +1690,7 @@
       <Item ItemId=";core.collaboration.notProvisioned" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The resources have not been provisioned yet. Provision the resources first.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Les ressources n’ont pas encore été provisionnées. Veuillez provisionner d’abord les ressources.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -1696,7 +1702,7 @@
       <Item ItemId=";core.collaboration.tenantNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Tenant id of your account and the provisioned Azure AD app does not match. Check whether you logined with wrong account.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[L’ID de locataire de votre compte et l’application Azure AD provisionnée ne correspondent pas. Veuillez vérifier si vous vous êtes connecté avec un compte incorrect.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -1708,6 +1714,9 @@
       <Item ItemId=";core.common.LifecycleComplete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Executed lifecycle %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s de cycle de vie exécuté.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1795,8 +1804,8 @@
       <Item ItemId=";core.consolidateLocalRemote.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your project will be upgraded to work with the latest version of Teams Toolkit. The upgrade will only add config.local.json, manifest.template.json files and backup manifest.remote.template.json, manifest.local.template.json files without changing your custom code. If you do not want to upgrade, install an older version of Teams Toolkit (<= 3.7.0)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Votre projet sera mis à niveau pour fonctionner avec la dernière version du kit de ressources de Teams. La mise à niveau ajoutera uniquement les fichiers config.local.json, manifest.template.json et sauvegardera les fichiers manifest.remote.template.json, manifest.local.template.json sans modifier votre code personnalisé. Si vous voulez éviter la mise à niveau automatique, veuillez installer une version plus ancienne du kit de ressources de Teams (<=3.7.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre projet sera mis à niveau pour fonctionner avec la dernière version du kit de ressources de Teams. La mise à niveau ajoutera uniquement les fichiers config.local.json, manifest.template.json et sauvegardera les fichiers manifest.remote.template.json, manifest.local.template.json sans modifier votre code personnalisé. Si vous ne voulez pas mettre à niveau, veuillez installer une version plus ancienne du kit de ressources de Teams (<=3.7.0).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your project will be upgraded to work with the latest version of Teams Toolkit. The upgrade will only add config.local.json, manifest.template.json files and backup manifest.remote.template.json, manifest.local.template.json files without changing your custom code. If you want to skip auto-upgrade, please install older version of Teams Toolkit (<=3.7.0)]]></Val>
@@ -1819,8 +1828,8 @@
       <Item ItemId=";core.consolidateLocalRemoteWithAadManifest.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your project will be upgraded to work with the latest version of Teams Toolkit. The upgrade will only add config.local.json, manifest.template.json, aad.template.json files, update projectSettings.json file and backup manifest.remote.template.json, manifest.local.template.json, projectSettings.json files without changing your custom code. If you do not want to upgrade, install an older version of Teams Toolkit (<= 3.7.0)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Votre projet va être mis à niveau pour fonctionner avec la dernière version du kit de ressources de Teams. La mise à niveau ajoute uniquement les fichiers config.local.json, manifest.template.json, aad.template.json, met à jour le fichier projectSettings.json et sauvegarde les fichiers manifest.remote.template.json, manifest.local.template.json, projectSettings.json sans modifier votre code personnalisé. Si vous voulez ignorer la mise à niveau automatique, installez une ancienne version du kit de ressources de Teams (<=3.7.0)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre projet va être mis à niveau pour fonctionner avec la dernière version du kit de ressources de Teams. La mise à niveau ajoute uniquement les fichiers config.local.json, manifest.template.json, aad.template.json, met à jour le fichier projectSettings.json et sauvegarde les fichiers manifest.remote.template.json, manifest.local.template.json, projectSettings.json sans modifier votre code personnalisé. Si vous ne voulez pas mettre à jour, installez une ancienne version du kit de ressources de Teams (<=3.7.0)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your project will be upgraded to work with the latest version of Teams Toolkit. The upgrade will only add config.local.json, manifest.template.json, aad.template.json files, update projectSettings.json file and backup manifest.remote.template.json, manifest.local.template.json, projectSettings.json files without changing your custom code. If you want to skip auto-upgrade, please install older version of Teams Toolkit (<=3.7.0)]]></Val>
@@ -1999,8 +2008,8 @@
       <Item ItemId=";core.deployArmTemplates.ActionSuccess" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully deployed ARM templates. Resource group name: %s. Deployment name: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Déploiement réussi des modèles ARM. Nom du groupe de ressources : %s. Nom du déploiement : %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les modèles ARM ont été déployés. Nom du groupe de ressources : %s. Nom du déploiement : %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s]]></Val>
@@ -2011,8 +2020,8 @@
       <Item ItemId=";core.deployArmTemplates.CompileBicepFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to compile Bicep files to JSON ARM templates file: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Impossible de compiler les fichiers biceps dans le fichier de modèles de bras Json : %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la compilation des fichiers Bicep dans le fichier de modèles ARM JSON : %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to compile bicep files to Json arm templates file: %s]]></Val>
@@ -2023,8 +2032,8 @@
       <Item ItemId=";core.deployArmTemplates.CompileBicepSuccessNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; Successfully compile Bicep files to JSON.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[[%s]5D; Compilation réussie des fichiers biceps en JSON.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; Compilez correctement les fichiers Bicep au format JSON.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[[%s]5D; Successfully compile bicep files to JSON.]]></Val>
@@ -2044,8 +2053,8 @@
       <Item ItemId=";core.deployArmTemplates.DeploymentFailedNotification" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resource deployments (%s) for your project failed. Refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more error details.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[les déploiements de ressources (%s) pour votre projet ont échoué. Veuillez vous référer au canal de sortie pour plus de détails sur l’erreur.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec des déploiements de ressources (%s) pour votre projet. Pour plus d’informations sur l’erreur, consultez [output channel]5D;(command:fx-extension.showOutputChannel).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[resource deployments (%s) for your project failed. Please refer to output channel for more error details.]]></Val>
@@ -2089,8 +2098,8 @@
       <Item ItemId=";core.deployArmTemplates.FailedToGetDeploymentErrorNotification" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resource deployments (%s module) for your project failed and get the error message failed. Refer to the resource group %s in portal for deployment error.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[les déploiements de ressources (module %s) pour votre projet ont échoué et le message d’erreur a échoué. Veuillez vous référer au groupe de ressources %s dans le portail pour une erreur de déploiement.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les déploiements de ressources (module %s) pour votre projet ont échoué et le message d’erreur a échoué. Veuillez vous référer au groupe de ressources %s dans le portail pour une erreur de déploiement.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[resource deployments (%s module) for your project failed and get the error message failed. Please refer to the resource group %s in portal for deployment error.]]></Val>
@@ -2215,7 +2224,7 @@
       <Item ItemId=";core.developerPortal.scaffold.CannotFindManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not find manifest from the downloaded package for teams app %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Manifeste introuvable à partir du package téléchargé pour l’application Teams %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -2461,8 +2470,8 @@
       <Item ItemId=";core.log.updateFunctionAppSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Azure Functions app settings.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Mise à jour des paramètres de l’application de fonction Azure.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mise à jour des paramètres de l’application Azure Functions.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Updating Azure Function app settings.]]></Val>
@@ -2473,8 +2482,8 @@
       <Item ItemId=";core.migrationToArmAndMultiEnv.ErrorMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Failed. Check the error message in [output channel]5D;(command:fx-extension.showOutputChannel) to troubleshoot and fix. To upgrade manually, click Learn More for the FAQ.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Échec de la mise à niveau. Veuillez vérifier le message d’erreur dans la fenêtre de sortie pour dépanner et corriger. Vous pouvez également cliquer sur En savoir plus pour la FAQ et comment effectuer la mise à niveau manuellement.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la mise à niveau. Consultez le message d’erreur dans [output channel]5D;(command:fx-extension.showOutputChannel) pour résoudre les problèmes. Pour effectuer la mise à niveau manuellement, cliquez sur En savoir plus pour le FAQ.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Failed. Please check the error message in Output window to troubleshoot and fix. You can also click Learn More for the FAQ and how to upgrade manually.]]></Val>
@@ -2494,8 +2503,8 @@
       <Item ItemId=";core.migrationToArmAndMultiEnv.PreCheckErrorMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Failed. '%s' doesn't exist or is not in JSON format. Please fix it and try again by running command (Teams: Upgrade project).]A;To upgrade manually, click Learn More for the FAQ.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Échec de la mise à niveau. '%s' n’existe pas ou n’est pas au format json. Veuillez le corriger et réessayer en exécutant la commande (Teams : projet de mise à niveau).]A;Vous pouvez également cliquer sur En savoir plus pour la FAQ.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la mise à niveau. '%s’ n’existe pas ou n’est pas au format JSON. Corrigez-le et réessayez en exécutant la commande (Teams : Mettre à niveau le projet).]A; Pour effectuer une mise à niveau manuellement, cliquez sur En savoir plus pour le forum aux questions.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Failed. '%s' doesn't exist or is not in json format. Please fix it and try again by running command (Teams: Upgrade project).]A;You can also click Learn More for the FAQ.]]></Val>
@@ -2506,8 +2515,8 @@
       <Item ItemId=";core.migrationToArmAndMultiEnv.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade succeeded.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La mise à niveau a réussi. Votre projet est mis à niveau vers de nouveaux fichiers de configuration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La mise à niveau a réussi.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade succeeded. Your project is upgraded to new configuration files.]]></Val>
@@ -2518,8 +2527,8 @@
       <Item ItemId=";core.migrationV3.CreateNewProject" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit (pre-release) does not support migrating projects from previous versions. Project migration will be added in an upcoming release.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La version préliminaire du kit de ressources Teams prend en charge la nouvelle configuration de projet et est incompatible avec les versions précédentes. Veuillez l’essayer en créant un projet. La prise en charge de la mise à niveau automatique sera ajoutée dans la version à venir.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kit de ressources Teams (préversion) ne prend pas en charge la migration de projets à partir de versions précédentes. La migration de projet sera ajoutée dans une prochaine version.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams toolkit's pre-released version supports new project configuration and is incompatible with previous versions. Please try it by creating a new project, auto upgrade support will be added in the coming release.]]></Val>
@@ -2530,8 +2539,8 @@
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit.]A;The auto-upgrade process will generate backups in case an error occurs.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Les configurations associées à Teams Toolkit sont d’une version plus ancienne. La mise à niveau du projet est nécessaire pour continuer. Veuillez confirmer que vous acceptez de mettre à niveau les configurations TeamsFx.]A;La mise à niveau n’aura pas d’impact sur le code source de votre entreprise, mais uniquement sur la configuration utilisée par Teams Toolkit. D’autre part, des sauvegardes seront générées pour le rétablissement. Si vous n’acceptez pas la mise à niveau, vous pouvez télécharger la version précédente %s de Teams Toolkit pour continuer à utiliser la configuration actuelle. Vous pouvez également la télécharger depuis ce lien %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mettez à niveau votre projet pour rester compatible avec la dernière version. Votre projet actuel contient des configurations provenant d’un ancien kit de ressources Teams.]A;Le processus de mise à niveau automatique génère des sauvegardes en cas d’erreur.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. You can also download from this link %s.]]></Val>
@@ -2542,8 +2551,8 @@
       <Item ItemId=";core.migrationV3.VS.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Teams Toolkit preview feature - Teams App Configuration Improvements is turned on. This project is required to be upgraded to work with the preview features. Select "Learn more" to read about the required changes or select "Upgrade" to perform the changes automatically. If you don't want to upgrade, you can turn off the preview feature.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La version installée de Teams Toolkit (%s) nécessite des modifications de configuration de ce projet réalisables automatiquement. Avant la mise à niveau, sélectionnez En savoir plus si vous souhaitez en savoir plus sur les modifications requises ou sélectionnez Mettre à niveau pour effectuer les modifications automatiquement.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La fonctionnalité d’aperçu du Kit de ressources Teams - Améliorations App Configuration Teams est activée. Ce projet doit être mis à niveau pour fonctionner avec les fonctionnalités en préversion. Sélectionnez « En savoir plus » pour en savoir plus sur les modifications requises ou sélectionnez « Mettre à niveau » pour effectuer les modifications automatiquement. Si vous ne souhaitez pas effectuer la mise à niveau, vous pouvez désactiver la fonctionnalité d’aperçu.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The installed version of Teams Toolkit (%s) requires configuration changes to this project that can be done automatically. Before upgrading, select Learn more to read about the required changes or select Upgrade to perform the changes automatically.]]></Val>
@@ -2554,6 +2563,9 @@
       <Item ItemId=";core.migrationV3.aadManifestNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[templates/appPackage/aad.manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[templates/appPackage/aad.manifest.template.json n’existe pas. Vous essayez peut-être de mettre à niveau un projet créé par le kit de ressources Teams <= v3.8.0. Installez le kit de ressources Teams v4.x et exécutez d’abord la mise à niveau.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2569,18 +2581,27 @@
       <Item ItemId=";core.migrationV3.confirmOnly.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please confirm the upgrade]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Confirmez la mise à niveau]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.migrationV3.manifestNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[templates/appPackage/manifest.template.json n’existe pas. Vous essayez peut-être de mettre à niveau un projet créé par Teams Toolkit <= v3.8.0. Installez Teams Toolkit v4.x et exécutez d’abord la mise à niveau.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.migrationV3.notAllowedMigration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run "teamsfx upgrade" to upgrade your project first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La version préliminaire du kit de ressources Teams prend en charge la nouvelle configuration de projet et est incompatible avec les versions précédentes. Essayez-le en créant un projet ou exécutez d’abord « mise à niveau teamsfx » pour mettre à niveau votre projet.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2722,8 +2743,8 @@
       <Item ItemId=";core.progress.buildingApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Functions]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Génération d’une API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Génération de fonctions]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Building Api]]></Val>
@@ -2734,8 +2755,8 @@
       <Item ItemId=";core.progress.buildingApi.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Functions project.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Génération de l’API de fonction.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Génération d’un projet Functions.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Building Function Api.]]></Val>
@@ -2950,8 +2971,8 @@
       <Item ItemId=";core.progress.restartAzureFunctionApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restarting Azure Functions App.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Redémarrage de l’application de fonction Azure.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Redémarrage de l’application Azure Functions.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Restarting Azure Function App.]]></Val>
@@ -2962,8 +2983,8 @@
       <Item ItemId=";core.progress.scaffoldApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Functions]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[API de génération de modèles automatique]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fonctions de génération de modèles automatique]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Scaffolding Api]]></Val>
@@ -2974,8 +2995,8 @@
       <Item ItemId=";core.progress.scaffoldApi.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Functions project.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Projet d’API de fonction de génération de modèles automatique.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Projet de génération de modèles automatique de fonctions.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Scaffolding Function Api project.]]></Val>
@@ -3067,14 +3088,17 @@
       <Item ItemId=";core.projectVersionChecker.incompatibleProject" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The current project is incompatible with the installed version of Teams Toolkit.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le projet actif est incompatible avec la version installée de Teams Toolkit.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.projectVersionChecker.vscodeUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The current project is incompatible with the installed Teams Toolkit, please install %s or above and reopen this project.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Votre extension Teams Toolkit ne prend plus en charge le projet actuel. Mettez à niveau l’extension vers la dernière version et essayez de rouvrir ce projet.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le projet actif est incompatible avec le kit de ressources Teams installé. Installez %s ou une version ultérieure, puis rouvrez ce projet.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your Teams Toolkit extension no longer supports the current project, please upgrade the extension to the latest version and try to open this project again.]]></Val>
@@ -3238,8 +3262,8 @@
       <Item ItemId=";core.provision.switchedM365AccountAndAzureSubscriptionNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You are now using a different Microsoft 365 tenant and a different Azure subscription from what you previously used.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Vous utilisez désormais un autre locataire Microsoft 365 et un autre abonnement Azure par rapport à ce que vous avez utilisé précédemment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous utilisez maintenant un autre locataire Microsoft 365 et un autre abonnement Azure que celui que vous avez utilisé précédemment.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.]]></Val>
@@ -3304,54 +3328,81 @@
       <Item ItemId=";core.summary.actionDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Action %s%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Action %s%s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.actionFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s a échoué.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.actionNotExecuted" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s was not executed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s n’a pas été exécuté.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.actionSucceeded" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s was executed successfully.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s a été exécuté avec succès.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.createdEnvFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment file was created at]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le fichier d’environnement a été créé à]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.lifecycleDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Lifecycle stage: %s(%s step(s) in total). The following actions will be executed: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Étape de cycle de vie : %s(%s étape(s) au total). Les actions suivantes vont être exécutées : %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.lifecycleFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s Lifecycle stage %s failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s %s de phase de cycle de vie a échoué.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.lifecycleNotExecuted" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s Lifecycle stage %s was not executed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’étape de cycle de vie %s %s n’a pas été exécutée.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.summary.lifecycleSucceeded" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s Lifecycle stage %s was executed successfully.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s %s de l’étape de cycle de vie a été exécutée.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3394,8 +3445,8 @@
       <Item ItemId=";core.updateBotIdsQuestion.placeholder" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unselect to keep with the original value of botId]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Désélectionnez pour conserver celui d’origine.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Désélectionner pour conserver la valeur d’origine de botId]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Unselect to keep with the original one.]]></Val>
@@ -3406,8 +3457,8 @@
       <Item ItemId=";core.updateBotIdsQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create new bot(s) for debugging]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Nous allons créer un bot pour vous permettre de commencer à utiliser le kit de ressources Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer un ou plusieurs bots pour le débogage]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[We will create a new bot for you to get started with Teams Toolkit]]></Val>
@@ -3418,8 +3469,8 @@
       <Item ItemId=";core.updateContentUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update the content URL from %s to %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[mettre à jour l’URL de contenu de %s vers %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mettre à jour l’URL de contenu de %s vers %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[update the content url from %s to %s]]></Val>
@@ -3430,8 +3481,8 @@
       <Item ItemId=";core.updateContentUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure content URL(s) for debugging]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Nous allons mettre à jour l’URL de contenu des onglets suivants pour que vous puissiez commencer à utiliser Teams Toolkit]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurer la ou les URL de contenu pour le débogage]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[We will update the following tabs' content url for you to get start with Teams Toolkit]]></Val>
@@ -3442,7 +3493,7 @@
       <Item ItemId=";core.updateUrlQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unselect to keep with the original URL]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Désélectionner pour conserver l’URL d’origine]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3454,7 +3505,7 @@
       <Item ItemId=";core.updateWebsiteUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update the website URL from %s to %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[mettre à jour l’URL du site web de %s vers %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3466,8 +3517,8 @@
       <Item ItemId=";core.updateWebsiteUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure website URL(s) for debugging]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Nous mettrons à jour l’URL du site web des onglets suivants pour que vous puissiez commencer à utiliser le kit de ressources Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurer la ou les URL de site web pour le débogage]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[We will update the following tabs' website url for you to get started with Teams Toolkit]]></Val>
@@ -3625,7 +3676,7 @@
       <Item ItemId=";depChecker.failToInstallBicepOutputCLI" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion. please read this wiki (@HelpLink) to install @NameVersion manually.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nous n’avons pas pu installer @NameVersion. Veuillez lire ce wiki (@HelpLink) pour installer @NameVersion manuellement.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3637,7 +3688,7 @@
       <Item ItemId=";depChecker.failToInstallBicepOutputVSC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion. please read this wiki (@HelpLink) to install @NameVersion manually and restart Visual Studio Code.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nous n’avons pas pu installer @NameVersion. Veuillez lire ce wiki (@HelpLink) pour installer @NameVersion manuellement, puis redémarrer Visual Studio Code.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3748,8 +3799,8 @@
       <Item ItemId=";depChecker.globalFuncNodeNotMatched" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with your Azure Functions Core Tools (@FuncVersion). Please make sure your Azure Functions Core Tools works with your Node.js version. See (@link) for Azure Functions supported Node.js versions.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Votre propre version de Node.js (@NodeVersion) est incompatible avec votre propre système Azure Functions Core Tools (@FuncVersion). Veuillez vérifier que votre propre système Azure Functions Core Tools fonctionne avec votre version Node.js. Si vous souhaitez en savoir plus sur les versions de Node.js qui prennent en charge Azure Functions, veuillez consulter le lien (@link).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre version de Node.js (@NodeVersion) est incompatible avec votre propre système Azure Functions Core Tools (@FuncVersion). Veuillez vérifier que votre système Azure Functions Core Tools fonctionne avec votre version Node.js. Si vous souhaitez en savoir plus sur les versions de Node.js qui prennent en charge Azure Functions, veuillez consulter le lien (@link).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your own Node.js(@NodeVersion) is incompatible with your own Azure Functions Core Tools(@FuncVersion). Please make sure your own Azure Functions Core Tools works with your Node.js version. See (@link) to Azure Functions supported Node.js versions.]]></Val>
@@ -3817,8 +3868,8 @@
       <Item ItemId=";depChecker.portableFuncNodeNotMatched" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Votre propre version de Node.js (@NodeVersion) est incompatible avec Teams Toolkit Azure Functions Core Tools (@FuncVersion). Accédez à @Link pour installer Node.js (nous vous recommandons @RecommendedVersion).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre version de Node.js (@NodeVersion) est incompatible avec Teams Toolkit Azure Functions Core Tools (@FuncVersion). Accédez à @Link pour installer Node.js (nous vous recommandons @RecommendedVersion).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your own Node.js(@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools(@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
@@ -3856,8 +3907,8 @@
       <Item ItemId=";driver.aadApp.description.create" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create an Azure Active Directory app to authenticate users]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Créer une application AAD pour authentifier les utilisateurs]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer une application Azure Active Directory pour authentifier les utilisateurs]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create an AAD app to authenticate users]]></Val>
@@ -3868,8 +3919,8 @@
       <Item ItemId=";driver.aadApp.description.update" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Apply Azure Active Directory app manifest to an existing app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Appliquer le manifeste d'application AAD à une application AAD existante]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Appliquer le manifeste d’application Azure Active Directory à une application existante]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Apply AAD app manifest to an existing AAD app]]></Val>
@@ -3880,8 +3931,8 @@
       <Item ItemId=";driver.aadApp.error.generateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to generate Azure Active Directory app manifest.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Échec de la génération du manifeste de l’application AAD.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la génération du manifeste d’application Azure Active Directory.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to generate AAD app manifest.]]></Val>
@@ -3901,8 +3952,8 @@
       <Item ItemId=";driver.aadApp.error.invalidFieldInManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Field %s is missing or invalid in Azure Active Directory app manifest.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Le champ %s est manquant ou non valide dans le manifeste de l’application AAD.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le champ %s est manquant ou non valide dans les manifeste d’application Azure Active Directory.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Field %s is missing or invalid in AAD app manifest.]]></Val>
@@ -3922,8 +3973,8 @@
       <Item ItemId=";driver.aadApp.error.missingEnv" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s is not set.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La variable d’environnement %s %s n’est pas définie.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La variable d’environnement %s n’est pas définie.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[%s Environment variable %s is not set.]]></Val>
@@ -3961,8 +4012,8 @@
       <Item ItemId=";driver.aadApp.log.outputAadAppManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build Azure Active Directory app manifest completed, and app manifest content is written to %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Le contenu du manifeste de l’application AAD est écrit dans %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Génération du manifeste d’application Azure Active Directory terminée et le contenu du manifeste d’application est écrit dans %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[AAD app manifest content is written to %s]]></Val>
@@ -3973,8 +4024,8 @@
       <Item ItemId=";driver.aadApp.log.skipCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s already exist, skipping new Azure Active Directory app creation step.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La variable d’environnement %s existe déjà. Nouvelle étape de création d’application AAD ignorée.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La variable d’environnement %s existe déjà, en ignorant la nouvelle étape de création d’application Azure Active Directory.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s already exist, skipping new AAD app creation step.]]></Val>
@@ -3985,8 +4036,8 @@
       <Item ItemId=";driver.aadApp.log.skipGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s already exist, skipping Azure Active Directory app client secret generation step.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La variable d’environnement %s existe déjà. L’étape de génération de la clé secrète client de l’application AAD est ignorée.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La variable d’environnement %s existe déjà, en ignorant l’étape de génération du secret client de l’application Azure Active Directory.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s already exist, skipping AAD app client secret generation step.]]></Val>
@@ -3997,8 +4048,8 @@
       <Item ItemId=";driver.aadApp.log.startCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s does not exist, creating a new Azure Active Directory app...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La variable d’environnement %s n’existe pas, création d’une application AAD...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La variable d’environnement %s n’existe pas, création d’une application Azure Active Directory...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s does not exist, creating a new AAD app...]]></Val>
@@ -4018,8 +4069,8 @@
       <Item ItemId=";driver.aadApp.log.startGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s does not exist, generating client secret for Azure Active Directory app...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[La variable d’environnement %s n’existe pas, générant une clé secrète client pour l’application AAD...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La variable d’environnement %s n’existe pas, générant une clé secrète client pour l’application Azure Active Directory...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Environment variable %s does not exist, generating client secret for AAD app...]]></Val>
@@ -4072,8 +4123,8 @@
       <Item ItemId=";driver.aadApp.progressBar.createAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating Azure Active Directory application]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Création de l’application AAD]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Création d’une application Azure Active Directory]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Creating AAD application]]></Val>
@@ -4084,8 +4135,8 @@
       <Item ItemId=";driver.aadApp.progressBar.createAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating Azure Active Directory application]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Création de l’application AAD]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Création d’une application Azure Active Directory]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Creating AAD application]]></Val>
@@ -4105,8 +4156,8 @@
       <Item ItemId=";driver.aadApp.progressBar.updateAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Azure Active Directory application]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Mise à jour de l’application AAD]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mise à jour de l’application Azure Active Directory]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Updating AAD application]]></Val>
@@ -4117,8 +4168,8 @@
       <Item ItemId=";driver.aadApp.progressBar.updateAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Azure Active Directory application]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Mise à jour de l’application AAD]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mise à jour de l’application Azure Active Directory]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Updating AAD application]]></Val>
@@ -4129,8 +4180,8 @@
       <Item ItemId=";driver.arm.description.deploy" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploy the given ARM templates to Azure]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Déployer les modèles de bras donnés sur Azure]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Déployer les modèles ARM donnés sur Azure]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Deploy the given arm templates to Azure]]></Val>
@@ -4141,8 +4192,8 @@
       <Item ItemId=";driver.arm.error.CompileBicepFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to compile Bicep files to JSON ARM templates file: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Impossible de compiler les fichiers biceps dans le fichier de modèles de bras Json : %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la compilation des fichiers Bicep dans le fichier de modèles ARM JSON : %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to compile bicep files to Json arm templates file: %s]]></Val>
@@ -4153,8 +4204,8 @@
       <Item ItemId=";driver.arm.error.outputConversionFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There is a duplicated key %s in ARM deployment output]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Une clé dupliquée %s se trouve dans la sortie de déploiement arm]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Une clé dupliquée %s se trouve dans la sortie de déploiement ARM]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[There is a duplicated key %s in arm deployment output]]></Val>
@@ -4282,6 +4333,9 @@
       <Item ItemId=";driver.common.FailRetrieveAzureCredentialsRemoteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to retrieve Azure credentials due to remote service error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la récupération des informations d’identification Azure en raison d’une erreur du service distant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4297,24 +4351,36 @@
       <Item ItemId=";driver.common.suggestion.retryLater" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Veuillez réessayer.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.deploy.ClearStorageRemoteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to clear Azure Storage Account due to remote service error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’effacement du compte de stockage Azure en raison d’une erreur du service distant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.deploy.FailedListPublishingCredentialsRemoteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to list publishing credentials due to remote service error. ]A;Please check your account and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la liste des informations d’identification de publication en raison d’une erreur du service distant. ]A;Vérifiez votre compte et réessayez.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.deploy.UploadToStorageRemoteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to upload local path %s to Azure Storage Account due to remote service error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec du chargement du chemin d’accès local %s vers le compte de stockage Azure en raison d’une erreur du service distant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4348,12 +4414,18 @@
       <Item ItemId=";driver.deploy.checkContainerStaticWebsiteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check if the container %s enabled static website option.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de vérifier si le conteneur %s option de site web statique activée.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.deploy.checkContainerStaticWebsiteRemoteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check if the container %s enabled static website option due to remote service error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de vérifier si le conteneur %s option de site web statique activée en raison d’une erreur du service distant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4378,8 +4450,8 @@
       <Item ItemId=";driver.deploy.deployToAzureStorageDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[deploy the project to the Azure Storage.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[déployez le projet sur les stockages Azure.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[déployer le projet sur le stockage Azure.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[deploy the project to the Azure Storages.]]></Val>
@@ -4390,6 +4462,9 @@
       <Item ItemId=";driver.deploy.enableStaticWebsiteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to enable static website option for the container %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’activation de l’option de site web statique pour le conteneur %s.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4405,6 +4480,9 @@
       <Item ItemId=";driver.deploy.enableStaticWebsiteRemoteError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to enable static website option for the container %s due to remote service error.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’activation de l’option de site web statique pour le conteneur %s en raison d’une erreur du service distant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4438,6 +4516,9 @@
       <Item ItemId=";driver.deploy.error.restartWebAppError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to restart web app.]A;Please try to restart the web app manually if the app doesn't work properly.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec du redémarrage de l’application web.]A;Essayez de redémarrer l’application web manuellement si l’application ne fonctionne pas correctement.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4453,6 +4534,9 @@
       <Item ItemId=";driver.deploy.getStorageContainerError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to get storage container %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’obtention de la %s du conteneur de stockage.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4873,8 +4957,8 @@
       <Item ItemId=";driver.spfx.error.noValidAppCatelog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in %s to true if you want Teams Toolkit to create it for you or you can create it by yourself.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Votre client ne contient aucun catalogue d’applications valide. Vous pouvez mettre à jour la propriété « createAppCatalogIfNotExist » dans app.yml sur true si vous voulez que nous la créions pour vous. Sinon, vous pouvez la créer vous-même.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Il n’existe aucun catalogue d’applications valide dans votre locataire. Vous pouvez mettre à jour la propriété « createAppCatalogIfNotExist » dans %s sur true si vous souhaitez que le kit de ressources Teams la crée pour vous ou que vous pouvez la créer vous-même.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in app.yml to true if you want us to create it for you or you can create it by yourself.]]></Val>
@@ -5038,8 +5122,8 @@
       <Item ItemId=";driver.teamsApp.summary.copyAppPackageSuccess" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams app %s was successfully copied to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[L'application Teams %s a été copiée avec succès vers %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’application Teams %s a été copiée dans %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app %s was successfully copyed to %s.]]></Val>
@@ -5095,6 +5179,9 @@
       <Item ItemId=";driver.teamsApp.validate.skip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s action is currently skipped, will be updated in the future version.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s action est actuellement ignorée, sera mise à jour dans la prochaine version.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5122,8 +5209,8 @@
       <Item ItemId=";error.BicepGenerationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to generate Bicep file %s. Reason: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Impossible de générer le fichier biceps %s. Les raisons]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la génération du fichier Bicep %s. Raison : %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to generate bicep file %s. Reason: %s]]></Val>
@@ -5146,8 +5233,8 @@
       <Item ItemId=";error.ConsolidateCanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit (version <= 3.7.0).]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Si vous ne voulez pas mettre à niveau votre projet, installez une autre version du kit de ressources de Teams (version <= 3.7.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Si vous ne souhaitez pas mettre à niveau votre projet, installez une autre version du kit de ressources Teams (version <= 3.7.0).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 3.7.0).]]></Val>
@@ -5230,7 +5317,7 @@
       <Item ItemId=";error.InitializedFileExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Initialized file(s) %s already exist, clean up and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le ou les fichiers initialisés %s existent déjà, nettoyez et réessayez.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -5365,6 +5452,9 @@
       <Item ItemId=";error.NoM365Token" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to get M365 token JSON object]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’obtention de l’objet JSON de jeton M365]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5392,8 +5482,8 @@
       <Item ItemId=";error.NoTeamsAppTenantId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to get Teams app tenant id]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[ID de locataire de l’application Teams introuvable]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’obtention de l’ID de locataire de l’application Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cannot find Teams app tenant id]]></Val>
@@ -5476,8 +5566,8 @@
       <Item ItemId=";error.ProjectFolderInvalidError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Path %s is invalid, set valid root folder in user settings(Use absolute directory or relative directory start with \${homeDir} ).]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Le chemin %s n’est pas valide. Définissez un dossier racine valide dans les paramètres utilisateur (utilisez le répertoire absolu ou le répertoire relatif commençant par \${homeDir}).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le chemin %s n’est pas valide, définissez un dossier racine valide dans les paramètres utilisateur (utilisez un répertoire absolu ou un répertoire relatif commençant par \${homeDir}).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Path %s is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \${homeDir} ).]]></Val>
@@ -5554,8 +5644,8 @@
       <Item ItemId=";error.UpgradeCanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit (version <= 2.10.0).]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Si vous ne voulez pas mettre à niveau votre projet, installez une autre version de Teams Toolkit (version <= 2.10.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Si vous ne souhaitez pas mettre à niveau votre projet, installez une autre version du kit de ressources Teams (version <= 2.10.0).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).]]></Val>
@@ -5566,7 +5656,7 @@
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Si vous ne souhaitez pas mettre à niveau votre projet, veuillez installer une autre version de Teams Toolkit dans %s en fonction de la version %s du projet.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -5578,8 +5668,8 @@
       <Item ItemId=";error.VideoFilterAppNotRemoteSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Video filter app in remote is not supported by Teams Toolkit. Check the README.md file in project root folder.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[L’application de filtre vidéo à distance n’est pas prise en charge par le kit de ressources Teams. Vérifiez le fichier README.md dans le dossier racine du projet.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’application de filtre vidéo à distance n’est pas prise en charge par le Kit de ressources Teams. Vérifiez le fichier README.md dans le dossier racine du projet.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Video filter app in remote is not supported by Teams Toolkit. Please check the README.md file in project root folder.]]></Val>
@@ -6157,7 +6247,7 @@
       <Item ItemId=";error.apiConnector.ApiConnectorInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API connector input %s is invalid]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le %s d’entrée du connecteur d’API n’est pas valide.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -6463,8 +6553,8 @@
       <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Manually update the app id and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Une application Teams avec cet ID existe déjà dans le magasin d’applications de votre organisation. Mettez à jour manuellement l’ID d’application et réessayez.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Une application Teams avec cet ID existe déjà dans l’App Store de votre organisation. Mettez à jour manuellement l’ID d’application et réessayez.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
@@ -6730,7 +6820,7 @@
       <Item ItemId=";error.rgUnauthorizedError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unauthorized to check the existence of resource group '%s' in subscription '%s'. Check your Azure subscription.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Non autorisé à vérifier l’existence du groupe de ressources « %s » dans l’abonnement « %s ». Vérifiez votre abonnement Azure.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -6871,8 +6961,8 @@
       <Item ItemId=";error.sql.GetDetail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Get the detailed error message in [output]5D;(command:fx-extension.showOutputChannel).]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Obtenez le message d’erreur détaillé dans la sortie.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Obtenez le message d’erreur détaillé dans [output]5D;(command:fx-extension.showOutputChannel).]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Get the detailed error message in output.]]></Val>
@@ -7165,7 +7255,7 @@
       <Item ItemId=";plugins.apiConnector.Notification.GenerateFiles" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[We have generated sample code to call your API at %s. Open the file(s) and follow the instructions in it to start invoking your APIs.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nous avons généré un exemple de code pour appeler votre API à %s. Ouvrez le ou les fichiers et suivez les instructions qu’il contient pour commencer à appeler vos API.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -7294,8 +7384,8 @@
       <Item ItemId=";plugins.apiConnector.functionOption.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Functions App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Application de fonction Azure]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Application Azure Functions]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Azure Function App]]></Val>
@@ -7525,8 +7615,8 @@
       <Item ItemId=";plugins.apim.QuestionConstants.CLI.ApiId.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The unique name of the API to be updated.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Nom unique de l’API à mettre à jour]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nom unique de l’API à mettre à jour.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The unique name of the api to be updated.]]></Val>
@@ -8065,8 +8155,8 @@
       <Item ItemId=";plugins.appstudio.publishSucceedNotice.cli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; has been successfully published to the Admin Portal (%s). Once approved, your app will be available for your organization. Learn more from %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[[%s]5D; a été publiée avec succès sur le portail d'administration (%s). Une fois approuvée, votre application sera disponible pour votre organisation. En savoir plus sur %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; a été publié sur le portail d’administration (%s). Une fois approuvée, votre application sera disponible pour votre organisation. Apprenez-en davantage à partir de %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[[%s]5D; successfully published to the admin portal(%s). Once approved, your app will be available for your organization. Learn more from %s.]]></Val>
@@ -8335,7 +8425,7 @@
       <Item ItemId=";plugins.bot.FailToCallAppStudioApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to call Developer Portal's API to check AAD application's existence.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec de l’appel de l’API de Developer Portal pour vérifier l’existence de l’application AAD.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -8383,8 +8473,8 @@
       <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot create bot with id %s which may be taken by an existing bot. Visit %s to learn more.]A;Or API call to Developer Portal failed: Error, Request failed with status code 500, API name: create-bot, X-Correlation-ID: undefined. This may come from some intermittent service error. Please wait for a few minutes and retry.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Impossible d’obtenir le bot avec l’ID %s qui a été créé auparavant. ]A;Cela peut se produire si le bot a été créé par un autre compte. Visitez %s pour en savoir plus.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de créer un bot avec l’ID %s qui peut être pris par un bot existant. Visitez %s pour en savoir plus.]A;Ou l’appel d’API à Developer Portal a échoué : erreur, échec de la demande avec le code d’état 500, nom de l’API : create-bot, X-Correlation-ID : non défini. Cela peut provenir d’une erreur intermittente de service. Veuillez patienter quelques minutes et réessayer.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
@@ -8797,8 +8887,8 @@
       <Item ItemId=";plugins.cicd.result.scaffold.skipped" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You have already created template(s) of %s using %s for %s environment, customize it or remove it to create a new one.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Vous avez déjà créé un ou plusieurs modèles de %s à l’aide de %s pour %s environnement. Personnalisez-le ou supprimez-le pour en créer un nouveau.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous avez déjà créé un ou plusieurs modèles de %s à l’aide de %s pour l’environnement %s, le personnaliser ou le supprimer pour en créer un nouveau.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You have already created template(s) of %s using %s for %s environment, please customize it or remove it to create a new one.]]></Val>
@@ -8809,8 +8899,8 @@
       <Item ItemId=";plugins.cicd.suggestions.checkPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Check if you got sufficient permission.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Vérifiez si vous disposez des autorisations suffisantes.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vérifiez si vous disposez d’une autorisation suffisante.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Please check if you got sufficient permission.]]></Val>
@@ -9088,7 +9178,7 @@
       <Item ItemId=";plugins.spfx.deployFailedNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, use site admin account, or you can get your own free Microsoft 365 tenant from [Microsoft 365 developer program]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vous n'avez pas l'autorisation de télécharger et de déployer un package sur App Catalog %s, veuillez utiliser le compte d'administration du site, ou vous pouvez obtenir votre propre locataire Microsoft 365 gratuit à partir de [Programme pour les développeurs Microsoft 365]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program).]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -9127,7 +9217,7 @@
       <Item ItemId=";plugins.spfx.error.noConfiguration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There's no .yo-rc.json file in your SPFx project, add the configuration file and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Votre projet SPFx ne contient aucun fichier .yo-rc.json. Ajoutez le fichier de configuration, puis réessayez.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -9160,7 +9250,7 @@
       <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[NPM not found on your machine. Install the supported version.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[NPM introuvable sur votre ordinateur. Installez la version prise en charge.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -9184,7 +9274,7 @@
       <Item ItemId=";plugins.spfx.insufficientPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, use site admin account.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vous n’êtes pas autorisé à charger et déployer le package sur le catalogue d’applications %s. Utilisez le compte d’administrateur de site.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -9214,7 +9304,7 @@
       <Item ItemId=";plugins.spfx.questions.webpartName.error.duplicate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The folder %s already exists. Choose a different name for your component.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le dossier %s existe déjà. Choisissez un autre nom pour votre composant.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -9436,7 +9526,7 @@
       <Item ItemId=";suggestions.retryTheCurrentStep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Retry the current step.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Réessayez l’étape actuelle.]]></Val>
           </Tgt>
           <Prev Cat="Text">

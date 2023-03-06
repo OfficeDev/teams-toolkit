@@ -49,6 +49,7 @@ export enum ExtensionErrors {
   TunnelEnvError = "TunnelEnvError",
   StartTunnelError = "StartTunnelError",
   NgrokTimeoutError = "NgrokTimeoutError",
+  LaunchTeamsWebClientError = "LaunchTeamsWebClientError",
   SetUpTabError = "SetUpTabError",
   SetUpBotError = "SetUpBotError",
   SetUpSSOError = "SetUpSSOError",

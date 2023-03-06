@@ -824,6 +824,10 @@
               {
                 "const": "deploy",
                 "description": "%teamstoolkit.taskDefinitions.command.deploy.description%"
+              },
+              {
+                "const": "launch-web-client",
+                "description": "%teamstoolkit.taskDefinitions.command.launchWebClient.description%"
               }
             ]
           },

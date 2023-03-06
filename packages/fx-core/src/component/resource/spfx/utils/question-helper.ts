@@ -14,7 +14,7 @@ export class PackageSelectOptionsHelper {
 
     versions = await Promise.all([
       Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 5, false),
-      Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 0.0000001),
+      Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
     ]);
 
     PackageSelectOptionsHelper.options = [

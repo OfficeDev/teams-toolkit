@@ -117,7 +117,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     await this.outputStartMessage(devTunnelDisplayMessages);
     await this.outputStartDevTunnelStepMessage(devTunnelDisplayMessages);
     await this.resolveArgs(this.args);
-    // TODO: delete the last debug tunnel if it is not deleted
+    await this.deleteExistingTunnel();
     const res = await this.start();
     if (res.isOk()) {
       await new Promise<void>((resolve) => {
@@ -131,6 +131,36 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       });
     }
     return res;
+  }
+
+  private async deleteExistingTunnel(): Promise<void> {
+    try {
+      if (!this.args?.output?.id) {
+        return;
+      }
+
+      const envsRes = await this.readPropertiesFromEnv(this.args.env);
+      if (envsRes.isErr()) {
+        return;
+      }
+      const id = envsRes.value[this.args.output.id];
+
+      const idArr = id?.split(".");
+      if (!idArr || idArr.length !== 2) {
+        return;
+      }
+
+      const tunnelInstance = await this.tunnelManagementClientImpl.getTunnel({
+        tunnelId: idArr[0],
+        clusterId: idArr[1],
+      });
+
+      if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
+        await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
+      }
+    } catch {
+      // Do nothing if delete existing tunnel failed.
+    }
   }
 
   private async start(): Promise<Result<Void, FxError>> {

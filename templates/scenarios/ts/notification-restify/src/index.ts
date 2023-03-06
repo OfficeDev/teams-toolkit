@@ -36,7 +36,7 @@ server.post(
           title: "New Event Occurred!",
           appName: "Contoso App Notification",
           description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://www.adaptivecards.io/",
+          notificationUrl: "https://aka.ms/teamsfx-notification-new",
         })
       );
 

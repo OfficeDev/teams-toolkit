@@ -174,3 +174,8 @@ export const Prerequisite = Object.freeze({
   portOccupancy: "portOccupancy",
   vxTestApp: "vxTestApp", // TODO(aochengwang): maybe change app name
 });
+
+export const TunnelType = Object.freeze({
+  devTunnel: "dev-tunnel",
+  ngrok: "ngrok",
+});

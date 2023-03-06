@@ -527,6 +527,7 @@ describe("debugMigration", () => {
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
+              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
@@ -582,6 +583,7 @@ describe("debugMigration", () => {
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
+              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "ngrokPath": "ngrok",
               "env": "local",
@@ -1347,6 +1349,7 @@ describe("debugMigration", () => {
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
+              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
@@ -1403,6 +1406,7 @@ describe("debugMigration", () => {
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
+              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
@@ -1464,6 +1468,7 @@ describe("debugMigration", () => {
             "bot npm install"
           ],
           "args": {
+              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {

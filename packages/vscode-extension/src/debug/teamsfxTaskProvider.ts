@@ -16,7 +16,7 @@ import {
   v2,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { isV3Enabled, ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import { isV3Enabled, ProgrammingLanguage, TunnelType } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
@@ -52,7 +52,6 @@ import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import * as globalVariables from "../globalVariables";
 import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
-import { TunnelType } from "./taskTerminal/baseTunnelTaskTerminal";
 import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
 
 const customTasks = Object.freeze({

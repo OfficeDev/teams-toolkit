@@ -320,12 +320,6 @@ export const RegularExpr = {
   validFunctionNamePattern: /^[a-zA-Z][\w-]{0,126}$/,
 };
 
-export const TeamsFxUrlNames = {
-  createBot: "<create-bot-registration>",
-  getBot: "<get-bot-registration>",
-  updateEndpoint: "<update-message-endpoint>",
-};
-
 /**
  * Void is used to construct Result<Void, FxError>.
  * e.g. return ok(Void);

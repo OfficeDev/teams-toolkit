@@ -22,15 +22,14 @@ import { setTools } from "../../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { ComponentNames } from "../../../../src/component/constants";
-import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { TeamsfxCore } from "../../../../src/component/core";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { provisionUtils } from "../../../../src/component/provisionUtils";
-import { ErrorNames, TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
+import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
 
 describe("Bot service telemetry helper", () => {
   const tools = new MockTools();
@@ -60,6 +59,8 @@ describe("Bot service telemetry helper", () => {
       botId: "",
       botPassword: "botPassword",
     };
+    sandbox.stub(AppStudio, "sendStartEvent").returns();
+    sandbox.stub(AppStudio, "sendSuccessEvent").returns();
   });
 
   afterEach(() => {

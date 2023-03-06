@@ -18,6 +18,7 @@ import {
   isVideoFilterProject,
   setRegion,
   ConvertTokenToJson,
+  getSPFxToken,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -37,6 +38,8 @@ import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import mockedEnv from "mocked-env";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
+import { TOOLS } from "../../src/core/globalVars";
+import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
 
@@ -533,6 +536,18 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("ConvertTokenToJson", async () => {
       const res = ConvertTokenToJson("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c");
       chai.expect(res["userId"]).equal("test@test.com");
+    });
+  });
+  describe("getSPFxToken", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy path", async () => {
+      const mockTools = new MockTools();
+      sinon.stub(mockTools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("xxx"));
+      sinon.stub(axios, "get").resolves({ data: { webUrl: "122" } });
+      const res = await getSPFxToken(mockTools.tokenProvider.m365TokenProvider);
     });
   });
 });

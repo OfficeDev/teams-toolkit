@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import "./teamsApp/create";
 import "./teamsApp/validate";
 import "./teamsApp/configure";
@@ -18,6 +21,7 @@ import "./deploy/spfx/deployDriver";
 import "./script/dotnetBuildDriver";
 import "./script/npmBuildDriver";
 import "./script/npxBuildDriver";
+import "./script/scriptDriver";
 import "./prerequisite/installDriver";
 import "./file/updateEnv";
 import "./file/updateJson";

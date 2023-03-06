@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
 export enum BotChannelType {
   MicrosoftTeams = "msteams",
   M365Extensions = "m365extensions",

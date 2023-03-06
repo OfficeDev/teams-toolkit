@@ -20,4 +20,6 @@ export class TelemetryConstant {
   public static readonly DEPLOY_COMPONENT_NAME = "deploy";
   // the component name of the provision life cycle
   public static readonly PROVISION_COMPONENT_NAME = "provision";
+  // the script component name
+  public static readonly SCRIPT_COMPONENT = "script";
 }

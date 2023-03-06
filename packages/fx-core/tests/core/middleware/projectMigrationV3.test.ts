@@ -39,7 +39,7 @@ import {
   errorNames,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { UpgradeCanceledError } from "../../../src/core/error";
+import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../src/core/error";
 import {
   Metadata,
   MetadataV2,
@@ -57,7 +57,6 @@ import {
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../src/core/middleware/types";
-import { isMigrationV3Enabled } from "../../../src/common/tools";
 import * as loader from "../../../src/core/middleware/projectSettingsLoader";
 import { SettingsUtils } from "../../../src/component/utils/settingsUtil";
 
@@ -155,6 +154,31 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
+  });
+
+  it("happy path run error - notAllowedMigrationError", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [ProjectMigratorMWV3],
+    });
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true, nonInteractive: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+      assert.instanceOf((res as any).error, NotAllowedMigrationError);
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
   });
 });
 
@@ -619,8 +643,7 @@ describe("manifestsMigration", () => {
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
-    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
-    await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
+    await copyTestProject(Constants.manifestsMigrationHappyPathWithoutAad, projectPath);
 
     // Action
     await manifestsMigration(migrationContext);
@@ -648,6 +671,42 @@ describe("manifestsMigration", () => {
 
     const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
     assert.isFalse(await fs.pathExists(aadManifestPath));
+  });
+
+  it("happy path: project created with ttk <= 4.0.0 with single teams app manifest", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathOld, projectPath);
+
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, errorNames.aadManifestTemplateNotExist);
+    }
+  });
+
+  it("happy path: project created with ttk <= 4.0.0 with two teams app manifest", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathOld, projectPath);
+    await fs.rename(
+      path.join(projectPath, "templates", "appPackage", "manifest.template.json"),
+      path.join(projectPath, "templates", "appPackage", "manifest.local.template.json")
+    );
+    await fs.copy(
+      path.join(projectPath, "templates", "appPackage", "manifest.local.template.json"),
+      path.join(projectPath, "templates", "appPackage", "manifest.remote.template.json")
+    );
+
+    try {
+      await manifestsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, errorNames.manifestTemplateNotExist);
+    }
   });
 
   it("migrate manifests failed: appPackage does not exist", async () => {
@@ -697,7 +756,7 @@ describe("manifestsMigration", () => {
       assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
-        "templates/appPackage/manifest.template.json does not exist"
+        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first."
       );
     }
   });
@@ -1262,11 +1321,6 @@ describe("Migration utils", () => {
     version.platform = Platform.CLI;
     migrationNotificationMessage(version);
   });
-
-  it("isMigrationV3Enabled", () => {
-    const enabled = isMigrationV3Enabled();
-    assert.isFalse(enabled);
-  });
 });
 
 describe("Migration show notification", () => {
@@ -1498,7 +1552,9 @@ const Constants = {
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsapp.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
+  manifestsMigrationHappyPathWithoutAad: "manifestsHappyPathWithoutAad",
   manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
+  manifestsMigrationHappyPathOld: "manifestsMigrationHappyPathOld",
   launchJsonPath: ".vscode/launch.json",
   happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
   happyPathAadManifestTemplateExist:

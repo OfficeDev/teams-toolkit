@@ -132,7 +132,6 @@ export function createResourcesTask(label: string): CommentJSONValue {
     type: "teamsfx",
     command: "provision",
     args: {
-      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -149,7 +148,6 @@ export function setUpLocalProjectsTask(label: string): CommentJSONValue {
     type: "teamsfx",
     command: "deploy",
     args: {
-      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -296,4 +294,24 @@ export function startBotTask(label: string, programmingLanguage?: string): Comme
     },
   };
   return assign(parse("{}"), task);
+}
+
+export function launchRemote(
+  hubName: string,
+  browserType: string,
+  browserName: string,
+  url: string,
+  order: number
+): Record<string, unknown> {
+  return {
+    name: `Launch Remote in ${hubName} (${browserName})`,
+    type: browserType,
+    request: "launch",
+    url,
+    presentation: {
+      group: `group ${order}: ${hubName}`,
+      order: 3,
+    },
+    internalConsoleOptions: "neverOpen",
+  };
 }

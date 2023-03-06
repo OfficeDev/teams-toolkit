@@ -4,7 +4,7 @@
 /**
  * @author Ivan Jobs <ruhe@microsoft.com>
  */
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import "mocha";
 import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/core/globalVars";
@@ -17,6 +17,7 @@ import { ErrorNames } from "../../../../src/component/resource/botService/consta
 import { Messages } from "./messages";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
+import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
 
 describe("AppStudio Client", () => {
   const tools = new MockTools();
@@ -43,12 +44,16 @@ describe("AppStudio Client", () => {
         status: 200,
         data: sampleBot,
       });
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
       // Act
       const res = await AppStudioClient.getBotRegistration("anything", "anything");
 
       // Assert
       assert.isTrue(res !== undefined);
       assert.isTrue(res?.botId === sampleBot.botId);
+      expect(startStub.calledOnce).to.be.true;
+      expect(successStub.calledOnce).to.be.true;
     });
 
     it("Should return a undefined when 404 was throwed out", async () => {
@@ -60,12 +65,16 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act
       const res = await AppStudioClient.getBotRegistration("anything", "anything");
 
       // Assert
       assert.isUndefined(res);
+      expect(startStub.calledOnce).to.be.true;
+      expect(successStub.calledOnce).to.be.false;
     });
 
     it("Should throw NotAllowedToAcquireToken error when 401 was throwed out", async () => {
@@ -77,6 +86,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -84,6 +95,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -98,6 +111,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -105,6 +120,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
   });
@@ -123,10 +140,14 @@ describe("AppStudio Client", () => {
         data: sampleBot,
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
         await AppStudioClient.createBotRegistration("anything", sampleBot);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.true;
       } catch (e) {
         assert.fail(Messages.ShouldNotReachHere);
       }
@@ -135,10 +156,14 @@ describe("AppStudio Client", () => {
     it("Bot registration creation should be skipped (existing bot case).", async () => {
       // Arrange
       sandbox.stub(AppStudioClient, "getBotRegistration").resolves(sampleBot);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
         await AppStudioClient.createBotRegistration("anything", sampleBot);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.true;
       } catch (e) {
         assert.fail(Messages.ShouldNotReachHere);
       }
@@ -154,6 +179,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -161,6 +188,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -174,6 +203,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -181,6 +212,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -194,6 +227,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -201,6 +236,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -216,6 +253,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -223,6 +262,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
   });
@@ -240,10 +281,14 @@ describe("AppStudio Client", () => {
         data: sampleBot,
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
         await AppStudioClient.updateBotRegistration("anything", sampleBot);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.true;
       } catch (e) {
         assert.fail(Messages.ShouldNotReachHere);
       }
@@ -258,6 +303,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -265,6 +312,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -277,6 +326,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -284,6 +335,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -296,6 +349,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -303,6 +358,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
 
@@ -317,6 +374,8 @@ describe("AppStudio Client", () => {
         },
       });
       sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
+      const startStub = sandbox.stub(AppStudio, "sendStartEvent").returns();
+      const successStub = sandbox.stub(AppStudio, "sendSuccessEvent").returns();
 
       // Act & Assert
       try {
@@ -324,6 +383,8 @@ describe("AppStudio Client", () => {
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
         assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
+        expect(startStub.calledOnce).to.be.true;
+        expect(successStub.calledOnce).to.be.false;
       }
     });
   });
@@ -337,6 +398,8 @@ describe("AppStudio Client", () => {
       // Arrange
       sandbox.stub(AppStudioClient, "getBotRegistration").resolves(sampleBot);
       sandbox.stub(AppStudioClient, "updateBotRegistration").resolves();
+      sandbox.stub(AppStudio, "sendStartEvent").returns();
+      sandbox.stub(AppStudio, "sendSuccessEvent").returns();
       // Act & Assert
       try {
         await AppStudioClient.updateMessageEndpoint("anything", "anything", "anything");

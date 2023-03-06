@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan Jobs <ruhe@microsoft.com>
+ */
 import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, default as axios } from "axios";
@@ -22,7 +25,22 @@ import { FxBotPluginResultFactory } from "../result";
 import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient";
 import { isHappyResponse } from "../common";
 import { HttpStatusCode } from "../../../constant/commonConstant";
-import { TeamsFxUrlNames } from "../../../constants";
+import { TeamsFxUrlNames } from "../constants";
+
+export function handleBotFrameworkError(e: any, apiName: string): void | undefined {
+  if (e.response?.status === HttpStatusCode.NOTFOUND) {
+    return undefined; // Stands for NotFound.
+  } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
+    throw new BotFrameworkNotAllowedToAcquireTokenError();
+  } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
+    throw new BotFrameworkForbiddenResultError();
+  } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
+    throw new BotFrameworkConflictResultError();
+  } else {
+    e.teamsfxUrlName = TeamsFxUrlNames[apiName];
+    throw AppStudio.wrapException(e, apiName) as SystemError;
+  }
+}
 
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
@@ -64,6 +82,7 @@ export class AppStudioClient {
     token: string,
     botId: string
   ): Promise<IBotRegistration | undefined> {
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.GET_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -72,21 +91,14 @@ export class AppStudioClient {
       );
       if (isHappyResponse(response)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.GET_BOT);
         return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
         throw new Error("Failed to get data");
       }
     } catch (e) {
-      if (e.response?.status === HttpStatusCode.NOTFOUND) {
-        return undefined; // Stands for NotFound.
-      } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
-        throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else {
-        // Potential live site issue cases.
-        e.teamsfxUrlName = TeamsFxUrlNames.getBot;
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT) as SystemError;
-      }
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
     }
   }
 
@@ -96,12 +108,14 @@ export class AppStudioClient {
     checkExistence = true,
     context?: ResourceContextV3
   ): Promise<void> {
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     if (registration.botId && checkExistence) {
       const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
         return;
       }
     }
@@ -113,17 +127,9 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
       }
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     } catch (e) {
-      if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
-        throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
-        throw new BotFrameworkForbiddenResultError();
-      } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
-        throw new BotFrameworkConflictResultError();
-      } else {
-        e.teamsfxUrlName = TeamsFxUrlNames.createBot;
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.CREATE_BOT) as SystemError;
-      }
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT);
     }
 
     return;
@@ -153,6 +159,7 @@ export class AppStudioClient {
     token: string,
     botReg: IBotRegistration
   ): Promise<void> {
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -162,17 +169,9 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     } catch (e) {
-      if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
-        throw new BotFrameworkNotAllowedToAcquireTokenError();
-      } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
-        throw new BotFrameworkForbiddenResultError();
-      } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
-        throw new BotFrameworkConflictResultError();
-      } else {
-        e.teamsfxUrlName = TeamsFxUrlNames.updateEndpoint;
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_BOT) as SystemError;
-      }
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
     }
 
     return;

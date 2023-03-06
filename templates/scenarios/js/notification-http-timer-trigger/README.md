@@ -29,12 +29,12 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 >
 > To run the notification bot template in your local dev machine, you will need:
 >
-> - `Node.js` installed locally (recommended version: 16)
+> - [Node.js](https://nodejs.org/), supported versions: 14, 16, 18 (preview)
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
 >
-> Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-notification#customize-installation).
+> Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-notification-new#customize-installation).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -47,17 +47,19 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 
 The bot will send an Adaptive Card to Teams:
 
-![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/166959087-a13abe67-e18a-4979-ab29-a8d7663b3489.png)
+![Notification Message in Teams](https://user-images.githubusercontent.com/7642967/223006044-5003574e-2aee-4a41-9b71-c103d0439012.png)
 
 ## What's included in the template
 
-| Folder | Contents |
+| Folder / File | Contents |
 | - | - |
-| `teamsfx` | Project level settings, configurations, and environment information |
-| `.vscode` | VSCode files for debugging |
-| `src` | The source code for the notification Teams application |
-| `appPackage` | Templates for the Teams application manifest |
-| `teamsfx` | Templates for provisioning Azure resources |
+| `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
+| `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
+| `.vscode/` | VSCode files for debugging |
+| `appPackage/` | Templates for the Teams application manifest |
+| `infra/` | Templates for provisioning Azure resources |
+| `src/` | The source code for the notification Teams application |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
@@ -65,6 +67,7 @@ The following files can be customized and demonstrate an example implementation 
 | - | - |
 | `*Trigger/function.json` | Azure Function bindings for the notification trigger |
 | `src/*Trigger.js` | Notification trigger implementation |
+| `src/teamsBot.js` | An empty teams activity handler for bot customization |
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
 | `src/cardModels.js` | The default Adaptive Card data model |
 
@@ -119,23 +122,23 @@ You can also add new cards if needed. Follow this [sample](https://aka.ms/teamsf
 
 Notifications can be sent to where the bot is installed:
 
-- [Send notifications to a channel](https://aka.ms/teamsfx-notification#send-notifications-to-a-channel)
-- [Send notifications to a group chat](https://aka.ms/teamsfx-notification#send-notifications-to-a-group-chat)
-- [Send notifications to a personal chat](https://aka.ms/teamsfx-notification#send-notifications-to-a-personal-chat)
+- [Send notifications to a channel](https://aka.ms/teamsfx-notification-new#send-notifications-to-a-channel)
+- [Send notifications to a group chat](https://aka.ms/teamsfx-notification-new#send-notifications-to-a-group-chat)
+- [Send notifications to a personal chat](https://aka.ms/teamsfx-notification-new#send-notifications-to-a-personal-chat)
 
 You can also send the notifications to a specific receiver:
 
-- [Send notifications to a specific channel](https://aka.ms/teamsfx-notification#send-notifications-to-a-specific-channel)
-- [Send notifications to a specific person](https://aka.ms/teamsfx-notification#send-notifications-to-a-specific-person)
+- [Send notifications to a specific channel](https://aka.ms/teamsfx-notification-new#send-notifications-to-a-specific-channel)
+- [Send notifications to a specific person](https://aka.ms/teamsfx-notification-new#send-notifications-to-a-specific-person)
 
-Congratulations, you've just created your own notification! To learn more about extending the notification bot template, [visit the documentation on Github](https://aka.ms/teamsfx-notification). You can find more scenarios like:
+Congratulations, you've just created your own notification! To learn more about extending the notification bot template, [visit the documentation on Github](https://aka.ms/teamsfx-notification-new). You can find more scenarios like:
 
-- [Customize storage](https://aka.ms/teamsfx-notification#customize-storage)
-- [Customize adapter](https://aka.ms/teamsfx-notification#customize-adapter)
-- [Customize the way to initialize the bot](https://aka.ms/teamsfx-notification#customize-initialization)
-- [Add authentication for your notification API](https://aka.ms/teamsfx-notification#add-authentication-for-your-notification-api)
-- [Connect to existing APIs](https://aka.ms/teamsfx-notification#connect-to-existing-api)
-- [Frequently asked questions](https://aka.ms/teamsfx-notification#frequently-asked-questions)
+- [Customize storage](https://aka.ms/teamsfx-notification-new#customize-storage)
+- [Customize adapter](https://aka.ms/teamsfx-notification-new#customize-adapter)
+- [Customize the way to initialize the bot](https://aka.ms/teamsfx-notification-new#customize-initialization)
+- [Add authentication for your notification API](https://aka.ms/teamsfx-notification-new#add-authentication-for-your-notification-api)
+- [Connect to existing APIs](https://aka.ms/teamsfx-notification-new#connect-to-existing-api)
+- [Frequently asked questions](https://aka.ms/teamsfx-notification-new#frequently-asked-questions)
 
 ## Extend notification bot with other bot scenarios
 
@@ -143,11 +146,11 @@ Notification bot is compatible with other bot scenarios like command bot and wor
 
 ### Add command to your application
 
-The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message and respond to commands with Adaptive Cards. Follow the [steps here](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add the command response feature to your workflow bot. Refer [the command bot document](https://aka.ms/teamsfx-command-response) for more information.
+The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message and respond to commands with Adaptive Cards. Follow the [steps here](https://aka.ms/teamsfx-command-new#How-to-add-more-command-and-response) to add the command response feature to your workflow bot. Refer [the command bot document](https://aka.ms/teamsfx-command-new) for more information.
 
 ### Add workflow to your notification bot
 
-Adaptive cards can be updated on user action to allow user progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-card-action-response#add-more-card-actions) to add workflow feature to your command bot. Refer [the workflow document](https://aka.ms/teamsfx-card-action-response) for more information.
+Adaptive cards can be updated on user action to allow user progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-workflow-new#add-more-card-actions) to add workflow feature to your command bot. Refer [the workflow document](https://aka.ms/teamsfx-workflow-new) for more information.
 
 ## Additional information and references
 

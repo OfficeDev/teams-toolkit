@@ -28,6 +28,7 @@ import {
   VsCodeEnv,
   PathNotExistError,
   UserCancelError,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -396,7 +397,7 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
-      let tutorialOptions: StaticOptions[] = [];
+      let tutorialOptions: OptionItem[] = [];
       sinon.stub(extension, "VS_CODE_UI").value({
         selectOption: (options: any) => {
           tutorialOptions = options.options;
@@ -409,6 +410,7 @@ describe("handlers", () => {
 
       chai.assert.equal(tutorialOptions.length, 6);
       chai.assert.isTrue(result.isOk());
+      chai.assert.equal(tutorialOptions[0].data, "https://aka.ms/teamsfx-card-action-response");
     });
 
     it("selectTutorialsHandler() - v3", async () => {
@@ -417,7 +419,7 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
-      let tutorialOptions: StaticOptions[] = [];
+      let tutorialOptions: OptionItem[] = [];
       sinon.stub(extension, "VS_CODE_UI").value({
         selectOption: (options: any) => {
           tutorialOptions = options.options;
@@ -428,8 +430,9 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 15);
+      chai.assert.equal(tutorialOptions.length, 16);
       chai.assert.isTrue(result.isOk());
+      chai.assert.equal(tutorialOptions[1].data, "https://aka.ms/teamsfx-notification-new");
     });
   });
 
@@ -1113,6 +1116,29 @@ describe("handlers", () => {
 
       const result = await handlers.manageCollaboratorHandler();
       chai.expect(result.isOk()).equals(true);
+    });
+
+    it("happy path: list collaborator throws error", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
+      });
+      sandbox.stub(MockCore.prototype, "listCollaborator").throws(new Error("Error"));
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isErr()).equals(true);
     });
 
     it("User Cancel", async () => {

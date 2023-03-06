@@ -1,28 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as sinon from "sinon";
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
-import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import * as appService from "@azure/arm-appservice";
+import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/tools";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
+import * as appService from "@azure/arm-appservice";
+import * as Models from "@azure/arm-appservice/src/models";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { expect, assert } from "chai";
 import * as fs from "fs-extra";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
-import * as Models from "@azure/arm-appservice/src/models";
-import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
-import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 import { ProgressMessages } from "../../../../../src/component/messages";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -61,10 +64,20 @@ describe("Azure App Service Deploy Driver test", () => {
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
+    const progressHandler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    const ui = new MockUserInteraction();
+    sandbox.stub(ui, "createProgressBar").returns(progressHandler);
+    const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+    const progressEndCaller = sandbox.stub(progressHandler, "end").resolves();
+
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -99,6 +112,9 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(6);
+    expect(progressEndCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
@@ -222,28 +238,6 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-  });
-
-  it("zip deploy need acceleration", async () => {
-    const args = {
-      workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
-      ignoreFile: "./ignore",
-      resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
-    } as DeployArgs;
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-    } as DriverContext;
-    context.logProvider.info = async (msg: string | Array<any>) => {
-      console.log(msg);
-      return Promise.resolve(true);
-    };
-    const deploy = new AzureZipDeployImpl(args, context, "", "", [], []);
-    sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
-    await deploy.run();
   });
 
   it("should thrown when deploy remote 500 error", async () => {
@@ -373,10 +367,21 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
       dryRun: true,
     } as DeployArgs;
+
+    const progressHandler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    const ui = new MockUserInteraction();
+    sandbox.stub(ui, "createProgressBar").returns(progressHandler);
+    const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+    const progressEndCaller = sandbox.stub(progressHandler, "end").resolves();
+
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -412,6 +417,9 @@ describe("Azure App Service Deploy Driver test", () => {
     const res = await deploy.execute(args, context);
     assert.equal(res.result.isOk(), true);
     assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+    // dry run will have only one progress step
+    assert.equal(progressNextCaller.callCount, 1);
+    expect(progressEndCaller.callCount).to.equal(1);
   });
 
   it("list credential error", async () => {

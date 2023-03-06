@@ -22,18 +22,19 @@ import { setTools } from "../../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { BotService } from "../../../../src/component/resource/botService/botService";
-import { ComponentNames, TeamsFxUrlNames } from "../../../../src/component/constants";
+import { ComponentNames } from "../../../../src/component/constants";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { TeamsfxCore } from "../../../../src/component/core";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { provisionUtils } from "../../../../src/component/provisionUtils";
-import { ErrorNames, TelemetryKeys } from "../../../../src/component/resource/botService/constants";
+import { TeamsFxUrlNames } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import { FailedToCreateBotRegistrationError } from "../../../../src/component/resource/botService/errors";
+import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
+import { APP_STUDIO_API_NAMES } from "../../../../src/component/resource/appManifest/constants";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -54,6 +55,8 @@ describe("Bot service", () => {
       getAccessToken: async (tokenRequest: TokenRequest) => ok("token"),
     } as M365TokenProvider;
     context.envInfo = newEnvInfoV3("local");
+    sandbox.stub(AppStudio, "sendStartEvent").returns();
+    sandbox.stub(AppStudio, "sendSuccessEvent").returns();
   });
 
   afterEach(() => {
@@ -129,7 +132,7 @@ describe("Bot service", () => {
         AppStudioError.DeveloperPortalAPIFailedError.name,
         ["", ""],
         {
-          teamsfxUrlName: TeamsFxUrlNames.createBot,
+          teamsfxUrlName: TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT],
         }
       )
     );

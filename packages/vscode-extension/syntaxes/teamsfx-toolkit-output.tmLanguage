@@ -148,6 +148,67 @@
                 <key>name</key>
                 <string>teamsfx-toolkit.listCollaborator.tenant</string>
             </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>(\(x\) Error:)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.error</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>(\(!\) Warning:)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.warning</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.info-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>Learn more: (https://.*)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.helplink</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                    <key>2</key>
+                    <dict>
+                        <key>name</key>
+                        <string>comment.line</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>([0-9]+ failed,) ([0-9]+ passed.)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.summary</string>
+            </dict>
         </array>
     </dict>
 </plist>

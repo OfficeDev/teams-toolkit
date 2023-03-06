@@ -28,6 +28,11 @@ export function hasFunctionBot(projectSettings: ProjectSettingsV3): boolean {
   if (!botComponent) return false;
   return botComponent.hosting === ComponentNames.Function;
 }
+export function hasWebAppBot(projectSettings: ProjectSettingsV3): boolean {
+  const botComponent = getComponent(projectSettings, ComponentNames.TeamsBot);
+  if (!botComponent) return false;
+  return botComponent.hosting === ComponentNames.AzureWebApp;
+}
 export function hasAAD(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.AadApp).length > 0;

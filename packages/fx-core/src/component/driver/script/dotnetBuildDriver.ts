@@ -25,7 +25,7 @@ export class DotnetBuildDriver extends BaseBuildStepDriver {
     );
   }
 
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return super.run(args, context);
   }

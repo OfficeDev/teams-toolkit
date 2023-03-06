@@ -77,7 +77,7 @@ export default class Provision extends YargsCommand {
   public readonly description = "Provision the cloud resources in the current application.";
   public readonly resourceGroupParam = "resource-group";
   public readonly subscriptionParam = "subscription";
-  public readonly subCommands = [new ProvisionManifest()];
+  public readonly subCommands = isV3Enabled() ? [] : [new ProvisionManifest()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

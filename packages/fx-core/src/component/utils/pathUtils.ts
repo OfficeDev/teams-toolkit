@@ -9,8 +9,8 @@ import {
 import * as path from "path";
 import fs from "fs-extra";
 import { yamlParser } from "../configManager/parser";
-import { InvalidEnvFolderPath } from "../configManager/error";
 import { MetadataV3 } from "../../common/versionMetadata";
+import { InvalidProjectError } from "../../core/error";
 
 export const YmlFileNameOld = "app.yml";
 export const LocalYmlFileNameOld = "app.local.yml";
@@ -31,7 +31,10 @@ export class PathUtils {
       SettingsFolderName,
       envName === "local" ? LocalYmlFileNameOld : YmlFileNameOld
     );
-    return ymlPath;
+    if (fs.pathExistsSync(ymlPath)) {
+      return ymlPath;
+    }
+    throw new InvalidProjectError();
   }
   async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {
     const ymlFilePath = this.getYmlFilePath(projectPath, "dev");

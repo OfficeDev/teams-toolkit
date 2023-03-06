@@ -147,7 +147,7 @@ describe("Deploy ARM Template to Azure", () => {
     chai.expect(error.name).to.equal(ErrorName.FailedToDeployArmTemplatesToAzureError);
     chai
       .expect(error.message)
-      .to.have.string("Failed to compile bicep files to Json arm templates file:");
+      .to.have.string("Failed to compile Bicep files to JSON ARM templates file:");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {

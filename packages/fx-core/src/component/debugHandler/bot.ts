@@ -37,11 +37,11 @@ import {
   BotChannelType,
   IBotRegistration,
 } from "../resource/botService/appStudio/interfaces/IBotRegistration";
-import { ErrorNames, MaxLengths } from "../resource/botService/constants";
+import { ErrorNames, MaxLengths, TeamsFxUrlNames } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
 import { genUUID } from "../resource/botService/common";
 import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
-import { ComponentNames, TeamsFxUrlNames } from "../constants";
+import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
@@ -49,6 +49,7 @@ import { AppStudioClient } from "../resource/botService/appStudio/appStudioClien
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
 import { AlreadyCreatedBotNotExist } from "../resource/botService/errors";
+import { APP_STUDIO_API_NAMES } from "../resource/appManifest/constants";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -276,7 +277,10 @@ export class BotDebugHandler {
       try {
         await AppStudioClient.createBotRegistration(tokenResult.value, botReg, false);
       } catch (e) {
-        if (e.innerError?.teamsfxUrlName == TeamsFxUrlNames.createBot && this.hasBotIdInEnvBefore) {
+        if (
+          e.innerError?.teamsfxUrlName == TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT] &&
+          this.hasBotIdInEnvBefore
+        ) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
           return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
         } else {

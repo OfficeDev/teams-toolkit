@@ -13,7 +13,7 @@ on:
       - dev
       - hotfix/**/*
       - prerelease
- 
+
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x 
+          dotnet-version: 3.1.x
 
       - name: Setup project
         run: |
@@ -61,4 +61,26 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
-          npx codecov
+
+      - name: CodeCov report attempt 1
+        id: codecov1
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+
+      - name: CodeCov report attempt 2
+        id: codecov2
+        if: steps.codecov1.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+
+      - name: CodeCov report attempt 3
+        id: codecov3
+        if: steps.codecov2.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true

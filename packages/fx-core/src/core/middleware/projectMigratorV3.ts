@@ -14,6 +14,9 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  AzureSolutionSettings,
+  ProjectSettingsV3,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -28,12 +31,13 @@ import {
   TelemetryEvent,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
-import { TOOLS } from "../globalVars";
+import { globalVars, TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,
   AbandonedProjectError,
   ToolkitNotSupportError,
+  NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -56,12 +60,15 @@ import {
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
   getVersionState,
+  getTrackingIdFromPath,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
   getPlaceholderMappings,
   isCommentObject,
+  launchRemote,
+  OldProjectSettingsHelper,
   readJsonCommentFile,
 } from "./utils/debug/debugV3MigrationUtils";
 import {
@@ -92,6 +99,7 @@ import { isSPFxProject, isV3Enabled } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
 
 export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -135,6 +143,7 @@ export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
+  aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
 const migrationMessageButtons = [upgradeButton, learnMoreText];
 
@@ -179,6 +188,15 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = err(ToolkitNotSupportError());
       return false;
     }
+
+    // in cli non interactive scenario, migration will return an error instead of popup dialog.
+    const nonInteractive = getParameterFromCxt(ctx, "nonInteractive");
+    if (nonInteractive) {
+      ctx.result = err(new NotAllowedMigrationError());
+      return;
+    }
+
+    await ensureTrackingIdInGlobal(ctx);
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
     if (isRunMigration) {
@@ -307,11 +325,56 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
   if (await fs.pathExists(launchJsonPath)) {
     await context.backup(Constants.launchJsonPath);
-    const launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    let launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    const oldProjectSettings = await loadProjectSettings(context.projectPath);
+    if (oldProjectSettings.isM365) {
+      const jsonObject = JSON.parse(launchJsonContent);
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.edge, "Edge", LaunchUrl.teamsRemote, 1)
+      );
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.chrome, "Chrome", LaunchUrl.teamsRemote, 1)
+      );
+      if (OldProjectSettingsHelper.includeTab(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteTab, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteTab,
+            2
+          )
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.edge, "Edge", LaunchUrl.officeRemoteTab, 3)
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.chrome, "Chrome", LaunchUrl.officeRemoteTab, 3)
+        );
+      } else if (OldProjectSettingsHelper.includeBot(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteBot, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteBot,
+            2
+          )
+        );
+      }
+      launchJsonContent = JSON.stringify(jsonObject, null, 4);
+    }
     const result = launchJsonContent
       .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
       .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
-      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
+      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}") // For M365 apps
+      .replace(/\${teamsAppInternalId}/g, "${dev:teamsAppInternalId}");
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }
@@ -378,7 +441,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw MigrationError(
-      new Error("templates/appPackage/manifest.template.json does not exist"),
+      new Error(getLocalizedString("core.migrationV3.manifestNotExist")),
       errorNames.manifestTemplateNotExist,
       learnMoreLink
     );
@@ -389,7 +452,18 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );
-  if (oldAadManifestExists) {
+
+  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
+    .activeResourcePlugins;
+  const component = (projectSettings as ProjectSettingsV3).components;
+  const aadRequired =
+    (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
+    (component &&
+      component.findIndex((component, index, obj) => {
+        return component.name == "aad-app";
+      }) >= 0);
+
+  if (oldAadManifestExists && aadRequired) {
     let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
@@ -397,6 +471,12 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
+  } else if (aadRequired && !oldAadManifestExists) {
+    throw MigrationError(
+      new Error(getLocalizedString("core.migrationV3.aadManifestNotExist")),
+      errorNames.aadManifestTemplateNotExist,
+      learnMoreLink
+    );
   }
 
   await context.fsRemove(oldAppPackageFolderPath);
@@ -580,6 +660,12 @@ export async function generateLocalConfig(context: MigrationContext): Promise<vo
     const oldProjectSettings = await loadProjectSettings(context.projectPath);
     await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
   }
+}
+
+export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
+  const projectPath = getParameterFromCxt(context, "projectPath", "");
+  const projectId = await getTrackingIdFromPath(projectPath);
+  globalVars.trackingId = projectId; // set trackingId to globalVars
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {

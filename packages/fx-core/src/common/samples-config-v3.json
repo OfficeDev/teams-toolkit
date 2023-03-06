@@ -14,6 +14,16 @@
             "suggested": true
         },
         {
+            "id": "graph-toolkit-contact-exporter",
+            "title": "Contact Exporter using Graph Toolkit",
+            "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",
+            "fullDescription": "Contact Exporter app can export your teams contact info to Excel files, and it is using Microsoft Graph Toolkit as UI component. This app only has a Tab frontend.",
+            "tags": ["Tab", "JS"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": true
+        },
+        {
             "id": "bot-sso",
             "title": "Bot App with SSO Enabled",
             "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
@@ -135,6 +145,66 @@
             "time": "10min to run",
             "configuration": "Manual configurations required",
             "suggested": false
-        }
+        },
+        {
+            "id": "graph-toolkit-one-productivity-hub",
+            "title": "One Productivity Hub using Graph Toolkit",
+            "shortDescription": "Microsoft Teams tab with SSO to view calendar events, to-do tasks and file folders.",
+            "fullDescription": "One Productivity Hub sample shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and TeamsFx provider. You can run this app locally or deploy it to Microsoft Azure.",
+            "tags": ["Tab", "JS", "SSO"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "todo-list-with-Azure-backend",
+            "title": "Todo List with backend on Azure",
+            "shortDescription": "Todo List app with Azure Function backend and Azure SQL database",
+            "fullDescription": "Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app.",
+            "tags": ["React", "Azure function", "Azure SQL", "JS", "CI/CD"],
+            "time": "30min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+        },
+        {
+            "id": "share-now",
+            "title": "Share Now",
+            "shortDescription": "Knowledge sharing app contains a Tab and a Message extension",
+            "fullDescription": "Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading.",
+            "tags": ["Tab", "Message extension", "TS"],
+            "time": "30min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "query-org-user-with-message-extension-sso",
+            "title": "Org User Search Connector",
+            "shortDescription": "Query Org User with Message Extension SSO",
+            "fullDescription": "This is a simple search-based message extension app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK and Microsoft Graph API to implement a feature that queries organization's user with single sign on (SSO) capability.",
+            "tags": ["Message extension", "SSO"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+          "id": "hello-world-teams-tab-and-outlook-add-in",
+          "title": "Hello World Teams Tab and Outlook add-in",
+          "shortDescription": "A hello world project that contains both Teams Tab and Outlook add-in capability",
+          "fullDescription": "A hello world project that contains both Teams Tab and Outlook add-in capability",
+          "tags": ["Tab", "Outlook add-in"],
+          "time": "5min to run",
+          "configuration": "Ready for debug",
+          "suggested": false
+        },
+        {
+            "id": "dev-assist-dashboard",
+            "title": "Developer Assist Dashboard",
+            "shortDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
+            "fullDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
+            "tags": ["Outlook", "Office", "TS"],
+            "time": "10min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+          }
     ]
 }

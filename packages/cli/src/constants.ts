@@ -85,7 +85,7 @@ export const AadManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.template.json'",
+      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.json'",
   },
 };
 
@@ -136,4 +136,4 @@ export const AddFeatureFunc = {
 
 export const EmptyQTreeNode = new QTreeNode({ type: "group" });
 
-export const SUPPORTED_SPFX_VERSION = "1.16.0";
+export const SUPPORTED_SPFX_VERSION = "1.16.1";

@@ -9,21 +9,9 @@
             "dependsOn": [
                 "Validate prerequisites",
                 "Start local tunnel",
-                "Create resources",
-                "Build project",
+                "Provision",
+                "Deploy",
                 "Start application"
-            ],
-            "dependsOrder": "sequence"
-        },
-        {
-            "label": "Start Teams App Locally & Install App",
-            "dependsOn": [
-                "Validate prerequisites",
-                "Start local tunnel",
-                "Create resources",
-                "Build project",
-                "Start application",
-                "Install app in Teams"
             ],
             "dependsOrder": "sequence"
         },
@@ -70,22 +58,20 @@
         {
             // Create the debug resources.
             // See https://aka.ms/teamsfx-tasks/provision to know the details and how to customize the args.
-            "label": "Create resources",
+            "label": "Provision",
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
             // Build project.
             // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
-            "label": "Build project",
+            "label": "Deploy",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
@@ -117,14 +103,6 @@
                     "beginsPattern": "[nodemon] starting",
                     "endsPattern": "restify listening to|Bot/ME service listening at|[nodemon] app crashed"
                 }
-            }
-        },
-        {
-            "label": "Install app in Teams",
-            "type": "shell",
-            "command": "exit ${command:fx-extension.install-app-in-teams}",
-            "presentation": {
-                "reveal": "never"
             }
         }
     ]

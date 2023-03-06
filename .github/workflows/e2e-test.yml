@@ -397,7 +397,7 @@ jobs:
 
   rerun:
     needs: tear-down
-    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 3 }}
+    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -408,11 +408,11 @@ jobs:
            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
            -H "X-GitHub-Api-Version: 2022-11-28" \
            https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
-           -d '{"ref":"'${GITHUB_REF##*/}'","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"3"}}'
+           -d '{"ref":"'${GITHUB_REF##*/}'","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
 
   report:
     needs: execute-case
-    if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >=3)) }}
+    if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5)) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -463,7 +463,7 @@ jobs:
           passed=0
           failed=0
 
-          emails="vsciotadt@microsoft.com;v-helzha@microsoft.com;v-ivanchen@microsoft.com;v-annefu@microsoft.com;v-liliu2@microsoft.com"
+          emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;"
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then
@@ -473,17 +473,24 @@ jobs:
             file="tests/e2e/$case"
             elegant_path="${file//.\//}"
 
+            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
+            duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
+
             email=""
             if grep -q "@author" $file; then
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
+
             if [[ "${{env.v3_flag}}" == "true" ]]; then
               email=""
               if grep -q "@owner" $file; then
                 email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
-              else
-                continue
               fi
+
+              started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test for v3") | .started_at'`
+              completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test for v3") | .completed_at'`
+              duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
             fi
 
             status=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .conclusion'`
@@ -491,10 +498,6 @@ jobs:
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
-
-            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
-            duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
             if [ -z "$email" ]; then

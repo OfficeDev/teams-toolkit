@@ -28,49 +28,75 @@ import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
-import {
-  templateAlphaVersion,
-  templatePrereleasePrefix,
-  templatePrereleaseVersion,
-} from "../../../src/component/generator/constant";
 import templateConfig from "../../../src/common/templates-config.json";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
   const sandbox = createSandbox();
+  let mockedEnvRestore = mockedEnv({});
 
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
+    mockedEnvRestore();
   });
 
-  it("select tag should return alpha if set env", async () => {
-    sandbox.stub(generatorUtils, "preRelease").returns(templateAlphaVersion);
-    const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
-    assert.equal(tag, templatePrereleasePrefix + templateAlphaVersion);
+  it("return rc if set env rc", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "rc",
+    });
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    assert.isTrue(url.includes("0.0.0-rc"));
   });
 
-  it("select tag should return undefined to use fallback if template config use alpha version", async () => {
-    sandbox.stub(generatorUtils, "preRelease").returns("");
-    sandbox.stub(templateConfig, "version").value(templateAlphaVersion);
-    const tag = await generatorUtils.selectTemplateTag(async () => ["1.0.0"]);
-    assert.equal(tag, undefined);
+  it("alpha or prerelease should return error to use fallback", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "",
+    });
+    sandbox.replace(templateConfig, "version", "0.0.0-alpha");
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    try {
+      await generatorUtils.fetchTemplateZipUrl("templateName");
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
   });
 
-  it("select tag should return correct version", async () => {
-    sandbox.stub(generatorUtils, "preRelease").returns("");
+  it("return correct version", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "",
+    });
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    const tag = "2.1.0";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     sandbox.stub(templateConfig, "version").value("^2.0.0");
-    sandbox.replace(generatorUtils, "templateTagPrefix", "templates@");
-    const tag = await generatorUtils.selectTemplateTag(async () => [
-      "1.0.0",
-      "2.0.0",
-      "2.1.0",
-      "2.1.1",
-      "3.0.0",
-    ]);
-    assert.equal(tag, "templates@2.1.1");
+    sandbox.replace(templateConfig, "tagPrefix", "templates@");
+    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    assert.isTrue(url.includes(tag));
+  });
+
+  it("return error if version pattern cannot match tag list", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "",
+    });
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    sandbox.stub(templateConfig, "version").value("^4.0.0");
+    sandbox.replace(templateConfig, "tagPrefix", "templates@");
+    try {
+      await generatorUtils.fetchTemplateZipUrl("templateName");
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
   });
 
   it("sendRequestWithRetry throw error if requestFn returns error status code", async () => {
@@ -126,12 +152,6 @@ describe("Generator utils", () => {
     assert.fail("Should not reach here.");
   });
 
-  it("fetch template zip url", async () => {
-    sandbox.stub(generatorUtils, "selectTemplateTag").resolves(templateAlphaVersion);
-    const url = await generatorUtils.fetchTemplateZipUrl("test");
-    assert.exists(url);
-  });
-
   it("fetch zip from url", async () => {
     sandbox.stub(axios, "get").resolves({ status: 200, data: new AdmZip().toBuffer() });
     const url = "ut";
@@ -139,7 +159,7 @@ describe("Generator utils", () => {
     assert.equal(zip.getEntries().length, 0);
   });
 
-  it("unzip ", async () => {
+  it("unzip", async () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
@@ -159,23 +179,18 @@ describe("Generator utils", () => {
     assert.equal(content, "test");
   });
 
-  it("unzip .gitignore", async () => {
+  it("unzip with no render function", async () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    await fs.ensureDir(outputDir);
-    const fileData = "fileData";
-    await fs.writeFile(path.join(inputDir, ".gitignore"), fileData);
-    await fs.writeFile(path.join(outputDir, ".gitignore"), fileData);
+    const fileData = "{%appName%}";
+    await fs.writeFile(path.join(inputDir, "test.txt"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
-    await generatorUtils.unzip(
-      new AdmZip(path.join(tmpDir, "test.zip")),
-      outputDir,
-      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
-      (fileName: string, fileData: Buffer) => renderTemplateFileData(fileName, fileData, {})
-    );
+    await generatorUtils.unzip(new AdmZip(path.join(tmpDir, "test.zip")), outputDir);
+    const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
+    assert.equal(content, fileData);
   });
 
   it("unzip with relative path", async () => {
@@ -205,6 +220,26 @@ describe("Generator utils", () => {
     } catch (e) {
       assert.equal(e.message, "invalid sample name: 'test'");
     }
+  });
+
+  it("not render if file doensn't end with .tpl", async () => {
+    const res = renderTemplateFileData("fileName", Buffer.from("appName", "utf-8"), {
+      appName: "test",
+    });
+    assert.equal(res.toString(), "appName");
+  });
+
+  it("zip folder", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    await fs.ensureDir(inputDir);
+    const fileData = "test";
+    await fs.writeFile(path.join(inputDir, "test.txt"), fileData);
+    const zip = generatorUtils.zipFolder(inputDir);
+    zip.getEntry("test.txt")!.getData().toString();
+    zip.getEntries().forEach((entry) => {
+      assert.equal(entry.getData().toString(), "test");
+      assert.equal(zip.getEntries().length, 1);
+    });
   });
 });
 
@@ -317,37 +352,5 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
-  });
-
-  it("correctly select template tag", async () => {
-    sandbox.stub(generatorUtils, "templateVersion").returns("^1.0.0");
-    const url = await generatorUtils.selectTemplateTag(async () => ["1.0.0", "1.2.0"]);
-    assert.include(url, "1.2.0");
-  });
-
-  it("return prerelease version if feature flag set", async () => {
-    const resolveFn = mockedEnv({
-      TEAMSFX_TEMPLATE_PRERELEASE: "alpha",
-    });
-    const url = await generatorUtils.selectTemplateTag(async () => ["1.0.0", "1.2.0"]);
-    assert.include(url, "alpha");
-    resolveFn();
-  });
-
-  it("alpha release or prerelease should use fallback", async () => {
-    const versions = [templateAlphaVersion, templatePrereleaseVersion];
-    versions.forEach(async (version) => {
-      sandbox.stub(generatorUtils, "templateVersion").returns(version);
-
-      try {
-        await generatorUtils.fetchTemplateZipUrl("ut");
-      } catch (e) {
-        assert.exists(e);
-        sandbox.restore();
-        return;
-      }
-      sandbox.restore();
-      assert.fail("Should not reach here.");
-    });
   });
 });

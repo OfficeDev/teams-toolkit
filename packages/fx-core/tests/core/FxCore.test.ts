@@ -309,7 +309,7 @@ describe("Core basic APIs", () => {
             new MissingEnvInFileUserError(
               "aadApp/update",
               "AAD_APP_OBJECT_ID",
-              "https://aka.ms/fake",
+              "https://fake-help-link",
               "driver.aadApp.error.generateManifestFailed",
               "fake path"
             )

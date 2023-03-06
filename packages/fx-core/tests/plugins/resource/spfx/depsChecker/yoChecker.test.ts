@@ -13,6 +13,7 @@ import { TestHelper } from "../helper";
 import { telemetryHelper } from "../../../../../src/component/resource/spfx/utils/telemetry-helper";
 import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
 import { LogProvider, LogLevel, Colors } from "@microsoft/teamsfx-api";
+import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 
 const ryc = rewire("../../../../../src/component/resource/spfx/depsChecker/yoChecker");
 
@@ -128,5 +129,47 @@ describe("Yo checker", () => {
       assert.callCount(cleanStub, 2);
       assert.callCount(validateStub, 1);
     }
+  });
+
+  it("findGloballyInstalledVersion: returns version", async () => {
+    const generatorChecker = new YoChecker(new StubLogger());
+    stub(cpUtils, "executeCommand").resolves("C:\\Roaming\\npm\n`-- yo@4.3.1\n\n");
+
+    const res = await generatorChecker.findGloballyInstalledVersion(1);
+    expect(res).equal("4.3.1");
+  });
+
+  it("findGloballyInstalledVersion: regex error", async () => {
+    const generatorChecker = new YoChecker(new StubLogger());
+    stub(cpUtils, "executeCommand").resolves(
+      "C:\\Roaming\\npm\n`-- @microsoft/generator-sharepoint@1.16.1\n\n"
+    );
+
+    const res = await generatorChecker.findGloballyInstalledVersion(1);
+    expect(res).equal(undefined);
+  });
+
+  it("findLatestVersion: returns version", async () => {
+    const generatorChecker = new YoChecker(new StubLogger());
+    stub(cpUtils, "executeCommand").resolves("4.3.1");
+
+    const res = await generatorChecker.findLatestVersion(1);
+    expect(res).equal("4.3.1");
+  });
+
+  it("findLatestVersion: regex error", async () => {
+    const generatorChecker = new YoChecker(new StubLogger());
+    stub(cpUtils, "executeCommand").resolves("empty");
+
+    const res = await generatorChecker.findLatestVersion(1);
+    expect(res).to.be.undefined;
+  });
+
+  it("findLatestVersion: exeute commmand error", async () => {
+    const generatorChecker = new YoChecker(new StubLogger());
+    stub(cpUtils, "executeCommand").throws("run command error");
+
+    const res = await generatorChecker.findLatestVersion(1);
+    expect(res).to.be.undefined;
   });
 });

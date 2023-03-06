@@ -36,9 +36,13 @@ class SampleProvider {
             tags: sample.tags,
             time: sample.time,
             configuration: sample.configuration,
-            link: sampleConfigV3.defaultPackageLink,
+            link: (sample as any).packageLink ?? sampleConfigV3.defaultPackageLink,
             suggested: sample.suggested,
-            url: sampleConfigV3.baseUrl,
+            url:
+              (sample as any).relativePath && (sample as any).url
+                ? (sample as any).url
+                : sampleConfigV3.baseUrl,
+            relativePath: (sample as any).relativePath,
           } as SampleInfo;
         });
       } else {

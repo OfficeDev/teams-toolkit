@@ -172,8 +172,8 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import commandController from "./commandController";
-import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
 import { ExtensionSurvey } from "./utils/survey";
 
 export let core: FxCore;
@@ -213,11 +213,7 @@ export function activate(): Result<Void, FxError> {
     );
   }
   try {
-    let m365Login: M365TokenProvider = M365TokenInstance;
-    const vscodeEnv = detectVsCodeEnv();
-    if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-      m365Login = M365CodeSpaceTokenInstance;
-    }
+    const m365Login: M365TokenProvider = M365TokenInstance;
     const m365NotificationCallback = (
       status: string,
       token: string | undefined,
@@ -2570,7 +2566,7 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
     result = wrapError(e);
   }
 
-  await processResult(TelemetryEvent.ManageCollaborator, result);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaborator);
   return result;
 }
 
@@ -3096,7 +3092,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         message
       );
       const provision = {
-        title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
+        title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitle"),
         run: async (): Promise<void> => {
           Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
         },
@@ -3117,8 +3113,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         )
         .then((selection) => {
           if (
-            selection?.title ===
-              localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew") ||
+            selection?.title === localize("teamstoolkit.commandsTreeViewProvider.provisionTitle") ||
             selection?.title === localize("teamstoolkit.handlers.localDebugTitle")
           ) {
             selection.run();
@@ -3502,7 +3497,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
         detail: localize("teamstoolkit.guides.cardActionResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-card-action-response",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-workflow-new"
+          : "https://aka.ms/teamsfx-card-action-response",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3516,7 +3513,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.sendNotification.label")}`,
         detail: localize("teamstoolkit.guides.sendNotification.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-notification",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-notification-new"
+          : "https://aka.ms/teamsfx-notification",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3530,7 +3529,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.guides.commandAndResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-command-response",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-command-new"
+          : "https://aka.ms/teamsfx-command-response",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3544,7 +3545,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
         detail: localize("teamstoolkit.guides.dashboardApp.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-dashboard-app",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-dashboard-new"
+          : "https://aka.ms/teamsfx-dashboard-app",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -3652,7 +3655,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.guides.connectApi.label")}`,
         detail: localize("teamstoolkit.guides.connectApi.detail"),
         groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-add-api-connection",
+        data: isV3Enabled()
+          ? "https://aka.ms/teamsfx-add-api-connection-new"
+          : "https://aka.ms/teamsfx-add-api-connection",
         buttons: [
           {
             iconPath: "file-symlink-file",
@@ -4009,6 +4014,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   let appDefinition;
   try {
+    AppManifestUtils.init({ telemetryReporter: tools.telemetryReporter } as any); // need to initiate temeletry so that telemetry set up in appManifest component can work.
     appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
   } catch (error: any) {
     ExtTelemetry.sendTelemetryErrorEvent(

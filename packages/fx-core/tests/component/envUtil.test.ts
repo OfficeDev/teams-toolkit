@@ -58,13 +58,13 @@ describe("env utils", () => {
     });
   });
   it("pathUtils.getYmlFilePath case 1", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(true);
     process.env.TEAMSFX_ENV = "dev";
     const res1 = pathUtils.getYmlFilePath(".", "dev");
     assert.equal(res1, path.join(".", MetadataV3.configFile));
   });
   it("pathUtils.getYmlFilePath case 2", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(false);
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     process.env.TEAMSFX_ENV = "dev";
     const res1 = pathUtils.getYmlFilePath(".", "dev");
     assert.equal(res1, path.join(".", "teamsfx", YmlFileNameOld));
@@ -76,6 +76,7 @@ describe("env utils", () => {
     };
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     const res = await pathUtils.getEnvFolderPath(".");
     assert.isTrue(res.isOk());
     if (res.isOk()) {
@@ -84,6 +85,7 @@ describe("env utils", () => {
   });
   it("pathUtils.getEnvFolderPath returns undefined", async () => {
     const mockProjectModel: ProjectModel = {};
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
     const res = await pathUtils.getEnvFolderPath(".");
@@ -96,6 +98,7 @@ describe("env utils", () => {
     const mockProjectModel: ProjectModel = {
       environmentFolderPath: "/home/envs",
     };
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
     const res = await pathUtils.getEnvFilePath(".", "dev");
@@ -108,6 +111,7 @@ describe("env utils", () => {
     const mockProjectModel: ProjectModel = {};
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     const res = await pathUtils.getEnvFilePath(".", "dev");
     assert.isTrue(res.isOk());
     if (res.isOk()) {
@@ -119,7 +123,13 @@ describe("env utils", () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
-    sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(
+        ("TEAMSFX_ENV=env\nTEAMS_APP_ID=testappid\nTAB_ENDPOINT=testendpoint\n" +
+          "SECRET_ABC=" +
+          encrypted) as any
+      );
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.readEnv(".", "dev");
@@ -524,10 +534,11 @@ describe("env utils", () => {
 
   it("dotenvUtil deserialize & serialize", async () => {
     const original =
-      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"#COMMENT3';
     const expected =
-      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"\nKEY5="VALUE5#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"#COMMENT3\nKEY4="VALUE4"\nKEY5="VALUE5#"';
     const parsed = dotenvUtil.deserialize(original);
+    console.log(parsed);
     assert.deepEqual(parsed, {
       lines: [
         "#COMMENT",
@@ -536,7 +547,7 @@ describe("env utils", () => {
         { key: "KEY1", value: "VALUE1", comment: "#COMMENT2" },
         { key: "KEY2", value: "VALUE2", quote: "'" },
         { key: "KEY3", value: "VALUE3#", quote: '"' },
-        { key: "indexPath", value: "/index.html#", quote: '"' },
+        { key: "indexPath", value: "/index.html#", quote: '"', comment: "#COMMENT3" },
       ],
       obj: { KEY1: "VALUE1", KEY2: "VALUE2", KEY3: "VALUE3#", indexPath: "/index.html#" },
     });
@@ -615,6 +626,7 @@ describe("environmentManager.listRemoteEnvConfigs", () => {
       TEAMSFX_V3: "true",
     });
     sandbox.stub(fs, "readdir").resolves([] as any);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     const res = await environmentManager.listRemoteEnvConfigs(".", true);
     assert.isTrue(res.isErr());
   });

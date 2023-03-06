@@ -45,6 +45,7 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  setUriEventHandler,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -82,6 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
+  setUriEventHandler(uriHandler);
   context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
   registerActivateCommands(context);
@@ -242,6 +244,20 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
+
+  // Upgrade command to update Teams manifest
+  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsManifest",
+    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+  );
+  context.subscriptions.push(migrateTeamsManifestCmd);
+
+  // Upgrade command to update Teams Client SDK
+  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsTabApp",
+    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+  );
+  context.subscriptions.push(migrateTeamsTabAppCmd);
 }
 
 /**
@@ -425,18 +441,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
   context.subscriptions.push(updateAadAppManifest);
-
-  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
-    "fx-extension.migrateTeamsManifest",
-    () => Correlator.run(handlers.migrateTeamsManifestHandler)
-  );
-  context.subscriptions.push(migrateTeamsManifestCmd);
-
-  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
-    "fx-extension.migrateTeamsTabApp",
-    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
-  );
-  context.subscriptions.push(migrateTeamsTabAppCmd);
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",

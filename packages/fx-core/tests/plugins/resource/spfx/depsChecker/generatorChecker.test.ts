@@ -5,12 +5,13 @@ import "mocha";
 import mockedEnv from "mocked-env";
 import rewire from "rewire";
 import fs from "fs-extra";
-import * as chai from "chai";
+import chai from "chai";
 import { stub, restore } from "sinon";
 import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { telemetryHelper } from "../../../../../src/component/resource/spfx/utils/telemetry-helper";
 import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
+import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 
 const rGeneratorChecker = rewire(
   "../../../../../src/component/resource/spfx/depsChecker/generatorChecker"
@@ -67,8 +68,8 @@ describe("generator checker", () => {
       const info = GeneratorChecker.getDependencyInfo();
 
       chai.expect(info).to.be.deep.equal({
-        supportedVersion: "1.16.0",
-        displayName: "@microsoft/generator-sharepoint@1.16.0",
+        supportedVersion: "1.16.1",
+        displayName: "@microsoft/generator-sharepoint@1.16.1",
       });
     });
 
@@ -148,6 +149,63 @@ describe("generator checker", () => {
         chai.expect(cleanStub.callCount).equal(2);
         chai.expect(validateStub.callCount).equal(1);
       }
+    });
+
+    it("findGloballyInstalledVersion: returns version", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(cpUtils, "executeCommand").resolves(
+        "C:\\Roaming\\npm\n`-- @microsoft/generator-sharepoint@1.16.1\n\n"
+      );
+
+      const res = await generatorChecker.findGloballyInstalledVersion(1);
+      chai.expect(res).equal("1.16.1");
+    });
+
+    it("findGloballyInstalledVersion: regex error", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(cpUtils, "executeCommand").resolves(
+        "C:\\Roaming\\npm\n`-- @microsoft/generator-sharepoint@empty\n\n"
+      );
+
+      const res = await generatorChecker.findGloballyInstalledVersion(1);
+      chai.expect(res).equal(undefined);
+    });
+
+    it("findGloballyInstalledVersion: exeute commmand error", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(cpUtils, "executeCommand").throws("run command error");
+      let error = undefined;
+
+      try {
+        const res = await generatorChecker.findGloballyInstalledVersion(1);
+      } catch (e) {
+        error = e;
+      }
+      chai.expect(error).not.undefined;
+    });
+
+    it("findLatestVersion: returns version", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(cpUtils, "executeCommand").resolves("1.16.1");
+
+      const res = await generatorChecker.findLatestVersion(1);
+      chai.expect(res).equal("1.16.1");
+    });
+
+    it("findLatestVersion: regex error", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(cpUtils, "executeCommand").resolves("empty");
+
+      const res = await generatorChecker.findLatestVersion(1);
+      chai.expect(res).to.be.undefined;
+    });
+
+    it("findLatestVersion: exeute commmand error", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(cpUtils, "executeCommand").throws("run command error");
+
+      const res = await generatorChecker.findLatestVersion();
+      chai.expect(res).to.be.undefined;
     });
   });
 });

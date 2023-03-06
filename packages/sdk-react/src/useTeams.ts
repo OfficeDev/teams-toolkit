@@ -5,11 +5,11 @@ import { useEffect, useState } from "react";
 import { unstable_batchedUpdates as batchedUpdates } from "react-dom";
 import { app, pages } from "@microsoft/teams-js";
 import {
+  teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
-  teamsTheme,
-  ThemePrepared,
-} from "@fluentui/react-northstar";
+  Theme,
+} from "@fluentui/react-components";
 
 const getTheme = (): string | undefined => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -37,7 +37,7 @@ export function useTeams(options?: {
   {
     inTeams?: boolean;
     fullScreen?: boolean;
-    theme: ThemePrepared;
+    theme: Theme;
     themeString: string;
     context?: app.Context;
   },
@@ -47,7 +47,7 @@ export function useTeams(options?: {
 ] {
   const [inTeams, setInTeams] = useState<boolean | undefined>(undefined);
   const [fullScreen, setFullScreen] = useState<boolean | undefined>(undefined);
-  const [theme, setTheme] = useState<ThemePrepared>(teamsTheme);
+  const [theme, setTheme] = useState<Theme>(teamsLightTheme);
   const [themeString, setThemeString] = useState<string>("default");
   const [initialTheme] = useState<string | undefined>(
     options && options.initialTheme ? options.initialTheme : getTheme()
@@ -65,7 +65,7 @@ export function useTeams(options?: {
         break;
       case "default":
       default:
-        setTheme(teamsTheme);
+        setTheme(teamsLightTheme);
     }
   };
 

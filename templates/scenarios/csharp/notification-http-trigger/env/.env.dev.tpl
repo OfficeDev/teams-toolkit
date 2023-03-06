@@ -12,5 +12,5 @@ TEAMS_APP_ID=
 BOT_AZURE_FUNCTION_APP_RESOURCE_ID=
 BOT_DOMAIN=
 
-# Secrets. You can add your own secret value, prefixed with SECRET_
+# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
 SECRET_BOT_PASSWORD=

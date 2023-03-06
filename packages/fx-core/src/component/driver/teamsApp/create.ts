@@ -109,7 +109,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     if (create) {
       const message = getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage");
       progressHandler?.next(message);
-      context.addSummary(message);
       const manifest = new TeamsAppManifest();
       manifest.name.short = args.name;
       if (teamsAppId) {

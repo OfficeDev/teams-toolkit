@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { APP_STUDIO_API_NAMES } from "../appManifest/constants";
+
 /**
  * @author zhijie <zhihuan@microsoft.com>
  */
@@ -64,3 +66,9 @@ export class TelemetryKeys {
   public static readonly Url = "url";
   public static readonly Method = "method";
 }
+
+export const TeamsFxUrlNames: { [index: string]: string } = {
+  [APP_STUDIO_API_NAMES.CREATE_BOT]: "<create-bot-registration>",
+  [APP_STUDIO_API_NAMES.GET_BOT]: "<get-bot-registration>",
+  [APP_STUDIO_API_NAMES.UPDATE_BOT]: "<update-message-endpoint>",
+};

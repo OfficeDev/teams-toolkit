@@ -28,12 +28,12 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 >
 > To run the command bot template in your local dev machine, you will need:
 >
-> - `Node.js` installed locally (recommended version: 16)
+> - [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
 >
-> Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
+> Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-new#customize-installation).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -47,22 +47,25 @@ The bot will respond to the `helloWorld` command with an Adaptive Card:
 
 ## What's included in the template
 
-| Folder       | Contents                                                            |
-| ------------ | ------------------------------------------------------------------- |
-| `teamsfx`    | Project level settings, configurations, and environment information |
-| `.vscode`    | VSCode files for debugging                                          |
-| `src`        | The source code for the command and response Teams application      |
-| `appPackage` | Templates for the Teams application manifest                        |
-| `infra`      | Templates for provisioning Azure resources                          |
+| Folder / File | Contents |
+| - | - |
+| `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
+| `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
+| `.vscode/` | VSCode files for debugging |
+| `appPackage/` | Templates for the Teams application manifest |
+| `infra/` | Templates for provisioning Azure resources |
+| `src/` | The source code for the application |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                       | Contents                                                                |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| `src/index.ts`                             | Application entry point and `restify` handlers for command and response |
-| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams                         |
-| `src/helloworldCommandHandler.ts`          | The business logic to handle a command                                  |
-| `src/cardModels.ts`                        | The default Adaptive Card data model                                    |
+| File | Contents |
+| - | - |
+| `src/index.ts` | Application entry point and `restify` handlers for command and response |
+| `src/teamsBot.ts`  | An empty teams activity handler for bot customization |
+| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
+| `src/helloworldCommandHandler.ts` | The business logic to handle a command |
+| `src/cardModels.ts` | The default Adaptive Card data model |
 
 ## Extend the command bot template with more commands and responses
 
@@ -124,7 +127,7 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 > Please note:
 
 > - Respond with an Adaptive Card is optional, you can simply respond with plain texts.
-> - If you'd like to send adaptive card with dynamic data, please refer to [this document](https://aka.ms/teamsfx-command-response#how-to-build-command-response-using-adaptive-card-with-dynamic-content).
+> - If you'd like to send adaptive card with dynamic data, please refer to [this document](https://aka.ms/teamsfx-command-new#how-to-build-command-response-using-adaptive-card-with-dynamic-content).
 
 ### Step 3: Handle the command
 
@@ -184,12 +187,12 @@ const commandApp = new ConversationBot({
 });
 ```
 
-Congratulations, you've just created your own command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-response). You can find more scenarios like:
+Congratulations, you've just created your own command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-new). You can find more scenarios like:
 
-- [Customize the trigger pattern](https://aka.ms/teamsfx-command-response#customize-the-trigger-pattern)
-- [Customize the Adaptive Card with dynamic content](https://aka.ms/teamsfx-command-response#how-to-build-command-response-using-adaptive-card-with-dynamic-content)
-- [Change the way to initialize the bot](https://aka.ms/teamsfx-command-response#customize-initialization)
-- [Connect to an existing API](https://aka.ms/teamsfx-command-response#connect-to-existing-api)
+- [Customize the trigger pattern](https://aka.ms/teamsfx-command-new#customize-the-trigger-pattern)
+- [Customize the Adaptive Card with dynamic content](https://aka.ms/teamsfx-command-new#how-to-build-command-response-using-adaptive-card-with-dynamic-content)
+- [Change the way to initialize the bot](https://aka.ms/teamsfx-command-new#customize-initialization)
+- [Connect to an existing API](https://aka.ms/teamsfx-command-new#connect-to-existing-api)
 - [Access Microsoft Graph](https://aka.ms/teamsfx-add-sso)
 
 ## Extend command bot with other bot scenarios
@@ -198,11 +201,11 @@ Command bot is compatible with other bot scenarios like notification bot and wor
 
 ### Add notifications to your command bot
 
-The notification feature adds the ability for your application to send Adaptive Cards in response to external events. Follow the [steps here](https://aka.ms/teamsfx-command-response#how-to-extend-my-command-and-response-bot-to-support-notification) to add the notification feature to your command bot. Refer [the notification document](https://aka.ms/teamsfx-notification) for more information.
+The notification feature adds the ability for your application to send Adaptive Cards in response to external events. Follow the [steps here](https://aka.ms/teamsfx-command-new#how-to-extend-my-command-and-response-bot-to-support-notification) to add the notification feature to your command bot. Refer [the notification document](https://aka.ms/teamsfx-notification-new) for more information.
 
 ### Add workflow to your command bot
 
-Adaptive cards can be updated on user action to allow user progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-card-action-response#add-more-card-actions) to add workflow feature to your command bot. Refer [the workflow document](https://aka.ms/teamsfx-card-action-response) for more information.
+Adaptive cards can be updated on user action to allow user progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-workflow-new#add-more-card-actions) to add workflow feature to your command bot. Refer [the workflow document](https://aka.ms/teamsfx-workflow-new) for more information.
 
 ## Additional information and references
 

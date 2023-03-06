@@ -81,7 +81,6 @@ import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { DotenvParseOutput } from "dotenv";
-import { yamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
@@ -100,6 +99,8 @@ import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
+import { MetadataV3 } from "../../common/versionMetadata";
+import { metadataUtil } from "../utils/metadataUtil";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -236,7 +237,7 @@ export class Coordinator {
 
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Capabilities]: feature,
-        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
+        [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
 
       if (feature === TabSPFxNewUIItem().id) {
@@ -279,10 +280,14 @@ export class Coordinator {
       }
     }
 
-    // generate unique projectId in projectSettings.json
-    const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    inputs.projectId = ensureRes.value;
+    // generate unique projectId in teamsapp.yaml (optional)
+    const ymlPath = path.join(projectPath, MetadataV3.configFile);
+    if (fs.pathExistsSync(ymlPath)) {
+      const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
+      if (ensureRes.isErr()) return err(ensureRes.error);
+      inputs.projectId = ensureRes.value;
+    }
+
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
@@ -339,11 +344,6 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
-      false
-    );
     return ok(undefined);
   }
 
@@ -424,11 +424,6 @@ export class Coordinator {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
-    context.userInteraction.showMessage(
-      "info",
-      "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
-      false
-    );
     return ok(undefined);
   }
 
@@ -525,7 +520,7 @@ export class Coordinator {
     // 1. parse yml to cycles
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -584,7 +579,7 @@ export class Coordinator {
     // 1. parse yml
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -913,7 +908,7 @@ export class Coordinator {
     const output: DotenvParseOutput = {};
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -954,9 +949,8 @@ export class Coordinator {
         // show message box after deploy
         const botTroubleShootMsg = getBotTroubleShootMessage(false);
         const msg =
-          getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+          getLocalizedString("core.common.LifecycleComplete", "deploy") +
           botTroubleShootMsg.textForLogging;
-        ctx.logProvider.info(msg);
         ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
@@ -979,7 +973,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }

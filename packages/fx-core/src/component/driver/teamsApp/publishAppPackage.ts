@@ -80,7 +80,7 @@ export class PublishAppPackageDriver implements StepDriver {
       getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppTitle"),
       2
     );
-    progressHandler?.start();
+    await progressHandler?.start();
 
     const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
     if (!(await fs.pathExists(appPackagePath))) {
@@ -120,7 +120,7 @@ export class PublishAppPackageDriver implements StepDriver {
     let result;
 
     const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1");
-    progressHandler?.next(message);
+    await progressHandler?.next(message);
     context.addSummary(message);
 
     try {
@@ -154,7 +154,7 @@ export class PublishAppPackageDriver implements StepDriver {
 
         if (executePublishUpdate) {
           const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
-          progressHandler?.next(message);
+          await progressHandler?.next(message);
           context.addSummary(message);
           const appId = await AppStudioClient.publishTeamsAppUpdate(
             manifest.id,
@@ -174,7 +174,7 @@ export class PublishAppPackageDriver implements StepDriver {
           getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
         );
         const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
-        progressHandler?.next(message);
+        await progressHandler?.next(message);
         context.addSummary(message);
         const appId = await AppStudioClient.publishTeamsApp(
           manifest.id,

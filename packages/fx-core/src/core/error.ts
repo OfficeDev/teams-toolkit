@@ -423,7 +423,6 @@ export class NoCapabilityFoundError extends UserError {
       source: CoreSource,
       message: getDefaultString("core.deploy.noCapabilityFound", operation),
       displayMessage: getLocalizedString("core.deploy.noCapabilityFound", operation),
-      helpLink: HelpLinks.HowToAddCapability,
     });
   }
 }
@@ -445,6 +444,17 @@ export class VideoFilterAppRemoteNotSupportedError extends UserError {
       name: VideoFilterAppRemoteNotSupportedError.name,
       message: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
       displayMessage: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+    });
+  }
+}
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: CoreSource,
+      name: NotAllowedMigrationError.name,
+      message: getLocalizedString("core.migrationV3.notAllowedMigration"),
+      displayMessage: getLocalizedString("core.migrationV3.notAllowedMigration"),
     });
   }
 }

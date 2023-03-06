@@ -43,7 +43,7 @@ import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
-import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
+import { NgrokTunnelTaskTerminal } from "./taskTerminal/ngrokTunnelTaskTerminal";
 import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
@@ -51,58 +51,75 @@ import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import * as globalVariables from "../globalVariables";
+import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
+import { TunnelType } from "./taskTerminal/baseTunnelTaskTerminal";
+import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
-    createTerminal: (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.npmInstall]: {
-    createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.startLocalTunnel]: {
-    createTerminal: (d: vscode.TaskDefinition) => new LocalTunnelTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => {
+      if (d?.args?.type === TunnelType.ngrok || typeof d?.args?.type === "undefined") {
+        return new NgrokTunnelTaskTerminal(d);
+      } else {
+        // If the value of type is not TunnelType.ngrok / TunnelType.devTunnel, resolveArgs in the BaseTunnelTaskTerminal will throw error.
+        return new DevTunnelTaskTerminal(d);
+      }
+    },
     presentationReveal: vscode.TaskRevealKind.Silent,
     presentationEcho: true,
     presentationshowReuseMessage: true,
   },
   [TaskCommand.setUpTab]: {
-    createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.setUpBot]: {
-    createTerminal: (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.setUpSSO]: {
-    createTerminal: (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.prepareManifest]: {
-    createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    createTerminal: async (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.launchWebClient]: {
+    createTerminal: async (d: vscode.TaskDefinition) => new LaunchTeamsClientTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.provision]: {
-    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.provision),
+    createTerminal: async (d: vscode.TaskDefinition) =>
+      new LifecycleTaskTerminal(d, Stage.provision),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.deploy]: {
-    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.deploy),
+    createTerminal: async (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.deploy),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
@@ -272,10 +289,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       vscode.TaskScope.Workspace,
       task.name,
       TeamsfxTaskProvider.type,
-      new vscode.CustomExecution(
-        async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
-          Promise.resolve(customTask.createTerminal(resolvedDefinition))
-      )
+      new vscode.CustomExecution(customTask.createTerminal)
     );
 
     newTask.presentationOptions.reveal = customTask.presentationReveal;

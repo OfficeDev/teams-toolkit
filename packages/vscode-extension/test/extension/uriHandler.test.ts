@@ -66,4 +66,16 @@ describe("uri handler", () => {
     chai.assert.isTrue(executeCommand.calledOnce);
     sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
   });
+
+  it("valid code spaces callback uri", async () => {
+    try {
+      const handler = new UriHandler();
+      const uri = vscode.Uri.parse(
+        "vscode://TeamsDevApp.ms-teams-vscode-extension/auth-complete?code=abc"
+      );
+      await handler.handleUri(uri);
+    } catch (e) {
+      chai.assert.isTrue(false);
+    }
+  });
 });

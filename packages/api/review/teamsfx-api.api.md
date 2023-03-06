@@ -2130,6 +2130,15 @@ export interface UserInteraction {
     openFile?(filePath: string): Promise<Result<boolean, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
     reload?(): Promise<Result<boolean, FxError>>;
+    runCommand?(args: {
+        cmd: string;
+        workingDirectory?: string;
+        shell?: string;
+        timeout?: number;
+        env?: {
+            [k: string]: string;
+        };
+    }): Promise<Result<string, FxError>>;
     runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;

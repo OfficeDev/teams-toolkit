@@ -13,9 +13,6 @@ export class HelpLinks {
   static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
   static readonly SwitchAccountOrSub = "https://aka.ms/teamsfx-switch-account-or-subscription-help";
   static readonly SwitchTenant = "https://aka.ms/teamsfx-switch-tenant";
-
-  // TODO: short link to the docs
-  static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
 }
 
 export class VSCodeExtensionCommand {
@@ -91,6 +88,8 @@ export class FeatureFlagName {
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly Validate = "TEAMSFX_VALIDATE_ENABLE";
+  static readonly SpfxDecouple = "TEAMSFX_SPFX_DECOUPLE";
 }
 
 export class ManifestVariables {

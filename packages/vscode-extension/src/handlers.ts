@@ -982,7 +982,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 /**
  * Ask user to select environment, local is included
  */
-async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   const projectPath = globalVariables.workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());

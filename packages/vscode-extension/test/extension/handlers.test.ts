@@ -72,6 +72,7 @@ import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { restore } from "sinon";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -343,6 +344,37 @@ describe("handlers", () => {
       chai.assert(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, ExtensionErrors.DefaultManifestTemplateNotExistsError);
+      }
+      sinon.restore();
+    });
+
+    it("validateManifestHandler() - app package", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(commonTools, "isValidationEnabled").returns(true);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: (options: any) => {
+          if (options.name === "targetEnvName") {
+            return Promise.resolve(ok({ type: "success", result: "dev" }));
+          } else {
+            return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
+          }
+        },
+      });
+
+      const res = await handlers.validateManifestHandler();
+
+      console.log(JSON.stringify(res));
+
+      chai.assert(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, ExtensionErrors.DefaultAppPackageNotExistsError);
       }
       sinon.restore();
     });

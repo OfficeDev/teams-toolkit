@@ -11,8 +11,13 @@ import {
   webpartNameQuestion,
 } from "../../../../../src/component/resource/spfx/utils/questions";
 import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
+import { cpUtils } from "../../../../../src";
 
 describe("utils", () => {
+  afterEach(async () => {
+    sinon.restore();
+  });
+
   describe("webpart name", () => {
     const previousInputs: Inputs = { platform: Platform.VSCode };
     beforeEach(() => {
@@ -176,5 +181,32 @@ describe("utils", () => {
 
       chai.expect(res).equal(undefined);
     });
+  });
+
+  it("findLatestVersion: exeute commmand error with undefined logger", async () => {
+    sinon.stub(cpUtils, "executeCommand").throws("run command error");
+
+    const res = await Utils.findLatestVersion(undefined, "name", 0);
+    chai.expect(res).to.be.undefined;
+  });
+
+  it("findGloballyInstalledVersion: exeute commmand error with undefined logger", async () => {
+    sinon.stub(cpUtils, "executeCommand").throws("run command error");
+    let error = undefined;
+
+    try {
+      await Utils.findGloballyInstalledVersion(undefined, "name", 0);
+    } catch (e) {
+      error = e;
+    }
+    chai.expect(error).not.undefined;
+  });
+
+  it("findGloballyInstalledVersion: exeute commmand error but not throw error", async () => {
+    sinon.stub(cpUtils, "executeCommand").throws("run command error");
+
+    const res = await Utils.findGloballyInstalledVersion(undefined, "name", 0, false);
+
+    chai.expect(res).to.be.undefined;
   });
 });

@@ -162,7 +162,7 @@ describe("Yo checker", () => {
     stub(cpUtils, "executeCommand").resolves("empty");
 
     const res = await generatorChecker.findLatestVersion(1);
-    expect(res).equal("latest");
+    expect(res).to.be.undefined;
   });
 
   it("findLatestVersion: exeute commmand error", async () => {
@@ -170,6 +170,6 @@ describe("Yo checker", () => {
     stub(cpUtils, "executeCommand").throws("run command error");
 
     const res = await generatorChecker.findLatestVersion(1);
-    expect(res).equal("latest");
+    expect(res).to.be.undefined;
   });
 });

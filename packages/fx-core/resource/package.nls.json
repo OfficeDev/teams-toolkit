@@ -1014,5 +1014,8 @@
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.title": "botFramework/create",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
-  "driver.generateAppsettings.description": "Add or update environment variables to appsettings file."
+  "driver.generateAppsettings.description": "Add or update environment variables to appsettings file.",
+  "error.yaml.InvalidYamlSchemaError": "Failed to parse yml file: %s",
+  "error.yaml.YamlFieldTypeError": "Field '%s' should have %s type, yml file: %s",
+  "error.yaml.InvalidYmlActionNameError": "Action '%s' not found, yml file: %s"
 }

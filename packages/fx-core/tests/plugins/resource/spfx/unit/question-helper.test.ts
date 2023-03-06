@@ -32,8 +32,8 @@ describe("question-helpers", () => {
       await PackageSelectOptionsHelper.loadOptions();
       const options = PackageSelectOptionsHelper.getOptions();
       chai.expect(options.length).equal(2);
-      chai.expect(options[0].label.includes("v1.16.0")).equal(true);
-      chai.expect(options[1].label.includes("v1.16.1")).equal(true);
+      chai.expect(options[1].label.includes("v1.16.0")).equal(true);
+      chai.expect(options[0].label.includes("v1.16.1")).equal(true);
     });
   });
 });

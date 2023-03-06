@@ -14,6 +14,10 @@ import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
 import { cpUtils } from "../../../../../src";
 
 describe("utils", () => {
+  afterEach(async () => {
+    sinon.restore();
+  });
+
   describe("webpart name", () => {
     const previousInputs: Inputs = { platform: Platform.VSCode };
     beforeEach(() => {
@@ -184,7 +188,6 @@ describe("utils", () => {
 
     const res = await Utils.findLatestVersion(undefined, "name", 0);
     chai.expect(res).equal("latest");
-    sinon.restore();
   });
 
   it("findGloballyInstalledVersion: exeute commmand error with undefined logger", async () => {
@@ -192,21 +195,18 @@ describe("utils", () => {
     let error = undefined;
 
     try {
-      await Utils.findGloballyInstalledVersion(undefined, "name", 0, false);
+      await Utils.findGloballyInstalledVersion(undefined, "name", 0);
     } catch (e) {
       error = e;
     }
     chai.expect(error).not.undefined;
-    sinon.restore();
   });
 
   it("findGloballyInstalledVersion: exeute commmand error but not throw error", async () => {
     sinon.stub(cpUtils, "executeCommand").throws("run command error");
-    const error = undefined;
 
-    const res = await Utils.findGloballyInstalledVersion(undefined, "name", 0, true);
+    const res = await Utils.findGloballyInstalledVersion(undefined, "name", 0, false);
 
     chai.expect(res).to.be.undefined;
-    sinon.restore();
   });
 });

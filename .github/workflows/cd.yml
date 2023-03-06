@@ -215,13 +215,6 @@ jobs:
           git add packages/fx-core/src/common/m365/serviceConstant.ts
           git commit -m "chore: replace sideloading placeholders"
 
-      - name: publish alpha release to npm org
-        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease' }}
-        run: |
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch ${GITHUB_REF#refs/*/}
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
-
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/prerelease' ) }}
         uses: jossef/action-set-json-field@v1
@@ -243,6 +236,13 @@ jobs:
         run: |
           git add ./packages/cli/package.json ./packages/vscode-extension/package.json
           git commit -m "chore: update ai key"
+
+      - name: publish alpha release to npm org
+        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease' }}
+        run: |
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch ${GITHUB_REF#refs/*/}
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
 
       - name: publish rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}

@@ -27,7 +27,7 @@ export class Constants {
   public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
   public static readonly TEMPLATE_NAME = "spfx-tab";
   public static readonly LatestVersion = "latest";
-  public static readonly RecommenLowestSpfxVersion = "v1.14.0";
+  public static readonly RecommendedLowestSpfxVersion = "v1.14.0";
   public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";
 }
 

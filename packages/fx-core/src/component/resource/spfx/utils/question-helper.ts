@@ -29,7 +29,7 @@ export class PackageSelectOptionsHelper {
               ),
         detail: getLocalizedString(
           "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
-          Constants.RecommenLowestSpfxVersion
+          Constants.RecommendedLowestSpfxVersion
         ),
       },
       {

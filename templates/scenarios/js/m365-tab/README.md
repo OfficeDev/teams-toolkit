@@ -43,7 +43,7 @@ Follow below instructions to get started with this application template for loca
 
 1. Executing the command `teamsfx provision --env local` in your project directory.
 1. Executing the command `teamsfx deploy --env local` in your project directory.
-1. Executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
+1. Executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams`, `outlook` or `office`.
 
 ## References
 

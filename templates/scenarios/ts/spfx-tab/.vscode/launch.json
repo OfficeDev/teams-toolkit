@@ -6,7 +6,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -30,7 +30,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -54,7 +54,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -73,7 +73,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -92,7 +92,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -112,7 +112,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -132,7 +132,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://www.office.com/m365apps/${local:teamsAppInternalId}?auth=2&${account-hint}",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",
@@ -152,7 +152,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://www.office.com/m365apps/${local:teamsAppInternalId}?auth=2&${account-hint}",
-            "webRoot": "${workspaceRoot}/SPFx",
+            "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
                 "webpack:///.././src/*": "${webRoot}/src/*",

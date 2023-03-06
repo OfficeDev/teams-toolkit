@@ -527,8 +527,8 @@ describe("debugMigration", () => {
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
-              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "type": "ngrok",
               "env": "local",
               "output": {
                 // Keep consistency with upgraded configuration.
@@ -583,9 +583,9 @@ describe("debugMigration", () => {
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
-              "type": "ngrok",
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "ngrokPath": "ngrok",
+              "type": "ngrok",
               "env": "local",
               "output": {
                 // Keep consistency with upgraded configuration.

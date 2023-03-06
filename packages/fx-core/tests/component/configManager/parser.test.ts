@@ -63,13 +63,34 @@ describe("v3 yaml parser", () => {
     });
   });
 
-  describe(`when parsing a file with lifecycle content without "uses"`, () => {
-    it("should return YamlFieldMissingError", async () => {
+  describe(`when parsing a file with lifecycle content with invalid "uses" and "with"`, () => {
+    it("should return YamlFieldMissingError without 'with'", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_without_with.yml")
       );
       assert(result.isErr() && result.error.name === "YamlFieldMissingError");
+    });
+    it("should return YamlFieldMissingError without 'uses'", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_lifecycle_without_uses.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldMissingError");
+    });
+    it("should return YamlFieldTypeError with wrong 'uses' type", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_lifecycle_with_wrong_uses_type.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+    });
+    it("should return YamlFieldTypeError with wrong 'with' type", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_lifecycle_with_wrong_with_type.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
     });
   });
 
@@ -107,8 +128,14 @@ describe("v3 yaml parser", () => {
       );
       assert(result.isErr() && result.error.name === "YamlFieldTypeError");
     });
-
-    it("should return error if env field is of type string", async () => {
+    it("should return error if env field value has wrong type", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_env_subfield_type.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+    });
+    it("should return error if env field is of type array", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_env_field_array.yml")

@@ -10,9 +10,7 @@ export class PackageSelectOptionsHelper {
   private static options: OptionItem[] = [];
 
   public static async loadOptions(): Promise<void> {
-    let versions: (string | undefined)[] = [undefined, undefined];
-
-    versions = await Promise.all([
+    const versions = await Promise.all([
       Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 5, false),
       Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
     ]);

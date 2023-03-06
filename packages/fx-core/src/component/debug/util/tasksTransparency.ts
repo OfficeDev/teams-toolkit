@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { TaskOverallLabel, TunnelType } from "../../../common/local/constants";
+import { TaskOverallLabel } from "../../../common/local/constants";
 import { CommentJSONValue, CommentObject, CommentArray } from "comment-json";
 import * as commentJson from "comment-json";
 import {

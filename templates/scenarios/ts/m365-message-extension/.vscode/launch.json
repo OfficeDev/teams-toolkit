@@ -46,12 +46,12 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Bot in Teams (Edge)",
+            "name": "Launch App in Teams (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
             "cascadeTerminateToConfigurations": [
-                "Attach to Bot"
+                "Attach to Local Service"
             ],
             "presentation": {
                 "group": "all",
@@ -60,12 +60,12 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Bot in Teams (Chrome)",
+            "name": "Launch App in Teams (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
             "cascadeTerminateToConfigurations": [
-                "Attach to Bot"
+                "Attach to Local Service"
             ],
             "presentation": {
                 "group": "all",
@@ -74,12 +74,12 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Bot in Outlook (Edge)",
+            "name": "Launch App in Outlook (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://outlook.office.com/mail?${account-hint}",
             "cascadeTerminateToConfigurations": [
-                "Attach to Bot"
+                "Attach to Local Service"
             ],
             "presentation": {
                 "group": "all",
@@ -88,12 +88,12 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Bot in Outlook (Chrome)",
+            "name": "Launch App in Outlook (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://outlook.office.com/mail?${account-hint}",
             "cascadeTerminateToConfigurations": [
-                "Attach to Bot"
+                "Attach to Local Service"
             ],
             "presentation": {
                 "group": "all",
@@ -102,7 +102,7 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Attach to Bot",
+            "name": "Attach to Local Service",
             "type": "pwa-node",
             "request": "attach",
             "port": 9239,
@@ -118,8 +118,8 @@
         {
             "name": "Debug in Teams (Edge)",
             "configurations": [
-                "Launch Bot in Teams (Edge)",
-                "Attach to Bot"
+                "Launch App in Teams (Edge)",
+                "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
@@ -131,8 +131,8 @@
         {
             "name": "Debug in Teams (Chrome)",
             "configurations": [
-                "Launch Bot in Teams (Chrome)",
-                "Attach to Bot"
+                "Launch App in Teams (Chrome)",
+                "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
@@ -144,8 +144,8 @@
         {
             "name": "Debug in Outlook (Edge)",
             "configurations": [
-                "Launch Bot in Outlook (Edge)",
-                "Attach to Bot"
+                "Launch App in Outlook (Edge)",
+                "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
@@ -157,8 +157,8 @@
         {
             "name": "Debug in Outlook (Chrome)",
             "configurations": [
-                "Launch Bot in Outlook (Chrome)",
-                "Attach to Bot"
+                "Launch App in Outlook (Chrome)",
+                "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {

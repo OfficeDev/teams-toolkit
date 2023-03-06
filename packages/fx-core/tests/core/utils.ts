@@ -334,8 +334,7 @@ export class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryEvent(
     eventName: string,
     properties?: { [key: string]: string },
-    measurements?: { [key: string]: number },
-    errorProps?: string[]
+    measurements?: { [key: string]: number }
   ): void {
     // do nothing
   }

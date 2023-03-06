@@ -34,6 +34,23 @@ export class YamlFieldTypeError extends UserError {
     super(errorOptions);
   }
 }
+
+/**
+ * Yaml field is missing
+ */
+export class YamlFieldMissingError extends UserError {
+  constructor(field: string) {
+    const key = "error.yaml.YamlFieldMissingError";
+    const errorOptions: UserErrorOptions = {
+      source: "ConfigManager",
+      name: "YamlFieldMissingError",
+      message: getDefaultString(key, field, globalVars.ymlFilePath),
+      displayMessage: getLocalizedString(key, field, globalVars.ymlFilePath),
+    };
+    super(errorOptions);
+  }
+}
+
 /**
  * Invalid yaml action name
  */

@@ -2,7 +2,7 @@ import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
 import { globalVars } from "../../core/globalVars";
-import { InvalidYamlSchemaError, YamlFieldTypeError } from "../../error/yml";
+import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
 
@@ -23,11 +23,16 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
         return err(new YamlFieldTypeError(name, "array"));
       }
       for (const elem of value) {
-        if (!("uses" in elem && typeof elem["uses"] === "string")) {
+        if (!("uses" in elem)) {
+          return err(new YamlFieldMissingError(`${name}.uses`));
+        }
+        if (!(typeof elem["uses"] === "string")) {
           return err(new YamlFieldTypeError(`${name}.uses`, "string"));
         }
-
-        if (!("with" in elem && typeof elem["with"] === "object")) {
+        if (!("with" in elem)) {
+          return err(new YamlFieldMissingError(`${name}.with`));
+        }
+        if (!(typeof elem["with"] === "object")) {
           return err(new YamlFieldTypeError(`${name}.with`, "object"));
         }
         if (elem["env"]) {

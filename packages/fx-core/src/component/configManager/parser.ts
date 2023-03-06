@@ -88,11 +88,7 @@ export class YamlParser implements IYamlParser {
       globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {
-      if (error instanceof Error) {
-        return err(new InvalidYamlSchemaError());
-      } else {
-        return err(new InvalidYamlSchemaError());
-      }
+      return err(new InvalidYamlSchemaError());
     }
   }
 }

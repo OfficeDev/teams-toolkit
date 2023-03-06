@@ -907,11 +907,16 @@ describe("Collaborator APIs for V3", () => {
         platform: Platform.VSCode,
         projectPath: path.join(os.tmpdir(), randomAppName()),
       };
+      const mockedEnvTmp: RestoreFn = mockedEnv({
+        [CollaborationConstants.TeamsAppIdEnv]: undefined,
+        [CollaborationConstants.AadObjectIdEnv]: undefined,
+      });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
       assert.isTrue(result.isErr());
       if (result.isErr()) {
         assert.equal(result.error.name, SolutionError.FailedToGetTeamsAppId);
       }
+      mockedEnvTmp();
     });
   });
 

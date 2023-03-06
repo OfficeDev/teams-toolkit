@@ -69,6 +69,11 @@ jobs:
         with:
           fail_ci_if_error: true
 
+      - name: delay 10s for attempt 2
+        if: steps.codecov1.outcome == 'failure'
+        run: |
+          sleep 10s
+
       - name: CodeCov report attempt 2
         id: codecov2
         if: steps.codecov1.outcome == 'failure'
@@ -76,6 +81,11 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
+
+      - name: delay 10s for attempt 3
+        if: steps.codecov2.outcome == 'failure'
+        run: |
+          sleep 10s
 
       - name: CodeCov report attempt 3
         id: codecov3

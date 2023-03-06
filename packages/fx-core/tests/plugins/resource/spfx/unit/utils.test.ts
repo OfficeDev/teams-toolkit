@@ -187,7 +187,7 @@ describe("utils", () => {
     sinon.stub(cpUtils, "executeCommand").throws("run command error");
 
     const res = await Utils.findLatestVersion(undefined, "name", 0);
-    chai.expect(res).equal("latest");
+    chai.expect(res).to.be.undefined;
   });
 
   it("findGloballyInstalledVersion: exeute commmand error with undefined logger", async () => {

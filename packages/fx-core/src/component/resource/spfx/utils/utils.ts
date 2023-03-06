@@ -179,9 +179,8 @@ export class Utils {
     logger: LogProvider | undefined,
     packageName: string,
     timeoutInSeconds: number
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const timeout = timeoutInSeconds * 1000;
-    const defaultOutput = "latest";
     try {
       const output = await cpUtils.executeCommand(
         undefined,
@@ -199,11 +198,11 @@ export class Utils {
       if (match && match.groups) {
         return match.groups.version;
       } else {
-        return defaultOutput;
+        return undefined;
       }
     } catch (error) {
       logger?.error(`Failed to execute "npm view ${packageName} version"`);
-      return defaultOutput;
+      return undefined;
     }
   }
 }

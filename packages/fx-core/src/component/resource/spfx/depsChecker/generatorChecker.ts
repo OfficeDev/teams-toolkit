@@ -115,7 +115,7 @@ export class GeneratorChecker implements DependencyChecker {
     return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
   }
 
-  public async findLatestVersion(timeoutInSeconds?: number): Promise<string> {
+  public async findLatestVersion(timeoutInSeconds?: number): Promise<string | undefined> {
     return await Utils.findLatestVersion(this._logger, name, timeoutInSeconds ?? 0);
   }
 

@@ -22,7 +22,7 @@ export class PackageSelectOptionsHelper {
           versions[0] !== undefined
             ? getLocalizedString(
                 "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label",
-                versions[0]
+                "v" + versions[0]
               )
             : getLocalizedString(
                 "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
@@ -34,10 +34,15 @@ export class PackageSelectOptionsHelper {
       },
       {
         id: "installLocally",
-        label: getLocalizedString(
-          "plugins.spfx.questions.packageSelect.installLocally.label",
-          versions[1]
-        ),
+        label:
+          versions[1] !== undefined
+            ? getLocalizedString(
+                "plugins.spfx.questions.packageSelect.installLocally.withVersion.label",
+                "v" + versions[1]
+              )
+            : getLocalizedString(
+                "plugins.spfx.questions.packageSelect.installLocally.noVersion.label"
+              ),
       },
     ];
   }

@@ -197,7 +197,7 @@ describe("generator checker", () => {
       stub(cpUtils, "executeCommand").resolves("empty");
 
       const res = await generatorChecker.findLatestVersion(1);
-      chai.expect(res).equal("latest");
+      chai.expect(res).to.be.undefined;
     });
 
     it("findLatestVersion: exeute commmand error", async () => {
@@ -205,7 +205,7 @@ describe("generator checker", () => {
       stub(cpUtils, "executeCommand").throws("run command error");
 
       const res = await generatorChecker.findLatestVersion();
-      chai.expect(res).equal("latest");
+      chai.expect(res).to.be.undefined;
     });
   });
 });

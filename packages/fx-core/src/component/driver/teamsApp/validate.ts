@@ -60,19 +60,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
       return err(result.error);
     }
 
-    // Temporarily disable validate for manifest JSON schema change
-    // Will be removed after "groupchat" has been added back
-    if (!isValidationEnabled()) {
-      const validationNotice = getLocalizedString("driver.teamsApp.validate.skip", actionName);
-      if (context.platform === Platform.VS) {
-        context.logProvider.warning(validationNotice);
-      } else {
-        context.ui?.showMessage("warn", validationNotice, false);
-      }
-      return ok(new Map());
-    }
-
-    if (args.appPackagePath) {
+    if (isValidationEnabled() && args.appPackagePath) {
       let appPackagePath = args.appPackagePath;
       if (!path.isAbsolute(appPackagePath)) {
         appPackagePath = path.join(context.projectPath, appPackagePath);

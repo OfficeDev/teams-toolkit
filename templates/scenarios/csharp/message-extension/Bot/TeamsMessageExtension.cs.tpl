@@ -195,7 +195,7 @@ public class TeamsMessageExtension : TeamsActivityHandler
         };
 
         // By default the link unfurling result is cached in Teams for 30 minutes.
-        // The code has set a cache policy and removed the cache for the app.
+        // The code has set a cache policy and removed the cache for the app. Learn more here: https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet%2Cadvantages#remove-link-unfurling-cache
         var action = new CardAction
         {
             Type = "setCachePolicy",

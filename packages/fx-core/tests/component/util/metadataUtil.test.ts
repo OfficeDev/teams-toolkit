@@ -1,7 +1,6 @@
 import { err, FxError, LogProvider, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { TelemetryEvent, TelemetryProperty } from "../../../src/common/telemetry";
 import {
@@ -64,22 +63,15 @@ describe("metadata util", () => {
     },
     environmentFolderPath: "./envs",
   };
-  let mockedEnvRestore: RestoreFn | undefined;
   let tools: MockTools;
 
   beforeEach(() => {
     tools = new MockTools();
     setTools(tools);
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
   });
 
   afterEach(() => {
     sandbox.restore();
-    if (mockedEnvRestore) {
-      mockedEnvRestore();
-    }
   });
 
   it("should return YamlParsingError", async () => {

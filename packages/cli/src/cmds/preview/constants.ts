@@ -135,6 +135,8 @@ export const installApp = {
       "We detected that you have not yet installed the app in Teams first, please run 'teamsfx preview %s --m365-host teams' to install app.",
     manifestChanges:
       "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
+    manifestChangesV3:
+      "If you changed the manifest file, please run 'teamsfx provision %s' to install app again.",
   },
   bot: {
     description:

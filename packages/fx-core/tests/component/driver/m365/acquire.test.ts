@@ -55,12 +55,13 @@ describe("m365Title/acquire", async () => {
       appPackagePath: "fakePath",
     };
 
-    sinon.stub(PackageService.prototype, "sideLoading").resolves("test-title-id");
+    sinon.stub(PackageService.prototype, "sideLoading").resolves(["test-title-id", "test-app-id"]);
     sinon.stub(fs, "pathExists").resolves(true);
 
     const result = await acquireDriver.run(args, mockedDriverContext);
     chai.assert.isTrue(result.isOk());
     chai.assert.equal((result as any).value.get("M365_TITLE_ID"), "test-title-id");
+    chai.assert.equal((result as any).value.get("M365_APP_ID"), "test-app-id");
   });
 
   it("execute happy path", async () => {
@@ -68,11 +69,12 @@ describe("m365Title/acquire", async () => {
       appPackagePath: "fakePath",
     };
 
-    sinon.stub(PackageService.prototype, "sideLoading").resolves("test-title-id");
+    sinon.stub(PackageService.prototype, "sideLoading").resolves(["test-title-id", "test-app-id"]);
     sinon.stub(fs, "pathExists").resolves(true);
 
     const result = await acquireDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(result.result.isOk());
     chai.assert.equal((result.result as any).value.get("M365_TITLE_ID"), "test-title-id");
+    chai.assert.equal((result.result as any).value.get("M365_APP_ID"), "test-app-id");
   });
 });

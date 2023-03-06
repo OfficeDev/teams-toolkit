@@ -163,7 +163,7 @@ export default class PreviewEnv extends YargsCommand {
     }
     const envs = envRes.value;
     if (envs.TEAMS_APP_ID === undefined) {
-      return err(errors.TeamsAppIdNotExists());
+      return err(errors.TeamsAppIdNotExistsV3());
     }
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = envs.TEAMS_APP_ID as string;
 
@@ -402,21 +402,24 @@ export default class PreviewEnv extends YargsCommand {
     }
 
     // launch Outlook or Office
-    if (CLIUIInstance.interactive) {
-      const shouldContinue = await showInstallAppInTeamsMessage(
-        env.toLowerCase() === environmentManager.getLocalEnvName(),
-        teamsAppTenantId,
-        teamsAppId,
-        undefined,
-        browser,
-        browserArgs
-      );
-      if (!shouldContinue) {
-        return err(UserCancelError);
+    let internalId: string | undefined = envs["M365_APP_ID"];
+    if (!internalId) {
+      if (CLIUIInstance.interactive) {
+        const shouldContinue = await showInstallAppInTeamsMessage(
+          env.toLowerCase() === environmentManager.getLocalEnvName(),
+          teamsAppTenantId,
+          teamsAppId,
+          undefined,
+          browser,
+          browserArgs
+        );
+        if (!shouldContinue) {
+          return err(UserCancelError);
+        }
       }
-    }
 
-    const internalId = await getTeamsAppInternalId(teamsAppId);
+      internalId = await getTeamsAppInternalId(teamsAppId);
+    }
     if (internalId) {
       await openHubWebClient(
         botId === undefined,
@@ -429,7 +432,7 @@ export default class PreviewEnv extends YargsCommand {
       );
       cliLogger.necessaryLog(
         LogLevel.Warning,
-        util.format(constants.installApp.nonInteractive.manifestChanges, `--env ${env}`)
+        util.format(constants.installApp.nonInteractive.manifestChangesV3, `--env ${env}`)
       );
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
     } else {

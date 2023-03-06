@@ -22,7 +22,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
         title: "New Event Occurred!",
         appName: "Contoso App Notification",
         description: `This is a sample time-triggered notification (${timeStamp}).`,
-        notificationUrl: "https://www.adaptivecards.io/",
+        notificationUrl: "https://aka.ms/teamsfx-notification-new",
       })
     );
 

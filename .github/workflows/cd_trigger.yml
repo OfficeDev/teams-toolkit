@@ -24,10 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
+      zipLink: ${{ steps.downloadUrl.outputs.result }}
       pre_id: ${{ steps.preid.outputs.result }}
       server_version: ${{ steps.version.outputs.result }}
     steps:
       - name: Download artifact
+        id: downloadUrl
         uses: actions/github-script@v6
         with:
           script: |
@@ -47,6 +49,7 @@ jobs:
             });
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/release.zip`, Buffer.from(download.data));
+            return matchArtifact.url
 
       - name: Unzip artifact
         run: unzip release.zip
@@ -78,7 +81,8 @@ jobs:
               console.log("=========== stable")
               return "stable"
             }
-
+        
+            
   CallAzurePipeline:
     runs-on: ubuntu-latest
     needs: DownloadAndOutput
@@ -90,7 +94,7 @@ jobs:
           azure-devops-project-url: https://devdiv.visualstudio.com/InternalTools
           azure-pipeline-name: TeamsFx-Dev17-CD
           azure-devops-token: ${{ secrets.VS_ADO_PAT }}
-          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}}'
+          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}}'
   
   CheckSetupSuccess:
     runs-on: ubuntu-latest

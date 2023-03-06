@@ -98,6 +98,7 @@ export const TaskCommand = Object.freeze({
   setUpBot: "debug-set-up-bot",
   setUpSSO: "debug-set-up-sso",
   prepareManifest: "debug-prepare-manifest",
+  launchWebClient: "launch-web-client",
   provision: "provision",
   deploy: "deploy",
 });
@@ -147,6 +148,12 @@ export const TaskDefaultValue = Object.freeze({
   },
   startLocalTunnel: {
     ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
+    ngrokPath: "ngrok",
+    output: {
+      endpoint: "BOT_ENDPOINT",
+      domain: "BOT_DOMAIN",
+      id: "DEV_TUNNEL_ID",
+    },
   },
   setUpTab: {
     baseUrl: "https://localhost:53000",
@@ -154,6 +161,7 @@ export const TaskDefaultValue = Object.freeze({
   setUpBot: {
     botMessagingEndpoint: "/api/messages",
   },
+  env: "local",
 });
 
 export const Prerequisite = Object.freeze({

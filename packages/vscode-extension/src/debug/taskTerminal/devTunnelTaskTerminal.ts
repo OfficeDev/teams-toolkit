@@ -7,7 +7,6 @@
  */
 
 import * as vscode from "vscode";
-
 import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
 import {
   Tunnel,
@@ -19,21 +18,22 @@ import {
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
+
 import VsCodeLogInstance from "../../commonlib/log";
+import { ExtensionErrors, ExtensionSource } from "../../error";
 import { tools } from "../../handlers";
-import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
-import { getLocalDebugSession } from "../commonUtils";
+import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { devTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
-import { localTelemetryReporter } from "../localTelemetryReporter";
+import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,
   IBaseTunnelArgs,
   OutputInfo,
   TunnelError,
+  TunnelType,
 } from "./baseTunnelTaskTerminal";
-import { ExtensionErrors, ExtensionSource } from "../../error";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams Toolkit" };
@@ -47,7 +47,7 @@ export interface IDevTunnelArgs extends IBaseTunnelArgs {
   access?: string;
   // TODO: add tunnel name into dev tunnel args
   // name?: string;
-  output: {
+  output?: {
     endpoint?: string;
     domain?: string;
     id?: string;
@@ -114,25 +114,11 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  do(): Promise<Result<Void, FxError>> {
-    return Correlator.runWithId(getLocalDebugSession().id, () =>
-      localTelemetryReporter.runWithTelemetryProperties(
-        TelemetryEvent.DebugStartLocalTunnelTask,
-        {
-          // TODO: add dev tunnel telemetry
-          // [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          // [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
-        },
-        () => this._do()
-      )
-    );
-  }
-
-  private async _do(): Promise<Result<Void, FxError>> {
+  protected async _do(): Promise<Result<Void, FxError>> {
     await this.outputStartMessage(devTunnelDisplayMessages);
     await this.outputStartDevTunnelStepMessage(devTunnelDisplayMessages);
     await this.resolveArgs(this.args);
-    // TODO: delete the last debug tunnel if it is not deleted
+    await this.deleteExistingTunnel();
     const res = await this.start();
     if (res.isOk()) {
       await new Promise<void>((resolve) => {
@@ -146,6 +132,36 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       });
     }
     return res;
+  }
+
+  private async deleteExistingTunnel(): Promise<void> {
+    try {
+      if (!this.args?.output?.id) {
+        return;
+      }
+
+      const envsRes = await this.readPropertiesFromEnv(this.args.env);
+      if (envsRes.isErr()) {
+        return;
+      }
+      const id = envsRes.value[this.args.output.id];
+
+      const idArr = id?.split(".");
+      if (!idArr || idArr.length !== 2) {
+        return;
+      }
+
+      const tunnelInstance = await this.tunnelManagementClientImpl.getTunnel({
+        tunnelId: idArr[0],
+        clusterId: idArr[1],
+      });
+
+      if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
+        await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
+      }
+    } catch {
+      // Do nothing if delete existing tunnel failed.
+    }
   }
 
   private async start(): Promise<Result<Void, FxError>> {
@@ -238,9 +254,29 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  // TODO: generate task args telemetry
-  protected generateTaskArgsTelemetry(): string {
-    return "";
+  protected generateTelemetries(): { [key: string]: string } {
+    return {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        type: maskValue(this.args.type, Object.values(TunnelType)),
+        port: maskValue(
+          this.args.port?.toString(),
+          Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
+        ),
+        protocol: maskValue(this.args.protocol, Object.values(Protocol)),
+        access: maskValue(this.args.access, Object.values(Access)),
+        env: maskValue(this.args.env, [TaskDefaultValue.env]),
+        output: {
+          endpoint: maskValue(this.args.output?.endpoint, [
+            TaskDefaultValue.startLocalTunnel.output.endpoint,
+          ]),
+          domain: maskValue(this.args.output?.domain, [
+            TaskDefaultValue.startLocalTunnel.output.domain,
+          ]),
+          id: maskValue(this.args.output?.id, [TaskDefaultValue.startLocalTunnel.output.id]),
+        },
+      }),
+    };
   }
 
   private async saveOutputToEnv(

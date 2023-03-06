@@ -473,15 +473,24 @@ jobs:
             file="tests/e2e/$case"
             elegant_path="${file//.\//}"
 
+            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
+            duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
+
             email=""
             if grep -q "@author" $file; then
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
+
             if [[ "${{env.v3_flag}}" == "true" ]]; then
               email=""
               if grep -q "@owner" $file; then
                 email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
               fi
+
+              started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test for v3") | .started_at'`
+              completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test for v3") | .completed_at'`
+              duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
             fi
 
             status=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .conclusion'`
@@ -489,10 +498,6 @@ jobs:
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
-
-            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
-            duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
             if [ -z "$email" ]; then

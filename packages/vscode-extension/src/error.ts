@@ -55,5 +55,6 @@ export enum ExtensionErrors {
   PrepareManifestError = "PrepareManifestError",
   LoginCacheError = "LoginCacheError",
   DefaultManifestTemplateNotExistsError = "DefaultManifestTemplateNotExistsError",
+  DefaultAppPackageNotExistsError = "DefaultAppPackageNotExistsError",
   DevTunnelStartError = "DevTunnelStartError",
 }

@@ -11,6 +11,7 @@ import {
   ExtensionContext,
   QuickInputButton,
   QuickPick,
+  Terminal,
   TextDocument,
   window,
   workspace,
@@ -21,6 +22,7 @@ import { SelectFileConfig, SelectFolderConfig, UserCancelError } from "@microsof
 import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { sleep } from "../../../src/utils/commonUtils";
+import { VsCodeLogProvider } from "../../../src/commonlib/log";
 
 describe("UI Unit Tests", async () => {
   before(() => {
@@ -311,6 +313,77 @@ describe("UI Unit Tests", async () => {
       expect(showTextStub.calledOnce).to.be.false;
       expect(executedCommand).to.equal("markdown.showPreview");
       sinon.restore();
+    });
+  });
+
+  describe("runCommand", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("runs command successfully", async function (this: Mocha.Context) {
+      const timer = sandbox.useFakeTimers();
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const mockTerminal = stubInterface<Terminal>();
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+      sandbox.stub(window, "createTerminal").returns(mockTerminal);
+
+      const runCmd = ui.runCommand({ cmd: "test" });
+      await timer.tickAsync(1000);
+      const result = await runCmd;
+
+      expect(mockTerminal.show.calledOnce).to.be.true;
+      expect(mockTerminal.sendText.calledOnceWithExactly("test")).to.be.true;
+      expect(result.isOk()).is.true;
+      timer.restore();
+    });
+
+    it("runs command timeout", async function (this: Mocha.Context) {
+      const timer = sandbox.useFakeTimers();
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const mockTerminal = {
+        show: sinon.stub(),
+        sendText: sinon.stub(),
+        processId: new Promise((resolve: (value: string) => void, reject) => {
+          const wait = setTimeout(() => {
+            clearTimeout(wait);
+            resolve("1");
+          }, 1000);
+        }),
+      } as unknown as Terminal;
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+      sandbox.stub(window, "createTerminal").returns(mockTerminal);
+
+      const runCmd = ui.runCommand({ cmd: "test", timeout: 200 });
+      await timer.tickAsync(2000);
+      const result = await runCmd;
+
+      expect(result.isErr()).is.true;
+      timer.restore();
     });
   });
 });

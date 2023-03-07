@@ -53,3 +53,5 @@ export const PublishAppLearnMoreLink =
 export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
 
 export const YmlEnvNamePlaceholder = "-${{TEAMSFX_ENV}}";
+
+export const TerminalName = "Teams Toolkit";

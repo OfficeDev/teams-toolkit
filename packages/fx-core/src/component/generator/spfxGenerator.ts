@@ -57,7 +57,6 @@ export class SPFxGenerator {
   ): Promise<Result<undefined, FxError>> {
     const ui = context.userInteraction;
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
-
     try {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
@@ -101,7 +100,20 @@ export class SPFxGenerator {
         (context.logProvider as any).outputChannel.show();
       }
 
-      const yoEnv = await SPFxGenerator.getYoEnv(yoChecker);
+      const yoEnv: NodeJS.ProcessEnv = process.env;
+      if (yoEnv.PATH) {
+        yoEnv.PATH = isYoCheckerEnabled()
+          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+              process.env.PATH ?? ""
+            }`
+          : process.env.PATH;
+      } else {
+        yoEnv.Path = isYoCheckerEnabled()
+          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+              process.env.Path ?? ""
+            }`
+          : process.env.Path;
+      }
 
       const args = [
         isGeneratorCheckerEnabled()
@@ -214,25 +226,5 @@ export class SPFxGenerator {
       await progressHandler?.end(false);
       return err(ScaffoldError(error));
     }
-  }
-
-  private static async getYoEnv(yoChecker: YoChecker) {
-    const yoEnv: NodeJS.ProcessEnv = process.env;
-
-    if (yoEnv.PATH) {
-      yoEnv.PATH = isYoCheckerEnabled()
-        ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-            process.env.PATH ?? ""
-          }`
-        : process.env.PATH;
-    } else {
-      yoEnv.Path = isYoCheckerEnabled()
-        ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-            process.env.Path ?? ""
-          }`
-        : process.env.Path;
-    }
-
-    return yoEnv;
   }
 }

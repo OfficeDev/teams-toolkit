@@ -82,8 +82,8 @@ import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
-// import { AddWebPartDriver } from "../component/driver/addFeature/addWebPart";
-// import { AddWebPartArgs } from "../component/driver/addFeature/interface/AddWebPartArgs";
+import { AddWebPartDriver } from "../component/driver/addFeature/addWebPart";
+import { AddWebPartArgs } from "../component/driver/addFeature/interface/AddWebPartArgs";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -345,19 +345,18 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     QuestionMW(getQuestionsForAddWebpart),
     ProjectMigratorMWV3,
-    ContextInjectorMW,
     ConcurrentLockerMW,
   ])
   async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    // const driver: AddWebPartDriver = Container.get("spfx/add");
-    // const args: AddWebPartArgs = {
-    //   manifestPath: inputs.manifestTemplatePath,
-    //   localManifestPath: inputs.localManifestTemplatePath,
-    //   spfxFolder: inputs.spfxFolder,
-    //   webpartName: inputs.webpartName
-    // };
-    // res = await driver.run(args, context);
-    return ok(Void);
+    const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
+    const args: AddWebPartArgs = {
+      manifestPath: inputs.manifestTemplatePath,
+      localManifestPath: inputs.localManifestTemplatePath,
+      spfxFolder: inputs.spfxFolder,
+      webpartName: inputs.webpartName,
+    };
+    const contextV3: DriverContext = createDriverContext(inputs);
+    return await driver.run(args, contextV3);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])

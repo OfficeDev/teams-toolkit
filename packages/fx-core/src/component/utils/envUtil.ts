@@ -70,26 +70,37 @@ export class EnvUtil {
       await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
     );
 
-    // decrypt
-    const settingsRes = await settingsUtil.readSettings(projectPath);
-    if (settingsRes.isErr()) {
-      return err(settingsRes.error);
-    }
-    const projectId = settingsRes.value.trackingId;
-    const cryptoProvider = new LocalCrypto(projectId);
-    for (const key of Object.keys(parseResult.obj)) {
-      if (key.startsWith("SECRET_")) {
-        const raw = parseResult.obj[key];
-        if (raw.startsWith("crypto_")) {
-          const decryptRes = await cryptoProvider.decrypt(raw);
-          if (decryptRes.isErr()) return err(decryptRes.error);
-          parseResult.obj[key] = decryptRes.value;
+    // get .env.xxx.user path
+    const dotEnvSecretFilePath = dotEnvFilePath + ".user";
+    let parseResultSecret;
+    if (await fs.pathExists(dotEnvSecretFilePath)) {
+      // only need to decrypt the .env.xxx.user file
+      parseResultSecret = dotenvUtil.deserialize(
+        await fs.readFile(dotEnvSecretFilePath, { encoding: "utf8" })
+      );
+      // decrypt
+      const settingsRes = await settingsUtil.readSettings(projectPath);
+      if (settingsRes.isErr()) {
+        return err(settingsRes.error);
+      }
+      const projectId = settingsRes.value.trackingId;
+      const cryptoProvider = new LocalCrypto(projectId);
+      for (const key of Object.keys(parseResultSecret.obj)) {
+        if (key.startsWith("SECRET_")) {
+          const raw = parseResultSecret.obj[key];
+          if (raw.startsWith("crypto_")) {
+            const decryptRes = await cryptoProvider.decrypt(raw);
+            if (decryptRes.isErr()) return err(decryptRes.error);
+            parseResultSecret.obj[key] = decryptRes.value;
+          }
         }
       }
     }
+
     parseResult.obj.TEAMSFX_ENV = env;
     if (loadToProcessEnv) {
       merge(process.env, parseResult.obj);
+      if (parseResultSecret) merge(process.env, parseResultSecret.obj);
     }
 
     const props: { [key: string]: string } = {};
@@ -134,13 +145,18 @@ export class EnvUtil {
     }
     const projectId = settingsRes.value.trackingId;
     const cryptoProvider = new LocalCrypto(projectId);
+    const noneSecretEnv: DotenvOutput = {};
+    const secretEnv: DotenvOutput = {};
     for (const key of Object.keys(envs)) {
       let value = envs[key];
       if (value && key.startsWith("SECRET_")) {
         const res = await cryptoProvider.encrypt(value);
         if (res.isErr()) return err(res.error);
         value = res.value;
-        envs[key] = value;
+        // envs[key] = value;
+        secretEnv[key] = value;
+      } else {
+        noneSecretEnv[key] = value;
       }
     }
 
@@ -150,19 +166,33 @@ export class EnvUtil {
     const dotEnvFilePath =
       dotEnvFilePathRes.value || path.resolve(projectPath, "env", `.env.${env ? env : "dev"}`);
     const envFileExists = await fs.pathExists(dotEnvFilePath);
+    const dotEnvSecretFilePath = dotEnvFilePath + ".user";
+    const envSecretFileExists = await fs.pathExists(dotEnvSecretFilePath);
     const parsedDotenv = envFileExists
       ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
       : { obj: {} };
-    merge(parsedDotenv.obj, envs);
+    const parsedDotenvSecret = envSecretFileExists
+      ? dotenvUtil.deserialize(await fs.readFile(dotEnvSecretFilePath))
+      : { obj: {} };
+    merge(parsedDotenv.obj, noneSecretEnv);
+    merge(parsedDotenvSecret.obj, secretEnv);
 
     //serialize
     const content = dotenvUtil.serialize(parsedDotenv);
+    const contentSecret = dotenvUtil.serialize(parsedDotenvSecret);
 
     //persist
     if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
+    if (!envSecretFileExists) await fs.ensureFile(dotEnvSecretFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
+    await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
     if (!envFileExists) {
       TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
+    }
+    if (!envSecretFileExists) {
+      TOOLS.logProvider.info(
+        "  Created environment file (secret) at " + dotEnvSecretFilePath + EOL + EOL
+      );
     }
     return ok(undefined);
   }

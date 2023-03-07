@@ -25,7 +25,7 @@ import { getExecCommand, Utils } from "../utils/utils";
 import { isSpfxDecoupleEnabled } from "../../../../common/featureFlags";
 import { Constants } from "../utils/constants";
 
-const name = "yo";
+const name = Constants.YeomanPackageName;
 const supportedVersion = "4.3.1";
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;

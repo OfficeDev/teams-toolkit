@@ -20,6 +20,7 @@ import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { isSpfxDecoupleEnabled } from "../../common/featureFlags";
 
 export class SPFxGenerator {
   @hooks([
@@ -56,6 +57,7 @@ export class SPFxGenerator {
   ): Promise<Result<undefined, FxError>> {
     const ui = context.userInteraction;
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
+
     try {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
@@ -69,23 +71,27 @@ export class SPFxGenerator {
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
 
-      const yoInstalled = await yoChecker.isInstalled();
-      const generatorInstalled = await spGeneratorChecker.isInstalled();
+      if (!isSpfxDecoupleEnabled()) {
+        const yoInstalled = await yoChecker.isInstalled();
+        const generatorInstalled = await spGeneratorChecker.isInstalled();
 
-      if (!yoInstalled || !generatorInstalled) {
-        await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyInstall"));
+        if (!yoInstalled || !generatorInstalled) {
+          await progressHandler?.next(
+            getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
+          );
 
-        if (isYoCheckerEnabled()) {
-          const yoRes = await yoChecker.ensureDependency(context);
-          if (yoRes.isErr()) {
-            throw DependencyInstallError("yo");
+          if (isYoCheckerEnabled()) {
+            const yoRes = await yoChecker.ensureDependency(context);
+            if (yoRes.isErr()) {
+              throw DependencyInstallError("yo");
+            }
           }
-        }
 
-        if (isGeneratorCheckerEnabled()) {
-          const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
-          if (spGeneratorRes.isErr()) {
-            throw DependencyInstallError("sharepoint generator");
+          if (isGeneratorCheckerEnabled()) {
+            const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
+            if (spGeneratorRes.isErr()) {
+              throw DependencyInstallError("sharepoint generator");
+            }
           }
         }
       }
@@ -95,20 +101,7 @@ export class SPFxGenerator {
         (context.logProvider as any).outputChannel.show();
       }
 
-      const yoEnv: NodeJS.ProcessEnv = process.env;
-      if (yoEnv.PATH) {
-        yoEnv.PATH = isYoCheckerEnabled()
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-              process.env.PATH ?? ""
-            }`
-          : process.env.PATH;
-      } else {
-        yoEnv.Path = isYoCheckerEnabled()
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-              process.env.Path ?? ""
-            }`
-          : process.env.Path;
-      }
+      const yoEnv = await SPFxGenerator.getYoEnv(yoChecker);
 
       const args = [
         isGeneratorCheckerEnabled()
@@ -221,5 +214,25 @@ export class SPFxGenerator {
       await progressHandler?.end(false);
       return err(ScaffoldError(error));
     }
+  }
+
+  private static async getYoEnv(yoChecker: YoChecker) {
+    const yoEnv: NodeJS.ProcessEnv = process.env;
+
+    if (yoEnv.PATH) {
+      yoEnv.PATH = isYoCheckerEnabled()
+        ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+            process.env.PATH ?? ""
+          }`
+        : process.env.PATH;
+    } else {
+      yoEnv.Path = isYoCheckerEnabled()
+        ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+            process.env.Path ?? ""
+          }`
+        : process.env.Path;
+    }
+
+    return yoEnv;
   }
 }

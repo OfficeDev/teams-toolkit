@@ -840,6 +840,7 @@ export class VsCodeUI implements UserInteraction {
     const quickPick = window.createQuickPick<FxQuickPickItem>();
     quickPick.title = config.title;
     quickPick.busy = true;
+    quickPick.enabled = false;
     quickPick.show();
     try {
       return await config.func(config.inputs);

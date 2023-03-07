@@ -27,6 +27,7 @@ import { ngrokTunnelDisplayMessages, TunnelDisplayMessages } from "../constants"
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { DotenvOutput } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 
 export interface IBaseTunnelArgs {
   type?: string;
@@ -269,6 +270,15 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     } catch (error: any) {
       return err(TunnelError.TunnelEnvError(error));
     }
+  }
+
+  protected async readPropertiesFromEnv(
+    env: string | undefined
+  ): Promise<Result<DotenvOutput, FxError>> {
+    if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
+      return ok({});
+    }
+    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env);
   }
 }
 

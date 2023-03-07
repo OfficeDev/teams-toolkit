@@ -10,6 +10,7 @@ import {
   TaskCommand,
   TaskDefaultValue,
   TaskLabel,
+  TunnelType,
 } from "../../../../common/local";
 import {
   createResourcesTask,
@@ -96,6 +97,7 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
           // Keep consistency with upgraded configuration.
         }
       `;
+      task["args"]["type"] = TunnelType.ngrok;
       task["args"]["env"] = "local";
       task["args"]["output"] = assign(parse(comment), {
         endpoint: context.placeholderMapping.botEndpoint,
@@ -907,6 +909,7 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
     type: "teamsfx",
     command: TaskCommand.startLocalTunnel,
     args: {
+      type: TunnelType.ngrok,
       ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
       env: "local",
       output: assign(parse(placeholderComment), {

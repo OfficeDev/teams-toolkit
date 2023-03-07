@@ -18,7 +18,7 @@ import {
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { TaskDefaultValue } from "@microsoft/teamsfx-core";
+import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -32,7 +32,6 @@ import {
   IBaseTunnelArgs,
   OutputInfo,
   TunnelError,
-  TunnelType,
 } from "./baseTunnelTaskTerminal";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];

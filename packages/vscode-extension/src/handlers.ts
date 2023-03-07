@@ -852,7 +852,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
         description: localize("teamstoolkit.handlers.validate.appPackageOptionDescription"),
       };
       const config: SingleSelectConfig = {
-        name: "targetEnvName",
+        name: "validateMethod",
         title: localize("teamstoolkit.handlers.validate.selectTitle"),
         options: [schemaOption, appPackageOption],
       };

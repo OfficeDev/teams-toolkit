@@ -2,7 +2,16 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ContextV3, err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  Stage,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -56,7 +65,7 @@ export class SPFxGenerator {
     return ok(undefined);
   }
 
-  private static async doYeomanScaffold(
+  public static async doYeomanScaffold(
     context: ContextV3,
     inputs: Inputs,
     destinationPath: string
@@ -70,6 +79,7 @@ export class SPFxGenerator {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
       const solutionName = inputs[CoreQuestionNames.AppName] as string;
+      const isAddSPFx = inputs.stage == Stage.addWebpart;
 
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = camelCase(componentName);
@@ -172,10 +182,9 @@ export class SPFxGenerator {
       if (solutionName) {
         args.push("--solution-name", solutionName);
       }
-
       try {
         await cpUtils.executeCommand(
-          destinationPath,
+          isAddSPFx ? path.join(destinationPath, "src") : destinationPath,
           context.logProvider,
           {
             timeout: 2 * 60 * 1000,
@@ -192,8 +201,10 @@ export class SPFxGenerator {
       }
 
       const newPath = path.join(destinationPath, "src");
-      const currentPath = path.join(destinationPath, solutionName!);
-      await fs.rename(currentPath, newPath);
+      if (!isAddSPFx) {
+        const currentPath = path.join(destinationPath, solutionName!);
+        await fs.rename(currentPath, newPath);
+      }
 
       await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.updateManifest"));
       const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;

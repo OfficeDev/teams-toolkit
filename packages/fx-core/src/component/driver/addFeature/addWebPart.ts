@@ -1,18 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Result,
-  FxError,
-  ok,
-  err,
-  ManifestUtil,
-  Platform,
-  IStaticTab,
-  v3,
-  Inputs,
-  Stage,
-} from "@microsoft/teamsfx-api";
+import { Result, FxError, IStaticTab, v3, Inputs, Stage } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
@@ -20,22 +9,10 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
-import { AppStudioError } from "../../resource/appManifest/errors";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { HelpLinks } from "../../../common/constants";
-import { getAbsolutePath, wrapRun } from "../../utils/common";
+import { wrapRun } from "../../utils/common";
 import { AddWebPartArgs } from "./interface/AddWebPartArgs";
-import { Utils } from "../../resource/spfx/utils/utils";
-import { camelCase } from "lodash";
 import path from "path";
-import { getTemplatesFolder } from "../../../folder";
-import { YoChecker } from "../../resource/spfx/depsChecker/yoChecker";
-import { GeneratorChecker } from "../../resource/spfx/depsChecker/generatorChecker";
-import { isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../../common/tools";
-import { DependencyInstallError } from "../../resource/spfx/error";
-import { cpUtils } from "../../../common/deps-checker";
-import { DefaultManifestProvider } from "../../resource/appManifest/manifestProvider";
 import * as fs from "fs-extra";
 import * as util from "util";
 import { ManifestTemplate } from "../../resource/spfx/utils/constants";

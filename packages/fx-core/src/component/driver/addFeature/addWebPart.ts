@@ -42,25 +42,24 @@ import { ManifestTemplate } from "../../resource/spfx/utils/constants";
 import { SPFxGenerator } from "../../generator/spfxGenerator";
 import { createContextV3 } from "../../utils";
 import { SPFXQuestionNames } from "../../resource/spfx/utils/questions";
-import { NoConfigurationError } from "../../resource/spfx/error";
+import { Constants } from "./utility/constants";
+import { NoConfigurationError } from "./error/noConfigurationError";
 
-const actionName = "spfx/add";
-
-@Service(actionName)
+@Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {
   description = getLocalizedString("driver.spfx.add.description");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([addStartAndEndTelemetry(Constants.ActionName, Constants.ActionName)])
   public async run(
     args: AddWebPartArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const wrapContext = new WrapDriverContext(context, Constants.ActionName, Constants.ActionName);
     return wrapRun(() => this.add(args, wrapContext));
   }
 
   public async execute(args: AddWebPartArgs, context: DriverContext): Promise<ExecutionResult> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const wrapContext = new WrapDriverContext(context, Constants.ActionName, Constants.ActionName);
     const res = await this.run(args, wrapContext);
     return {
       result: res,
@@ -74,19 +73,52 @@ export class AddWebPartDriver implements StepDriver {
     const manifestPath = args.manifestPath;
     const localManifestPath = args.localManifestPath;
 
-    const yorcPath = path.join(context.projectPath, "src", ".yo-rc.json");
+    const yorcPath = path.join(spfxFolder, Constants.YO_RC_FILE);
     if (!(await fs.pathExists(yorcPath))) {
-      throw NoConfigurationError();
+      throw new NoConfigurationError();
     }
 
     const inputs: Inputs = { platform: context.platform, stage: Stage.addWebpart };
     inputs[SPFXQuestionNames.webpart_name] = webpartName;
+    inputs["spfxFolder"] = spfxFolder;
+    inputs["manifestPath"] = manifestPath;
+    inputs["localManifestPath"] = localManifestPath;
     const yeomanRes = await SPFxGenerator.doYeomanScaffold(
       createContextV3(),
       inputs,
       context.projectPath
     );
     if (yeomanRes.isErr()) throw yeomanRes.error;
+
+    const componentId = yeomanRes.value;
+    const remoteStaticSnippet: IStaticTab = {
+      entityId: componentId,
+      name: webpartName,
+      contentUrl: util.format(Constants.REMOTE_CONTENT_URL, componentId, componentId),
+      websiteUrl: ManifestTemplate.WEBSITE_URL,
+      scopes: ["personal"],
+    };
+    const localStaticSnippet: IStaticTab = {
+      entityId: componentId,
+      name: webpartName,
+      contentUrl: util.format(Constants.LOCAL_CONTENT_URL, componentId, componentId),
+      websiteUrl: ManifestTemplate.WEBSITE_URL,
+      scopes: ["personal"],
+    };
+
+    inputs["addManifestPath"] = localManifestPath;
+    const localRes = await manifestUtils.addCapabilities(
+      { ...inputs, projectPath: context.projectPath },
+      [{ name: "staticTab", snippet: localStaticSnippet }]
+    );
+    if (localRes.isErr()) throw localRes.error;
+
+    inputs["addManifestPath"] = manifestPath;
+    const remoteRes = await manifestUtils.addCapabilities(
+      { ...inputs, projectPath: context.projectPath },
+      [{ name: "staticTab", snippet: remoteStaticSnippet }]
+    );
+    if (remoteRes.isErr()) throw remoteRes.error;
 
     return new Map();
   }

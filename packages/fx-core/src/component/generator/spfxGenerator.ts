@@ -63,7 +63,7 @@ export class SPFxGenerator {
     context: ContextV3,
     inputs: Inputs,
     destinationPath: string
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<string, FxError>> {
     const ui = context.userInteraction;
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
     try {
@@ -149,7 +149,7 @@ export class SPFxGenerator {
         args.push("--solution-name", solutionName);
       }
       await cpUtils.executeCommand(
-        isAddSPFx ? path.join(destinationPath, "src") : destinationPath,
+        isAddSPFx ? inputs["spfxFolder"] : destinationPath,
         context.logProvider,
         {
           timeout: 2 * 60 * 1000,
@@ -205,7 +205,7 @@ export class SPFxGenerator {
       }
 
       await progressHandler?.end(true);
-      return ok(undefined);
+      return ok(componentId);
     } catch (error) {
       if ((error as any).name === "DependencyInstallFailed") {
         const globalYoVersion = Utils.getPackageVersion("yo");

@@ -63,6 +63,7 @@ const config = {
       template: "./src/commonlib/codeFlowResult/index.html",
       filename: "codeFlowResult/index.html",
     }),
+    new webpack.DefinePlugin({ "process.env.TEAMSFX_V3": JSON.stringify("true") }),
     new CopyPlugin({
       patterns: [
         {

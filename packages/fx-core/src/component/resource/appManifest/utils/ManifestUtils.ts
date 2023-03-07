@@ -107,7 +107,12 @@ export class ManifestUtils {
     capabilities: v3.ManifestCapability[],
     isM365 = false
   ): Promise<Result<undefined, FxError>> {
-    const appManifestRes = await this.readAppManifest(inputs.projectPath);
+    let appManifestRes;
+    if (isV3Enabled()) {
+      appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
+    } else {
+      appManifestRes = await this.readAppManifest(inputs.projectPath);
+    }
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
     for (const capability of capabilities) {

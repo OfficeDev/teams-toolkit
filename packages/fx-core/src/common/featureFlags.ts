@@ -49,3 +49,7 @@ export function isTDPIntegrationEnabled(): boolean {
 export function isOfficeAddinEnabled(): boolean {
   return isV3Enabled();
 }
+
+export function isSpfxDecoupleEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.SpfxDecouple, false);
+}

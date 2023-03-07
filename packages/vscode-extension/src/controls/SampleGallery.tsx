@@ -29,6 +29,7 @@ import VideoFilterApp from "../../img/webview/sample/video-filter-app-sample-in-
 import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
 import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-tab-and-outlook-add-in.png";
+import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -59,6 +60,7 @@ const imageMapping: { [p: string]: any } = {
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
+  "dev-assist-dashboard": DevAssistDashboard,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

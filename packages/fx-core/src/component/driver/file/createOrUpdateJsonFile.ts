@@ -21,7 +21,7 @@ const actionName = "file/createOrUpdateJsonFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
 
 @Service(actionName) // DO NOT MODIFY the service name
-export class UpdateJsonDriver implements StepDriver {
+export class CreateOrUpdateJsonFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateJsonFile.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])

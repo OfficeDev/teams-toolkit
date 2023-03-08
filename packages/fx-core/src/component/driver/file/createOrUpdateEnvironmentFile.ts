@@ -24,7 +24,7 @@ const actionName = "file/createOrUpdateEnvironmentFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
 
 @Service(actionName) // DO NOT MODIFY the service name
-export class UpdateEnvDriver implements StepDriver {
+export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateEnvironmentFile.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])

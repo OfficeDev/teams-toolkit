@@ -20,7 +20,7 @@ const actionName = "env/addEnvironmentVariable";
 const helpLink = "https://aka.ms/teamsfx-actions/env-addEnvironmentVariable";
 
 @Service(actionName) // DO NOT MODIFY the service name
-export class AddEnvDriver implements StepDriver {
+export class AddEnvironmentVariableDriver implements StepDriver {
   description = getLocalizedString("driver.env.addEnvironmentVariable.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])

@@ -84,3 +84,8 @@ Once deployed, you may want to distribute your application to your organization'
 
 - From Visual Studio Code: open the Teams Toolkit and click `Publish to Teams` or open the command palette and select: `Teams: Publish to Teams`.
 - From TeamsFx CLI: run command `teamsfx publish` in your project directory.
+
+## Current limitations on mobile platform
+- On IOS (and a few Android) mobile platform, if user close the Teams App, he would have to sign in again due to browser [blocks third-party cookies](https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more) and this results in additional prompts. Related issue can be found [here](https://github.com/OfficeDev/TeamsFx/issues/7574).
+
+- Due to system webview limitations, users in the tenant with conditional access policies applied cannot consent permissions when conduct an OAuth flow within the Teams mobile clients, it would show error: "xxx requires you to secure this device...".

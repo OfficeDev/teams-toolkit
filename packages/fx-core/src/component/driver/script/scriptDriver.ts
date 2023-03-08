@@ -78,7 +78,7 @@ export class ScriptDriver implements StepDriver {
     args: ScriptDriverArgs,
     context: DriverContext
   ): Promise<Result<[string, DotenvOutput], FxError>> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let workingDir = args.workingDirectory || ".";
       workingDir = path.isAbsolute(workingDir)
         ? workingDir
@@ -106,14 +106,17 @@ export class ScriptDriver implements StepDriver {
         command = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${args.run}"`;
       }
       context.logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
-      if (context.ui?.runCommand)
-        context.ui.runCommand({
+      if (context.ui?.runCommand) {
+        const uiRes = await context.ui.runCommand({
           cmd: command,
           workingDirectory: workingDir,
           shell: shell,
           timeout: args.timeout,
         });
-      else {
+        if (uiRes.isErr()) resolve(err(uiRes.error));
+        resolve(ok(["", {}]));
+        return;
+      } else {
         exec(
           command,
           {

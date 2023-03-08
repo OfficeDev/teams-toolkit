@@ -15,11 +15,9 @@ import fs from "fs-extra";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
-
   beforeEach(() => {
     sandbox.stub(tools, "waitSeconds").resolves();
   });
-
   afterEach(() => {
     sandbox.restore();
   });
@@ -116,7 +114,7 @@ describe("Script Driver test", () => {
       assert.deepEqual(output, { KEY: "VALUE" });
     }
   });
-  it("executeCommand using ui.runCommand()", async () => {
+  it("execute command ui.runCommand()", async () => {
     const args = {
       workingDirectory: "./",
       shell: "cmd",

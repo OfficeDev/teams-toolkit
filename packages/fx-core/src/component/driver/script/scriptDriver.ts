@@ -38,9 +38,9 @@ export class ScriptDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const res = await this.run(args, ctx);
-    const summary = `${res.isOk() ? "success" : "failed"} to execute command '${
-      (args as any).run
-    }'`;
+    const summary = `${
+      res.isOk() ? "success" : "failed"
+    } to execute command '${this.maskSecretValues((args as any).run)}'`;
     return { result: res, summaries: [summary] };
   }
   async execCallback(
@@ -67,7 +67,7 @@ export class ScriptDriver implements StepDriver {
     }
     if (error) {
       await context.logProvider.error(
-        `Failed to run command: "${command}" on path: "${workingDir}".`
+        `Failed to run command: "${this.maskSecretValues(command)}" on path: "${workingDir}".`
       );
       resolve(err(assembleError(error)));
     } else {

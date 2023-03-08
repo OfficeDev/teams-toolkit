@@ -203,7 +203,7 @@ export class EnvUtil {
     if (!envFolderPath) return ok([]);
     const list = await fs.readdir(envFolderPath);
     const envs = list
-      .filter((fileName) => fileName.startsWith(".env."))
+      .filter((fileName) => fileName.startsWith(".env.") && !fileName.endsWith(".user"))
       .map((fileName) => fileName.substring(5));
     return ok(envs);
   }

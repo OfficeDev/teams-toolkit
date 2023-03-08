@@ -256,6 +256,10 @@ jobs:
         with:
           node-version: 16
 
+      - name: Setup Azure Functions Core Tools For Linux
+        run: |
+          sudo npm install --unsafe-perm -g azure-functions-core-tools@4
+
       - name: Setup legacy-peer-deps
         run: |
           npm config set legacy-peer-deps true
@@ -309,6 +313,8 @@ jobs:
           TEAMSFX_V3: "true"
           TEAMSFX_DEBUG_TEMPLATE: "true"
           NODE_ENV: "development"
+          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then

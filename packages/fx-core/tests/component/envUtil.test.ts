@@ -125,11 +125,10 @@ describe("env utils", () => {
     const encrypted = encRes.value;
     sandbox
       .stub(fs, "readFile")
-      .resolves(
-        ("TEAMSFX_ENV=env\nTEAMS_APP_ID=testappid\nTAB_ENDPOINT=testendpoint\n" +
-          "SECRET_ABC=" +
-          encrypted) as any
-      );
+      .onFirstCall()
+      .resolves("TEAMSFX_ENV=env\nTEAMS_APP_ID=testappid\nTAB_ENDPOINT=testendpoint" as any)
+      .onSecondCall()
+      .resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.readEnv(".", "dev");

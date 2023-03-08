@@ -8,7 +8,7 @@
 import * as util from "util";
 import * as vscode from "vscode";
 import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
+import { envUtil, isV3Enabled, TunnelType } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
@@ -37,11 +37,6 @@ export interface IBaseTunnelArgs {
     domain?: string;
   };
 }
-
-export const TunnelType = Object.freeze({
-  devTunnel: "dev-tunnel",
-  ngrok: "ngrok",
-});
 
 export type OutputInfo = {
   file: string | undefined;

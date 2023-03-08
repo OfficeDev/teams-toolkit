@@ -1,7 +1,7 @@
 import * as jsonschema from "jsonschema";
 import fs from "fs-extra";
 import * as path from "path";
-import { Inputs, Question, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   NodeVersionNotSupportedError,
@@ -10,12 +10,15 @@ import {
 } from "../error";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
+import { PackageSelectOptionsHelper } from "./question-helper";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
   webpart_name = "spfx-webpart-name",
   webpart_desp = "spfx-webpart-desp",
   version_check = "spfx-version-check",
+  load_package_version = "spfx-load-package-version",
+  use_global_package_or_install_local = "spfx-use-global-package-or-install-local",
 }
 
 export const frameworkQuestion: Question = {
@@ -102,5 +105,26 @@ export const versionCheckQuestion: Question = {
       throw NodeVersionNotSupportedError(nodeMajorVersion ?? "");
     }
     return undefined;
+  },
+};
+
+export const loadPackageVersions: Question = {
+  type: "func",
+  name: SPFXQuestionNames.load_package_version,
+  title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+  func: async (inputs: Inputs) => {
+    await PackageSelectOptionsHelper.loadOptions();
+    return undefined;
+  },
+};
+
+export const spfxPackageSelectQuestion: Question = {
+  type: "singleSelect",
+  name: SPFXQuestionNames.use_global_package_or_install_local,
+  title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+  staticOptions: [],
+  placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
+  dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    return PackageSelectOptionsHelper.getOptions();
   },
 };

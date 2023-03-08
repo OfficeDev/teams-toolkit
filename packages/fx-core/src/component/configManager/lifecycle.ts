@@ -1,11 +1,11 @@
 import { ok, err, FxError, Result, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { Container } from "typedi";
+import { InvalidYmlActionNameError } from "../../error/yml";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { TeamsFxTelemetryReporter } from "../utils/teamsFxTelemetryReporter";
 import { component, lifecycleExecutionEvent, SummaryConstant, TelemetryProperty } from "./constant";
-import { DriverNotFoundError } from "./error";
 import {
   DriverDefinition,
   LifecycleName,
@@ -325,7 +325,7 @@ export class Lifecycle implements ILifecycle {
     const drivers: DriverInstance[] = [];
     for (const def of this.driverDefs) {
       if (!Container.has(def.uses)) {
-        return err(new DriverNotFoundError(def.name ?? "", def.uses));
+        return err(new InvalidYmlActionNameError(def.uses));
       }
       const driver = Container.get<StepDriver>(def.uses);
       drivers.push({ instance: driver, ...def });

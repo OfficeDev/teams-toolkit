@@ -46,13 +46,16 @@ import { manifestUtils } from "../../../src/component/resource/appManifest/utils
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import EventEmitter from "events";
 import proxyquire from "proxyquire";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: ContextV3;
+  let mockedEnvRestore: RestoreFn;
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3(newProjectSettingsV3());
@@ -235,6 +238,7 @@ describe("OfficeAddinGenerator", function () {
 
   afterEach(async () => {
     sinon.restore();
+    mockedEnvRestore();
   });
 });
 

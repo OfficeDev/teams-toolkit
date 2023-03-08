@@ -17,15 +17,12 @@ import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
 
-const actionName = "file/updateJson";
-const helpLink = "https://aka.ms/teamsfx-actions/file-updateJson";
+const actionName = "file/createOrUpdateJsonFile";
+const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
 
-/**
- * @deprecated - use createOrUpdateJsonFile instead
- */
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateJsonDriver implements StepDriver {
-  description = getLocalizedString("driver.file.updateJson.description");
+  description = getLocalizedString("driver.file.createOrUpdateJsonFile.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -78,7 +75,7 @@ export class UpdateJsonDriver implements StepDriver {
       await fs.writeFile(appsettingsPath, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
       return {
         output: new Map<string, string>(),
-        summaries: [getLocalizedString("driver.file.updateJson.summary.withTarget", args.target)],
+        summaries: [getLocalizedString("driver.file.createOrUpdateJsonFile.summary", args.target)],
       };
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {

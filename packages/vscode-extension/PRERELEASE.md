@@ -22,16 +22,16 @@ Sample additions:
 
 Bug fixes:
 
-- Fixed an issue where you might see runtime errors on Teams Toolkit extension pagg ([#7887](https://github.com/OfficeDev/TeamsFx/pull/7887))
+- Fixed an issue where you might see runtime errors on the Teams Toolkit extension page. ([#7887](https://github.com/OfficeDev/TeamsFx/pull/7887))
 - Fixed an issue where the app name is not shown properly on the scaffolding success message. ([#7839](https://github.com/OfficeDev/TeamsFx/pull/7839))
-- Fixed an issue for several how-to guides that aren't pointing to pre-release compitable versions. ([#7830](https://github.com/OfficeDev/TeamsFx/pull/7830))
-- Fixed an [issue 7410](https://github.com/OfficeDev/TeamsFx/issues/7410) where `Deploy Teams app manifest` option is missing ([#7755](https://github.com/OfficeDev/TeamsFx/pull/7755))
+- Fixed an issue for several how-to guides that don't point to pre-release compatible versions. ([#7830](https://github.com/OfficeDev/TeamsFx/pull/7830))
+- Fixed an [issue 7410](https://github.com/OfficeDev/TeamsFx/issues/7410) where the `Deploy Teams app manifest` option is missing. ([#7755](https://github.com/OfficeDev/TeamsFx/pull/7755))
 
 ### Feb 22, 2023
 
 New features:
 
-Updated the fundamental design of Teams Toolkit to make it configurable and transparent as much as possible, the new design allows you to:
+Updated the fundamental design of Teams Toolkit to make it configurable and transparent as much as possible. The new design allows you to:
 
 - Use existing infrastructure, resource groups, and more when provisioning.
 - Use an existing Teams app ID.
@@ -42,28 +42,28 @@ Updated the fundamental design of Teams Toolkit to make it configurable and tran
 Enhancements:
 
 - Removed subscriptions from the sidebar's "ACCOUNTS" section.
-- Removed the "ENVIRONMENT" section from sidebar.
+- Removed the "ENVIRONMENT" section from the sidebar.
 - Removed the "Edit manifest file" button from the sidebar's "DEVELOPMENT" section.
 - Added a "Add environment" button to the sidebar's "DEVELOPMENT" section.
-- Added a "Manage collaborator" button to sidebar's "DEVELOPMENT" section.
+- Added a "Manage collaborator" button to the sidebar's "DEVELOPMENT" section.
 - Removed `.fx` folder from Teams Toolkit scaffolded templates.
 - Moved `template/appPackage` to the root folder for templates.
-- Added a `env` folder to manage all `.env` files in template root folders.
-- Added a `infra` folder to organize bicep files in template root folders.
+- Added an `env` folder to manage all `.env` files in template root folders.
+- Added an `infra` folder to organize bicep files in template root folders.
 - Added `teamsapp.yml` and `teamsapp.local.yml` files to manage configuration and lifecycles in template root folders.
-- Flattened the source code file structure for tempaltes, application code is no longer organized by capability.
+- Flattened the source code file structure for templates. Application code is no longer organized by capability.
 
 Sample addition:
 
-- `Team Central Dashboard`: A single dashboard displaying data chats and content from Microsoft Graph to accelerate team collaboration and personal productivity.
+- `Team Central Dashboard`: A dashboard displaying data chats and content from Microsoft Graph to accelerate team collaboration and personal productivity.
 
   ![dashboard](https://user-images.githubusercontent.com/11220663/223746585-49799058-71ed-4c92-bce0-5aefd26ea3e4.png)
 
-## Flrequenty asked questions
+## Frequently asked questions
 
 ### What does pre-release mean
 
-Pre-release is meant for those who are eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be major.
+Pre-release is meant for those eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be significant.
 
 ### What about my existing Teams Toolkit projects
 

@@ -1,22 +1,46 @@
 # Teams Toolkit v5.0 Pre-release
 
-### What does pre-release mean?
-Pre-release is meant for those who are eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be major.
+## Changelog
 
-We've addressed a number of reported bugs and added major changes in this release based on your feedback to make Teams Toolkit more flexible. Some of the key highlights to these changes include:
+### Mar 14, 2023
 
-- Use existing infrastructure, resource groups, and more when provisioning
-- Use an existing Teams app ID
-- Use an existing Azure AD app registration ID
-- Use a different tunneling solution or customize the defaults
+New features:
+
+- Supported create, debug, and deploy an [Outlook add-in](https://learn.microsoft.com/office/dev/add-ins/outlook/outlook-add-ins-overview) project.
+- Improved debug experience for apps across Microsoft 365 with automatic sideloading and channel registration.
+- Disabled commands from tree view that doesn't allow concurrent executions.
+
+Sample additions:
+
+- `Developer Assist Dashboard`: A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.
+  
+  ![devdashboard](https://user-images.githubusercontent.com/11220663/223749194-c83c6788-8138-45ca-a97c-7027a7beafab.png)
+
+- `Hello World Teams Tab and Outlook add-in`: A hello world project that contains both Teams Tab and Outlook add-in capability
+  
+  ![outlookaddin](https://user-images.githubusercontent.com/11220663/223749477-7dce433b-f569-49ec-b676-9a384e5ad0f1.png)
+
+Bug fixes:
+
+- Fixed an issue where you might see runtime errors on Teams Toolkit extension pagg ([#7887](https://github.com/OfficeDev/TeamsFx/pull/7887))
+- Fixed an issue where the app name is not shown properly on the scaffolding success message. ([#7839](https://github.com/OfficeDev/TeamsFx/pull/7839))
+- Fixed an issue for several how-to guides that aren't pointing to pre-release compitable versions. ([#7830](https://github.com/OfficeDev/TeamsFx/pull/7830))
+- Fixed an [issue 7410](https://github.com/OfficeDev/TeamsFx/issues/7410) where `Deploy Teams app manifest` option is missing ([#7755](https://github.com/OfficeDev/TeamsFx/pull/7755))
+
+### Feb 22, 2023
+
+New features:
+
+Updated the fundamental design of Teams Toolkit to make it configurable and transparent as much as possible, the new design allows you to:
+
+- Use existing infrastructure, resource groups, and more when provisioning.
+- Use an existing Teams app ID.
+- Use an existing Azure AD app registration ID.
+- Customizable tunneling solution.
 - Add custom steps to debugging, provisioning, deploying, publishing, etc.
 
-### What about my existing Teams Toolkit projects?
-The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+Enhancements:
 
-Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).
-
-Changelog:
 - Removed subscriptions from the sidebar's "ACCOUNTS" section.
 - Removed the "ENVIRONMENT" section from sidebar.
 - Removed the "Edit manifest file" button from the sidebar's "DEVELOPMENT" section.
@@ -26,5 +50,23 @@ Changelog:
 - Moved `template/appPackage` to the root folder for templates.
 - Added a `env` folder to manage all `.env` files in template root folders.
 - Added a `infra` folder to organize bicep files in template root folders.
-- Added teamsapp.yml and teamsapp.local.yml files to manage configuration and lifecycles in template root folders.
+- Added `teamsapp.yml` and `teamsapp.local.yml` files to manage configuration and lifecycles in template root folders.
 - Flattened the source code file structure for tempaltes, application code is no longer organized by capability.
+
+Sample addition:
+
+- `Team Central Dashboard`: A single dashboard displaying data chats and content from Microsoft Graph to accelerate team collaboration and personal productivity.
+
+  ![dashboard](https://user-images.githubusercontent.com/11220663/223746585-49799058-71ed-4c92-bce0-5aefd26ea3e4.png)
+
+## Flrequenty asked questions
+
+### What does pre-release mean
+
+Pre-release is meant for those who are eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be major.
+
+### What about my existing Teams Toolkit projects
+
+The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+
+Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).

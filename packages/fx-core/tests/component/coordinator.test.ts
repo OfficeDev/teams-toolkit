@@ -55,7 +55,7 @@ import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelp
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
-import { createContextV3 } from "../../src/component/utils";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
@@ -395,7 +395,7 @@ describe("component coordinator test", () => {
 
   it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -487,7 +487,7 @@ describe("component coordinator test", () => {
   });
   it("provision success with subscriptionId in yml", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -555,7 +555,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -635,7 +635,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with existing resource groups in VS Code", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -714,7 +714,7 @@ describe("component coordinator test", () => {
   });
   it("provision spfx project shows sucess notification", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -772,7 +772,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when user directly update yml with empty subscriptionId", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -824,7 +824,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get subInfo", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -894,7 +894,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed getLifecycleDescriptions Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -975,7 +975,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with partial success", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1067,7 +1067,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getM365TenantId Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1134,7 +1134,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getSelectedSubscription Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1208,7 +1208,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1271,7 +1271,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs for existing resource group", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1336,7 +1336,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with CLI inputs: create resource group failed", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1398,7 +1398,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when getting azure credentials", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1483,7 +1483,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when checking resource group existence", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1573,7 +1573,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [],
         run: async (ctx: DriverContext) => {
@@ -1612,9 +1612,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("provsision failed with check whether m365 tenant matched fail", async () => {
+  it("provision failed with check whether m365 tenant matched fail", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1698,7 +1698,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with no subscription permission", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1843,7 +1843,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      deploy: {
         name: "configureApp",
         driverDefs: [],
         run: async (ctx: DriverContext) => {
@@ -1974,7 +1974,48 @@ describe("component coordinator test", () => {
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
   });
-
+  it("provision lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.provision(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
+  it("deploy lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.deploy(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
+  it("publish lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.publish(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
   it("convertExecuteResult ok", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = ok(value);

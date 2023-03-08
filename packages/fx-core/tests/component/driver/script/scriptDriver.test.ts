@@ -10,7 +10,7 @@ import { DriverContext } from "../../../../src/component/driver/interface/common
 import { scriptDriver } from "../../../../src/component/driver/script/scriptDriver";
 import { assert } from "chai";
 import { MockUserInteraction } from "../../../core/utils";
-import { err, UserError } from "@microsoft/teamsfx-api";
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 
 describe("Script Driver test", () => {
@@ -116,11 +116,12 @@ describe("Script Driver test", () => {
       assert.deepEqual(output, { KEY: "VALUE" });
     }
   });
-  it("executeCommand failed", async () => {
+  it("executeCommand using ui.runCommand()", async () => {
     const args = {
       workingDirectory: "./",
-      run: "abc",
       shell: "cmd",
+      run: "echo 111",
+      redirectTo: "./log",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -128,7 +129,8 @@ describe("Script Driver test", () => {
       ui: new MockUserInteraction(),
       projectPath: "./",
     } as DriverContext;
-    const res = await scriptDriver.executeCommand(args, context);
-    assert.isTrue(res.isErr());
+    sandbox.stub(context.ui!, "runCommand").resolves(ok(""));
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
   });
 });

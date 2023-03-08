@@ -106,48 +106,37 @@ export class ScriptDriver implements StepDriver {
         command = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${args.run}"`;
       }
       context.logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
-      exec(
-        command,
-        {
+      if (context.ui?.runCommand)
+        context.ui.runCommand({
+          cmd: command,
+          workingDirectory: workingDir,
           shell: shell,
-          cwd: workingDir,
-          encoding: "utf8",
-          env: { ...process.env },
           timeout: args.timeout,
-        },
-        async (error, stdout, stderr) => {
-          await this.execCallback(
-            resolve,
-            error,
-            stdout,
-            stderr,
-            command,
-            context,
-            workingDir,
-            appendFile
-          );
-          // if (stdout) {
-          //   await context.logProvider.info(this.maskSecretValues(stdout));
-          //   if (appendFile) {
-          //     await fs.appendFile(appendFile, stdout);
-          //   }
-          // }
-          // if (stderr) {
-          //   await context.logProvider.error(this.maskSecretValues(stderr));
-          //   if (appendFile) {
-          //     await fs.appendFile(appendFile, stderr);
-          //   }
-          // }
-          // if (error) {
-          //   await context.logProvider.error(
-          //     `Failed to run command: "${command}" on path: "${workingDir}".`
-          //   );
-          //   resolve(err(assembleError(error)));
-          // } else {
-          //   resolve(ok([stdout, {}]));
-          // }
-        }
-      );
+        });
+      else {
+        exec(
+          command,
+          {
+            shell: shell,
+            cwd: workingDir,
+            encoding: "utf8",
+            env: { ...process.env },
+            timeout: args.timeout,
+          },
+          async (error, stdout, stderr) => {
+            await this.execCallback(
+              resolve,
+              error,
+              stdout,
+              stderr,
+              command,
+              context,
+              workingDir,
+              appendFile
+            );
+          }
+        );
+      }
     });
   }
   parseKeyValueInOutput(command: string): DotenvOutput | undefined {

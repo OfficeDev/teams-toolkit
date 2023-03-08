@@ -177,16 +177,6 @@
             "suggested": false
         },
         {
-            "id": "query-org-user-with-message-extension-sso",
-            "title": "Org User Search Connector",
-            "shortDescription": "Query Org User with Message Extension SSO",
-            "fullDescription": "This is a simple search-based message extension app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK and Microsoft Graph API to implement a feature that queries organization's user with single sign on (SSO) capability.",
-            "tags": ["Message extension", "SSO"],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": false
-        },
-        {
           "id": "hello-world-teams-tab-and-outlook-add-in",
           "title": "Hello World Teams Tab and Outlook add-in",
           "shortDescription": "A hello world project that contains both Teams Tab and Outlook add-in capability",

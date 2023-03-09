@@ -402,24 +402,25 @@ export function addFileSystemWatcher(workspacePath: string) {
       await sendSDKVersionTelemetry(event.fsPath);
     });
 
-    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("/src/.yo-rc.json");
-    yorcFileWatcher.onDidCreate(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
-    });
-    yorcFileWatcher.onDidChange(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
-    });
-    yorcFileWatcher.onDidDelete(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
-    });
+    if (isV3Enabled()) {
+      const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
+      yorcFileWatcher.onDidCreate(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+      yorcFileWatcher.onDidChange(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+      yorcFileWatcher.onDidDelete(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+    }
   }
 }
 
 export async function refreshSPFxTreeOnFileChanged() {
-  const developmentTreeView = TreeViewManagerInstance.getTreeView(
-    "teamsfx-development"
-  ) as CommandsTreeViewProvider;
-  await developmentTreeView.refresh();
+  globalVariables.initializeGlobalVariables(globalVariables.context);
+
+  await TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {

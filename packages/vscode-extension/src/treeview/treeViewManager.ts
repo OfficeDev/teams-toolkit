@@ -137,9 +137,6 @@ class TreeViewManager {
   }
 
   private registerEnvironment(disposables: vscode.Disposable[]) {
-    if (isV3Enabled()) {
-      return;
-    }
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-environment", envTreeProviderInstance)
     );

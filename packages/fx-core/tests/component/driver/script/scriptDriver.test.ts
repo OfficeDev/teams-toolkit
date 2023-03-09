@@ -21,7 +21,7 @@ describe("Script Driver test", () => {
   afterEach(() => {
     sandbox.restore();
   });
-  it("execute success", async () => {
+  it("execute success set-output", async () => {
     const args = {
       workingDirectory: "./",
       shell: "cmd",
@@ -41,6 +41,23 @@ describe("Script Driver test", () => {
       const output = res.result.value;
       assert.equal(output.get("KEY"), "VALUE");
     }
+  });
+  it("execute success exec", async () => {
+    const args = {
+      workingDirectory: "./",
+      shell: "cmd",
+      run: "echo 123",
+      redirectTo: "./log",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    context.ui!.runCommand = undefined;
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
   });
   it("execCallback with Error", async () => {
     sandbox.stub(fs, "appendFile").resolves();

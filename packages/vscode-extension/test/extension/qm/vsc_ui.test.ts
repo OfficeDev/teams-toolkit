@@ -391,7 +391,6 @@ describe("UI Unit Tests", async () => {
       expect(result.isErr()).is.true;
       timer.restore();
     });
-
   });
   describe("single select", () => {
     it("select success with validation", async function (this: Mocha.Context) {

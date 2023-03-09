@@ -238,7 +238,15 @@ export class ManifestUtils {
     if (inputs.validDomain && !appManifest.validDomains?.includes(inputs.validDomain)) {
       appManifest.validDomains?.push(inputs.validDomain);
     }
-    const writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
+
+    let writeRes: any;
+    if (isV3Enabled()) {
+      const content = JSON.stringify(appManifest, undefined, 4);
+      const contentV2 = convertManifestTemplateToV2(content);
+      await fs.writeFile(inputs["addManifestPath"], contentV2);
+    } else {
+      writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
+    }
     if (writeRes.isErr()) return err(writeRes.error);
     return ok(undefined);
   }

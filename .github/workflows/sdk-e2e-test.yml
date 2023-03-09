@@ -136,7 +136,6 @@ jobs:
       - name: Rerun
         # if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
         if: ${{ failure() && github.run_attempt < 5 }}
-        runs-on: ubuntu-latest
         run: |
           curl \
            -X POST \

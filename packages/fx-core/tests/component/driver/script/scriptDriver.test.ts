@@ -12,7 +12,7 @@ import { assert } from "chai";
 import { MockUserInteraction } from "../../../core/utils";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-
+import * as child_process from "child_process";
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(() => {
@@ -56,6 +56,7 @@ describe("Script Driver test", () => {
       projectPath: "./",
     } as DriverContext;
     context.ui!.runCommand = undefined;
+    sandbox.stub(child_process, "exec").resolves();
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
   });

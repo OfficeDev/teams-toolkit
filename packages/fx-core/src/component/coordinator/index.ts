@@ -593,7 +593,7 @@ export class Coordinator {
     ].filter((c) => c !== undefined) as Lifecycle[];
 
     if (cycles.length === 0) {
-      return err(new LifeCycleUndefinedError("registerApp, provision, or "));
+      return err(new LifeCycleUndefinedError("registerApp, provision, or configureApp"));
     }
 
     // 2. M365 sign in and tenant check if needed.

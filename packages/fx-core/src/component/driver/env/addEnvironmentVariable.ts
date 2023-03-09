@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as dotenv from "dotenv";
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
 import { Service } from "typedi";
 
 import { hooks } from "@feathersjs/hooks/lib";
@@ -16,19 +12,16 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
-import { UnhandledSystemError } from "./error/unhandledError";
-import { GenerateEnvArgs } from "./interface/generateEnvArgs";
+import { InvalidParameterUserError } from "../file/error/invalidParameterUserError";
+import { UnhandledSystemError } from "../file/error/unhandledError";
+import { GenerateEnvArgs } from "../file/interface/generateEnvArgs";
 
-const actionName = "file/updateEnv";
-const helpLink = "https://aka.ms/teamsfx-actions/file-updateEnv";
+const actionName = "env/addEnvironmentVariable";
+const helpLink = "https://aka.ms/teamsfx-actions/env-addEnvironmentVariable";
 
-/**
- * @deprecated - use createOrUpdateEnvironmentFile instead
- */
 @Service(actionName) // DO NOT MODIFY the service name
-export class UpdateEnvDriver implements StepDriver {
-  description = getLocalizedString("driver.file.description");
+export class AddEnvironmentVariableDriver implements StepDriver {
+  description = getLocalizedString("driver.env.addEnvironmentVariable.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -61,46 +54,16 @@ export class UpdateEnvDriver implements StepDriver {
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.file.progressBar.title"),
-      1
-    );
-
     try {
-      await progressHandler?.start();
-
       this.validateArgs(args);
-
-      await progressHandler?.next(getLocalizedString("driver.file.progressBar.generate"));
-
-      if (args.target) {
-        const target = this.getAbsolutePath(args.target, context.projectPath);
-        await fs.ensureFile(target);
-        const envs = dotenv.parse(await fs.readFile(target));
-        const content = Object.entries({ ...envs, ...args.envs })
-          .map(([key, value]) => `${key}=${value}`)
-          .join(os.EOL);
-        await fs.writeFile(target, content);
-
-        await progressHandler?.end(true);
-
-        return {
-          output: new Map<string, string>(),
-          summaries: [getLocalizedString("driver.file.summary.withTarget", path.normalize(target))],
-        };
-      } else {
-        const state = this.loadCurrentState();
-
-        await progressHandler?.end(true);
-
-        return {
-          output: new Map(Object.entries(args.envs)),
-          summaries: [getLocalizedString("driver.file.summary.default", state.TEAMSFX_ENV)],
-        };
-      }
+      const state = this.loadCurrentState();
+      return {
+        output: new Map(Object.entries(args.envs)),
+        summaries: [
+          getLocalizedString("driver.env.addEnvironmentVariable.summary", state.TEAMSFX_ENV),
+        ],
+      };
     } catch (error) {
-      await progressHandler?.end(false);
-
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -118,12 +81,6 @@ export class UpdateEnvDriver implements StepDriver {
 
   private validateArgs(args: GenerateEnvArgs): void {
     const invalidParameters: string[] = [];
-    if (
-      args.target !== undefined &&
-      (typeof args.target !== "string" || args.target.length === 0)
-    ) {
-      invalidParameters.push("target");
-    }
 
     if (!args.envs || typeof args.envs !== "object") {
       invalidParameters.push("envs");
@@ -138,12 +95,6 @@ export class UpdateEnvDriver implements StepDriver {
     if (invalidParameters.length > 0) {
       throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string) {
-    return path.isAbsolute(relativeOrAbsolutePath)
-      ? relativeOrAbsolutePath
-      : path.join(projectPath, relativeOrAbsolutePath);
   }
 
   private loadCurrentState() {

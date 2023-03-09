@@ -133,9 +133,21 @@ jobs:
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
+      - name: Rerun
+        if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
+        runs-on: ubuntu-latest
+        run: |
+          curl \
+           -X POST \
+           -H "Accept: application/vnd.github+json" \
+           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+           -H "X-GitHub-Api-Version: 2022-11-28" \
+           https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
+           -d '{"ref":"'${GITHUB_REF##*/}'","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
+
       - name: Report result
         uses: satak/webrequest-action@master
-        if: ${{ always() && github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5)) }}
         with:
           url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
           method: POST

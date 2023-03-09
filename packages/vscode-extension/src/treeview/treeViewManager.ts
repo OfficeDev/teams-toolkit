@@ -15,6 +15,7 @@ import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
 import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isSPFxProject } from "../globalVariables";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -85,6 +86,17 @@ class TreeViewManager {
       }
       utilityTreeviewProvider.refresh();
     }
+  }
+
+  public async updateTreeViewsOnSPFxChanged(): Promise<void> {
+    const developmentTreeviewProvider = this.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+    const developmentCommands = developmentTreeviewProvider.getCommands();
+    developmentCommands.splice(0);
+    developmentCommands.push(...this.getDevelopmentCommands());
+
+    developmentTreeviewProvider.refresh();
   }
 
   public getTreeView(viewName: string) {
@@ -182,15 +194,17 @@ class TreeViewManager {
         { name: "debug-alt", custom: false }
       ),
       ...(isV3Enabled()
-        ? [
-            new TreeViewCommand(
-              localize("teamstoolkit.commmands.addWebpart.title"),
-              localize("teamstoolkit.commmands.addWebpart.description"),
-              "fx-extension.addWebpart",
-              "addWebpart",
-              { name: "teamsfx-add-feature", custom: false }
-            ),
-          ]
+        ? isSPFxProject
+          ? [
+              new TreeViewCommand(
+                localize("teamstoolkit.commmands.addWebpart.title"),
+                localize("teamstoolkit.commmands.addWebpart.description"),
+                "fx-extension.addWebpart",
+                "addWebpart",
+                { name: "teamsfx-add-feature", custom: false }
+              ),
+            ]
+          : []
         : [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),

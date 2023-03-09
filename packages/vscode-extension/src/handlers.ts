@@ -147,6 +147,7 @@ import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
+import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import {
   anonymizeFilePaths,
   getAppName,
@@ -394,7 +395,25 @@ export function addFileSystemWatcher(workspacePath: string) {
     packageLockFileWatcher.onDidChange(async (event) => {
       await sendSDKVersionTelemetry(event.fsPath);
     });
+
+    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("/src/.yo-rc.json");
+    yorcFileWatcher.onDidCreate(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidChange(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidDelete(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
   }
+}
+
+export async function refreshSPFxTreeOnFileChanged() {
+  const developmentTreeView = TreeViewManagerInstance.getTreeView(
+    "teamsfx-development"
+  ) as CommandsTreeViewProvider;
+  await developmentTreeView.refresh();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {

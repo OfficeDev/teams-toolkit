@@ -59,8 +59,10 @@ jobs:
           npm run setup
 
       - name: Unit Test
+        env:
+          TEAMSFX_V3: "false"
         run: |
-          xvfb-run -a npx lerna run test:unit --stream
+          xvfb-run -a npx lerna run test:unit --stream --no-bail
 
       - name: CodeCov report attempt 1
         id: codecov1

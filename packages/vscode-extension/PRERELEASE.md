@@ -10,9 +10,14 @@ New features:
 - Improved debug experience for apps across Microsoft 365 with automatic sideloading and channel registration.
 - Disabled commands from tree view that doesn't allow concurrent executions.
 
+SDK updates:
+
+- [TeamsFx](https://www.npmjs.com/package/@microsoft/teamsfx) `v2.2.1`: Updated package dependency.
+- [TeamsFx-React](https://www.npmjs.com/package/@microsoft/teamsfx-react) `v3.0.0`: Updated package to support React 18 and `useTeams`, `useTeamsFx` and `useTeamsUserCredential` hooks to use `@fluentui/react-components` from Fluent UI v9.
+
 Sample additions:
 
-- `Developer Assist Dashboard`: A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.
+- `Developer Assist Dashboard`: A dashboard that integrates with Azure DevOps, Github issues and Planner tasks and accelerates developer productivity.
   
   ![devdashboard](https://user-images.githubusercontent.com/11220663/223749194-c83c6788-8138-45ca-a97c-7027a7beafab.png)
 
@@ -35,7 +40,7 @@ Updated the fundamental design of Teams Toolkit to make it configurable and tran
 
 - Use existing infrastructure, resource groups, and more when provisioning.
 - Use an existing Teams app ID.
-- Use an existing Azure AD app registration ID.
+- Use an existing Azure Active Directory app registration ID.
 - Customizable tunneling solution.
 - Add custom steps to debugging, provisioning, deploying, publishing, etc.
 

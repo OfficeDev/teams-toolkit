@@ -86,7 +86,7 @@ describe("ProjectMigratorMW", () => {
     sandbox
       .stub(MockUserInteraction.prototype, "showMessage")
       .onCall(0)
-      .resolves(ok("Learn more"))
+      .resolves(ok("More Info"))
       .onCall(1)
       .resolves(ok("Upgrade"));
     sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
@@ -1362,9 +1362,9 @@ describe("Migration show notification", () => {
     assert.isTrue(res);
   });
 
-  it("nonmodal case and click learn more", async () => {
+  it("nonmodal case and click More Info", async () => {
     inputs.isNonmodalMessage = "true";
-    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Learn more"));
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("More Info"));
     const res = await MigratorV3.showNotification(coreCtx, version);
     assert.isFalse(res);
   });

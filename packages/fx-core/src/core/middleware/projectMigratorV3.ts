@@ -145,7 +145,8 @@ export const errorNames = {
   manifestTemplateNotExist: "ManifestTemplateNotExist",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-const migrationMessageButtons = [upgradeButton, learnMoreText];
+export const moreInfoButton = getLocalizedString("core.option.moreInfo");
+const migrationMessageButtons = [upgradeButton, moreInfoButton];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -545,7 +546,7 @@ export async function askUserConfirm(
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
-    if (answer === learnMoreText) {
+    if (answer === moreInfoButton) {
       TOOLS?.ui!.openUrl(learnMoreLink);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
@@ -553,7 +554,7 @@ export async function askUserConfirm(
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
-  } while (answer === learnMoreText);
+  } while (answer === moreInfoButton);
   if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
@@ -584,7 +585,7 @@ export async function showNonmodalNotification(
     [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
   });
   const answer = await popupMessageNonmodal(versionForMigration);
-  if (answer === learnMoreText) {
+  if (answer === moreInfoButton) {
     TOOLS?.ui!.openUrl(learnMoreLink);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,

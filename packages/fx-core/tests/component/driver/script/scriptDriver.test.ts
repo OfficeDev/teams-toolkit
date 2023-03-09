@@ -58,6 +58,9 @@ describe("Script Driver test", () => {
     context.ui!.runCommand = undefined;
     sandbox.stub(child_process, "exec").resolves();
     const res = await scriptDriver.execute(args, context);
+    if (res.result.isErr()) {
+      console.log(res.result.error);
+    }
     assert.isTrue(res.result.isOk());
   });
   it("execCallback with Error", async () => {

@@ -45,7 +45,6 @@ describe("Script Driver test", () => {
   it("execute success exec", async () => {
     const args = {
       workingDirectory: "./",
-      shell: "cmd",
       run: "echo 123",
       redirectTo: "./log",
     };

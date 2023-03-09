@@ -42,7 +42,7 @@ jobs:
         if: ${{ always() }}
         working-directory: packages/sdk
         run: |
-          exit 1
+          npm run test:e2e:node
 
       - name: run test - browser
         if: ${{ always() }}
@@ -134,8 +134,7 @@ jobs:
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Rerun
-        # if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
-        if: ${{ failure() && github.run_attempt < 5 }}
+        if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
         run: |
           curl \
            -X POST \

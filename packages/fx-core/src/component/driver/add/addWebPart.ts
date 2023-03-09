@@ -71,14 +71,14 @@ export class AddWebPartDriver implements StepDriver {
     const remoteStaticSnippet: IStaticTab = {
       entityId: componentId,
       name: webpartName,
-      contentUrl: util.format(Constants.REMOTE_CONTENT_URL, componentId, componentId),
+      contentUrl: util.format(Constants.REMOTE_CONTENT_URL, componentId),
       websiteUrl: ManifestTemplate.WEBSITE_URL,
       scopes: ["personal"],
     };
     const localStaticSnippet: IStaticTab = {
       entityId: componentId,
       name: webpartName,
-      contentUrl: util.format(Constants.LOCAL_CONTENT_URL, componentId, componentId),
+      contentUrl: util.format(Constants.LOCAL_CONTENT_URL, componentId),
       websiteUrl: ManifestTemplate.WEBSITE_URL,
       scopes: ["personal"],
     };
@@ -97,6 +97,11 @@ export class AddWebPartDriver implements StepDriver {
     );
     if (remoteRes.isErr()) throw remoteRes.error;
 
+    context.ui?.showMessage(
+      "info",
+      getLocalizedString("driver.spfx.add.successNotice", webpartName),
+      false
+    );
     return new Map();
   }
 }

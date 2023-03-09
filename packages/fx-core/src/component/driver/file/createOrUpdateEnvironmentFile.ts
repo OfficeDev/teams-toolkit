@@ -20,15 +20,12 @@ import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
 
-const actionName = "file/updateEnv";
-const helpLink = "https://aka.ms/teamsfx-actions/file-updateEnv";
+const actionName = "file/createOrUpdateEnvironmentFile";
+const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
 
-/**
- * @deprecated - use createOrUpdateEnvironmentFile instead
- */
 @Service(actionName) // DO NOT MODIFY the service name
-export class UpdateEnvDriver implements StepDriver {
-  description = getLocalizedString("driver.file.description");
+export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
+  description = getLocalizedString("driver.file.createOrUpdateEnvironmentFile.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -61,46 +58,25 @@ export class UpdateEnvDriver implements StepDriver {
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.file.progressBar.title"),
-      1
-    );
-
     try {
-      await progressHandler?.start();
-
       this.validateArgs(args);
-
-      await progressHandler?.next(getLocalizedString("driver.file.progressBar.generate"));
-
-      if (args.target) {
-        const target = this.getAbsolutePath(args.target, context.projectPath);
-        await fs.ensureFile(target);
-        const envs = dotenv.parse(await fs.readFile(target));
-        const content = Object.entries({ ...envs, ...args.envs })
-          .map(([key, value]) => `${key}=${value}`)
-          .join(os.EOL);
-        await fs.writeFile(target, content);
-
-        await progressHandler?.end(true);
-
-        return {
-          output: new Map<string, string>(),
-          summaries: [getLocalizedString("driver.file.summary.withTarget", path.normalize(target))],
-        };
-      } else {
-        const state = this.loadCurrentState();
-
-        await progressHandler?.end(true);
-
-        return {
-          output: new Map(Object.entries(args.envs)),
-          summaries: [getLocalizedString("driver.file.summary.default", state.TEAMSFX_ENV)],
-        };
-      }
+      const target = this.getAbsolutePath(args.target!, context.projectPath);
+      await fs.ensureFile(target);
+      const envs = dotenv.parse(await fs.readFile(target));
+      const content = Object.entries({ ...envs, ...args.envs })
+        .map(([key, value]) => `${key}=${value}`)
+        .join(os.EOL);
+      await fs.writeFile(target, content);
+      return {
+        output: new Map<string, string>(),
+        summaries: [
+          getLocalizedString(
+            "driver.file.createOrUpdateEnvironmentFile.summary",
+            path.normalize(target)
+          ),
+        ],
+      };
     } catch (error) {
-      await progressHandler?.end(false);
-
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -118,10 +94,7 @@ export class UpdateEnvDriver implements StepDriver {
 
   private validateArgs(args: GenerateEnvArgs): void {
     const invalidParameters: string[] = [];
-    if (
-      args.target !== undefined &&
-      (typeof args.target !== "string" || args.target.length === 0)
-    ) {
+    if (!args.target || typeof args.target !== "string" || args.target.length === 0) {
       invalidParameters.push("target");
     }
 
@@ -144,11 +117,5 @@ export class UpdateEnvDriver implements StepDriver {
     return path.isAbsolute(relativeOrAbsolutePath)
       ? relativeOrAbsolutePath
       : path.join(projectPath, relativeOrAbsolutePath);
-  }
-
-  private loadCurrentState() {
-    return {
-      TEAMSFX_ENV: process.env.TEAMSFX_ENV,
-    };
   }
 }

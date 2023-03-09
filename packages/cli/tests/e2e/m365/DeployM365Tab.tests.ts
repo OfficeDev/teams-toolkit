@@ -6,9 +6,8 @@
  * @owner Kuojian Lu <kuojianlu@microsoft.com>
  */
 
-import * as chai from "chai";
-import * as fs from "fs-extra";
 import { describe } from "mocha";
+import * as chai from "chai";
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
@@ -18,18 +17,22 @@ import m365Provider from "../../../src/commonlib/m365LoginUserPassword";
 import { AadValidator } from "../../commonlib/aadValidate";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { FrontendValidator } from "../../commonlib/frontendValidator";
 import {
   cleanUpLocalProject,
+  createResourceGroup,
+  deleteResourceGroupByName,
   getTestFolder,
   getUniqueAppName,
   readContextMultiEnvV3,
 } from "../commonUtils";
 import { deleteAadAppByObjectId, deleteTeamsApp, getTeamsApp } from "../debug/utility";
 
-describe("Debug V3 m365-tab template", () => {
+describe("Deploy V3 m365-tab template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const resourceGroupName = `${appName}-rg`;
 
   afterEach(async function () {
     if (!isV3Enabled()) {
@@ -44,10 +47,11 @@ describe("Debug V3 m365-tab template", () => {
     if (context?.AAD_APP_OBJECT_ID) {
       await deleteAadAppByObjectId(context.AAD_APP_OBJECT_ID);
     }
+    await deleteResourceGroupByName(resourceGroupName);
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449535 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 17449539 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }
@@ -57,10 +61,16 @@ describe("Debug V3 m365-tab template", () => {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await CliHelper.provisionProject(projectPath, "--env local");
+    const result = await createResourceGroup(resourceGroupName, "eastus");
+    chai.assert.isTrue(result);
+
+    await CliHelper.provisionProject(projectPath, "--interactive false --env dev", {
+      ...process.env,
+      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+    });
     console.log(`[Successfully] provision for ${projectPath}`);
 
-    let context = await readContextMultiEnvV3(projectPath, "local");
+    let context = await readContextMultiEnvV3(projectPath, "dev");
     chai.assert.isDefined(context);
 
     // validate aad
@@ -74,6 +84,10 @@ describe("Debug V3 m365-tab template", () => {
     const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
     chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
+    // validate tab
+    let frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+
     // validate m365
     chai.assert.isDefined(context.M365_TITLE_ID);
     chai.assert.isNotEmpty(context.M365_TITLE_ID);
@@ -81,19 +95,15 @@ describe("Debug V3 m365-tab template", () => {
     chai.assert.isNotEmpty(context.M365_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--env local");
+    await CliHelper.deployAll(projectPath, "--interactive false --env dev");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
-    context = await readContextMultiEnvV3(projectPath, "local");
+    context = await readContextMultiEnvV3(projectPath, "dev");
     chai.assert.isDefined(context);
 
-    // validate ssl cert
-    chai.assert.isDefined(context.SSL_CRT_FILE);
-    chai.assert.isNotEmpty(context.SSL_CRT_FILE);
-    chai.assert.isDefined(context.SSL_KEY_FILE);
-    chai.assert.isNotEmpty(context.SSL_KEY_FILE);
-
-    // validate .localSettings
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));
+    // validate tab
+    frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+    await FrontendValidator.validateDeploy(frontend);
   });
 });

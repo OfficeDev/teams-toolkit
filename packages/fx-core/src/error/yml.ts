@@ -67,3 +67,20 @@ export class InvalidYmlActionNameError extends UserError {
     super(errorOptions);
   }
 }
+
+/**
+ * Lifecycle not found
+ */
+export class LifeCycleUndefinedError extends UserError {
+  constructor(lifecycle: string) {
+    const key = "error.yaml.LifeCycleUndefinedError";
+    const errorOptions: UserErrorOptions = {
+      source: "Coordinator",
+      name: "LifeCycleUndefinedError",
+      message: getDefaultString(key, lifecycle, globalVars.ymlFilePath),
+      displayMessage: getLocalizedString(key, lifecycle, globalVars.ymlFilePath),
+      helpLink: "https://aka.ms/teamsfx-actions",
+    };
+    super(errorOptions);
+  }
+}

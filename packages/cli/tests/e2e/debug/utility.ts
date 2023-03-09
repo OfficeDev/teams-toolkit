@@ -30,23 +30,26 @@ export async function deleteAadAppByObjectId(objectId: string) {
   }
 }
 
-export async function deleteAadAppByClientId(clientId: string) {
+export async function getAadAppByClientId(clientId: string): Promise<any> {
   const requester = await createRequester();
-  let objectId: string | undefined = undefined;
   for (let retries = 3; retries > 0; --retries) {
     try {
       const response = await requester.get(`api/aadapp/${clientId}`);
       if (response.status >= 200 && response.status < 300) {
         console.log("Successfully got AAD app");
-        objectId = response.data.id;
-        break;
+        return response.data;
       }
     } catch (e) {
       console.log(`Failed to get AAD app, error: ${e}`);
     }
   }
-  if (objectId) {
-    await deleteAadAppByObjectId(objectId);
+  return undefined;
+}
+
+export async function deleteAadAppByClientId(clientId: string) {
+  const aadApp = await getAadAppByClientId(clientId);
+  if (aadApp?.objectId) {
+    await deleteAadAppByObjectId(aadApp.objectId);
   }
 }
 
@@ -65,6 +68,22 @@ export async function deleteBot(botId: string) {
   }
 }
 
+export async function getBot(botId: string): Promise<any> {
+  const requester = await createRequester();
+  for (let retries = 3; retries > 0; --retries) {
+    try {
+      const response = await requester.get(`/api/botframework/${botId}`);
+      if (response.status >= 200 && response.status < 300) {
+        console.log("Successfully got bot");
+        return response.data;
+      }
+    } catch (e) {
+      console.log(`Failed to get bot, error: ${e}`);
+    }
+  }
+  return undefined;
+}
+
 export async function deleteTeamsApp(teamsAppId: string) {
   const requester = await createRequester();
   for (let retries = 3; retries > 0; --retries) {
@@ -78,4 +97,20 @@ export async function deleteTeamsApp(teamsAppId: string) {
       console.log(`Failed to delete Teams app, error: ${e}`);
     }
   }
+}
+
+export async function getTeamsApp(teamsAppId: string): Promise<any> {
+  const requester = await createRequester();
+  for (let retries = 3; retries > 0; --retries) {
+    try {
+      const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
+      if (response.status >= 200 && response.status < 300) {
+        console.log("Successfully got Teams app");
+        return response.data;
+      }
+    } catch (e) {
+      console.log(`Failed to get Teams app, error: ${e}`);
+    }
+  }
+  return undefined;
 }

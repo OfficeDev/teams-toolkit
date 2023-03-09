@@ -187,12 +187,12 @@
           "suggested": false
         },
         {
-            "id": "dev-assist-dashboard",
+            "id": "developer-assist-dashboard",
             "title": "Developer Assist Dashboard",
             "shortDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
             "fullDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
             "tags": ["Outlook", "Office", "TS"],
-            "time": "10min to run",
+            "time": "15min to run",
             "configuration": "Manual configurations required",
             "suggested": false
           }

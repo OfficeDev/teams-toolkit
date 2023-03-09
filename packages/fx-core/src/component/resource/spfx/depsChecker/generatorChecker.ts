@@ -24,10 +24,13 @@ import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
 import { isSpfxDecoupleEnabled } from "../../../../common/featureFlags";
+import { PackageSelectOptionsHelper } from "../utils/question-helper";
 
 const name = Constants.GeneratorPackageName;
 const supportedVersion = Constants.SPFX_VERSION;
-const displayName = `${name}@${supportedVersion}`;
+const displayName = isSpfxDecoupleEnabled()
+  ? `${name}@${Constants.LatestVersion}`
+  : `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
 
 export class GeneratorChecker implements DependencyChecker {
@@ -70,6 +73,40 @@ export class GeneratorChecker implements DependencyChecker {
     return ok(true);
   }
 
+  public async ensureLatestDependency(
+    ctx: PluginContext | ContextV3
+  ): Promise<Result<boolean, FxError>> {
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
+    let needInstall = false;
+    try {
+      needInstall = !(await this.isLatestInstalled());
+      if (needInstall) {
+        this._logger.info(`${displayName} not found, installing...`);
+        await this.install();
+        this._logger.info(`Successfully installed ${displayName}`);
+      }
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator, {
+        [TelemetryProperty.NeedInstallSharepointGeneratorLocally]: needInstall.toString(),
+      });
+    } catch (error) {
+      telemetryHelper.sendErrorEvent(
+        ctx,
+        TelemetryEvents.EnsureLatestSharepointGenerator,
+        error as UserError | SystemError,
+        {
+          [TelemetryProperty.EnsureLatestSharepointGeneratorReason]: (
+            error as UserError | SystemError
+          ).name,
+          [TelemetryProperty.NeedInstallSharepointGeneratorLocally]: needInstall.toString(),
+        }
+      );
+      await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
+      return err(error as UserError | SystemError);
+    }
+
+    return ok(true);
+  }
+
   public async isInstalled(): Promise<boolean> {
     let isVersionSupported = false,
       hasSentinel = false;
@@ -81,6 +118,19 @@ export class GeneratorChecker implements DependencyChecker {
       return false;
     }
     return isVersionSupported && hasSentinel;
+  }
+
+  public async isLatestInstalled(): Promise<boolean> {
+    try {
+      const generatorVersion = await this.queryVersion();
+      const latestGeneratorVersion =
+        PackageSelectOptionsHelper.getLatestSpGeneratorVersoin() ??
+        (await this.findLatestVersion(5));
+      const hasSentinel = await fs.pathExists(this.getSentinelPath());
+      return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion && hasSentinel;
+    } catch (error) {
+      return false;
+    }
   }
 
   public async install(): Promise<void> {

@@ -14,6 +14,7 @@ export enum SPFxVersionOptionIds {
 export class PackageSelectOptionsHelper {
   private static options: OptionItem[] = [];
   private static globalPackageVersions: (string | undefined)[] = [undefined, undefined];
+  private static latestSpGeneratorVersion: string | undefined = undefined;
 
   public static async loadOptions(): Promise<void> {
     const versions = await Promise.all([
@@ -24,6 +25,7 @@ export class PackageSelectOptionsHelper {
 
     PackageSelectOptionsHelper.globalPackageVersions[0] = versions[0];
     PackageSelectOptionsHelper.globalPackageVersions[1] = versions[2];
+    PackageSelectOptionsHelper.latestSpGeneratorVersion = versions[1];
 
     PackageSelectOptionsHelper.options = [
       {
@@ -65,6 +67,7 @@ export class PackageSelectOptionsHelper {
   public static clear(): void {
     PackageSelectOptionsHelper.options = [];
     PackageSelectOptionsHelper.globalPackageVersions = [undefined, undefined];
+    PackageSelectOptionsHelper.latestSpGeneratorVersion = undefined;
   }
 
   public static checkGlobalPackages(): boolean {
@@ -72,5 +75,9 @@ export class PackageSelectOptionsHelper {
       !!PackageSelectOptionsHelper.globalPackageVersions[0] &&
       !!PackageSelectOptionsHelper.globalPackageVersions[1]
     );
+  }
+
+  public static getLatestSpGeneratorVersoin(): string | undefined {
+    return PackageSelectOptionsHelper.latestSpGeneratorVersion;
   }
 }

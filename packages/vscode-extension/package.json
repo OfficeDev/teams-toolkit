@@ -185,7 +185,7 @@
           "id": "teamsfx-feedback",
           "name": "Feedback",
           "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
-          "visibility": "collapsed"
+          "visibility": "visible"
         },
         {
           "id": "teamsfx-empty-project",

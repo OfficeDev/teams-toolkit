@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-import { FuncValidation, Inputs, Platform, Stage, TextInputQuestion } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FuncValidation,
+  getValidationFunction,
+  Inputs,
+  Platform,
+  SingleSelectQuestion,
+  Stage,
+  TextInputQuestion,
+} from "@microsoft/teamsfx-api";
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
@@ -7,11 +16,16 @@ import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 import {
+  spfxPackageSelectQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
 } from "../../../../../src/component/resource/spfx/utils/questions";
 import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
 import { cpUtils } from "../../../../../src";
+import {
+  PackageSelectOptionsHelper,
+  SPFxVersionOptionIds,
+} from "../../../../../src/component/resource/spfx/utils/question-helper";
 
 describe("utils", () => {
   afterEach(async () => {
@@ -180,6 +194,48 @@ describe("utils", () => {
       const res = await (versionCheckQuestion as any).func({});
 
       chai.expect(res).equal(undefined);
+    });
+  });
+
+  describe("spfxPackageSelectQuestion", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("return undefined if choosing to install locally", async () => {
+      const func = getValidationFunction<string>(
+        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        { platform: Platform.VSCode }
+      );
+      const res = await func(SPFxVersionOptionIds.installLocally);
+      chai.expect(res).equal(undefined);
+    });
+
+    it("return undefined if package exists", async () => {
+      sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(true);
+
+      const func = getValidationFunction<string>(
+        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        { platform: Platform.VSCode }
+      );
+      const res = await func(SPFxVersionOptionIds.globalPackage);
+      chai.expect(res).equal(undefined);
+    });
+
+    it("return undefined if package exists", async () => {
+      sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(false);
+
+      const func = getValidationFunction<string>(
+        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        { platform: Platform.VSCode }
+      );
+      let error;
+      try {
+        await func(SPFxVersionOptionIds.globalPackage);
+      } catch (e) {
+        error = e;
+      }
+      chai.expect(error.name).equal("DevEnvironmentSetupError");
     });
   });
 

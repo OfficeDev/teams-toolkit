@@ -379,6 +379,13 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "fx-extension.OpenAdaptiveCardExt",
     handlers.openAdaptiveCardExt
   );
+
+  registerInCommandController(
+    context,
+    "fx-extension.addWebpart",
+    handlers.addWebpart,
+    "addWebpart"
+  );
 }
 
 function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) {
@@ -483,11 +490,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
-
-  const addWebpartCmd = vscode.commands.registerCommand("fx-extension.addWebpart", (...args) =>
-    Correlator.run(handlers.addWebpart, args)
-  );
-  context.subscriptions.push(addWebpartCmd);
 
   const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
     await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);

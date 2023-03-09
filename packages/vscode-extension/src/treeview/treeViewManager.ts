@@ -169,7 +169,15 @@ class TreeViewManager {
         TreeCategory.GettingStarted
       ),
       ...(isV3Enabled()
-        ? []
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commmands.addWebpart.title"),
+              localize("teamstoolkit.commmands.addWebpart.description"),
+              "fx-extension.addWebpart",
+              "addWebpart",
+              { name: "teamsfx-add-feature", custom: false }
+            ),
+          ]
         : [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),

@@ -34,6 +34,7 @@ describe("Script Driver test", () => {
       ui: new MockUserInteraction(),
       projectPath: "./",
     } as DriverContext;
+    context.ui!.runCommand = undefined;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {

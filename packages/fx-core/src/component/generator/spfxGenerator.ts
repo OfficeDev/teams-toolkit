@@ -178,11 +178,14 @@ export class SPFxGenerator {
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
       const componentId = manifestJson.id;
-      if (!context.templateVariables) {
-        context.templateVariables = Generator.getDefaultVariables(solutionName);
+
+      if (!isAddSPFx) {
+        if (!context.templateVariables) {
+          context.templateVariables = Generator.getDefaultVariables(solutionName);
+        }
+        context.templateVariables["componentId"] = componentId;
+        context.templateVariables["webpartName"] = webpartName;
       }
-      context.templateVariables["componentId"] = componentId;
-      context.templateVariables["webpartName"] = webpartName;
 
       // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
       const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;

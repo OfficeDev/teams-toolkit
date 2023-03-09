@@ -60,7 +60,7 @@ const imageMapping: { [p: string]: any } = {
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
-  "dev-assist-dashboard": DevAssistDashboard,
+  "developer-assist-dashboard": DevAssistDashboard,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

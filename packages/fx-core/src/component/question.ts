@@ -84,7 +84,7 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { CoreQuestionNames, ProgrammingLanguageQuestion } from "../core/question";
+import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,

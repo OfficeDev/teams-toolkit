@@ -80,7 +80,7 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
 export const fetchTemplateUrlWithTagAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateUrlWithTag,
   run: async (context: GeneratorContext) => {
-    if (context.zip || context.zipUrl) {
+    if (context.zip || context.zipUrl || context.cancelDownloading) {
       return;
     }
 

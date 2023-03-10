@@ -101,6 +101,7 @@ import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
+import { LifeCycleUndefinedError } from "../../error/yml";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -591,6 +592,10 @@ export class Coordinator {
       projectModel.configureApp,
     ].filter((c) => c !== undefined) as Lifecycle[];
 
+    if (cycles.length === 0) {
+      return err(new LifeCycleUndefinedError("registerApp, provision, or configureApp"));
+    }
+
     // 2. M365 sign in and tenant check if needed.
     let containsM365 = false;
     let containsAzure = false;
@@ -956,6 +961,8 @@ export class Coordinator {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
+    } else {
+      return err(new LifeCycleUndefinedError("deploy"));
     }
     return ok(output);
   }
@@ -995,6 +1002,8 @@ export class Coordinator {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
+    } else {
+      return err(new LifeCycleUndefinedError("publish"));
     }
     return ok(undefined);
   }

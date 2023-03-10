@@ -32,6 +32,7 @@ import { addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { isSpfxDecoupleEnabled, isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { TabSPFxNewUIItem } from "../constants";
 import { getComponent } from "../workflow";
+
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;

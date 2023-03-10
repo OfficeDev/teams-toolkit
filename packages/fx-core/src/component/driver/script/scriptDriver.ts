@@ -38,9 +38,9 @@ export class ScriptDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const res = await this.run(args, ctx);
-    const summary = `${res.isOk() ? "success" : "failed"} to execute command '${
-      (args as any).run
-    }'`;
+    const summary = `${
+      res.isOk() ? "success" : "failed"
+    } to execute command '${this.maskSecretValues((args as any).run)}'`;
     return { result: res, summaries: [summary] };
   }
   async execCallback(
@@ -67,7 +67,7 @@ export class ScriptDriver implements StepDriver {
     }
     if (error) {
       await context.logProvider.error(
-        `Failed to run command: "${command}" on path: "${workingDir}".`
+        `Failed to run command: "${this.maskSecretValues(command)}" on path: "${workingDir}".`
       );
       resolve(err(assembleError(error)));
     } else {
@@ -78,7 +78,7 @@ export class ScriptDriver implements StepDriver {
     args: ScriptDriverArgs,
     context: DriverContext
   ): Promise<Result<[string, DotenvOutput], FxError>> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       let workingDir = args.workingDirectory || ".";
       workingDir = path.isAbsolute(workingDir)
         ? workingDir
@@ -106,48 +106,40 @@ export class ScriptDriver implements StepDriver {
         command = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${args.run}"`;
       }
       context.logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
-      exec(
-        command,
-        {
+      if (context.ui?.runCommand) {
+        const uiRes = await context.ui.runCommand({
+          cmd: command,
+          workingDirectory: workingDir,
           shell: shell,
-          cwd: workingDir,
-          encoding: "utf8",
-          env: { ...process.env },
           timeout: args.timeout,
-        },
-        async (error, stdout, stderr) => {
-          await this.execCallback(
-            resolve,
-            error,
-            stdout,
-            stderr,
-            command,
-            context,
-            workingDir,
-            appendFile
-          );
-          // if (stdout) {
-          //   await context.logProvider.info(this.maskSecretValues(stdout));
-          //   if (appendFile) {
-          //     await fs.appendFile(appendFile, stdout);
-          //   }
-          // }
-          // if (stderr) {
-          //   await context.logProvider.error(this.maskSecretValues(stderr));
-          //   if (appendFile) {
-          //     await fs.appendFile(appendFile, stderr);
-          //   }
-          // }
-          // if (error) {
-          //   await context.logProvider.error(
-          //     `Failed to run command: "${command}" on path: "${workingDir}".`
-          //   );
-          //   resolve(err(assembleError(error)));
-          // } else {
-          //   resolve(ok([stdout, {}]));
-          // }
-        }
-      );
+        });
+        if (uiRes.isErr()) resolve(err(uiRes.error));
+        resolve(ok(["", {}]));
+        return;
+      } else {
+        exec(
+          command,
+          {
+            shell: shell,
+            cwd: workingDir,
+            encoding: "utf8",
+            env: { ...process.env },
+            timeout: args.timeout,
+          },
+          async (error, stdout, stderr) => {
+            await this.execCallback(
+              resolve,
+              error,
+              stdout,
+              stderr,
+              command,
+              context,
+              workingDir,
+              appendFile
+            );
+          }
+        );
+      }
     });
   }
   parseKeyValueInOutput(command: string): DotenvOutput | undefined {

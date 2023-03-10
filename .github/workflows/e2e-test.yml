@@ -256,6 +256,10 @@ jobs:
         with:
           node-version: 16
 
+      - name: Setup Azure Functions Core Tools For Linux
+        run: |
+          sudo npm install --unsafe-perm -g azure-functions-core-tools@4
+
       - name: Setup legacy-peer-deps
         run: |
           npm config set legacy-peer-deps true
@@ -309,6 +313,8 @@ jobs:
           TEAMSFX_V3: "true"
           TEAMSFX_DEBUG_TEMPLATE: "true"
           NODE_ENV: "development"
+          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then
@@ -408,7 +414,7 @@ jobs:
            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
            -H "X-GitHub-Api-Version: 2022-11-28" \
            https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
-           -d '{"ref":"'${GITHUB_REF##*/}'","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
+           -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
 
   report:
     needs: execute-case

@@ -140,7 +140,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",

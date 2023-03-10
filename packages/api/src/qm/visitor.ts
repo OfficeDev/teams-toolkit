@@ -150,6 +150,9 @@ const questionVisitor = async function (
         return ok({ type: "skip", result: returnResult });
       }
       if (question.type === "singleSelect") {
+        const validationFunc = question.validation
+          ? getValidationFunction<string>(question.validation, inputs)
+          : undefined;
         return await ui.selectOption({
           name: question.name,
           title: title,
@@ -161,6 +164,7 @@ const questionVisitor = async function (
           step: step,
           totalSteps: totalSteps,
           buttons: question.buttons,
+          validation: validationFunc,
         });
       } else {
         const mq = selectQuestion as MultiSelectQuestion;

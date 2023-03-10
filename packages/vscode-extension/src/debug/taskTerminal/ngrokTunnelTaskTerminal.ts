@@ -14,7 +14,11 @@ import * as vscode from "vscode";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { LocalEnvManager, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import {
+  LocalEnvManager,
+  TaskDefaultValue,
+  TunnelType,
+} from "@microsoft/teamsfx-core/build/common/local";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";
@@ -35,7 +39,6 @@ import {
   IBaseTunnelArgs,
   OutputInfo,
   TunnelError,
-  TunnelType,
 } from "./baseTunnelTaskTerminal";
 
 const ngrokTimeout = 1 * 60 * 1000;

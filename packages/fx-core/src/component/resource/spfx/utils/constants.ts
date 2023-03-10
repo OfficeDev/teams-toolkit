@@ -25,7 +25,13 @@ export class Constants {
   public static readonly SUPPORTED_NODE_VERSION = ["16"];
   public static readonly SUPPORTED_NPM_VERSION = ["7", "8"];
   public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
+  public static readonly SetUpDevEnvironmentHelpLink =
+    "https://aka.ms/teamsfx-spfx-dev-environment-setup";
   public static readonly TEMPLATE_NAME = "spfx-tab";
+  public static readonly LatestVersion = "latest";
+  public static readonly RecommendedLowestSpfxVersion = "v1.14.0";
+  public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";
+  public static readonly YeomanPackageName = "yo";
 }
 
 export class PlaceHolders {

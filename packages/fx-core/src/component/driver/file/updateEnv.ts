@@ -23,6 +23,9 @@ import { GenerateEnvArgs } from "./interface/generateEnvArgs";
 const actionName = "file/updateEnv";
 const helpLink = "https://aka.ms/teamsfx-actions/file-updateEnv";
 
+/**
+ * @deprecated - use createOrUpdateEnvironmentFile instead
+ */
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateEnvDriver implements StepDriver {
   description = getLocalizedString("driver.file.description");

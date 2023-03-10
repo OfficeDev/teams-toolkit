@@ -20,7 +20,7 @@ import {
   readContextMultiEnvV3,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled, isValidationEnabled } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Start a new project", function () {
@@ -86,14 +86,16 @@ describe("Start a new project", function () {
       });
       expect(result.stderr).to.eq("");
 
-      // validation local env succeed without local debug
-      command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
-      result = await execAsync(command, {
-        cwd: path.join(testFolder, appName),
-        env: process.env,
-        timeout: 0,
-      });
-      expect(result.stderr).to.eq("");
+      if (isValidationEnabled()) {
+        // validation local env succeed without local debug
+        command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
+        result = await execAsync(command, {
+          cwd: path.join(testFolder, appName),
+          env: process.env,
+          timeout: 0,
+        });
+        expect(result.stderr).to.eq("");
+      }
 
       // provision
       result = await execAsyncWithRetry(`teamsfx provision`, {

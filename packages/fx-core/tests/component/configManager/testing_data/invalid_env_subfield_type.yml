@@ -1,0 +1,7 @@
+provision:
+  - name: test
+    uses: some_unknown_driver
+    with:
+      name: mybot
+    env: 
+      ENV_VAR1: 123

@@ -22,8 +22,10 @@ import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { getExecCommand, Utils } from "../utils/utils";
+import { isSpfxDecoupleEnabled } from "../../../../common/featureFlags";
+import { Constants } from "../utils/constants";
 
-const name = "yo";
+const name = Constants.YeomanPackageName;
 const supportedVersion = "4.3.1";
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
@@ -94,13 +96,13 @@ export class YoChecker implements DependencyChecker {
   }
 
   public async findGloballyInstalledVersion(
-    timeoutInMinutes?: number
+    timeoutInSeconds?: number
   ): Promise<string | undefined> {
-    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInMinutes ?? 0);
+    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
   }
 
-  public async findLatestVersion(timeoutInMinutes: number): Promise<string> {
-    return await Utils.findLatestVersion(this._logger, name, timeoutInMinutes);
+  public async findLatestVersion(timeoutInSeconds: number): Promise<string | undefined> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInSeconds);
   }
 
   private async validate(): Promise<boolean> {
@@ -165,6 +167,7 @@ export class YoChecker implements DependencyChecker {
 
   private async installYo(): Promise<void> {
     try {
+      const version = isSpfxDecoupleEnabled() ? Constants.LatestVersion : supportedVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
@@ -172,7 +175,7 @@ export class YoChecker implements DependencyChecker {
         { timeout: timeout, shell: false },
         getExecCommand("npm"),
         "install",
-        `${name}@${supportedVersion}`,
+        `${name}@${version}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
         "--no-audit",

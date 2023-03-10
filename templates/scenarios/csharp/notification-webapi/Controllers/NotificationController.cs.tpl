@@ -35,7 +35,7 @@ namespace {%SafeProjectName%}.Controllers
                         Title = "New Event Occurred!",
                         AppName = "Contoso App Notification",
                         Description = $"This is a sample http-triggered notification to {installation.Type}",
-                        NotificationUrl = "https://www.adaptivecards.io/",
+                        NotificationUrl = "https://aka.ms/teamsfx-notification-new",
                     }
                 );
                 await installation.SendAdaptiveCard(JsonConvert.DeserializeObject(cardContent), cancellationToken);

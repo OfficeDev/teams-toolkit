@@ -59,7 +59,7 @@ import {
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { isFeatureFlagEnabled } from "./featureFlags";
+import { isFeatureFlagEnabled, isSpfxDecoupleEnabled } from "./featureFlags";
 import _ from "lodash";
 import { BotHostTypeName, BotHostTypes } from "./local/constants";
 import { isExistingTabApp } from "./projectSettingsHelper";
@@ -616,11 +616,13 @@ export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Prom
 }
 
 export function isYoCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
+  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true) && !isSpfxDecoupleEnabled();
 }
 
 export function isGeneratorCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
+  return (
+    isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true) && !isSpfxDecoupleEnabled()
+  );
 }
 
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {

@@ -20,6 +20,7 @@ import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { isSpfxDecoupleEnabled } from "../../common/featureFlags";
 
 export class SPFxGenerator {
   @hooks([
@@ -69,23 +70,27 @@ export class SPFxGenerator {
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
 
-      const yoInstalled = await yoChecker.isInstalled();
-      const generatorInstalled = await spGeneratorChecker.isInstalled();
+      if (!isSpfxDecoupleEnabled()) {
+        const yoInstalled = await yoChecker.isInstalled();
+        const generatorInstalled = await spGeneratorChecker.isInstalled();
 
-      if (!yoInstalled || !generatorInstalled) {
-        await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyInstall"));
+        if (!yoInstalled || !generatorInstalled) {
+          await progressHandler?.next(
+            getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
+          );
 
-        if (isYoCheckerEnabled()) {
-          const yoRes = await yoChecker.ensureDependency(context);
-          if (yoRes.isErr()) {
-            throw DependencyInstallError("yo");
+          if (isYoCheckerEnabled()) {
+            const yoRes = await yoChecker.ensureDependency(context);
+            if (yoRes.isErr()) {
+              throw DependencyInstallError("yo");
+            }
           }
-        }
 
-        if (isGeneratorCheckerEnabled()) {
-          const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
-          if (spGeneratorRes.isErr()) {
-            throw DependencyInstallError("sharepoint generator");
+          if (isGeneratorCheckerEnabled()) {
+            const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
+            if (spGeneratorRes.isErr()) {
+              throw DependencyInstallError("sharepoint generator");
+            }
           }
         }
       }

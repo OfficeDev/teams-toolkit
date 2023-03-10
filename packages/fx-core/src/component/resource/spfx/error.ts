@@ -182,3 +182,18 @@ export function NoConfigurationError(): SystemError {
     helpLink: Constants.SPFX_HELP_LINK,
   });
 }
+
+export function DevEnvironmentSetupError(): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "DevEnvironmentSetupError",
+    message: getDefaultString(
+      "plugins.spfx.error.devEnvironmentNotSetup",
+      Constants.SetUpDevEnvironmentHelpLink
+    ),
+    displayMessage: getLocalizedString(
+      "plugins.spfx.error.devEnvironmentNotSetup",
+      Constants.SetUpDevEnvironmentHelpLink
+    ),
+  });
+}

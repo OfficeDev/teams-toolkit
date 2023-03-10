@@ -15,7 +15,6 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
 import {
   cleanUpLocalProject,
   getTestFolder,
@@ -31,7 +30,7 @@ import {
   getTeamsApp,
 } from "./utility";
 
-describe("Debug V3 notification-http-trigger template", () => {
+describe("Debug V3 command-and-response template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -54,19 +53,13 @@ describe("Debug V3 notification-http-trigger template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449529 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 17469675 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }
 
     // create
-    await CliHelper.createProjectWithCapability(
-      appName,
-      testFolder,
-      Capability.Notification,
-      undefined,
-      "--bot-host-type-trigger http-functions"
-    );
+    await CliHelper.createProjectWithCapability(appName, testFolder, "command-bot" as any);
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
@@ -101,9 +94,6 @@ describe("Debug V3 notification-http-trigger template", () => {
 
     context = await readContextMultiEnvV3(projectPath, "local");
     chai.assert.isDefined(context);
-
-    // validate func
-    chai.assert.isUndefined(context.FUNC_PATH); // FUNC_PATH is undefined for global func
 
     // validate .localSettings
     chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));

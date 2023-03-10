@@ -5,6 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
+import { ManifestUtil } from "@microsoft/teamsfx-api";
 import { ValidateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/validate";
 import { ValidateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
@@ -30,10 +31,22 @@ describe("teamsApp/validate", async () => {
     sinon.restore();
   });
 
-  it("file not found", async () => {
+  it("file not found - app package", async () => {
     sinon.stub(tools, "isValidationEnabled").resolves(true);
     const args: ValidateTeamsAppArgs = {
       appPackagePath: "fakepath",
+    };
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
+    }
+  });
+
+  it("file not found - manifest", async () => {
+    const args: ValidateTeamsAppArgs = {
+      manifestPath: "fakepath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
@@ -54,7 +67,7 @@ describe("teamsApp/validate", async () => {
     }
   });
 
-  it("happy path", async () => {
+  it("happy path - validate against schema", async () => {
     const args: ValidateTeamsAppArgs = {
       manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
@@ -134,5 +147,53 @@ describe("teamsApp/validate", async () => {
     };
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
+  });
+
+  it("validation error - no schema", async () => {
+    const args: ValidateTeamsAppArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.noSchema.manifest.json",
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
+    }
+  });
+
+  it("validation error - invalid", async () => {
+    const args: ValidateTeamsAppArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.invalid.manifest.json",
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
+    }
+  });
+
+  it("validation error - download failed", async () => {
+    sinon
+      .stub(ManifestUtil, "validateManifest")
+      .throws(new Error(`Failed to get manifest at url due to: unknown error`));
+    const args: ValidateTeamsAppArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
+    }
   });
 });

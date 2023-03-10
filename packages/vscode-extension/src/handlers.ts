@@ -92,7 +92,12 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
+import {
+  FxCore,
+  isOfficeAddinEnabled,
+  isV3Enabled,
+  isValidationEnabled,
+} from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
@@ -835,6 +840,84 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
+    if (isValidationEnabled()) {
+      const schemaOption: OptionItem = {
+        id: "validateAgainstSchema",
+        label: localize("teamstoolkit.handlers.validate.schemaOption"),
+        description: localize("teamstoolkit.handlers.validate.schemaOptionDescription"),
+      };
+      const appPackageOption: OptionItem = {
+        id: "validateAgainstPackage",
+        label: localize("teamstoolkit.handlers.validate.appPackageOption"),
+        description: localize("teamstoolkit.handlers.validate.appPackageOptionDescription"),
+      };
+      const config: SingleSelectConfig = {
+        name: "validateMethod",
+        title: localize("teamstoolkit.handlers.validate.selectTitle"),
+        options: [schemaOption, appPackageOption],
+      };
+      const result = await VS_CODE_UI.selectOption(config);
+      if (result.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error, {
+          ...getTriggerFromProperty(args),
+        });
+        return err(result.error);
+      } else {
+        const selectedEnv = await askTargetEnvironment();
+        if (selectedEnv.isErr()) {
+          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+          showError(selectedEnv.error);
+          return err(selectedEnv.error);
+        }
+        const env = selectedEnv.value;
+
+        const func: Func = {
+          namespace: "fx-solution-azure",
+          method: "validateManifest",
+          params: {},
+        };
+        if (result.value.result === schemaOption.id) {
+          if (!(await fs.pathExists(manifestTemplatePath))) {
+            const error = new UserError(
+              ExtensionSource,
+              ExtensionErrors.DefaultManifestTemplateNotExistsError,
+              util.format(
+                localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
+                manifestTemplatePath
+              )
+            );
+
+            ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+            showError(error);
+            return err(error);
+          }
+          func.params = {
+            manifestPath: manifestTemplatePath,
+          };
+        } else {
+          const appPackagePath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
+          if (!(await fs.pathExists(appPackagePath))) {
+            const error = new UserError(
+              ExtensionSource,
+              ExtensionErrors.DefaultAppPackageNotExistsError,
+              util.format(
+                localize("teamstoolkit.handlers.defaultAppPackageNotExists"),
+                appPackagePath
+              )
+            );
+
+            ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+            showError(error);
+            return err(error);
+          }
+
+          func.params = {
+            appPackagePath: appPackagePath,
+          };
+        }
+        return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+      }
+    }
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
         ExtensionSource,
@@ -862,7 +945,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
       namespace: "fx-solution-azure",
       method: "validateManifest",
       params: {
-        manifestTemplatePath: manifestTemplatePath,
+        manifestPath: manifestTemplatePath,
         env: env,
       },
     };
@@ -899,7 +982,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 /**
  * Ask user to select environment, local is included
  */
-async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   const projectPath = globalVariables.workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());

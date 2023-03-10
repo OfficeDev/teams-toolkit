@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, Platform } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform, ManifestUtil } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
@@ -16,8 +16,11 @@ import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
+import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { AppStudioScopes, isValidationEnabled } from "../../../common/tools";
+import { HelpLinks } from "../../../common/constants";
+import { getAbsolutePath } from "../../utils/common";
 
 const actionName = "teamsApp/validate";
 
@@ -120,67 +123,72 @@ export class ValidateTeamsAppDriver implements StepDriver {
       );
       context.ui?.showMessage("info", message, false);
       return ok(new Map());
-    }
-    /*
-    const state = this.loadCurrentState();
-    const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath!, context.projectPath),
-      state,
-      withEmptyCapabilities
-    );
-    if (manifestRes.isErr()) {
-      return err(manifestRes.error);
-    }
-    const manifest = manifestRes.value;
+    } else {
+      const state = this.loadCurrentState();
+      const manifestRes = await manifestUtils.getManifestV3(
+        getAbsolutePath(args.manifestPath!, context.projectPath),
+        state
+      );
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const manifest = manifestRes.value;
 
-    let validationResult;
-    if (manifest.$schema) {
-      try {
-        validationResult = await ManifestUtil.validateManifest(manifest);
-      } catch (e: any) {
+      let validationResult;
+      if (manifest.$schema) {
+        try {
+          validationResult = await ManifestUtil.validateManifest(manifest);
+        } catch (e: any) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.ValidationFailedError.name,
+              AppStudioError.ValidationFailedError.message([
+                getLocalizedString(
+                  "error.appstudio.validateFetchSchemaFailed",
+                  manifest.$schema,
+                  e.message
+                ),
+              ]),
+              HelpLinks.WhyNeedProvision
+            )
+          );
+        }
+      } else {
         return err(
           AppStudioResultFactory.UserError(
             AppStudioError.ValidationFailedError.name,
             AppStudioError.ValidationFailedError.message([
-              getLocalizedString(
-                "error.appstudio.validateFetchSchemaFailed",
-                manifest.$schema,
-                e.message
-              ),
+              getLocalizedString("error.appstudio.validateSchemaNotDefined"),
             ]),
             HelpLinks.WhyNeedProvision
           )
         );
       }
-    } else {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message([
-            getLocalizedString("error.appstudio.validateSchemaNotDefined"),
-          ]),
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    }
 
-    if (validationResult.length > 0) {
-      const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
-      context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
-      const validationFailed = AppStudioResultFactory.UserError(
-        AppStudioError.ValidationFailedError.name,
-        errMessage,
-        "https://aka.ms/teamsfx-actions/teamsapp-validate"
-      );
-      return err(validationFailed);
-    }*/
-    const validationNotice = getLocalizedString("driver.teamsApp.validate.skip", actionName);
-    if (context.platform === Platform.VS) {
-      context.logProvider.warning(validationNotice);
-    } else {
-      context.ui?.showMessage("warn", validationNotice, false);
+      if (validationResult.length > 0) {
+        const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
+        context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
+        const validationFailed = AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          errMessage,
+          "https://aka.ms/teamsfx-actions/teamsapp-validate"
+        );
+        return err(validationFailed);
+      }
+      const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
+      if (context.platform === Platform.VS) {
+        context.logProvider.info(validationSuccess);
+      } else {
+        context.ui?.showMessage("info", validationSuccess, false);
+      }
+      return ok(new Map());
     }
-    return ok(new Map());
+  }
+
+  private loadCurrentState() {
+    return {
+      ENV_NAME: process.env.TEAMSFX_ENV,
+    };
   }
 
   private validateArgs(args: ValidateTeamsAppArgs): Result<any, FxError> {

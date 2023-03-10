@@ -22,8 +22,10 @@ import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
+import { getExecCommand, Utils } from "../utils/utils";
+import { isSpfxDecoupleEnabled } from "../../../../common/featureFlags";
 
-const name = "@microsoft/generator-sharepoint";
+const name = Constants.GeneratorPackageName;
 const supportedVersion = Constants.SPFX_VERSION;
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
@@ -107,6 +109,16 @@ export class GeneratorChecker implements DependencyChecker {
     )}"`;
   }
 
+  public async findGloballyInstalledVersion(
+    timeoutInSeconds?: number
+  ): Promise<string | undefined> {
+    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
+  }
+
+  public async findLatestVersion(timeoutInSeconds?: number): Promise<string | undefined> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInSeconds ?? 0);
+  }
+
   private async validate(): Promise<boolean> {
     return await this.isInstalled();
   }
@@ -153,14 +165,15 @@ export class GeneratorChecker implements DependencyChecker {
 
   private async installGenerator(): Promise<void> {
     try {
+      const version = isSpfxDecoupleEnabled() ? Constants.LatestVersion : supportedVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
         this._logger,
         { timeout: timeout, shell: false },
-        this.getExecCommand("npm"),
+        getExecCommand("npm"),
         "install",
-        `${name}@${supportedVersion}`,
+        `${name}@${version}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
         "--no-audit",
@@ -172,13 +185,5 @@ export class GeneratorChecker implements DependencyChecker {
       this._logger.error(`Failed to execute npm install ${displayName}`);
       throw NpmInstallError(error as Error);
     }
-  }
-
-  private getExecCommand(command: string): string {
-    return this.isWindows() ? `${command}.cmd` : command;
-  }
-
-  private isWindows(): boolean {
-    return os.type() === "Windows_NT";
   }
 }

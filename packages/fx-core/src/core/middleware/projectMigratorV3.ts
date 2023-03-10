@@ -16,6 +16,7 @@ import {
   Platform,
   AzureSolutionSettings,
   ProjectSettingsV3,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -30,12 +31,13 @@ import {
   TelemetryEvent,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
-import { TOOLS } from "../globalVars";
+import { globalVars, TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,
   AbandonedProjectError,
   ToolkitNotSupportError,
+  NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -58,6 +60,7 @@ import {
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
   getVersionState,
+  getTrackingIdFromPath,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -185,6 +188,15 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = err(ToolkitNotSupportError());
       return false;
     }
+
+    // in cli non interactive scenario, migration will return an error instead of popup dialog.
+    const nonInteractive = getParameterFromCxt(ctx, "nonInteractive");
+    if (nonInteractive) {
+      ctx.result = err(new NotAllowedMigrationError());
+      return;
+    }
+
+    await ensureTrackingIdInGlobal(ctx);
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
     if (isRunMigration) {
@@ -359,10 +371,8 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
       launchJsonContent = JSON.stringify(jsonObject, null, 4);
     }
     const result = launchJsonContent
-      .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
       .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
-      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}") // For M365 apps
-      .replace(/\${teamsAppInternalId}/g, "${dev:teamsAppInternalId}");
+      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }
@@ -648,6 +658,12 @@ export async function generateLocalConfig(context: MigrationContext): Promise<vo
     const oldProjectSettings = await loadProjectSettings(context.projectPath);
     await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
   }
+}
+
+export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
+  const projectPath = getParameterFromCxt(context, "projectPath", "");
+  const projectId = await getTrackingIdFromPath(projectPath);
+  globalVars.trackingId = projectId; // set trackingId to globalVars
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {

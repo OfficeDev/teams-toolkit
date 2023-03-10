@@ -72,7 +72,7 @@ export const trustDevCertRetiredNotification =
 export enum Hub {
   teams = "Teams",
   outlook = "Outlook",
-  office = "Office",
+  office = "the Microsoft 365 app",
 }
 
 export enum Host {
@@ -242,7 +242,7 @@ export const npmInstallDisplayMessages: DisplayMessages = {
     `Finished 'Install npm packages' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
-export const localTunnelDisplayMessages = Object.freeze({
+export const ngrokTunnelDisplayMessages = Object.freeze({
   taskName: "Start local tunnel",
   title: "Running 'Start local tunnel' Visual Studio Code task.",
   checkNumber: (n: number) =>
@@ -268,6 +268,10 @@ export const localTunnelDisplayMessages = Object.freeze({
   durationMessage: (duration: number) =>
     `Started local tunnel service in ${duration.toFixed(2)} seconds.`,
 });
+
+// TODO: update devTunnelDisplayMessages
+export type TunnelDisplayMessages = typeof ngrokTunnelDisplayMessages;
+export const devTunnelDisplayMessages: TunnelDisplayMessages = ngrokTunnelDisplayMessages;
 
 export const setUpTabDisplayMessages: DisplayMessages = {
   taskName: "Set up tab",
@@ -346,7 +350,15 @@ export const sideloadingDisplayMessages = Object.freeze({
   sideloadingUrlMessage: (hub: Hub, url: string) =>
     `${hub} web client is being launched for you to debug the Teams app: ${url}.`,
   hotReloadingMessage:
-    "The app supports hot reloading. If you have any code changes within the project, the app will be reloaded.",
+    "The app supports hot reloading. If you have any code changes in the project, the app will be reloaded.",
+});
+
+export const launchingTeamsClientDisplayMessages = Object.freeze({
+  title: "Launching Teams web client.",
+  launchUrlMessage: (url: string) =>
+    `Teams web client is being launched for you to debug the Teams app: ${url}.`,
+  hotReloadingMessage:
+    "The app supports hot reloading. If you have any code changes in the project, the app will be reloaded.",
 });
 
 export const DebugSessionExists = "Debug session exists";

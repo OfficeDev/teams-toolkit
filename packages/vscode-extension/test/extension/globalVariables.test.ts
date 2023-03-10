@@ -4,6 +4,7 @@ import * as sinon from "sinon";
 import { ExtensionContext } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
+import { UriHandler } from "../../src/uriHandler";
 
 describe("Global Variables", () => {
   describe("isSPFxProject", () => {
@@ -35,6 +36,13 @@ describe("Global Variables", () => {
       } as unknown as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(true);
+
+      sinon.restore();
+    });
+
+    it("set uri handler", async () => {
+      const uriHandler = new UriHandler();
+      globalVariables.setUriEventHandler(uriHandler);
 
       sinon.restore();
     });

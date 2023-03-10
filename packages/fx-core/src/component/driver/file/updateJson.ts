@@ -20,6 +20,9 @@ import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
 const actionName = "file/updateJson";
 const helpLink = "https://aka.ms/teamsfx-actions/file-updateJson";
 
+/**
+ * @deprecated - use createOrUpdateJsonFile instead
+ */
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateJsonDriver implements StepDriver {
   description = getLocalizedString("driver.file.updateJson.description");

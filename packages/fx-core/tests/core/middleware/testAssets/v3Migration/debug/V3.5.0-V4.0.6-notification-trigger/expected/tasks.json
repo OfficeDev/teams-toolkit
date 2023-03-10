@@ -49,6 +49,7 @@
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
+                "type": "ngrok",
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
                 "env": "local",
                 "output": {

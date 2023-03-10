@@ -48,10 +48,12 @@ export enum ExtensionErrors {
   TunnelEndpointNotFoundError = "TunnelEndpointNotFoundError",
   TunnelEnvError = "TunnelEnvError",
   NgrokTimeoutError = "NgrokTimeoutError",
+  LaunchTeamsWebClientError = "LaunchTeamsWebClientError",
   SetUpTabError = "SetUpTabError",
   SetUpBotError = "SetUpBotError",
   SetUpSSOError = "SetUpSSOError",
   PrepareManifestError = "PrepareManifestError",
   LoginCacheError = "LoginCacheError",
   DefaultManifestTemplateNotExistsError = "DefaultManifestTemplateNotExistsError",
+  DevTunnelStartError = "DevTunnelStartError",
 }

@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.2.3",
+  "version": "4.2.4",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -140,7 +140,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",
@@ -814,32 +814,25 @@
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
               },
               {
-                "const": "debug-npm-install",
-                "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
-              },
-              {
                 "const": "debug-start-local-tunnel",
                 "description": "%teamstoolkit.taskDefinitions.command.startLocalTunnel.description%"
               },
               {
-                "const": "debug-set-up-tab",
-                "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
+                "const": "provision",
+                "description": "%teamstoolkit.taskDefinitions.command.provision.description%"
               },
               {
-                "const": "debug-set-up-bot",
-                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
+                "const": "deploy",
+                "description": "%teamstoolkit.taskDefinitions.command.deploy.description%"
               },
               {
-                "const": "debug-set-up-sso",
-                "description": "%teamstoolkit.taskDefinitions.command.sso.description%"
-              },
-              {
-                "const": "debug-prepare-manifest",
-                "description": "%teamstoolkit.taskDefinitions.command.manifest.description%"
+                "const": "launch-web-client",
+                "description": "%teamstoolkit.taskDefinitions.command.launchWebClient.description%"
               }
             ]
           },
           "args": {
+            "description": "The arguments of the command.",
             "anyOf": [
               {
                 "type": "object",
@@ -860,22 +853,6 @@
                         {
                           "const": "m365Account",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
-                        },
-                        {
-                          "const": "devCert",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle%"
-                        },
-                        {
-                          "const": "func",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.funcTitle%"
-                        },
-                        {
-                          "const": "ngrok",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle%"
-                        },
-                        {
-                          "const": "dotnet",
-                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
                           "const": "portOccupancy",
@@ -918,120 +895,6 @@
               {
                 "type": "object",
                 "required": [
-                  "projects"
-                ],
-                "properties": {
-                  "projects": {
-                    "type": "array",
-                    "description": "%teamstoolkit.taskDefinitions.args.projects.title%",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "cwd"
-                      ],
-                      "properties": {
-                        "cwd": {
-                          "type": "string",
-                          "description": "%teamstoolkit.taskDefinitions.args.projects.cwd.title%"
-                        },
-                        "npmInstallArgs": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "description": "%teamstoolkit.taskDefinitions.args.projects.npmInstallArgs.title%"
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "forceUpdate": {
-                    "type": "boolean",
-                    "title": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
-                    "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
-                    "default": false,
-                    "oneOf": [
-                      {
-                        "const": false,
-                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
-                      },
-                      {
-                        "const": true,
-                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
-                      }
-                    ]
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
-                  "baseUrl"
-                ],
-                "properties": {
-                  "baseUrl": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.tab.baseUrlTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
-                  "botMessagingEndpoint"
-                ],
-                "properties": {
-                  "botId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.bot.botIdTitle%"
-                  },
-                  "botPassword": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.bot.botPasswordTitle%"
-                  },
-                  "botMessagingEndpoint": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "objectId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.objectIdTitle%"
-                  },
-                  "clientId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientIdTitle%"
-                  },
-                  "clientSecret": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientSecretTitle%"
-                  },
-                  "accessAsUserScopeId": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "appPackagePath": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle%"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
                   "ngrokArgs"
                 ],
                 "properties": {
@@ -1062,9 +925,55 @@
                       },
                       {}
                     ]
+                  },
+                  "env": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
+                    "anyOf": [
+                      {
+                        "const": "local"
+                      },
+                      {}
+                    ]
+                  },
+                  "output": {
+                    "type": "object",
+                    "description": "%teamstoolkit.taskDefinitions.args.output.title%",
+                    "properties": {
+                      "domain": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.domain.title%"
+                      },
+                      "endpoint": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                      }
+                    }
                   }
                 },
                 "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "env"
+                ],
+                "properties": {
+                  "env": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
+                    "anyOf": [
+                      {
+                        "const": "local"
+                      },
+                      {}
+                    ]
+                  },
+                  "template": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.template.title%"
+                  }
+                }
               }
             ]
           }
@@ -1247,53 +1156,8 @@
     ],
     "configuration": [
       {
-        "title": "Prerequisite Check",
-        "order": 2,
-        "properties": {
-          "fx-extension.prerequisiteCheck": {
-            "type": "object",
-            "markdownDescription": "**[Obsolete]** Only work for `${command:fx-extension.validate-local-prerequisites}`",
-            "properties": {
-              "node": {
-                "type": "boolean",
-                "description": "Ensure Node.js is installed."
-              },
-              "dotnetSdk": {
-                "type": "boolean",
-                "description": "Ensure .NET SDK is installed."
-              },
-              "funcCoreTools": {
-                "type": "boolean",
-                "description": "Ensure Azure Functions Core Tools is installed."
-              },
-              "bicep": {
-                "type": "boolean",
-                "description": "Ensure Bicep CLI is installed."
-              },
-              "ngrok": {
-                "type": "boolean",
-                "description": "Ensure Ngrok is installed and started."
-              },
-              "devCert": {
-                "type": "boolean",
-                "description": "Ensure development certificate is trusted."
-              }
-            },
-            "additionalProperties": false,
-            "default": {
-              "node": true,
-              "dotnetSdk": true,
-              "funcCoreTools": true,
-              "bicep": true,
-              "ngrok": true,
-              "devCert": true
-            }
-          }
-        }
-      },
-      {
         "title": "SPFx Configuration",
-        "order": 2,
+        "order": 1,
         "properties": {
           "fx-extension.SPFxPrerequisiteCheck": {
             "type": "object",
@@ -1510,8 +1374,12 @@
     "@azure/identity": "^3.1.3",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
+    "@microsoft/dev-tunnels-connections": "~1.0.7342",
+    "@microsoft/dev-tunnels-contracts": "~1.0.7342",
+    "@microsoft/dev-tunnels-management": "~1.0.7342",
+    "@microsoft/dev-tunnels-ssh": "~3.10.19",
     "@microsoft/teamsfx-api": "^0.22.1",
-    "@microsoft/teamsfx-core": "^1.23.1",
+    "@microsoft/teamsfx-core": "^1.23.2",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",
@@ -1519,11 +1387,12 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.18.2",
-    "jscodeshift": "^0.13.0",
+    "jscodeshift": "^0.14.0",
     "jsonc-parser": "^3.0.0",
     "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
+    "node-rsa": "^1.1.1",
     "open": "^8.4.0",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",

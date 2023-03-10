@@ -1,20 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
+import fs from "fs-extra";
+import * as path from "path";
+import { EOL } from "os";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateTeamsAppArgs } from "./interfaces/ValidateTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { HelpLinks } from "../../../common/constants";
-import { getAbsolutePath } from "../../utils/common";
+import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { AppStudioScopes, isValidationEnabled } from "../../../common/tools";
 
 const actionName = "teamsApp/validate";
 
@@ -46,17 +49,82 @@ export class ValidateTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async validate(
     args: ValidateTeamsAppArgs,
-    context: WrapDriverContext,
-    withEmptyCapabilities?: boolean
+    context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    /*const result = this.validateArgs(args);
+    TelemetryUtils.init(context);
+    const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
     }
 
+    if (isValidationEnabled() && args.appPackagePath) {
+      let appPackagePath = args.appPackagePath;
+      if (!path.isAbsolute(appPackagePath)) {
+        appPackagePath = path.join(context.projectPath, appPackagePath);
+      }
+      if (!(await fs.pathExists(appPackagePath))) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.FileNotFoundError.name,
+            AppStudioError.FileNotFoundError.message(appPackagePath)
+          )
+        );
+      }
+      const archivedFile = await fs.readFile(appPackagePath);
+
+      const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
+      const appStudioToken = appStudioTokenRes.value;
+
+      const validationResult = await AppStudioClient.partnerCenterAppPackageValidation(
+        archivedFile,
+        appStudioToken
+      );
+
+      // logs in output window
+      const errors = validationResult.errors
+        .map((error) => {
+          return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
+            error.helpUrl
+          }`;
+        })
+        .join(EOL);
+      const warnings = validationResult.warnings
+        .map((warning) => {
+          return `(!) Warning: ${warning.content} \n${getLocalizedString(
+            "core.option.learnMore"
+          )}: ${warning.helpUrl}`;
+        })
+        .join(EOL);
+      const outputMessage =
+        EOL +
+        getLocalizedString(
+          "driver.teamsApp.summary.validate",
+          validationResult.errors.length + validationResult.warnings.length,
+          validationResult.notes.length,
+          errors,
+          warnings,
+          undefined
+        );
+      context.logProvider?.info(outputMessage);
+
+      const message = getLocalizedString(
+        "driver.teamsApp.validate.result",
+        validationResult.errors.length + validationResult.warnings.length,
+        validationResult.notes.length,
+        "command:fx-extension.showOutputChannel"
+      );
+      context.ui?.showMessage("info", message, false);
+      return ok(new Map());
+    }
+    /*
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath, context.projectPath),
+      getAbsolutePath(args.manifestPath!, context.projectPath),
       state,
       withEmptyCapabilities
     );
@@ -115,31 +183,29 @@ export class ValidateTeamsAppDriver implements StepDriver {
     return ok(new Map());
   }
 
-  private loadCurrentState() {
-    return {
-      TAB_ENDPOINT: process.env.TAB_ENDPOINT,
-      TAB_DOMAIN: process.env.TAB_DOMAIN,
-      BOT_ID: process.env.BOT_ID,
-      BOT_DOMAIN: process.env.BOT_DOMAIN,
-      ENV_NAME: process.env.TEAMSFX_ENV,
-    };
-  }
-
   private validateArgs(args: ValidateTeamsAppArgs): Result<any, FxError> {
-    const invalidParams: string[] = [];
-    if (!args || !args.manifestPath) {
-      invalidParams.push("manifestPath");
-    }
-    if (invalidParams.length > 0) {
+    if (!args || (!args.manifestPath && !args.appPackagePath)) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          [
+            getDefaultString(
+              "driver.teamsApp.validate.invalidParameter",
+              "manifestPath",
+              "appPackagePath",
+              actionName
+            ),
+            getLocalizedString(
+              "driver.teamsApp.validate.invalidParameter",
+              "manifestPath",
+              "appPackagePath",
+              actionName
+            ),
+          ],
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );
-    } else {
-      return ok(undefined);
     }
+    return ok(undefined);
   }
 }

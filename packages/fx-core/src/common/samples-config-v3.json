@@ -185,6 +185,26 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false
-        }
+        },
+        {
+          "id": "hello-world-teams-tab-and-outlook-add-in",
+          "title": "Hello World Teams Tab and Outlook add-in",
+          "shortDescription": "A hello world project that contains both Teams Tab and Outlook add-in capability",
+          "fullDescription": "A hello world project that contains both Teams Tab and Outlook add-in capability",
+          "tags": ["Tab", "Outlook add-in"],
+          "time": "5min to run",
+          "configuration": "Ready for debug",
+          "suggested": false
+        },
+        {
+            "id": "dev-assist-dashboard",
+            "title": "Developer Assist Dashboard",
+            "shortDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
+            "fullDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
+            "tags": ["Outlook", "Office", "TS"],
+            "time": "10min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+          }
     ]
 }

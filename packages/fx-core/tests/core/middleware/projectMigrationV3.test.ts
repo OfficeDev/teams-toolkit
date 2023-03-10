@@ -39,7 +39,7 @@ import {
   errorNames,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { UpgradeCanceledError } from "../../../src/core/error";
+import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../src/core/error";
 import {
   Metadata,
   MetadataV2,
@@ -154,6 +154,31 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
+  });
+
+  it("happy path run error - notAllowedMigrationError", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [ProjectMigratorMWV3],
+    });
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true, nonInteractive: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+      assert.instanceOf((res as any).error, NotAllowedMigrationError);
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
   });
 });
 
@@ -731,7 +756,7 @@ describe("manifestsMigration", () => {
       assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
-        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first."
+        "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first."
       );
     }
   });
@@ -838,11 +863,11 @@ describe("updateLaunchJson", () => {
     const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
     assert.equal(
       updatedLaunchJson.configurations[0].url,
-      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[1].url,
-      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[2].url,

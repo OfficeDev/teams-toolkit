@@ -430,7 +430,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 15);
+      chai.assert.equal(tutorialOptions.length, 16);
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(tutorialOptions[1].data, "https://aka.ms/teamsfx-notification-new");
     });

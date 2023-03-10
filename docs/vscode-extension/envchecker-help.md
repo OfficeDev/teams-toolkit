@@ -128,7 +128,7 @@ To resolve this please refer to [How to install Node.js?](#how-to-install-nodejs
 
 > Node.js (*node_version*) is not in the supported version list (v16).
 
-The SharePoint Framework v1.16.0 is supported on the following Node.js versions:
+The SharePoint Framework v1.16.1 is supported on the following Node.js versions:
 
 - Node.js v16 LTS (v16.13.x - v16.18.x, aka: Gallium)
 

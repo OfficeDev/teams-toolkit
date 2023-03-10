@@ -90,13 +90,16 @@ export class M365TitleAcquireDriver implements StepDriver {
         throw sideloadingTokenRes.error;
       }
       const sideloadingToken = sideloadingTokenRes.value;
-      const titleId = await packageService.sideLoading(sideloadingToken, appPackagePath);
+      const sideloadingRes = await packageService.sideLoading(sideloadingToken, appPackagePath);
 
       await progressHandler?.end(true);
 
       return {
-        output: new Map([["M365_TITLE_ID", titleId]]),
-        summaries: [getLocalizedString("driver.m365.acquire.summary", titleId)],
+        output: new Map([
+          ["M365_TITLE_ID", sideloadingRes[0]],
+          ["M365_APP_ID", sideloadingRes[1]],
+        ]),
+        summaries: [getLocalizedString("driver.m365.acquire.summary", sideloadingRes[0])],
       };
     } catch (error) {
       await progressHandler?.end(false);

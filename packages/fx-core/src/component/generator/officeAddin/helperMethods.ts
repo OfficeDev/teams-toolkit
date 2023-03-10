@@ -1,3 +1,6 @@
+/**
+ * @author darrmill@microsoft.com, yefuwang@microsoft.com
+ */
 import axios from "axios";
 import fs from "fs";
 import * as fse from "fs-extra";
@@ -99,5 +102,36 @@ export class HelperMethods {
 
     // Save project manifest
     await ManifestUtil.writeToPath(manifestTemplatePath, manifest);
+  }
+
+  static async updateManifestLocation(
+    projectRoot: string,
+    manifestRelativePath: string
+  ): Promise<void> {
+    const manifestPath = path.join(projectRoot, manifestRelativePath);
+    if (await fse.pathExists(manifestPath)) {
+      if (!(await fse.pathExists(path.join(projectRoot, "appPackage")))) {
+        await fse.mkdir(path.join(projectRoot, "appPackage"));
+      }
+      await fse.rename(manifestPath, path.join(projectRoot, "appPackage", "manifest.json"));
+    }
+
+    const packageJsonPath = path.join(projectRoot, "package.json");
+    if (await fse.pathExists(packageJsonPath)) {
+      // Replace "manifest.json" with "appPackage/manifest.json"
+      const content = (await fse.readFile(packageJsonPath)).toString();
+      const reg = /\smanifest\.json\"/;
+      const data = content.replace(reg, ` appPackage/manifest.json"`);
+      await fse.writeFile(packageJsonPath, data);
+    }
+
+    const webpackConfigPath = path.join(projectRoot, "webpack.config.js");
+    if (await fse.pathExists(webpackConfigPath)) {
+      // Replace "manifest*.json" with "appPackage/manifest*.json"
+      const content = (await fse.readFile(webpackConfigPath)).toString();
+      const reg = /\"manifest\*\.json\"/;
+      const data = content.replace(reg, `"appPackage/manifest*.json"`);
+      await fse.writeFile(webpackConfigPath, data);
+    }
   }
 }

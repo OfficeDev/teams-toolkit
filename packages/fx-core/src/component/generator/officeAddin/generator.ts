@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import {
   FxError,
   Inputs,
@@ -103,12 +107,14 @@ export class OfficeAddinGenerator {
           const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
           await childProcessExec(cmdLine);
 
+          const manifestPath = jsonData.getManifestPath(template) as string;
           // modify manifest guid and DisplayName
           await OfficeAddinManifest.modifyManifestFile(
-            `${join(addinRoot, jsonData.getManifestPath(template) as string)}`,
+            `${join(addinRoot, manifestPath)}`,
             "random",
             `${name}`
           );
+          await HelperMethods.updateManifestLocation(addinRoot, manifestPath);
         }
       } else {
         // from existing project

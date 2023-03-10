@@ -6,9 +6,9 @@
 
 New features:
 
-- Supported create, debug, and deploy an [Outlook add-in](https://learn.microsoft.com/office/dev/add-ins/outlook/outlook-add-ins-overview) project.
-- Improved debug experience for apps across Microsoft 365 with automatic sideloading and channel registration.
-- Disabled commands from tree view that doesn't allow concurrent executions.
+- Create, debug, and deploy an [Outlook add-in](https://learn.microsoft.com/office/dev/add-ins/outlook/outlook-add-ins-overview) project.
+- Improved debug experience for personal tab and search-based message extension across Microsoft 365 that allows you to automatically run and debug your app in Outlook and the Microsoft 365 app.
+- Disabled commands from tree view that doesn't allow concurrent executions. For example, when you execute `Provision in the cloud` command, other commands in the `Deployment` section will be disabled to prevent concurrent execution error.
 
 SDK updates:
 
@@ -72,6 +72,6 @@ Pre-release is meant for those eager to try the latest Teams Toolkit features an
 
 ### What about my existing Teams Toolkit projects
 
-The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. We have also provided a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
 
 Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).

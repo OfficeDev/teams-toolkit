@@ -153,7 +153,6 @@ import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
-import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import {
   anonymizeFilePaths,
   getAppName,

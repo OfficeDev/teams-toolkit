@@ -119,7 +119,7 @@ export class HelperMethods {
       const packageJsonPath = path.join(projectRoot, "package.json");
       if (await fse.pathExists(packageJsonPath)) {
         const content = (await fse.readFile(packageJsonPath)).toString();
-        const reg = /\smanifest\.json\"/;
+        const reg = /\smanifest\.json\"/g;
         const data = content.replace(reg, ` appPackage/manifest.json"`);
         await fse.writeFile(packageJsonPath, data);
       }

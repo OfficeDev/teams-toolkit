@@ -40,14 +40,14 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
 
 function checkIsSPFx(directory: string): boolean {
   const files = fs.readdirSync(directory);
-  for (const file in files) {
+  for (const file of files) {
     if (file === ".yo-rc.json") {
-      const content = fs.readJsonSync(file);
+      const content = fs.readJsonSync(path.join(directory, file));
       if (content["@microsoft/generator-sharepoint"]) {
         return true;
       }
     } else if (fs.lstatSync(path.join(directory, file)).isDirectory()) {
-      return checkIsSPFx(directory);
+      if (checkIsSPFx(path.join(directory, file))) return true;
     }
   }
   return false;

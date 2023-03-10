@@ -136,23 +136,29 @@ export class BaseWidget<P, S> extends Component<P, S & BaseWidgetState> {
   }
 
   /**
-   * Override this method to customize the widget header.
-   * @returns JSX component for the widget body
+   * The purpose of this method is to provide a way for you to add custom header content to the widget.
+   * By overriding this method, you can add additional functionality or styling to the widget's header.
+   * If the method is not overridden, the widget will return undefined as the default value for the header, indicating that no custom header content has been defined.
+   * @returns An optional JSX.Element representing the header of the widget.
    */
   protected header(): JSX.Element | undefined {
     return undefined;
   }
 
   /**
-   * Override this method to customize the widget body.
-   * @returns JSX component for the widget body
+   * The purpose of this method is to provide a way for you to add custom body content to the widget.
+   * By overriding this method, you can add additional functionality or styling to the widget's body.
+   * If the method is not overridden, the widget will return undefined as the default value for the body, indicating that no custom body content has been defined.
+   * @returns An optional JSX.Element representing the body of the widget.
    */
   protected body(): JSX.Element | undefined {
     return undefined;
   }
 
   /**
-   * Override this method to defines the footer of the widget component. It should return an optional JSX.Element which represents the footer of the widget.
+   * The purpose of this method is to provide a way for you to add custom footer content to the widget.
+   * By overriding this method, you can add additional functionality or styling to the widget's footer.
+   * If the method is not overridden, the widget will return undefined as the default value for the footer, indicating that no custom footer content has been defined.
    * @returns An optional JSX.Element representing the footer of the widget.
    */
   protected footer(): JSX.Element | undefined {

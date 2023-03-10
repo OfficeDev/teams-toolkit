@@ -4,6 +4,8 @@
 import { BaseComponentInnerError } from "../error/componentError";
 import { errorSource } from "./constant";
 
+export class CancelDownloading extends Error {}
+
 export class TemplateZipFallbackError extends BaseComponentInnerError {
   constructor() {
     super(

@@ -104,7 +104,8 @@ export class HelperMethods {
     await ManifestUtil.writeToPath(manifestTemplatePath, manifest);
   }
 
-  static async updateManifestLocation(
+  // Move the manifest.json and assets to appPackage folder and update related files.
+  static async moveManifestLocation(
     projectRoot: string,
     manifestRelativePath: string
   ): Promise<void> {
@@ -114,24 +115,40 @@ export class HelperMethods {
         await fse.mkdir(path.join(projectRoot, "appPackage"));
       }
       await fse.rename(manifestPath, path.join(projectRoot, "appPackage", "manifest.json"));
-    }
 
-    const packageJsonPath = path.join(projectRoot, "package.json");
-    if (await fse.pathExists(packageJsonPath)) {
-      // Replace "manifest.json" with "appPackage/manifest.json"
-      const content = (await fse.readFile(packageJsonPath)).toString();
-      const reg = /\smanifest\.json\"/;
-      const data = content.replace(reg, ` appPackage/manifest.json"`);
-      await fse.writeFile(packageJsonPath, data);
-    }
+      const packageJsonPath = path.join(projectRoot, "package.json");
+      if (await fse.pathExists(packageJsonPath)) {
+        const content = (await fse.readFile(packageJsonPath)).toString();
+        const reg = /\smanifest\.json\"/;
+        const data = content.replace(reg, ` appPackage/manifest.json"`);
+        await fse.writeFile(packageJsonPath, data);
+      }
 
-    const webpackConfigPath = path.join(projectRoot, "webpack.config.js");
-    if (await fse.pathExists(webpackConfigPath)) {
-      // Replace "manifest*.json" with "appPackage/manifest*.json"
-      const content = (await fse.readFile(webpackConfigPath)).toString();
-      const reg = /\"manifest\*\.json\"/;
-      const data = content.replace(reg, `"appPackage/manifest*.json"`);
-      await fse.writeFile(webpackConfigPath, data);
+      const assetsPath = path.join(projectRoot, "assets");
+      if (await fse.pathExists(assetsPath)) {
+        await fse.move(assetsPath, path.join(projectRoot, "appPackage", "assets"));
+      }
+
+      const webpackConfigPath = path.join(projectRoot, "webpack.config.js");
+      if (await fse.pathExists(webpackConfigPath)) {
+        const content = (await fse.readFile(webpackConfigPath)).toString();
+        const manifestReg = /\"manifest\*\.json\"/g;
+        const assetsReg = /\"assets\/\*\"/g;
+        const data = content
+          .replace(manifestReg, `"appPackage/manifest*.json"`)
+          .replace(assetsReg, `"appPackage/assets/*"`);
+
+        await fse.writeFile(webpackConfigPath, data);
+      }
+
+      const htmlPath = path.join(projectRoot, "src", "taskpane", "taskpane.html");
+      if (await fse.pathExists(htmlPath)) {
+        const content = (await fse.readFile(htmlPath)).toString();
+        const assetsReg = /\/assets\//g;
+        const data = content.replace(assetsReg, `/appPackage/assets/`);
+
+        await fse.writeFile(htmlPath, data);
+      }
     }
   }
 }

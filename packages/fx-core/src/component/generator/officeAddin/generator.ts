@@ -114,7 +114,7 @@ export class OfficeAddinGenerator {
             "random",
             `${name}`
           );
-          await HelperMethods.updateManifestLocation(addinRoot, manifestPath);
+          await HelperMethods.moveManifestLocation(addinRoot, manifestPath);
         }
       } else {
         // from existing project

@@ -2524,7 +2524,7 @@ export async function listCollaborator(env?: string): Promise<Result<any, FxErro
   return result;
 }
 
-export async function manageCollaboratorHandler(): Promise<Result<any, FxError>> {
+export async function manageCollaboratorHandler(env?: string): Promise<Result<any, FxError>> {
   let result: any = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaboratorStart);
 
@@ -2554,12 +2554,12 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
     const command = collaboratorCommand.value.result;
     switch (command) {
       case "grantPermission":
-        result = await grantPermission();
+        result = await grantPermission(env);
         break;
 
       case "listCollaborator":
       default:
-        result = await listCollaborator();
+        result = await listCollaborator(env);
         break;
     }
   } catch (e) {

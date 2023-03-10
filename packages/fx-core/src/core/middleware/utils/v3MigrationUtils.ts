@@ -354,7 +354,7 @@ export async function updateAndSaveManifestForSpfx(
   await context.fsWriteFile(localTemplatePath, localTemplate);
 }
 
-export function tryExtractEnvForUserdata(filename: string): string {
+export function tryExtractEnvFromUserdata(filename: string): string {
   const userdataRegex = new RegExp(`([a-zA-Z0-9_-]*)\\.${MetadataV2.userdataSuffix}`, "g");
   const regRes = userdataRegex.exec(filename);
   if (regRes != null) {

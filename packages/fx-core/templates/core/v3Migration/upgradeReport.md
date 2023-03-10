@@ -22,7 +22,7 @@ You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-chang
 
 1. Created `teamsapp.yml` and `teamsapp.local.yml` in your project root folder.
 2. Moved environment files in `.fx` to `.env.{env}` in `env` folder.
-3. If your project contains file `.fx/states/{env}.userdata`, it will be moved to `.env.{env}.user` in `env` folder.
+3. If your project contains file `.fx/states/{env}.userdata`, the content will be moved to `.env.{env}.user` in `env` folder
 4. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
 5. If your project contains file `templates/appPackage/aad.template.json`, it will be moved and renamed as `aad.manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
 6. Updated `.vscode/tasks.json` and `.vscode/launch.json`.

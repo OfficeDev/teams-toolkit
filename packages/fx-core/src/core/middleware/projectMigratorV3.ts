@@ -62,7 +62,7 @@ import {
   getVersionState,
   getTrackingIdFromPath,
   buildEnvUserFileName,
-  tryExtractEnvForUserdata as tryExtractEnvFromUserdata,
+  tryExtractEnvFromUserdata,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";

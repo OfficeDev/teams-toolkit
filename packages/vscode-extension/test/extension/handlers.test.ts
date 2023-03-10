@@ -1077,7 +1077,7 @@ describe("handlers", () => {
       );
       sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
 
-      const result = await handlers.manageCollaboratorHandler();
+      const result = await handlers.manageCollaboratorHandler("env");
       chai.expect(result.isOk()).equals(true);
     });
 
@@ -1114,7 +1114,7 @@ describe("handlers", () => {
         dispose: () => {},
       });
 
-      const result = await handlers.manageCollaboratorHandler();
+      const result = await handlers.manageCollaboratorHandler("env");
       chai.expect(result.isOk()).equals(true);
     });
 
@@ -1137,7 +1137,7 @@ describe("handlers", () => {
         dispose: () => {},
       });
 
-      const result = await handlers.manageCollaboratorHandler();
+      const result = await handlers.manageCollaboratorHandler("env");
       chai.expect(result.isErr()).equals(true);
     });
 

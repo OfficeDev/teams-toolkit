@@ -195,13 +195,6 @@ class TreeViewManager {
               undefined,
               { name: "teamsfx-add-environment", custom: false }
             ),
-            new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle"),
-              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription"),
-              "fx-extension.manageCollaborator",
-              "manageCollaborator",
-              { name: "organization", custom: false }
-            ),
           ]
         : [
             new TreeViewCommand(

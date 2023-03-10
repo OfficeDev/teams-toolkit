@@ -535,12 +535,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(deployManifestFromCtxMenuCmd);
 
   if (isV3Enabled()) {
-    registerInCommandController(
-      context,
+    const manageCollaborator = vscode.commands.registerCommand(
       "fx-extension.manageCollaborator",
-      handlers.manageCollaboratorHandler,
-      "manageCollaborator"
+      (node) => {
+        const envName = node.identifier;
+        Correlator.run(handlers.manageCollaboratorHandler, envName);
+      }
     );
+    context.subscriptions.push(manageCollaborator);
   } else {
     const grantPermission = vscode.commands.registerCommand(
       "fx-extension.grantPermission",

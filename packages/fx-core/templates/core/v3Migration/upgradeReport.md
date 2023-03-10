@@ -11,7 +11,7 @@ Visit https://aka.ms/teams-toolkit-5.0-upgrade to learn more about the upgrade.
 There's no immediate action required from you. This part illustrates what's changed to your development flow.
 > If you encountered any errors or issues after upgrade, you could try the following steps or visit [known issues](https://aka.ms/teams-toolkit-5.0-upgrade#known-issues) for details.
 
-1. You need to sync `.env/.env.{env}` files between different machines manually. All these files will be gitignored by default. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
+1. You need to sync `.env/.env.{env}.user` files between different machines manually. All these files will be gitignored by default. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 2. You need to take some manual steps when creating or provisioning new environments for your old project. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 3. You need to manually update `.vscode/launch.json` when launching your app for a certain environment. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
 4. You need to provide values to `APIM__PUBLISHEREMAIL` and `APIM__PUBLISHERNAME` environment variable if your current project uses APIM. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)
@@ -22,11 +22,12 @@ You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-chang
 
 1. Created `teamsapp.yml` and `teamsapp.local.yml` in your project root folder.
 2. Moved environment files in `.fx` to `.env.{env}` in `env` folder.
-3. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
-4. If your project contains file `templates/appPackage/aad.template.json`, it will be moved and renamed as `aad.manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
-5. Updated `.vscode/tasks.json` and `.vscode/launch.json`.
-6. Updated `.gitignore` to ignore new environment files.
-7. Removed `.fx` folder.
+3. If your project contains file `.fx/states/{env}.userdata`, it will be moved to `.env.{env}.user` in `env` folder.
+4. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
+5. If your project contains file `templates/appPackage/aad.template.json`, it will be moved and renamed as `aad.manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
+6. Updated `.vscode/tasks.json` and `.vscode/launch.json`.
+7. Updated `.gitignore` to ignore new environment user files.
+8. Removed `.fx` folder.
 
 For more detailed changes, please refer to this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#file-changes).
 

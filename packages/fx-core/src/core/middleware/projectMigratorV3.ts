@@ -61,6 +61,8 @@ import {
   getDownloadLinkByVersionAndPlatform,
   getVersionState,
   getTrackingIdFromPath,
+  buildEnvUserFileName,
+  tryExtractEnvForUserdata as tryExtractEnvFromUserdata,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -775,40 +777,29 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
 }
 
 export async function userdataMigration(context: MigrationContext): Promise<void> {
-  // general
-  if (await context.fsPathExists(path.join(".fx", "states"))) {
-    // if ./fx/states/ exists
-    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
-    for (const fileName of fileNames)
-      if (fileName.endsWith(".userdata")) {
-        const fileRegex = new RegExp("([a-zA-Z0-9_-]*)(\\.userdata)", "g"); // state.*.json
-        const fileNamesArray = fileRegex.exec(fileName);
-        if (fileNamesArray != null) {
-          // get envName
-          const envName = fileNamesArray[1];
-          // create .env.{env} file if not exist
-          await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
-          if (
-            !(await context.fsPathExists(
-              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
-            ))
-          )
-            await context.fsCreateFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
-            );
-          const bicepContent = await readBicepContent(context);
-          const envData = await readAndConvertUserdata(
-            context,
-            path.join(".fx", "states", fileName),
-            bicepContent
-          );
-          await context.fsWriteFile(
-            path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
-            envData,
-            Constants.envWriteOption
-          );
-        }
-      }
+  const stateFolder = path.join(MetadataV2.configFolder, MetadataV2.stateFolder);
+  if (!(await context.fsPathExists(stateFolder))) {
+    return;
+  }
+  await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
+  const stateFiles = fsReadDirSync(context, stateFolder); // search all files, get file names
+  for (const stateFile of stateFiles) {
+    const envName = tryExtractEnvFromUserdata(stateFile);
+    if (envName) {
+      // get envName
+      const envFileName = buildEnvUserFileName(envName);
+      const bicepContent = await readBicepContent(context);
+      const envData = await readAndConvertUserdata(
+        context,
+        path.join(stateFolder, stateFile),
+        bicepContent
+      );
+      await context.fsWriteFile(
+        path.join(MetadataV3.defaultEnvironmentFolder, envFileName),
+        envData,
+        Constants.envWriteOption
+      );
+    }
   }
 }
 
@@ -941,8 +932,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
     path.join(context.projectPath, gitignoreFile),
     "utf8"
   );
-  ignoreFileContent +=
-    EOL + path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + "*");
+  ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvUserFileName("*")}`;
   ignoreFileContent += EOL + `${backupFolder}/*`;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);

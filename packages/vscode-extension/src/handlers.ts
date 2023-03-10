@@ -2438,9 +2438,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
     }
 
     inputs = getSystemInputs();
-    if (!isV3Enabled()) {
-      inputs.env = env;
-    }
+    inputs.env = env;
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;

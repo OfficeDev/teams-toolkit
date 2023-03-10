@@ -702,7 +702,7 @@
       {
         "command": "fx-extension.manageCollaborator",
         "title": "%teamstoolkit.commands.manageCollaborator.title%",
-        "enablement": "fx-extension.isV3Enabled",
+        "enablement": "fx-extension.isV3Enabled && !fx-extension.commandLocked",
         "icon": "$(organization)"
       },
       {

@@ -20,7 +20,6 @@ import {
 } from "@microsoft/dev-tunnels-management";
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
-
 import VsCodeLogInstance from "../../commonlib/log";
 import { tools } from "../../handlers";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";

@@ -2041,7 +2041,7 @@
       <Item ItemId=";teamstoolkit.guides.addOutlookAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configure Outlook add-in Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Configurar la funcionalidad de complemento de Outlook]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -2275,8 +2275,8 @@
       <Item ItemId=";teamstoolkit.handlers.createProjectNotification" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You should create a new app or open an existing one to open the README file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Debe crear una nueva aplicación de Teams o abrir una existente para abrir el archivo Léame.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Debe crear una nueva aplicación o abrir una existente para abrir el archivo Léame.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You should create a new Teams app or open an existing one to open the README file.]]></Val>
@@ -2788,8 +2788,8 @@
       <Item ItemId=";teamstoolkit.localDebug.installApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[To continue to debug your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Para seguir depurando la aplicación en Outlook o Office.com, debe instalar la aplicación manualmente a través de Teams.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Para seguir depurando la aplicación en Outlook o en la aplicación de Microsoft 365, debe instalar la aplicación manualmente a través de Teams.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[To continue to debug your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
@@ -2842,12 +2842,18 @@
       <Item ItemId=";teamstoolkit.localDebug.launchTeamsWebClientError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to launch Teams web client.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Error al iniciar el cliente web de Teams.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.launchTeamsWebClientStoppedError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Task to launch Teams web client stopped with exit code '%s'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La tarea para iniciar el cliente web de Teams se detuvo con el código de salida "%s".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3208,8 +3214,8 @@
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Teams Manifest to Extend in Outlook and the Microsoft 365 app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Actualizar el manifiesto de Teams para ampliarlo en Outlook y Office]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Actualizar el manifiesto de Teams para ampliarlo en Outlook y la aplicación de Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Teams Manifest to Extend in Outlook and Office]]></Val>
@@ -3268,8 +3274,8 @@
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.warningMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and the Microsoft 365 app. We recommend to use git for better tracking file changes before upgrading.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Kit de herramientas de Teams actualizará en contexto el archivo de manifiesto de Teams que seleccionó para trabajar en Outlook y Office. Se recomienda usar Git para realizar un mejor seguimiento de los cambios de los archivos antes de actualizar.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kit de herramientas de Teams actualizará en contexto el archivo de manifiesto de Teams que seleccionó para trabajar en Outlook y la aplicación de Microsoft 365. Se recomienda usar Git para realizar un mejor seguimiento de los cambios de los archivos antes de actualizar.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and Office. We recommend to use git for better tracking file changes before upgrading.]]></Val>
@@ -3280,8 +3286,8 @@
       <Item ItemId=";teamstoolkit.migrateTeamsTabApp.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Teams Tab App to Extend in Outlook and the Microsoft 365 app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Actualizar la aplicación de pestaña de Teams para ampliarla en Outlook y Office]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Actualizar la aplicación de pestaña de Teams para ampliarla en Outlook y en la aplicación de Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Teams Tab App to Extend in Outlook and Office]]></Val>
@@ -3421,8 +3427,8 @@
       <Item ItemId=";teamstoolkit.preview.installApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[To continue to preview your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Para continuar con la vista previa de la aplicación en Outlook o Office.com, debe instalar la aplicación manualmente mediante Teams.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Para seguir con la vista previa de la aplicación en Outlook o en la aplicación de Microsoft 365, debe instalar la aplicación manualmente a través de Teams.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
@@ -3673,6 +3679,9 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.args.env.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The environment name.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nombre del entorno.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3697,18 +3706,27 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.args.output.domain.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The key of the environment variable of tunnel domain.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clave de la variable de entorno del dominio de túnel.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.output.endpoint.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The key of the environment variable of tunnel endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clave de la variable de entorno del punto de conexión de túnel.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.output.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The keys of the environment variables of tunnel domain and tunnel endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Las claves de las variables de entorno del dominio de túnel y el punto de conexión de túnel.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3769,6 +3787,9 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.args.template.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The path to yml template.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ruta de acceso a la plantilla yml.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3784,20 +3805,26 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.deploy.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Execute deploy lifecycle.]A; See https://aka.ms/teamsfx-tasks/deploy for details and how to customize the arguments.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ejecutar ciclo de vida de implementación.]A; Consulte https://aka.ms/teamsfx-tasks/deploy para obtener más información y saber cómo personalizar los argumentos.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.launchWebClient.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Launch Teams web client. ]A; See https://aka.ms/teamsfx-tasks/launch-web-client for details and how to customize the arguments.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inicie el cliente web de Teams. ]A; Consulte https://aka.ms/teamsfx-tasks/launch-web-client para obtener más información y saber cómo personalizar los argumentos.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.prerequisites.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate prerequisites.]A; See https://aka.ms/teamsfx-tasks/check-prerequisites for details and how to customize the arguments.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Validare instalar los requisitos previos.]A; Consulte https://aka.ms/teamsfx-check-prerequisites-task para obtener información sobre cómo personalizar los siguientes argumentos.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Valide los requisitos previos.]A; Consulte https://aka.ms/teamsfx-tasks/check-prerequisites para obtener más información y saber cómo personalizar los argumentos.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-check-prerequisites-task for how to customize following args.]]></Val>
@@ -3808,14 +3835,17 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.provision.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Execute provision lifecycle.]A; See https://aka.ms/teamsfx-tasks/provision for details and how to customize the arguments.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ejecutar ciclo de vida de aprovisionamiento.]A; Consulte https://aka.ms/teamsfx-tasks/provision para obtener más información y saber cómo personalizar los argumentos.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.startLocalTunnel.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start the local tunneling service.]A; See https://aka.ms/teamsfx-tasks/local-tunnel for details and how to customize the arguments.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Iniciar el servicio de túnel local.]A; Consulte https://aka.ms/teamsfx-local-tunnel-task para obtener información sobre cómo personalizar los siguientes argumentos.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inicie el servicio de tunelización local.]A; Consulte https://aka.ms/teamsfx-tasks/local-tunnel para obtener más información y saber cómo personalizar los argumentos.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Start the local tunnel service.]A; See https://aka.ms/teamsfx-local-tunnel-task for how to customize following args.]]></Val>
@@ -3904,7 +3934,7 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vaya directamente al Kit de herramientas de Teams y obtenga información general sobre los aspectos básicos. Para obtener más información, visite [Comenzar]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Guía detallada para crear una aplicación de Teams para el mundo real.]A;[Documentación]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guías paso a paso]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Cree un proyecto o explore nuestras muestras.]A;[Crear una nueva app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3928,7 +3958,7 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You need to upgrade the project to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back. [Learn more]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version 4.x.x.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Debe actualizar el proyecto para usar las características más recientes. El proceso de actualización no cambiará el código personalizado. Se crearán los archivos de copia de seguridad en caso de que desee revertirlos. [Learn more]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Esta actualización es obligatoria para seguir usando la versión actual del kit de herramientas de Teams. Si no quiere actualizar ahora, siga usando la versión 4.x.x del kit de herramientas de Teams.]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3949,8 +3979,8 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start with [Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) or [Outlook add-in]5D;(https://aka.ms/teamsfx-outlook-add-in-capabilities) capability to build your first app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a New App]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Elija [Capacidades de la aplicación de Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) y compile su primera aplicación de Teams.]A;Puede crearla desde cero o explorar nuestras muestras para ayudarle a empezar rápidamente con los ejemplos reales y estructuras de código.]A;[Cree una nueva aplicación de Teams]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Comience con la funcionalidad [Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) o [complemento de Outlook]5D;(https://aka.ms/teamsfx-outlook-add-in-capabilities) para crear su primera aplicación.]A;Puede crearla desde cero o explorar nuestras muestras para ayudarle a empezar rápidamente con los ejemplos reales y estructuras de código.]A;[Cree una nueva aplicación]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Choose [Teams app capabilities]5D;(https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a new Teams app]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
@@ -3973,7 +4003,7 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.]A; If you already have a Microsoft 365 organizational account, [Sign in to Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.]A;[Create a Microsoft 365 Testing Tenant]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Cree un espacio empresarial de prueba de Microsoft 365 gratuito para instalar y obtener una vista previa de las aplicaciones de Teams en Teams.]A; Si ya tiene una cuenta de organización de Microsoft 365, [inicie sesión en Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22 PassThrough%22%5D) y valide si [la instalación de prueba]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) está habilitada.]A;[Cree un espacio empresarial de pruebas de Microsoft 365]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -3994,7 +4024,7 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Deployment Commands]5D;(command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Deployment']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Puede aprovisionar recursos en la nube e implementar el código de la aplicación en los recursos aprovisionados. Por último, distribuya su primera aplicación a Teams.]A;[Abrir los comandos de implementación]5D;(command:fx-extension.openDeploymentTreeview?%5B%22ThroughThrough%22%5D)]A;__Tip: Más información sobre ['Implementación']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4015,7 +4045,7 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Developing Teams application with JavaScript or TypeScript requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run Prerequisite Checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[El Kit de herramientas de Teams requiere principalmente NPM y Node.js. Compruebe su entorno y prepárese para el primer desarrollo de aplicaciones de Teams.]A;[Ejecute el comprobador de requisitos]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4066,7 +4096,7 @@
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run Local Preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Presione [F5]5D;(command:fx-extension.selectAndDebug?%5B%22 PassThrough%22%5D) o encuentre el panel "[Ejecutar y depurar]5D;(command:workbench.view.debug)" en la barra de actividades y haga clic en el icono de reproducción para obtener una vista previa local de la aplicación en el contexto de Teams.]A;[Ejecutar vista previa local (F5)]5D; (command:fx-extension.selectAndDebug?%5B%22ThroughThrough%22%5D)]A;__Sugerencia: para ejecutar la versión preliminar local, inicie sesión en Microsoft 365 (cuenta de la organización) con la opción de instalación de prueba.__]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4087,7 +4117,7 @@
       <Item ItemId=";teamstoolkit.walkthroughs.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Get Started with Teams Toolkit]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Introducción al Kit de herramientas de Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">

@@ -550,8 +550,8 @@
       <Item ItemId=";core.M365SsoLaunchPageOptionItem.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Identity aware webpages embedded in Microsoft Teams, Outlook and the Microsoft 365 app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Strony internetowe obsługujące tożsamość osadzone w aplikacjach Microsoft Teams, Outlook i Office.com]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Strony internetowe obsługujące tożsamość osadzone w usłudze Microsoft Teams, aplikacji Outlook i Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Identity aware webpages embedded in Microsoft Teams, Outlook and Office.com]]></Val>
@@ -1042,8 +1042,8 @@
       <Item ItemId=";core.TabSPFxOption.detailNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[SPFx components hosted in Microsoft 365 and embeded in Microsoft Teams]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Strony internetowe obsługujące aplikację Teams z programem SharePoint Framework osadzonym w usłudze Microsoft Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Składniki SPFx hostowane na platformie Microsoft 365 i osadzane w usłudze Microsoft Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams]]></Val>
@@ -1732,8 +1732,8 @@
       <Item ItemId=";core.common.OfficeDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Microsoft 365 app for desktop client id]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Identyfikator klienta klasycznego pakietu Office]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Identyfikator klienta aplikacji Microsoft 365 dla komputerów stacjonarnych]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Office desktop client id]]></Val>
@@ -1744,8 +1744,8 @@
       <Item ItemId=";core.common.OfficeWebClientName1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Microsoft 365 app client id 1]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Identyfikator klienta 1 programu Office.com]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Identyfikator klienta 1 aplikacji platformy Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Office.com client id 1]]></Val>
@@ -1756,8 +1756,8 @@
       <Item ItemId=";core.common.OfficeWebClientName2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Microsoft 365 app client id 2]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Identyfikator klienta 2 programu Office.com]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Identyfikator klienta 2 aplikacji platformy Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Office.com client id 2]]></Val>
@@ -2329,8 +2329,8 @@
       <Item ItemId=";core.getCreateNewOrFromSampleQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit: Create a New App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Zestaw narzędzi aplikacji Teams: tworzenie nowej aplikacji Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zestaw narzędzi usługi Teams: tworzenie nowej aplikacji]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit: Create a new Teams app]]></Val>
@@ -2470,12 +2470,18 @@
       <Item ItemId=";core.importAddin.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import an existing Outlook add-in project to the latest app manifest schema and project structure]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Importowanie istniejącego projektu dodatku programu Outlook do najnowszego schematu manifestu aplikacji i struktury projektu]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.importAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import an existing Outlook add-in (Preview on Windows)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Importowanie istniejącego dodatku programu Outlook (wersja zapoznawcza w systemie Windows)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2596,8 +2602,8 @@
       <Item ItemId=";core.migrationV3.aadManifestNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[templates/appPackage/aad.manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Plik templates/appPackage/aad.manifest.template.json nie istnieje. Być może próbujesz uaktualnić projekt utworzony przez zestaw narzędzi aplikacji Teams <= v3.8.0. Zainstaluj zestaw narzędzi aplikacji Teams w wersji 4.x i najpierw uruchom uaktualnienie.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Plik templates/appPackage/aad.manifest.template.json nie istnieje. Być może próbujesz uaktualnić projekt utworzony przez zestaw narzędzi usługi Teams dla programu Visual Studio Code v3.x/ interfejs wiersza polecenia zestawu narzędzi usługi Teams v0.x / zestaw narzędzi usługi Teams dla programu Visual Studio w wersji 17.3. Zainstaluj zestaw narzędzi usługi Teams dla programu Visual Studio Code w wersji 4.x / interfejs wiersza polecenia zestawu narzędzi usługi Teams w wersji 1.x / zestaw narzędzi usługi Teams dla programu Visual Studio w wersji 17.4 i najpierw uruchom uaktualnienie.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[templates/appPackage/aad.manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
@@ -2626,8 +2632,8 @@
       <Item ItemId=";core.migrationV3.manifestNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Plik templates/appPackage/manifest.template.json nie istnieje. Być może próbujesz uaktualnić projekt utworzony przez zestaw narzędzi aplikacji Teams <= v3.8.0. Najpierw zainstaluj zestaw narzędzi aplikacji Teams w wersji 4.x i uruchom uaktualnienie.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Plik templates/appPackage/manifest.template.json nie istnieje. Być może próbujesz uaktualnić projekt utworzony przez zestaw narzędzi usługi Teams dla programu Visual Studio Code v3.x / interfejs wiersza polecenia zestawu narzędzi usługi Teams v0.x / zestaw narzędzi usługi Teams dla programu Visual Studio w wersji 17.3. Zainstaluj zestaw narzędzi usługi Teams dla programu Visual Studio Code w wersji 4.x / interfejs wiersza polecenia zestawu narzędzi usługi Teams w wersji 1.x / zestaw narzędzi usługi Teams dla programu Visual Studio w wersji 17.4 i najpierw uruchom uaktualnienie.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
@@ -2647,12 +2653,18 @@
       <Item ItemId=";core.newTaskpaneAddin.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A ribbon button and taskpane for use with Outlook]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Przycisk wstążki i okienko zadań do użycia z programem Outlook]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.newTaskpaneAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Outlook Taskpane add-in (Preview on Windows)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dodatek Okienko zadań programu Outlook (wersja zapoznawcza w systemie Windows)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2731,7 +2743,7 @@
       <Item ItemId=";core.options.separator.addin" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Office add-ins]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Dodatki pakietu Office]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -5233,18 +5245,27 @@
       <Item ItemId=";driver.teamsApp.summary.validate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has checked against all validation rules:]A;]A;Summary:]A;%s failed, %s passed.]A;%s]A;%s]A;]A;A complete log of validations can be found in %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zestaw narzędzi usługi Teams został sprawdzony pod kątem wszystkich reguł poprawności:]A;]A;Podsumowanie:]A;%s nie powiodło się, przekazano %s.]A;%s]A;%s]A;]A;Pełny dziennik walidacji można znaleźć w %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.validate.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Either %s or %s parameter should be provided for action %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Należy podać parametr %s lub %s dla akcji %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.validate.result" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has completed checking your app package against validation rules. %s failed, %s passed. Check [output window]5D;(%s) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zestaw narzędzi usługi Teams zakończył sprawdzanie pakietu aplikacji pod kątem reguł poprawności. Operacja %s nie powiodła się, przekazano %s. Sprawdź [okno danych wyjściowych]5D;(%s), aby uzyskać szczegółowe informacje.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7180,24 +7201,36 @@
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nie można przeanalizować pliku YAML: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.InvalidYmlActionNameError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Action '%s' not found, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nie znaleziono akcji „%s”,plik YAML: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.YamlFieldMissingError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Field '%s' is missing, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Brak pola „%s”. Plik YAML: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.YamlFieldTypeError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Field '%s' should have %s type, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pole „%s” powinno mieć typ %s, plik YAML: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -9391,42 +9424,63 @@
       <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Install the latest SharePoint Framework locally in Teams Toolkit directory ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Instalowanie najnowszego programu SharePoint Framework lokalnie w katalogu zestawu narzędzi usługi Teams ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Install the latest SharePoint Framework (%s) locally in Teams Toolkit directory ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Instalowanie najnowszego programu SharePoint Framework (%s) lokalnie w katalogu zestawu narzędzi usługi Teams ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select an option for scaffolding]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wybierz opcję tworzenia szkieletów]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[SharePoint Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint Framework]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Recommend SharePoint Framework %s or later]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Rekomenduj program SharePoint Framework %s lub nowszy]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use globally installed SharePoint Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Korzystanie z globalnie zainstalowanego programu SharePoint Framework]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use globally installed SharePoint Framework (%s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Użyj globalnie zainstalowanego programu SharePoint Framework (%s)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

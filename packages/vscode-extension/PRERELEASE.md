@@ -72,6 +72,6 @@ Pre-release is meant for those eager to try the latest Teams Toolkit features an
 
 ### What about my existing Teams Toolkit projects
 
-The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. We have also provided a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+The changes in this pre-release require upgrades to the TeamsFx configuration files. You can migrate by creating a new project and move your exiting code, or Teams Toolkit have also provided a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
 
 Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).

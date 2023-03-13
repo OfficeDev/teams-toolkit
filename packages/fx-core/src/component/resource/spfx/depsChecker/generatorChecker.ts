@@ -124,7 +124,7 @@ export class GeneratorChecker implements DependencyChecker {
     try {
       const generatorVersion = await this.queryVersion();
       const latestGeneratorVersion =
-        PackageSelectOptionsHelper.getLatestSpGeneratorVersoin() ??
+        PackageSelectOptionsHelper.getLatestSpGeneratorVersion() ??
         (await this.findLatestVersion(5));
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
       return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion && hasSentinel;

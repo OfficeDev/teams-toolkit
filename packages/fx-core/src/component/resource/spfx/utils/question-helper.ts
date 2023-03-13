@@ -77,7 +77,7 @@ export class PackageSelectOptionsHelper {
     );
   }
 
-  public static getLatestSpGeneratorVersoin(): string | undefined {
+  public static getLatestSpGeneratorVersion(): string | undefined {
     return PackageSelectOptionsHelper.latestSpGeneratorVersion;
   }
 }

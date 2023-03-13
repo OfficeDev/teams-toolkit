@@ -37,7 +37,12 @@ export class InvalidActionInputError extends UserError {
       source: actionName,
       name: "InvalidActionInputError",
       message: getDefaultString(key, actionName, parameters.join(","), globalVars.ymlFilePath),
-      displayMessage: getLocalizedString(key, actionName, parameters, globalVars.ymlFilePath),
+      displayMessage: getLocalizedString(
+        key,
+        actionName,
+        parameters.join(","),
+        globalVars.ymlFilePath
+      ),
       helpLink: helpLink || "https://aka.ms/teamsfx-actions",
     };
     super(errorOptions);

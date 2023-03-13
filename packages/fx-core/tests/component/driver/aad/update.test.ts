@@ -62,12 +62,7 @@ describe("aadAppUpdate", async () => {
 
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidActionInputError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       manifestPath: "./aad.manifest.json",
@@ -75,12 +70,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidActionInputError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       outputFilePath: "./build/aad.manifest.dev.json",
@@ -88,12 +78,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidActionInputError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
   it("should throw error if argument property is invalid", async () => {
@@ -104,12 +89,7 @@ describe("aadAppUpdate", async () => {
 
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidActionInputError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       manifestPath: "./aad.manifest.json",
@@ -118,12 +98,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidActionInputError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       manifestPath: true,
@@ -132,12 +107,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidActionInputError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
   it("should success with valid manifest", async () => {

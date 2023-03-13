@@ -77,6 +77,11 @@ describe("OfficeAddinGenerator", function () {
     sinon.stub(fse, "writeJSON").resolves();
   });
 
+  it("should run childProcessExec command success", async function () {
+    sinon.stub(childProcess, "exec").yields(`echo 'test'`, "test");
+    chai.assert(await OfficeAddinGenerator.childProcessExec(`echo 'test'`), "test");
+  });
+
   it("should call both doScaffolding and template generator", async function () {
     const inputs: Inputs = {
       platform: Platform.CLI,

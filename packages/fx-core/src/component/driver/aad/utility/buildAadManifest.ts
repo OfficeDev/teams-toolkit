@@ -85,15 +85,7 @@ async function loadManifest(
         manifestPath,
         helpLink
       );
-      error.helpLink;
       throw error;
-      // throw new MissingEnvInFileUserError(
-      //   actionName,
-      //   unresolvedEnvironmentVariable,
-      //   helpLink,
-      //   driverConstants.generateManifestFailedMessageKey,
-      //   manifestPath
-      // );
     }
     const manifest: AADManifest = JSON.parse(manifestString);
     AadManifestHelper.processRequiredResourceAccessInManifest(manifest);

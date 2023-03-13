@@ -43,3 +43,13 @@ export class InvalidActionInputError extends UserError {
     super(errorOptions);
   }
 }
+
+export class InvalidProjectError extends UserError {
+  constructor() {
+    super({
+      message: getDefaultString("error.common.InvalidProjectError"),
+      displayMessage: getLocalizedString("error.common.InvalidProjectError"),
+      source: "common",
+    });
+  }
+}

@@ -2536,7 +2536,7 @@ describe("component coordinator test", () => {
     if (res1.isErr()) console.log(res1.error);
     assert.isTrue(res1.isOk());
     const res2 = await fxCore.executeUserTask(
-      { namespace: "", method: "validateManifest", params: { manifestTemplatePath: "." } },
+      { namespace: "", method: "validateManifest", params: { manifestPath: "." } },
       inputs
     );
     if (res2.isErr()) console.log(res2.error);

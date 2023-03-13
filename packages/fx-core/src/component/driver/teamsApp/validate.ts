@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, Platform, ManifestUtil } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  ok,
+  err,
+  Platform,
+  TeamsAppManifest,
+  ManifestUtil,
+} from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
@@ -19,6 +27,9 @@ import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { AppStudioScopes, isValidationEnabled } from "../../../common/tools";
+import AdmZip from "adm-zip";
+import { Constants } from "../../resource/appManifest/constants";
+import { metadataUtil } from "../../utils/metadataUtil";
 import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
 
@@ -74,6 +85,14 @@ export class ValidateTeamsAppDriver implements StepDriver {
         );
       }
       const archivedFile = await fs.readFile(appPackagePath);
+
+      const zipEntries = new AdmZip(archivedFile).getEntries();
+      const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+      if (manifestFile) {
+        const manifestContent = manifestFile.getData().toString();
+        const manifest = JSON.parse(manifestContent) as TeamsAppManifest;
+        metadataUtil.parseManifest(manifest);
+      }
 
       const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,

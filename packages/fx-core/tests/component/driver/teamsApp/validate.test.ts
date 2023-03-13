@@ -16,7 +16,10 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import * as tools from "../../../../src/common/tools";
-import { Platform } from "@microsoft/teamsfx-api";
+import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import { Constants } from "../../../../src/component/resource/appManifest/constants";
+import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
 
 describe("teamsApp/validate", async () => {
   const teamsAppDriver = new ValidateTeamsAppDriver();
@@ -140,7 +143,17 @@ describe("teamsApp/validate", async () => {
       },
     });
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+    // sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
 
     const args: ValidateTeamsAppArgs = {
       appPackagePath: "fakePath",

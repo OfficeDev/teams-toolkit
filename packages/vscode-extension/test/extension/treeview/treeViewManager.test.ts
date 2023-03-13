@@ -23,10 +23,10 @@ describe("TreeViewManager", () => {
     } as unknown as vscode.ExtensionContext);
     chai.assert.isDefined(treeViewManager.getTreeView("teamsfx-accounts"));
 
-    const deploymentTreeView = treeViewManager.getTreeView("teamsfx-deployment");
-    chai.assert.isDefined(deploymentTreeView);
-    chai.assert.equal(deploymentTreeView.commands.length, 5);
-    chai.assert.equal(deploymentTreeView.commands[3].commandId, "fx-extension.build");
+    const lifecycleTreeView = treeViewManager.getTreeView("teamsfx-lifecycle");
+    chai.assert.isDefined(lifecycleTreeView);
+    chai.assert.equal(lifecycleTreeView.commands.length, 5);
+    chai.assert.equal(lifecycleTreeView.commands[3].commandId, "fx-extension.build");
   });
 
   it("registerTreeViews in v3", async () => {

@@ -152,7 +152,6 @@ import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import {
   anonymizeFilePaths,
   getAppName,
@@ -451,37 +450,6 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
   // check if file is project config
   if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
     await envTreeProviderInstance.reloadEnvironments();
-  }
-}
-
-function registerCoreEvents() {
-  // legacy codes for webview provider
-  const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
-  if (developmentView instanceof CommandsWebviewProvider) {
-    core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(true);
-    });
-    core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(false);
-    });
-  }
-
-  const deploymentView = TreeViewManagerInstance.getTreeView("teamsfx-deployment");
-  if (deploymentView instanceof CommandsWebviewProvider) {
-    core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(true);
-    });
-    core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(false);
-    });
   }
 }
 
@@ -1914,10 +1882,10 @@ export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> 
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-development"));
 }
 
-export async function openDeploymentLinkHandler(args: any[]): Promise<boolean> {
+export async function openLifecycleLinkHandler(args: any[]): Promise<boolean> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
-    [TelemetryProperty.DocumentationName]: "deployment",
+    [TelemetryProperty.DocumentationName]: "lifecycle",
   });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
 }
@@ -3530,13 +3498,13 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
   return result;
 }
 
-export async function openDeploymentTreeview(args?: any[]) {
+export async function openLifecycleTreeview(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ClickOpenDeploymentTreeview,
+    TelemetryEvent.ClickOpenLifecycleTreeview,
     getTriggerFromProperty(args)
   );
   if (globalVariables.isTeamsFxProject) {
-    vscode.commands.executeCommand("teamsfx-deployment.focus");
+    vscode.commands.executeCommand("teamsfx-lifecycle.focus");
   } else {
     vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }

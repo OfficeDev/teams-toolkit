@@ -1,5 +1,5 @@
 import * as chai from "chai";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as sinon from "sinon";
 import { ExtensionContext } from "vscode";
 

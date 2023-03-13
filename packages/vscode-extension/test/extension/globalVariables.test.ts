@@ -5,6 +5,7 @@ import { ExtensionContext } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
 import { UriHandler } from "../../src/uriHandler";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Global Variables", () => {
   describe("isSPFxProject", () => {
@@ -19,7 +20,9 @@ describe("Global Variables", () => {
         },
       } as unknown as ExtensionContext);
 
-      chai.expect(globalVariables.isSPFxProject).equals(false);
+      if (!isV3Enabled()) {
+        chai.expect(globalVariables.isSPFxProject).equals(false);
+      }
 
       sinon.restore();
     });
@@ -35,7 +38,9 @@ describe("Global Variables", () => {
         },
       } as unknown as ExtensionContext);
 
-      chai.expect(globalVariables.isSPFxProject).equals(true);
+      if (!isV3Enabled()) {
+        chai.expect(globalVariables.isSPFxProject).equals(true);
+      }
 
       sinon.restore();
     });

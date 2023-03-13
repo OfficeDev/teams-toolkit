@@ -73,6 +73,22 @@ export class AppStudioError {
     ],
   };
 
+  public static readonly InvalidTeamsAppIdError = {
+    name: "InvalidTeamsAppId",
+    message: (teamsAppId: string): [string, string] => [
+      getDefaultString("driver.teamsApp.update.invalidTeamsAppId", teamsAppId),
+      getLocalizedString("driver.teamsApp.update.invalidTeamsAppId", teamsAppId),
+    ],
+  };
+
+  public static readonly TeamsAppNotExistsError = {
+    name: "TeasmAppNotExists",
+    message: (teamsAppId: string): [string, string] => [
+      getDefaultString("driver.teamsApp.update.notExistsError", teamsAppId),
+      getLocalizedString("driver.teamsApp.update.notExistsError", teamsAppId),
+    ],
+  };
+
   public static readonly ValidationFailedError = {
     name: "ManifestValidationFailed",
     message: (errors: string[]): [string, string] => [

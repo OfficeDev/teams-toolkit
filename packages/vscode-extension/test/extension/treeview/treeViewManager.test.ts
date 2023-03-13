@@ -32,15 +32,13 @@ describe("TreeViewManager", () => {
   it("registerTreeViews in v3", async () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
 
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
-    for (const command of developmentTreeview.commands) {
-      console.log(command.commandId);
-    }
     chai.assert.equal(developmentTreeview.commands.length, 5);
   });
 

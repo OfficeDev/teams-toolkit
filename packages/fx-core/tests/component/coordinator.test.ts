@@ -69,6 +69,7 @@ import { deployUtils } from "../../src/component/deployUtils";
 import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -2521,8 +2522,10 @@ describe("component coordinator test", () => {
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
     const driver1: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const driver3: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
     sandbox.stub(driver1, "run").resolves(ok(new Map()));
     sandbox.stub(driver2, "run").resolves(ok(new Map()));
+    sandbox.stub(driver3, "run").resolves(ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -2551,6 +2554,11 @@ describe("component coordinator test", () => {
     );
     if (res3.isErr()) console.log(res3.error);
     assert.isTrue(res3.isOk());
+    const res4 = await fxCore.executeUserTask(
+      { namespace: "", method: "validateManifest", params: { appPackagePath: "." } },
+      inputs
+    );
+    assert.isTrue(res4.isOk());
   });
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {

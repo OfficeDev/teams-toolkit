@@ -5,6 +5,7 @@ import { ContextV3, Inputs, ok, Platform } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
@@ -13,6 +14,7 @@ import { Generator } from "../../../src/component/generator/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfxGenerator";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
+import { SPFxVersionOptionIds } from "../../../src/component/resource/spfx/utils/question-helper";
 import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
 import { Utils } from "../../../src/component/resource/spfx/utils/utils";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
@@ -22,6 +24,7 @@ import { MockTools } from "../../core/utils";
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: ContextV3;
+  let mockedEnvRestore: RestoreFn | undefined;
 
   beforeEach(async () => {
     const gtools = new MockTools();
@@ -43,6 +46,13 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readJson").resolves({});
     sinon.stub(fs, "ensureFile").resolves();
     sinon.stub(fs, "writeJSON").resolves();
+  });
+
+  afterEach(async () => {
+    sinon.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
   });
 
   it("Both yeoman generator and template generator is called when scaffold SPFx project", async function () {
@@ -130,7 +140,61 @@ describe("SPFxGenerator", function () {
     chai.expect(result.isOk()).to.eq(true);
   });
 
-  afterEach(async () => {
-    sinon.restore();
+  it("select to install locally but no need to install", async function () {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_SPFX_DECOUPLE: "true",
+    });
+
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
+
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+
+    chai.expect(generateTemplateStub.calledOnce).to.be.true;
+  });
+
+  it("select to install locally and install", async function () {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_SPFX_DECOUPLE: "true",
+    });
+
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(false);
+    const yoInstaller = sinon
+      .stub(YoChecker.prototype, "ensureLatestDependency")
+      .resolves(ok(true));
+    const generatorInstaller = sinon
+      .stub(GeneratorChecker.prototype, "ensureLatestDependency")
+      .resolves(ok(true));
+
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+
+    chai.expect(generateTemplateStub.calledOnce).to.be.true;
+    chai.expect(yoInstaller.calledOnce).to.be.true;
+    chai.expect(generatorInstaller.calledOnce).to.be.true;
   });
 });

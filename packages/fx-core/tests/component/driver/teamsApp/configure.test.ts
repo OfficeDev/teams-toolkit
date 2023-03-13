@@ -88,6 +88,30 @@ describe("teamsApp/update", async () => {
     }
   });
 
+  it("invalid teams app id", async () => {
+    const args: ConfigureTeamsAppArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      const manifest = new TeamsAppManifest();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest)));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+
+    const result = await teamsAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(result.result.isErr());
+    if (result.result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidTeamsAppIdError.name, result.result.error.name);
+    }
+  });
+
   it("happy path", async () => {
     const args: ConfigureTeamsAppArgs = {
       appPackagePath: "fakePath",

@@ -157,7 +157,9 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     );
     this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
     this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings); // maybe use ResourceId
-    this.handlebarsContext.useBotWebAppResourceId = this.bicepContent.includes("botWebAppResourceId"); // isWebAppBot and use botWebAppResourceId
+    this.handlebarsContext.useBotWebAppResourceId =
+      this.bicepContent.includes("botWebAppResourceId"); // use botWebAppResourceId
+
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");

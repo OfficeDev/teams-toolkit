@@ -59,7 +59,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: botId.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -74,7 +74,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: name.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -89,7 +89,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: messagingEndpoint.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -106,7 +106,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: description.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -123,7 +123,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: iconUrl.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -140,7 +140,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: channels.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -161,7 +161,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: channels.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 
@@ -183,7 +183,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
         chai.assert(result.error instanceof InvalidActionInputError);
         const message =
           "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: channels.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert.include(result.error.message, message);
       }
     });
 

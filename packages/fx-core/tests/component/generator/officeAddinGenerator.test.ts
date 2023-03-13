@@ -133,12 +133,9 @@ describe("OfficeAddinGenerator", function () {
     inputs[AddinProjectFolderQuestion.name] = undefined;
     inputs[AddinLanguageQuestion.name] = "TypeScript";
 
-    sinon.stub<any, any>(childProcess, "exec").callsFake(() => {
-      return;
-    });
+    sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-    sinon.stub(childProcess, "exec").resolves();
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);

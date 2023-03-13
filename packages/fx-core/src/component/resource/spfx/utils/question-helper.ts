@@ -20,7 +20,7 @@ export class PackageSelectOptionsHelper {
     const versions = await Promise.all([
       Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 0, false),
       Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
-      Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0),
+      Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0, false),
     ]);
 
     PackageSelectOptionsHelper.globalPackageVersions[0] = versions[0];

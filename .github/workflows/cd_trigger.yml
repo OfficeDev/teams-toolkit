@@ -14,10 +14,10 @@ jobs:
       - name: Trigger TeamsFx-CICD-Test
         run: |
           curl \
-              -u :${{ secrets.TEAMSFX_BOT }} \
+              -u :${{ secrets.GHEC_BOT_PAT }} \
               -X POST \
               -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
+              https://api.github.com/repos/devdiv-azure-service-dmitryr/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
               -d "{\"ref\":\"main\"}"
 
   DownloadAndOutput:

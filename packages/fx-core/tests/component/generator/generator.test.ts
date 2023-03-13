@@ -12,13 +12,17 @@ import {
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { Generator } from "../../../src/component/generator/generator";
+import {
+  Generator,
+  templateDefaultOnActionError,
+} from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
+  GeneratorContext,
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
@@ -252,6 +256,32 @@ describe("Generator error", async () => {
 
   afterEach(async () => {
     sandbox.restore();
+  });
+
+  it("no zip url", async () => {
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
+    const generatorContext: GeneratorContext = {
+      name: "test",
+      relativePath: "/",
+      destination: "test",
+      logProvider: tools.logProvider,
+      onActionError: templateDefaultOnActionError,
+    };
+    try {
+      try {
+        await fetchZipFromUrlAction.run(generatorContext);
+      } catch (error) {
+        if (generatorContext.onActionError) {
+          await generatorContext.onActionError(fetchZipFromUrlAction, generatorContext, error);
+        } else {
+          throw error;
+        }
+      }
+    } catch (error) {
+      assert.notExists(error);
+      assert.fail("Should not reach here.");
+    }
+    assert.isTrue(generatorContext.cancelDownloading);
   });
 
   it("fetch sample zip from url error", async () => {

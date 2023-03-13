@@ -197,3 +197,37 @@ export function DevEnvironmentSetupError(): UserError {
     ),
   });
 }
+
+export function LatestPackageInstallError(): SystemError {
+  const fxFolderPath = "HOME/.fx";
+  return new SystemError(
+    Constants.PLUGIN_NAME,
+    "LatestPackageInstallFailed",
+    getDefaultString(
+      "plugins.spfx.error.installLatestDependencyError",
+      fxFolderPath,
+      Constants.SetUpDevEnvironmentHelpLink
+    ),
+    getLocalizedString(
+      "plugins.spfx.error.installLatestDependencyError",
+      fxFolderPath,
+      Constants.SetUpDevEnvironmentHelpLink
+    )
+  );
+}
+
+export function YoGeneratorScaffoldError(): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "ScaffoldFailed",
+    message: getDefaultString(
+      "plugins.spfx.error.scaffoldError",
+      "command:fx-extension.showOutputChannel"
+    ),
+    displayMessage: getLocalizedString(
+      "plugins.spfx.error.scaffoldError",
+      "command:fx-extension.showOutputChannel"
+    ),
+    helpLink: Constants.ScaffoldHelpLink,
+  });
+}

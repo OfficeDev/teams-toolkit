@@ -71,7 +71,10 @@ export class SPFxGenerator {
     destinationPath: string
   ): Promise<Result<string, FxError>> {
     const ui = context.userInteraction;
-    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
+    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(
+      ui,
+      inputs.stage == Stage.addWebpart
+    );
     const shouldInstallLocally =
       inputs[SPFXQuestionNames.use_global_package_or_install_local] ===
       SPFxVersionOptionIds.installLocally;
@@ -137,7 +140,13 @@ export class SPFxGenerator {
         }
       }
 
-      await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.scaffoldProject"));
+      await progressHandler?.next(
+        getLocalizedString(
+          isAddSPFx
+            ? "driver.spfx.add.progress.scaffoldWebpart"
+            : "plugins.spfx.scaffold.scaffoldProject"
+        )
+      );
       if (inputs.platform === Platform.VSCode) {
         (context.logProvider as any).outputChannel.show();
       }

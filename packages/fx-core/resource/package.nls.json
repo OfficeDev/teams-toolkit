@@ -1036,6 +1036,6 @@
   "error.yaml.InvalidYmlActionNameError": "Action '%s' not found, yaml file: %s",
   "error.yaml.LifeCycleUndefinedError": "Lifecycle '%s' is undefined, yaml file: %s",
   "error.common.UnresolvedPlaceholderError": "There are unresolved placeholders: '%s', which are required for file: %s.",
-  "error.common.InvalidProjectError": "The command only works for project created by Teams Toolkit.",
-  "error.common.InvalidActionInputError": "Following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s"
+  "error.common.InvalidProjectError": "This command only works for project created by Teams Toolkit.",
+  "error.common.InvalidActionInputError": "The following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s"
 }

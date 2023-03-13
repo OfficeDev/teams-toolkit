@@ -473,6 +473,7 @@ jobs:
           skipped_lists=""
 
           emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;"
+          echo $emails
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then
@@ -521,7 +522,7 @@ jobs:
             report_file=`find ~/artifacts -wholename "*${job_id}/mochawesome.json"`
             if [ ! -z "$report_file" ]; then
               tests=`echo $report_file | jq -cr '[ .. | objects | with_entries(select(.key=="tests")) | select(. != {}) | select(.tests | type=="array") ] | map(.tests | .[]) | .[]'`
-              
+              echo $tests
               lable=""
               while IFS= read -r test;
               do
@@ -536,7 +537,7 @@ jobs:
                   if [[ ! -z "$email" && ! "$emails" == *"$email"* ]]; then
                     emails="$emails;$email"
                   fi
-                elif [[ ! -z `echo $test | jq 'select(.skipped==true)'` ]]; then
+                elif [[ ! -z `echo $test | jq 'select(.skipped==true)'` || ! -z `echo $test | jq 'select(.pending==true)'` ]]; then
                   skipped=$((skipped+1))
                   label="<span style=\\\"background-color: #D4DBDE;color:white;font-weight:bold;\\\">SKIPPED</span>"
                 fi
@@ -546,7 +547,7 @@ jobs:
                   passed_lists="$passed_lists $row"
                 elif [[ ! -z `echo $test | jq 'select(.fail==true)'` ]]; then
                   failed_lists="$failed_lists $row"
-                elif [[ ! -z `echo $test | jq 'select(.skipped==true)'` ]]; then
+                elif [[ ! -z `echo $test | jq 'select(.skipped==true)'` || ! -z `echo $test | jq 'select(.pending==true)'` ]]; then
                   skipped_lists="$skipped_lists $row"
                 fi
               done <<< $tests

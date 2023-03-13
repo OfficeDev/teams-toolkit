@@ -76,6 +76,7 @@ export class ProgressTitleMessage {
   );
   static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
   static readonly ScaffoldProgressTitle = getLocalizedString("plugins.spfx.scaffold.title");
+  static readonly AddProgressTitle = getLocalizedString("driver.spfx.add.progress.title");
 }
 
 export class PreDeployProgressMessage {

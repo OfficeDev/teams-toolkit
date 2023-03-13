@@ -11,8 +11,8 @@
         "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
     },
     "icons": {
-        "color": "./color.png",
-        "outline": "./outline.png"
+        "color": "color.png",
+        "outline": "outline.png"
     },
     "name": {
         "short": "{%appName%}-${{TEAMSFX_ENV}}",

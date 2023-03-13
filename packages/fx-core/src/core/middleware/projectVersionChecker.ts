@@ -60,7 +60,7 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   if (inputs.platform === Platform.VSCode) {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS?.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
+    TOOLS?.ui.showMessage("warn", message, false, learnMoreText)?.then((res) => {
       if (res.isOk() && res.value === learnMoreText) {
         TOOLS?.ui!.openUrl(MetadataV2.updateToolkitLink);
       }
@@ -75,7 +75,7 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
     const expectedVersion = "Visual Studio 2022 17.5 Preview";
     TOOLS?.ui
       .showMessage("warn", getLocalizedString(messageKey, expectedVersion), false, learnMoreText)
-      .then((res) => {
+      ?.then((res) => {
         if (res.isOk() && res.value === learnMoreText) {
           TOOLS?.ui!.openUrl(learnMoreLink);
         }

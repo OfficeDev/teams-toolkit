@@ -106,12 +106,12 @@ export class SPFxGenerator {
             getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
           );
 
-          const yoRes = await yoChecker.ensureDependency(context);
+          const yoRes = await yoChecker.ensureLatestDependency(context);
           if (yoRes.isErr()) {
             throw DependencyInstallError("yo");
           }
 
-          const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
+          const spGeneratorRes = await spGeneratorChecker.ensureLatestDependency(context);
           if (spGeneratorRes.isErr()) {
             throw DependencyInstallError("sharepoint generator");
           }

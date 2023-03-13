@@ -14,6 +14,7 @@ import {
   LocalEnvironmentName,
   StaticOptions,
   MultiSelectQuestion,
+  SingleFileQuestion,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -85,6 +86,8 @@ export enum CoreQuestionNames {
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
   AppPackagePath = "appPackagePath",
   ReplaceBotIds = "replaceBotIds",
+  TeamsAppManifestFilePath = "teamsAppManifestFilePath",
+  AadAppManifestFilePath = "aadAppManifestFilePath",
 }
 
 export const ProjectNamePattern =
@@ -857,5 +860,37 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     staticOptions: [...OfficeAddinItems(), ImportAddinProjectItem()],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     skipSingleOption: true,
+  };
+}
+
+export function selectAadAppManifestQuestion(): SingleFileQuestion {
+  return {
+    name: CoreQuestionNames.AadAppManifestFilePath,
+    title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
+      if (fs.pathExistsSync(manifestPath)) {
+        return manifestPath;
+      } else {
+        return undefined;
+      }
+    },
+  };
+}
+
+export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
+  return {
+    name: CoreQuestionNames.TeamsAppManifestFilePath,
+    title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const manifestPath: string = path.join(inputs.projectPath!, "appPackge", "manifest.json");
+      if (fs.pathExistsSync(manifestPath)) {
+        return manifestPath;
+      } else {
+        return undefined;
+      }
+    },
   };
 }

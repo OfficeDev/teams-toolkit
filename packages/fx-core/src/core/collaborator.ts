@@ -57,6 +57,12 @@ import axios from "axios";
 import { AadApp } from "../component/resource/aadApp/aadApp";
 import fs from "fs-extra";
 import * as dotenv from "dotenv";
+import { validate as uuidValidate } from "uuid";
+import {
+  CoreQuestionNames,
+  selectAadAppManifestQuestion,
+  selectTeamsAppManifestQuestion,
+} from "./question";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -68,6 +74,11 @@ export class CollaborationConstants {
   static readonly AadObjectIdEnv = "AAD_APP_OBJECT_ID";
   static readonly TeamsAppIdEnv = "TEAMS_APP_ID";
   static readonly TeamsAppTenantIdEnv = "TEAMS_APP_TENANT_ID";
+
+  // App Type Question
+  static readonly AppType = "collaborationType";
+  static readonly TeamsAppQuestionId = "teamsApp";
+  static readonly AadAppQuestionId = "aadApp";
 }
 
 export class CollaborationUtil {
@@ -170,6 +181,55 @@ export class CollaborationUtil {
     }
   }
 
+  static async loadManifestId(
+    manifestFilePath: string
+  ): Promise<Result<string | undefined, FxError>> {
+    try {
+      if (!manifestFilePath || !(await fs.pathExists(manifestFilePath))) {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.FailedToLoadManifestFile,
+            getLocalizedString("core.collaboration.error.manifestFileNotExist", manifestFilePath)
+          )
+        );
+      }
+
+      const manifest = await fs.readJson(manifestFilePath);
+      if (!manifest || !manifest.id) {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.FailedToLoadManifestFile,
+            getLocalizedString("core.collaboration.error.manifestFileNotValid", manifestFilePath)
+          )
+        );
+      }
+
+      const id = manifest.id;
+      // TODO: support process.env
+      if (uuidValidate(id)) {
+        return ok(id);
+      } else {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.FailedToLoadManifestFile,
+            getLocalizedString("core.collaboration.error.manifestIdNotValid", manifestFilePath)
+          )
+        );
+      }
+    } catch (error: any) {
+      return err(
+        new UserError(
+          SolutionSource,
+          SolutionError.FailedToLoadManifestFile,
+          getLocalizedString("core.collaboration.error.failedToLoadDotEnvFile", error?.message)
+        )
+      );
+    }
+  }
+
   // Priority parameter > dotenv > env
   static async getTeamsAppIdAndAadObjectId(
     inputs: v2.InputsWithProjectPath
@@ -213,20 +273,33 @@ export class CollaborationUtil {
 
     // 3. load from env
     // TODO: load env from context
-    teamsAppId = teamsAppId ?? process.env[CollaborationConstants.TeamsAppIdEnv] ?? undefined;
-    aadObjectId = aadObjectId ?? process.env[CollaborationConstants.AadObjectIdEnv] ?? undefined;
+    const appType = inputs?.[CollaborationConstants.AppType] as string[];
+    if (!teamsAppId && appType.includes(CollaborationConstants.TeamsAppQuestionId)) {
+      const manifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+      if (manifestFilePath) {
+        const teamsAppIdRes = await this.loadManifestId(manifestFilePath);
+        if (teamsAppIdRes.isOk()) {
+          teamsAppId = teamsAppIdRes.value;
+        } else {
+          return err(teamsAppIdRes.error);
+        }
+      } else {
+        teamsAppId = teamsAppId ?? process.env[CollaborationConstants.TeamsAppIdEnv];
+      }
+    }
 
-    if (!teamsAppId) {
-      return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.FailedToGetTeamsAppId,
-          getLocalizedString(
-            "core.collaboration.error.failedToGetTeamsAppId",
-            CollaborationConstants.TeamsAppIdEnv
-          )
-        )
-      );
+    if (!aadObjectId && appType.includes(CollaborationConstants.AadAppQuestionId)) {
+      const manifestFilePath = inputs?.[CoreQuestionNames.AadAppManifestFilePath] as string;
+      if (manifestFilePath) {
+        const aadAppIdRes = await this.loadManifestId(manifestFilePath);
+        if (aadAppIdRes.isOk()) {
+          aadObjectId = aadAppIdRes.value;
+        } else {
+          return err(aadAppIdRes.error);
+        }
+      } else {
+        aadObjectId = aadObjectId ?? process.env[CollaborationConstants.AadObjectIdEnv];
+      }
     }
 
     return ok({
@@ -735,7 +808,20 @@ export async function getQuestionsForGrantPermission(
       return err(jsonObjectRes.error);
     }
     const jsonObject = jsonObjectRes.value;
-    return ok(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    const root = getCollaborationAppNode();
+    root.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    return ok(root);
+  }
+  return ok(undefined);
+}
+
+export async function getQuestionsForListCollaborator(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  if (isDynamicQuestion) {
+    const root = getCollaborationAppNode();
+    return ok(root);
   }
   return ok(undefined);
 }
@@ -750,4 +836,73 @@ function getPrintEnvMessage(env: string | undefined, message: string) {
         { content: `${env}\n`, color: Colors.BRIGHT_MAGENTA },
       ]
     : [];
+}
+
+function getCollaborationAppNode(): QTreeNode {
+  const teamsAppSelectNode = new QTreeNode({ type: "group" });
+  teamsAppSelectNode.condition = {
+    validFunc: (input: unknown, inputs?: Inputs) => {
+      if (!inputs) {
+        return "Invalid inputs";
+      }
+
+      if (process.env[CollaborationConstants.TeamsAppIdEnv]) {
+        return "get teams app id from .env file";
+      }
+
+      const appType = inputs[CollaborationConstants.AppType];
+      if (appType && appType.includes(CollaborationConstants.TeamsAppQuestionId)) {
+        return undefined;
+      }
+
+      return "teams app not selected";
+    },
+  };
+  teamsAppSelectNode.addChild(new QTreeNode(selectTeamsAppManifestQuestion()));
+
+  const aadAppSelectNode = new QTreeNode({ type: "group" });
+  aadAppSelectNode.condition = {
+    validFunc: (input: unknown, inputs?: Inputs) => {
+      if (!inputs) {
+        return "Invalid inputs";
+      }
+
+      if (process.env[CollaborationConstants.AadObjectIdEnv]) {
+        return "get teams app id from .env file";
+      }
+
+      const appType = inputs[CollaborationConstants.AppType];
+      if (appType && (appType as string[]).includes(CollaborationConstants.AadAppQuestionId)) {
+        return undefined;
+      }
+
+      return "teams app not selected";
+    },
+  };
+  aadAppSelectNode.addChild(new QTreeNode(selectAadAppManifestQuestion()));
+
+  const root = new QTreeNode(selectAppTypeQuestion());
+  root.addChild(teamsAppSelectNode);
+  root.addChild(aadAppSelectNode);
+  return root;
+}
+
+function selectAppTypeQuestion(): MultiSelectQuestion {
+  return {
+    name: CollaborationConstants.AppType,
+    title: getLocalizedString("core.selectCollaborationAppTypeQuestion.title"),
+    type: "multiSelect",
+    staticOptions: [
+      {
+        id: CollaborationConstants.AadAppQuestionId,
+        label: getLocalizedString("core.aadAppQuestion.label"),
+        description: getLocalizedString("core.aadAppQuestion.description"),
+      },
+      {
+        id: CollaborationConstants.TeamsAppQuestionId,
+        label: getLocalizedString("core.teamsAppQuestion.label"),
+        description: getLocalizedString("core.teamsAppQuestion.description"),
+      },
+    ],
+  };
 }

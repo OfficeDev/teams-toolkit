@@ -18,11 +18,11 @@ import {
   isOfficeAddinEnabled,
   isPreviewFeaturesEnabled,
 } from "../../common/featureFlags";
-import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
+import { deepCopy, isExistingTabAppEnabled, isV3Enabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
-import { getQuestionsForGrantPermission } from "../collaborator";
+import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
   BotIdsQuestion,
@@ -64,6 +64,8 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "grantPermission") {
     getQuestionRes = await getQuestionsForGrantPermission(inputs);
+  } else if (isV3Enabled() && method === "listCollaborator") {
+    getQuestionRes = await getQuestionsForListCollaborator(inputs);
   }
 
   if (getQuestionRes.isErr()) {

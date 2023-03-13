@@ -678,6 +678,7 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false, true),
+    QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])

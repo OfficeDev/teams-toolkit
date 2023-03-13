@@ -22,6 +22,8 @@ import {
   checkPermission,
   CollaborationConstants,
   CollaborationUtil,
+  getQuestionsForGrantPermission,
+  getQuestionsForListCollaborator,
   grantPermission,
   listCollaborator,
 } from "../../src/core/collaborator";
@@ -31,7 +33,7 @@ import {
   MockedAzureAccountProvider,
   MockedV2Context,
 } from "../plugins/solution/util";
-import { randomAppName } from "./utils";
+import { MockTools, randomAppName } from "./utils";
 import { Container } from "typedi";
 import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../src/component/constants";
@@ -42,6 +44,8 @@ import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import fs from "fs-extra";
 import { FeatureFlagName } from "../../src/common/constants";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { CoreQuestionNames } from "../../src/core/question";
+import { TOOLS, setTools } from "../../src/core/globalVars";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -803,6 +807,55 @@ describe("Collaborator APIs for V3", () => {
     });
   });
 
+  describe("loadManifestId v3", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox
+        .stub(fs, "readJson")
+        .resolves(JSON.parse('{"id":"00000000-0000-0000-0000-000000000000"}'));
+      const res = await CollaborationUtil.loadManifestId("manifest");
+      assert.isTrue(res.isOk() && res.value === "00000000-0000-0000-0000-000000000000");
+    });
+
+    it("manifest not exist", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await CollaborationUtil.loadManifestId("manifest");
+      assert.isTrue(res.isErr() && res.error.name == "FailedToLoadManifestFile");
+    });
+
+    it("manifestFileNotValid", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox
+        .stub(fs, "readJson")
+        .resolves(JSON.parse('{"test":"00000000-0000-0000-0000-000000000000"}'));
+      const res = await CollaborationUtil.loadManifestId("manifest");
+      assert.isTrue(res.isErr() && res.error.name == "FailedToLoadManifestFile");
+    });
+
+    it("manifestIdNotValid", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves(JSON.parse('{"id":"abc"}'));
+      const res = await CollaborationUtil.loadManifestId("manifest");
+      assert.isTrue(res.isErr() && res.error.name == "FailedToLoadManifestFile");
+    });
+
+    it("unexpected error", async () => {
+      sandbox.stub(fs, "pathExists").throws(new Error("error"));
+      const res = await CollaborationUtil.loadManifestId("manifest");
+      assert.isTrue(res.isErr() && res.error.name == "FailedToLoadManifestFile");
+    });
+  });
+
   describe("getTeamsAppIdAndAadObjectId v3", () => {
     let mockedEnvRestore: RestoreFn;
 
@@ -819,6 +872,10 @@ describe("Collaborator APIs for V3", () => {
         [CollaborationConstants.TeamsAppIdEnv]: "teamsAppId",
         [CollaborationConstants.AadObjectIdEnv]: "aadObjectId",
       });
+      inputs[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
       assert.isTrue(result.isOk());
       if (result.isOk()) {
@@ -827,6 +884,25 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(appId.aadObjectId, "aadObjectId");
       }
       mockedEnvTmp();
+    });
+
+    it("happy path vsc: get from manifest file", async () => {
+      inputs[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
+      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestPath: string) => {
+        return manifestPath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadObjectId");
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        const appId = result.value;
+        assert.equal(appId.teamsAppId, "teamsAppId");
+        assert.equal(appId.aadObjectId, "aadObjectId");
+      }
     });
 
     it("happy path cli: get from parameter", async () => {
@@ -876,6 +952,10 @@ describe("Collaborator APIs for V3", () => {
         [CollaborationConstants.TeamsAppIdEnv]: "teamsAppId",
         [CollaborationConstants.AadObjectIdEnv]: "aadObjectId",
       });
+      inputsCli[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
       assert.isTrue(result.isOk());
       if (result.isOk()) {
@@ -900,23 +980,6 @@ describe("Collaborator APIs for V3", () => {
       if (result.isErr()) {
         assert.equal(result.error.name, "errorName");
       }
-    });
-
-    it("failed to get teamsAppId", async () => {
-      const inputsCli: v2.InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), randomAppName()),
-      };
-      const mockedEnvTmp: RestoreFn = mockedEnv({
-        [CollaborationConstants.TeamsAppIdEnv]: undefined,
-        [CollaborationConstants.AadObjectIdEnv]: undefined,
-      });
-      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
-      assert.isTrue(result.isErr());
-      if (result.isErr()) {
-        assert.equal(result.error.name, SolutionError.FailedToGetTeamsAppId);
-      }
-      mockedEnvTmp();
     });
   });
 
@@ -1224,6 +1287,42 @@ describe("Collaborator APIs for V3", () => {
 
       const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
+    });
+
+    it("questions: get question for grant permission", async () => {
+      inputs[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
+      const tools = new MockTools();
+      setTools(tools);
+      sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
+      const nodeRes = await getQuestionsForGrantPermission(inputs);
+      assert.isTrue(nodeRes.isOk());
+      if (nodeRes.isOk()) {
+        const node = nodeRes.value;
+        assert(node != undefined && node?.children?.length == 3);
+      }
+    });
+
+    it("questions: get question for list collaborator", async () => {
+      inputs[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
+      const nodeRes = await getQuestionsForListCollaborator(inputs);
+      assert.isTrue(nodeRes.isOk());
+      if (nodeRes.isOk()) {
+        const node = nodeRes.value;
+        assert(node != undefined && node?.children?.length == 2);
+      }
     });
   });
 });

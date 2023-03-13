@@ -4,7 +4,7 @@ import { mergeStyles, mergeStyleSets } from "@fluentui/react";
 import { tokens } from "@fluentui/react-components";
 
 /**
- * Interface for defining the class names of widget elements *
+ * Interface for defining the class names of widget elements
  */
 export interface IWidgetClassNames {
   /**
@@ -77,35 +77,31 @@ interface BaseWidgetState {
 }
 
 /**
- * The base class for widget implementation.
- * It's also a react component, for more information about react component, please refer to https://reactjs.org/docs/react-component.html
+ * The base component that provides basic functionality to create a widget.
  * @param P the type of props.
  * @param S the type of state.
  */
 export class BaseWidget<P, S> extends Component<P, S & BaseWidgetState> {
   /**
-   * Constructs the BaseWidget component.
+   * Constructor of BaseWidget.
    * @param {Readonly<P>} props - The props of the component.
-   * @public
    */
-  constructor(props: Readonly<P>) {
+  public constructor(props: Readonly<P>) {
     super(props);
     this.state = { loading: undefined } as S & BaseWidgetState;
   }
 
   /**
    * Called after the component is mounted. You can do initialization that requires DOM nodes here. You can also make network requests here if you need to load data from a remote endpoint.
-   * @public
    */
-  async componentDidMount() {
+  public async componentDidMount() {
     this.setState({ ...(await this.getData()), loading: false });
   }
 
   /**
    * Defines the default layout for the widget.
-   * @public
    */
-  render() {
+  public render() {
     const { root, header, body, footer } = this.styling();
     const showLoading = this.state.loading !== false && this.loading() !== undefined;
     return (

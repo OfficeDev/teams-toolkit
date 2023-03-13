@@ -51,10 +51,10 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   private ref: React.RefObject<HTMLDivElement>;
 
   /**
-   * Initializes the state of the component.
+   * Constructor of BaseDashboard.
    * @param {Readonly<P>} props The properties for the dashboard.
    */
-  constructor(props: Readonly<P>) {
+  public constructor(props: Readonly<P>) {
     super(props);
     this.state = {
       isMobile: undefined,
@@ -67,7 +67,7 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   /**
    * Called after the component is mounted. You can do initialization that requires DOM nodes here. You can also make network requests here if you need to load data from a remote endpoint.
    */
-  async componentDidMount() {
+  public async componentDidMount() {
     // Observe the dashboard div for resize events
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -83,7 +83,7 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   /**
    * Called before the component is unmounted and destroyed. You can do necessary cleanup here, such as invalidating timers, canceling network requests, or removing any DOM elements.
    */
-  componentWillUnmount(): void {
+  public componentWillUnmount(): void {
     // Unobserve the dashboard div for resize events
     if (this.state.observer && this.ref.current) {
       this.state.observer.unobserve(this.ref.current);
@@ -93,7 +93,7 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   /**
    * Defines the default layout for the dashboard.
    */
-  render() {
+  public render() {
     return (
       <div
         ref={this.ref}

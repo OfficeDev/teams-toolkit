@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/botFramework/error/invalidParameterUserError";
 import { UnhandledSystemError } from "../../../../src/component/driver/botFramework/error/unhandledError";
 import { CreateOrUpdateBotFrameworkBotDriver } from "../../../../src/component/driver/botFramework/createOrUpdateBot";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 describe("CreateOrUpdateM365BotDriver", () => {
   const mockedDriverContext: any = {
@@ -56,9 +56,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: botId.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: botId.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -71,9 +71,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: name.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: name.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -86,9 +86,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: messagingEndpoint.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: messagingEndpoint.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -103,9 +103,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: description.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: description.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -120,9 +120,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: iconUrl.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: iconUrl.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -137,9 +137,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: channels.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: channels.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -158,9 +158,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: channels.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: channels.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -180,9 +180,9 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
+        chai.assert(result.error instanceof InvalidActionInputError);
         const message =
-          "Following parameter is missing or invalid for botFramework/create action: channels.";
+          "Following parameter(s) is(are) missing or invalid for 'botFramework/create' action: channels.";
         chai.assert.equal(result.error.message, message);
       }
     });

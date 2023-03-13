@@ -18,8 +18,8 @@ import {
   UnhandledSystemError,
   UnhandledUserError,
 } from "../../../../src/component/driver/aad/error/unhandledError";
-import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -61,7 +61,7 @@ describe("aadAppCreate", async () => {
     let result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
+      .is.instanceOf(InvalidActionInputError)
       .and.has.property(
         "message",
         "Following parameter is missing or invalid for aadApp/create action: generateClientSecret."
@@ -73,7 +73,7 @@ describe("aadAppCreate", async () => {
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
+      .is.instanceOf(InvalidActionInputError)
       .and.has.property(
         "message",
         "Following parameter is missing or invalid for aadApp/create action: name."
@@ -83,7 +83,7 @@ describe("aadAppCreate", async () => {
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
+      .is.instanceOf(InvalidActionInputError)
       .and.has.property(
         "message",
         "Following parameter is missing or invalid for aadApp/create action: name, generateClientSecret."
@@ -98,7 +98,7 @@ describe("aadAppCreate", async () => {
     let result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
+      .is.instanceOf(InvalidActionInputError)
       .and.has.property(
         "message",
         "Following parameter is missing or invalid for aadApp/create action: generateClientSecret."
@@ -111,7 +111,7 @@ describe("aadAppCreate", async () => {
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
+      .is.instanceOf(InvalidActionInputError)
       .and.has.property(
         "message",
         "Following parameter is missing or invalid for aadApp/create action: name."
@@ -124,7 +124,7 @@ describe("aadAppCreate", async () => {
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
+      .is.instanceOf(InvalidActionInputError)
       .and.has.property(
         "message",
         "Following parameter is missing or invalid for aadApp/create action: name, generateClientSecret."

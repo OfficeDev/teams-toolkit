@@ -10,7 +10,6 @@ import { DriverContext } from "../../interface/commonArgs";
 import { AADManifest } from "../../../resource/aadApp/interfaces/AADManifest";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { getUuid } from "../../../../common/tools";
-import { MissingEnvInFileUserError } from "../error/missingEnvInFileError";
 import { UnresolvedPlaceholderError } from "../../../../error/common";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name

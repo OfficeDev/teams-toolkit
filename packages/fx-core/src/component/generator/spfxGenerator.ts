@@ -125,17 +125,19 @@ export class SPFxGenerator {
 
       const yoEnv: NodeJS.ProcessEnv = process.env;
       if (yoEnv.PATH) {
-        yoEnv.PATH = isYoCheckerEnabled()
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-              process.env.PATH ?? ""
-            }`
-          : process.env.PATH;
+        yoEnv.PATH =
+          isYoCheckerEnabled() || shouldInstallLocally
+            ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+                process.env.PATH ?? ""
+              }`
+            : process.env.PATH;
       } else {
-        yoEnv.Path = isYoCheckerEnabled()
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-              process.env.Path ?? ""
-            }`
-          : process.env.Path;
+        yoEnv.Path =
+          isYoCheckerEnabled() || shouldInstallLocally
+            ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+                process.env.Path ?? ""
+              }`
+            : process.env.Path;
       }
 
       const args = [

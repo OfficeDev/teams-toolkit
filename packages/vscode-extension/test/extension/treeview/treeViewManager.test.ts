@@ -39,7 +39,7 @@ describe("TreeViewManager", () => {
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
     for (const command of developmentTreeview.commands) {
-      console.log(command.readyLabel);
+      console.log(command.commandId);
     }
     chai.assert.equal(developmentTreeview.commands.length, 5);
   });

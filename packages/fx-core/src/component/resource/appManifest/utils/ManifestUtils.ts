@@ -60,7 +60,7 @@ import {
 } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
-import { UnresolvedPlaceholderError } from "../../../../error/common";
+import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../error/common";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -70,12 +70,7 @@ export class ManifestUtils {
 
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(manifestTemplatePath)
-        )
-      );
+      return err(new FileNotFoundError("teamsApp", manifestTemplatePath));
     }
     // Be compatible with UTF8-BOM encoding
     // Avoid Unexpected token error at JSON.parse()

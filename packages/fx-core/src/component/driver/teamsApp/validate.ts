@@ -21,6 +21,7 @@ import { getDefaultString, getLocalizedString } from "../../../common/localizeUt
 import { AppStudioScopes, isValidationEnabled } from "../../../common/tools";
 import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
+import { FileNotFoundError } from "../../../error/common";
 
 const actionName = "teamsApp/validate";
 
@@ -66,11 +67,10 @@ export class ValidateTeamsAppDriver implements StepDriver {
         appPackagePath = path.join(context.projectPath, appPackagePath);
       }
       if (!(await fs.pathExists(appPackagePath))) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.FileNotFoundError.name,
-            AppStudioError.FileNotFoundError.message(appPackagePath)
-          )
+        new FileNotFoundError(
+          actionName,
+          appPackagePath,
+          "https://aka.ms/teamsfx-actions/teamsapp-validate"
         );
       }
       const archivedFile = await fs.readFile(appPackagePath);

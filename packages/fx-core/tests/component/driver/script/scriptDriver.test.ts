@@ -14,6 +14,9 @@ import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as child_process from "child_process";
+import { execCallback } from "../../../../src/component/code/utils";
+import * as utils from "../../../../src/component/code/utils";
+
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
   let mockedEnvRestore: RestoreFn;
@@ -68,46 +71,34 @@ describe("Script Driver test", () => {
   });
   it("execCallback with Error", async () => {
     sandbox.stub(fs, "appendFile").resolves();
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-      projectPath: "./",
-    } as DriverContext;
     process.env.SECRET_MY = "VAL";
-    await scriptDriver.execCallback(
+    await execCallback(
       (a: any) => {},
       new Error("error"),
       "SECRET_MY=VAL",
       "SECRET_MY=VAL",
       "",
-      context,
+      new TestLogProvider(),
       "",
       "./log"
     );
   });
   it("execCallback without Error", async () => {
     sandbox.stub(fs, "appendFile").resolves();
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-      projectPath: "./",
-    } as DriverContext;
     process.env.SECRET_MY = "VAL";
-    await scriptDriver.execCallback(
+    await execCallback(
       (a: any) => {},
       null,
       "SECRET_MY=VAL",
       "SECRET_MY=VAL",
       "",
-      context,
+      new TestLogProvider(),
       "",
       "./log"
     );
   });
   it("execute failed, mock executeCommand fail", async () => {
-    sandbox.stub(scriptDriver, "executeCommand").resolves(err(new UserError({})));
+    sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
     const args = {
       workingDirectory: "./",
       run: "::set-output KEY=VALUE",
@@ -132,7 +123,13 @@ describe("Script Driver test", () => {
       ui: new MockUserInteraction(),
       projectPath: "./",
     } as DriverContext;
-    const res = await scriptDriver.executeCommand(args, context);
+    const res = await utils.executeCommand(
+      args.run,
+      context.projectPath,
+      context.logProvider,
+      context.ui,
+      args.workingDirectory
+    );
     assert.isTrue(res.isOk());
     if (res.isOk()) {
       const output = res.value[1];

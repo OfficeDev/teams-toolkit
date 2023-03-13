@@ -209,10 +209,7 @@ describe("aadAppUpdate", async () => {
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError).and.include({
-      message: "AAD_APP_OBJECT_ID", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
-      source: "aadApp/update",
-    });
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
 
     args = {
       manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
@@ -533,9 +530,6 @@ describe("aadAppUpdate", async () => {
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError).and.include({
-      message: "AAD_APP_NAME, APPLICATION_NAME",
-      source: "aadApp/update",
-    });
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
   });
 });

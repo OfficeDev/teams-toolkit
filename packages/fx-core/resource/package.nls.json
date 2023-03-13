@@ -936,7 +936,7 @@
   "driver.spfx.error.failedToGetAppCatalog": "Cannot get app catalog site url after creation. You may need wait a few minutes and retry.",
   "driver.spfx.error.noValidAppCatelog": "There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in %s to true if you want Teams Toolkit to create it for you or you can create it by yourself.",
   "driver.spfx.add.description": "add additional web part to SPFx project",
-  "driver.spfx.add.successNotice": "Web part %s successfully added to project.",
+  "driver.spfx.add.successNotice": "Web part %s was successfully added to project.",
   "driver.spfx.add.progress.title": "Scaffolding web part",
   "driver.spfx.add.progress.scaffoldWebpart": "Generate SPFx web part using Yeoman CLI",
   "driver.prerequisite.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",

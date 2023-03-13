@@ -102,6 +102,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
 import { LifeCycleUndefinedError } from "../../error/yml";
+import { UnresolvedPlaceholderError } from "../../error/common";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -696,23 +697,7 @@ export class Coordinator {
 
       // for azure action, subscription is necessary
       if (!resolvedSubscriptionId) {
-        return err(
-          new UserError({
-            source: "coordinator",
-            name: "UnresolvedPlaceholders",
-            message: getDefaultString(
-              "core.error.unresolvedPlaceholders",
-              "AZURE_SUBSCRIPTION_ID",
-              templatePath
-            ),
-            displayMessage: getLocalizedString(
-              "core.error.unresolvedPlaceholders",
-              "AZURE_SUBSCRIPTION_ID",
-              templatePath
-            ),
-            helpLink: "https://aka.ms/teamsfx-actions",
-          })
-        );
+        return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
       }
 
       // ensure resource group
@@ -874,21 +859,11 @@ export class Coordinator {
           error = reason.error;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
-          error = new UserError({
-            source: reason.failedDriver.uses,
-            name: "UnresolvedPlaceholders",
-            message: getDefaultString(
-              "core.error.unresolvedPlaceholders",
-              placeholders,
-              templatePath
-            ),
-            displayMessage: getLocalizedString(
-              "core.error.unresolvedPlaceholders",
-              placeholders,
-              templatePath
-            ),
-            helpLink: "https://aka.ms/teamsfx-actions",
-          });
+          error = new UnresolvedPlaceholderError(
+            reason.failedDriver.uses,
+            placeholders,
+            templatePath
+          );
         }
       }
     } else {

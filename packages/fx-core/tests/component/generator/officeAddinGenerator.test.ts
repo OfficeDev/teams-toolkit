@@ -138,7 +138,7 @@ describe("OfficeAddinGenerator", function () {
     });
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-
+    sinon.stub(childProcess, "exec").resolves();
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);

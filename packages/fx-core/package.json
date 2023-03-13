@@ -42,6 +42,7 @@
     "test:generator": "nyc mocha \"tests/component/generator/*.test.ts\"",
     "test:scriptDriver": "nyc mocha \"tests/component/driver/script/scriptDriver.test.ts\"",
     "test:rghelper": "nyc mocha \"tests/component/resourceGroupHelper.test.ts\"",
+    "test:appst": "nyc mocha \"tests/component/driver/teamsApp/validate.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

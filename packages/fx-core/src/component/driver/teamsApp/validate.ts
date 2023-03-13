@@ -67,10 +67,12 @@ export class ValidateTeamsAppDriver implements StepDriver {
         appPackagePath = path.join(context.projectPath, appPackagePath);
       }
       if (!(await fs.pathExists(appPackagePath))) {
-        new FileNotFoundError(
-          actionName,
-          appPackagePath,
-          "https://aka.ms/teamsfx-actions/teamsapp-validate"
+        return err(
+          new FileNotFoundError(
+            actionName,
+            appPackagePath,
+            "https://aka.ms/teamsfx-actions/teamsapp-validate"
+          )
         );
       }
       const archivedFile = await fs.readFile(appPackagePath);

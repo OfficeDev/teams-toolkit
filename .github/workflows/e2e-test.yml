@@ -520,6 +520,7 @@ jobs:
 
             job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             report_file=`find ~/artifacts -wholename "*${job_id}/mochawesome.json"`
+            echo $report_file
             if [ ! -z "$report_file" ]; then
               tests=`echo $report_file | jq -cr '[ .. | objects | with_entries(select(.key=="tests")) | select(. != {}) | select(.tests | type=="array") ] | map(.tests | .[]) | .[]'`
               echo $tests

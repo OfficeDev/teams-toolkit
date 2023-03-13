@@ -60,6 +60,7 @@ import {
 } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { UnresolvedPlaceholderError } from "../../../../error/common";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -579,27 +580,9 @@ export class ManifestUtils {
       (x) => x != "TEAMS_APP_ID"
     );
     if (tokens.length > 0) {
-      if (isLocalDebug) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetLocalDebugConfigFailedError.name,
-            AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
-            )
-          )
-        );
-      } else {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
-              false
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      }
+      return err(
+        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+      );
     }
 
     manifest = JSON.parse(resolvedManifestString);

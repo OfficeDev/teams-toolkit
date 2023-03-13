@@ -22,14 +22,11 @@ import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { getExecCommand, Utils } from "../utils/utils";
-import { isSpfxDecoupleEnabled } from "../../../../common/featureFlags";
 import { Constants } from "../utils/constants";
 
 const name = Constants.YeomanPackageName;
 const supportedVersion = "4.3.1";
-const displayName = isSpfxDecoupleEnabled()
-  ? `${name}@${Constants.LatestVersion}`
-  : `${name}@${supportedVersion}`;
+const displayName = `${name}@${Constants.LatestVersion}`;
 const timeout = 6 * 60 * 1000;
 
 export class YoChecker implements DependencyChecker {
@@ -206,7 +203,7 @@ export class YoChecker implements DependencyChecker {
 
   private async installYo(): Promise<void> {
     try {
-      const version = isSpfxDecoupleEnabled() ? Constants.LatestVersion : supportedVersion;
+      const version = Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,

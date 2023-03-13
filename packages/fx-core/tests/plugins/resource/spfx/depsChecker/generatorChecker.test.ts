@@ -70,7 +70,7 @@ describe("generator checker", () => {
 
       chai.expect(info).to.be.deep.equal({
         supportedVersion: "1.16.1",
-        displayName: "@microsoft/generator-sharepoint@1.16.1",
+        displayName: "@microsoft/generator-sharepoint@latest",
       });
     });
 
@@ -132,12 +132,7 @@ describe("generator checker", () => {
         console.log("stub cleanup");
         return;
       });
-      const installStub = stub(GeneratorChecker.prototype, <any>"installGenerator").callsFake(
-        async () => {
-          console.log("stub installyo");
-          return;
-        }
-      );
+      stub(cpUtils, "executeCommand").resolves();
       const validateStub = stub(GeneratorChecker.prototype, <any>"validate").callsFake(async () => {
         console.log("stub validate");
         return false;
@@ -146,7 +141,6 @@ describe("generator checker", () => {
       try {
         await generatorChecker.install();
       } catch {
-        chai.expect(installStub.callCount).equal(1);
         chai.expect(cleanStub.callCount).equal(2);
         chai.expect(validateStub.callCount).equal(1);
       }

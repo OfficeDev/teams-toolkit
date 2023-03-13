@@ -114,10 +114,7 @@ describe("Yo checker", () => {
       console.log("stub cleanup");
       return;
     });
-    const installStub = stub(YoChecker.prototype, <any>"installYo").callsFake(async () => {
-      console.log("stub installyo");
-      return;
-    });
+    stub(cpUtils, "executeCommand").resolves();
     const validateStub = stub(YoChecker.prototype, <any>"validate").callsFake(async () => {
       console.log("stub validate");
       return false;
@@ -126,7 +123,6 @@ describe("Yo checker", () => {
     try {
       await yc.install();
     } catch {
-      assert.callCount(installStub, 1);
       assert.callCount(cleanStub, 2);
       assert.callCount(validateStub, 1);
     }

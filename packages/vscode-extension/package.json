@@ -1242,32 +1242,6 @@
         }
       }
     ],
-    "configuration": [
-      {
-        "title": "SPFx Configuration",
-        "order": 1,
-        "properties": {
-          "fx-extension.SPFxPrerequisiteCheck": {
-            "type": "object",
-            "properties": {
-              "yo": {
-                "type": "boolean",
-                "description": "Ensure Yeoman CLI is installed. (Requires reload of VS Code)"
-              },
-              "sharepointYeomanGenerator": {
-                "type": "boolean",
-                "description": "Ensure SPFx Yeoman Generator is installed. (Requires reload of VS Code)"
-              }
-            },
-            "additionalProperties": false,
-            "default": {
-              "yo": true,
-              "sharepointYeomanGenerator": true
-            }
-          }
-        }
-      }
-    ],
     "languages": [
       {
         "id": "teamsfx-toolkit-output"

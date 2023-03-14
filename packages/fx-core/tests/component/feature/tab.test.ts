@@ -33,6 +33,7 @@ import {
 import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
 import Container from "typedi";
 import { AppSettingConstants } from "../../../src/component/code/appSettingUtils";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -48,7 +49,7 @@ describe("Tab Feature", () => {
   };
   context.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
-
+  let mockedEnvRestore: RestoreFn;
   let writeFileStub: SinonStub;
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
@@ -158,6 +159,7 @@ describe("Tab Feature", () => {
     assert.equal(tabState?.[StorageOutputs.indexPath.key], "/");
   });
   it("configure sso blazor tab", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const appSettings = [
       AppSettingConstants.Placeholders.clientId,
       AppSettingConstants.Placeholders.clientSecret,
@@ -188,5 +190,6 @@ describe("Tab Feature", () => {
     assert.isTrue(res.isOk());
     const expectedAppSettings = [clientId, clientSecret, oauthAuthority].join(";");
     assert.equal(writeFileStub.args?.[0]?.[1], expectedAppSettings);
+    mockedEnvRestore();
   });
 });

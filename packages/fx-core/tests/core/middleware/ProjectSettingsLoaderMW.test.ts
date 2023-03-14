@@ -26,7 +26,7 @@ import { ProjectSettingsLoaderMW } from "../../../src/core/middleware/projectSet
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -79,6 +79,7 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
     path.resolve(inputs.projectPath, "teamsapp.yml"),
   ];
+  let mockedEnvRestore: RestoreFn;
 
   beforeEach(() => {
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
@@ -94,6 +95,7 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   const tools = new MockTools();
   setTools(tools);
@@ -107,6 +109,7 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     other: [ProjectSettingsLoaderMW, ContextInjectorMW],
   });
   it(`success to load project settings`, async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const my = new MyClass();
     const res = await my.other(inputs);
     assert.isTrue(res.isOk() && res.value !== undefined && res.value.appName === appName);

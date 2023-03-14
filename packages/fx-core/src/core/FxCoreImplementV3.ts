@@ -41,8 +41,10 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import "../component/driver/index";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
-import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
-import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
+import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
@@ -300,18 +302,19 @@ export class FxCoreV3Implement {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
-      let args: ValidateTeamsAppArgs;
       if (func.params.manifestPath) {
-        args = {
+        const args: ValidateManifestArgs = {
           manifestPath: func.params.manifestPath,
         };
+        const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
+        res = await driver.run(args, context);
       } else {
-        args = {
+        const args: ValidateAppPackageArgs = {
           appPackagePath: func.params.appPackagePath,
         };
+        const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+        res = await driver.run(args, context);
       }
-      res = await driver.run(args, context);
     } else if (func.method === "buildPackage") {
       const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
       const args: CreateAppPackageArgs = {

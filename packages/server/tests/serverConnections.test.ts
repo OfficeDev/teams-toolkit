@@ -142,6 +142,7 @@ describe("serverConnections", () => {
   });
 
   it("deployTeamsAppManifestRequest should return {}", async () => {
+    sandbox.stub(tools, "isV3Enabled").returns(false);
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.resolves(ok("test"));
     sandbox.replace(connection["core"], "executeUserTask", fake);

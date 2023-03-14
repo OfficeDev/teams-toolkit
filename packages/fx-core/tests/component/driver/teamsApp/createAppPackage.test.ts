@@ -9,6 +9,10 @@ import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsAp
 import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { MockedM365Provider } from "../../../plugins/solution/util";
+import { FileNotFoundError } from "../../../../src/error/common";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { ok, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
 
 describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
@@ -21,20 +25,34 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.restore();
   });
 
-  it("should throw error if file not exists", async () => {
+  it("should throw error if file not exists case 1", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath: "fakepath",
       outputZipPath: "fakePath",
       outputJsonPath: "fakePath",
     };
-
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sinon.stub(fs, "pathExists").onFirstCall().resolves(false);
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
+      chai.assert.isTrue(result.error instanceof FileNotFoundError);
     }
   });
-
+  it("should throw error if file not exists case 2", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath: "fakepath",
+      outputZipPath: "fakePath",
+      outputJsonPath: "fakePath",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sinon.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof FileNotFoundError);
+    }
+  });
   it("invalid param error", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath: "",

@@ -11,18 +11,22 @@ import { scriptDriver } from "../../../../src/component/driver/script/scriptDriv
 import { assert } from "chai";
 import { MockUserInteraction } from "../../../core/utils";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as child_process from "child_process";
 import { execCallback } from "../../../../src/component/code/utils";
 import * as utils from "../../../../src/component/code/utils";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     sandbox.stub(tools, "waitSeconds").resolves();
   });
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("execute success set-output", async () => {
     const args = {

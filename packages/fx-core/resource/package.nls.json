@@ -1023,7 +1023,7 @@
   "driver.teamsApp.summary.validate": "Teams Toolkit has checked against all validation rules:\n\nSummary:\n%s failed, %s passed.\n%s\n%s\n\nA complete log of validations can be found in %s",
   "driver.teamsApp.validate.skip": "%s action is currently skipped, will be updated in the future version.",
   "driver.teamsApp.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
-  "driver.teamsApp.validate.invalidParameter": "Either %s or %s parameter should be provided for action %s",
+  "driver.teamsApp.validate.invalidParameter": "Parameter %s should be provided for action %s",
   "driver.teamsApp.validate.result": "Teams Toolkit has completed checking your app package against validation rules. %s failed, %s passed. Check [output window](%s) for details.",
   "error.teamsApp.AppIdNotExistError": "Teams app with ID %s does not exist in Teams Developer Portal.",
   "error.teamsApp.InvalidAppIdError": "Teams app ID %s is invalid",

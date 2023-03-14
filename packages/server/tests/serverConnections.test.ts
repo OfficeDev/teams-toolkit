@@ -26,7 +26,7 @@ describe("serverConnections", () => {
   const down = new TestStream();
   const msgConn = createMessageConnection(up as any, down as any);
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 

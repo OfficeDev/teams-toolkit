@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -94,10 +94,10 @@ jobs:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -182,10 +182,10 @@ jobs:
     name: ${{ matrix.cases }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -249,10 +249,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -377,7 +377,7 @@ jobs:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -406,7 +406,7 @@ jobs:
     if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: rerun
         run: |
           curl \
            -X POST \
@@ -422,7 +422,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check schedule for v3
         if: github.event.schedule == '0 4 * * *'

@@ -105,9 +105,9 @@ jobs:
             subject="[PASSED] $subject"
           fi
 
-          echo "::set-output name=body::$body"
-          echo "::set-output name=to::$emails"
-          echo "::set-output name=subject::$subject"
+          echo "body=$body" >> $GITHUB_OUTPUT
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master

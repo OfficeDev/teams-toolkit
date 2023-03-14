@@ -10,6 +10,7 @@ import {
   getQuestionsForDeployV3,
   FeatureId,
   InitDebugProceedQuestion,
+  getQuestionsForAddWebpart,
 } from "../../src/component/question";
 import {
   ApiConnectionOptionItem,
@@ -378,10 +379,14 @@ describe("question for v3", () => {
     }
   });
 
-  it("getQuestionsForAddFeatureSubCommand", async () => {
+  it("getQuestionsForAddWebpart", async () => {
     const inputs: Inputs = {
-      platform: Platform.CLI_HELP,
+      platform: Platform.VSCode,
     };
+
+    const res = getQuestionsForAddWebpart(inputs);
+
+    assert.isTrue(res.isOk());
   });
 
   it("InitDebugProceedQuestion.title", async () => {

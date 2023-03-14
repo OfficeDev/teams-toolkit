@@ -98,4 +98,23 @@ describe("TreeViewManager", () => {
 
     chai.assert.equal(commands.length, 3);
   });
+
+  it("updateTreeViewsOnSPFxChanged", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
+    treeViewManager.registerTreeViews({
+      subscriptions: [],
+    } as unknown as vscode.ExtensionContext);
+    const developmentTreeviewProvider = treeViewManager.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+
+    const commands = developmentTreeviewProvider.getCommands();
+    chai.assert.equal(commands.length, 5);
+
+    sandbox.stub(globalVariables, "isSPFxProject").value(true);
+    await treeViewManager.updateTreeViewsOnSPFxChanged();
+
+    chai.assert.equal(commands.length, 6);
+  });
 });

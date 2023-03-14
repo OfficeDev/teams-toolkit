@@ -332,25 +332,8 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("validateManifestHandler() - V3", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, ExtensionErrors.DefaultManifestTemplateNotExistsError);
-      }
-      sinon.restore();
-    });
-
     it("validateManifestHandler() - app package", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(commonTools, "isValidationEnabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -379,7 +362,6 @@ describe("handlers", () => {
 
     it("validateManifestHandler() - manifest file", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(commonTools, "isValidationEnabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -408,7 +390,6 @@ describe("handlers", () => {
 
     it("validateManifestHandler() - user cancel", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(commonTools, "isValidationEnabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -431,7 +412,6 @@ describe("handlers", () => {
 
     it("validateManifestHandler() - user cancel env", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(commonTools, "isValidationEnabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");

@@ -82,6 +82,7 @@ describe("TreeViewManager", () => {
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
 
     treeViewManager.registerTreeViews({
       subscriptions: [],

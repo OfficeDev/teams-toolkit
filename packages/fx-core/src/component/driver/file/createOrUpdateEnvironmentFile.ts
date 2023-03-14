@@ -16,9 +16,9 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "file/createOrUpdateEnvironmentFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
@@ -109,7 +109,7 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 

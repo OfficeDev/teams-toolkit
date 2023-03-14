@@ -37,6 +37,7 @@ import { AppDefinition } from "../../resource/appManifest/interfaces/appDefiniti
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getTemplatesFolder } from "../../../folder";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/create";
 
@@ -191,9 +192,9 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     if (invalidParams.length > 0) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+        new InvalidActionInputError(
+          actionName,
+          invalidParams,
           "https://aka.ms/teamsfx-actions/teamsapp-create"
         )
       );

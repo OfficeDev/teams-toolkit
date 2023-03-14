@@ -38,6 +38,8 @@ import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
+import "../../../../src/component/resource/appManifest/appManifest";
+import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../src/error/common";
 import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
@@ -536,5 +538,14 @@ describe("getManifest V3", () => {
     envInfo.envName = "local";
     const res1 = await manifestUtils.getManifest("", envInfo, true);
     chai.assert.isTrue(res1.isOk());
+  });
+
+  it("getManifestV3 unresolved placeholder Error", async () => {
+    const envInfo = newEnvInfoV3();
+    envInfo.envName = "dev";
+    manifest.name.short = "${{MY_APP_NAME}}";
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    const res = await manifestUtils.getManifestV3("", envInfo, false);
+    chai.assert.isTrue(res.isErr() && res.error instanceof UnresolvedPlaceholderError);
   });
 });

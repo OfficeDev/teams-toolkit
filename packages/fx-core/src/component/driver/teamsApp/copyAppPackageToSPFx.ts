@@ -8,9 +8,8 @@ import fs from "fs-extra";
 import path from "path";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { FileNotFoundError } from "../../../error/common";
 import { Constants } from "../../resource/appManifest/constants";
-import { AppStudioError } from "../../resource/appManifest/errors";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { asFactory, asString, wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -63,10 +62,7 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
       ? copyAppPackageArgs.appPackagePath
       : path.join(context.projectPath, copyAppPackageArgs.appPackagePath);
     if (!(await fs.pathExists(appPackagePath))) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(appPackagePath)
-      );
+      throw new FileNotFoundError(actionName, appPackagePath);
     }
     const pictures = await this.getIcons(appPackagePath);
     const spfxFolder = path.isAbsolute(copyAppPackageArgs.spfxFolder)
@@ -105,10 +101,7 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
     const zipEntries = new AdmZip(archivedFile).getEntries();
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
     if (!manifestFile) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
-      );
+      throw new FileNotFoundError(actionName, Constants.MANIFEST_FILE);
     }
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;

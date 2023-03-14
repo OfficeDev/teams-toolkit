@@ -62,6 +62,7 @@ import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
+import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -219,6 +220,34 @@ describe("Core basic APIs", () => {
         runSpy.getCall(0).args[0].manifestPath,
         path.join(os.tmpdir(), appName, "aad.manifest.json")
       );
+      runSpy.restore();
+    } finally {
+      restore();
+    }
+  });
+
+  it("add web part to SPFx", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        spfxFolder: ".\\src",
+        manifestPath: ".\\appPackage\\manifest.json",
+        localManifestPath: ".\\appPackage\\manifest.local.json",
+        "spfx-webpart-name": "helloworld",
+        stage: Stage.addWebpart,
+        projectPath: path.join(os.tmpdir(), appName),
+      };
+
+      const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");
+      await core.addWebpart(inputs);
+      sandbox.assert.calledOnce(runSpy);
       runSpy.restore();
     } finally {
       restore();

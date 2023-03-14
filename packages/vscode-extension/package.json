@@ -140,7 +140,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",
@@ -319,6 +319,11 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.manageCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/ && fx-extension.isV3Enabled",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.openSubscriptionInPortal",
           "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
           "group": "inline@3"
@@ -399,6 +404,10 @@
         },
         {
           "command": "fx-extension.listCollaborator",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.manageCollaborator",
           "when": "false"
         },
         {
@@ -694,7 +703,7 @@
         "command": "fx-extension.manageCollaborator",
         "title": "%teamstoolkit.commands.manageCollaborator.title%",
         "enablement": "fx-extension.isV3Enabled && !fx-extension.commandLocked",
-        "category": "Teams"
+        "icon": "$(organization)"
       },
       {
         "command": "fx-extension.localdebug",
@@ -866,7 +875,7 @@
                     "items": {
                       "type": "number"
                     },
-                    "description": "%teamstoolkit.taskDefinitions.args.ports.title%"
+                    "description": "%teamstoolkit.taskDefinitions.args.portOccupancy.title%"
                   }
                 },
                 "if": {
@@ -895,9 +904,15 @@
               {
                 "type": "object",
                 "required": [
+                  "type",
                   "ngrokArgs"
                 ],
                 "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.type.title%",
+                    "const": "ngrok"
+                  },
                   "ngrokArgs": {
                     "oneOf": [
                       {
@@ -947,6 +962,75 @@
                       "endpoint": {
                         "type": "string",
                         "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "port",
+                  "protocol"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.type.title%",
+                    "const": "dev-tunnel"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "%teamstoolkit.taskDefinitions.args.port.title%"
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.protocol.title%",                    
+                    "oneOf": [
+                      {
+                        "const": "http"
+                      },
+                      {
+                        "const": "https"
+                      }
+                    ]
+                  },
+                  "access": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.access.title%",                    
+                    "oneOf": [
+                      {
+                        "const": "public"
+                      }
+                    ]
+                  },
+                  "env": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
+                    "anyOf": [
+                      {
+                        "const": "local"
+                      },
+                      {}
+                    ]
+                  },
+                  "output": {
+                    "type": "object",
+                    "description": "%teamstoolkit.taskDefinitions.args.output.title%",
+                    "properties": {
+                      "domain": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.domain.title%"
+                      },
+                      "endpoint": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.id.title%"
                       }
                     }
                   }

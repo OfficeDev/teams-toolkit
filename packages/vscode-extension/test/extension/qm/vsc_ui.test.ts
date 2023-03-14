@@ -17,8 +17,14 @@ import {
   workspace,
 } from "vscode";
 
-import { SelectFileConfig, SelectFolderConfig, UserCancelError } from "@microsoft/teamsfx-api";
-
+import {
+  SelectFileConfig,
+  SelectFolderConfig,
+  SingleSelectConfig,
+  UserCancelError,
+  UserError,
+} from "@microsoft/teamsfx-api";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { sleep } from "../../../src/utils/commonUtils";
@@ -53,6 +59,7 @@ describe("UI Unit Tests", async () => {
 
   describe("Select Folder", () => {
     it("has returns default folder", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
         name: "name",
@@ -98,6 +105,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
         name: "name",
@@ -141,6 +149,7 @@ describe("UI Unit Tests", async () => {
 
   describe("Select File", () => {
     it("has returns default file", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -181,6 +190,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -222,6 +232,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns item in possible files", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -324,6 +335,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command successfully", async function (this: Mocha.Context) {
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = stubInterface<Terminal>();
@@ -352,6 +364,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command timeout", async function (this: Mocha.Context) {
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = {
@@ -384,6 +397,102 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       timer.restore();
+    });
+  });
+  describe("single select", () => {
+    it("select success with validation", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      let hasRun = false;
+      const config: SingleSelectConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        options: [{ id: "1", label: "label1" }],
+        validation: (input: string) => {
+          if (input === "1") {
+            hasRun = true;
+            return undefined;
+          }
+        },
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerItemButton.callsFake((listener: (e: any) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sinon.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectOption(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("1");
+      }
+      sinon.restore();
+    });
+
+    it("select fail with validation", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const hasRun = false;
+      const config: SingleSelectConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        options: [{ id: "1", label: "label1" }],
+        validation: (input: string) => {
+          throw new UserError("name", "source", "msg", "msg");
+        },
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerItemButton.callsFake((listener: (e: any) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sinon.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectOption(config);
+
+      expect(result.isErr()).is.true;
+
+      sinon.restore();
     });
   });
 });

@@ -242,36 +242,84 @@ export const npmInstallDisplayMessages: DisplayMessages = {
     `Finished 'Install npm packages' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
-export const ngrokTunnelDisplayMessages = Object.freeze({
+export const baseTunnelDisplayMessages = Object.freeze({
   taskName: "Start local tunnel",
-  title: "Running 'Start local tunnel' Visual Studio Code task.",
+  title: () => localize("teamstoolkit.localDebug.output.tunnel.title"),
   checkNumber: (n: number) =>
-    `${stepPrefix(
-      n
-    )} Teams Toolkit is starting the local tunnel service to forward public ngrok URL to local port and inspect traffic. Open terminal window to see the running details.`,
-  summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about 'Start local tunnel' task.`,
+    `${stepPrefix(n)} ${localize("teamstoolkit.localDebug.output.tunnel.checkNumber")}`,
+  summary: () => localize("teamstoolkit.localDebug.output.summary"),
+  learnMore: (link: string) =>
+    util.format(localize("teamstoolkit.localDebug.output.tunnel.learnMore"), link),
   learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task",
-  successSummary: (src: string, dist: string, envFile: string | undefined, envKeys: string[]) =>
+  successSummary: (src: string, dest: string, envFile: string | undefined, envKeys: string[]) =>
     envFile === undefined
-      ? `Forwarding ngrok URL ${dist} to ${src}`
-      : `Forwarding ngrok URL ${dist} to ${src}. Saved [${envKeys.join(", ")}] to ${envFile}`,
-  checkNgrokMessage: "Checking and installing ngrok",
-  startMessage: "Starting local tunnel service",
-  forwardingUrl: (src: string, dist: string) => `Forwarding URL ${dist} to ${src}`,
-  saveEnvs: (envFile: string, envKeys: string[]) => `Saved [${envKeys.join(", ")}] to ${envFile}`,
-  installSuccessMessage: (ngrokPath: string) => `ngrok is installed at ${ngrokPath}`,
-  skipInstallMessage: (ngrokPath: string) =>
-    `Skip checking and installing ngrok as user has specified ngrok path (${ngrokPath}).`,
-  successMessage: "Local tunnel service is started successfully.",
-  errorMessage: "Failed to start local tunnel service.",
+      ? util.format(localize("teamstoolkit.localDebug.output.tunnel.successSummary"), dest, src)
+      : util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.successSummaryWithEnv"),
+          dest,
+          src,
+          envKeys.join(", "),
+          envFile
+        ),
+  terminalSuccessSummary: (
+    src: string,
+    dest: string,
+    envFile: string | undefined,
+    envKeys: string[]
+  ) =>
+    envFile === undefined
+      ? util.format(
+          getDefaultString("teamstoolkit.localDebug.output.tunnel.successSummary"),
+          dest,
+          src
+        )
+      : util.format(
+          getDefaultString("teamstoolkit.localDebug.output.tunnel.successSummaryWithEnv"),
+          dest,
+          src,
+          envKeys.join(", "),
+          envFile
+        ),
   durationMessage: (duration: number) =>
-    `Started local tunnel service in ${duration.toFixed(2)} seconds.`,
+    util.format(localize("teamstoolkit.localDebug.output.tunnel.duration"), duration.toFixed(2)),
+  startTerminalMessage: "Starting local tunnel service", // begin pattern of problem matcher
+  successTerminalMessage: "Local tunnel service is started successfully.", // end pattern of problem matcher
+  errorTerminalMessage: "Failed to start local tunnel service.", // end pattern of problem matcher
 });
 
-// TODO: update devTunnelDisplayMessages
-export type TunnelDisplayMessages = typeof ngrokTunnelDisplayMessages;
-export const devTunnelDisplayMessages: TunnelDisplayMessages = ngrokTunnelDisplayMessages;
+export type TunnelDisplayMessages = typeof baseTunnelDisplayMessages;
+export const devTunnelDisplayMessages = Object.freeze(
+  Object.assign(
+    {
+      startDevTunnelMessage: () => localize("teamstoolkit.localDebug.output.tunnel.startDevTunnel"),
+      createDevTunnelTerminalMessage: (tag: string) =>
+        util.format(
+          getDefaultString("teamstoolkit.localDebug.output.tunnel.createDevTunnelMessage"),
+          tag
+        ),
+    },
+    baseTunnelDisplayMessages
+  )
+);
+export const ngrokTunnelDisplayMessages = Object.freeze(
+  Object.assign(
+    {
+      startNgrokMessage: () => localize("teamstoolkit.localDebug.output.tunnel.startNgrokMessage"),
+      checkNgrokMessage: () => localize("teamstoolkit.localDebug.output.tunnel.checkNgrokMessage"),
+      installSuccessMessage: (ngrokPath: string) =>
+        util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.installSuccessMessage"),
+          ngrokPath
+        ),
+      skipInstallMessage: (ngrokPath: string) =>
+        util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.skipInstallMessage"),
+          ngrokPath
+        ),
+    },
+    baseTunnelDisplayMessages
+  )
+);
 
 export const setUpTabDisplayMessages: DisplayMessages = {
   taskName: "Set up tab",

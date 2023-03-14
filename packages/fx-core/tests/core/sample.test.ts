@@ -15,11 +15,13 @@ import { setTools } from "../../src/core/globalVars";
 import * as projectSettingsLoader from "../../src/core/middleware/projectSettingsLoader";
 import { CoreQuestionNames, ScratchOptionNoVSC } from "../../src/core/question";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Core basic APIs - create from sample", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
     sandbox
@@ -39,9 +41,11 @@ describe("Core basic APIs - create from sample", () => {
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
+    mockedEnvRestore();
   });
 
   it("create from sample todo-list-SPFx", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     appName = "todo-list-SPFx";
     projectPath = path.resolve(os.tmpdir(), appName);
     deleteFolder(projectPath);

@@ -15,7 +15,7 @@ configureApp:
       envs:
         TAB_DOMAIN: localhost:53000
         TAB_ENDPOINT: https://localhost:53000
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value

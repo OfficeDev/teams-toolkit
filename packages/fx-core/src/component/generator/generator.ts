@@ -14,7 +14,12 @@ import {
   commonTemplateName,
   sampleDefaultTimeoutInMs,
 } from "./constant";
-import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
+import {
+  CancelDownloading,
+  FetchZipFromUrlError,
+  TemplateZipFallbackError,
+  UnzipError,
+} from "./error";
 import {
   SampleActionSeq,
   GeneratorAction,
@@ -142,8 +147,11 @@ export async function templateDefaultOnActionError(
   switch (action.name) {
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
-      await context.logProvider.info(error.message);
-      await context.logProvider.info(LogMessages.getTemplateFromLocal);
+      context.cancelDownloading = true;
+      if (!(error instanceof CancelDownloading)) {
+        await context.logProvider.info(error.message);
+        await context.logProvider.info(LogMessages.getTemplateFromLocal);
+      }
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
       await context.logProvider.error(error.message);

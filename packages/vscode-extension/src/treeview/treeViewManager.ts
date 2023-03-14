@@ -137,9 +137,6 @@ class TreeViewManager {
   }
 
   private registerEnvironment(disposables: vscode.Disposable[]) {
-    if (isV3Enabled()) {
-      return;
-    }
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-environment", envTreeProviderInstance)
     );
@@ -197,13 +194,6 @@ class TreeViewManager {
               "fx-extension.addEnvironment",
               undefined,
               { name: "teamsfx-add-environment", custom: false }
-            ),
-            new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle"),
-              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription"),
-              "fx-extension.manageCollaborator",
-              "manageCollaborator",
-              { name: "organization", custom: false }
             ),
           ]
         : [

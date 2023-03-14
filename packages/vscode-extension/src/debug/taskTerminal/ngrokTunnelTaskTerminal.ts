@@ -281,20 +281,20 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   private async outputInstallNgrokStepMessage(): Promise<void> {
     VsCodeLogInstance.outputChannel.appendLine(
-      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.checkNgrokMessage} ... `
+      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.checkNgrokMessage()} ... `
     );
-    await this.progressHandler.next(ngrokTunnelDisplayMessages.checkNgrokMessage);
+    await this.progressHandler.next(ngrokTunnelDisplayMessages.checkNgrokMessage());
   }
 
   private async outputStartNgrokStepMessage(ngrokArgs: string[], ngrokPath: string): Promise<void> {
     VsCodeLogInstance.outputChannel.appendLine(
-      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.startMessage} ... `
+      `${this.step.getPrefix()} ${ngrokTunnelDisplayMessages.startNgrokMessage()} ... `
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`${NgrokTunnelTaskTerminal.command(ngrokArgs, ngrokPath)}\r\n\r\n`);
 
-    await this.progressHandler.next(ngrokTunnelDisplayMessages.startMessage);
+    await this.progressHandler.next(ngrokTunnelDisplayMessages.startNgrokMessage());
   }
 
   protected generateTelemetries(): { [key: string]: string } {

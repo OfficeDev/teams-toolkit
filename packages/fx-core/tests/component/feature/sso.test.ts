@@ -165,6 +165,7 @@ describe("SSO feature", () => {
   };
   context.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.stub(telemetry, "sendErrorTelemetryThenReturnError").returns(
       new UserError({
@@ -181,6 +182,7 @@ describe("SSO feature", () => {
   });
 
   it("happy path", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(AppManifest.prototype, "addCapability").resolves(ok(undefined));
     sandbox.stub(ManifestUtils.prototype, "isExistingTab").resolves(ok(true));
     const inputs: InputsWithProjectPath = {
@@ -195,6 +197,7 @@ describe("SSO feature", () => {
     const component = Container.get(ComponentNames.SSO) as any;
     const ssoRes = await component.add(context, inputs);
     assert.isTrue(ssoRes.isOk());
+    mockedEnvRestore();
   });
 
   it("add sso with generateManifest failed", async () => {
@@ -277,6 +280,7 @@ describe("SSO feature", () => {
   });
 
   it("happy path for function scenario", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(AppManifest.prototype, "addCapability").resolves(ok(undefined));
     sandbox.stub(ManifestUtils.prototype, "isExistingTab").resolves(ok(true));
     const inputs: InputsWithProjectPath = {
@@ -291,6 +295,7 @@ describe("SSO feature", () => {
     const component = Container.get(ComponentNames.SSO) as any;
     const ssoRes = await component.add(context, inputs);
     assert.isTrue(ssoRes.isOk());
+    mockedEnvRestore();
   });
 });
 

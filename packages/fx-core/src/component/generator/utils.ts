@@ -10,7 +10,6 @@ import {
   placeholderDelimiters,
   templateAlphaVersion,
   templateFileExt,
-  templatePrereleasePrefix,
   templatePrereleaseVersion,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -19,6 +18,7 @@ import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
+import { CancelDownloading } from "./error";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -30,7 +30,7 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
 
   // To avoid incompatible, alpha release does not download latest template.
   if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
-    return undefined;
+    throw new CancelDownloading();
   }
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));

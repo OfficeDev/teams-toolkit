@@ -570,7 +570,6 @@ export class ManifestUtils {
 
     const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
 
-    const isLocalDebug = state.ENV_NAME === "local";
     const tokens = getEnvironmentVariables(resolvedManifestString).filter(
       (x) => x != "TEAMS_APP_ID"
     );

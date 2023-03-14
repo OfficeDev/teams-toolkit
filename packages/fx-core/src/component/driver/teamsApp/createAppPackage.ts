@@ -14,8 +14,6 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
-import { AppStudioError } from "../../resource/appManifest/errors";
 import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../../../common/constants";

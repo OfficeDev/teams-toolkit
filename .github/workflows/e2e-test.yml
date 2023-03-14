@@ -554,7 +554,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> $failed_lists $passed_lists $skipped_lists </table> <br />"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $passed_lists $skipped_lists </table> <br />"
 
           total=$((passed+failed+skipped))
 

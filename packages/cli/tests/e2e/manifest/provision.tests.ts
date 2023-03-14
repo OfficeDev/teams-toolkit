@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Yefu Wang <yefuwang@microsoft.com>
- * @owner Ning Liu <nliu@microsoft.com>
+ * @author Ning Liu <nliu@microsoft.com>
  */
 
 import path from "path";

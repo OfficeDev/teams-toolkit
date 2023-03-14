@@ -6,13 +6,8 @@ on:
       cases:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
-      v3:
-        description: "set v3 feature flag turn on for testing(true or false)"
-        required: false
-        default: "false"
   schedule:
     - cron: "0 22 * * *"
-    - cron: "0 4 * * *"
   pull_request:
     branches:
       - main
@@ -239,6 +234,11 @@ jobs:
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      TEAMSFX_V3: "true"
+      TEAMSFX_DEBUG_TEMPLATE: "true"
+      NODE_ENV: "development"
+      SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+      SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
     needs: setup
     runs-on: ubuntu-latest
     strategy:
@@ -269,15 +269,6 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Download Simple Auth bits
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 5
-          shell: pwsh
-          command: |
-            ./.github/scripts/download-simpleauth.sh
-
       - name: Setup project
         uses: nick-fields/retry@v2
         with:
@@ -295,26 +286,7 @@ jobs:
           lscpu
 
       - name: run test
-        if: github.event.schedule != '0 4 * * *'
         working-directory: packages/cli/tests/e2e
-        run: |
-          file=`find . -wholename "${{ matrix.cases }}"`
-          if [ -z "$file" ]; then
-            echo "can't find target case in $file"
-            exit 1
-          else
-            npx mocha --reporter mochawesome --timeout 1200000 $file
-          fi
-
-      - name: run test for v3
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.v3 != 'false' || github.event.schedule == '0 4 * * *' }}
-        working-directory: packages/cli/tests/e2e
-        env:
-          TEAMSFX_V3: "true"
-          TEAMSFX_DEBUG_TEMPLATE: "true"
-          NODE_ENV: "development"
-          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
-          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then
@@ -424,11 +396,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Check schedule for v3
-        if: github.event.schedule == '0 4 * * *'
-        run: |
-          echo "v3_flag=true" >> $GITHUB_ENV
-
       - name: Install Dateutils
         run: |
           sudo apt install dateutils
@@ -492,17 +459,6 @@ jobs:
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
-            if [[ "${{env.v3_flag}}" == "true" ]]; then
-              email=""
-              if grep -q "@owner" $file; then
-                email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
-              fi
-
-              started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test for v3") | .started_at'`
-              completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test for v3") | .completed_at'`
-              duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
-            fi
-
             author=""
             if [ -z "$email" ]; then
               author="N/A"
@@ -558,10 +514,7 @@ jobs:
 
           total=$((passed+failed+skipped))
 
-          subject="TeamsFx E2E Test Report ($passed/$total Passed, $failed/$total Failed, $skipped/$total Skipped)"
-          if [[ "${{env.v3_flag}}" == "true" ]]; then
-            subject="TeamsFx E2E V3 Test Report ($passed/$total Passed, $failed/$total Failed, $skipped/$total Skipped)"
-          fi
+          subject="TeamsFx E2E V3 Test Report ($passed/$total Passed, $failed/$total Failed, $skipped/$total Skipped)"
           if [ $failed -gt 0 ]; then
             subject="[FAILED] $subject"
           else

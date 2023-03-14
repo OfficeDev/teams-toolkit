@@ -81,6 +81,7 @@ describe("Core basic APIs", () => {
   });
   describe("create from new", async () => {
     it("CLI with folder input", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       appName = randomAppName();
       const core = new FxCore(tools);
       const inputs: Inputs = {

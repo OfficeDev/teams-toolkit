@@ -18,12 +18,13 @@ import { lock, unlock } from "proper-lockfile";
 import { TOOLS } from "../globalVars";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
-import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
+import { CoreSource, NoProjectOpenedError, PathNotExistError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import crypto from "crypto";
 import * as os from "os";
 import { waitSeconds } from "../../common/tools";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
+import { InvalidProjectError } from "../../error/common";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -46,7 +47,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   } else if (isValidProjectV2(inputs.projectPath)) {
     configFolder = path.join(inputs.projectPath, `.${ConfigFolderName}`);
   } else {
-    ctx.result = err(new InvalidProjectError(configFolder));
+    ctx.result = err(new InvalidProjectError());
     return;
   }
 

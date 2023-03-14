@@ -15,7 +15,7 @@ configureApp:
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
 
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
 

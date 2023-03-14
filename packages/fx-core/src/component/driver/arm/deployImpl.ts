@@ -21,10 +21,10 @@ import { executeCommand } from "../../../common/cpUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { SolutionError, SolutionSource } from "../../constants";
-import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
+import { InvalidActionInputError } from "../../../error/common";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -59,7 +59,7 @@ export class ArmDeployImpl {
     const invalidParameters = await validateArgs(this.args);
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(Constants.actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(Constants.actionName, invalidParameters, helpLink);
     }
   }
 

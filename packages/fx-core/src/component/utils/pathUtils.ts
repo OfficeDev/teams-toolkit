@@ -10,7 +10,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { yamlParser } from "../configManager/parser";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { InvalidProjectError } from "../../core/error";
+import { InvalidProjectError } from "../../error/common";
 
 export const YmlFileNameOld = "app.yml";
 export const LocalYmlFileNameOld = "app.local.yml";

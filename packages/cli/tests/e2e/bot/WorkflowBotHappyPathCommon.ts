@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Dooriya Li <dol@microsoft.com>
- * @owner Siglud <fanhu@microsoft.com>
+ * @author Siglud <fanhu@microsoft.com>
  */
 
 import * as fs from "fs-extra";

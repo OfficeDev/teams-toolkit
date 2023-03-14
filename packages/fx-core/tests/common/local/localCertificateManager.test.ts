@@ -307,6 +307,21 @@ describe("certificate", () => {
         "friendlyname"
       );
     });
+
+    it("trustCertificate error", async () => {
+      sinon.stub(os, "type").returns("Windows_NT");
+      const certManager = new LocalCertificateManager();
+      (certManager as any).waitForUserConfirm = function (): Promise<boolean> {
+        return Promise.reject(new Error("test"));
+      };
+      const cert = {
+        certPath: "certPath",
+        keyPath: "keyPath",
+      } as any;
+      await (certManager as any).trustCertificate(cert, "thumbprint", "friendlyname");
+      chai.assert.isFalse(cert.isTrusted);
+      chai.assert.isDefined(cert.error);
+    });
   });
 });
 

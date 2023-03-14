@@ -1382,9 +1382,9 @@ describe("handlers", () => {
       const phantomMigrationV3Stub = sandbox
         .stub(mockCore, "phantomMigrationV3")
         .resolves(err(error));
-      sinon.stub(localizeUtils, "localize").returns("");
+      sandbox.stub(localizeUtils, "localize").returns("");
       const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
-      sinon.stub(vscode.commands, "executeCommand");
+      sandbox.stub(vscode.commands, "executeCommand");
 
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(

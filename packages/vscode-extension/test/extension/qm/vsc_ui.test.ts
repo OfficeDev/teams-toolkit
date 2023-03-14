@@ -364,7 +364,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command timeout", async function (this: Mocha.Context) {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = {

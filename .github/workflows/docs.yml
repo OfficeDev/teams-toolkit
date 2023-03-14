@@ -26,11 +26,11 @@ jobs:
         run: |
           links=`git grep -hEo "https://aka[a-zA-Z0-9./?=_%:-]*[a-zA-Z0-9]"  | sort -nr | uniq`
 
-          white-list="https://aka.ms/teamsfx-debug-prepare-manifest;"
+          white_list="https://aka.ms/teamsfx-debug-prepare-manifest;"
 
           while IFS= read -r link;
           do
-            if [[ $white-list == *"$link"* ]]; then
+            if [[ $white_list == *"$link"* ]]; then
               echo $link "=>" "white list" >> akas.data
               continue
             fi

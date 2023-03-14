@@ -23,7 +23,7 @@ describe("AzureNode", () => {
   });
 
   it("setSignedIn", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(false);
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(AzureAccountManager.getInstance(), "getSelectedSubscription").returns(
       Promise.resolve({
         subscriptionId: "subscriptionId",

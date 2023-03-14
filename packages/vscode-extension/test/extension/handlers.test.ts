@@ -108,6 +108,10 @@ describe("handlers", () => {
     });
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("getSystemInputs()", () => {
     sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
     const input: Inputs = handlers.getSystemInputs();

@@ -4,7 +4,7 @@
 import { assembleError, err, FxError, LogProvider, ok, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import os from "os";
-import { exec, ExecException, spawn } from "child_process";
+import { exec } from "child_process";
 import { DriverContext } from "../driver/interface/commonArgs";
 import fs from "fs-extra";
 import { DotenvOutput } from "../utils/envUtil";
@@ -78,14 +78,14 @@ export async function executeCommand(
       resolve(ok(["", {}]));
       return;
     }
-    const osList = shell2os[shell];
-    if (!osList.includes(os.platform())) {
-      await logProvider.warning(
-        `Failed to run command: "${command}" on path: "${workingDir}", shell ${shell} can not be executed in os ${os}`
-      );
-      resolve(ok(["", {}]));
-      return;
-    }
+    // const osList = shell2os[shell];
+    // if (!osList.includes(os.platform())) {
+    //   await logProvider.warning(
+    //     `Failed to run command: "${command}" on path: "${workingDir}", shell ${shell} can not be executed in os ${os}`
+    //   );
+    //   resolve(ok(["", {}]));
+    //   return;
+    // }
     await logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
     // if (ui?.runCommand) {
     //   const uiRes = await ui.runCommand({

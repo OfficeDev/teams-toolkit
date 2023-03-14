@@ -52,6 +52,7 @@ describe("Tab Feature", () => {
   let mockedEnvRestore: RestoreFn;
   let writeFileStub: SinonStub;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
@@ -74,6 +75,7 @@ describe("Tab Feature", () => {
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("add react tab", async () => {
@@ -159,7 +161,6 @@ describe("Tab Feature", () => {
     assert.equal(tabState?.[StorageOutputs.indexPath.key], "/");
   });
   it("configure sso blazor tab", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const appSettings = [
       AppSettingConstants.Placeholders.clientId,
       AppSettingConstants.Placeholders.clientSecret,
@@ -190,6 +191,5 @@ describe("Tab Feature", () => {
     assert.isTrue(res.isOk());
     const expectedAppSettings = [clientId, clientSecret, oauthAuthority].join(";");
     assert.equal(writeFileStub.args?.[0]?.[1], expectedAppSettings);
-    mockedEnvRestore();
   });
 });

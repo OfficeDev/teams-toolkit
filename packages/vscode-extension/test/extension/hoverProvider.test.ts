@@ -69,6 +69,7 @@ describe("Manifest template hover", async () => {
   });
 
   it("hover - match", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     const hoverProvider = new ManifestTemplateHoverProvider();
     const position = new vscode.Position(5, 15);
     const cts = new vscode.CancellationTokenSource();

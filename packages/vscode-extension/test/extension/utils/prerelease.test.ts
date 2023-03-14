@@ -37,6 +37,7 @@ describe("versionUtil", () => {
     chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
   });
   beforeEach(() => {
+    sandbox.restore();
     sandbox.stub(PrereleasePage.prototype, "show").resolves();
     context = {
       subscriptions: [],

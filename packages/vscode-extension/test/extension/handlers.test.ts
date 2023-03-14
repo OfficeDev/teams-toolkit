@@ -202,6 +202,35 @@ describe("handlers", () => {
     sendTelemetryEventFunc.restore();
   });
 
+  it("addFileSystemWatcher detect SPFx project", async () => {
+    const workspacePath = "test";
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+    const isV3Enabled = sinon.stub(commonTools, "isV3Enabled").returns(true);
+
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+    } as any;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const sendTelemetryEventFunc = sinon
+      .stub(ExtTelemetry, "sendTelemetryEvent")
+      .callsFake(() => {});
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.equal(createWatcher.callCount, 4);
+    chai.assert.equal(createListener.callCount, 4);
+    chai.assert.isTrue(changeListener.calledTwice);
+    isValidProject.restore();
+    isV3Enabled.restore();
+    createWatcher.restore();
+    createListener.restore();
+    changeListener.restore();
+    sendTelemetryEventFunc.restore();
+  });
+
   it("addFileSystemWatcher in invalid project", async () => {
     const workspacePath = "test";
     const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(false);
@@ -332,6 +361,18 @@ describe("handlers", () => {
       sinon.restore();
     });
 
+    it("addWebpartHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const addWebpart = sinon.spy(handlers.core, "addWebpart");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      await handlers.addWebpart();
+
+      sinon.assert.calledOnce(addWebpart);
+      sinon.restore();
+    });
     it("validateManifestHandler() - app package", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());

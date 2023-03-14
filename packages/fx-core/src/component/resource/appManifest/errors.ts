@@ -76,16 +76,16 @@ export class AppStudioError {
   public static readonly InvalidTeamsAppIdError = {
     name: "InvalidTeamsAppId",
     message: (teamsAppId: string): [string, string] => [
-      getDefaultString("error.teams.InvalidAppIdError", teamsAppId),
-      getLocalizedString("error.teams.InvalidAppIdError", teamsAppId),
+      getDefaultString("error.teamsApp.InvalidAppIdError", teamsAppId),
+      getLocalizedString("error.teamsApp.InvalidAppIdError", teamsAppId),
     ],
   };
 
   public static readonly TeamsAppNotExistsError = {
     name: "TeasmAppNotExists",
     message: (teamsAppId: string): [string, string] => [
-      getDefaultString("error.teams.AppIdNotExistError", teamsAppId),
-      getLocalizedString("error.teams.AppIdNotExistError", teamsAppId),
+      getDefaultString("error.teamsApp.AppIdNotExistError", teamsAppId),
+      getLocalizedString("error.teamsApp.AppIdNotExistError", teamsAppId),
     ],
   };
 

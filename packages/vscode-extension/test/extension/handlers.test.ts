@@ -108,10 +108,6 @@ describe("handlers", () => {
     });
   });
 
-  afterEach(() => {
-    sinon.restore();
-  });
-
   it("getSystemInputs()", () => {
     sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
     const input: Inputs = handlers.getSystemInputs();
@@ -1285,6 +1281,9 @@ describe("handlers", () => {
   });
 
   describe("manifest", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
     it("edit manifest template: local", async () => {
       sinon.restore();
       sinon.stub(commonTools, "isV3Enabled").returns(false);

@@ -47,6 +47,7 @@ describe("npmInstallHandler", () => {
 
     beforeEach(() => {
       sinon.restore();
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(vscode.workspace, "workspaceFolders").value([workspaceFolder]);
       globalStateGetStub = sinon.stub(globalState, "globalStateGet").callsFake(async () => state);
       globalStateUpdateStub = sinon

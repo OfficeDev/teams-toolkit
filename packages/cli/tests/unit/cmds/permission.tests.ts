@@ -70,7 +70,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Status - Happy Path", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: 'false'});
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
@@ -85,7 +85,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Grant - Happy Path", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: 'false'});
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionGrant();
     sandbox.stub(Utils, "isSpfxProject").resolves(ok(false));
     const args = {
@@ -100,7 +100,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Status SPFX - Happy Path", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: 'false'});
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
@@ -114,7 +114,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Grant SPFX - Happy Path", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: 'false'});
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionGrant();
     sandbox.stub(Utils, "isSpfxProject").resolves(ok(true));
     const args = {

@@ -92,7 +92,7 @@ describe("Config Command Tests", function () {
     });
   });
 
-  afterEach(()=> {
+  afterEach(() => {
     mockedEnvRestore();
   });
 

@@ -28,6 +28,7 @@ describe("Config Command Tests", function () {
   let telemetryEvents: string[] = [];
   let logs: string[] = [];
   let decrypted: string[] = [];
+  let mockedEnvRestore: RestoreFn;
   const config = {
     telemetry: "on",
     envCheckerValidateDotnetSdk: "true",
@@ -86,6 +87,13 @@ describe("Config Command Tests", function () {
     telemetryEvents = [];
     logs = [];
     decrypted = [];
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
+  });
+
+  afterEach(()=> {
+    mockedEnvRestore();
   });
 
   it("has configured proper parameters", () => {

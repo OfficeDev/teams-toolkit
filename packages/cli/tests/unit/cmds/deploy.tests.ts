@@ -101,6 +101,7 @@ describe("Deploy Command Tests", function () {
   });
 
   it("Builder Check", () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false"});
     const cmd = new Deploy();
     cmd.builder(yargs);
     expect(options).deep.equals(
@@ -159,6 +160,7 @@ describe("Deploy Command Tests", function () {
   });
 
   it("Deploy Command Running -- aad manifest component", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false"});
     const cmd = new Deploy();
     cmd["params"] = {
       [constants.deployPluginNodeName]: {

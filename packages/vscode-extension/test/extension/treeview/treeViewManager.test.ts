@@ -109,11 +109,11 @@ describe("TreeViewManager", () => {
     ) as CommandsTreeViewProvider;
 
     const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 5);
+    chai.assert.equal(commands.length, 4);
 
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
     await treeViewManager.updateTreeViewsOnSPFxChanged();
 
-    chai.assert.equal(commands.length, 6);
+    chai.assert.equal(commands.length, 5);
   });
 });

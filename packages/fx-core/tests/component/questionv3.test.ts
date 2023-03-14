@@ -393,7 +393,7 @@ describe("question for v3", () => {
 
     const res = (spfxFolderQuestion() as any).default({ projectPath: projectDir });
 
-    assert.equal(res, "\\test\\src");
+    assert.equal(res, "\\test/src");
   });
 
   it("manifestFileQuestion", () => {
@@ -401,7 +401,7 @@ describe("question for v3", () => {
 
     const res = (manifestFileQuestion() as any).default({ projectPath: projectDir });
 
-    assert.equal(res, "\\test\\appPackage\\manifest.json");
+    assert.equal(res, "\\test/appPackage/manifest.json");
   });
 
   it("localManifestFileQuestion", () => {
@@ -409,7 +409,7 @@ describe("question for v3", () => {
 
     const res = (localManifestFileQuestion() as any).default({ projectPath: projectDir });
 
-    assert.equal(res, "\\test\\appPackage\\manifest.local.json");
+    assert.equal(res, "\\test/appPackage/manifest.local.json");
   });
 
   it("InitDebugProceedQuestion.title", async () => {

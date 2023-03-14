@@ -50,12 +50,12 @@ export async function executeCommand(
     if (os.platform() === "win32") {
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
-    const defaultShellMap: any = {
+    const defaultOsToShellMap: any = {
       win32: "powershell",
       darwin: "bash",
       linux: "bash",
     };
-    const shell2os: any = {
+    const shellToOsMap: any = {
       cmd: ["win32"],
       powershell: ["win32"],
       pwsh: ["win32"],
@@ -63,7 +63,7 @@ export async function executeCommand(
       bash: ["linux", "darwin"],
     };
     let run = command;
-    shell = shell ?? defaultShellMap[process.platform];
+    shell = shell ?? defaultOsToShellMap[process.platform];
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
@@ -78,7 +78,7 @@ export async function executeCommand(
       resolve(ok(["", {}]));
       return;
     }
-    // const osList = shell2os[shell];
+    // const osList = shellToOsMap[shell];
     // if (!osList.includes(os.platform())) {
     //   await logProvider.warning(
     //     `Failed to run command: "${command}" on path: "${workingDir}", shell ${shell} can not be executed in os ${os}`

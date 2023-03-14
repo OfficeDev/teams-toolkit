@@ -2022,4 +2022,16 @@ describe("handlers", () => {
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
     });
   });
+
+  it("refreshSPFxTreeOnFileChanged", async () => {
+    const initGlobalVariables = sinon.stub(globalVariables, "initializeGlobalVariables");
+    const updateTreeViewsOnSPFxChanged = sinon
+      .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
+      .resolves();
+
+    await handlers.refreshSPFxTreeOnFileChanged();
+
+    chai.expect(initGlobalVariables.calledOnce).to.be.true;
+    chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
+  });
 });

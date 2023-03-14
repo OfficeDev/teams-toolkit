@@ -9,7 +9,7 @@ import mockFs from "mock-fs";
 import { UserError, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 import { DepsType } from "../../../src/common/deps-checker/depsChecker";
@@ -25,7 +25,7 @@ import {
 } from "../../../src/common/local/localCertificateManager";
 import { environmentManager } from "../../../src/core/environment";
 import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
-
+import { FeatureFlagName } from "../../../src/common/constants";
 chai.use(chaiAsPromised);
 
 describe("LocalEnvManager", () => {
@@ -62,8 +62,9 @@ describe("LocalEnvManager", () => {
   describe("getProjectSettings()", () => {
     const sandbox = sinon.createSandbox();
     let files: Record<string, any> = {};
-
+    let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
       files = {};
       sandbox.restore();
       sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
@@ -80,10 +81,12 @@ describe("LocalEnvManager", () => {
     });
 
     afterEach(() => {
+      mockedEnvRestore();
       sandbox.restore();
     });
 
     it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -99,6 +102,7 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
@@ -124,8 +128,9 @@ describe("LocalEnvManager", () => {
   describe("getLocalSettings()", () => {
     const sandbox = sinon.createSandbox();
     let files: Record<string, any> = {};
-
+    let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
       files = {};
       sandbox.restore();
       sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
@@ -143,9 +148,11 @@ describe("LocalEnvManager", () => {
 
     afterEach(() => {
       sandbox.restore();
+      mockedEnvRestore();
     });
 
     it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -173,6 +180,7 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -189,6 +197,7 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)

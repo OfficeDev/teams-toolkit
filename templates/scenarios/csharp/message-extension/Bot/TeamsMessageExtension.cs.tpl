@@ -194,9 +194,17 @@ public class TeamsMessageExtension : TeamsActivityHandler
             Images = new List<CardImage> { new CardImage("https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png") },
         };
 
+        // By default the link unfurling result is cached in Teams for 30 minutes.
+        // The code has set a cache policy and removed the cache for the app. Learn more here: https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet%2Cadvantages#remove-link-unfurling-cache
+        var action = new CardAction
+        {
+            Type = "setCachePolicy",
+            Value = "{\"type\":\"no-cache\"}",
+        };
+        
         var attachments = new MessagingExtensionAttachment(HeroCard.ContentType, null, heroCard);
-        var result = new MessagingExtensionResult("list", "result", new[] { attachments });
-
+        var suggestedActions = new MessagingExtensionSuggestedAction(new[] { action });
+        var result = new MessagingExtensionResult("list", "result", new[] { attachments }, suggestedActions);
         return Task.FromResult(new MessagingExtensionResponse(result));
     }
 

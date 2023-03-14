@@ -1,0 +1,41 @@
+{
+    "manifestVersion": "1.14",
+    "version": "1.0.0",
+    "id": "${{ TEAMS_APP_ID }}",
+    "packageName": "com.microsoft.teams.extension",
+    "developer": {
+        "name": "Teams App, Inc.",
+        "websiteUrl": "https://www.example.com",
+        "privacyUrl": "https://www.example.com/termofuse",
+        "termsOfUseUrl": "https://www.example.com/privacy"
+    },
+    "icons": {
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
+    },
+    "name": {
+        "short": "${{ CONFIG_TEAMS_APP_NAME }}",
+        "full": "${{ CONFIG_TEAMS_APP_NAME }}"
+    },
+    "description": {
+        "short": "Short description of ${{ CONFIG_TEAMS_APP_NAME }}",
+        "full": "Full description of ${{ CONFIG_TEAMS_APP_NAME }}"
+    },
+    "accentColor": "#FFFFFF",
+    "composeExtensions": [],
+    "staticTabs": [],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": [],
+    "localizationInfo": {
+        "defaultLanguageTag": "en",
+        "additionalLanguages": [
+            {
+                "languageTag": "de",
+                "file": "resources/de.json"
+            }
+        ]
+    }
+}

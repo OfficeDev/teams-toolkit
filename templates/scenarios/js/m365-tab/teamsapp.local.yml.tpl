@@ -2,7 +2,7 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
       name: {%appName%} # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
@@ -21,7 +21,6 @@ registerApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-configureApp:
   - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
@@ -34,6 +33,10 @@ configureApp:
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
+
+  - uses: teamsApp/validateManifest # Validate using manifest schema
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
 
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:

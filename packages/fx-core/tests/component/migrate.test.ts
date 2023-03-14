@@ -11,7 +11,9 @@ import { InputsWithProjectPath, Platform, ProjectSettingsV3 } from "@microsoft/t
 import * as path from "path";
 import * as os from "os";
 import { generateBicepsV3 } from "../../src/core/middleware/projectMigrator";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Migration test for v3", () => {
+  let mockedEnvRestore: RestoreFn;
   it("convertProjectSettingsV2ToV3", async () => {
     const projectSettings = {
       appName: "hj070701",
@@ -124,6 +126,7 @@ describe("Migration test for v3", () => {
   });
 
   it("generateBicepV3", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const settings: ProjectSettingsV3 = {
       appName: "testapp123",
       projectId: "b46390fc-8cff-4842-8ade-56d82c531c68",
@@ -237,5 +240,6 @@ describe("Migration test for v3", () => {
     };
     const res = generateBicepsV3(settings, inputs);
     assert.isTrue((await res).isOk());
+    mockedEnvRestore();
   });
 });

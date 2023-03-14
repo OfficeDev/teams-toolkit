@@ -71,7 +71,7 @@ export class ManifestValidate extends YargsCommand {
 
       if (isV3Enabled()) {
         func.params = {
-          manifestTemplatePath:
+          manifestPath:
             args[ManifestFilePathParamName] ??
             `${rootFolder}/${AppPackageFolderName}/manifest.json`,
         };

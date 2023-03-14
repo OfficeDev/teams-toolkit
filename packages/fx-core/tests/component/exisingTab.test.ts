@@ -28,6 +28,7 @@ describe("Existing Tab test for v3", () => {
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
   let mockedEnvRestore: RestoreFn;
+  let envRestore: RestoreFn;
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_INIT_APP: "true" });
   });
@@ -42,6 +43,7 @@ describe("Existing Tab test for v3", () => {
   });
 
   it("create existing app", async () => {
+    envRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -56,6 +58,7 @@ describe("Existing Tab test for v3", () => {
     assert.equal(context.projectSetting!.appName, appName);
     assert.equal(context.projectPath, projectPath);
     assert.deepEqual(context.projectSetting.components, []);
+    envRestore();
   });
 
   it("create existing app - CLI", async () => {

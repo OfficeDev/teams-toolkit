@@ -4,13 +4,14 @@ import * as path from "path";
 import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
+  DevEnvironmentSetupError,
   NodeVersionNotSupportedError,
   NpmNotFoundError,
   NpmVersionNotSupportedError,
 } from "../error";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
-import { PackageSelectOptionsHelper } from "./question-helper";
+import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -126,5 +127,17 @@ export const spfxPackageSelectQuestion: Question = {
   placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
   dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
     return PackageSelectOptionsHelper.getOptions();
+  },
+  validation: {
+    validFunc: async (input: string): Promise<string | undefined> => {
+      if (input === SPFxVersionOptionIds.globalPackage) {
+        const hasPackagesInstalled = PackageSelectOptionsHelper.checkGlobalPackages();
+        if (!hasPackagesInstalled) {
+          throw DevEnvironmentSetupError();
+        }
+      }
+
+      return undefined;
+    },
   },
 };

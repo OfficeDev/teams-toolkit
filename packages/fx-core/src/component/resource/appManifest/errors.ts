@@ -76,16 +76,16 @@ export class AppStudioError {
   public static readonly InvalidTeamsAppIdError = {
     name: "InvalidTeamsAppId",
     message: (teamsAppId: string): [string, string] => [
-      getDefaultString("driver.teamsApp.update.invalidTeamsAppId", teamsAppId),
-      getLocalizedString("driver.teamsApp.update.invalidTeamsAppId", teamsAppId),
+      getDefaultString("error.teams.InvalidAppIdError", teamsAppId),
+      getLocalizedString("error.teams.InvalidAppIdError", teamsAppId),
     ],
   };
 
   public static readonly TeamsAppNotExistsError = {
     name: "TeasmAppNotExists",
     message: (teamsAppId: string): [string, string] => [
-      getDefaultString("driver.teamsApp.update.notExistsError", teamsAppId),
-      getLocalizedString("driver.teamsApp.update.notExistsError", teamsAppId),
+      getDefaultString("error.teams.AppIdNotExistError", teamsAppId),
+      getLocalizedString("error.teams.AppIdNotExistError", teamsAppId),
     ],
   };
 

@@ -23,7 +23,7 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession, Step } from "../commonUtils";
-import { ngrokTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
+import { baseTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -69,7 +69,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     BaseTunnelTaskTerminal.tunnelTaskTerminals.set(this.taskTerminalId, this);
 
     this.progressHandler = new ProgressHandler(
-      ngrokTunnelDisplayMessages.taskName,
+      baseTunnelDisplayMessages.taskName,
       stepNumber,
       "terminal"
     );
@@ -129,25 +129,25 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   protected async outputStartMessage(tunnelDisplayMessages: TunnelDisplayMessages): Promise<void> {
-    VsCodeLogInstance.info(tunnelDisplayMessages.title);
+    VsCodeLogInstance.info(tunnelDisplayMessages.title());
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       tunnelDisplayMessages.checkNumber(this.step.totalSteps)
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
-    this.writeEmitter.fire(`${tunnelDisplayMessages.startMessage}\r\n\r\n`);
+    this.writeEmitter.fire(`${tunnelDisplayMessages.startTerminalMessage}\r\n\r\n`);
 
     await this.progressHandler.start();
   }
 
   protected async outputSuccessSummary(
     tunnelDisplayMessages: TunnelDisplayMessages,
-    ngrokTunnel: EndpointInfo,
+    tunnelInfo: EndpointInfo,
     envs: OutputInfo
   ): Promise<void> {
     const duration = this.getDurationInSeconds();
-    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary);
+    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary());
     VsCodeLogInstance.outputChannel.appendLine("");
 
     for (const outputMessage of this.outputMessageList) {
@@ -156,8 +156,8 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
 
     VsCodeLogInstance.outputChannel.appendLine(
       `${doctorConstant.Tick} ${tunnelDisplayMessages.successSummary(
-        ngrokTunnel.src,
-        ngrokTunnel.dest,
+        tunnelInfo.src,
+        tunnelInfo.dest,
         envs.file,
         envs.keys
       )}`
@@ -173,12 +173,14 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     }
 
     this.writeEmitter.fire(
-      `\r\n${tunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dest)}\r\n`
+      `\r\n${tunnelDisplayMessages.terminalSuccessSummary(
+        tunnelInfo.src,
+        tunnelInfo.dest,
+        envs.file,
+        envs.keys
+      )}\r\n`
     );
-    if (envs.file !== undefined) {
-      this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.saveEnvs(envs.file, envs.keys)}\r\n`);
-    }
-    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.successMessage}\r\n\r\n`);
+    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.successTerminalMessage}\r\n\r\n`);
 
     await this.progressHandler.end(true);
 
@@ -198,8 +200,8 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     tunnelDisplayMessages: TunnelDisplayMessages,
     error?: any
   ): Promise<void> {
-    const fxError = assembleError(error ?? new Error(tunnelDisplayMessages.errorMessage));
-    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary);
+    const fxError = error ? assembleError(error) : TunnelError.StartTunnelError();
+    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary());
 
     VsCodeLogInstance.outputChannel.appendLine("");
     for (const outputMessage of this.outputMessageList) {
@@ -214,7 +216,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
-    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.errorMessage}\r\n`);
+    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.errorTerminalMessage}\r\n`);
 
     await this.progressHandler.end(false);
 
@@ -284,5 +286,15 @@ export const TunnelError = Object.freeze({
       ExtensionErrors.TunnelEnvError,
       util.format(getDefaultString("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? ""),
       util.format(localize("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? "")
+    ),
+  StartTunnelError: (error?: any) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.StartTunnelError,
+      util.format(
+        getDefaultString("teamstoolkit.localDebug.startTunnelError"),
+        error?.message ?? ""
+      ),
+      util.format(localize("teamstoolkit.localDebug.startTunnelError"), error?.message ?? "")
     ),
 });

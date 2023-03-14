@@ -12,8 +12,9 @@ import os from "os";
 import * as path from "path";
 
 import { LocalCertificateManager } from "../../../src/common/local/localCertificateManager";
+import * as localizeUtils from "../../../src/common/localizeUtils";
 import * as ps from "../../../src/common/local/process";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, FxError, Result, UserInteraction, ok } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 
@@ -215,6 +216,96 @@ describe("certificate", () => {
         /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
       );
       chai.assert.equal(res.isTrusted, true);
+    });
+  });
+
+  describe("platform specific", () => {
+    const fakeHomeDir = path.resolve(workspaceFolder, ".home/");
+    const files: Record<string, any> = {};
+    let certManager: LocalCertificateManager;
+
+    beforeEach(() => {
+      sinon.restore();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("waitForUserConfirm once", async () => {
+      sinon.stub(localizeUtils, "getLocalizedString").callsFake((key, ...params) => {
+        if (key === "debug.install") {
+          return "install";
+        }
+
+        return "empty";
+      });
+      const ui = {
+        showMessage(
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> {
+          return Promise.resolve(ok("install"));
+        },
+      } as UserInteraction;
+      certManager = new LocalCertificateManager(ui);
+      const userConfirm = await (certManager as any).waitForUserConfirm();
+      chai.assert.isTrue(userConfirm);
+    });
+
+    it("waitForUserConfirm twice", async () => {
+      sinon.stub(localizeUtils, "getLocalizedString").callsFake((key, ...params) => {
+        if (key === "debug.install") {
+          return "install";
+        } else if (key === "core.provision.learnMore") {
+          return "learnmore";
+        }
+
+        return "empty";
+      });
+      let count = 0;
+      const ui = {
+        openUrl(link: string): Promise<Result<boolean, FxError>> {
+          return Promise.resolve(ok(true));
+        },
+        showMessage(
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> {
+          count++;
+          return Promise.resolve(ok(count > 1 ? "install" : "learnmore"));
+        },
+      } as UserInteraction;
+      certManager = new LocalCertificateManager(ui);
+      const userConfirm = await (certManager as any).waitForUserConfirm();
+      chai.assert.isTrue(userConfirm);
+    });
+
+    it("trustCertificateWindows", async () => {
+      sinon.stub(ps, "execPowerShell").callsFake(async (command: string) => {
+        if (command.startsWith("(Get-ChildItem")) {
+          // Command: `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`
+          return "friendlyname";
+        } else if (command.startsWith("Import-Certificate")) {
+          // Command: `Import-Certificate -FilePath '${localCert.certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root`
+          return "import";
+        } else {
+          return "";
+        }
+      });
+      const certManager = new LocalCertificateManager();
+      await (certManager as any).trustCertificateWindows(
+        {
+          certPath: "certPath",
+          keyPath: "keyPath",
+        },
+        "thumbprint",
+        "friendlyname"
+      );
     });
   });
 });

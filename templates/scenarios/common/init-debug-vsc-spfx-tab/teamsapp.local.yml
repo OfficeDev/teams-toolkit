@@ -9,7 +9,7 @@ provision:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
     
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.template.local.json # Path to manifest template
 

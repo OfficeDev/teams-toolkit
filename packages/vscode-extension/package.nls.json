@@ -355,8 +355,6 @@
     "teamstoolkit.guides.addBot.label": "Configure Bot Capability",
     "teamstoolkit.guides.addME.detail": "Allow the users to interact with your web service through buttons and forms.",
     "teamstoolkit.guides.addME.label": "Configure Messaging Extension Capability",
-    "teamstoolkit.guides.addSpfxTab.detail": "Teams-aware web pages with SharePoint Framework embedded in Microsoft Teams.",
-    "teamstoolkit.guides.addSpfxTab.label": "Configure SPFx-based Tab Capability",
     "teamstoolkit.guides.addOutlookAddin.detail": "Outlook add-ins are web apps that extend the functionality of Outlook.",
     "teamstoolkit.guides.addOutlookAddin.label": "Configure Outlook add-in Capability",
     "teamstoolkit.guides.addSso.detail": "Develop a single sign-on feature for the Teams Launch pages and Bot capability.",

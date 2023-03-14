@@ -30,6 +30,7 @@ import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isSpfxDecoupleEnabled } from "../../common/featureFlags";
+import { SPFxVersionOptionIds } from "../resource/spfx/utils/question-helper";
 
 export class SPFxGenerator {
   @hooks([
@@ -69,6 +70,9 @@ export class SPFxGenerator {
       ui,
       inputs.stage == Stage.addWebpart
     );
+    const shouldInstallLocally =
+      inputs[SPFXQuestionNames.use_global_package_or_install_local] ===
+      SPFxVersionOptionIds.installLocally;
     try {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
@@ -106,6 +110,29 @@ export class SPFxGenerator {
             }
           }
         }
+      } else if (shouldInstallLocally) {
+        const latestYoInstalled = await yoChecker.isLatestInstalled();
+        const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled();
+
+        if (!latestYoInstalled || !latestGeneratorInstalled) {
+          await progressHandler?.next(
+            getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
+          );
+
+          if (!latestYoInstalled) {
+            const yoRes = await yoChecker.ensureLatestDependency(context);
+            if (yoRes.isErr()) {
+              throw DependencyInstallError("yo");
+            }
+          }
+
+          if (!latestGeneratorInstalled) {
+            const spGeneratorRes = await spGeneratorChecker.ensureLatestDependency(context);
+            if (spGeneratorRes.isErr()) {
+              throw DependencyInstallError("sharepoint generator");
+            }
+          }
+        }
       }
 
       await progressHandler?.next(
@@ -121,21 +148,23 @@ export class SPFxGenerator {
 
       const yoEnv: NodeJS.ProcessEnv = process.env;
       if (yoEnv.PATH) {
-        yoEnv.PATH = isYoCheckerEnabled()
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-              process.env.PATH ?? ""
-            }`
-          : process.env.PATH;
+        yoEnv.PATH =
+          isYoCheckerEnabled() || shouldInstallLocally
+            ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+                process.env.PATH ?? ""
+              }`
+            : process.env.PATH;
       } else {
-        yoEnv.Path = isYoCheckerEnabled()
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-              process.env.Path ?? ""
-            }`
-          : process.env.Path;
+        yoEnv.Path =
+          isYoCheckerEnabled() || shouldInstallLocally
+            ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+                process.env.Path ?? ""
+              }`
+            : process.env.Path;
       }
 
       const args = [
-        isGeneratorCheckerEnabled()
+        isGeneratorCheckerEnabled() || shouldInstallLocally
           ? spGeneratorChecker.getSpGeneratorPath()
           : "@microsoft/sharepoint",
         "--skip-install",

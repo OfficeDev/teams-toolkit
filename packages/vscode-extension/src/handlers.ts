@@ -3642,20 +3642,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                 },
               ],
             },
-            {
-              id: "addSpfxTab",
-              label: `${localize("teamstoolkit.guides.addSpfxTab.label")}`,
-              detail: localize("teamstoolkit.guides.addSpfxTab.detail"),
-              groupName: localize("teamstoolkit.guide.capability"),
-              data: "https://aka.ms/teamsfx-add-spfx-tab",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
             ...(isOfficeAddinEnabled()
               ? [
                   {

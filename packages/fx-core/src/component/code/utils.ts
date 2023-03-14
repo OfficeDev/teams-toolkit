@@ -55,13 +55,13 @@ export async function executeCommand(
       darwin: "bash",
       linux: "bash",
     };
-    const shellToOsMap: any = {
-      cmd: ["win32"],
-      powershell: ["win32"],
-      pwsh: ["win32"],
-      sh: ["linux", "darwin"],
-      bash: ["linux", "darwin"],
-    };
+    // const shellToOsMap: any = {
+    //   cmd: ["win32"],
+    //   powershell: ["win32"],
+    //   pwsh: ["win32"],
+    //   sh: ["linux", "darwin"],
+    //   bash: ["linux", "darwin"],
+    // };
     let run = command;
     shell = shell ?? defaultOsToShellMap[process.platform];
     let appendFile: string | undefined = undefined;
@@ -123,14 +123,14 @@ export async function executeCommand(
       }
     );
     cp.stdout?.on("data", (data: string | Buffer) => {
-      TOOLS.logProvider.info(maskSecretValues(data as string));
+      logProvider.info(maskSecretValues(data as string));
       if (appendFile) {
         fs.appendFileSync(appendFile, data);
       }
       outputStrings.push(data as string);
     });
     cp.stderr?.on("data", (data: string | Buffer) => {
-      TOOLS.logProvider.error(maskSecretValues(data as string));
+      logProvider.error(maskSecretValues(data as string));
       if (appendFile) {
         fs.appendFileSync(appendFile, data);
       }

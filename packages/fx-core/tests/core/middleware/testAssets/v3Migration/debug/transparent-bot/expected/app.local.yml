@@ -26,7 +26,7 @@ provision:
         - name: m365extensions
 
 configureApp:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
 

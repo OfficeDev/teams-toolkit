@@ -95,6 +95,7 @@ describe("handlers", () => {
     });
 
     it("Valid project", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
       const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
@@ -275,6 +276,7 @@ describe("handlers", () => {
     });
 
     it("createNewProjectHandler()", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const clock = sinon.useFakeTimers();
 
       sinon.stub(handlers, "core").value(new MockCore());
@@ -341,6 +343,7 @@ describe("handlers", () => {
     });
 
     it("buildPackageHandler()", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -353,6 +356,7 @@ describe("handlers", () => {
     });
 
     it("validateManifestHandler()", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -571,6 +575,7 @@ describe("handlers", () => {
     });
 
     it("openConfigStateFile() - local", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(localizeUtils, "localize").callsFake((key: string) => {
         return key;
       });
@@ -611,6 +616,7 @@ describe("handlers", () => {
     });
 
     it("openConfigStateFile() - env - FileNotFound", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -748,6 +754,7 @@ describe("handlers", () => {
     });
 
     it("deployAadManifest happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const sandbox = sinon.createSandbox();
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -763,6 +770,7 @@ describe("handlers", () => {
     });
 
     it("localDebug", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
@@ -790,6 +798,7 @@ describe("handlers", () => {
     });
 
     it("publishApplication", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -803,6 +812,7 @@ describe("handlers", () => {
     });
 
     it("createEnv", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -983,6 +993,7 @@ describe("handlers", () => {
       sinon.restore();
     });
     it("successfully update secret", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -1015,6 +1026,7 @@ describe("handlers", () => {
     });
 
     it("failed to update due to corrupted secret", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -1053,6 +1065,7 @@ describe("handlers", () => {
     });
     it("grant permission", async () => {
       sinon.restore();
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1095,6 +1108,7 @@ describe("handlers", () => {
     });
 
     it("grant permission with empty tenant id", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1119,6 +1133,7 @@ describe("handlers", () => {
     });
 
     it("list collaborators", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1136,6 +1151,7 @@ describe("handlers", () => {
     });
 
     it("list collaborators with empty tenant id", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1276,8 +1292,12 @@ describe("handlers", () => {
   });
 
   describe("manifest", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
     it("edit manifest template: local", async () => {
       sinon.restore();
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
         .stub(vscode.workspace, "openTextDocument")
@@ -1297,6 +1317,7 @@ describe("handlers", () => {
 
     it("edit manifest template: remote", async () => {
       sinon.restore();
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
         .stub(vscode.workspace, "openTextDocument")
@@ -1375,9 +1396,9 @@ describe("handlers", () => {
       const phantomMigrationV3Stub = sandbox
         .stub(mockCore, "phantomMigrationV3")
         .resolves(err(error));
-      sinon.stub(localizeUtils, "localize").returns("");
+      sandbox.stub(localizeUtils, "localize").returns("");
       const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
-      sinon.stub(vscode.commands, "executeCommand");
+      sandbox.stub(vscode.commands, "executeCommand");
 
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
@@ -1409,6 +1430,7 @@ describe("handlers", () => {
   });
 
   it("deployAadAppManifest", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1434,6 +1456,7 @@ describe("handlers", () => {
   });
 
   it("showError", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     sinon.stub(localizeUtils, "localize").returns("");
     const showErrorMessageStub = sinon
       .stub(vscode.window, "showErrorMessage")
@@ -1727,6 +1750,7 @@ describe("handlers", () => {
     });
 
     it("publish in developer portal", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon
@@ -1749,6 +1773,7 @@ describe("handlers", () => {
     });
 
     it("select file error", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(UserCancelError));
@@ -1772,6 +1797,7 @@ describe("handlers", () => {
     });
 
     it("open link with loginHint", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(M365TokenInstance, "getStatus").resolves(
@@ -1794,6 +1820,7 @@ describe("handlers", () => {
     });
 
     it("open link without loginHint", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon.stub(M365TokenInstance, "getStatus").resolves(
         ok({

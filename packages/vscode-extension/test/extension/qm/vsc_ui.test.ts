@@ -24,7 +24,7 @@ import {
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
-
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { sleep } from "../../../src/utils/commonUtils";
@@ -59,6 +59,7 @@ describe("UI Unit Tests", async () => {
 
   describe("Select Folder", () => {
     it("has returns default folder", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
         name: "name",
@@ -104,6 +105,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
         name: "name",
@@ -147,6 +149,7 @@ describe("UI Unit Tests", async () => {
 
   describe("Select File", () => {
     it("has returns default file", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -187,6 +190,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -228,6 +232,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns item in possible files", async function (this: Mocha.Context) {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -330,6 +335,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command successfully", async function (this: Mocha.Context) {
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = stubInterface<Terminal>();
@@ -358,6 +364,7 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command timeout", async function (this: Mocha.Context) {
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = {

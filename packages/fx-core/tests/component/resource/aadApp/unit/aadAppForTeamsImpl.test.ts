@@ -26,6 +26,7 @@ import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/ut
 import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import { ConfigKeys } from "../../../../../src/component/resource/aadApp/constants";
 import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/component/constants";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -53,7 +54,7 @@ const ctx = new MockedV2Context(projectSettings) as ContextV3;
 describe("AadAppForTeamsPlugin: CI", () => {
   let plugin: AadAppForTeamsImpl;
   let context: PluginContext;
-
+  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
     plugin = new AadAppForTeamsImpl();
     sinon.stub(AadAppClient, "createAadApp").resolves();
@@ -76,9 +77,11 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   afterEach(() => {
     sinon.restore();
+    mockedEnvRestore();
   });
 
   it("provision: tab", async function () {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     context = await TestHelper.pluginContext(new Map(), true, false, false);
     context.m365TokenProvider = mockTokenProviderM365();
 
@@ -94,6 +97,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
   });
 
   it("provision: skip provision", async function () {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     context = await TestHelper.pluginContext(new Map(), true, false, false);
     context.m365TokenProvider = mockTokenProviderM365();
     mockSkipFlag(context);
@@ -103,6 +107,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
   });
 
   it("provision: tab and bot", async function () {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.m365TokenProvider = mockTokenProviderM365();
 
@@ -118,6 +123,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
   });
 
   it("provision: none input and fix", async function () {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     context = await TestHelper.pluginContext(new Map(), false, false, false);
     context.m365TokenProvider = mockTokenProviderM365();
 

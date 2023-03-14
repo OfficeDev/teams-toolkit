@@ -19,7 +19,7 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -69,6 +69,7 @@ describe("Core basic APIs", () => {
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
     sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
@@ -77,6 +78,7 @@ describe("Core basic APIs", () => {
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
+    mockedEnvRestore();
   });
   describe("create from new", async () => {
     it("CLI with folder input", async () => {
@@ -97,6 +99,7 @@ describe("Core basic APIs", () => {
     });
 
     it("VSCode without customized default root directory", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       appName = randomAppName();
       const core = new FxCore(tools);
       const inputs: Inputs = {
@@ -122,6 +125,7 @@ describe("Core basic APIs", () => {
     });
 
     it("VSCode without customized default root directory - new UI", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       appName = randomAppName();
       const core = new FxCore(tools);
       const inputs: Inputs = {
@@ -148,6 +152,7 @@ describe("Core basic APIs", () => {
   });
 
   it("scaffold and createEnv, activateEnv", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     appName = randomAppName();
     const core = new FxCore(tools);
     const inputs: Inputs = {

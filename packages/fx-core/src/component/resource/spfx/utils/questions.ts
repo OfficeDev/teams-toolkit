@@ -129,6 +129,7 @@ export const spfxPackageSelectQuestion: Question = {
   dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
     return PackageSelectOptionsHelper.getOptions();
   },
+  default: SPFxVersionOptionIds.installLocally,
   validation: {
     validFunc: async (input: string): Promise<string | undefined> => {
       if (input === SPFxVersionOptionIds.globalPackage) {

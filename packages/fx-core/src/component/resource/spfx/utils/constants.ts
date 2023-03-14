@@ -33,6 +33,7 @@ export class Constants {
   public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";
   public static readonly YeomanPackageName = "yo";
   public static readonly DEFAULT_WEBPART_NAME = "helloworld";
+  public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
 }
 
 export class PlaceHolders {

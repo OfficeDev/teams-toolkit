@@ -17,7 +17,12 @@ import fs from "fs-extra";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
-import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
+import {
+  DependencyInstallError,
+  LatestPackageInstallError,
+  ScaffoldError,
+  YoGeneratorScaffoldError,
+} from "../resource/spfx/error";
 import { Utils } from "../resource/spfx/utils/utils";
 import { camelCase } from "lodash";
 import { Constants, ScaffoldProgressMessage } from "../resource/spfx/utils/constants";
@@ -122,14 +127,14 @@ export class SPFxGenerator {
           if (!latestYoInstalled) {
             const yoRes = await yoChecker.ensureLatestDependency(context);
             if (yoRes.isErr()) {
-              throw DependencyInstallError("yo");
+              throw LatestPackageInstallError();
             }
           }
 
           if (!latestGeneratorInstalled) {
             const spGeneratorRes = await spGeneratorChecker.ensureLatestDependency(context);
             if (spGeneratorRes.isErr()) {
-              throw DependencyInstallError("sharepoint generator");
+              throw LatestPackageInstallError();
             }
           }
         }
@@ -186,16 +191,24 @@ export class SPFxGenerator {
       if (solutionName) {
         args.push("--solution-name", solutionName);
       }
-      await cpUtils.executeCommand(
-        isAddSPFx ? inputs["spfxFolder"] : destinationPath,
-        context.logProvider,
-        {
-          timeout: 2 * 60 * 1000,
-          env: yoEnv,
-        },
-        "yo",
-        ...args
-      );
+      
+      try {
+        await cpUtils.executeCommand(
+          isAddSPFx ? inputs["spfxFolder"] : destinationPath,
+          context.logProvider,
+          {
+            timeout: 2 * 60 * 1000,
+            env: yoEnv,
+          },
+          "yo",
+          ...args
+        );
+      } catch (yoError) {
+        if ((yoError as any).message) {
+          context.logProvider.error((yoError as any).message);
+        }
+        throw YoGeneratorScaffoldError();
+      }
 
       const newPath = path.join(destinationPath, "src");
       if (!isAddSPFx) {
@@ -248,34 +261,6 @@ export class SPFxGenerator {
       await progressHandler?.end(true);
       return ok(componentId);
     } catch (error) {
-      if ((error as any).name === "DependencyInstallFailed") {
-        const globalYoVersion = Utils.getPackageVersion("yo");
-        const globalGenVersion = Utils.getPackageVersion("@microsoft/generator-sharepoint");
-        const yoInfo = YoChecker.getDependencyInfo();
-        const genInfo = GeneratorChecker.getDependencyInfo();
-        const yoMessage =
-          globalYoVersion === undefined
-            ? "    yo not installed"
-            : `    globally installed yo@${globalYoVersion}`;
-        const generatorMessage =
-          globalGenVersion === undefined
-            ? "    @microsoft/generator-sharepoint not installed"
-            : `    globally installed @microsoft/generator-sharepoint@${globalYoVersion}`;
-        context.logProvider?.error(
-          `We've encountered some issues when trying to install prerequisites under HOME/.fx folder.  Learn how to remediate by going to this link(aka.ms/teamsfx-spfx-help) and following the steps applicable to your system: \n ${yoMessage} \n ${generatorMessage}`
-        );
-        context.logProvider?.error(
-          `Teams Toolkit recommends using ${yoInfo.displayName} ${genInfo.displayName}`
-        );
-      }
-      if (
-        (error as any).message &&
-        (error as any).message.includes("'yo' is not recognized as an internal or external command")
-      ) {
-        context.logProvider?.error(
-          "NPM v6.x with Node.js v12.13.0+ (Erbium) or Node.js v14.15.0+ (Fermium) is recommended for spfx scaffolding and later development. You can use correct version and try again."
-        );
-      }
       await progressHandler?.end(false);
       return err(ScaffoldError(error));
     }

@@ -249,6 +249,9 @@ describe("tools", () => {
     });
 
     it("happy path", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       const projectSettings: ProjectSettings = {
         appName: "app-name",
         projectId: "project-id",
@@ -293,6 +296,7 @@ describe("tools", () => {
       chai.assert.equal(result!.isFromSample, projectSettings.isFromSample);
       chai.assert.equal(result!.isM365, projectSettings.isM365);
       chai.assert.equal(result!.hostType, projectSettings.solutionSettings?.hostType);
+      restore();
     });
 
     it("happy path V3", async () => {
@@ -433,6 +437,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Can recognize normal video filter project", async () => {
       // Arrange
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       const manifest = {
         meetingExtensionDefinition: {
           videoFiltersConfigurationUrl: "https://a.b.c/",
@@ -449,9 +456,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.true;
+      restore();
     });
 
     it("Should not recognize tab project as video filter", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       // Arrange
       const manifest = {
         $schema:
@@ -514,6 +525,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
+      restore();
     });
   });
 

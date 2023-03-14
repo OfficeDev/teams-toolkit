@@ -107,6 +107,27 @@ export class CreateAppPackageDriver implements StepDriver {
       return err(error);
     }
 
+    // pre-check existence
+    if (
+      manifest.localizationInfo &&
+      manifest.localizationInfo.additionalLanguages &&
+      manifest.localizationInfo.additionalLanguages.length > 0
+    ) {
+      for (const language of manifest.localizationInfo.additionalLanguages) {
+        const file = language.file;
+        const fileName = `${appDirectory}/${file}`;
+        if (!(await fs.pathExists(fileName))) {
+          return err(
+            new FileNotFoundError(
+              actionName,
+              fileName,
+              "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+            )
+          );
+        }
+      }
+    }
+
     const zip = new AdmZip();
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
 
@@ -122,21 +143,12 @@ export class CreateAppPackageDriver implements StepDriver {
       manifest.localizationInfo.additionalLanguages &&
       manifest.localizationInfo.additionalLanguages.length > 0
     ) {
-      await Promise.all(
-        manifest.localizationInfo.additionalLanguages.map(async function (language: any) {
-          const file = language.file;
-          const fileName = `${appDirectory}/${file}`;
-          if (!(await fs.pathExists(fileName))) {
-            throw new FileNotFoundError(
-              actionName,
-              fileName,
-              "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
-            );
-          }
-          const dir = path.dirname(file);
-          zip.addLocalFile(fileName, dir === "." ? "" : dir);
-        })
-      );
+      for (const language of manifest.localizationInfo.additionalLanguages) {
+        const file = language.file;
+        const fileName = `${appDirectory}/${file}`;
+        const dir = path.dirname(file);
+        zip.addLocalFile(fileName, dir === "." ? "" : dir);
+      }
     }
 
     zip.writeZip(zipFileName);

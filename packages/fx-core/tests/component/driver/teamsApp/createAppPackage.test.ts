@@ -53,6 +53,32 @@ describe("teamsApp/createAppPackage", async () => {
       chai.assert.isTrue(result.error instanceof FileNotFoundError);
     }
   });
+  it("should throw error if file not exists case 3", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath: "fakepath",
+      outputZipPath: "fakePath",
+      outputJsonPath: "fakePath",
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.localizationInfo = {
+      additionalLanguages: [{ file: "aaa", languageTag: "zh" }],
+      defaultLanguageTag: "en",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(true)
+      .onThirdCall()
+      .resolves(false);
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof FileNotFoundError);
+    }
+  });
   it("invalid param error", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath: "",

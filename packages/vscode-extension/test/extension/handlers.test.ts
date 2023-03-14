@@ -205,12 +205,13 @@ describe("handlers", () => {
 
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
-    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const isV3Enabled = sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
       onDidChange: () => ({ dispose: () => undefined }),
+      onDidDelete: () => ({ dispose: () => undefined }),
     } as any;
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
     const createListener = sinon.stub(watcher, "onDidCreate").resolves();
@@ -224,12 +225,7 @@ describe("handlers", () => {
     chai.assert.equal(createWatcher.callCount, 4);
     chai.assert.equal(createListener.callCount, 4);
     chai.assert.isTrue(changeListener.calledTwice);
-    isValidProject.restore();
-    isV3Enabled.restore();
-    createWatcher.restore();
-    createListener.restore();
-    changeListener.restore();
-    sendTelemetryEventFunc.restore();
+    sinon.restore();
   });
 
   it("addFileSystemWatcher in invalid project", async () => {

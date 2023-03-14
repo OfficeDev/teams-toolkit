@@ -101,6 +101,9 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
@@ -156,6 +159,9 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check with Error", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
@@ -186,6 +192,9 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command with interactive question", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {

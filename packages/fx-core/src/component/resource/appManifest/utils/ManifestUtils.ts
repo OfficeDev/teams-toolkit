@@ -17,6 +17,7 @@ import isUUID from "validator/lib/isUUID";
 import { v4 } from "uuid";
 import "reflect-metadata";
 import stripBom from "strip-bom";
+import AdmZip from "adm-zip";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { AppStudioError } from "../errors";
@@ -39,6 +40,7 @@ import {
   STATIC_TABS_TPL_V3,
   WEB_APPLICATION_INFO_V3,
   manifestStateDataRegex,
+  Constants,
 } from "../constants";
 import {
   BotScenario,
@@ -601,6 +603,22 @@ export class ManifestUtils {
       manifest.staticTabs.filter((tab) => tab.contentUrl && !tab.contentUrl.includes("{{state."))
         .length > 0;
     return ok(hasExistingTabInManifest && !hasTabInProjectSettings);
+  }
+
+  extractManifestFromArchivedFile(archivedFile: Buffer): Result<TeamsAppManifest, FxError> {
+    const zipEntries = new AdmZip(archivedFile).getEntries();
+    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+    if (!manifestFile) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+        )
+      );
+    }
+    const manifestString = manifestFile.getData().toString();
+    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
+    return ok(manifest);
   }
 }
 

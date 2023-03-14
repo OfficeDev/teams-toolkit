@@ -91,7 +91,6 @@ export class SPFxGenerator {
 
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
-
       if (!isSpfxDecoupleEnabled()) {
         const yoInstalled = await yoChecker.isInstalled();
         const generatorInstalled = await spGeneratorChecker.isInstalled();
@@ -191,7 +190,7 @@ export class SPFxGenerator {
       if (solutionName) {
         args.push("--solution-name", solutionName);
       }
-      
+
       try {
         await cpUtils.executeCommand(
           isAddSPFx ? inputs["spfxFolder"] : destinationPath,

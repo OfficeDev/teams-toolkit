@@ -694,7 +694,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
 
     it("Multi env enabled and both new files and old files exist", async () => {
-      const restore = mockedEnv({TEAMSFX_V3: 'false'})
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       oldExist = true;
       newExist = true;
       const result = getProjectId("real");
@@ -702,8 +702,8 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       restore();
     });
 
-    it("Multi env enabled and only new files exist", async () => {\
-      const restore = mockedEnv({TEAMSFX_V3: 'false'})
+    it("Multi env enabled and only new files exist", async () => {
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       oldExist = false;
       newExist = true;
       const result = getProjectId("real");
@@ -809,14 +809,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
 
     it("isM365 == true", async () => {
-      const restore = mockedEnv({ TEAMSFX_V3 : "false"})
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       const result = getIsM365("real.isM365=true");
       expect(result).equals("true");
       restore();
     });
 
     it("isM365 == false", async () => {
-      const restore = mockedEnv({ TEAMSFX_V3: 'false'});
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       const result = getIsM365("real.isM365=false");
       expect(result).equals("false");
       restore();

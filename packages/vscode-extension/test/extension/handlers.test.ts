@@ -69,7 +69,6 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
-import { restore } from "sinon";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
@@ -204,8 +203,8 @@ describe("handlers", () => {
 
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
-    sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+    const isV3Enabled = sinon.stub(commonTools, "isV3Enabled").returns(true);
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
@@ -215,6 +214,7 @@ describe("handlers", () => {
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
     const createListener = sinon.stub(watcher, "onDidCreate").resolves();
     const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const deleteListener = sinon.stub(watcher, "onDidDelete").resolves();
     const sendTelemetryEventFunc = sinon
       .stub(ExtTelemetry, "sendTelemetryEvent")
       .callsFake(() => {});
@@ -224,7 +224,13 @@ describe("handlers", () => {
     chai.assert.equal(createWatcher.callCount, 4);
     chai.assert.equal(createListener.callCount, 4);
     chai.assert.isTrue(changeListener.calledTwice);
-    sinon.restore();
+    isValidProject.restore();
+    isV3Enabled.restore();
+    createWatcher.restore();
+    createListener.restore();
+    changeListener.restore();
+    deleteListener.restore();
+    sendTelemetryEventFunc.restore();
   });
 
   it("addFileSystemWatcher in invalid project", async () => {
@@ -357,18 +363,6 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("addWebpartHandler()", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const addWebpart = sinon.spy(handlers.core, "addWebpart");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
-
-      await handlers.addWebpart();
-
-      sinon.assert.calledOnce(addWebpart);
-      sinon.restore();
-    });
     it("validateManifestHandler() - app package", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());

@@ -74,6 +74,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.GrantPermission;
       case Stage.publishInDeveloperPortal:
         return TelemetryEvent.PublishInDeveloperPortal;
+      case Stage.addWebpart:
+        return TelemetryEvent.AddWebpart;
       default:
         return undefined;
     }

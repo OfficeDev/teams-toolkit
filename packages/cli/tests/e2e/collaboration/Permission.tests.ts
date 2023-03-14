@@ -3,7 +3,6 @@
 
 /**
  * @author Bowen Song <bowen.song@microsoft.com>
- * @owner Bowen Song <bowen.song@microsoft.com>
  */
 
 import { expect } from "chai";

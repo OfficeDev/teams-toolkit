@@ -25,8 +25,8 @@ describe("TreeViewManager", () => {
 
     const lifecycleTreeView = treeViewManager.getTreeView("teamsfx-lifecycle");
     chai.assert.isDefined(lifecycleTreeView);
-    chai.assert.equal(lifecycleTreeView.commands.length, 5);
-    chai.assert.equal(lifecycleTreeView.commands[3].commandId, "fx-extension.build");
+    chai.assert.equal(lifecycleTreeView.commands.length, 3);
+    chai.assert.equal(lifecycleTreeView.commands[0].commandId, "fx-extension.provision");
   });
 
   it("registerTreeViews in v3", async () => {
@@ -38,7 +38,7 @@ describe("TreeViewManager", () => {
 
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
-    chai.assert.equal(developmentTreeview.commands.length, 5);
+    chai.assert.equal(developmentTreeview.commands.length, 4);
   });
 
   it("setRunningCommand", async () => {
@@ -63,16 +63,16 @@ describe("TreeViewManager", () => {
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
-    const developmentTreeviewProvider = treeViewManager.getTreeView(
-      "teamsfx-development"
+    const utilityTreeviewProvider = treeViewManager.getTreeView(
+      "teamsfx-utility"
     ) as CommandsTreeViewProvider;
 
-    const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 6);
+    const commands = utilityTreeviewProvider.getCommands();
+    chai.assert.equal(commands.length, 3);
 
     await treeViewManager.updateTreeViewsByContent();
 
-    chai.assert.equal(commands.length, 7);
+    chai.assert.equal(commands.length, 4);
   });
 
   it("updateTreeViewsByContent that removes project related commands", async () => {
@@ -88,7 +88,7 @@ describe("TreeViewManager", () => {
     ) as CommandsTreeViewProvider;
 
     const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 6);
+    chai.assert.equal(commands.length, 4);
 
     await treeViewManager.updateTreeViewsByContent(true);
 

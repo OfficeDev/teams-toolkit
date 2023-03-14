@@ -52,25 +52,26 @@ class TreeViewManager {
 
   public async updateTreeViewsByContent(removeProjectRelatedCommands = false): Promise<void> {
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
-    const developmentTreeviewProvider = this.getTreeView(
-      "teamsfx-development"
-    ) as CommandsTreeViewProvider;
-    const developmentCommands = developmentTreeviewProvider.getCommands();
-    developmentCommands.splice(0);
-    developmentCommands.push(...this.getDevelopmentCommands());
     if (removeProjectRelatedCommands) {
+      const developmentTreeviewProvider = this.getTreeView(
+        "teamsfx-development"
+      ) as CommandsTreeViewProvider;
+      const developmentCommands = developmentTreeviewProvider.getCommands();
+      developmentCommands.splice(0);
+      developmentCommands.push(...this.getDevelopmentCommands());
       developmentCommands.splice(3);
+      developmentTreeviewProvider.refresh();
     } else if (hasAdaptiveCard) {
       // after "Validate application" command, the adaptive card will be shown
       const utilityTreeviewProvider = this.getTreeView(
         "teamsfx-utility"
       ) as CommandsTreeViewProvider;
       const utilityCommands = utilityTreeviewProvider.getCommands();
-      const validateCommandIndex = developmentCommands.findIndex(
+      const validateCommandIndex = utilityCommands.findIndex(
         (command) => command.commandId === "fx-extension.validateManifest"
       );
       if (validateCommandIndex >= 0) {
-        developmentCommands.splice(
+        utilityCommands.splice(
           validateCommandIndex + 1,
           0,
           new TreeViewCommand(
@@ -82,8 +83,8 @@ class TreeViewManager {
           )
         );
       }
+      utilityTreeviewProvider.refresh();
     }
-    developmentTreeviewProvider.refresh();
   }
 
   public getTreeView(viewName: string) {

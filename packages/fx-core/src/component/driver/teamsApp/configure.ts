@@ -21,6 +21,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 export const actionName = "teamsApp/update";
 
@@ -77,9 +78,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
     if (!(await fs.pathExists(appPackagePath))) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath),
+        new FileNotFoundError(
+          actionName,
+          appPackagePath,
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
@@ -179,9 +180,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     }
     if (invalidParams.length > 0) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+        new InvalidActionInputError(
+          actionName,
+          invalidParams,
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );

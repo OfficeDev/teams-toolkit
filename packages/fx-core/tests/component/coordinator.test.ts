@@ -2050,7 +2050,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholders", async () => {
+  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2063,7 +2063,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
+    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
   });
 
   it("init infra happy path vsc", async () => {

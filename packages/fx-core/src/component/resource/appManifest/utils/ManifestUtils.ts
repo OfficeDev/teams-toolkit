@@ -62,6 +62,7 @@ import {
 } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../error/common";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -71,12 +72,7 @@ export class ManifestUtils {
 
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(manifestTemplatePath)
-        )
-      );
+      return err(new FileNotFoundError("teamsApp", manifestTemplatePath));
     }
     // Be compatible with UTF8-BOM encoding
     // Avoid Unexpected token error at JSON.parse()
@@ -589,32 +585,13 @@ export class ManifestUtils {
 
     const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
 
-    const isLocalDebug = state.ENV_NAME === "local";
     const tokens = getEnvironmentVariables(resolvedManifestString).filter(
       (x) => x != "TEAMS_APP_ID"
     );
     if (tokens.length > 0) {
-      if (isLocalDebug) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetLocalDebugConfigFailedError.name,
-            AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
-            )
-          )
-        );
-      } else {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
-              false
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      }
+      return err(
+        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+      );
     }
 
     manifest = JSON.parse(resolvedManifestString);

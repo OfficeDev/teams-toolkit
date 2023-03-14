@@ -28,12 +28,7 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
 } from "../component/constants";
-import {
-  ObjectIsUndefinedError,
-  NoAadManifestExistError,
-  InvalidInputError,
-  InvalidProjectError,
-} from "./error";
+import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -87,6 +82,7 @@ import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
+import { InvalidProjectError } from "../error/common";
 
 export class FxCoreV3Implement {
   tools: Tools;

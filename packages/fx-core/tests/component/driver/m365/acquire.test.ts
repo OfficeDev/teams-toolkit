@@ -46,7 +46,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(result.error.name, "InvalidParameter");
+      chai.assert.equal(result.error.name, "InvalidActionInputError");
     }
   });
 

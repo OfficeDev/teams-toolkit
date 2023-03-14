@@ -13,9 +13,9 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "file/createOrUpdateJsonFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
@@ -115,7 +115,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 

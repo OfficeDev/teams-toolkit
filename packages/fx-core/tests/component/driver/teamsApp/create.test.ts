@@ -48,7 +48,7 @@ describe("teamsApp/create", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+      chai.assert.equal("InvalidActionInputError", result.error.name);
     }
   });
 

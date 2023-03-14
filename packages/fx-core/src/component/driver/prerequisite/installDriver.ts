@@ -30,6 +30,7 @@ import { DotnetInstallationUserError } from "./error/dotnetInstallationUserError
 import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
+import { InvalidActionInputError } from "../../../error/common";
 
 const ACTION_NAME = "prerequisite/install";
 const outputName = Object.freeze({
@@ -168,13 +169,13 @@ export class ToolsInstallDriverImpl {
 
   private validateArgs(args: InstallToolArgs): void {
     if (!!args.devCert && typeof args.devCert?.trust !== "boolean") {
-      throw new InvalidParameterUserError(ACTION_NAME, "devCert.trust", helpLink);
+      throw new InvalidActionInputError(ACTION_NAME, ["devCert.trust"], helpLink);
     }
     if (!!args.func && typeof args.func !== "boolean") {
-      throw new InvalidParameterUserError(ACTION_NAME, "func", helpLink);
+      throw new InvalidActionInputError(ACTION_NAME, ["func"], helpLink);
     }
     if (!!args.dotnet && typeof args.dotnet !== "boolean") {
-      throw new InvalidParameterUserError(ACTION_NAME, "dotnet", helpLink);
+      throw new InvalidActionInputError(ACTION_NAME, ["dotnet"], helpLink);
     }
   }
 

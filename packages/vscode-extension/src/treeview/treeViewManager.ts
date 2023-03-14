@@ -66,22 +66,22 @@ class TreeViewManager {
         "teamsfx-utility"
       ) as CommandsTreeViewProvider;
       const utilityCommands = utilityTreeviewProvider.getCommands();
-      // const previewCommandIndex = developmentCommands.findIndex(
-      //   (command) => command.commandId === "fx-extension.debug"
-      // );
-      // if (previewCommandIndex >= 0) {
-      //   developmentCommands.splice(
-      //     previewCommandIndex + 1,
-      //     0,
-      //     new TreeViewCommand(
-      //       localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
-      //       localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
-      //       "fx-extension.OpenAdaptiveCardExt",
-      //       undefined,
-      //       { name: "eye", custom: false }
-      //     )
-      //   );
-      // }
+      const validateCommandIndex = developmentCommands.findIndex(
+        (command) => command.commandId === "fx-extension.validateManifest"
+      );
+      if (validateCommandIndex >= 0) {
+        developmentCommands.splice(
+          validateCommandIndex + 1,
+          0,
+          new TreeViewCommand(
+            localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
+            localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
+            "fx-extension.OpenAdaptiveCardExt",
+            undefined,
+            { name: "eye", custom: false }
+          )
+        );
+      }
     }
     developmentTreeviewProvider.refresh();
   }
@@ -254,6 +254,13 @@ class TreeViewManager {
         "fx-extension.build",
         "buildPackage",
         { name: "package", custom: false }
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.validateApplicationTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.validateApplicationDescription"),
+        "fx-extension.validateManifest",
+        undefined,
+        { name: "beaker", custom: false }
       ),
     ];
 

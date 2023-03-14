@@ -77,17 +77,13 @@ export class GeneratorChecker implements DependencyChecker {
     ctx: PluginContext | ContextV3
   ): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
-    let needInstall = false;
+
     try {
-      needInstall = !(await this.isLatestInstalled());
-      if (needInstall) {
-        this._logger.info(`${displayName} not found, installing...`);
-        await this.install();
-        this._logger.info(`Successfully installed ${displayName}`);
-      }
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator, {
-        [TelemetryProperty.NeedInstallSharepointGeneratorLocally]: needInstall.toString(),
-      });
+      this._logger.info(`${displayName} not found, installing...`);
+      await this.install();
+      this._logger.info(`Successfully installed ${displayName}`);
+
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator);
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
@@ -97,7 +93,6 @@ export class GeneratorChecker implements DependencyChecker {
           [TelemetryProperty.EnsureLatestSharepointGeneratorReason]: (
             error as UserError | SystemError
           ).name,
-          [TelemetryProperty.NeedInstallSharepointGeneratorLocally]: needInstall.toString(),
         }
       );
       await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);

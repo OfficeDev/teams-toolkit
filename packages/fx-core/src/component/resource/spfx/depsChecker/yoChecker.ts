@@ -70,17 +70,12 @@ export class YoChecker implements DependencyChecker {
     ctx: PluginContext | ContextV3
   ): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
-    let needInstall = false;
     try {
-      needInstall = !(await this.isLatestInstalled());
-      if (needInstall) {
-        this._logger.info(`${displayName} not found, installing...`);
-        await this.install();
-        this._logger.info(`Successfully installed ${displayName}`);
-      }
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo, {
-        [TelemetryProperty.NeedInstallYoLocally]: needInstall.toString(),
-      });
+      this._logger.info(`${displayName} not found, installing...`);
+      await this.install();
+      this._logger.info(`Successfully installed ${displayName}`);
+
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo);
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
@@ -88,7 +83,6 @@ export class YoChecker implements DependencyChecker {
         error as UserError | SystemError,
         {
           [TelemetryProperty.EnsureLatestYoReason]: (error as UserError | SystemError).name,
-          [TelemetryProperty.NeedInstallYoLocally]: needInstall.toString(),
         }
       );
       await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);

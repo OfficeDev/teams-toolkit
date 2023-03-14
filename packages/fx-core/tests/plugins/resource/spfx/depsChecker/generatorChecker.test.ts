@@ -289,25 +289,8 @@ describe("generator checker", () => {
   });
 
   describe("ensureLatestDependency", () => {
-    it("no need to install", async () => {
-      const checker = new GeneratorChecker(new StubLogger());
-
-      stub(GeneratorChecker.prototype, <any>"isLatestInstalled").callsFake(async () => {
-        return true;
-      });
-
-      const context = createContextV3();
-
-      const result = await checker.ensureLatestDependency(context);
-      chai.expect(result.isOk()).to.be.true;
-    });
-
     it("install successfully", async () => {
       const checker = new GeneratorChecker(new StubLogger());
-
-      stub(GeneratorChecker.prototype, <any>"isLatestInstalled").callsFake(async () => {
-        return false;
-      });
 
       stub(GeneratorChecker.prototype, <any>"install").callsFake(async () => {
         console.log("installing");
@@ -321,10 +304,6 @@ describe("generator checker", () => {
 
     it("install error", async () => {
       const checker = new GeneratorChecker(new StubLogger());
-
-      stub(GeneratorChecker.prototype, <any>"isLatestInstalled").callsFake(async () => {
-        return false;
-      });
 
       stub(GeneratorChecker.prototype, <any>"install").callsFake(async () => {
         throw new UserError("source", "name", "msg", "msg");

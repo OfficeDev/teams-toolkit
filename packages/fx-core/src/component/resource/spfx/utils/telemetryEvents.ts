@@ -17,7 +17,5 @@ export enum TelemetryProperty {
   EnsureYoReason = "ensure-yo-reason",
   EnsureSharepointGeneratorReason = "ensure-sharepoint-generator-reason",
   EnsureLatestYoReason = "ensure-latest-yo-reason",
-  NeedInstallYoLocally = "need-install-yo-locally",
-  NeedInstallSharepointGeneratorLocally = "need-install-sharepoint-generator-locally",
   EnsureLatestSharepointGeneratorReason = "ensure-latest-sharepoint-generator-reason",
 }

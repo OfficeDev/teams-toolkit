@@ -253,25 +253,8 @@ describe("Yo checker", () => {
   });
 
   describe("ensureLatestDependency", () => {
-    it("no need to install", async () => {
-      const yc = new YoChecker(new StubLogger());
-
-      stub(YoChecker.prototype, <any>"isLatestInstalled").callsFake(async () => {
-        return true;
-      });
-
-      const context = createContextV3();
-
-      const result = await yc.ensureLatestDependency(context);
-      expect(result.isOk()).to.be.true;
-    });
-
     it("install successfully", async () => {
       const yc = new YoChecker(new StubLogger());
-
-      stub(YoChecker.prototype, <any>"isLatestInstalled").callsFake(async () => {
-        return false;
-      });
 
       stub(YoChecker.prototype, <any>"install").callsFake(async () => {
         console.log("installing");
@@ -285,11 +268,6 @@ describe("Yo checker", () => {
 
     it("install error", async () => {
       const yc = new YoChecker(new StubLogger());
-
-      stub(YoChecker.prototype, <any>"isLatestInstalled").callsFake(async () => {
-        return false;
-      });
-
       stub(YoChecker.prototype, <any>"install").callsFake(async () => {
         throw new UserError("source", "name", "msg", "msg");
       });

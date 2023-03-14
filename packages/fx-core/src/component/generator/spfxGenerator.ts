@@ -106,14 +106,18 @@ export class SPFxGenerator {
             getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
           );
 
-          const yoRes = await yoChecker.ensureLatestDependency(context);
-          if (yoRes.isErr()) {
-            throw DependencyInstallError("yo");
+          if (!latestYoInstalled) {
+            const yoRes = await yoChecker.ensureLatestDependency(context);
+            if (yoRes.isErr()) {
+              throw DependencyInstallError("yo");
+            }
           }
 
-          const spGeneratorRes = await spGeneratorChecker.ensureLatestDependency(context);
-          if (spGeneratorRes.isErr()) {
-            throw DependencyInstallError("sharepoint generator");
+          if (!latestGeneratorInstalled) {
+            const spGeneratorRes = await spGeneratorChecker.ensureLatestDependency(context);
+            if (spGeneratorRes.isErr()) {
+              throw DependencyInstallError("sharepoint generator");
+            }
           }
         }
       }

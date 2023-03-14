@@ -165,7 +165,7 @@ describe("SPFxGenerator", function () {
     chai.expect(generateTemplateStub.calledOnce).to.be.true;
   });
 
-  it("select to install locally and install", async function () {
+  it("select to install locally and install only sp", async function () {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_SPFX_DECOUPLE: "true",
     });
@@ -176,7 +176,7 @@ describe("SPFxGenerator", function () {
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
     };
-    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(false);
     const yoInstaller = sinon
       .stub(YoChecker.prototype, "ensureLatestDependency")
@@ -194,7 +194,40 @@ describe("SPFxGenerator", function () {
     chai.expect(result.isOk()).to.eq(true);
 
     chai.expect(generateTemplateStub.calledOnce).to.be.true;
-    chai.expect(yoInstaller.calledOnce).to.be.true;
+    chai.expect(yoInstaller.calledOnce).to.be.false;
     chai.expect(generatorInstaller.calledOnce).to.be.true;
+  });
+
+  it("select to install locally and install only yo", async function () {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_SPFX_DECOUPLE: "true",
+    });
+
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
+    const yoInstaller = sinon
+      .stub(YoChecker.prototype, "ensureLatestDependency")
+      .resolves(ok(true));
+    const generatorInstaller = sinon
+      .stub(GeneratorChecker.prototype, "ensureLatestDependency")
+      .resolves(ok(true));
+
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+
+    chai.expect(generateTemplateStub.calledOnce).to.be.true;
+    chai.expect(yoInstaller.calledOnce).to.be.true;
+    chai.expect(generatorInstaller.calledOnce).to.be.false;
   });
 });

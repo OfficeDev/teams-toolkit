@@ -1463,7 +1463,7 @@
     "@microsoft/dev-tunnels-management": "~1.0.7342",
     "@microsoft/dev-tunnels-ssh": "~3.10.19",
     "@microsoft/teamsfx-api": "^0.22.1",
-    "@microsoft/teamsfx-core": "^1.23.2",
+    "@microsoft/teamsfx-core": "^2.0.0-alpha",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

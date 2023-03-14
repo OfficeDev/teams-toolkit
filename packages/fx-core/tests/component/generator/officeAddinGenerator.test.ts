@@ -82,6 +82,14 @@ describe("OfficeAddinGenerator", function () {
     chai.assert(await OfficeAddinGenerator.childProcessExec(`echo 'test'`), "test");
   });
 
+  it("should throw error once command fail", async function () {
+    try {
+      await OfficeAddinGenerator.childProcessExec("exit -1");
+    } catch (err) {
+      chai.assert(err.message, "Command failed: exit -1");
+    }
+  });
+
   it("should call both doScaffolding and template generator", async function () {
     const inputs: Inputs = {
       platform: Platform.CLI,

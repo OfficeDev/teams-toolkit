@@ -695,10 +695,10 @@ export class Coordinator {
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
 
-      // for azure action, subscription is necessary
-      if (!resolvedSubscriptionId) {
-        return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
-      }
+      // will not happen
+      // if (!resolvedSubscriptionId) {
+      //   return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
+      // }
 
       // ensure resource group
       if (resourceGroupUnresolved) {
@@ -713,7 +713,7 @@ export class Coordinator {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
-            resolvedSubscriptionId,
+            resolvedSubscriptionId!,
             undefined,
             defaultRg
           );
@@ -730,7 +730,7 @@ export class Coordinator {
       // consent user
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
       try {
-        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId); //make sure sub is correctly set if ensureSubscription() is not called.
+        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId!); //make sure sub is correctly set if ensureSubscription() is not called.
       } catch (e) {
         return err(assembleError(e));
       }
@@ -757,7 +757,7 @@ export class Coordinator {
         const createRgRes = await resourceGroupHelper.createNewResourceGroup(
           targetResourceGroupInfo.name,
           ctx.azureAccountProvider,
-          resolvedSubscriptionId,
+          resolvedSubscriptionId!,
           targetResourceGroupInfo.location
         );
         if (createRgRes.isErr()) {

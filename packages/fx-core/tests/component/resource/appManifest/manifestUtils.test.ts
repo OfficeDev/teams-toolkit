@@ -543,6 +543,8 @@ describe("getManifest V3", () => {
   it("getManifestV3 unresolved placeholder Error", async () => {
     const envInfo = newEnvInfoV3();
     envInfo.envName = "dev";
+    manifest.name.short = "${{MY_APP_NAME}}";
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     const res = await manifestUtils.getManifestV3("", envInfo, false);
     chai.assert.isTrue(res.isErr() && res.error instanceof FileNotFoundError);
   });

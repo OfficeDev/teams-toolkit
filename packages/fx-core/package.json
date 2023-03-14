@@ -103,7 +103,7 @@
     "node-forge": "^1.0.0",
     "node-ts-uuid": "^1.0.8",
     "office-addin-manifest": "^1.10.4",
-    "office-addin-project": "0.5.0",
+    "office-addin-project": "0.6.3",
     "openapi-types": "^7.2.3",
     "proper-lockfile": "^4.1.2",
     "read-package-json-fast": "^2.0.3",

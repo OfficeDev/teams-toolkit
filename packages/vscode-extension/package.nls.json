@@ -156,6 +156,7 @@
     "teamstoolkit.commandsTreeViewProvider.guideTitle": "View How-to Guides",
     "teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle": "Manage Collaborator",
     "teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription": "Manage M365 Teams App (with AAD app) Collaborators",
+    "teamstoolkit.commandsTreeViewProvider.addWebpartTitle": "Add SPFx Web Part",
     "teamstoolkit.common.readMore": "Read more",
     "teamstoolkit.common.signin": "Sign in",
     "teamstoolkit.common.signout": "Sign out",

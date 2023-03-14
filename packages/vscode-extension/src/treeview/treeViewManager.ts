@@ -184,7 +184,7 @@ class TreeViewManager {
         ? isSPFxProject
           ? [
               new TreeViewCommand(
-                localize("teamstoolkit.commmands.addWebpart.title"),
+                localize("teamstoolkit.commandsTreeViewProvider.addWebpartTitle"),
                 localize("teamstoolkit.commmands.addWebpart.description"),
                 "fx-extension.addWebpart",
                 "addWebpart",

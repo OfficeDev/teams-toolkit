@@ -525,8 +525,8 @@ jobs:
               lable=""
               while IFS= read -r test;
               do
-                name=`echo $test | jq .fullTitle`
-                duration=`echo $test | jq .duration`
+                name=`echo $test | jq -cr .fullTitle`
+                duration=`echo $test | jq -cr .duration`
                 if [[ ! -z `echo $test | jq 'select(.pass==true)'` ]]; then
                   passed=$((passed+1))
                   label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">PASSED</span>"

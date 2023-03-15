@@ -119,6 +119,7 @@ describe("handlers", () => {
   });
 
   it("getAzureProjectConfigV3", async () => {
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     const fake_config_v3 = {
@@ -136,6 +137,7 @@ describe("handlers", () => {
   });
 
   it("getAzureProjectConfigV3 return undefined", async () => {
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
@@ -146,6 +148,7 @@ describe("handlers", () => {
   });
 
   it("getSettingsVersion in v3", async () => {
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
@@ -174,7 +177,7 @@ describe("handlers", () => {
   it("addFileSystemWatcher in valid project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-
+    const isV3Enabled = sandbox.stub(commonTools, "isV3Enabled").returns(false);
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
       onDidChange: () => ({ dispose: () => undefined }),
@@ -1397,6 +1400,7 @@ describe("handlers", () => {
   });
 
   it("deployAadAppManifest", async () => {
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");

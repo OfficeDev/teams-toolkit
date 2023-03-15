@@ -94,45 +94,56 @@ export class ValidateAppPackageDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    const validationResult = await AppStudioClient.partnerCenterAppPackageValidation(
-      archivedFile,
-      appStudioToken
-    );
+    try {
+      const validationResult = await AppStudioClient.partnerCenterAppPackageValidation(
+        archivedFile,
+        appStudioToken
+      );
 
-    // logs in output window
-    const errors = validationResult.errors
-      .map((error) => {
-        return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
-          error.helpUrl
-        }`;
-      })
-      .join(EOL);
-    const warnings = validationResult.warnings
-      .map((warning) => {
-        return `(!) Warning: ${warning.content} \n${getLocalizedString("core.option.learnMore")}: ${
-          warning.helpUrl
-        }`;
-      })
-      .join(EOL);
-    const outputMessage =
-      EOL +
-      getLocalizedString(
-        "driver.teamsApp.summary.validate",
+      // logs in output window
+      const errors = validationResult.errors
+        .map((error) => {
+          return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
+            error.helpUrl
+          }`;
+        })
+        .join(EOL);
+      const warnings = validationResult.warnings
+        .map((warning) => {
+          return `(!) Warning: ${warning.content} \n${getLocalizedString(
+            "core.option.learnMore"
+          )}: ${warning.helpUrl}`;
+        })
+        .join(EOL);
+      const outputMessage =
+        EOL +
+        getLocalizedString(
+          "driver.teamsApp.summary.validate",
+          validationResult.errors.length + validationResult.warnings.length,
+          validationResult.notes.length,
+          errors,
+          warnings,
+          undefined
+        );
+      context.logProvider?.info(outputMessage);
+
+      const message = getLocalizedString(
+        "driver.teamsApp.validate.result",
         validationResult.errors.length + validationResult.warnings.length,
         validationResult.notes.length,
-        errors,
-        warnings,
-        undefined
+        "command:fx-extension.showOutputChannel"
       );
-    context.logProvider?.info(outputMessage);
-
-    const message = getLocalizedString(
-      "driver.teamsApp.validate.result",
-      validationResult.errors.length + validationResult.warnings.length,
-      validationResult.notes.length,
-      "command:fx-extension.showOutputChannel"
-    );
-    context.ui?.showMessage("info", message, false);
+      context.ui?.showMessage("info", message, false);
+    } catch (e: any) {
+      context.logProvider?.warning(
+        getLocalizedString("driver.teamsApp.validate.apiFailed", e.message)
+      );
+      context.ui?.showMessage(
+        "warn",
+        getLocalizedString("driver.teamsApp.validate.apiFailed", e.displayMessage),
+        false
+      );
+    }
     return ok(new Map());
   }
 

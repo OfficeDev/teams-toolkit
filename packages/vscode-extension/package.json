@@ -42,7 +42,7 @@
   "activationEvents": [
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.createFromWalkthrough",
-    "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.openLifecycleTreeview",
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openSamples",
@@ -148,21 +148,14 @@
           "when": "fx-extension.isTeamsFx"
         },
         {
-          "type": "webview",
-          "id": "teamsfx-development-webview",
-          "name": "Development",
-          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
-        },
-        {
-          "id": "teamsfx-deployment",
-          "name": "Deployment",
+          "id": "teamsfx-lifecycle",
+          "name": "Lifecycle",
           "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
-          "type": "webview",
-          "id": "teamsfx-deployment-webview",
-          "name": "Deployment",
-          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
+          "id": "teamsfx-utility",
+          "name": "Utility",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
           "id": "teamsfx-project-and-check-upgradeV3",
@@ -249,8 +242,8 @@
           "group": "navigation@1"
         },
         {
-          "command": "fx-extension.openDeploymentLink",
-          "when": "view == teamsfx-deployment",
+          "command": "fx-extension.openLifecycleLink",
+          "when": "view == teamsfx-lifecycle",
           "group": "navigation@1"
         },
         {
@@ -345,7 +338,12 @@
         },
         {
           "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem =~ /^fx-extension.(provision|build|deploy|publish|publishInDeveloperPortal)$/",
+          "when": "view == teamsfx-lifecycle && viewItem =~ /^fx-extension.(provision|deploy|publish)$/",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-utility && viewItem =~ /^fx-extension.(build|publishInDeveloperPortal)$/",
           "group": "inline"
         }
       ],
@@ -427,7 +425,7 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.openDeploymentLink",
+          "command": "fx-extension.openLifecycleLink",
           "when": "false"
         },
         {
@@ -517,8 +515,8 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.openDeploymentTreeview",
-        "title": "Teams - Open Deployment Treeview",
+        "command": "fx-extension.openLifecycleTreeview",
+        "title": "Teams - Open Lifecycle Treeview",
         "enablement": "never"
       },
       {
@@ -725,8 +723,8 @@
         "icon": "$(info)"
       },
       {
-        "command": "fx-extension.openDeploymentLink",
-        "title": "%teamstoolkit.commands.deploymentLink.title%",
+        "command": "fx-extension.openLifecycleLink",
+        "title": "%teamstoolkit.commands.lifecycleLink.title%",
         "icon": "$(info)"
       },
       {
@@ -807,6 +805,12 @@
       {
         "command": "fx-extension.openSurvey",
         "title": "%teamstoolkit.commandsTreeViewProvider.openSurveyTitle%"
+      },
+      {
+        "command": "fx-extension.addWebpart",
+        "title": "%teamstoolkit.commmands.addWebpart.title%",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isV3Enabled && !fx-extension.commandLocked",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [
@@ -1235,32 +1239,6 @@
           "activeOnStart": true,
           "beginsPattern": "[nodemon] starting",
           "endsPattern": "listening|[nodemon] app crashed"
-        }
-      }
-    ],
-    "configuration": [
-      {
-        "title": "SPFx Configuration",
-        "order": 1,
-        "properties": {
-          "fx-extension.SPFxPrerequisiteCheck": {
-            "type": "object",
-            "properties": {
-              "yo": {
-                "type": "boolean",
-                "description": "Ensure Yeoman CLI is installed. (Requires reload of VS Code)"
-              },
-              "sharepointYeomanGenerator": {
-                "type": "boolean",
-                "description": "Ensure SPFx Yeoman Generator is installed. (Requires reload of VS Code)"
-              }
-            },
-            "additionalProperties": false,
-            "default": {
-              "yo": true,
-              "sharepointYeomanGenerator": true
-            }
-          }
         }
       }
     ],

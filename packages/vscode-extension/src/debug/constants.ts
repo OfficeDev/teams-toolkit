@@ -3,6 +3,7 @@
 import * as util from "util";
 
 import { defaultHelpLink } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { TaskLabel } from "@microsoft/teamsfx-core/build/common/local";
 import { ExtensionErrors } from "../error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
@@ -182,7 +183,7 @@ export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
 };
 
 export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
-  taskName: "Validate & install prerequisites",
+  taskName: TaskLabel.PrerequisiteCheck,
   title: "Running 'Validate & install prerequisites' Visual Studio Code task.",
   checkNumber: (n: number) =>
     `${stepPrefix(
@@ -205,7 +206,7 @@ export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
 };
 
 export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
-  taskName: "Validate prerequisites",
+  taskName: TaskLabel.PrerequisiteCheckV3,
   title: "Running 'Validate prerequisites' Visual Studio Code task.",
   checkNumber: (n: number) =>
     `${stepPrefix(n)} Teams Toolkit is checking the required prerequisites.`,
@@ -223,7 +224,7 @@ export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
 };
 
 export const npmInstallDisplayMessages: DisplayMessages = {
-  taskName: "Install npm packages",
+  taskName: TaskLabel.InstallNpmPackages,
   title: "Running 'Install npm packages' Visual Studio Code task.",
   checkNumber: (n: number) =>
     `${stepPrefix(
@@ -243,7 +244,7 @@ export const npmInstallDisplayMessages: DisplayMessages = {
 };
 
 export const baseTunnelDisplayMessages = Object.freeze({
-  taskName: "Start local tunnel",
+  taskName: TaskLabel.StartLocalTunnel,
   title: () => localize("teamstoolkit.localDebug.output.tunnel.title"),
   checkNumber: (n: number) =>
     `${stepPrefix(n)} ${localize("teamstoolkit.localDebug.output.tunnel.checkNumber")}`,
@@ -322,7 +323,7 @@ export const ngrokTunnelDisplayMessages = Object.freeze(
 );
 
 export const setUpTabDisplayMessages: DisplayMessages = {
-  taskName: "Set up tab",
+  taskName: TaskLabel.SetUpTab,
   title: "Running 'Set up tab' Visual Studio Code task.",
   checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up tab for debugging.`,
   summary: "Summary:",
@@ -339,7 +340,7 @@ export const setUpTabDisplayMessages: DisplayMessages = {
 };
 
 export const setUpBotDisplayMessages: DisplayMessages = {
-  taskName: "Set up bot",
+  taskName: TaskLabel.SetUpBot,
   title: "Running 'Set up bot' Visual Studio Code task.",
   checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up bot for debugging.`,
   summary: "Summary:",
@@ -356,7 +357,7 @@ export const setUpBotDisplayMessages: DisplayMessages = {
 };
 
 export const setUpSSODisplayMessages: DisplayMessages = {
-  taskName: "Set up SSO",
+  taskName: TaskLabel.SetUpSSO,
   title: "Running 'Set up SSO' Visual Studio Code task.",
   checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up SSO for debugging.`,
   summary: "Summary:",
@@ -373,7 +374,7 @@ export const setUpSSODisplayMessages: DisplayMessages = {
 };
 
 export const prepareManifestDisplayMessages: DisplayMessages = {
-  taskName: "Build and upload Teams manifest",
+  taskName: TaskLabel.PrepareManifest,
   title: "Running 'Build and upload Teams manifest' Visual Studio Code task.",
   checkNumber: (n: number) =>
     `${stepPrefix(n)} Teams Toolkit is building and uploading Teams manifest for debugging.`,

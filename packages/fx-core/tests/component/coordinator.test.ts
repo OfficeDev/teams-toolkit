@@ -59,7 +59,7 @@ import { createContextV3, createDriverContext } from "../../src/component/utils"
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { ValidateTeamsAppDriver } from "../../src/component/driver/teamsApp/validate";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import Container from "typedi";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
@@ -69,6 +69,7 @@ import { deployUtils } from "../../src/component/deployUtils";
 import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -2049,7 +2050,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholders", async () => {
+  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2062,7 +2063,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
+    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
   });
 
   it("init infra happy path vsc", async () => {
@@ -2519,10 +2520,12 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
-    const driver1: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+    const driver1: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const driver3: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
     sandbox.stub(driver1, "run").resolves(ok(new Map()));
     sandbox.stub(driver2, "run").resolves(ok(new Map()));
+    sandbox.stub(driver3, "run").resolves(ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -2536,7 +2539,7 @@ describe("component coordinator test", () => {
     if (res1.isErr()) console.log(res1.error);
     assert.isTrue(res1.isOk());
     const res2 = await fxCore.executeUserTask(
-      { namespace: "", method: "validateManifest", params: { manifestTemplatePath: "." } },
+      { namespace: "", method: "validateManifest", params: { manifestPath: "." } },
       inputs
     );
     if (res2.isErr()) console.log(res2.error);
@@ -2551,6 +2554,11 @@ describe("component coordinator test", () => {
     );
     if (res3.isErr()) console.log(res3.error);
     assert.isTrue(res3.isOk());
+    const res4 = await fxCore.executeUserTask(
+      { namespace: "", method: "validateManifest", params: { appPackagePath: "." } },
+      inputs
+    );
+    assert.isTrue(res4.isOk());
   });
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {

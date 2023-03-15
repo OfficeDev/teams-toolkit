@@ -84,7 +84,31 @@ describe("teamsApp/update", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+      chai.assert.equal("InvalidActionInputError", result.error.name);
+    }
+  });
+
+  it("invalid teams app id", async () => {
+    const args: ConfigureTeamsAppArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      const manifest = new TeamsAppManifest();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest)));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+
+    const result = await teamsAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(result.result.isErr());
+    if (result.result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidTeamsAppIdError.name, result.result.error.name);
     }
   });
 
@@ -94,10 +118,12 @@ describe("teamsApp/update", async () => {
     };
 
     sinon.stub(AppStudioClient, "importApp").resolves(appDef);
+    sinon.stub(AppStudioClient, "getApp").resolves(appDef);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").callsFake(async () => {
       const zip = new AdmZip();
       const manifest = new TeamsAppManifest();
+      manifest.id = uuid();
       manifest.staticTabs = [
         {
           entityId: "index",
@@ -132,10 +158,13 @@ describe("teamsApp/update", async () => {
     };
 
     sinon.stub(AppStudioClient, "importApp").resolves(appDef);
+    sinon.stub(AppStudioClient, "getApp").resolves(appDef);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").callsFake(async () => {
       const zip = new AdmZip();
-      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const manifest = new TeamsAppManifest();
+      manifest.id = uuid();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest)));
       zip.addFile("color.png", new Buffer(""));
       zip.addFile("outlie.png", new Buffer(""));
 
@@ -144,7 +173,6 @@ describe("teamsApp/update", async () => {
     });
 
     const result = await teamsAppDriver.execute(args, mockedDriverContext);
-    console.log(JSON.stringify(result));
     chai.assert.isTrue(result.result.isOk());
   });
 });

@@ -24,15 +24,11 @@ import * as os from "os";
 import * as path from "path";
 import { getLockFolder, ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
 import { CallbackRegistry } from "../../../src/core/callback";
-import {
-  CoreSource,
-  InvalidProjectError,
-  NoProjectOpenedError,
-  PathNotExistError,
-} from "../../../src/core/error";
+import { CoreSource, NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
 import { randomAppName } from "../utils";
 import * as tools from "../../../src/common/tools";
 import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
+import { InvalidProjectError } from "../../../src/error/common";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {

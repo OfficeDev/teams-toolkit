@@ -26,11 +26,11 @@ jobs:
         run: |
           links=`git grep -hEo "https://aka[a-zA-Z0-9./?=_%:-]*[a-zA-Z0-9]"  | sort -nr | uniq`
 
-          white-list="https://aka.ms/teamsfx-debug-prepare-manifest;"
+          white_list="https://aka.ms/teamsfx-debug-prepare-manifest;"
 
           while IFS= read -r link;
           do
-            if [[ $white-list == *"$link"* ]]; then
+            if [[ $white_list == *"$link"* ]]; then
               echo $link "=>" "white list" >> akas.data
               continue
             fi
@@ -105,9 +105,9 @@ jobs:
             subject="[PASSED] $subject"
           fi
 
-          echo "::set-output name=body::$body"
-          echo "::set-output name=to::$emails"
-          echo "::set-output name=subject::$subject"
+          echo "body=$body" >> $GITHUB_OUTPUT
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master

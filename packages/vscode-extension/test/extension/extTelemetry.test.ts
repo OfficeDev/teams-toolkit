@@ -74,6 +74,11 @@ describe("ExtTelemetry", () => {
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CreateNewEnvironment);
     });
 
+    it("Stage.addWebpart", () => {
+      const stage = Stage.addWebpart;
+      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.AddWebpart);
+    });
+
     it("unknown", () => {
       const stage = "unknown";
       chai.expect(ExtTelemetry.stageToEvent(stage as Stage)).equals(undefined);

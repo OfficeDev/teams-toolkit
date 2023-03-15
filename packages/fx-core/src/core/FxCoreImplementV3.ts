@@ -28,12 +28,7 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
 } from "../component/constants";
-import {
-  ObjectIsUndefinedError,
-  NoAadManifestExistError,
-  InvalidInputError,
-  InvalidProjectError,
-} from "./error";
+import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -46,8 +41,10 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import "../component/driver/index";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
-import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
-import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
+import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
@@ -70,7 +67,11 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
+import {
+  getQuestionsForAddWebpart,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+} from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -78,6 +79,10 @@ import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
+import { AddWebPartDriver } from "../component/driver/add/addWebPart";
+import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
+import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
+import { InvalidProjectError } from "../error/common";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -304,18 +309,19 @@ export class FxCoreV3Implement {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
-      let args: ValidateTeamsAppArgs;
       if (func.params.manifestPath) {
-        args = {
+        const args: ValidateManifestArgs = {
           manifestPath: func.params.manifestPath,
         };
+        const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
+        res = await driver.run(args, context);
       } else {
-        args = {
+        const args: ValidateAppPackageArgs = {
           appPackagePath: func.params.appPackagePath,
         };
+        const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+        res = await driver.run(args, context);
       }
-      res = await driver.run(args, context);
     } else if (func.method === "buildPackage") {
       const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
       const args: CreateAppPackageArgs = {
@@ -333,6 +339,24 @@ export class FxCoreV3Implement {
       res = await this.previewAadManifest(inputs);
     }
     return res;
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW(getQuestionsForAddWebpart),
+    ProjectMigratorMWV3,
+    ConcurrentLockerMW,
+  ])
+  async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
+    const args: AddWebPartArgs = {
+      manifestPath: inputs.manifestPath,
+      localManifestPath: inputs.localManifestPath,
+      spfxFolder: inputs.spfxFolder,
+      webpartName: inputs[SPFXQuestionNames.webpart_name],
+    };
+    const contextV3: DriverContext = createDriverContext(inputs);
+    return await driver.run(args, contextV3);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])

@@ -3,6 +3,7 @@
 "use strict";
 
 import * as os from "os";
+import { TaskOverallLabel } from "../../../common/local";
 import { HubName, LaunchBrowser, LaunchUrl } from "../constants";
 
 export function generateConfigurations(
@@ -412,7 +413,7 @@ function debug(
   return {
     name: `Debug (${browserName})`,
     configurations,
-    preLaunchTask: "Pre Debug Check & Start All",
+    preLaunchTask: TaskOverallLabel.NextDefault,
     presentation: {
       group: "all",
       order: order,
@@ -446,9 +447,7 @@ function debugM365(
     name: `Debug in ${hubName} (${browserName})`,
     configurations,
     preLaunchTask:
-      hubName === HubName.teams
-        ? "Pre Debug Check & Start All"
-        : "Pre Debug Check & Start All & Install App",
+      hubName === HubName.teams ? TaskOverallLabel.NextDefault : TaskOverallLabel.NextM365,
     presentation: {
       group: `group ${hubOrder}: ${hubName}`,
       order: order,

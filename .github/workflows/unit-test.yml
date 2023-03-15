@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Checkout-pr
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
@@ -45,7 +45,7 @@ jobs:
           git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
 

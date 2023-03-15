@@ -46,13 +46,16 @@ import { manifestUtils } from "../../../src/component/resource/appManifest/utils
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import EventEmitter from "events";
 import proxyquire from "proxyquire";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: ContextV3;
+  let mockedEnvRestore: RestoreFn;
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3(newProjectSettingsV3());
@@ -72,6 +75,19 @@ describe("OfficeAddinGenerator", function () {
     sinon.stub(fse, "readJson").resolves({});
     sinon.stub(fse, "ensureFile").resolves();
     sinon.stub(fse, "writeJSON").resolves();
+  });
+
+  it("should run childProcessExec command success", async function () {
+    sinon.stub(childProcess, "exec").yields(`echo 'test'`, "test");
+    chai.assert(await OfficeAddinGenerator.childProcessExec(`echo 'test'`), "test");
+  });
+
+  it("should throw error once command fail", async function () {
+    try {
+      await OfficeAddinGenerator.childProcessExec("exit -1");
+    } catch (err) {
+      chai.assert(err.message, "Command failed: exit -1");
+    }
   });
 
   it("should call both doScaffolding and template generator", async function () {
@@ -130,12 +146,9 @@ describe("OfficeAddinGenerator", function () {
     inputs[AddinProjectFolderQuestion.name] = undefined;
     inputs[AddinLanguageQuestion.name] = "TypeScript";
 
-    sinon.stub<any, any>(childProcess, "exec").callsFake(() => {
-      return;
-    });
+    sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
@@ -235,6 +248,7 @@ describe("OfficeAddinGenerator", function () {
 
   afterEach(async () => {
     sinon.restore();
+    mockedEnvRestore();
   });
 });
 

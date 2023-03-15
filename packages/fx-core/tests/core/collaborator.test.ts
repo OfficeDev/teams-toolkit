@@ -130,6 +130,13 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("listCollaborator", () => {
+    let mockedEnvRestore: RestoreFn;
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
         tenantId: "fake_tid",
@@ -325,6 +332,13 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("checkPermission", () => {
+    let mockedEnvRestore: RestoreFn;
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
         tenantId: "fake_tid",
@@ -470,6 +484,13 @@ describe("Collaborator APIs for V3", () => {
     });
   });
   describe("grantPermission", () => {
+    let mockedEnvRestore: RestoreFn;
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
         tenantId: "fake_tid",

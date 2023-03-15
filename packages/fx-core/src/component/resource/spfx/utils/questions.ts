@@ -12,6 +12,7 @@ import {
 import { Constants } from "./constants";
 import { Utils } from "./utils";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
+import { isV3Enabled } from "../../../../common/tools";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -39,7 +40,7 @@ export const webpartNameQuestion: Question = {
   type: "text",
   name: SPFXQuestionNames.webpart_name,
   title: "Web Part Name",
-  default: "helloworld",
+  default: Constants.DEFAULT_WEBPART_NAME,
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
       const schema = {
@@ -54,14 +55,14 @@ export const webpartNameQuestion: Question = {
         );
       }
 
-      if (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath) {
-        const webpartFolder = path.join(
-          previousInputs?.projectPath,
-          "SPFx",
-          "src",
-          "webparts",
-          input
-        );
+      if (
+        previousInputs &&
+        ((previousInputs.stage === Stage.addWebpart && previousInputs["spfxFolder"]) ||
+          (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath))
+      ) {
+        const webpartFolder = isV3Enabled()
+          ? path.join(previousInputs["spfxFolder"], "src", "webparts", input)
+          : path.join(previousInputs?.projectPath as any, "SPFx", "src", "webparts", input);
         if (await fs.pathExists(webpartFolder)) {
           return getLocalizedString(
             "plugins.spfx.questions.webpartName.error.duplicate",
@@ -128,6 +129,7 @@ export const spfxPackageSelectQuestion: Question = {
   dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
     return PackageSelectOptionsHelper.getOptions();
   },
+  default: SPFxVersionOptionIds.installLocally,
   validation: {
     validFunc: async (input: string): Promise<string | undefined> => {
       if (input === SPFxVersionOptionIds.globalPackage) {

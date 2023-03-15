@@ -379,6 +379,13 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "fx-extension.OpenAdaptiveCardExt",
     handlers.openAdaptiveCardExt
   );
+
+  registerInCommandController(
+    context,
+    "fx-extension.addWebpart",
+    handlers.addWebpart,
+    "addWebpart"
+  );
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {

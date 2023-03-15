@@ -51,10 +51,11 @@ export class ProgressHelper {
   }
 
   static async startScaffoldProgressHandler(
-    ui: UserInteraction | undefined
+    ui: UserInteraction | undefined,
+    isAdd = false
   ): Promise<IProgressHandler | undefined> {
     this.scaffoldProgress = ui?.createProgressBar(
-      ProgressTitleMessage.ScaffoldProgressTitle,
+      isAdd ? ProgressTitleMessage.AddProgressTitle : ProgressTitleMessage.ScaffoldProgressTitle,
       Object.entries(ScaffoldProgressMessage).length
     );
     await this.scaffoldProgress?.start("");

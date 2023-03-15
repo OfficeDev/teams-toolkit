@@ -30,3 +30,4 @@ import "./file/updateEnv";
 import "./file/updateJson";
 import "./botFramework/createOrUpdateBot";
 import "./m365/acquire";
+import "./add/addWebPart";

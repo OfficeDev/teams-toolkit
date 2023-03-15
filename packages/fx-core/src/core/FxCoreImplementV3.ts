@@ -67,7 +67,11 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
+import {
+  getQuestionsForAddWebpart,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+} from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -75,6 +79,9 @@ import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
+import { AddWebPartDriver } from "../component/driver/add/addWebPart";
+import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
+import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { InvalidProjectError } from "../error/common";
 
 export class FxCoreV3Implement {
@@ -332,6 +339,24 @@ export class FxCoreV3Implement {
       res = await this.previewAadManifest(inputs);
     }
     return res;
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW(getQuestionsForAddWebpart),
+    ProjectMigratorMWV3,
+    ConcurrentLockerMW,
+  ])
+  async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
+    const args: AddWebPartArgs = {
+      manifestPath: inputs.manifestPath,
+      localManifestPath: inputs.localManifestPath,
+      spfxFolder: inputs.spfxFolder,
+      webpartName: inputs[SPFXQuestionNames.webpart_name],
+    };
+    const contextV3: DriverContext = createDriverContext(inputs);
+    return await driver.run(args, contextV3);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])

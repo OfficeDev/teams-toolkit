@@ -34,11 +34,7 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
   }
 
   public async reloadEnvironments(): Promise<Result<Void, FxError>> {
-    if (
-      !globalVariables.workspaceUri ||
-      !isValidProject(globalVariables.workspaceUri.fsPath) ||
-      isV3Enabled()
-    ) {
+    if (!globalVariables.workspaceUri || !isValidProject(globalVariables.workspaceUri.fsPath)) {
       return ok(Void);
     }
     return await this.mutex.runExclusive(async () => {

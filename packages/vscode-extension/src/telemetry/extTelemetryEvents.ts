@@ -96,7 +96,7 @@ export enum TelemetryEvent {
 
   NextStep = "next-step",
 
-  ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
+  ClickOpenLifecycleTreeview = "click-open-lifecycle-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
   ViewGuidedTutorials = "view-guided-tutorials",

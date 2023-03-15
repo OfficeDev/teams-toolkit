@@ -57,14 +57,12 @@ import { SampleHandler } from "./sampleHandler";
 import { DepsHandler } from "./depsHandler";
 import { Telemetry, TelemetryUtils } from "./telemetry";
 import { hasAAD, hasBot, hasApi } from "../../../common/projectSettingsHelperV3";
+import { InvalidProjectError } from "../../../error/common";
 
 export class ApiConnectorImpl {
   public async scaffold(ctx: ContextV3, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
-      throw ResultFactory.UserError(
-        ErrorMessage.InvalidProjectError.name,
-        ErrorMessage.InvalidProjectError.message()
-      );
+      throw new InvalidProjectError();
     }
     const projectPath = inputs.projectPath;
     const languageType: string = ctx.projectSetting!.programmingLanguage!;

@@ -427,7 +427,7 @@ jobs:
           done
 
           cases=`echo $jobs| jq -r '.[] | select(.name | contains("tests.ts")) | .name'`
-
+          echo $jobs
 
           passed=0
           failed=0
@@ -470,8 +470,11 @@ jobs:
               target_type=".NET"
             fi
 
+            name="${case//'.tests.ts'/}"
+            name="${name//.\//}"
+            name="${name//\//_}"
             job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
-            report_file=`find ~/artifacts -wholename "*${job_id}/mochawesome.json"`
+            report_file=`find ~/artifacts -wholename "*${name}/mochawesome.json"`
             echo "Tried to find the $report_file with $job_id"
             if [ ! -z "$report_file" ]; then
               echo "Found the $report_file with $job_id"

@@ -28,7 +28,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
@@ -43,7 +43,7 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 publish:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage

@@ -32,6 +32,7 @@ export class Constants {
   public static readonly RecommendedLowestSpfxVersion = "v1.14.0";
   public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";
   public static readonly YeomanPackageName = "yo";
+  public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
 }
 
 export class PlaceHolders {

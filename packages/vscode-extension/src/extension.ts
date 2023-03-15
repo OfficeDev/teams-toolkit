@@ -120,7 +120,7 @@ export async function deactivate() {
 
 function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   registerTreeViewCommandsInDevelopment(context);
-  registerTreeViewCommandsInDeployment(context);
+  registerTreeViewCommandsInLifecycle(context);
   registerTreeViewCommandsInHelper(context);
   registerTeamsFxCommands(context);
   registerMenuCommands(context);
@@ -204,12 +204,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     })
   );
 
-  // Show deployment view
-  const openDeploymentTreeview = vscode.commands.registerCommand(
-    "fx-extension.openDeploymentTreeview",
-    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
+  // Show lifecycle view
+  const openLifecycleTreeview = vscode.commands.registerCommand(
+    "fx-extension.openLifecycleTreeview",
+    (...args) => Correlator.run(handlers.openLifecycleTreeview, args)
   );
-  context.subscriptions.push(openDeploymentTreeview);
+  context.subscriptions.push(openLifecycleTreeview);
 
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
@@ -381,7 +381,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   );
 }
 
-function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) {
+function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   // Provision in the cloud
   registerInCommandController(
     context,
@@ -589,12 +589,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openAccountLinkCmd);
 
-  const openDeploymentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openDeploymentLink",
+  const openLifecycleLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openLifecycleLink",
     (...args) =>
-      Correlator.run(handlers.openDeploymentLinkHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
+      Correlator.run(handlers.openLifecycleLinkHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
-  context.subscriptions.push(openDeploymentLinkCmd);
+  context.subscriptions.push(openLifecycleLinkCmd);
 
   const openDevelopmentLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openDevelopmentLink",

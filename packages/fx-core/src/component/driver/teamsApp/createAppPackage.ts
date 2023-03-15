@@ -14,11 +14,10 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
-import { AppStudioError } from "../../resource/appManifest/errors";
 import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../../../common/constants";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -90,9 +89,9 @@ export class CreateAppPackageDriver implements StepDriver {
 
     const colorFile = path.join(appDirectory, manifest.icons.color);
     if (!(await fs.pathExists(colorFile))) {
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(colorFile),
+      const error = new FileNotFoundError(
+        actionName,
+        colorFile,
         "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
       );
       return err(error);
@@ -100,12 +99,33 @@ export class CreateAppPackageDriver implements StepDriver {
 
     const outlineFile = path.join(appDirectory, manifest.icons.outline);
     if (!(await fs.pathExists(outlineFile))) {
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(outlineFile),
+      const error = new FileNotFoundError(
+        actionName,
+        outlineFile,
         "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
       );
       return err(error);
+    }
+
+    // pre-check existence
+    if (
+      manifest.localizationInfo &&
+      manifest.localizationInfo.additionalLanguages &&
+      manifest.localizationInfo.additionalLanguages.length > 0
+    ) {
+      for (const language of manifest.localizationInfo.additionalLanguages) {
+        const file = language.file;
+        const fileName = `${appDirectory}/${file}`;
+        if (!(await fs.pathExists(fileName))) {
+          return err(
+            new FileNotFoundError(
+              actionName,
+              fileName,
+              "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+            )
+          );
+        }
+      }
     }
 
     const zip = new AdmZip();
@@ -123,21 +143,12 @@ export class CreateAppPackageDriver implements StepDriver {
       manifest.localizationInfo.additionalLanguages &&
       manifest.localizationInfo.additionalLanguages.length > 0
     ) {
-      await Promise.all(
-        manifest.localizationInfo.additionalLanguages.map(async function (language: any) {
-          const file = language.file;
-          const fileName = `${appDirectory}/${file}`;
-          if (!(await fs.pathExists(fileName))) {
-            throw AppStudioResultFactory.UserError(
-              AppStudioError.FileNotFoundError.name,
-              AppStudioError.FileNotFoundError.message(fileName),
-              "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
-            );
-          }
-          const dir = path.dirname(file);
-          zip.addLocalFile(fileName, dir === "." ? "" : dir);
-        })
-      );
+      for (const language of manifest.localizationInfo.additionalLanguages) {
+        const file = language.file;
+        const fileName = `${appDirectory}/${file}`;
+        const dir = path.dirname(file);
+        zip.addLocalFile(fileName, dir === "." ? "" : dir);
+      }
     }
 
     zip.writeZip(zipFileName);
@@ -200,9 +211,9 @@ export class CreateAppPackageDriver implements StepDriver {
     }
     if (invalidParams.length > 0) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+        new InvalidActionInputError(
+          actionName,
+          invalidParams,
           "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
         )
       );

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { deepCopy } from "../../common/tools";
+import { cloneDeep } from "lodash";
 import { TelemetryConstants } from "../constants";
 
 export class TeamsFxTelemetryReporter {
@@ -92,7 +92,7 @@ export class TeamsFxTelemetryReporter {
     config: TeamsFxTelemetryConfig,
     defaultConfig?: TeamsFxTelemetryDefaultConfig
   ): TeamsFxTelemetryConfig {
-    const result = deepCopy(config);
+    const result = cloneDeep(config);
     if (defaultConfig) {
       if (defaultConfig.baseEventName) {
         result.eventName = defaultConfig.baseEventName + result.eventName;

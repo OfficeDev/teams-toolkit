@@ -392,6 +392,10 @@ jobs:
         run: |
           sudo apt install dateutils
 
+      - name: Install Dateutils
+        run: |
+          sudo apt install tree
+
       - uses: actions/download-artifact@v3
         with:
           path: ~/artifacts
@@ -400,6 +404,7 @@ jobs:
         id: list-jobs
         working-directory: packages/cli
         run: |
+          tree ~/artifacts
           page=1
           jobs="[]"
 
@@ -432,7 +437,6 @@ jobs:
           skipped_lists=""
 
           emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;"
-          echo $emails
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then
@@ -468,9 +472,9 @@ jobs:
 
             job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             report_file=`find ~/artifacts -wholename "*${job_id}/mochawesome.json"`
-            echo "Tried to find the $report_file"
+            echo "Tried to find the $report_file with $job_id"
             if [ ! -z "$report_file" ]; then
-              echo "Found the $report_file"
+              echo "Found the $report_file with $job_id"
               tests=`cat $report_file | jq -cr '[ .. | objects | with_entries(select(.key=="tests")) | select(. != {}) | select(.tests | type=="array") ] | map(.tests | .[]) | .[]'`
               lable=""
               while IFS= read -r test;
@@ -501,7 +505,7 @@ jobs:
                 fi
               done <<< $tests
             else
-              echo "Not found the $report_file"
+              echo "Failed to find the $report_file with $job_id"
             fi
 
           done <<< $cases
@@ -518,7 +522,7 @@ jobs:
           fi
 
           echo "body=$body" >> $GITHUB_OUTPUT
-          echo "to=zhiyou@microsoft" >> $GITHUB_OUTPUT
+          echo "to=zhiyou@microsoft.com" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail to the whole team

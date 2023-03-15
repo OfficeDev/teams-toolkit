@@ -8,7 +8,6 @@ import { exec } from "child_process";
 import { DriverContext } from "../driver/interface/commonArgs";
 import fs from "fs-extra";
 import { DotenvOutput } from "../utils/envUtil";
-import { TOOLS } from "../../core/globalVars";
 
 export function convertToLangKey(programmingLanguage: string): string {
   switch (programmingLanguage) {

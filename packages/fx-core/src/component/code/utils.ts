@@ -4,7 +4,7 @@
 import { assembleError, err, FxError, LogProvider, ok, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import os from "os";
-import { exec, ExecException } from "child_process";
+import { exec } from "child_process";
 import { DriverContext } from "../driver/interface/commonArgs";
 import fs from "fs-extra";
 import { DotenvOutput } from "../utils/envUtil";
@@ -49,107 +49,111 @@ export async function executeCommand(
     if (os.platform() === "win32") {
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
-    const defaultShellMap: any = {
+    const defaultOsToShellMap: any = {
       win32: "powershell",
       darwin: "bash",
       linux: "bash",
     };
+    // const shellToOsMap: any = {
+    //   cmd: ["win32"],
+    //   powershell: ["win32"],
+    //   pwsh: ["win32"],
+    //   sh: ["linux", "darwin"],
+    //   bash: ["linux", "darwin"],
+    // };
     let run = command;
-    shell = shell ?? defaultShellMap[process.platform];
+    shell = shell ?? defaultOsToShellMap[process.platform];
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
     }
-    const outputs = parseKeyValueInOutput(command);
-    if (outputs) {
-      resolve(ok(["", outputs]));
-      return;
-    }
     if (shell === "cmd") {
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
+    // if (!shell) {
+    //   await logProvider.warning(
+    //     `Failed to run command: "${command}" on path: "${workingDir}", shell type unspecified`
+    //   );
+    //   resolve(ok(["", {}]));
+    //   return;
+    // }
+    // const osList = shellToOsMap[shell];
+    // if (!osList.includes(os.platform())) {
+    //   await logProvider.warning(
+    //     `Failed to run command: "${command}" on path: "${workingDir}", shell ${shell} can not be executed in os ${os}`
+    //   );
+    //   resolve(ok(["", {}]));
+    //   return;
+    // }
     await logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
-    if (ui?.runCommand) {
-      const uiRes = await ui.runCommand({
-        cmd: run,
-        workingDirectory: workingDir,
+    // if (ui?.runCommand) {
+    //   const uiRes = await ui.runCommand({
+    //     cmd: run,
+    //     workingDirectory: workingDir,
+    //     shell: shell,
+    //     timeout: timeout,
+    //   });
+    //   if (uiRes.isErr()) resolve(err(uiRes.error));
+    //   resolve(ok(["", {}]));
+    //   return;
+    // } else {
+    const outputStrings: string[] = [];
+    const cp = exec(
+      run,
+      {
         shell: shell,
+        cwd: workingDir,
+        encoding: "utf8",
+        env: { ...process.env, ...env },
         timeout: timeout,
-      });
-      if (uiRes.isErr()) resolve(err(uiRes.error));
-      resolve(ok(["", {}]));
-      return;
-    } else {
-      exec(
-        run,
-        {
-          shell: shell,
-          cwd: workingDir,
-          encoding: "utf8",
-          env: { ...process.env, ...env },
-          timeout: timeout,
-        },
-        async (error, stdout, stderr) => {
-          await execCallback(
-            resolve,
-            error,
-            stdout,
-            stderr,
-            run,
-            logProvider,
-            workingDir,
-            appendFile
+      },
+      async (error, stdout, stderr) => {
+        if (error) {
+          await logProvider.error(
+            `Failed to run command: "${maskSecretValues(command)}" on path: "${workingDir}".`
           );
+          resolve(err(assembleError(error)));
+        } else {
+          // parse '::set-output' patterns
+          const outputString = outputStrings.join("");
+          const outputObject = parseSetOutputCommand(outputString);
+          resolve(ok([outputString, outputObject]));
         }
-      );
-    }
+      }
+    );
+    const dataHandler = (data: string | Buffer) => {
+      if (appendFile) {
+        fs.appendFileSync(appendFile, data);
+      }
+      outputStrings.push(data as string);
+    };
+    cp.stdout?.on("data", (data: string | Buffer) => {
+      logProvider.info(maskSecretValues(data as string));
+      dataHandler(data);
+    });
+    cp.stderr?.on("data", (data: string | Buffer) => {
+      logProvider.error(maskSecretValues(data as string));
+      dataHandler(data);
+    });
+    // }
   });
 }
 
-function parseKeyValueInOutput(command: string): DotenvOutput | undefined {
-  if (command.startsWith("::set-output ")) {
-    const str = command.substring(12).trim();
-    const arr = str.split("=");
-    if (arr.length === 2) {
-      const key = arr[0].trim();
-      const value = arr[1].trim();
-      const output: DotenvOutput = { [key]: value };
-      return output;
+function parseSetOutputCommand(stdout: string): DotenvOutput {
+  const lines = stdout.toString().replace(/\r\n?/gm, "\n").split(/\r?\n/);
+  const output: DotenvOutput = {};
+  for (const line of lines) {
+    if (line.startsWith("::set-output ")) {
+      const str = line.substring(12).trim();
+      const arr = str.split("=");
+      if (arr.length === 2) {
+        const key = arr[0].trim();
+        const value = arr[1].trim();
+        output[key] = value;
+      }
     }
   }
-  return undefined;
-}
-
-export async function execCallback(
-  resolve: any,
-  error: ExecException | null,
-  stdout: string,
-  stderr: string,
-  command: string,
-  logProvider: LogProvider,
-  workingDir: string,
-  appendFile?: string
-) {
-  if (stdout) {
-    await logProvider.info(maskSecretValues(stdout));
-    if (appendFile) {
-      await fs.appendFile(appendFile, stdout);
-    }
-  }
-  if (stderr) {
-    await logProvider.error(maskSecretValues(stderr));
-    if (appendFile) {
-      await fs.appendFile(appendFile, stderr);
-    }
-  }
-  if (error) {
-    await logProvider.error(
-      `Failed to run command: "${maskSecretValues(command)}" on path: "${workingDir}".`
-    );
-    resolve(err(assembleError(error)));
-  } else {
-    resolve(ok([stdout, {}]));
-  }
+  return output;
 }
 
 export function maskSecretValues(stdout: string): string {

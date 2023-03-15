@@ -317,19 +317,11 @@ jobs:
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
-        if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
+        if: ${{ success() || (failure() && github.run_attempt >= 2) }}
         with:
           name: ${{ steps.get-report-name.outputs.name }}
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
-
-      - name: Upload perf metrics
-        uses: actions/upload-artifact@v2
-        if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
-        with:
-          name: ${{ steps.get-report-name.outputs.name }}_metrics
-          path: |
-            /tmp/.metrics/output.txt
 
   tear-down:
     if: ${{ always() }}
@@ -375,7 +367,7 @@ jobs:
 
   rerun:
     needs: tear-down
-    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
+    if: ${{ failure() && github.run_attempt < 2 }}
     runs-on: ubuntu-latest
     steps:
       - name: rerun
@@ -390,7 +382,7 @@ jobs:
 
   report:
     needs: execute-case
-    if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5)) }}
+    if: ${{ (success() || (failure() && github.run_attempt >= 2)) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -476,7 +468,9 @@ jobs:
 
             job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             report_file=`find ~/artifacts -wholename "*${job_id}/mochawesome.json"`
+            echo "Tried to find the $report_file"
             if [ ! -z "$report_file" ]; then
+              echo "Found the $report_file"
               tests=`cat $report_file | jq -cr '[ .. | objects | with_entries(select(.key=="tests")) | select(. != {}) | select(.tests | type=="array") ] | map(.tests | .[]) | .[]'`
               lable=""
               while IFS= read -r test;
@@ -506,6 +500,8 @@ jobs:
                   skipped_lists="$skipped_lists $row"
                 fi
               done <<< $tests
+            else
+              echo "Not found the $report_file"
             fi
 
           done <<< $cases
@@ -522,7 +518,7 @@ jobs:
           fi
 
           echo "body=$body" >> $GITHUB_OUTPUT
-          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "to=zhiyou@microsoft" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail to the whole team

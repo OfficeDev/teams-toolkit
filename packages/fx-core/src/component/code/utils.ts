@@ -121,19 +121,19 @@ export async function executeCommand(
         }
       }
     );
-    cp.stdout?.on("data", (data: string | Buffer) => {
-      logProvider.info(maskSecretValues(data as string));
+    const dataHandler = (data: string | Buffer) => {
       if (appendFile) {
         fs.appendFileSync(appendFile, data);
       }
       outputStrings.push(data as string);
+    };
+    cp.stdout?.on("data", (data: string | Buffer) => {
+      logProvider.info(maskSecretValues(data as string));
+      dataHandler(data);
     });
     cp.stderr?.on("data", (data: string | Buffer) => {
       logProvider.error(maskSecretValues(data as string));
-      if (appendFile) {
-        fs.appendFileSync(appendFile, data);
-      }
-      outputStrings.push(data as string);
+      dataHandler(data);
     });
     // }
   });

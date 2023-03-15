@@ -142,7 +142,7 @@ export class YoChecker implements DependencyChecker {
   }
 
   private async validate(): Promise<boolean> {
-    return await this.isInstalled();
+    return await fs.pathExists(this.getSentinelPath());
   }
 
   private getDefaultInstallPath(): string {

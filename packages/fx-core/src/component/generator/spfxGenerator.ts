@@ -18,7 +18,6 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import {
-  DependencyInstallError,
   LatestPackageInstallError,
   ScaffoldError,
   YoGeneratorScaffoldError,

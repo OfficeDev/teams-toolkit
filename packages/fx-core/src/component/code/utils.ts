@@ -70,13 +70,13 @@ export async function executeCommand(
     if (shell === "cmd") {
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
-    if (!shell) {
-      await logProvider.warning(
-        `Failed to run command: "${command}" on path: "${workingDir}", shell type unspecified`
-      );
-      resolve(ok(["", {}]));
-      return;
-    }
+    // if (!shell) {
+    //   await logProvider.warning(
+    //     `Failed to run command: "${command}" on path: "${workingDir}", shell type unspecified`
+    //   );
+    //   resolve(ok(["", {}]));
+    //   return;
+    // }
     // const osList = shellToOsMap[shell];
     // if (!osList.includes(os.platform())) {
     //   await logProvider.warning(

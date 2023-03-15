@@ -57,6 +57,14 @@ import axios from "axios";
 import { AadApp } from "../component/resource/aadApp/aadApp";
 import fs from "fs-extra";
 import * as dotenv from "dotenv";
+import { validate as uuidValidate } from "uuid";
+import {
+  CoreQuestionNames,
+  selectAadAppManifestQuestion,
+  selectEnvNode,
+  selectTeamsAppManifestQuestion,
+} from "./question";
+import { envUtil } from "../component/utils/envUtil";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -68,6 +76,13 @@ export class CollaborationConstants {
   static readonly AadObjectIdEnv = "AAD_APP_OBJECT_ID";
   static readonly TeamsAppIdEnv = "TEAMS_APP_ID";
   static readonly TeamsAppTenantIdEnv = "TEAMS_APP_TENANT_ID";
+
+  // App Type Question
+  static readonly AppType = "collaborationType";
+  static readonly TeamsAppQuestionId = "teamsApp";
+  static readonly AadAppQuestionId = "aadApp";
+
+  static readonly placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
 }
 
 export class CollaborationUtil {
@@ -212,27 +227,95 @@ export class CollaborationUtil {
     }
 
     // 3. load from env
-    // TODO: load env from context
-    teamsAppId = teamsAppId ?? process.env[CollaborationConstants.TeamsAppIdEnv] ?? undefined;
-    aadObjectId = aadObjectId ?? process.env[CollaborationConstants.AadObjectIdEnv] ?? undefined;
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+    const aadAppManifestFilePath = inputs?.[CoreQuestionNames.AadAppManifestFilePath] as string;
 
-    if (!teamsAppId) {
-      return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.FailedToGetTeamsAppId,
-          getLocalizedString(
-            "core.collaboration.error.failedToGetTeamsAppId",
-            CollaborationConstants.TeamsAppIdEnv
-          )
-        )
-      );
+    if (teamsAppManifestFilePath && !teamsAppId) {
+      const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
+      if (teamsAppIdRes.isOk()) {
+        teamsAppId = await this.parseManifestId(teamsAppIdRes.value, inputs);
+      } else {
+        return err(teamsAppIdRes.error);
+      }
+    }
+
+    if (aadAppManifestFilePath && !aadObjectId) {
+      const aadObjectIdRes = await this.loadManifestId(aadAppManifestFilePath);
+      if (aadObjectIdRes.isOk()) {
+        aadObjectId = await this.parseManifestId(aadObjectIdRes.value, inputs);
+      } else {
+        return err(aadObjectIdRes.error);
+      }
     }
 
     return ok({
       teamsAppId: teamsAppId,
       aadObjectId: aadObjectId,
     });
+  }
+
+  static async loadManifestId(manifestFilePath: string): Promise<Result<string, FxError>> {
+    try {
+      if (!manifestFilePath || !(await fs.pathExists(manifestFilePath))) {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.FailedToLoadManifestFile,
+            getLocalizedString("core.collaboration.error.manifestFileNotExist", manifestFilePath)
+          )
+        );
+      }
+
+      const manifest = await fs.readJson(manifestFilePath);
+      if (!manifest || !manifest.id) {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.FailedToLoadManifestFile,
+            getLocalizedString("core.collaboration.error.manifestFileNotValid", manifestFilePath)
+          )
+        );
+      }
+
+      const id = manifest.id;
+      return ok(id);
+    } catch (error) {
+      return err(
+        new UserError(
+          SolutionSource,
+          SolutionError.FailedToLoadManifestFile,
+          getLocalizedString("core.collaboration.error.failedToLoadManifest", manifestFilePath)
+        )
+      );
+    }
+  }
+
+  static requireEnvQuestion(appId: string): boolean {
+    if (appId.match(CollaborationConstants.placeholderRegex)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  static async parseManifestId(appId: string, inputs: Inputs): Promise<string | undefined> {
+    // Hardcoded id in manifest
+    if (uuidValidate(appId)) {
+      return appId;
+    } else if (appId.match(CollaborationConstants.placeholderRegex)) {
+      // Reference value in .env file
+      const envName = appId
+        .replace(/\$*\{+/g, "")
+        .replace(/\}+/g, "")
+        .trim();
+      const targetEnv = inputs.env ?? inputs?.[CoreQuestionNames.TargetEnvName];
+      const res = await envUtil.readEnv(inputs.projectPath!, targetEnv!);
+      if (res.isOk() && res.value) {
+        return res.value[envName] ?? undefined;
+      }
+    }
+
+    return undefined;
   }
 }
 
@@ -735,7 +818,21 @@ export async function getQuestionsForGrantPermission(
       return err(jsonObjectRes.error);
     }
     const jsonObject = jsonObjectRes.value;
-    return ok(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+
+    const root = await getCollaborationQuestionNode(inputs);
+    root.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    return ok(root);
+  }
+  return ok(undefined);
+}
+
+export async function getQuestionsForListCollaborator(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  if (isDynamicQuestion) {
+    const root = await getCollaborationQuestionNode(inputs);
+    return ok(root);
   }
   return ok(undefined);
 }
@@ -750,4 +847,99 @@ function getPrintEnvMessage(env: string | undefined, message: string) {
         { content: `${env}\n`, color: Colors.BRIGHT_MAGENTA },
       ]
     : [];
+}
+
+function selectAppTypeQuestion(): MultiSelectQuestion {
+  return {
+    name: CollaborationConstants.AppType,
+    title: getLocalizedString("core.selectCollaborationAppTypeQuestion.title"),
+    type: "multiSelect",
+    staticOptions: [
+      {
+        id: CollaborationConstants.AadAppQuestionId,
+        label: getLocalizedString("core.aadAppQuestion.label"),
+        description: getLocalizedString("core.aadAppQuestion.description"),
+      },
+      {
+        id: CollaborationConstants.TeamsAppQuestionId,
+        label: getLocalizedString("core.teamsAppQuestion.label"),
+        description: getLocalizedString("core.teamsAppQuestion.description"),
+      },
+    ],
+  };
+}
+
+async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> {
+  const root = new QTreeNode(selectAppTypeQuestion());
+
+  // Teams app manifest select node
+  const teamsAppSelectNode = new QTreeNode(selectTeamsAppManifestQuestion());
+  teamsAppSelectNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
+  root.addChild(teamsAppSelectNode);
+
+  // Aad app manifest select node
+  const aadAppSelectNode = new QTreeNode(selectAadAppManifestQuestion());
+  aadAppSelectNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
+  root.addChild(aadAppSelectNode);
+
+  // Env select node
+  const envNode = await selectEnvNode(inputs);
+  if (!envNode) {
+    return root;
+  }
+  envNode.condition = {
+    validFunc: validateEnvQuestion,
+  };
+  teamsAppSelectNode.addChild(envNode);
+  aadAppSelectNode.addChild(envNode);
+
+  return root;
+}
+
+export async function validateEnvQuestion(
+  input: any,
+  inputs?: Inputs
+): Promise<string | undefined> {
+  if (inputs?.env || inputs?.targetEnvName) {
+    return "Env already selected";
+  }
+
+  const appType = inputs?.[CollaborationConstants.AppType] as string[];
+  const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
+  const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
+  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
+  const teamsManifestPath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath];
+
+  // When both is selected, only show the question once at the end
+  if ((requireAad && !aadManifestPath) || (requireTeams && !teamsManifestPath)) {
+    return "Question not finished";
+  }
+
+  // Only show env question when manifest id is referencing value from .env file
+  let requireEnv = false;
+  if (requireTeams && teamsManifestPath) {
+    const teamsAppIdRes = await CollaborationUtil.loadManifestId(teamsManifestPath);
+    if (teamsAppIdRes.isOk()) {
+      requireEnv = CollaborationUtil.requireEnvQuestion(teamsAppIdRes.value);
+      if (requireEnv) {
+        return undefined;
+      }
+    } else {
+      return "Invalid manifest";
+    }
+  }
+
+  if (requireAad && aadManifestPath) {
+    const aadAppIdRes = await CollaborationUtil.loadManifestId(aadManifestPath);
+    if (aadAppIdRes.isOk()) {
+      requireEnv = CollaborationUtil.requireEnvQuestion(aadAppIdRes.value);
+      if (requireEnv) {
+        return undefined;
+      }
+    } else {
+      return "Invalid manifest";
+    }
+  }
+
+  return "Env question not required";
 }

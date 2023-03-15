@@ -29,8 +29,10 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Prerequisites
 
-> - [SharePoint Framework development environment](https://aka.ms/teamsfx-spfx-dev-environment-setup)
+> - [Set up SharePoint Framework development environment](https://aka.ms/teamsfx-spfx-dev-environment-setup)
 > - An Microsoft 365 account. Get your own free Microsoft 365 tenant from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+> - Download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download [TeamsFx CLI](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-cli)
+
 
 ## Solution
 

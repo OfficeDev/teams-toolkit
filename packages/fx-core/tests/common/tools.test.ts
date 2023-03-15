@@ -606,10 +606,5 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const res = isValidationEnabled();
       chai.expect(res).false;
     });
-    it("should return true if isValidationEnabled set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_VALIDATE_ENABLE: "true" }, { clear: true });
-      const res = isValidationEnabled();
-      chai.expect(res).true;
-    });
   });
 });

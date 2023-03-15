@@ -114,21 +114,15 @@ describe("Yo checker", () => {
       console.log("stub cleanup");
       return;
     });
-    const installStub = stub(YoChecker.prototype, <any>"installYo").callsFake(async () => {
-      console.log("stub installyo");
-      return;
-    });
-    const validateStub = stub(YoChecker.prototype, <any>"validate").callsFake(async () => {
-      console.log("stub validate");
-      return false;
+    stub(cpUtils, "executeCommand").resolves();
+    stub(fs, "pathExists").callsFake(async () => {
+      return true;
     });
 
     try {
       await yc.install();
     } catch {
-      assert.callCount(installStub, 1);
       assert.callCount(cleanStub, 2);
-      assert.callCount(validateStub, 1);
     }
   });
 

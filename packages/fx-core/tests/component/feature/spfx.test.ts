@@ -152,10 +152,6 @@ describe("spfx", () => {
     });
 
     it("questions: SPFx decouple enabled", () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_SPFX_DECOUPLE: "true",
-      });
-
       const node: QTreeNode = getSPFxScaffoldQuestion();
 
       chai.expect(node.children![0].data.name).equal(SPFXQuestionNames.load_package_version);

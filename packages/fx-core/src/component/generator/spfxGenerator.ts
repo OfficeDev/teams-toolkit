@@ -18,7 +18,6 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import {
-  DependencyInstallError,
   LatestPackageInstallError,
   ScaffoldError,
   YoGeneratorScaffoldError,
@@ -28,13 +27,11 @@ import { camelCase } from "lodash";
 import { Constants, ScaffoldProgressMessage } from "../resource/spfx/utils/constants";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
-import { isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { cpUtils } from "../../common/deps-checker";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { isSpfxDecoupleEnabled } from "../../common/featureFlags";
 import { SPFxVersionOptionIds } from "../resource/spfx/utils/question-helper";
 
 export class SPFxGenerator {
@@ -91,30 +88,8 @@ export class SPFxGenerator {
 
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
-      if (!isSpfxDecoupleEnabled()) {
-        const yoInstalled = await yoChecker.isInstalled();
-        const generatorInstalled = await spGeneratorChecker.isInstalled();
 
-        if (!yoInstalled || !generatorInstalled) {
-          await progressHandler?.next(
-            getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
-          );
-
-          if (isYoCheckerEnabled()) {
-            const yoRes = await yoChecker.ensureDependency(context);
-            if (yoRes.isErr()) {
-              throw DependencyInstallError("yo");
-            }
-          }
-
-          if (isGeneratorCheckerEnabled()) {
-            const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
-            if (spGeneratorRes.isErr()) {
-              throw DependencyInstallError("sharepoint generator");
-            }
-          }
-        }
-      } else if (shouldInstallLocally) {
+      if (shouldInstallLocally) {
         const latestYoInstalled = await yoChecker.isLatestInstalled();
         const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled();
 
@@ -152,25 +127,21 @@ export class SPFxGenerator {
 
       const yoEnv: NodeJS.ProcessEnv = process.env;
       if (yoEnv.PATH) {
-        yoEnv.PATH =
-          isYoCheckerEnabled() || shouldInstallLocally
-            ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-                process.env.PATH ?? ""
-              }`
-            : process.env.PATH;
+        yoEnv.PATH = shouldInstallLocally
+          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+              process.env.PATH ?? ""
+            }`
+          : process.env.PATH;
       } else {
-        yoEnv.Path =
-          isYoCheckerEnabled() || shouldInstallLocally
-            ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-                process.env.Path ?? ""
-              }`
-            : process.env.Path;
+        yoEnv.Path = shouldInstallLocally
+          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+              process.env.Path ?? ""
+            }`
+          : process.env.Path;
       }
 
       const args = [
-        isGeneratorCheckerEnabled() || shouldInstallLocally
-          ? spGeneratorChecker.getSpGeneratorPath()
-          : "@microsoft/sharepoint",
+        shouldInstallLocally ? spGeneratorChecker.getSpGeneratorPath() : "@microsoft/sharepoint",
         "--skip-install",
         "true",
         "--component-type",

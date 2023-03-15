@@ -323,14 +323,6 @@ jobs:
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
-      - name: Upload perf metrics
-        uses: actions/upload-artifact@v2
-        if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
-        with:
-          name: ${{ steps.get-report-name.outputs.name }}_metrics
-          path: |
-            /tmp/.metrics/output.txt
-
   tear-down:
     if: ${{ always() }}
     needs: execute-case
@@ -431,7 +423,6 @@ jobs:
 
           cases=`echo $jobs| jq -r '.[] | select(.name | contains("tests.ts")) | .name'`
 
-
           passed=0
           failed=0
           skipped=0
@@ -440,7 +431,6 @@ jobs:
           skipped_lists=""
 
           emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;"
-          echo $emails
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then
@@ -474,9 +464,13 @@ jobs:
               target_type=".NET"
             fi
 
+            name="${case//'.tests.ts'/}"
+            name="${name//.\//}"
+            name="${name//\//_}"
             job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
-            report_file=`find ~/artifacts -wholename "*${job_id}/mochawesome.json"`
+            report_file=`find ~/artifacts -wholename "*${name}*/mochawesome.json"`
             if [ ! -z "$report_file" ]; then
+              echo "Found the $report_file with $job_id and $name"
               tests=`cat $report_file | jq -cr '[ .. | objects | with_entries(select(.key=="tests")) | select(. != {}) | select(.tests | type=="array") ] | map(.tests | .[]) | .[]'`
               lable=""
               while IFS= read -r test;
@@ -506,6 +500,8 @@ jobs:
                   skipped_lists="$skipped_lists $row"
                 fi
               done <<< $tests
+            else
+              echo "Failed to find the $report_file with $job_id and $name"
             fi
 
           done <<< $cases

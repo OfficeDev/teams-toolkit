@@ -2,8 +2,6 @@ export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   AutomaticNpmInstall = "automaticNpmInstall",
-  YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
-  generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

@@ -32,6 +32,9 @@ export enum TelemetryEvent {
   AddFeatureStart = "add-feature-start",
   AddFeature = "add-feature",
 
+  AddWebpartStart = "add-web-part-start",
+  AddWebpart = "add-web-part",
+
   OpenManifestEditorStart = "open-manifest-editor-start",
   OpenManifestEditor = "open-manifest-editor",
 

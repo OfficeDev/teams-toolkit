@@ -106,16 +106,19 @@ describe("handlers", () => {
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
   });
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("getSystemInputs()", () => {
-    sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
   it("getAzureProjectConfigV3", async () => {
-    const sandbox = sinon.createSandbox();
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     const fake_config_v3 = {
@@ -130,11 +133,9 @@ describe("handlers", () => {
     chai.assert.exists(res?.projectSettings);
     chai.assert.equal(res?.projectSettings.appName, "fake_test");
     chai.assert.equal(res?.projectSettings.projectId, "fake_projectId");
-    sandbox.restore();
   });
 
   it("getAzureProjectConfigV3 return undefined", async () => {
-    const sandbox = sinon.createSandbox();
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
@@ -142,11 +143,9 @@ describe("handlers", () => {
       .resolves(err(new PathNotExistError("path not exist", "fake path")));
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.isUndefined(res);
-    sandbox.restore();
   });
 
   it("getSettingsVersion in v3", async () => {
-    const sandbox = sinon.createSandbox();
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
@@ -155,15 +154,14 @@ describe("handlers", () => {
       .resolves(ok({ currentVersion: "3.0.0" }));
     const res = await handlers.getSettingsVersion();
     chai.assert.equal(res, "3.0.0");
-    sandbox.restore();
   });
 
   it("openBackupConfigMd", async () => {
     const workspacePath = "test";
     const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
 
-    const openTextDocument = sinon.stub(vscode.workspace, "openTextDocument").resolves();
-    const executeCommand = sinon.stub(vscode.commands, "executeCommand").resolves();
+    const openTextDocument = sandbox.stub(vscode.workspace, "openTextDocument").resolves();
+    const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
 
     await handlers.openBackupConfigMd(workspacePath, filePath);
 
@@ -171,22 +169,22 @@ describe("handlers", () => {
     chai.assert.isTrue(
       executeCommand.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
     );
-    openTextDocument.restore();
-    executeCommand.restore();
   });
 
   it("addFileSystemWatcher in valid project", async () => {
     const workspacePath = "test";
-    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
       onDidChange: () => ({ dispose: () => undefined }),
     } as any;
-    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
-    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
-    const sendTelemetryEventFunc = sinon
+    const createWatcher = sandbox
+      .stub(vscode.workspace, "createFileSystemWatcher")
+      .returns(watcher);
+    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
+    const sendTelemetryEventFunc = sandbox
       .stub(ExtTelemetry, "sendTelemetryEvent")
       .callsFake(() => {});
 
@@ -195,28 +193,25 @@ describe("handlers", () => {
     chai.assert.isTrue(createWatcher.calledThrice);
     chai.assert.isTrue(createListener.calledThrice);
     chai.assert.isTrue(changeListener.calledOnce);
-    isValidProject.restore();
-    createWatcher.restore();
-    createListener.restore();
-    changeListener.restore();
-    sendTelemetryEventFunc.restore();
   });
 
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
-    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const isV3Enabled = sinon.stub(commonTools, "isV3Enabled").returns(true);
+    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+    const isV3Enabled = sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
       onDidChange: () => ({ dispose: () => undefined }),
       onDidDelete: () => ({ dispose: () => undefined }),
     } as any;
-    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
-    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
-    const deleteListener = sinon.stub(watcher, "onDidDelete").resolves();
-    const sendTelemetryEventFunc = sinon
+    const createWatcher = sandbox
+      .stub(vscode.workspace, "createFileSystemWatcher")
+      .returns(watcher);
+    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
+    const deleteListener = sandbox.stub(watcher, "onDidDelete").resolves();
+    const sendTelemetryEventFunc = sandbox
       .stub(ExtTelemetry, "sendTelemetryEvent")
       .callsFake(() => {});
 
@@ -225,49 +220,38 @@ describe("handlers", () => {
     chai.assert.equal(createWatcher.callCount, 4);
     chai.assert.equal(createListener.callCount, 4);
     chai.assert.isTrue(changeListener.calledTwice);
-    isValidProject.restore();
-    isV3Enabled.restore();
-    createWatcher.restore();
-    createListener.restore();
-    changeListener.restore();
-    deleteListener.restore();
-    sendTelemetryEventFunc.restore();
   });
 
   it("addFileSystemWatcher in invalid project", async () => {
     const workspacePath = "test";
-    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(false);
+    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
       onDidChange: () => ({ dispose: () => undefined }),
     } as any;
-    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
-    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const createWatcher = sandbox
+      .stub(vscode.workspace, "createFileSystemWatcher")
+      .returns(watcher);
+    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
 
     handlers.addFileSystemWatcher(workspacePath);
 
     chai.assert.isTrue(createWatcher.calledTwice);
     chai.assert.isTrue(createListener.calledTwice);
     chai.assert.isTrue(changeListener.notCalled);
-    isValidProject.restore();
-    createWatcher.restore();
-    createListener.restore();
-    changeListener.restore();
   });
 
   it("sendSDKVersionTelemetry", async () => {
     const filePath = "test/package-lock.json";
 
-    const readJsonFunc = sinon.stub(fs, "readJson").resolves();
-    const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const readJsonFunc = sandbox.stub(fs, "readJson").resolves();
+    const sendTelemetryEventFunc = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     handlers.sendSDKVersionTelemetry(filePath);
 
     chai.assert.isTrue(readJsonFunc.calledOnce);
-    readJsonFunc.restore();
-    sendTelemetryEventFunc.restore();
   });
 
   describe("command handlers", function () {
@@ -563,10 +547,9 @@ describe("handlers", () => {
   });
 
   it("openAccountHelpHandler()", async () => {
-    const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
+    const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
     await handlers.openAccountHelpHandler();
-    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
-    createOrShow.restore();
+    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
   });
 
   describe("runCommand()", function () {
@@ -878,45 +861,38 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler", async () => {
-    const executeCommands = sinon.stub(vscode.commands, "executeCommand");
-    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await handlers.openWelcomeHandler();
 
-    sinon.assert.calledOnceWithExactly(
+    sandbox.assert.calledOnceWithExactly(
       executeCommands,
       "workbench.action.openWalkthrough",
       "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
     );
-    executeCommands.restore();
-    sendTelemetryEvent.restore();
   });
 
   it("openSurveyHandler", async () => {
-    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    const openLink = sinon.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
-    sinon.stub(localizeUtils, "getDefaultString").returns("test");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const openLink = sandbox.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
+    sandbox.stub(localizeUtils, "getDefaultString").returns("test");
 
     await handlers.openSurveyHandler([extTelemetryEvents.TelemetryTriggerFrom.TreeView]);
     chai.assert.isTrue(sendTelemetryEvent.calledOnce);
     chai.assert.isTrue(openLink.calledOnce);
-    sendTelemetryEvent.restore();
-    openLink.restore();
   });
 
   it("openSamplesHandler", async () => {
-    const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
-    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await handlers.openSamplesHandler();
 
-    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, false);
-    createOrShow.restore();
-    sendTelemetryEvent.restore();
+    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, false);
   });
 
   it("openReadMeHandler v3", async () => {
-    const sandbox = sinon.createSandbox();
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
@@ -933,12 +909,9 @@ describe("handlers", () => {
 
     chai.assert.isTrue(openTextDocumentStub.calledOnce);
     chai.assert.isTrue(executeCommands.calledOnce);
-
-    sandbox.restore();
   });
 
   it("openReadMeHandler spfx - v2", async () => {
-    const sandbox = sinon.createSandbox();
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
@@ -960,32 +933,26 @@ describe("handlers", () => {
 
     chai.assert.isTrue(openTextDocumentStub.calledOnce);
     chai.assert.isTrue(executeCommands.calledOnce);
-
-    sandbox.restore();
   });
 
   it("signOutM365", async () => {
-    const signOut = sinon.stub(M365TokenInstance, "signout").resolves(true);
-    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(envTreeProviderInstance, "reloadEnvironments");
+    const signOut = sandbox.stub(M365TokenInstance, "signout").resolves(true);
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(envTreeProviderInstance, "reloadEnvironments");
 
     await handlers.signOutM365(false);
 
-    sinon.assert.calledOnce(signOut);
-    signOut.restore();
-    sendTelemetryEvent.restore();
+    sandbox.assert.calledOnce(signOut);
   });
 
   it("signOutAzure", async () => {
-    Object.setPrototypeOf(AzureAccountManager, sinon.stub());
-    const signOut = sinon.stub(AzureAccountManager.getInstance(), "signout");
-    const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    Object.setPrototypeOf(AzureAccountManager, sandbox.stub());
+    const signOut = sandbox.stub(AzureAccountManager.getInstance(), "signout");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await handlers.signOutAzure(false);
 
-    sinon.assert.calledOnce(signOut);
-    signOut.restore();
-    sendTelemetryEvent.restore();
+    sandbox.assert.calledOnce(signOut);
   });
 
   describe("decryptSecret", function () {
@@ -1420,8 +1387,8 @@ describe("handlers", () => {
       scratch: "no",
       platform: Platform.VSCode,
     };
-    sinon.stub(handlers, "core").value(new MockCore());
-    const createProject = sinon.spy(handlers.core, "createProject");
+    sandbox.stub(handlers, "core").value(new MockCore());
+    const createProject = sandbox.spy(handlers.core, "createProject");
 
     await handlers.downloadSample(inputs);
 
@@ -1430,41 +1397,39 @@ describe("handlers", () => {
   });
 
   it("deployAadAppManifest", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(false);
-    sinon.stub(handlers, "core").value(new MockCore());
-    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sinon.assert.calledOnce(deployArtifacts);
+    sandbox.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
-    sinon.restore();
   });
 
   it("deployAadAppManifest v3", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
-    sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
-    sinon.stub(handlers, "core").value(new MockCore());
-    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sinon.assert.calledOnce(deployAadManifest);
+    sandbox.assert.calledOnce(deployAadManifest);
     chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
     deployAadManifest.restore();
-    sinon.restore();
   });
 
   it("showError", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(false);
-    sinon.stub(localizeUtils, "localize").returns("");
-    const showErrorMessageStub = sinon
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    sandbox.stub(localizeUtils, "localize").returns("");
+    const showErrorMessageStub = sandbox
       .stub(vscode.window, "showErrorMessage")
       .callsFake((title: string, button: any) => {
         return Promise.resolve(button);
       });
-    const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(vscode.commands, "executeCommand");
+    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(vscode.commands, "executeCommand");
     const error = new UserError("test source", "test name", "test message", "test displayMessage");
     error.helpLink = "test helpLink";
 
@@ -1477,7 +1442,6 @@ describe("handlers", () => {
         "help-link": "test helpLink",
       })
     );
-    sinon.restore();
   });
 
   describe("promptSPFxUpgrade", async () => {
@@ -2024,8 +1988,9 @@ describe("handlers", () => {
   });
 
   it("refreshSPFxTreeOnFileChanged", async () => {
-    const initGlobalVariables = sinon.stub(globalVariables, "initializeGlobalVariables");
-    const updateTreeViewsOnSPFxChanged = sinon
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
+    const updateTreeViewsOnSPFxChanged = sandbox
       .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
       .resolves();
 

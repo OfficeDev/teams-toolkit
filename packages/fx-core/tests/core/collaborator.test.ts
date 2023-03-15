@@ -50,6 +50,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { CoreQuestionNames } from "../../src/core/question";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { setTools } from "../../src/core/globalVars";
+import { environmentManager } from "../../src/core/environment";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -935,6 +936,30 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(result.error.name, "errorName");
       }
     });
+
+    it("load manifest failed in Teams app", async () => {
+      inputs[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
+      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .resolves(err(new UserError("source", "name", "message")));
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isErr());
+    });
+
+    it("load manifest failed in aad app", async () => {
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
+      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .resolves(err(new UserError("source", "name", "message")));
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isErr());
+    });
   });
 
   describe("collaboration v3", () => {
@@ -1345,12 +1370,14 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("return undefined when invalid", async () => {
-      const res = await CollaborationUtil.parseManifestId("${TEST}", inputs);
+      const res = await CollaborationUtil.parseManifestId("TEST", inputs);
       assert.isUndefined(res);
     });
 
     it("return undefined when throw error", async () => {
-      sandbox.stub();
+      sandbox.stub(envUtil, "readEnv").resolves(err(new UserError("source", "name", "message")));
+      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
+      assert.isUndefined(res);
     });
   });
 
@@ -1467,6 +1494,22 @@ describe("Collaborator APIs for V3", () => {
       assert.equal(res, "Invalid manifest");
     });
 
+    it("env node validation: select aad, need select env", async () => {
+      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
+      inputs.env = undefined;
+
+      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
+        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
+      });
+      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
+        return true;
+      });
+
+      const res = await validateEnvQuestion(undefined, inputs);
+      assert.isUndefined(res);
+    });
+
     it("happy path: getQuestionsForGrantPermission", async () => {
       inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
       inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
@@ -1477,6 +1520,8 @@ describe("Collaborator APIs for V3", () => {
       sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
         return true;
       });
+      sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev", "test"]));
+      sandbox.stub(fs, "pathExistsSync").returns(true);
       const tools = new MockTools();
       setTools(tools);
       sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
@@ -1564,15 +1609,23 @@ describe("Collaborator APIs for V3", () => {
       }
     });
 
+    it("getQuestionsForGrantPermission not dynamic", async () => {
+      inputs.platform = Platform.CLI_HELP;
+      const nodeRes = await getQuestionsForGrantPermission(inputs);
+      assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
+    });
+
     it("happy path: getQuestionsForListCollaborator", async () => {
       inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
       inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs.platform = Platform.VSCode;
       sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
         return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
       });
       sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
         return true;
       });
+      sandbox.stub(fs, "pathExistsSync").returns(true);
       const nodeRes = await getQuestionsForListCollaborator(inputs);
       assert.isTrue(nodeRes.isOk());
       if (nodeRes.isOk()) {
@@ -1646,6 +1699,12 @@ describe("Collaborator APIs for V3", () => {
           assert.isUndefined(aadAppQuestionActivate);
         }
       }
+    });
+
+    it("getQuestionsForListCollaborator not dynamic", async () => {
+      inputs.platform = Platform.CLI_HELP;
+      const nodeRes = await getQuestionsForListCollaborator(inputs);
+      assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
     });
   });
 });

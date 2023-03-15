@@ -373,7 +373,7 @@
   "error.DotEnvFileNotExistError": "Environment %s not found. Make sure the .env.%s file exist.",
   "error.InvalidEnvNameError": "Environment name can only contain letters, digits, _ and -.",
   "error.UpgradeCanceledError": "If you don't want to upgrade your project, install another version of Teams Toolkit (version <= 2.10.0).",
-  "error.UpgradeV3CanceledError": "If you are not ready to upgrade, please continue to use the old version Teams Toolkit",
+  "error.UpgradeV3CanceledError": "If you are not ready to upgrade, please continue to use the old version of Teams Toolkit",
   "error.ConsolidateCanceledError": "If you don't want to upgrade your project, install another version of Teams Toolkit (version <= 3.7.0).",
   "error.OperationNotPermittedError": "Operation is not permitted: %s",
   "error.InvalidInputError": "Failed to update context: %s",

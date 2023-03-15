@@ -490,6 +490,7 @@ export enum SolutionError {
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
+  InvalidManifestError = "InvalidManifestError",
   FailedToLoadManifestFile = "FailedToLoadManifestFile",
 }
 

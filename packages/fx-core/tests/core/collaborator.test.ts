@@ -1313,7 +1313,7 @@ describe("Collaborator APIs for V3", () => {
     it("manifest not exist", async () => {
       sandbox.stub(fs, "pathExists").resolves(false);
       const res = await CollaborationUtil.loadManifestId("manifest");
-      assert.isTrue(res.isErr() && res.error.name == "FailedToLoadManifestFile");
+      assert.isTrue(res.isErr() && res.error.name == "FileNotFoundError");
     });
 
     it("manifestFileNotValid", async () => {
@@ -1322,7 +1322,7 @@ describe("Collaborator APIs for V3", () => {
         .stub(fs, "readJson")
         .resolves(JSON.parse('{"test":"00000000-0000-0000-0000-000000000000"}'));
       const res = await CollaborationUtil.loadManifestId("manifest");
-      assert.isTrue(res.isErr() && res.error.name == "FailedToLoadManifestFile");
+      assert.isTrue(res.isErr() && res.error.name == "InvalidManifestError");
     });
 
     it("unexpected error", async () => {

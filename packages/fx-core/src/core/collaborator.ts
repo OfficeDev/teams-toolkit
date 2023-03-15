@@ -65,6 +65,7 @@ import {
   selectTeamsAppManifestQuestion,
 } from "./question";
 import { envUtil } from "../component/utils/envUtil";
+import { FileNotFoundError } from "../error/common";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -257,13 +258,7 @@ export class CollaborationUtil {
   static async loadManifestId(manifestFilePath: string): Promise<Result<string, FxError>> {
     try {
       if (!manifestFilePath || !(await fs.pathExists(manifestFilePath))) {
-        return err(
-          new UserError(
-            SolutionSource,
-            SolutionError.FailedToLoadManifestFile,
-            getLocalizedString("core.collaboration.error.manifestFileNotExist", manifestFilePath)
-          )
-        );
+        return err(new FileNotFoundError(SolutionSource, manifestFilePath));
       }
 
       const manifest = await fs.readJson(manifestFilePath);
@@ -271,8 +266,8 @@ export class CollaborationUtil {
         return err(
           new UserError(
             SolutionSource,
-            SolutionError.FailedToLoadManifestFile,
-            getLocalizedString("core.collaboration.error.manifestFileNotValid", manifestFilePath)
+            SolutionError.InvalidManifestError,
+            getLocalizedString("error.collaboration.InvalidManifestError", manifestFilePath)
           )
         );
       }
@@ -284,18 +279,14 @@ export class CollaborationUtil {
         new UserError(
           SolutionSource,
           SolutionError.FailedToLoadManifestFile,
-          getLocalizedString("core.collaboration.error.failedToLoadManifest", manifestFilePath)
+          getLocalizedString("error.collaboration.FailedToLoadManifest", manifestFilePath)
         )
       );
     }
   }
 
   static requireEnvQuestion(appId: string): boolean {
-    if (appId.match(CollaborationConstants.placeholderRegex)) {
-      return true;
-    } else {
-      return false;
-    }
+    return !!appId.match(CollaborationConstants.placeholderRegex);
   }
 
   static async parseManifestId(appId: string, inputs: Inputs): Promise<string | undefined> {

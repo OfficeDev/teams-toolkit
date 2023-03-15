@@ -251,6 +251,7 @@ describe("Add capability V3", () => {
   it("Add command and response bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
+      TEAMSFX_V3: "false",
     });
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
@@ -263,6 +264,7 @@ describe("Add capability V3", () => {
   it("Add workflow bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
+      TEAMSFX_V3: "false",
     });
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.WorkflowBot];

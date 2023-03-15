@@ -601,13 +601,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const res = isApiConnectEnabled();
       chai.expect(res).true;
     });
-    it("should return true if isValidationEnabled set", () => {
-      mockedEnvRestore = mockedEnv({ isValidationEnabled: "false" }, { clear: true });
+    it("should return false if isValidationEnabled set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_VALIDATE_ENABLE: "false" }, { clear: true });
       const res = isValidationEnabled();
       chai.expect(res).false;
     });
     it("should return true if isValidationEnabled set", () => {
-      mockedEnvRestore = mockedEnv({ isValidationEnabled: "true" }, { clear: true });
+      mockedEnvRestore = mockedEnv({ TEAMSFX_VALIDATE_ENABLE: "true" }, { clear: true });
       const res = isValidationEnabled();
       chai.expect(res).true;
     });

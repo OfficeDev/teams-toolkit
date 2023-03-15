@@ -474,7 +474,7 @@ jobs:
             name="${name//.\//}"
             name="${name//\//_}"
             job_id=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
-            report_file=`find ~/artifacts -wholename "${name}*/mochawesome.json"`
+            report_file=`find ~/artifacts -wholename "*${name}*/mochawesome.json"`
             echo "Tried to find the $report_file with $job_id with $name"
             if [ ! -z "$report_file" ]; then
               echo "Found the $report_file with $job_id with $name"

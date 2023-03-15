@@ -22,11 +22,14 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set TAB_DOMAIN for local launch
+    name: Set TAB_DOMAIN for local launch
     with:
-      envs:
-        TAB_DOMAIN: localhost:53000
-        TAB_ENDPOINT: https://localhost:53000
+      run: ::set-output TAB_DOMAIN=localhost:53000
+  - uses: script # Set TAB_ENDPOINT for local launch
+    name: Set TAB_ENDPOINT for local launch
+    with:
+      run: ::set-output TAB_ENDPOINT=https://localhost:53000
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
@@ -62,7 +65,7 @@ deploy:
     with:
       args: install --no-audit
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./.localSettings
       envs:

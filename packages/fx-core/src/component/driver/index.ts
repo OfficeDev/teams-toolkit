@@ -23,7 +23,6 @@ import "./script/npmBuildDriver";
 import "./script/npxBuildDriver";
 import "./script/scriptDriver";
 import "./prerequisite/installDriver";
-import "./env/addEnvironmentVariable";
 import "./file/createOrUpdateEnvironmentFile";
 import "./file/createOrUpdateJsonFile";
 import "./file/updateEnv";

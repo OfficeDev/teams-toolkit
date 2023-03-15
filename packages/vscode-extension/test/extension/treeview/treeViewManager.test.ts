@@ -77,7 +77,6 @@ describe("TreeViewManager", () => {
   });
 
   it("updateTreeViewsByContent that removes project related commands", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));

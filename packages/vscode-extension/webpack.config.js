@@ -19,7 +19,6 @@ const config = {
   entry: {
     extension: "./src/extension.ts", // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
     client: "./src/controls/index.tsx",
-    tree: "./src/treeview/webViewProvider/tree.tsx",
   },
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/

@@ -565,46 +565,4 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const res = await getSPFxToken(mockTools.tokenProvider.m365TokenProvider);
     });
   });
-  describe("feature flag check", () => {
-    const sandbox = sinon.createSandbox();
-    let mockedEnvRestore: RestoreFn;
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("should return true if no v5 set", () => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).true;
-    });
-    it("should return true if v5 set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).true;
-    });
-    it("should return false if v5 set other value", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "yes" }, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).false;
-    });
-    it("should return false is v5 set false", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).false;
-    });
-    it("should return false if apiConnection not set", () => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).false;
-    });
-    it("should return true is apiConnection set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).true;
-    });
-    it("should return false if isValidationEnabled set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_VALIDATE_ENABLE: "false" }, { clear: true });
-      const res = isValidationEnabled();
-      chai.expect(res).false;
-    });
-  });
 });

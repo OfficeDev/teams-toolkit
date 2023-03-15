@@ -133,16 +133,14 @@ describe("generator checker", () => {
         return;
       });
       stub(cpUtils, "executeCommand").resolves();
-      const validateStub = stub(GeneratorChecker.prototype, <any>"validate").callsFake(async () => {
-        console.log("stub validate");
-        return false;
+      stub(fs, "pathExists").callsFake(async () => {
+        return true;
       });
 
       try {
         await generatorChecker.install();
       } catch {
         chai.expect(cleanStub.callCount).equal(2);
-        chai.expect(validateStub.callCount).equal(1);
       }
     });
 

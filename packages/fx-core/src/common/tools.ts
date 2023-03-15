@@ -413,7 +413,7 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : false;
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
 }
 
 export function isVideoFilterEnabled(): boolean {

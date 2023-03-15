@@ -11,7 +11,7 @@ import {
 } from "@microsoft/teamsfx-core/build/component/question";
 import { Argv } from "yargs";
 import activate from "../activate";
-import { CLIHelpInputs, EmptyQTreeNode, RootFolderNode, RootFolderOptions } from "../constants";
+import { CLIHelpInputs, EmptyQTreeNode, RootFolderNode } from "../constants";
 import cliTelemetry from "../telemetry/cliTelemetry";
 
 import {

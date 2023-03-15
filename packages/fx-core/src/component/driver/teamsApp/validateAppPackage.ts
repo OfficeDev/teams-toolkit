@@ -136,11 +136,14 @@ export class ValidateAppPackageDriver implements StepDriver {
       context.ui?.showMessage("info", message, false);
     } catch (e: any) {
       context.logProvider?.warning(
-        getLocalizedString("driver.teamsApp.validate.apiFailed", e.message)
+        getLocalizedString("error.teamsApp.validate.apiFailed", e.message)
       );
       context.ui?.showMessage(
         "warn",
-        getLocalizedString("driver.teamsApp.validate.apiFailed", e.displayMessage),
+        getLocalizedString(
+          "error.teamsApp.validate.apiFailed.display",
+          "command:fx-extension.showOutputChannel"
+        ),
         false
       );
     }

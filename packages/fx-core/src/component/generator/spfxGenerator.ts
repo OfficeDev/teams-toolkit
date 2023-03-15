@@ -2,7 +2,16 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ContextV3, err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  Stage,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -56,13 +65,16 @@ export class SPFxGenerator {
     return ok(undefined);
   }
 
-  private static async doYeomanScaffold(
+  public static async doYeomanScaffold(
     context: ContextV3,
     inputs: Inputs,
     destinationPath: string
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<string, FxError>> {
     const ui = context.userInteraction;
-    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
+    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(
+      ui,
+      inputs.stage == Stage.addWebpart
+    );
     const shouldInstallLocally =
       inputs[SPFXQuestionNames.use_global_package_or_install_local] ===
       SPFxVersionOptionIds.installLocally;
@@ -70,6 +82,7 @@ export class SPFxGenerator {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
       const solutionName = inputs[CoreQuestionNames.AppName] as string;
+      const isAddSPFx = inputs.stage == Stage.addWebpart;
 
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = camelCase(componentName);
@@ -78,7 +91,6 @@ export class SPFxGenerator {
 
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
-
       if (!isSpfxDecoupleEnabled()) {
         const yoInstalled = await yoChecker.isInstalled();
         const generatorInstalled = await spGeneratorChecker.isInstalled();
@@ -127,7 +139,13 @@ export class SPFxGenerator {
         }
       }
 
-      await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.scaffoldProject"));
+      await progressHandler?.next(
+        getLocalizedString(
+          isAddSPFx
+            ? "driver.spfx.add.progress.scaffoldWebpart"
+            : "plugins.spfx.scaffold.scaffoldProject"
+        )
+      );
       if (inputs.platform === Platform.VSCode) {
         (context.logProvider as any).outputChannel.show();
       }
@@ -175,7 +193,7 @@ export class SPFxGenerator {
 
       try {
         await cpUtils.executeCommand(
-          destinationPath,
+          isAddSPFx ? inputs["spfxFolder"] : destinationPath,
           context.logProvider,
           {
             timeout: 2 * 60 * 1000,
@@ -192,8 +210,10 @@ export class SPFxGenerator {
       }
 
       const newPath = path.join(destinationPath, "src");
-      const currentPath = path.join(destinationPath, solutionName!);
-      await fs.rename(currentPath, newPath);
+      if (!isAddSPFx) {
+        const currentPath = path.join(destinationPath, solutionName!);
+        await fs.rename(currentPath, newPath);
+      }
 
       await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.updateManifest"));
       const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
@@ -208,11 +228,14 @@ export class SPFxGenerator {
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
       const componentId = manifestJson.id;
-      if (!context.templateVariables) {
-        context.templateVariables = Generator.getDefaultVariables(solutionName);
+
+      if (!isAddSPFx) {
+        if (!context.templateVariables) {
+          context.templateVariables = Generator.getDefaultVariables(solutionName);
+        }
+        context.templateVariables["componentId"] = componentId;
+        context.templateVariables["webpartName"] = webpartName;
       }
-      context.templateVariables["componentId"] = componentId;
-      context.templateVariables["webpartName"] = webpartName;
 
       // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
       const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
@@ -235,7 +258,7 @@ export class SPFxGenerator {
       }
 
       await progressHandler?.end(true);
-      return ok(undefined);
+      return ok(componentId);
     } catch (error) {
       await progressHandler?.end(false);
       return err(ScaffoldError(error));

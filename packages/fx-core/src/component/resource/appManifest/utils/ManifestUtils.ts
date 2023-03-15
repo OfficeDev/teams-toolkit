@@ -107,7 +107,12 @@ export class ManifestUtils {
     capabilities: v3.ManifestCapability[],
     isM365 = false
   ): Promise<Result<undefined, FxError>> {
-    const appManifestRes = await this.readAppManifest(inputs.projectPath);
+    let appManifestRes;
+    if (isV3Enabled()) {
+      appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
+    } else {
+      appManifestRes = await this.readAppManifest(inputs.projectPath);
+    }
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
     for (const capability of capabilities) {
@@ -233,8 +238,16 @@ export class ManifestUtils {
     if (inputs.validDomain && !appManifest.validDomains?.includes(inputs.validDomain)) {
       appManifest.validDomains?.push(inputs.validDomain);
     }
-    const writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
-    if (writeRes.isErr()) return err(writeRes.error);
+
+    if (isV3Enabled()) {
+      const content = JSON.stringify(appManifest, undefined, 4);
+      const contentV2 = convertManifestTemplateToV2(content);
+      await fs.writeFile(inputs["addManifestPath"], contentV2);
+    } else {
+      const writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
+      if (writeRes.isErr()) return err(writeRes.error);
+    }
+
     return ok(undefined);
   }
 

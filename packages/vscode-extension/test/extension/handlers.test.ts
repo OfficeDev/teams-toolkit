@@ -69,7 +69,6 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
-import { restore } from "sinon";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
@@ -200,6 +199,38 @@ describe("handlers", () => {
     createWatcher.restore();
     createListener.restore();
     changeListener.restore();
+    sendTelemetryEventFunc.restore();
+  });
+
+  it("addFileSystemWatcher detect SPFx project", async () => {
+    const workspacePath = "test";
+    const isValidProject = sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+    const isV3Enabled = sinon.stub(commonTools, "isV3Enabled").returns(true);
+
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+      onDidDelete: () => ({ dispose: () => undefined }),
+    } as any;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const deleteListener = sinon.stub(watcher, "onDidDelete").resolves();
+    const sendTelemetryEventFunc = sinon
+      .stub(ExtTelemetry, "sendTelemetryEvent")
+      .callsFake(() => {});
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.equal(createWatcher.callCount, 4);
+    chai.assert.equal(createListener.callCount, 4);
+    chai.assert.isTrue(changeListener.calledTwice);
+    isValidProject.restore();
+    isV3Enabled.restore();
+    createWatcher.restore();
+    createListener.restore();
+    changeListener.restore();
+    deleteListener.restore();
     sendTelemetryEventFunc.restore();
   });
 
@@ -1990,5 +2021,17 @@ describe("handlers", () => {
       chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
     });
+  });
+
+  it("refreshSPFxTreeOnFileChanged", async () => {
+    const initGlobalVariables = sinon.stub(globalVariables, "initializeGlobalVariables");
+    const updateTreeViewsOnSPFxChanged = sinon
+      .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
+      .resolves();
+
+    await handlers.refreshSPFxTreeOnFileChanged();
+
+    chai.expect(initGlobalVariables.calledOnce).to.be.true;
+    chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
   });
 });

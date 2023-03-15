@@ -394,7 +394,26 @@ export function addFileSystemWatcher(workspacePath: string) {
     packageLockFileWatcher.onDidChange(async (event) => {
       await sendSDKVersionTelemetry(event.fsPath);
     });
+
+    if (isV3Enabled()) {
+      const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
+      yorcFileWatcher.onDidCreate(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+      yorcFileWatcher.onDidChange(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+      yorcFileWatcher.onDidDelete(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+    }
   }
+}
+
+export async function refreshSPFxTreeOnFileChanged() {
+  globalVariables.initializeGlobalVariables(globalVariables.context);
+
+  await TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {
@@ -1125,6 +1144,12 @@ export async function openFolderHandler(args?: any[]): Promise<Result<any, FxErr
   return ok(null);
 }
 
+export async function addWebpart(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
+
+  return await runCommand(Stage.addWebpart);
+}
+
 export async function runCommand(
   stage: Stage,
   defaultInputs?: Inputs
@@ -1203,6 +1228,10 @@ export async function runCommand(
       }
       case Stage.publishInDeveloperPortal: {
         result = await core.publishInDeveloperPortal(inputs);
+        break;
+      }
+      case Stage.addWebpart: {
+        result = await core.addWebpart(inputs);
         break;
       }
       default:

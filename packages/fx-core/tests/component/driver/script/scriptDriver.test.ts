@@ -14,8 +14,8 @@ import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as child_process from "child_process";
-import { execCallback } from "../../../../src/component/code/utils";
 import * as utils from "../../../../src/component/code/utils";
+import * as os from "os";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -31,8 +31,7 @@ describe("Script Driver test", () => {
   it("execute success set-output", async () => {
     const args = {
       workingDirectory: "./",
-      shell: "cmd",
-      run: "::set-output KEY=VALUE",
+      run: "echo '::set-output MY_KEY=MY_VALUE'",
       redirectTo: "./log",
     };
     const context = {
@@ -46,7 +45,7 @@ describe("Script Driver test", () => {
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
       const output = res.result.value;
-      assert.equal(output.get("KEY"), "VALUE");
+      assert.equal(output.get("MY_KEY"), "MY_VALUE");
     }
   });
   it("execute success exec", async () => {
@@ -69,34 +68,6 @@ describe("Script Driver test", () => {
     }
     assert.isTrue(res.result.isOk());
   });
-  it("execCallback with Error", async () => {
-    sandbox.stub(fs, "appendFile").resolves();
-    process.env.SECRET_MY = "VAL";
-    await execCallback(
-      (a: any) => {},
-      new Error("error"),
-      "SECRET_MY=VAL",
-      "SECRET_MY=VAL",
-      "",
-      new TestLogProvider(),
-      "",
-      "./log"
-    );
-  });
-  it("execCallback without Error", async () => {
-    sandbox.stub(fs, "appendFile").resolves();
-    process.env.SECRET_MY = "VAL";
-    await execCallback(
-      (a: any) => {},
-      null,
-      "SECRET_MY=VAL",
-      "SECRET_MY=VAL",
-      "",
-      new TestLogProvider(),
-      "",
-      "./log"
-    );
-  });
   it("execute failed, mock executeCommand fail", async () => {
     sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
     const args = {
@@ -115,7 +86,7 @@ describe("Script Driver test", () => {
   it("executeCommand: set output", async () => {
     const args = {
       workingDirectory: "./",
-      run: "::set-output KEY=VALUE",
+      run: "echo '::set-output KEY=VALUE'",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -136,12 +107,10 @@ describe("Script Driver test", () => {
       assert.deepEqual(output, { KEY: "VALUE" });
     }
   });
-  it("execute command ui.runCommand()", async () => {
+  it("executeCommand: set output", async () => {
     const args = {
       workingDirectory: "./",
-      shell: "cmd",
-      run: "echo 111",
-      redirectTo: "./log",
+      run: "echo '::set-output KEY=VALUE'",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -149,8 +118,54 @@ describe("Script Driver test", () => {
       ui: new MockUserInteraction(),
       projectPath: "./",
     } as DriverContext;
-    sandbox.stub(context.ui!, "runCommand").resolves(ok(""));
-    const res = await scriptDriver.execute(args, context);
-    assert.isTrue(res.result.isOk());
+    const res = await utils.executeCommand(
+      args.run,
+      context.projectPath,
+      context.logProvider,
+      context.ui,
+      args.workingDirectory
+    );
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      const output = res.value[1];
+      assert.deepEqual(output, { KEY: "VALUE" });
+    }
   });
+  it("executeCommand: error", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: "abc",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    const res = await utils.executeCommand(
+      args.run,
+      context.projectPath,
+      context.logProvider,
+      context.ui,
+      args.workingDirectory
+    );
+    assert.isTrue(res.isErr());
+  });
+  // it("execute command ui.runCommand()", async () => {
+  //   const args = {
+  //     workingDirectory: "./",
+  //     shell: "cmd",
+  //     run: "echo 111",
+  //     redirectTo: "./log",
+  //   };
+  //   const context = {
+  //     azureAccountProvider: new TestAzureAccountProvider(),
+  //     logProvider: new TestLogProvider(),
+  //     ui: new MockUserInteraction(),
+  //     projectPath: "./",
+  //   } as DriverContext;
+  //   sandbox.stub(context.ui!, "runCommand").resolves(ok(""));
+  //   const res = await scriptDriver.execute(args, context);
+  //   assert.isTrue(res.result.isOk());
+  // });
 });

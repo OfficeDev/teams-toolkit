@@ -86,7 +86,6 @@ const config = {
       /node-gyp[\/\\]bin[\/\\]node-gyp.js/,
       "@npmcli/node-gyp"
     ),
-    new webpack.DefinePlugin(buildConfig.preview.env),
     new CopyPlugin({
       patterns: [
         {

@@ -46,7 +46,7 @@ deploy:
     with:
       func: true
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:

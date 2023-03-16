@@ -34,7 +34,7 @@ provision:
       name: {{appName}}
       messagingEndpoint: $\{{BOT_ENDPOINT}}/api/messages
       description: ""
-  - uses: file/updateJson
+  - uses: file/createOrUpdateJsonFile
     with:
       target: ./appsettings.Development.json
       appsettings:
@@ -51,14 +51,20 @@ provision:
 
 configureApp:
 {{#if activePlugins.fx-resource-frontend-hosting}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set env for local launch
+    name: Set {{placeholderMappings.tabDomain}} for local launch
     with:
-      envs:
-        {{placeholderMappings.tabDomain}}: localhost:44302
-        {{placeholderMappings.tabEndpoint}}: https://localhost:44302
-        {{placeholderMappings.tabIndexPath}}: '#'
+      run: ::set-output {{placeholderMappings.tabDomain}}=localhost:44302
+  - uses: script # Set env for local launch
+    name: Set {{placeholderMappings.tabEndpoint}} for local launch
+    with:
+      run: ::set-output {{placeholderMappings.tabEndpoint}}=https://localhost:44302
+  - uses: script # Set env for local launch
+    name: Set {{placeholderMappings.tabIndexPath}} for local launch
+    with:
+      run: ::set-output {{placeholderMappings.tabIndexPath}}=#
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
-  - uses: file/updateJson
+  - uses: file/createOrUpdateJsonFile
     with:
       target: ./appsettings.Development.json
       appsettings:
@@ -70,10 +76,10 @@ configureApp:
   {{/if}} 
 {{/if}}
 {{#if activePlugins.fx-resource-bot}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set env for local launch
+    name: Set {{placeholderMappings.botDomain}} for local launch
     with:
-      envs:
-        {{placeholderMappings.botDomain}}: $\{{BOT_DOMAIN}}
+      run: ::set-output {{placeholderMappings.botDomain}}=$\{{BOT_DOMAIN}}
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.

@@ -24,10 +24,9 @@ provision:
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 {{#if activePlugins.fx-resource-frontend-hosting}}
-  - uses: file/updateEnv # Add additional item to .env file
+  - uses: script # Add additional item to .env file
     with:
-      envs:
-        {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}: '/' # Used in appPackage/manifest.json file.
+      run: ::set-output {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}=/ # Used in appPackage/manifest.json file.
 {{/if}}
 
 deploy:

@@ -20,12 +20,18 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN for local launch
     with:
-      envs:
-        PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN: localhost:53000
-        PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT: https://localhost:53000
-        PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH: /index.html#
+      run: ::set-output PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN=localhost:53000
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT for local launch
+    with:
+      run: ::set-output PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT=https://localhost:53000
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH for local launch
+    with:
+      run: ::set-output PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH=/index.html#
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
@@ -65,7 +71,7 @@ deploy:
       args: install -D env-cmd
       workingDirectory: .
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.localSettings
       envs:
@@ -78,7 +84,7 @@ deploy:
         REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}/auth-start.html
         REACT_APP_TEAMSFX_ENDPOINT: http://localhost:55000
 
-  - uses: file/updateJson # Generate runtime environment variables
+  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
     with:
       target: SIMPLE_AUTH_APPSETTINGS_PATH
       appsettings:

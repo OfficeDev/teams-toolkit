@@ -30,7 +30,7 @@ import Upgrade from "./upgrade";
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
-  ...(isV3Enabled() ? [] : [new Add()]),
+  new Add(),
   new Provision(),
   new Deploy(),
   new Package(),

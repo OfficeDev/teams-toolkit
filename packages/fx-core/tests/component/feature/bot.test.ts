@@ -42,9 +42,11 @@ import child_process from "child_process";
 import { AppSettingConstants } from "../../../src/component/code/appSettingUtils";
 import { QuestionNames } from "../../../src/component/feature/bot/constants";
 import { AppServiceOptionItem } from "../../../src/component/feature/bot/question";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Bot Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
+  let mockedEnvRestore: RestoreFn;
   setTools(tools);
   const appName = `unittest${randomAppName()}`;
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
@@ -61,6 +63,7 @@ describe("Bot Feature", () => {
   let scaffoldStub: SinonStub;
   beforeEach(() => {
     const manifest = {} as TeamsAppManifest;
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     scaffoldStub = sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
@@ -84,6 +87,7 @@ describe("Bot Feature", () => {
   });
 
   afterEach(() => {
+    mockedEnvRestore();
     sandbox.restore();
   });
 

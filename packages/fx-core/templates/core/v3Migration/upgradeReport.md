@@ -11,7 +11,7 @@ Visit https://aka.ms/teams-toolkit-5.0-upgrade to learn more about the upgrade.
 There's no immediate action required from you. This part illustrates what's changed to your development flow.
 > If you encountered any errors or issues after upgrade, you could try the following steps or visit [known issues](https://aka.ms/teams-toolkit-5.0-upgrade#known-issues) for details.
 
-1. You need to sync `.env/.env.{env}.user` files between different machines manually. All these files will be gitignored by default. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
+1. You need to sync `env/.env.{env}.user` files between different machines manually. All these files will be gitignored by default. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 2. You need to take some manual steps when creating or provisioning new environments for your old project. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 3. You need to manually update `.vscode/launch.json` when launching your app for a certain environment. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
 4. You need to provide values to `APIM__PUBLISHEREMAIL` and `APIM__PUBLISHERNAME` environment variable if your current project uses APIM. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)
@@ -33,7 +33,7 @@ For more detailed changes, please refer to this [wiki](https://aka.ms/teams-tool
 
 ## Known issues
 
-1. If your project only contains a bot, you may meet error that complains `STATE__FX_RESOURCE_FRONTEND_HOSTING__ENDPOINT` is missing when executing commands. Replace this placeholder with a valid URL in `appPackage/manifest.template.json` to fix it. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#state__fx_resource_frontend_hosting__endpoint-missing-error-in-some-projects)
+1. If your project only contains a bot, you may meet error that complains `STATE__FX_RESOURCE_FRONTEND_HOSTING__ENDPOINT` is missing when executing commands. Replace this placeholder with a valid URL in `appPackage/manifest.json` to fix it. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#state__fx_resource_frontend_hosting__endpoint-missing-error-in-some-projects)
 
 ## How to roll back
 

@@ -218,8 +218,7 @@
   "plugins.spfx.error.invalidDependency": "Failed to validate package %s",
   "plugins.spfx.error.installDependency": "Failed to install package %s. Learn how to remediate in the [output](command:fx-extension.showOutputChannel).",
   "plugins.spfx.error.noConfiguration": "There's no .yo-rc.json file in your SPFx project, add the configuration file and try again.",
-  "plugins.spfx.error.devEnvironmentNotSetup": "SPFx development environment has not been set up correctly. Visit [Set up your SharePoint Framework development environment | Microsoft Learn](%s) to learn more.",
-  "_plugins.spfx.error.devEnvironmentNotSetup.comment": "'Microsoft Learn' and 'SharePoint' are product brand names, which should not be localized. ",
+  "plugins.spfx.error.devEnvironmentNotSetup": "SPFx development environment has not been set up correctly. You can click \"Get Help\" to follow the guide to set up right environment.",
   "plugins.spfx.scaffold.dependencyCheck": "Checking dependencies...",
   "plugins.spfx.scaffold.dependencyInstall": "Installing dependencies. This may take more than 5 minutes to finish.",
   "plugins.spfx.scaffold.scaffoldProject": "Generate SPFx project using Yeoman CLI",
@@ -624,6 +623,13 @@
   "core.collaboration.error.dotEnvFileNotExist": "Failed to find your .env File.",
   "core.collaboration.error.failedToLoadDotEnvFile": "Failed to load your .env File. Reason: %s",
   "core.collaboration.error.failedToGetTeamsAppId": "Failed to find Teams app id in your .env file. Please correctly set the value with key '%s' in your .env file.",
+  "core.selectAadAppManifestQuestion.title": "Select Azure Active Directory manifest.json file",
+  "core.selectTeamsAppManifestQuestion.title": "Select Teams manifest.json file",
+  "core.selectCollaborationAppTypeQuestion.title": "Select app you want to manage the collaborators",
+  "core.aadAppQuestion.label": "Azure Active Directory app",
+  "core.aadAppQuestion.description": "Your Azure Active Directory app for Single Sign On",
+  "core.teamsAppQuestion.label": "Teams app",
+  "core.teamsAppQuestion.description": "Your Teams app", 
   "core.M365SsoLaunchPageOptionItem.label": "SSO enabled personal tab",
   "core.M365SsoLaunchPageOptionItem.detail": "Identity aware webpages embedded in Microsoft Teams, Outlook and the Microsoft 365 app",
   "core.M365SearchAppOptionItem.label": "Search-based message extension",
@@ -1056,5 +1062,7 @@
   "error.common.UnresolvedPlaceholderError": "The following environment variables are missing: '%s', which are required for file: %s.",
   "error.common.InvalidProjectError": "This command only works for project created by Teams Toolkit.",
   "error.common.InvalidActionInputError": "The following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s",
-  "error.common.FileNotFoundError": "File not found: %s"
+  "error.common.FileNotFoundError": "File not found: %s",
+  "error.collaboration.InvalidManifestError": "Your manifest is invalid: %s. Please make sure 'id' key exists in your manifest file.",
+  "error.collaboration.FailedToLoadManifest": "Failed to load manifest file. Reason: %s."
 }

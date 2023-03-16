@@ -187,14 +187,9 @@ export function DevEnvironmentSetupError(): UserError {
   return new UserError({
     source: Constants.PLUGIN_NAME,
     name: "DevEnvironmentSetupError",
-    message: getDefaultString(
-      "plugins.spfx.error.devEnvironmentNotSetup",
-      Constants.SetUpDevEnvironmentHelpLink
-    ),
-    displayMessage: getLocalizedString(
-      "plugins.spfx.error.devEnvironmentNotSetup",
-      Constants.SetUpDevEnvironmentHelpLink
-    ),
+    message: getDefaultString("plugins.spfx.error.devEnvironmentNotSetup"),
+    displayMessage: getLocalizedString("plugins.spfx.error.devEnvironmentNotSetup"),
+    helpLink: Constants.SetUpDevEnvironmentHelpLink,
   });
 }
 

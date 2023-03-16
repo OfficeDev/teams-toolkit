@@ -8,7 +8,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { setTools } from "../../../src/core/globalVars";
-import { MockTools, randomAppName } from "../utils";
+import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVersionChecker";
 import { assert } from "chai";
 import mockedEnv from "mocked-env";
@@ -129,7 +129,7 @@ describe("Middleware - projectVersionChecker.test", () => {
     }
   });
 
-  it("Show update dialog or message in V3", async () => {
+  it("Show message in V3 cli", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });
@@ -150,23 +150,91 @@ describe("Middleware - projectVersionChecker.test", () => {
         myMethod: [ProjectVersionCheckerMW],
       });
 
-      const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
       const showLog = sandbox.stub(mockTools.logProvider, "warning");
 
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: path.join(os.tmpdir(), appName),
+      };
+      const res = await my.myMethod(inputs);
+      assert.isTrue(showLog.calledOnce);
+      assert.isTrue(res.isErr());
+    } finally {
+      restore();
+    }
+  });
+
+  it("Show update dialog in V3 vscode", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const appName = randomAppName();
+      sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
+      sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
+        version: "2.0.0",
+        source: VersionSource.teamsapp,
+      });
+
+      class MyClass {
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [ProjectVersionCheckerMW],
+      });
+
+      const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
+      showMessageFunc.resolves(ok("Learn more"));
       const my = new MyClass();
       const inputs1: Inputs = {
         platform: Platform.VSCode,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      await my.myMethod(inputs1);
-      const inputs2: Inputs = {
-        platform: Platform.CLI,
+      const res = await my.myMethod(inputs1);
+      assert.isTrue(showMessageFunc.calledOnce);
+      assert.isTrue(res.isErr());
+    } finally {
+      restore();
+    }
+  });
+
+  it("Show update dialog in V3 vs", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const appName = randomAppName();
+      sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
+      sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
+        version: "2.0.0",
+        source: VersionSource.teamsapp,
+      });
+
+      class MyClass {
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+
+      hooks(MyClass, {
+        myMethod: [ProjectVersionCheckerMW],
+      });
+
+      const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
+      showMessageFunc.resolves(ok("Learn more"));
+
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VS,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      await my.myMethod(inputs2);
-
+      const res = await my.myMethod(inputs);
       assert.isTrue(showMessageFunc.calledOnce);
-      assert.isTrue(showLog.calledOnce);
+      assert.isTrue(res.isErr());
     } finally {
       restore();
     }

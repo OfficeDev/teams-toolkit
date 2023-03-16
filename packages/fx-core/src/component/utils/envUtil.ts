@@ -1,15 +1,15 @@
-import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { pathUtils } from "./pathUtils";
 import { TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
+import { FileNotFoundError } from "../../error/common";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -55,14 +55,7 @@ export class EnvUtil {
         process.env.TEAMSFX_ENV = env;
         return ok({ TEAMSFX_ENV: env });
       } else {
-        return err(
-          new UserError({
-            source: "core",
-            name: "DotEnvFileNotExistError",
-            displayMessage: getLocalizedString("error.DotEnvFileNotExistError", env, env),
-            message: getDefaultString("error.DotEnvFileNotExistError", env, env),
-          })
-        );
+        return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
       }
     }
     // deserialize

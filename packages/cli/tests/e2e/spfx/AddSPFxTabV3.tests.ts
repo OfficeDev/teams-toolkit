@@ -47,7 +47,7 @@ describe("Start a new project", function () {
     const spfxFolder = path.join(projectPath, "src");
     const manifestPath = path.join(projectPath, AppPackageFolderName, "manifest.json");
     const localManifestPath = path.join(projectPath, AppPackageFolderName, "manifest.local.json");
-    command = `teamsfx add SPFxWebPart --spfx-webpart-name secondwebpart --spfxFolder ${spfxFolder} --manifestPath ${manifestPath} --localManifestPath ${localManifestPath}`;
+    command = `teamsfx add SPFxWebPart --spfx-webpart-name secondwebpart --spfx-folder ${spfxFolder} --manifest-path ${manifestPath} --local-manifest-path ${localManifestPath}`;
     result = await execAsync(command, {
       cwd: path.join(testFolder, appName),
       env: process.env,

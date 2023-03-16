@@ -21,7 +21,6 @@ import {
   getSPFxToken,
   isV3Enabled,
   isApiConnectEnabled,
-  isValidationEnabled,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -566,7 +565,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
   });
   describe("feature flag check", () => {
-    const sandbox = sinon.createSandbox();
     let mockedEnvRestore: RestoreFn;
     afterEach(() => {
       mockedEnvRestore();
@@ -585,6 +583,16 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
       const res = isV3Enabled();
       chai.expect(res).false;
+    });
+    it("should return false if no TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).false;
+    });
+    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).true;
     });
   });
 });

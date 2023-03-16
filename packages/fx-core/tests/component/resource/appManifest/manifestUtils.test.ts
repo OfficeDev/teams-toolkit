@@ -69,13 +69,16 @@ describe("Manifest provider", () => {
   };
   const sandbox = sinon.createSandbox();
   let manifest: TeamsAppManifest;
+  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     manifest = JSON.parse(TEAMS_APP_MANIFEST_TEMPLATE) as TeamsAppManifest;
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
   });
   afterEach(async () => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("addCapabilities", async () => {
     const capabilities = [{ name: "staticTab" as const }];
@@ -116,7 +119,9 @@ describe("Add capability V3", () => {
   let inputs: v2.InputsWithProjectPath;
   let manifest: TeamsAppManifest;
   const component = Container.get<AppManifest>(ComponentNames.AppManifest);
+  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -128,6 +133,7 @@ describe("Add capability V3", () => {
 
   afterEach(async () => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("Check capability exceed limit: should return false", async () => {
@@ -245,6 +251,7 @@ describe("Add capability V3", () => {
   it("Add command and response bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
+      TEAMSFX_V3: "false",
     });
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
@@ -257,6 +264,7 @@ describe("Add capability V3", () => {
   it("Add workflow bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
+      TEAMSFX_V3: "false",
     });
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.WorkflowBot];

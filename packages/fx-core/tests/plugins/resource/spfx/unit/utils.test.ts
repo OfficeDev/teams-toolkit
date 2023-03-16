@@ -26,16 +26,21 @@ import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
 } from "../../../../../src/component/resource/spfx/utils/question-helper";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("utils", () => {
   afterEach(async () => {
     sinon.restore();
   });
 
   describe("webpart name", () => {
+    let mockedEnvRestore: RestoreFn;
     const previousInputs: Inputs = { platform: Platform.VSCode };
     beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       previousInputs["projectPath"] = "c:\\testPath";
+    });
+    afterEach(() => {
+      mockedEnvRestore();
     });
 
     it("Returns undefined when web part name not duplicated in create stage", async () => {

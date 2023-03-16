@@ -896,7 +896,15 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
           appPackagePath: appPackagePath,
         };
       }
-      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+      const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
+      telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
+      return await runUserTask(
+        func,
+        TelemetryEvent.ValidateManifest,
+        false,
+        env,
+        telemetryProperties
+      );
     }
   } else {
     const func: Func = {
@@ -1309,7 +1317,8 @@ export async function runUserTask(
   func: Func,
   eventName: string,
   ignoreEnvInfo: boolean,
-  envName?: string
+  envName?: string,
+  telemetryProperties?: { [key: string]: string }
 ): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   let inputs: Inputs | undefined;
@@ -1327,7 +1336,7 @@ export async function runUserTask(
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
 }
@@ -1407,7 +1416,8 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
 async function processResult(
   eventName: string | undefined,
   result: Result<null, FxError>,
-  inputs?: Inputs
+  inputs?: Inputs,
+  extraProperty?: { [key: string]: string }
 ) {
   const envProperty: { [key: string]: string } = {};
   const createProperty: { [key: string]: string } = {};
@@ -1436,6 +1446,7 @@ async function processResult(
       ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
         ...createProperty,
         ...envProperty,
+        ...extraProperty,
       });
     }
     const error = result.error;
@@ -1461,6 +1472,7 @@ async function processResult(
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         ...createProperty,
         ...envProperty,
+        ...extraProperty,
       });
     }
   }

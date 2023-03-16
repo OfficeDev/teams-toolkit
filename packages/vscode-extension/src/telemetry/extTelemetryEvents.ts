@@ -335,6 +335,7 @@ export enum TelemetryProperty {
   // Used with InteractWithInProductDoc
   Interaction = "interaction",
   Identifier = "identifier",
+  ValidateMethod = "validate-method",
 }
 
 export enum TelemetryMeasurements {

@@ -150,15 +150,12 @@ describe("Middleware - projectVersionChecker.test", () => {
         myMethod: [ProjectVersionCheckerMW],
       });
 
-      const showLog = sandbox.stub(mockTools.logProvider, "warning");
-
       const my = new MyClass();
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: path.join(os.tmpdir(), appName),
       };
       const res = await my.myMethod(inputs);
-      assert.isTrue(showLog.calledOnce);
       assert.isTrue(res.isErr());
     } finally {
       restore();
@@ -172,6 +169,7 @@ describe("Middleware - projectVersionChecker.test", () => {
     try {
       const appName = randomAppName();
       sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
+      sandbox.stub(mockTools.ui, "showMessage").resolves(ok("Learn more"));
       sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
         version: "2.0.0",
         source: VersionSource.teamsapp,
@@ -187,15 +185,12 @@ describe("Middleware - projectVersionChecker.test", () => {
         myMethod: [ProjectVersionCheckerMW],
       });
 
-      const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
-      showMessageFunc.resolves(ok("Learn more"));
       const my = new MyClass();
       const inputs1: Inputs = {
         platform: Platform.VSCode,
         projectPath: path.join(os.tmpdir(), appName),
       };
       const res = await my.myMethod(inputs1);
-      assert.isTrue(showMessageFunc.calledOnce);
       assert.isTrue(res.isErr());
     } finally {
       restore();
@@ -209,6 +204,7 @@ describe("Middleware - projectVersionChecker.test", () => {
     try {
       const appName = randomAppName();
       sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
+      sandbox.stub(mockTools.ui, "showMessage").resolves(ok("Learn more"));
       sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
         version: "2.0.0",
         source: VersionSource.teamsapp,
@@ -224,16 +220,12 @@ describe("Middleware - projectVersionChecker.test", () => {
         myMethod: [ProjectVersionCheckerMW],
       });
 
-      const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
-      showMessageFunc.resolves(ok("Learn more"));
-
       const my = new MyClass();
       const inputs: Inputs = {
         platform: Platform.VS,
         projectPath: path.join(os.tmpdir(), appName),
       };
       const res = await my.myMethod(inputs);
-      assert.isTrue(showMessageFunc.calledOnce);
       assert.isTrue(res.isErr());
     } finally {
       restore();

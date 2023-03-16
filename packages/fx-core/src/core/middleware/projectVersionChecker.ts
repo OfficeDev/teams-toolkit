@@ -62,7 +62,7 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
     const message = getLocalizedString(messageKey);
     TOOLS?.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
       if (res.isOk() && res.value === learnMoreText) {
-        TOOLS?.ui!.openUrl(MetadataV2.updateToolkitLink);
+        TOOLS?.ui.openUrl(MetadataV2.updateToolkitLink);
       }
     });
     return IncompatibleProjectError(messageKey);

@@ -174,7 +174,7 @@ describe("Capability Command Tests", function () {
     await cmd.builder(yargs);
 
     expect(options).deep.equals(
-      ["spfxFolder", "spfx-webpart-name", "manifestPath", "localManifestPath", "folder"],
+      ["spfx-folder", "spfx-webpart-name", "manifest-path", "local-manifest-path", "folder"],
       JSON.stringify(options)
     );
   });
@@ -184,10 +184,10 @@ describe("Capability Command Tests", function () {
     const cmd = new AddWebpart();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["spfxFolder"]: "/src",
+      ["spfx-folder"]: "/src",
       ["spfx-webpart-name"]: "hiworld",
-      ["manifestPath"]: "/appPackage/manifest.json",
-      ["localManifestPath"]: "/appPackage/manifest.local.json",
+      ["manifest-path"]: "/appPackage/manifest.json",
+      ["local-manifest-path"]: "/appPackage/manifest.local.json",
     };
     await cmd.handler(args);
     expect(addWebpartStub.calledOnce).to.be.true;
@@ -205,10 +205,10 @@ describe("Capability Command Tests", function () {
     const cmd = new AddWebpart();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
-      ["spfxFolder"]: "/src",
+      ["spfx-folder"]: "/src",
       ["spfx-webpart-name"]: "hiworld",
-      ["manifestPath"]: "/appPackage/manifest.json",
-      ["localManifestPath"]: "/appPackage/manifest.local.json",
+      ["manifest-path"]: "/appPackage/manifest.json",
+      ["local-manifest-path"]: "/appPackage/manifest.local.json",
     };
     try {
       await cmd.handler(args);

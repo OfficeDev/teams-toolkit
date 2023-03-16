@@ -74,6 +74,7 @@ import {
   BuiltInFeaturePluginNames,
   GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
+  SPFxQuestionNames,
 } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
@@ -825,7 +826,7 @@ export function getQuestionsForInit(
 export function spfxFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
-    name: "spfxFolder",
+    name: SPFxQuestionNames.SPFxFolder,
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
     default: (inputs: Inputs) => {
@@ -837,7 +838,7 @@ export function spfxFolderQuestion(): FolderQuestion {
 export function manifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
-    name: "manifestPath",
+    name: SPFxQuestionNames.ManifestPath,
     title: getLocalizedString("core.manifestPath.title"),
     placeholder: getLocalizedString("core.manifestPath.placeholder"),
     default: (inputs: Inputs) => {
@@ -849,7 +850,7 @@ export function manifestFileQuestion(): SingleFileQuestion {
 export function localManifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
-    name: "localManifestPath",
+    name: SPFxQuestionNames.LocalManifestPath,
     title: getLocalizedString("core.localManifestPath.title"),
     placeholder: getLocalizedString("core.localManifestPath.placeholder"),
     default: (inputs: Inputs) => {

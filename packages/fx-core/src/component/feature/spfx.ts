@@ -29,7 +29,7 @@ import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { addFeatureNotify, scaffoldRootReadme } from "../utils";
-import { isSpfxDecoupleEnabled, isSPFxMultiTabEnabled } from "../../common/featureFlags";
+import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { TabSPFxNewUIItem } from "../constants";
 import { getComponent } from "../workflow";
 
@@ -85,16 +85,10 @@ export function getSPFxScaffoldQuestion(): QTreeNode {
   const spfx_frontend_host = new QTreeNode({
     type: "group",
   });
-  let spfx_first_question;
-  if (isSpfxDecoupleEnabled()) {
-    const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
-    spfx_frontend_host.addChild(spfx_load_package_versions);
-    spfx_first_question = new QTreeNode(spfxPackageSelectQuestion);
-    spfx_load_package_versions.addChild(spfx_first_question);
-  } else {
-    spfx_first_question = new QTreeNode(versionCheckQuestion);
-    spfx_frontend_host.addChild(spfx_first_question);
-  }
+  const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
+  spfx_frontend_host.addChild(spfx_load_package_versions);
+  const spfx_first_question = new QTreeNode(spfxPackageSelectQuestion);
+  spfx_load_package_versions.addChild(spfx_first_question);
 
   const spfx_framework_type = new QTreeNode(frameworkQuestion);
   spfx_first_question.addChild(spfx_framework_type);

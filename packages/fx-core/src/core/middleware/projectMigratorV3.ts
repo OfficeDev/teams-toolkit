@@ -63,6 +63,7 @@ import {
   getTrackingIdFromPath,
   buildEnvUserFileName,
   tryExtractEnvFromUserdata,
+  buildEnvFileName,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -560,11 +561,7 @@ export async function askUserConfirm(
       [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
-    const link = getDownloadLinkByVersionAndPlatform(
-      versionForMigration.currentVersion,
-      versionForMigration.platform
-    );
-    ctx.result = err(UpgradeV3CanceledError(link, versionForMigration.currentVersion));
+    ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
@@ -933,6 +930,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
     "utf8"
   );
   ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvUserFileName("*")}`;
+  ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvFileName("local")}`;
   ignoreFileContent += EOL + `${backupFolder}/*`;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);

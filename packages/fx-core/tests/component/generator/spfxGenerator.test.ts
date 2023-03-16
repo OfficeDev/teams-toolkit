@@ -146,10 +146,6 @@ describe("SPFxGenerator", function () {
   });
 
   it("select to install locally but no need to install", async function () {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_SPFX_DECOUPLE: "true",
-    });
-
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -172,10 +168,6 @@ describe("SPFxGenerator", function () {
   });
 
   it("select to install locally and install only sp", async function () {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_SPFX_DECOUPLE: "true",
-    });
-
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -206,10 +198,6 @@ describe("SPFxGenerator", function () {
   });
 
   it("select to install locally and install only yo", async function () {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_SPFX_DECOUPLE: "true",
-    });
-
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -240,10 +228,6 @@ describe("SPFxGenerator", function () {
   });
 
   it("select to install locally and install sp error", async function () {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_SPFX_DECOUPLE: "true",
-    });
-
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -266,10 +250,6 @@ describe("SPFxGenerator", function () {
   });
 
   it("select to install locally and install yo error", async function () {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_SPFX_DECOUPLE: "true",
-    });
-
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -291,10 +271,6 @@ describe("SPFxGenerator", function () {
   });
 
   it("Yeoman Generator scaffolding error", async function () {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_SPFX_DECOUPLE: "true",
-    });
-
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -309,5 +285,55 @@ describe("SPFxGenerator", function () {
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
     chai.expect(result.isErr()).to.eq(true);
+  });
+
+  it("install locally and use path", async function () {
+    mockedEnvRestore = mockedEnv({
+      PATH: undefined,
+    });
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+
+    chai.expect(generateTemplateStub.calledOnce).to.be.true;
+  });
+
+  it("use global packages and use path", async function () {
+    mockedEnvRestore = mockedEnv({
+      PATH: undefined,
+    });
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.globalPackage,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+
+    chai.expect(generateTemplateStub.calledOnce).to.be.true;
   });
 });

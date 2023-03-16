@@ -7,7 +7,6 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const terserWebpackPlugin = require("terser-webpack-plugin");
-const buildConfig = require("./config");
 
 /**@type {import('webpack').Configuration}*/
 const config = {

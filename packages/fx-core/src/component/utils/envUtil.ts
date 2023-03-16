@@ -10,6 +10,7 @@ import * as path from "path";
 import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
+import { FileNotFoundError } from "../../error/common";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -42,28 +43,16 @@ export class EnvUtil {
   async readEnv(
     projectPath: string,
     env: string,
-    loadToProcessEnv = true,
-    silent = true
+    loadToProcessEnv = true
   ): Promise<Result<DotenvOutput, FxError>> {
     // read
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
     if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
     const dotEnvFilePath = dotEnvFilePathRes.value;
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
-      if (silent) {
-        // .env file does not exist, just ignore
-        process.env.TEAMSFX_ENV = env;
-        return ok({ TEAMSFX_ENV: env });
-      } else {
-        return err(
-          new UserError({
-            source: "core",
-            name: "DotEnvFileNotExistError",
-            displayMessage: getLocalizedString("error.DotEnvFileNotExistError", env, env),
-            message: getDefaultString("error.DotEnvFileNotExistError", env, env),
-          })
-        );
-      }
+      // .env file does not exist, just ignore
+      process.env.TEAMSFX_ENV = env;
+      return ok({ TEAMSFX_ENV: env });
     }
     // deserialize
     const parseResult = dotenvUtil.deserialize(

@@ -1062,6 +1062,7 @@
   "error.common.InvalidActionInputError": "The following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s",
   "error.common.FileNotFoundError": "No such file or directory, open '%s'",
   "error.common.JSONSyntaxError": "JSON syntax error: %s",
+  "error.common.UnhandledError": "Unhandled error: %s",
   "error.collaboration.InvalidManifestError": "Your manifest is invalid: %s. Please make sure 'id' key exists in your manifest file.",
   "error.collaboration.FailedToLoadManifest": "Failed to load manifest file. Reason: %s."
 }

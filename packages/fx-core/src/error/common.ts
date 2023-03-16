@@ -89,8 +89,8 @@ export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: source || "unknown",
-      message: e.message || getDefaultString("error.common.UnhandledError"),
-      displayMessage: e.message || getLocalizedString("error.common.UnhandledError"),
+      message: getDefaultString("error.common.UnhandledError", e.message),
+      displayMessage: getLocalizedString("error.common.UnhandledError", e.message),
     });
     if (e.stack) super.stack = e.stack;
   }

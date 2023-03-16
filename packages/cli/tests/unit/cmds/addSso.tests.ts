@@ -32,6 +32,7 @@ describe("Add SSO Command Tests", function () {
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_V3: "false",
     });
 
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {

@@ -490,6 +490,8 @@ export enum SolutionError {
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
+  InvalidManifestError = "InvalidManifestError",
+  FailedToLoadManifestFile = "FailedToLoadManifestFile",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

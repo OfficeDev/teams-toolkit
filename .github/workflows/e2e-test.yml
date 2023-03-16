@@ -296,15 +296,6 @@ jobs:
             npx mocha --reporter mochawesome --timeout 1200000 $file
           fi
 
-      - name: get job id
-        id: get-job-id
-        if: ${{ always() }}
-        uses: ayachensiyuan/get-action-job-id@v1.7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          job-name: ${{ matrix.cases }}
-
       - name: get report name
         id: get-report-name
         if: ${{ always() }}
@@ -312,11 +303,11 @@ jobs:
           name="${{ matrix.cases }}"
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
-          name="${name//\//_}"_${{ steps.get-job-id.outputs.jobId }}
+          name="${name//\//_}"
           echo "name=$name" >> $GITHUB_OUTPUT
 
       - name: Upload test report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
         with:
           name: ${{ steps.get-report-name.outputs.name }}
@@ -344,7 +335,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -506,7 +497,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $passed_lists $skipped_lists </table> <br />"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $skipped_lists $passed_lists </table> <br />"
 
           total=$((passed+failed+skipped))
 

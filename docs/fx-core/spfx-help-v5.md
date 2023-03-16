@@ -1,8 +1,8 @@
-# SPFx troubleshoot
+# SPFx FAQ and troubleshooting guide
 
-1. [Failure to scaffold](#scaffold)
+1. [Failed to scaffold](#scaffold)
 
-## 1. Failure to scaffold<a name="scaffold"></a>
+## 1. Failed to scaffold<a name="scaffold"></a>
 
 ### Error message
 Project creation failed. A possible reason could be from Yeoman SharePoint Generator.

@@ -168,6 +168,17 @@ describe("Capability Command Tests", function () {
     }
   });
 
+  it("Capability Add SPFx Web Part Command Builder", async () => {
+    const cmd = new AddWebpart();
+
+    await cmd.builder(yargs);
+
+    expect(options).deep.equals(
+      ["spfxFolder", "spfx-webpart-name", "manifestPath", "localManifestPath", "folder"],
+      JSON.stringify(options)
+    );
+  });
+
   it("Capability Add SPFx Web Part Command Running Check", async () => {
     const addWebpartStub = sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(Void));
     const cmd = new AddWebpart();

@@ -62,6 +62,7 @@ const imageMapping: { [p: string]: any } = {
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
   "dev-assist-dashboard": DevAssistDashboard,
+  "live-share-dice-roller":LiveShareDiceRoller,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

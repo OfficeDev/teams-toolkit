@@ -54,15 +54,15 @@ configureApp:
   - uses: script # Set env for local launch
     name: Set {{placeholderMappings.tabDomain}} for local launch
     with:
-      run: ::set-output {{placeholderMappings.tabDomain}}=localhost:44302
+      run: echo "::set-output {{placeholderMappings.tabDomain}}=localhost:44302"
   - uses: script # Set env for local launch
     name: Set {{placeholderMappings.tabEndpoint}} for local launch
     with:
-      run: ::set-output {{placeholderMappings.tabEndpoint}}=https://localhost:44302
+      run: echo "::set-output {{placeholderMappings.tabEndpoint}}=https://localhost:44302"
   - uses: script # Set env for local launch
     name: Set {{placeholderMappings.tabIndexPath}} for local launch
     with:
-      run: ::set-output {{placeholderMappings.tabIndexPath}}=#
+      run: echo "::set-output {{placeholderMappings.tabIndexPath}}=#"
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: file/createOrUpdateJsonFile
     with:
@@ -79,7 +79,7 @@ configureApp:
   - uses: script # Set env for local launch
     name: Set {{placeholderMappings.botDomain}} for local launch
     with:
-      run: ::set-output {{placeholderMappings.botDomain}}=$\{{BOT_DOMAIN}}
+      run: echo "::set-output {{placeholderMappings.botDomain}}=$\{{BOT_DOMAIN}}"
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.

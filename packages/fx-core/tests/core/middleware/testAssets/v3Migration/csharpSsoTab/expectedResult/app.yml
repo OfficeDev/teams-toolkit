@@ -17,7 +17,7 @@ provision:
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
   - uses: script # Add additional item to .env file
     with:
-      run: ::set-output PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/ # Used in appPackage/manifest.json file.
+      run: echo "::set-output PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/" # Used in appPackage/manifest.json file.
 
 deploy:
   - uses: cli/runDotnetCommand

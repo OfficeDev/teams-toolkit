@@ -55,15 +55,15 @@ configureApp:
   - uses: script # Set env for local launch
     name: Set {{../../placeholderMappings.tabDomain}} for local launch
     with:
-      run: ::set-output {{../../placeholderMappings.tabDomain}}={{domain}}
+      run: echo "::set-output {{../../placeholderMappings.tabDomain}}={{domain}}"
   - uses: script # Set env for local launch
     name: Set {{../../placeholderMappings.tabEndpoint}} for local launch
     with:
-      run: ::set-output {{../../placeholderMappings.tabEndpoint}}={{endpoint}}
+      run: echo "::set-output {{../../placeholderMappings.tabEndpoint}}={{endpoint}}"
   - uses: script # Set env for local launch
     name: Set {{../../placeholderMappings.tabIndexPath}} for local launch
     with:
-      run: ::set-output {{../../placeholderMappings.tabIndexPath}}=/index.html#
+      run: echo "::set-output {{../../placeholderMappings.tabIndexPath}}=/index.html#"
 
   {{/tab}}
   {{#if aad}}

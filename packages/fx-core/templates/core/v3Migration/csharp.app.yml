@@ -26,7 +26,7 @@ provision:
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: script # Add additional item to .env file
     with:
-      run: ::set-output {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}=/ # Used in appPackage/manifest.json file.
+      run: echo "::set-output {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}=/" # Used in appPackage/manifest.json file.
 {{/if}}
 
 deploy:

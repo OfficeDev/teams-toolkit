@@ -11,15 +11,15 @@ configureApp:
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN for local launch
     with:
-      run: ::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000
+      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000"
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT for local launch
     with:
-      run: ::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000
+      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000"
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH for local launch
     with:
-      run: ::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#
+      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#"
 
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:

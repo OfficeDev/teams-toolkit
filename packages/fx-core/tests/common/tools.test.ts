@@ -21,7 +21,6 @@ import {
   getSPFxToken,
   isV3Enabled,
   isApiConnectEnabled,
-  isValidationEnabled,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -563,6 +562,37 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sinon.stub(mockTools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("xxx"));
       sinon.stub(axios, "get").resolves({ data: { webUrl: "122" } });
       const res = await getSPFxToken(mockTools.tokenProvider.m365TokenProvider);
+    });
+  });
+  describe("feature flag check", () => {
+    let mockedEnvRestore: RestoreFn;
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("should return true if no v5 set", () => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
+      const res = isV3Enabled();
+      chai.expect(res).true;
+    });
+    it("should return true if v5 set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
+      const res = isV3Enabled();
+      chai.expect(res).true;
+    });
+    it("should return false is v5 set false", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
+      const res = isV3Enabled();
+      chai.expect(res).false;
+    });
+    it("should return false if no TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).false;
+    });
+    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).true;
     });
   });
 });

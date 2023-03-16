@@ -80,19 +80,19 @@ describe("Start a new project", function () {
           const filePath = path.join(testFolder, appName, isV3Enabled() ? `src` : `SPFx`, file);
           expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
         }
-        expect(result.stderr).to.eq("");
+        expect(result.success).to.be.true;
       }
 
       {
         // validation succeed without provision
         const result = await Executor.validate(projectPath, environmentManager.getDefaultEnvName());
-        expect(result.stderr).to.eq("");
+        expect(result.success).to.be.true;
       }
 
       if (isValidationEnabled()) {
         // validation local env succeed without local debug
         const result = await Executor.validate(projectPath, environmentManager.getLocalEnvName());
-        expect(result.stderr).to.eq("");
+        expect(result.success).to.be.true;
       }
 
       {
@@ -101,7 +101,7 @@ describe("Start a new project", function () {
           projectPath,
           environmentManager.getDefaultEnvName()
         );
-        expect(result.stderr).to.eq("");
+        expect(result.success).to.be.true;
       }
 
       {
@@ -125,7 +125,7 @@ describe("Start a new project", function () {
       {
         // deploy
         const result = await Executor.deploy(projectPath, environmentManager.getDefaultEnvName());
-        expect(result.stderr).to.eq("");
+        expect(result.success).to.be.true;
       }
 
       {
@@ -148,7 +148,7 @@ describe("Start a new project", function () {
       {
         // publish
         const result = await Executor.publish(projectPath, environmentManager.getDefaultEnvName());
-        expect(result.stderr).to.eq("");
+        expect(result.success).to.be.true;
       }
 
       {

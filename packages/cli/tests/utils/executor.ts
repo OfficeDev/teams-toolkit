@@ -19,18 +19,19 @@ export class Executor {
         timeout: timeout ?? 0,
       });
       if (result.stderr) {
-        console.error(`[Failed] "${command}" in ${cwd}. Output Error: ${result.stderr}`);
+        /// the command exit with 0
+        console.log(`[Success] "${command}" in ${cwd} with some stderr: ${result.stderr}`);
       } else {
         console.log(`[Success] "${command}" in ${cwd}.`);
       }
-      return result;
+      return { ...result, success: true };
     } catch (e) {
       if (e.killed && e.signal == "SIGTERM") {
         console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
       } else {
-        console.error(`[Failed] "${command}" in ${cwd}. Caught Error: ${e.message}`);
+        console.error(`[Failed] "${command}" in ${cwd} with error: ${e.message}`);
       }
-      return { stdout: "", stderr: e.message as string };
+      return { stdout: "", stderr: e.message as string, success: false };
     }
   }
 

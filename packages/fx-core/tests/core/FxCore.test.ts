@@ -247,6 +247,7 @@ describe("Core basic APIs", () => {
         "manifest-path": ".\\appPackage\\manifest.json",
         "local-manifest-path": ".\\appPackage\\manifest.local.json",
         "spfx-webpart-name": "helloworld",
+        "spfx-use-global-package-or-install-local": "installLocally",
         stage: Stage.addWebpart,
         projectPath: path.join(os.tmpdir(), appName),
       };

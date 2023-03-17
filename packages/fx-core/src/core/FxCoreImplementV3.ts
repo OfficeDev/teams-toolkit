@@ -517,6 +517,9 @@ export class FxCoreV3Implement {
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateApplication)])
   async validateApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.validateApplication);
+    inputs.stage = Stage.validateApplication;
+
     const context: DriverContext = createDriverContext(inputs);
     if (inputs.validateMethod === "validateAgainstSchema") {
       // load env

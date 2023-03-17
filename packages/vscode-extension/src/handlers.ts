@@ -839,11 +839,11 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
       });
       return err(result.error);
     } else {
-      // const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
-      // telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
+      const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
+      telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
       const inputs = getSystemInputs();
       inputs.validateMethod = result.value.result;
-      return await runCommand(Stage.validateApplication, inputs);
+      return await runCommand(Stage.validateApplication, inputs, telemetryProperties);
     }
   } else {
     const func: Func = {
@@ -1099,7 +1099,8 @@ export async function addWebpart(args?: any[]) {
 
 export async function runCommand(
   stage: Stage,
-  defaultInputs?: Inputs
+  defaultInputs?: Inputs,
+  telemetryProperties?: { [key: string]: string }
 ): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -1196,7 +1197,7 @@ export async function runCommand(
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
 }

@@ -891,7 +891,11 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
 }
 
 export function selectTeamsAppManifestQuestion(inputs: Inputs): QTreeNode {
-  const manifestPath: string = path.join(inputs.projectPath!, "appPackage", "manifest.json");
+  const manifestPath: string = path.join(
+    inputs.projectPath!,
+    AppPackageFolderName,
+    "manifest.json"
+  );
 
   const teamsAppManifestNode: SingleFileQuestion = {
     name: CoreQuestionNames.TeamsAppManifestFilePath,

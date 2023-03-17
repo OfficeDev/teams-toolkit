@@ -2,6 +2,8 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
+environmentFolderPath: ./env
+
 # Triggered when 'teamsfx provision' is executed
 provision:
   - uses: arm/deploy # Deploy given ARM templates parallelly.

@@ -45,6 +45,9 @@ describe("Start a new project", function () {
       env: process.env,
       timeout: 0,
     });
+    console.log(
+      `[Successfully] create project, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+    );
 
     const spfxFolder = path.join(projectPath, "src");
     const manifestPath = path.join(projectPath, AppPackageFolderName, "manifest.json");

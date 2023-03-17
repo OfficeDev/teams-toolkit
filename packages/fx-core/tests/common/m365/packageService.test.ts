@@ -149,7 +149,12 @@ describe("Package Service", () => {
     };
     const expectedError = new Error("test-post") as any;
     expectedError.response = {
-      data: {},
+      data: {
+        foo: "bar",
+      },
+      headers: {
+        traceresponse: "tracing-id",
+      },
     };
     axiosPostResponses["/dev/v1/users/packages"] = expectedError;
 

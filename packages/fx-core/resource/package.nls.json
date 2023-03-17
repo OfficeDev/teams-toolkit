@@ -1042,6 +1042,8 @@
   "driver.teamsApp.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.teamsApp.validate.invalidParameter": "Parameter %s should be provided for action %s",
   "driver.teamsApp.validate.result": "Teams Toolkit has completed checking your app package against validation rules. %s failed, %s passed. Check [output window](%s) for details.",
+  "error.teamsApp.validate.apiFailed": "Teams app package validation failed due to  %s",
+  "error.teamsApp.validate.apiFailed.display": "Teams app pacakge validation failed. Check [output window](%s) for details.",
   "error.teamsApp.AppIdNotExistError": "Teams app with ID %s does not exist in Teams Developer Portal.",
   "error.teamsApp.InvalidAppIdError": "Teams app ID %s is invalid",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",

@@ -67,7 +67,7 @@ describe("Start a new project", function () {
     );
 
     // validation succeed without provision
-    command = "teamsfx validate";
+    command = `teamsfx validate --env ${environmentManager.getDefaultEnvName()}`;
     result = await execAsync(command, {
       cwd: path.join(testFolder, appName),
       env: process.env,

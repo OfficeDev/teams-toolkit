@@ -16,6 +16,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   readContextMultiEnv,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
@@ -27,6 +28,7 @@ describe("Start a new project", function () {
   let appName: string;
   let testFolder: string;
   let projectPath: string;
+  let teamsAppId: string | undefined;
   beforeEach(async () => {
     testFolder = getTestFolder();
     appName = getUniqueAppName();
@@ -95,14 +97,20 @@ describe("Start a new project", function () {
 
     {
       // Get context
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = isV3Enabled()
+        ? await readContextMultiEnvV3(projectPath, environmentManager.getDefaultEnvName())
+        : await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
 
-      // Only check Teams App existence
-      const appStudio = AppStudioValidator.init(context);
-      AppStudioValidator.validateTeamsAppExist(appStudio);
+      if (isV3Enabled()) {
+        chai.assert.exists(context.TEAMS_APP_ID);
+        teamsAppId = context.TEAMS_APP_ID;
+        AppStudioValidator.setE2ETestProvider();
+      } else {
+        // Only check Teams App existence
+        const appStudio = AppStudioValidator.init(context);
+        AppStudioValidator.validateTeamsAppExist(appStudio);
+        teamsAppId = appStudio.teamsAppId;
+      }
     }
 
     // deploy
@@ -116,8 +124,12 @@ describe("Start a new project", function () {
 
     {
       // Validate sharepoint package
-      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+      const solutionConfig = await fs.readJson(
+        `${projectPath}/${isV3Enabled() ? `src` : `SPFx`}/config/package-solution.json`
+      );
+      const sharepointPackage = `${projectPath}/${isV3Enabled() ? `src` : `SPFx`}/sharepoint/${
+        solutionConfig.paths.zippedPackage
+      }`;
       appId = solutionConfig["solution"]["id"];
       expect(appId).to.not.be.empty;
       expect(await fs.pathExists(sharepointPackage)).to.be.true;

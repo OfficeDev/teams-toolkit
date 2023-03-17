@@ -1784,6 +1784,8 @@ export enum Stage {
     // (undocumented)
     create = "create",
     // (undocumented)
+    createAppPackage = "createAppPackage",
+    // (undocumented)
     createEnv = "createEnv",
     // (undocumented)
     debug = "debug",

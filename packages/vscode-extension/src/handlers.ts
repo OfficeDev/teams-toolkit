@@ -903,46 +903,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   if (isV3Enabled()) {
-    // Use default manifest template
-    // Throw error if not exists and remind user to use CLI
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
-
-    if (!(await fs.pathExists(manifestTemplatePath))) {
-      const error = new UserError(
-        ExtensionSource,
-        ExtensionErrors.DefaultManifestTemplateNotExistsError,
-        util.format(
-          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-          manifestTemplatePath
-        )
-      );
-
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-      showError(error);
-      return err(error);
-    }
-
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-      showError(selectedEnv.error);
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "buildPackage",
-      params: {
-        manifestTemplatePath: manifestTemplatePath,
-        outputZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
-        outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
-        env: env,
-      },
-    };
-
-    return await runUserTask(func, TelemetryEvent.Build, false, env);
+    return await runCommand(Stage.createAppPackage);
   } else {
     const func: Func = {
       namespace: "fx-solution-azure",
@@ -1184,6 +1145,10 @@ export async function runCommand(
       }
       case Stage.validateApplication: {
         result = await core.validateApplication(inputs);
+        break;
+      }
+      case Stage.createAppPackage: {
+        result = await core.createAppPackage(inputs);
         break;
       }
       default:

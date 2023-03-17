@@ -482,6 +482,10 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.validateApplication, inputs);
   }
 
+  async createAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.createAppPackage, inputs);
+  }
+
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */

@@ -21,6 +21,8 @@ import {
   Tools,
   UserCancelError,
   Void,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -69,6 +71,7 @@ import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
+  getQuestionsForCreateAppPackage,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
   getQuestionsForValidateApplication,
@@ -544,5 +547,29 @@ export class FxCoreV3Implement {
       const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
       return await driver.run(args, context);
     }
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForCreateAppPackage)])
+  async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.createAppPackage);
+    inputs.stage = Stage.createAppPackage;
+
+    const context: DriverContext = createDriverContext(inputs);
+
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+
+    // load env
+    const env = inputs?.[CoreQuestionNames.TargetEnvName] as string;
+    if (env) {
+      await envUtil.readEnv(inputs.projectPath!, env);
+    }
+
+    const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const args: CreateAppPackageArgs = {
+      manifestPath: teamsAppManifestFilePath,
+      outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
+      outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
+    };
+    return await driver.run(args, context);
   }
 }

@@ -902,3 +902,19 @@ export async function getQuestionsForValidateApplication(
   }
   return ok(group);
 }
+
+export async function getQuestionsForCreateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+
+  // Env select node
+  const envNode = await selectEnvNode(inputs, true);
+  if (envNode) {
+    teamsAppSelectNode.addChild(envNode);
+  }
+  return ok(group);
+}

@@ -864,12 +864,12 @@ async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> 
   const root = new QTreeNode(selectAppTypeQuestion());
 
   // Teams app manifest select node
-  const teamsAppSelectNode = new QTreeNode(selectTeamsAppManifestQuestion());
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
   teamsAppSelectNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
   root.addChild(teamsAppSelectNode);
 
   // Aad app manifest select node
-  const aadAppSelectNode = new QTreeNode(selectAadAppManifestQuestion());
+  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
   aadAppSelectNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
   root.addChild(aadAppSelectNode);
 

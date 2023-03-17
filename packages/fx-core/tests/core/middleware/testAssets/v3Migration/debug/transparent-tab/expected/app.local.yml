@@ -8,14 +8,20 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN for local launch
     with:
-      envs:
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
+      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000"
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT for local launch
+    with:
+      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000"
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH for local launch
+    with:
+      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#"
 
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
 
@@ -40,7 +46,7 @@ deploy:
     # SSL_CRT_FILE: certificate file
     # SSL_KEY_FILE: certificate key
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:

@@ -23,6 +23,7 @@ import * as telemetry from "../../../src/core/telemetry";
 import { Sql } from "../../../src/component/feature/sql";
 import { cloneDeep } from "lodash";
 import { ComponentNames } from "../../../src/component/constants";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("sql feature", () => {
   const sandbox = createSandbox();
@@ -48,6 +49,7 @@ describe("sql feature", () => {
   };
   originContext.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
+  let restore: RestoreFn;
   beforeEach(() => {
     sandbox.stub(telemetry, "sendErrorTelemetryThenReturnError").returns(
       new UserError({
@@ -64,6 +66,7 @@ describe("sql feature", () => {
   });
 
   it("add sql with api setting", async () => {
+    restore = mockedEnv({ TEAMSFX_V3: "false" });
     const context = cloneDeep(originContext);
     context.projectSetting.components.push({
       name: "teams-api",
@@ -78,6 +81,7 @@ describe("sql feature", () => {
     const component = Container.get<Sql>("sql");
     const res = await component.add(context, inputs);
     assert.isTrue(res.isOk());
+    restore();
   });
 
   it("add sql without api setting", async () => {
@@ -85,6 +89,7 @@ describe("sql feature", () => {
     // context.projectSetting.components.push({
     //   name: "teams-api",
     // });
+    restore = mockedEnv({ TEAMSFX_V3: "false" });
     const apiComponent = Container.get(ComponentNames.TeamsApi) as any;
     sandbox.stub(apiComponent, "add").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {
@@ -97,5 +102,6 @@ describe("sql feature", () => {
     const component = Container.get<Sql>("sql");
     const res = await component.add(originContext, inputs);
     assert.isTrue(res.isOk());
+    restore();
   });
 });

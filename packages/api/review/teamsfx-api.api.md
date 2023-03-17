@@ -1776,6 +1776,8 @@ export enum Stage {
     // (undocumented)
     addResource = "addResource",
     // (undocumented)
+    addWebpart = "addWebpart",
+    // (undocumented)
     build = "build",
     // (undocumented)
     checkPermission = "checkPermission",

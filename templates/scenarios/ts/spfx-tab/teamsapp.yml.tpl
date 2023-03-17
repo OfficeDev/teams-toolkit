@@ -34,7 +34,7 @@ registerApp:
 
 # Triggered when 'teamsfx provision' is executed
 configureApp:
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
@@ -48,10 +48,16 @@ configureApp:
       manifestTemplate: ./appPackage/manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to Teams app
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+    with:
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # M365_TITLE_ID: the id of M365 title
+    # M365_APP_ID: the app id of M365 title
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage

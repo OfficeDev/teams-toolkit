@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.2.4",
+  "version": "4.99.0-alpha",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -42,7 +42,7 @@
   "activationEvents": [
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.createFromWalkthrough",
-    "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.openLifecycleTreeview",
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openSamples",
@@ -140,7 +140,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",
@@ -148,21 +148,14 @@
           "when": "fx-extension.isTeamsFx"
         },
         {
-          "type": "webview",
-          "id": "teamsfx-development-webview",
-          "name": "Development",
-          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
-        },
-        {
-          "id": "teamsfx-deployment",
-          "name": "Deployment",
+          "id": "teamsfx-lifecycle",
+          "name": "Lifecycle",
           "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
-          "type": "webview",
-          "id": "teamsfx-deployment-webview",
-          "name": "Deployment",
-          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
+          "id": "teamsfx-utility",
+          "name": "Utility",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
           "id": "teamsfx-project-and-check-upgradeV3",
@@ -249,8 +242,8 @@
           "group": "navigation@1"
         },
         {
-          "command": "fx-extension.openDeploymentLink",
-          "when": "view == teamsfx-deployment",
+          "command": "fx-extension.openLifecycleLink",
+          "when": "view == teamsfx-lifecycle",
           "group": "navigation@1"
         },
         {
@@ -319,6 +312,11 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.manageCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/ && fx-extension.isV3Enabled",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.openSubscriptionInPortal",
           "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
           "group": "inline@3"
@@ -340,7 +338,12 @@
         },
         {
           "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem =~ /^fx-extension.(provision|build|deploy|publish|publishInDeveloperPortal)$/",
+          "when": "view == teamsfx-lifecycle && viewItem =~ /^fx-extension.(provision|deploy|publish)$/",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-utility && viewItem =~ /^fx-extension.(build|publishInDeveloperPortal)$/",
           "group": "inline"
         }
       ],
@@ -402,6 +405,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.manageCollaborator",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.localdebug",
           "when": "false"
         },
@@ -418,7 +425,7 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.openDeploymentLink",
+          "command": "fx-extension.openLifecycleLink",
           "when": "false"
         },
         {
@@ -508,8 +515,8 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.openDeploymentTreeview",
-        "title": "Teams - Open Deployment Treeview",
+        "command": "fx-extension.openLifecycleTreeview",
+        "title": "Teams - Open Lifecycle Treeview",
         "enablement": "never"
       },
       {
@@ -694,7 +701,7 @@
         "command": "fx-extension.manageCollaborator",
         "title": "%teamstoolkit.commands.manageCollaborator.title%",
         "enablement": "fx-extension.isV3Enabled && !fx-extension.commandLocked",
-        "category": "Teams"
+        "icon": "$(organization)"
       },
       {
         "command": "fx-extension.localdebug",
@@ -716,8 +723,8 @@
         "icon": "$(info)"
       },
       {
-        "command": "fx-extension.openDeploymentLink",
-        "title": "%teamstoolkit.commands.deploymentLink.title%",
+        "command": "fx-extension.openLifecycleLink",
+        "title": "%teamstoolkit.commands.lifecycleLink.title%",
         "icon": "$(info)"
       },
       {
@@ -798,6 +805,12 @@
       {
         "command": "fx-extension.openSurvey",
         "title": "%teamstoolkit.commandsTreeViewProvider.openSurveyTitle%"
+      },
+      {
+        "command": "fx-extension.addWebpart",
+        "title": "%teamstoolkit.commmands.addWebpart.title%",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isV3Enabled && !fx-extension.commandLocked",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [
@@ -866,7 +879,7 @@
                     "items": {
                       "type": "number"
                     },
-                    "description": "%teamstoolkit.taskDefinitions.args.ports.title%"
+                    "description": "%teamstoolkit.taskDefinitions.args.portOccupancy.title%"
                   }
                 },
                 "if": {
@@ -895,9 +908,15 @@
               {
                 "type": "object",
                 "required": [
+                  "type",
                   "ngrokArgs"
                 ],
                 "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.type.title%",
+                    "const": "ngrok"
+                  },
                   "ngrokArgs": {
                     "oneOf": [
                       {
@@ -947,6 +966,75 @@
                       "endpoint": {
                         "type": "string",
                         "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type",
+                  "port",
+                  "protocol"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.type.title%",
+                    "const": "dev-tunnel"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "%teamstoolkit.taskDefinitions.args.port.title%"
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.protocol.title%",                    
+                    "oneOf": [
+                      {
+                        "const": "http"
+                      },
+                      {
+                        "const": "https"
+                      }
+                    ]
+                  },
+                  "access": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.access.title%",                    
+                    "oneOf": [
+                      {
+                        "const": "public"
+                      }
+                    ]
+                  },
+                  "env": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
+                    "anyOf": [
+                      {
+                        "const": "local"
+                      },
+                      {}
+                    ]
+                  },
+                  "output": {
+                    "type": "object",
+                    "description": "%teamstoolkit.taskDefinitions.args.output.title%",
+                    "properties": {
+                      "domain": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.domain.title%"
+                      },
+                      "endpoint": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "%teamstoolkit.taskDefinitions.args.output.id.title%"
                       }
                     }
                   }
@@ -1154,32 +1242,6 @@
         }
       }
     ],
-    "configuration": [
-      {
-        "title": "SPFx Configuration",
-        "order": 1,
-        "properties": {
-          "fx-extension.SPFxPrerequisiteCheck": {
-            "type": "object",
-            "properties": {
-              "yo": {
-                "type": "boolean",
-                "description": "Ensure Yeoman CLI is installed. (Requires reload of VS Code)"
-              },
-              "sharepointYeomanGenerator": {
-                "type": "boolean",
-                "description": "Ensure SPFx Yeoman Generator is installed. (Requires reload of VS Code)"
-              }
-            },
-            "additionalProperties": false,
-            "default": {
-              "yo": true,
-              "sharepointYeomanGenerator": true
-            }
-          }
-        }
-      }
-    ],
     "languages": [
       {
         "id": "teamsfx-toolkit-output"
@@ -1379,7 +1441,7 @@
     "@microsoft/dev-tunnels-management": "~1.0.7342",
     "@microsoft/dev-tunnels-ssh": "~3.10.19",
     "@microsoft/teamsfx-api": "^0.22.1",
-    "@microsoft/teamsfx-core": "^1.23.2",
+    "@microsoft/teamsfx-core": "^2.0.0-alpha",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

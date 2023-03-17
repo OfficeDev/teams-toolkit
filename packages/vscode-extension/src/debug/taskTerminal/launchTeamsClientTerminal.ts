@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as util from "util";
-import * as open from "open";
 import * as commonUtils from "../commonUtils";
 import * as globalVariables from "../../globalVariables";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
@@ -61,9 +61,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
       this.args.env
     );
     const accountHint = await generateAccountHint(false);
-    const launchUrl =
-      `https://teams.microsoft.com/l/app/${teamsAppId}?` +
-      encodeURIComponent(`installAppPackage=true&webjoin=true&${accountHint}`);
+    const launchUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${accountHint}`;
 
     VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
@@ -82,10 +80,22 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
   private openUrl(url: string): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>(async (resolve, reject) => {
-      const childProc = await open(url);
+      const options: cp.SpawnOptions = {
+        cwd: globalVariables.workspaceUri?.fsPath ?? "",
+        shell: true,
+        detached: false,
+      };
+
+      const childProc = cp.spawn("npx", ["open-cli", `"${url}"`], options);
 
       childProc.stdout?.setEncoding("utf-8");
       childProc.stdout?.on("data", (data: string | Buffer) => {
+        const line = data.toString().replace(/\n/g, "\r\n");
+        this.writeEmitter.fire(line);
+      });
+
+      childProc.stderr?.setEncoding("utf-8");
+      childProc.stderr?.on("data", (data: string | Buffer) => {
         const line = data.toString().replace(/\n/g, "\r\n");
         this.writeEmitter.fire(line);
       });

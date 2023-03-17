@@ -24,9 +24,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
       - name: audit
@@ -49,14 +49,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
 
@@ -100,12 +100,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
-      
+
       - name: prettier check files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
         run: |
@@ -117,18 +117,18 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
         run: |
           git diff --diff-filter=MARC origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> diffFiles.txt
-      
+
       - name: check content
         run: |
           touch diffFiles.txt
           python .github/detect/sensitive-detect.py diff
-  
+
   schedule-check-sensitive-content:
     if: ${{ github.event_name == 'schedule' && (github.ref == 'refs/heads/dev'|| github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ga') }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
@@ -141,15 +141,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
       - name: check feature history
         id: description
-        shell: '/bin/bash {0}'
-        run: | 
+        shell: "/bin/bash {0}"
+        run: |
           head=$(git describe --first-parent --abbrev=0)
           echo $head
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
@@ -163,7 +163,7 @@ jobs:
           echo $breaking_change_toolkit
           echo -e '\nCLI BREAKING CHANGE:\n' "$breaking_change_cli" '\n\nExtension-toolkit BREAKING CHANGE:\n' "$breaking_change_toolkit" > breaking_change_history.txt
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
       - name: lerna expect rc version
@@ -181,3 +181,4 @@ jobs:
         with:
           body: ${{join(steps.test.outputs.*, '')}}
           token: ${{ secrets.GITHUB_TOKEN }}
+

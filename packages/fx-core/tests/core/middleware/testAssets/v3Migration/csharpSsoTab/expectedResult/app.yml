@@ -15,10 +15,9 @@ provision:
          deploymentName: teams_toolkit_deployment # Required when deploy ARM template
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
-  - uses: file/updateEnv # Add additional item to .env file
+  - uses: script # Add additional item to .env file
     with:
-      envs:
-        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH: '/' # Used in appPackage/manifest.json file.
+      run: echo "::set-output PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/" # Used in appPackage/manifest.json file.
 
 deploy:
   - uses: cli/runDotnetCommand
@@ -56,7 +55,7 @@ configureApp:
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value

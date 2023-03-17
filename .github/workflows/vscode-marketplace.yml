@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: 'Input the CD pipeline run ID to fetch the artifact'
+        description: "Input the CD pipeline run ID to fetch the artifact"
         required: true
-        default: ''
+        default: ""
       isPreview:
-        description: 'Publish VSIX as a preview version(yes or no)'
+        description: "Publish VSIX as a preview version(yes or no)"
         required: true
-        default: 'no'
+        default: "no"
 
 jobs:
   publish-to-vscode-marketplace:
@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
 
@@ -30,13 +30,13 @@ jobs:
       - name: Download release artifacts
         uses: Legit-Labs/action-download-artifact@v2
         with:
-          run_id: ${{ github.event.input.run_id }}
+          run_id: ${{ github.event.inputs.run_id }}
           name: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: cd.yml
           path: .
 
-      - name: release preview 
+      - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}
         env:
           PAT: ${{ secrets.VSCE_PAT }}

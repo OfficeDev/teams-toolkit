@@ -549,10 +549,13 @@
       </Item>
       <Item ItemId=";core.M365SsoLaunchPageOptionItem.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Identity aware webpages embedded in Microsoft Teams, Outlook and Office.com]]></Val>
+          <Val><![CDATA[Identity aware webpages embedded in Microsoft Teams, Outlook and the Microsoft 365 app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft Teams、Outlook、Office.com に埋め込まれた ID 対応の Web ページ]]></Val>
+            <Val><![CDATA[Microsoft Teams、Outlook、Microsoft 365 アプリに埋め込まれた ID 対応の Web ページ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Identity aware webpages embedded in Microsoft Teams, Outlook and Office.com]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -888,10 +891,13 @@
       </Item>
       <Item ItemId=";core.ScratchOptionYes.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a new Teams app]]></Val>
+          <Val><![CDATA[Create a new app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しい Teams アプリを作成する]]></Val>
+            <Val><![CDATA[新しいアプリを作成する]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a new Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -909,9 +915,9 @@
       </Item>
       <Item ItemId=";core.ScratchOptionYesVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a new Teams app]]></Val>
+          <Val><![CDATA[Create a new app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新しい Teams アプリを作成する]]></Val>
+            <Val><![CDATA[新しいアプリを作成する]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app]]></Val>
@@ -1035,10 +1041,13 @@
       </Item>
       <Item ItemId=";core.TabSPFxOption.detailNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams]]></Val>
+          <Val><![CDATA[SPFx components hosted in Microsoft 365 and embeded in Microsoft Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft Teams に埋め込まれた SharePoint Framework を含む Teams 対応の Web ページ]]></Val>
+            <Val><![CDATA[Microsoft 365 でホストされ、Microsoft Teams に埋め込まれた SPFx コンポーネント]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1722,28 +1731,37 @@
       </Item>
       <Item ItemId=";core.common.OfficeDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Office desktop client id]]></Val>
+          <Val><![CDATA[The Microsoft 365 app for desktop client id]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Office デスクトップ クライアント ID]]></Val>
+            <Val><![CDATA[デスクトップ クライアント ID 用の Microsoft 365 アプリ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Office desktop client id]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.common.OfficeWebClientName1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Office.com client id 1]]></Val>
+          <Val><![CDATA[The Microsoft 365 app client id 1]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Office.com クライアント ID 1]]></Val>
+            <Val><![CDATA[Microsoft 365 アプリ クライアント ID 1]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Office.com client id 1]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.common.OfficeWebClientName2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Office.com client id 2]]></Val>
+          <Val><![CDATA[The Microsoft 365 app client id 2]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Office.com クライアント ID 2]]></Val>
+            <Val><![CDATA[Microsoft 365 アプリ クライアント ID 2]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Office.com client id 2]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2310,10 +2328,13 @@
       </Item>
       <Item ItemId=";core.getCreateNewOrFromSampleQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit: Create a new Teams app]]></Val>
+          <Val><![CDATA[Teams Toolkit: Create a New App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams ツールキット: 新しい Teams アプリを作成する]]></Val>
+            <Val><![CDATA[Teams ツールキット: 新しいアプリを作成する]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams Toolkit: Create a new Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2446,6 +2467,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.importAddin.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Import an existing Outlook add-in project to the latest app manifest schema and project structure]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[既存の Outlook アドイン プロジェクトを最新のアプリ マニフェスト スキーマとプロジェクトの構造にインポートします]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.importAddin.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Import an existing Outlook add-in (Preview on Windows)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[既存の Outlook アドインをインポートする (Windows のプレビュー)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
@@ -2562,10 +2601,13 @@
       </Item>
       <Item ItemId=";core.migrationV3.aadManifestNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[templates/appPackage/aad.manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
+          <Val><![CDATA[templates/appPackage/aad.manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[templates/appPackage/aad.manifest.template.json は存在しません。Teams ツールキット v3.8.0 以前によって作成されたプロジェクトをアップグレードしようとしている可能性があります。最初に Teams ツールキット v4.x をインストールし、アップグレードを実行してください。]]></Val>
+            <Val><![CDATA[templates/appPackage/aad.manifest.template.json が存在しません。Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3 用 Teams ツールキットで作成されたプロジェクトをアップグレードしようとしている可能性があります。Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 用 Teams ツールキットをインストールし、最初にアップグレードを実行してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[templates/appPackage/aad.manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2589,10 +2631,13 @@
       </Item>
       <Item ItemId=";core.migrationV3.manifestNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
+          <Val><![CDATA[templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[templates/appPackage/manifest.template.json が存在しません。Teams Toolkit <= v3.8.0 によって作成されたプロジェクトをアップグレードしようとしている可能性があります。最初に Teams Toolkit v4.x をインストールし、アップグレードを実行してください。]]></Val>
+            <Val><![CDATA[templates/appPackage/manifest.template.json が存在しません。Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3 用 Teams ツールキットで作成されたプロジェクトをアップグレードしようとしている可能性があります。Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 用 Teams ツールキットをインストールし、最初にアップグレードを実行してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit <= v3.8.0. Please install Teams Toolkit v4.x and run upgrade first.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2601,6 +2646,24 @@
           <Val><![CDATA[Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run "teamsfx upgrade" to upgrade your project first.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams ツールキットのプレリリース バージョンでは、新しいプロジェクト構成がサポートされており、以前のバージョンと互換性がありません。新しいプロジェクトを作成して試すか、"teamsfx upgrade" を実行して最初にプロジェクトをアップグレードしてください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.newTaskpaneAddin.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A ribbon button and taskpane for use with Outlook]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Outlook で使用するリボン ボタンと作業ウィンドウ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.newTaskpaneAddin.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Outlook Taskpane add-in (Preview on Windows)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Outlook 作業ウィンドウ アドイン (Windows のプレビュー)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2679,10 +2742,13 @@
       </Item>
       <Item ItemId=";core.options.separator.addin" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Office Add-ins]]></Val>
+          <Val><![CDATA[Office add-ins]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Office アドイン]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Office Add-ins]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5176,6 +5242,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.teamsApp.summary.validate" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit has checked against all validation rules:]A;]A;Summary:]A;%s failed, %s passed.]A;%s]A;%s]A;]A;A complete log of validations can be found in %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ツールキットは、すべての検証規則に対するチェックを行いました:]A;]A;概要:]A;%s には不合格で、%s に合格しました。]A;%s]A;%s]A;]A;検証の完全なログは、%s にあります]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.validate.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Either %s or %s parameter should be provided for action %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[アクション %s には、%s パラメーターまたは %s パラメーターを指定する必要があります]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.validate.result" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit has completed checking your app package against validation rules. %s failed, %s passed. Check [output window]5D;(%s) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ツールキットで、検証規則に対するアプリ パッケージの確認が完了しました。%s に不合格で、%s に合格しました。詳細については、[output window]5D; (%s) を確認してください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.teamsApp.validate.skip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s action is currently skipped, will be updated in the future version.]]></Val>
@@ -7101,6 +7194,42 @@
           <Val><![CDATA[Failed to get login user info.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[ログイン ユーザー情報を取得できませんでした。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[YAML ファイルの解析に失敗しました: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.yaml.InvalidYmlActionNameError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Action '%s' not found, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[アクション '%s'が見つかりません。YAML ファイル: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.yaml.YamlFieldMissingError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Field '%s' is missing, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[フィールド '%s' がありません。YAML ファイル: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.yaml.YamlFieldTypeError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Field '%s' should have %s type, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[フィールド '%s' には %s 型が必要です。YAML ファイル: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -9288,6 +9417,69 @@
           <Val><![CDATA[Framework]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[フレームワーク]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install the latest SharePoint Framework locally in Teams Toolkit directory ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ローカルで Teams ツールキット ディレクトリに最新の SharePoint Framework をインストールする ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install the latest SharePoint Framework (%s) locally in Teams Toolkit directory ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ローカルで Teams ツールキット ディレクトリに最新の SharePoint Framework (%s) をインストールする ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select an option for scaffolding]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[スキャフォールディングのオプションを選択する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SharePoint Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint Framework]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Recommend SharePoint Framework %s or later]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint Framework %s 以降をお勧めします]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use globally installed SharePoint Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[グローバルにインストールされた SharePoint Framework を使用する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use globally installed SharePoint Framework (%s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[グローバルにインストールされた SharePoint Framework を使用する (%s)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

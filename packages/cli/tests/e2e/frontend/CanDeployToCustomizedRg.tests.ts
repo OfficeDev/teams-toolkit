@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
- * @owner Zhijie Huang <zhijie.huang@microsoft.com>
+ * @author Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
 import path from "path";

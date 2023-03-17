@@ -4,11 +4,14 @@ version: 1.0.0
 
 
 registerApp:
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set TAB_DOMAIN for local launch
+    name: Set TAB_DOMAIN for local launch
     with:
-      envs:
-        TAB_DOMAIN: localhost:44302
-        TAB_ENDPOINT: https://localhost:44302
+      run: echo "::set-output TAB_DOMAIN=localhost:44302"
+  - uses: script # Set TAB_ENDPOINT for local launch
+    name: Set TAB_ENDPOINT for local launch
+    with:
+      run: echo "::set-output TAB_ENDPOINT=https://localhost:44302"
 
   - uses: teamsApp/create # Creates a Teams app
     with:

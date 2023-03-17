@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 /**
- * @author Aocheng Wang <aochengwang@microsoft.com>
  * @owner Yuan Tian <tianyuan@microsoft.com>
  */
 

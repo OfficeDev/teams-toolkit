@@ -2,20 +2,21 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: tab # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-
-configureApp:
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set TAB_DOMAIN for local launch
+    name: Set TAB_DOMAIN for local launch
     with:
-      envs:
-        TAB_DOMAIN: localhost:53000
-        TAB_ENDPOINT: https://localhost:53000
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+      run: echo "::set-output TAB_DOMAIN=localhost:53000"
+  - uses: script # Set TAB_ENDPOINT for local launch
+    name: Set TAB_ENDPOINT for local launch
+    with:
+      run: echo "::set-output TAB_ENDPOINT=https://localhost:53000"
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
@@ -46,7 +47,7 @@ deploy:
     with:
       args: install -D env-cmd
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./.localSettings
       envs:

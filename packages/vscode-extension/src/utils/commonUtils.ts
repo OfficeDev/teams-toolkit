@@ -272,21 +272,12 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.YoEnvCheckerEnable
-  ).toString();
-  process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.generatorEnvCheckerEnable
-  ).toString();
-
   initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
-  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
-  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
   static readonly Preview = "TEAMSFX_PREVIEW";
 }
 

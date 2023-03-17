@@ -147,7 +147,6 @@ import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import {
   anonymizeFilePaths,
   getAppName,
@@ -395,7 +394,26 @@ export function addFileSystemWatcher(workspacePath: string) {
     packageLockFileWatcher.onDidChange(async (event) => {
       await sendSDKVersionTelemetry(event.fsPath);
     });
+
+    if (isV3Enabled()) {
+      const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
+      yorcFileWatcher.onDidCreate(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+      yorcFileWatcher.onDidChange(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+      yorcFileWatcher.onDidDelete(async (event) => {
+        await refreshSPFxTreeOnFileChanged();
+      });
+    }
   }
+}
+
+export async function refreshSPFxTreeOnFileChanged() {
+  globalVariables.initializeGlobalVariables(globalVariables.context);
+
+  await TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {
@@ -446,37 +464,6 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
   // check if file is project config
   if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
     await envTreeProviderInstance.reloadEnvironments();
-  }
-}
-
-function registerCoreEvents() {
-  // legacy codes for webview provider
-  const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
-  if (developmentView instanceof CommandsWebviewProvider) {
-    core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(true);
-    });
-    core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-development") as CommandsWebviewProvider
-      ).onLockChanged(false);
-    });
-  }
-
-  const deploymentView = TreeViewManagerInstance.getTreeView("teamsfx-deployment");
-  if (deploymentView instanceof CommandsWebviewProvider) {
-    core.on(CoreCallbackEvent.lock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(true);
-    });
-    core.on(CoreCallbackEvent.unlock, () => {
-      (
-        TreeViewManagerInstance.getTreeView("teamsfx-deployment") as CommandsWebviewProvider
-      ).onLockChanged(false);
-    });
   }
 }
 
@@ -835,38 +822,90 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
 
-    if (!(await fs.pathExists(manifestTemplatePath))) {
-      const error = new UserError(
-        ExtensionSource,
-        ExtensionErrors.DefaultManifestTemplateNotExistsError,
-        util.format(
-          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-          manifestTemplatePath
-        )
-      );
-
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-      showError(error);
-      return err(error);
-    }
-
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-      showError(selectedEnv.error);
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "validateManifest",
-      params: {
-        manifestTemplatePath: manifestTemplatePath,
-        env: env,
-      },
+    const schemaOption: OptionItem = {
+      id: "validateAgainstSchema",
+      label: localize("teamstoolkit.handlers.validate.schemaOption"),
+      description: localize("teamstoolkit.handlers.validate.schemaOptionDescription"),
     };
-    return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    const appPackageOption: OptionItem = {
+      id: "validateAgainstPackage",
+      label: localize("teamstoolkit.handlers.validate.appPackageOption"),
+      description: localize("teamstoolkit.handlers.validate.appPackageOptionDescription"),
+    };
+    const config: SingleSelectConfig = {
+      name: "validateMethod",
+      title: localize("teamstoolkit.handlers.validate.selectTitle"),
+      options: [schemaOption, appPackageOption],
+    };
+    const result = await VS_CODE_UI.selectOption(config);
+    if (result.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error, {
+        ...getTriggerFromProperty(args),
+      });
+      return err(result.error);
+    } else {
+      const selectedEnv = await askTargetEnvironment();
+      if (selectedEnv.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+        showError(selectedEnv.error);
+        return err(selectedEnv.error);
+      }
+      const env = selectedEnv.value;
+
+      const func: Func = {
+        namespace: "fx-solution-azure",
+        method: "validateManifest",
+        params: {},
+      };
+      if (result.value.result === schemaOption.id) {
+        if (!(await fs.pathExists(manifestTemplatePath))) {
+          const error = new UserError(
+            ExtensionSource,
+            ExtensionErrors.DefaultManifestTemplateNotExistsError,
+            util.format(
+              localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
+              manifestTemplatePath
+            )
+          );
+
+          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+          showError(error);
+          return err(error);
+        }
+        func.params = {
+          manifestPath: manifestTemplatePath,
+        };
+      } else {
+        const appPackagePath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
+        if (!(await fs.pathExists(appPackagePath))) {
+          const error = new UserError(
+            ExtensionSource,
+            ExtensionErrors.DefaultAppPackageNotExistsError,
+            util.format(
+              localize("teamstoolkit.handlers.defaultAppPackageNotExists"),
+              appPackagePath
+            )
+          );
+
+          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+          showError(error);
+          return err(error);
+        }
+
+        func.params = {
+          appPackagePath: appPackagePath,
+        };
+      }
+      const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
+      telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
+      return await runUserTask(
+        func,
+        TelemetryEvent.ValidateManifest,
+        false,
+        env,
+        telemetryProperties
+      );
+    }
   } else {
     const func: Func = {
       namespace: "fx-solution-azure",
@@ -899,7 +938,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 /**
  * Ask user to select environment, local is included
  */
-async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   const projectPath = globalVariables.workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
@@ -1113,6 +1152,12 @@ export async function openFolderHandler(args?: any[]): Promise<Result<any, FxErr
   return ok(null);
 }
 
+export async function addWebpart(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
+
+  return await runCommand(Stage.addWebpart);
+}
+
 export async function runCommand(
   stage: Stage,
   defaultInputs?: Inputs
@@ -1193,6 +1238,10 @@ export async function runCommand(
         result = await core.publishInDeveloperPortal(inputs);
         break;
       }
+      case Stage.addWebpart: {
+        result = await core.addWebpart(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -1268,7 +1317,8 @@ export async function runUserTask(
   func: Func,
   eventName: string,
   ignoreEnvInfo: boolean,
-  envName?: string
+  envName?: string,
+  telemetryProperties?: { [key: string]: string }
 ): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   let inputs: Inputs | undefined;
@@ -1286,7 +1336,7 @@ export async function runUserTask(
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
 }
@@ -1366,7 +1416,8 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
 async function processResult(
   eventName: string | undefined,
   result: Result<null, FxError>,
-  inputs?: Inputs
+  inputs?: Inputs,
+  extraProperty?: { [key: string]: string }
 ) {
   const envProperty: { [key: string]: string } = {};
   const createProperty: { [key: string]: string } = {};
@@ -1395,6 +1446,7 @@ async function processResult(
       ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
         ...createProperty,
         ...envProperty,
+        ...extraProperty,
       });
     }
     const error = result.error;
@@ -1420,6 +1472,7 @@ async function processResult(
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         ...createProperty,
         ...envProperty,
+        ...extraProperty,
       });
     }
   }
@@ -1831,10 +1884,10 @@ export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> 
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-development"));
 }
 
-export async function openDeploymentLinkHandler(args: any[]): Promise<boolean> {
+export async function openLifecycleLinkHandler(args: any[]): Promise<boolean> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
-    [TelemetryProperty.DocumentationName]: "deployment",
+    [TelemetryProperty.DocumentationName]: "lifecycle",
   });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
 }
@@ -2438,9 +2491,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
     }
 
     inputs = getSystemInputs();
-    if (!isV3Enabled()) {
-      inputs.env = env;
-    }
+    inputs.env = env;
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
@@ -2524,7 +2575,7 @@ export async function listCollaborator(env?: string): Promise<Result<any, FxErro
   return result;
 }
 
-export async function manageCollaboratorHandler(): Promise<Result<any, FxError>> {
+export async function manageCollaboratorHandler(env?: string): Promise<Result<any, FxError>> {
   let result: any = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaboratorStart);
 
@@ -2554,12 +2605,12 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
     const command = collaboratorCommand.value.result;
     switch (command) {
       case "grantPermission":
-        result = await grantPermission();
+        result = await grantPermission(env);
         break;
 
       case "listCollaborator":
       default:
-        result = await listCollaborator();
+        result = await listCollaborator(env);
         break;
     }
   } catch (e) {
@@ -3449,13 +3500,13 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
   return result;
 }
 
-export async function openDeploymentTreeview(args?: any[]) {
+export async function openLifecycleTreeview(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ClickOpenDeploymentTreeview,
+    TelemetryEvent.ClickOpenLifecycleTreeview,
     getTriggerFromProperty(args)
   );
   if (globalVariables.isTeamsFxProject) {
-    vscode.commands.executeCommand("teamsfx-deployment.focus");
+    vscode.commands.executeCommand("teamsfx-lifecycle.focus");
   } else {
     vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
@@ -3592,20 +3643,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
               detail: localize("teamstoolkit.guides.addME.detail"),
               groupName: localize("teamstoolkit.guide.capability"),
               data: "https://aka.ms/teamsfx-add-message-extension",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addSpfxTab",
-              label: `${localize("teamstoolkit.guides.addSpfxTab.label")}`,
-              detail: localize("teamstoolkit.guides.addSpfxTab.detail"),
-              groupName: localize("teamstoolkit.guide.capability"),
-              data: "https://aka.ms/teamsfx-add-spfx-tab",
               buttons: [
                 {
                   iconPath: "file-symlink-file",

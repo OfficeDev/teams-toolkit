@@ -843,7 +843,7 @@ export class ProvisionUtils {
       "error.m365tenantcheck.tenantNotMatch",
       keysNeedToUpdate.join(", "),
       env,
-      HelpLinks.SwitchTenant
+      "[SwitchTenant]" + "(" + HelpLinks.SwitchTenant + ")"
     );
 
     const error = new UserError(source, "M365TenantNotMatch", msg, msg);

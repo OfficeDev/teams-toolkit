@@ -48,6 +48,7 @@ import {
   VersionState,
 } from "../../../src/common/versionMetadata";
 import {
+  buildEnvUserFileName,
   getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
@@ -885,11 +886,11 @@ describe("updateLaunchJson", () => {
     const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
     assert.equal(
       updatedLaunchJson.configurations[0].url,
-      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[1].url,
-      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[2].url,
@@ -1031,9 +1032,11 @@ describe("userdataMigration", () => {
       "userdata.dev"
     );
     assert.isTrue(
-      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+      await fs.pathExists(
+        path.join(projectPath, Constants.environmentFolder, buildEnvUserFileName("dev"))
+      )
     );
-    const testEnvContent_dev = await readEnvFile(
+    const testEnvContent_dev = await readEnvUserFile(
       path.join(projectPath, Constants.environmentFolder),
       "dev"
     );
@@ -1044,9 +1047,11 @@ describe("userdataMigration", () => {
       "userdata.local"
     );
     assert.isTrue(
-      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.local"))
+      await fs.pathExists(
+        path.join(projectPath, Constants.environmentFolder, buildEnvUserFileName("local"))
+      )
     );
-    const testEnvContent_local = await readEnvFile(
+    const testEnvContent_local = await readEnvUserFile(
       path.join(projectPath, Constants.environmentFolder),
       "local"
     );
@@ -1559,6 +1564,10 @@ async function readSettingJson(projectPath: string): Promise<any> {
 
 async function readEnvFile(projectPath: string, env: string): Promise<any> {
   return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
+}
+
+async function readEnvUserFile(projectPath: string, env: string): Promise<any> {
+  return await fs.readFileSync(path.join(projectPath, buildEnvUserFileName(env))).toString();
 }
 
 function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {

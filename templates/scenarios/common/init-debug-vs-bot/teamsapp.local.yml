@@ -2,14 +2,13 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: bot # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-provision:
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
       name: bot
@@ -17,7 +16,7 @@ provision:
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: file/updateJson # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile # Generate runtime appsettings to JSON file
     with:
       target: ./appsettings.Development.json
       appsettings:
@@ -33,8 +32,7 @@ provision:
       channels:
         - name: msteams
 
-configureApp:
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value

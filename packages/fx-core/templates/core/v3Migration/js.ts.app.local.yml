@@ -52,12 +52,18 @@ provision:
 {{#config.configureApp}}
 configureApp:
   {{#tab}}
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set env for local launch
+    name: Set {{../../placeholderMappings.tabDomain}} for local launch
     with:
-      envs:
-        {{../../placeholderMappings.tabDomain}}: {{domain}}
-        {{../../placeholderMappings.tabEndpoint}}: {{endpoint}}
-        {{../../placeholderMappings.tabIndexPath}}: /index.html#
+      run: echo "::set-output {{../../placeholderMappings.tabDomain}}={{domain}}"
+  - uses: script # Set env for local launch
+    name: Set {{../../placeholderMappings.tabEndpoint}} for local launch
+    with:
+      run: echo "::set-output {{../../placeholderMappings.tabEndpoint}}={{endpoint}}"
+  - uses: script # Set env for local launch
+    name: Set {{../../placeholderMappings.tabIndexPath}} for local launch
+    with:
+      run: echo "::set-output {{../../placeholderMappings.tabIndexPath}}=/index.html#"
 
   {{/tab}}
   {{#if aad}}
@@ -77,7 +83,7 @@ configureApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
   {{else}}
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
 
@@ -129,7 +135,7 @@ deploy:
 
   {{/dotnetCommand}}
   {{#tab}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -141,7 +147,7 @@ deploy:
 
   {{/tab}}
   {{#if bot}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -150,7 +156,7 @@ deploy:
 
   {{/if}}
   {{#ssoTab}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -163,7 +169,7 @@ deploy:
 
   {{/ssoTab}}
   {{#if ssoBot}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -183,7 +189,7 @@ deploy:
 
   {{/if}}
   {{#if ssoFunction}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./api/.env.teamsfx.local
       envs:
@@ -204,7 +210,7 @@ deploy:
 
   {{/npmCommands}}
   {{#frontendStart}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.localSettings
       envs:
@@ -225,7 +231,7 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/updateJson # Generate runtime environment variables
+  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
     with:
       target: {{appsettingsPath}}
       appsettings:
@@ -240,7 +246,7 @@ deploy:
 
   {{/authStart}}
   {{#botStart}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.localSettings
       envs:
@@ -264,7 +270,7 @@ deploy:
 
   {{/botStart}}
   {{#if backendStart}}
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./api/.localSettings
       envs:

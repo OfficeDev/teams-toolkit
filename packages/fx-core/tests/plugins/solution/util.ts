@@ -233,6 +233,16 @@ export class MockedUserInteraction implements UserInteraction {
   ): Promise<Result<T, FxError>> {
     return task.run(...args);
   }
+
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string;
+    shell?: string;
+    timeout?: number;
+    env?: { [k: string]: string };
+  }): Promise<Result<string, FxError>> {
+    return ok("");
+  }
 }
 
 export class MockedV2Context implements v2.Context {

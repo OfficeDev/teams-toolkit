@@ -2,24 +2,37 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ContextV3, err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  Stage,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
-import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
+import {
+  LatestPackageInstallError,
+  ScaffoldError,
+  YoGeneratorScaffoldError,
+} from "../resource/spfx/error";
 import { Utils } from "../resource/spfx/utils/utils";
 import { camelCase } from "lodash";
 import { Constants, ScaffoldProgressMessage } from "../resource/spfx/utils/constants";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
-import { isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { cpUtils } from "../../common/deps-checker";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { SPFxVersionOptionIds } from "../resource/spfx/utils/question-helper";
 
 export class SPFxGenerator {
   @hooks([
@@ -49,17 +62,24 @@ export class SPFxGenerator {
     return ok(undefined);
   }
 
-  private static async doYeomanScaffold(
+  public static async doYeomanScaffold(
     context: ContextV3,
     inputs: Inputs,
     destinationPath: string
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<string, FxError>> {
     const ui = context.userInteraction;
-    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
+    const progressHandler = await ProgressHelper.startScaffoldProgressHandler(
+      ui,
+      inputs.stage == Stage.addWebpart
+    );
+    const shouldInstallLocally =
+      inputs[SPFXQuestionNames.use_global_package_or_install_local] ===
+      SPFxVersionOptionIds.installLocally;
     try {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
       const solutionName = inputs[CoreQuestionNames.AppName] as string;
+      const isAddSPFx = inputs.stage == Stage.addWebpart;
 
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = camelCase(componentName);
@@ -69,41 +89,51 @@ export class SPFxGenerator {
       const yoChecker = new YoChecker(context.logProvider!);
       const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
 
-      const yoInstalled = await yoChecker.isInstalled();
-      const generatorInstalled = await spGeneratorChecker.isInstalled();
+      if (shouldInstallLocally) {
+        const latestYoInstalled = await yoChecker.isLatestInstalled();
+        const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled();
 
-      if (!yoInstalled || !generatorInstalled) {
-        await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyInstall"));
+        if (!latestYoInstalled || !latestGeneratorInstalled) {
+          await progressHandler?.next(
+            getLocalizedString("plugins.spfx.scaffold.dependencyInstall")
+          );
 
-        if (isYoCheckerEnabled()) {
-          const yoRes = await yoChecker.ensureDependency(context);
-          if (yoRes.isErr()) {
-            throw DependencyInstallError("yo");
+          if (!latestYoInstalled) {
+            const yoRes = await yoChecker.ensureLatestDependency(context);
+            if (yoRes.isErr()) {
+              throw LatestPackageInstallError();
+            }
           }
-        }
 
-        if (isGeneratorCheckerEnabled()) {
-          const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
-          if (spGeneratorRes.isErr()) {
-            throw DependencyInstallError("sharepoint generator");
+          if (!latestGeneratorInstalled) {
+            const spGeneratorRes = await spGeneratorChecker.ensureLatestDependency(context);
+            if (spGeneratorRes.isErr()) {
+              throw LatestPackageInstallError();
+            }
           }
         }
       }
 
-      await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.scaffoldProject"));
+      await progressHandler?.next(
+        getLocalizedString(
+          isAddSPFx
+            ? "driver.spfx.add.progress.scaffoldWebpart"
+            : "plugins.spfx.scaffold.scaffoldProject"
+        )
+      );
       if (inputs.platform === Platform.VSCode) {
         (context.logProvider as any).outputChannel.show();
       }
 
       const yoEnv: NodeJS.ProcessEnv = process.env;
       if (yoEnv.PATH) {
-        yoEnv.PATH = isYoCheckerEnabled()
+        yoEnv.PATH = shouldInstallLocally
           ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
               process.env.PATH ?? ""
             }`
           : process.env.PATH;
       } else {
-        yoEnv.Path = isYoCheckerEnabled()
+        yoEnv.Path = shouldInstallLocally
           ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
               process.env.Path ?? ""
             }`
@@ -111,9 +141,7 @@ export class SPFxGenerator {
       }
 
       const args = [
-        isGeneratorCheckerEnabled()
-          ? spGeneratorChecker.getSpGeneratorPath()
-          : "@microsoft/sharepoint",
+        shouldInstallLocally ? spGeneratorChecker.getSpGeneratorPath() : "@microsoft/sharepoint",
         "--skip-install",
         "true",
         "--component-type",
@@ -133,20 +161,30 @@ export class SPFxGenerator {
       if (solutionName) {
         args.push("--solution-name", solutionName);
       }
-      await cpUtils.executeCommand(
-        destinationPath,
-        context.logProvider,
-        {
-          timeout: 2 * 60 * 1000,
-          env: yoEnv,
-        },
-        "yo",
-        ...args
-      );
+
+      try {
+        await cpUtils.executeCommand(
+          isAddSPFx ? inputs["spfxFolder"] : destinationPath,
+          context.logProvider,
+          {
+            timeout: 2 * 60 * 1000,
+            env: yoEnv,
+          },
+          "yo",
+          ...args
+        );
+      } catch (yoError) {
+        if ((yoError as any).message) {
+          context.logProvider.error((yoError as any).message);
+        }
+        throw YoGeneratorScaffoldError();
+      }
 
       const newPath = path.join(destinationPath, "src");
-      const currentPath = path.join(destinationPath, solutionName!);
-      await fs.rename(currentPath, newPath);
+      if (!isAddSPFx) {
+        const currentPath = path.join(destinationPath, solutionName!);
+        await fs.rename(currentPath, newPath);
+      }
 
       await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.updateManifest"));
       const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
@@ -161,11 +199,14 @@ export class SPFxGenerator {
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
       const componentId = manifestJson.id;
-      if (!context.templateVariables) {
-        context.templateVariables = Generator.getDefaultVariables(solutionName);
+
+      if (!isAddSPFx) {
+        if (!context.templateVariables) {
+          context.templateVariables = Generator.getDefaultVariables(solutionName);
+        }
+        context.templateVariables["componentId"] = componentId;
+        context.templateVariables["webpartName"] = webpartName;
       }
-      context.templateVariables["componentId"] = componentId;
-      context.templateVariables["webpartName"] = webpartName;
 
       // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
       const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
@@ -188,36 +229,8 @@ export class SPFxGenerator {
       }
 
       await progressHandler?.end(true);
-      return ok(undefined);
+      return ok(componentId);
     } catch (error) {
-      if ((error as any).name === "DependencyInstallFailed") {
-        const globalYoVersion = Utils.getPackageVersion("yo");
-        const globalGenVersion = Utils.getPackageVersion("@microsoft/generator-sharepoint");
-        const yoInfo = YoChecker.getDependencyInfo();
-        const genInfo = GeneratorChecker.getDependencyInfo();
-        const yoMessage =
-          globalYoVersion === undefined
-            ? "    yo not installed"
-            : `    globally installed yo@${globalYoVersion}`;
-        const generatorMessage =
-          globalGenVersion === undefined
-            ? "    @microsoft/generator-sharepoint not installed"
-            : `    globally installed @microsoft/generator-sharepoint@${globalYoVersion}`;
-        context.logProvider?.error(
-          `We've encountered some issues when trying to install prerequisites under HOME/.fx folder.  Learn how to remediate by going to this link(aka.ms/teamsfx-spfx-help) and following the steps applicable to your system: \n ${yoMessage} \n ${generatorMessage}`
-        );
-        context.logProvider?.error(
-          `Teams Toolkit recommends using ${yoInfo.displayName} ${genInfo.displayName}`
-        );
-      }
-      if (
-        (error as any).message &&
-        (error as any).message.includes("'yo' is not recognized as an internal or external command")
-      ) {
-        context.logProvider?.error(
-          "NPM v6.x with Node.js v12.13.0+ (Erbium) or Node.js v14.15.0+ (Fermium) is recommended for spfx scaffolding and later development. You can use correct version and try again."
-        );
-      }
       await progressHandler?.end(false);
       return err(ScaffoldError(error));
     }

@@ -887,7 +887,7 @@ export async function getQuestionsForValidateApplication(
   const group = new QTreeNode({ type: "group" });
   if (inputs.validateMethod === "validateAgainstSchema") {
     // Manifest path node
-    const teamsAppSelectNode = new QTreeNode(selectTeamsAppManifestQuestion());
+    const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
     group.addChild(teamsAppSelectNode);
 
     // Env select node

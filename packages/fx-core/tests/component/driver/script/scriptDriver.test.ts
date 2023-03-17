@@ -24,9 +24,12 @@ describe("Script Driver test", () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     sandbox.stub(tools, "waitSeconds").resolves();
   });
-  afterEach(() => {
+  afterEach(async () => {
     sandbox.restore();
     mockedEnvRestore();
+    if (await fs.pathExists("./log")) {
+      await fs.remove("./log");
+    }
   });
   it("execute success set-output", async () => {
     const args = {

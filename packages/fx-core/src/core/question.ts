@@ -16,6 +16,8 @@ import {
   MultiSelectQuestion,
   SingleFileQuestion,
   QTreeNode,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -89,6 +91,7 @@ export enum CoreQuestionNames {
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "teamsAppManifestFilePath",
   AadAppManifestFilePath = "aadAppManifestFilePath",
+  TeamsAppPackageFilePath = "teamsAppPackageFilePath",
 }
 
 export const ProjectNamePattern =
@@ -896,11 +899,39 @@ export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
   };
 }
 
-export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefined> {
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(
-    inputs.projectPath!,
-    true
-  );
+export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
+  return {
+    name: CoreQuestionNames.TeamsAppPackageFilePath,
+    title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const appPackagePath: string = path.join(
+        inputs.projectPath!,
+        BuildFolderName,
+        AppPackageFolderName,
+        "appPackage.dev.zip"
+      );
+      if (fs.pathExistsSync(appPackagePath)) {
+        return appPackagePath;
+      } else {
+        return undefined;
+      }
+    },
+  };
+}
+
+export async function selectEnvNode(
+  inputs: Inputs,
+  withLocalEnv?: boolean
+): Promise<QTreeNode | undefined> {
+  let envProfilesResult;
+
+  if (withLocalEnv) {
+    envProfilesResult = await environmentManager.listAllEnvConfigs(inputs.projectPath!);
+  } else {
+    envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!, true);
+  }
+
   if (envProfilesResult.isErr()) {
     // If failed to load env, return undefined
     return undefined;

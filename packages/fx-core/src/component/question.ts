@@ -84,7 +84,12 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import {
+  ProgrammingLanguageQuestion,
+  selectTeamsAppManifestQuestion,
+  selectTeamsAppPackageQuestion,
+  selectEnvNode,
+} from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -874,4 +879,26 @@ export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | un
   manifestFile.addChild(localManifestFile);
 
   return ok(addWebpart);
+}
+
+export async function getQuestionsForValidateApplication(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  if (inputs.validateMethod === "validateAgainstSchema") {
+    // Manifest path node
+    const teamsAppSelectNode = new QTreeNode(selectTeamsAppManifestQuestion());
+    group.addChild(teamsAppSelectNode);
+
+    // Env select node
+    const envNode = await selectEnvNode(inputs, true);
+    if (envNode) {
+      teamsAppSelectNode.addChild(envNode);
+    }
+  } else {
+    // App package path node
+    const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
+    group.addChild(teamsAppSelectNode);
+  }
+  return ok(group);
 }

@@ -73,6 +73,7 @@ export enum Stage {
   initDebug = "initDebug",
   initInfra = "initInfra",
   publishInDeveloperPortal = "publishInDeveloperPortal",
+  validateApplication = "validateApplication",
 }
 
 export enum TelemetryEvent {

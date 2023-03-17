@@ -71,6 +71,7 @@ import {
   getQuestionsForAddWebpart,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
+  getQuestionsForValidateApplication,
 } from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
@@ -83,6 +84,7 @@ import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { InvalidProjectError } from "../error/common";
+import { CoreQuestionNames } from "./question";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -511,5 +513,33 @@ export class FxCoreV3Implement {
     const contextV3: DriverContext = createDriverContext(inputs);
     await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateApplication)])
+  async validateApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    const context: DriverContext = createDriverContext(inputs);
+    if (inputs.validateMethod === "validateAgainstSchema") {
+      // load env
+      const env = inputs?.[CoreQuestionNames.TargetEnvName] as string;
+      if (env) {
+        await envUtil.readEnv(inputs.projectPath!, env);
+      }
+
+      const teamsAppManifestFilePath = inputs?.[
+        CoreQuestionNames.TeamsAppManifestFilePath
+      ] as string;
+      const args: ValidateManifestArgs = {
+        manifestPath: teamsAppManifestFilePath,
+      };
+      const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
+      return await driver.run(args, context);
+    } else {
+      const teamsAppPackageFilePath = inputs?.[CoreQuestionNames.TeamsAppPackageFilePath] as string;
+      const args: ValidateAppPackageArgs = {
+        appPackagePath: teamsAppPackageFilePath,
+      };
+      const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+      return await driver.run(args, context);
+    }
   }
 }

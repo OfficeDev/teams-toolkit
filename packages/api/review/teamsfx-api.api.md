@@ -1824,7 +1824,9 @@ export enum Stage {
     // (undocumented)
     update = "update",
     // (undocumented)
-    userTask = "userTask"
+    userTask = "userTask",
+    // (undocumented)
+    validateApplication = "validateApplication"
 }
 
 // @public (undocumented)

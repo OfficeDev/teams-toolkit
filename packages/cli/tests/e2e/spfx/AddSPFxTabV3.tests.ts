@@ -7,7 +7,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import {
   cleanUpLocalProject,
   cleanupSharePointPackage,
@@ -102,7 +102,7 @@ describe("Start a new project", function () {
         : await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
 
       if (isV3Enabled()) {
-        chai.assert.exists(context.TEAMS_APP_ID);
+        assert.exists(context.TEAMS_APP_ID);
         teamsAppId = context.TEAMS_APP_ID;
         AppStudioValidator.setE2ETestProvider();
       } else {

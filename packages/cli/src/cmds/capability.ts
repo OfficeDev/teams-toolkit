@@ -110,6 +110,10 @@ export class AddWebpart extends YargsCommand {
     const core = resultFolder.value;
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.stage = Stage.addWebpart;
+    if (args["spfx-use-global-package-or-install-local"]) {
+      inputs["spfx-use-global-package-or-install-local"] =
+        args["spfx-use-global-package-or-install-local"];
+    }
     if (args[SPFxQuestionNames.SPFxFolder]) {
       inputs[SPFxQuestionNames.SPFxFolder] = args[SPFxQuestionNames.SPFxFolder];
     }

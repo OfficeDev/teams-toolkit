@@ -174,7 +174,15 @@ describe("Capability Command Tests", function () {
     await cmd.builder(yargs);
 
     expect(options).deep.equals(
-      ["spfx-folder", "spfx-webpart-name", "manifest-path", "local-manifest-path", "folder"],
+      [
+        "spfx-load-package-version",
+        "spfx-use-global-package-or-install-local",
+        "spfx-folder",
+        "spfx-webpart-name",
+        "manifest-path",
+        "local-manifest-path",
+        "folder",
+      ],
       JSON.stringify(options)
     );
   });

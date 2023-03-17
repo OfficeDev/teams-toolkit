@@ -196,6 +196,7 @@ describe("Capability Command Tests", function () {
       ["spfx-webpart-name"]: "hiworld",
       ["manifest-path"]: "/appPackage/manifest.json",
       ["local-manifest-path"]: "/appPackage/manifest.local.json",
+      ["spfx-use-global-package-or-install-local"]: "installLocally",
     };
     await cmd.handler(args);
     expect(addWebpartStub.calledOnce).to.be.true;

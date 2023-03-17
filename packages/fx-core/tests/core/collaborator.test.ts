@@ -13,6 +13,9 @@ import {
   ContextV3,
   ValidationSchema,
   getValidationFunction,
+  SingleSelectQuestion,
+  StaticOptions,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -1563,6 +1566,12 @@ describe("Collaborator APIs for V3", () => {
         const teamsAppManifestQuestion = node?.children?.[0];
         const aadAppManifestQuestion = node?.children?.[1];
 
+        assert.isTrue(teamsAppManifestQuestion?.children?.length == 2);
+        assert.isTrue(aadAppManifestQuestion?.children?.length == 2);
+
+        const teamsAppConfirmNode = teamsAppManifestQuestion?.children?.[0];
+        const aadAppConfirmNode = aadAppManifestQuestion?.children?.[0];
+
         {
           // teamsApp & aadApp selected and env provided
           inputs[CollaborationConstants.AppType] = [
@@ -1586,6 +1595,15 @@ describe("Collaborator APIs for V3", () => {
             inputs[CollaborationConstants.AppType]
           );
           assert.isUndefined(aadAppQuestionActivate);
+
+          const teamsAppConfirmOption = (teamsAppConfirmNode?.data as SingleSelectQuestion)
+            .dynamicOptions!(inputs) as StaticOptions;
+          const aadAppConfirmOption = (aadAppConfirmNode?.data as SingleSelectQuestion)
+            .dynamicOptions!(inputs) as StaticOptions;
+          assert.isTrue(
+            (teamsAppConfirmOption[0] as OptionItem).label == "teamsAppManifest" &&
+              (aadAppConfirmOption[0] as OptionItem).label == "aadAppManifest"
+          );
         }
         {
           // teamsApp selected

@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import {
   ContextV3,
   devPreview,
@@ -14,7 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs";
-import fse from "fs-extra";
+import * as fse from "fs-extra";
 import axios from "axios";
 import "mocha";
 import mockfs from "mock-fs";
@@ -466,6 +470,82 @@ describe("helperMethods", async () => {
       } catch (err) {
         chai.assert.fail(err);
       }
+    });
+  });
+
+  describe("moveManifestLocation", () => {
+    const projectRoot = "/home/user/addin";
+
+    beforeEach(() => {
+      mockfs({
+        "/home/user/addin/manifest.json": "{}",
+        "/home/user/addin/assets": {
+          file1: "xxx",
+        },
+        "/home/user/addin/webpack.config.js": JSON.stringify([
+          {
+            from: "assets/*",
+            to: "assets/[name][ext][query]",
+          },
+          {
+            from: "manifest*.json",
+            to: "[name]" + "[ext]",
+          },
+        ]),
+        "/home/user/addin/package.json": JSON.stringify({
+          scripts: {
+            start: "office-addin-debugging start manifest.json",
+            stop: "office-addin-debugging stop manifest.json",
+            validate: "office-addin-manifest validate manifest.json",
+          },
+        }),
+        "/home/user/addin/src/taskpane/taskpane.html": `<img width="90" height="90" src="../../assets/logo-filled.png" alt="Contoso" title="Contoso" />`,
+      });
+    });
+
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("should move manifest.json into appPackage folder", async () => {
+      await HelperMethods.moveManifestLocation(projectRoot, "manifest.json");
+      chai.assert.isFalse(await fse.pathExists(path.join(projectRoot, "manifest.json")));
+      chai.assert.isFalse(await fse.pathExists(path.join(projectRoot, "assets")));
+
+      chai.assert.isTrue(
+        await fse.pathExists(path.join(projectRoot, "appPackage", "manifest.json"))
+      );
+      chai.assert.isTrue(
+        await fse.pathExists(path.join(projectRoot, "appPackage", "assets", "file1"))
+      );
+
+      const webpackConfigPath = path.join(projectRoot, "webpack.config.js");
+      const webpackConfigJson = JSON.parse(await fse.readFile(webpackConfigPath, "utf8"));
+      chai.assert.equal(webpackConfigJson[0].from, "appPackage/assets/*");
+      chai.assert.equal(webpackConfigJson[1].from, "appPackage/manifest*.json");
+
+      const packageJsonPath = path.join(projectRoot, "package.json");
+      const packageJson = JSON.parse(await fse.readFile(packageJsonPath, "utf8"));
+      chai.assert.equal(
+        packageJson.scripts.start,
+        "office-addin-debugging start appPackage/manifest.json"
+      );
+
+      chai.assert.equal(
+        packageJson.scripts.stop,
+        "office-addin-debugging stop appPackage/manifest.json"
+      );
+      chai.assert.equal(
+        packageJson.scripts.validate,
+        "office-addin-manifest validate appPackage/manifest.json"
+      );
+
+      const htmlPath = path.join(projectRoot, "src", "taskpane", "taskpane.html");
+      const html = await fse.readFile(htmlPath, "utf8");
+      chai.assert.equal(
+        html,
+        `<img width="90" height="90" src="../../appPackage/assets/logo-filled.png" alt="Contoso" title="Contoso" />`
+      );
     });
   });
 });

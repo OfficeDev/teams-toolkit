@@ -87,7 +87,7 @@ describe("ProjectMigratorMW", () => {
     sandbox
       .stub(MockUserInteraction.prototype, "showMessage")
       .onCall(0)
-      .resolves(ok("Learn more"))
+      .resolves(ok("More Info"))
       .onCall(1)
       .resolves(ok("Upgrade"));
     sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
@@ -417,6 +417,28 @@ describe("generateAppYml-js/ts", () => {
 
   it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
     await copyTestProject("jsWebappBotId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
+  });
+
+  it("should success for js function bot as resourceId eq botWebAppResourceId", async () => {
+    await copyTestProject("jsFuncBotWebAppId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
+  });
+
+  it("should success for ts function bot as resourceId eq botWebAppResourceId", async () => {
+    await copyTestProject("jsFuncBotWebAppId", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
     projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
@@ -1367,9 +1389,9 @@ describe("Migration show notification", () => {
     assert.isTrue(res);
   });
 
-  it("nonmodal case and click learn more", async () => {
+  it("nonmodal case and click More Info", async () => {
     inputs.isNonmodalMessage = "true";
-    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Learn more"));
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("More Info"));
     const res = await MigratorV3.showNotification(coreCtx, version);
     assert.isFalse(res);
   });

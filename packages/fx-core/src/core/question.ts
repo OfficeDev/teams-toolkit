@@ -92,6 +92,7 @@ export enum CoreQuestionNames {
   TeamsAppManifestFilePath = "teamsAppManifestFilePath",
   AadAppManifestFilePath = "aadAppManifestFilePath",
   TeamsAppPackageFilePath = "teamsAppPackageFilePath",
+  ConfirmManifest = "confirmManifest",
 }
 
 export const ProjectNamePattern =
@@ -867,13 +868,14 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
   };
 }
 
-export function selectAadAppManifestQuestion(): SingleFileQuestion {
-  return {
+export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
+  const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
+
+  const aadAppManifestNode: SingleFileQuestion = {
     name: CoreQuestionNames.AadAppManifestFilePath,
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
       if (fs.pathExistsSync(manifestPath)) {
         return manifestPath;
       } else {
@@ -881,15 +883,21 @@ export function selectAadAppManifestQuestion(): SingleFileQuestion {
       }
     },
   };
+
+  const res = new QTreeNode(aadAppManifestNode);
+  const confirmNode = confirmManifestNode(manifestPath, false);
+  res.addChild(confirmNode);
+  return res;
 }
 
-export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
-  return {
+export function selectTeamsAppManifestQuestion(inputs: Inputs): QTreeNode {
+  const manifestPath: string = path.join(inputs.projectPath!, "appPackage", "manifest.json");
+
+  const teamsAppManifestNode: SingleFileQuestion = {
     name: CoreQuestionNames.TeamsAppManifestFilePath,
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      const manifestPath: string = path.join(inputs.projectPath!, "appPackage", "manifest.json");
       if (fs.pathExistsSync(manifestPath)) {
         return manifestPath;
       } else {
@@ -897,6 +905,11 @@ export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
       }
     },
   };
+
+  const res = new QTreeNode(teamsAppManifestNode);
+  const confirmNode = confirmManifestNode(manifestPath, true);
+  res.addChild(confirmNode);
+  return res;
 }
 
 export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
@@ -943,4 +956,33 @@ export async function selectEnvNode(
 
   const envNode = new QTreeNode(selectEnv);
   return envNode;
+}
+
+export function confirmManifestNode(defaultManifestFilePath: string, isTeamsApp = true): QTreeNode {
+  const confirmManifestQuestion: SingleSelectQuestion = {
+    name: CoreQuestionNames.ConfirmManifest,
+    title: isTeamsApp
+      ? getLocalizedString("core.selectTeamsAppManifestQuestion.title")
+      : getLocalizedString("core.selectAadAppManifestQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [],
+    skipSingleOption: false,
+    placeholder: getLocalizedString("core.confirmManifestQuestion.placeholder"),
+  };
+
+  confirmManifestQuestion.dynamicOptions = (inputs: Inputs): StaticOptions => {
+    return [
+      {
+        id: "manifest",
+        label: isTeamsApp
+          ? inputs[CoreQuestionNames.TeamsAppManifestFilePath]
+          : inputs[CoreQuestionNames.AadAppManifestFilePath],
+      },
+    ];
+  };
+  const confirmManifestNode = new QTreeNode(confirmManifestQuestion);
+  confirmManifestNode.condition = {
+    notEquals: defaultManifestFilePath,
+  };
+  return confirmManifestNode;
 }

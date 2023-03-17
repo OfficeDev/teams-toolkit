@@ -14,6 +14,7 @@ import { assert } from "chai";
 import mockedEnv from "mocked-env";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { MetadataV2, MetadataV3, VersionSource } from "../../../src/common/versionMetadata";
+import { learnMoreText } from "../../../src/core/middleware/projectMigrator";
 
 describe("Middleware - projectVersionChecker.test", () => {
   const sandbox = sinon.createSandbox();
@@ -169,7 +170,7 @@ describe("Middleware - projectVersionChecker.test", () => {
     try {
       const appName = randomAppName();
       sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
-      sandbox.stub(mockTools.ui, "showMessage").resolves(ok("Learn more"));
+      sandbox.stub(mockTools.ui, "showMessage").resolves(ok(learnMoreText));
       sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
         version: "2.0.0",
         source: VersionSource.teamsapp,
@@ -204,7 +205,7 @@ describe("Middleware - projectVersionChecker.test", () => {
     try {
       const appName = randomAppName();
       sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
-      sandbox.stub(mockTools.ui, "showMessage").resolves(ok("Learn more"));
+      sandbox.stub(mockTools.ui, "showMessage").resolves(ok(learnMoreText));
       sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
         version: "2.0.0",
         source: VersionSource.teamsapp,

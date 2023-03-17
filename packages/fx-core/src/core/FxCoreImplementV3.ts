@@ -355,6 +355,7 @@ export class FxCoreV3Implement {
       localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
       spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
       webpartName: inputs[SPFxQuestionNames.WebPartName],
+      spfxPackage: inputs[SPFXQuestionNames.use_global_package_or_install_local],
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     return await driver.run(args, contextV3);

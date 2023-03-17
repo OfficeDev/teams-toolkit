@@ -94,7 +94,11 @@ import {
 } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
-import { webpartNameQuestion } from "./resource/spfx/utils/questions";
+import {
+  loadPackageVersions,
+  spfxPackageSelectQuestion,
+  webpartNameQuestion,
+} from "./resource/spfx/utils/questions";
 import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
@@ -862,8 +866,14 @@ export function localManifestFileQuestion(): SingleFileQuestion {
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
 
+  const loadPackage = new QTreeNode(loadPackageVersions);
+  addWebpart.addChild(loadPackage);
+
+  const spfxPackage = new QTreeNode(spfxPackageSelectQuestion);
+  loadPackage.addChild(spfxPackage);
+
   const spfxFolder = new QTreeNode(spfxFolderQuestion());
-  addWebpart.addChild(spfxFolder);
+  spfxPackage.addChild(spfxFolder);
 
   const webpartName = new QTreeNode(webpartNameQuestion);
   spfxFolder.addChild(webpartName);

@@ -223,9 +223,9 @@ export class PackageService {
 
   private traceError(error: any) {
     // add error details and trace to message
-    const detail = JSON.stringify(error.response?.data ?? {});
-    const tracingId = error.response?.headers?.traceresponse ?? "";
-    const originalMessage = error.message ?? "";
+    const detail = JSON.stringify(error.response.data ?? {});
+    const tracingId = error.response.headers?.traceresponse ?? "";
+    const originalMessage = error.message;
     error.message = JSON.stringify({
       message: originalMessage,
       detail: detail,

@@ -456,6 +456,14 @@ describe("Core basic APIs", () => {
       TAB_ENDPOINT: "fake",
     });
     try {
+      sandbox.stub(envUtil, "readEnv").resolves(
+        ok({
+          AAD_APP_OBJECT_ID: getUuid(),
+          AAD_APP_CLIENT_ID: getUuid(),
+          TAB_DOMAIN: "fake",
+          TAB_ENDPOINT: "fake",
+        })
+      );
       const appName = randomAppName();
       const core = new FxCore(tools);
       const inputs: Inputs = {

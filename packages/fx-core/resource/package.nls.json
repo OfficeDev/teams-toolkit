@@ -1042,6 +1042,8 @@
   "driver.teamsApp.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.teamsApp.validate.invalidParameter": "Parameter %s should be provided for action %s",
   "driver.teamsApp.validate.result": "Teams Toolkit has completed checking your app package against validation rules. %s failed, %s passed. Check [output window](%s) for details.",
+  "error.teamsApp.validate.apiFailed": "Teams app package validation failed due to  %s",
+  "error.teamsApp.validate.apiFailed.display": "Teams app pacakge validation failed. Check [output window](%s) for details.",
   "error.teamsApp.AppIdNotExistError": "Teams app with ID %s does not exist in Teams Developer Portal.",
   "error.teamsApp.InvalidAppIdError": "Teams app ID %s is invalid",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
@@ -1060,7 +1062,9 @@
   "error.common.UnresolvedPlaceholderError": "The following environment variables are missing: '%s', which are required for file: %s.",
   "error.common.InvalidProjectError": "This command only works for project created by Teams Toolkit.",
   "error.common.InvalidActionInputError": "The following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s",
-  "error.common.FileNotFoundError": "File not found: %s",
+  "error.common.FileNotFoundError": "No such file or directory, open '%s'",
+  "error.common.JSONSyntaxError": "JSON syntax error: %s",
+  "error.common.UnhandledError": "Unhandled error: %s",
   "error.collaboration.InvalidManifestError": "Your manifest is invalid: %s. Please make sure 'id' key exists in your manifest file.",
   "error.collaboration.FailedToLoadManifest": "Failed to load manifest file. Reason: %s."
 }

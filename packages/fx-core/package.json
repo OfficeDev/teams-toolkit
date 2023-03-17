@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "1.23.2",
+  "version": "2.0.0-alpha",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -43,6 +43,7 @@
     "test:scriptDriver": "nyc mocha \"tests/component/driver/script/scriptDriver.test.ts\"",
     "test:rghelper": "nyc mocha \"tests/component/resourceGroupHelper.test.ts\"",
     "test:manifestUtil": "nyc mocha \"tests/component/resource/appManifest/manifestUtils.test.ts\"",
+    "test:jsonUtils": "nyc mocha \"tests/component/jsonUtils.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

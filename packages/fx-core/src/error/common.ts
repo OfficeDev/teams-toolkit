@@ -1,4 +1,4 @@
-import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
 
@@ -56,5 +56,42 @@ export class InvalidProjectError extends UserError {
       displayMessage: getLocalizedString("error.common.InvalidProjectError"),
       source: "common",
     });
+  }
+}
+
+export class JSONSyntaxError extends UserError {
+  constructor(filePathOrContent: string, e: Error) {
+    super({
+      message: getDefaultString("error.common.JSONSyntaxError", filePathOrContent, e.message),
+      displayMessage: getLocalizedString(
+        "error.common.JSONSyntaxError",
+        filePathOrContent,
+        e.message
+      ),
+      source: "common",
+    });
+    super.stack = e.stack;
+  }
+}
+
+export class ReadFileError extends SystemError {
+  constructor(e: Error, source?: string) {
+    super({
+      source: source || "unknown",
+      message: e.message || getDefaultString("error.common.ReadFileError"),
+      displayMessage: e.message || getLocalizedString("error.common.ReadFileError"),
+    });
+    if (e.stack) super.stack = e.stack;
+  }
+}
+
+export class UnhandledError extends SystemError {
+  constructor(e: Error, source?: string) {
+    super({
+      source: source || "unknown",
+      message: getDefaultString("error.common.UnhandledError", e.message),
+      displayMessage: getLocalizedString("error.common.UnhandledError", e.message),
+    });
+    if (e.stack) super.stack = e.stack;
   }
 }

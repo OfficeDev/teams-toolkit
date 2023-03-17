@@ -460,6 +460,31 @@ describe("handlers", () => {
       sinon.restore();
     });
 
+    it("validateManifestHandler() - telemetries", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
+      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(handlers, "runUserTask").resolves(ok(new Map()));
+
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: (options: any) => {
+          if (options.name === "targetEnvName") {
+            return Promise.resolve(ok({ type: "success", result: "dev" }));
+          } else {
+            return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
+          }
+        },
+      });
+
+      await handlers.validateManifestHandler();
+      sinon.restore();
+    });
+
     it("debugHandler()", async () => {
       const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");

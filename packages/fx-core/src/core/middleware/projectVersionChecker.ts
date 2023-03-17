@@ -18,7 +18,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import { IncompatibleProjectError, IncompatibleVSProjectError } from "../error";
+import { IncompatibleProjectError } from "../error";
 
 let userCancelFlag = false;
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -72,15 +72,13 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
     return IncompatibleProjectError(messageKey);
   } else {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
-    const expectedVersion = "Visual Studio 2022 17.5 Preview";
-    TOOLS.ui
-      .showMessage("warn", getLocalizedString(messageKey, expectedVersion), false, learnMoreText)
-      .then((res) => {
-        if (res.isOk() && res.value === learnMoreText) {
-          TOOLS.ui.openUrl(learnMoreLink);
-        }
-      });
-    return IncompatibleVSProjectError(messageKey, expectedVersion);
+    const message = getLocalizedString(messageKey);
+    TOOLS.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
+      if (res.isOk() && res.value === learnMoreText) {
+        TOOLS.ui.openUrl(learnMoreLink);
+      }
+    });
+    return IncompatibleProjectError(messageKey);
   }
 }
 

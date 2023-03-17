@@ -361,15 +361,6 @@ export function IncompatibleProjectError(messageKey: string): UserError {
   );
 }
 
-export function IncompatibleVSProjectError(messageKey: string, version: string): UserError {
-  return new UserError(
-    CoreSource,
-    "IncompatibleProject",
-    getDefaultString(messageKey, version),
-    getLocalizedString(messageKey, version)
-  );
-}
-
 export function AbandonedProjectError(): UserError {
   return new UserError(
     CoreSource,

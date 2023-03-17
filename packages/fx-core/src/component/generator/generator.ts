@@ -16,6 +16,8 @@ import {
 } from "./constant";
 import {
   CancelDownloading,
+  DownloadSampleApiLimitError,
+  DownloadSampleNetworkError,
   FetchZipFromUrlError,
   TemplateZipFallbackError,
   UnzipError,
@@ -26,13 +28,16 @@ import {
   TemplateActionSeq,
   GeneratorContext,
   GeneratorActionName,
+  DownloadDirectoryActionSeq,
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
   getSampleRelativePath,
+  getSampleUrl,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
+import { isDownloadDirectoryEnabled } from "../../common/tools";
 
 export class Generator {
   public static getDefaultVariables(appName: string): { [key: string]: string } {
@@ -110,13 +115,15 @@ export class Generator {
       destination: destinationPath,
       logProvider: ctx.logProvider,
       zipUrl: sample.link,
+      url: getSampleUrl(sample),
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
 
     await actionContext?.progressBar?.next(ProgressMessages.generateSample());
-    await this.generate(generatorContext, SampleActionSeq);
+    const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
+    await this.generate(generatorContext, actionSeq);
     return ok(undefined);
   }
 
@@ -171,6 +178,12 @@ export async function sampleDefaultOnActionError(
 ): Promise<void> {
   await context.logProvider.error(error.message);
   switch (action.name) {
+    case GeneratorActionName.DownloadDirectory:
+      if (error.message.includes("403")) {
+        throw new DownloadSampleApiLimitError(context.url!).toFxError();
+      } else {
+        throw new DownloadSampleNetworkError(context.url!).toFxError();
+      }
     case GeneratorActionName.FetchZipFromUrl:
       throw new FetchZipFromUrlError(context.zipUrl!).toFxError();
     case GeneratorActionName.Unzip:

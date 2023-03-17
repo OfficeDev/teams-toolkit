@@ -3,7 +3,7 @@
 
 import AdmZip from "adm-zip";
 import path from "path";
-import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder } from "./utils";
+import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder, downloadDirectory } from "./utils";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
@@ -19,6 +19,7 @@ export interface GeneratorContext {
   relativePath?: string;
   zipUrl?: string;
   zip?: AdmZip;
+  url?: string;
   fallbackZipPath?: string;
   cancelDownloading?: boolean;
 
@@ -44,6 +45,7 @@ export enum GeneratorActionName {
   FetchTemplateUrlWithTag = "FetchTemplatesUrlWithTag",
   FetchZipFromUrl = "FetchZipFromUrl",
   FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
+  DownloadDirectory = "DownloadDirectory",
   Unzip = "Unzip",
 }
 
@@ -74,6 +76,13 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
     );
 
     context.zip = zipFolder(templateSourceCodePath);
+  },
+};
+
+export const downloadDirectoryAction: GeneratorAction = {
+  name: GeneratorActionName.DownloadDirectory,
+  run: async (context: GeneratorContext) => {
+    await downloadDirectory(context.url!, context.destination);
   },
 };
 
@@ -150,3 +159,4 @@ export const TemplateActionSeq: GeneratorAction[] = [
 ];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];
+export const DownloadDirectoryActionSeq: GeneratorAction[] = [downloadDirectoryAction];

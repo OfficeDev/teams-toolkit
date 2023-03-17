@@ -17,3 +17,5 @@ export const componentName = "generator";
 export const commonTemplateName = "common";
 export const placeholderDelimiters: [string, string] = ["{{", "}}"];
 export const oldPlaceholderDelimiters: [string, string] = ["{%", "%}"];
+export const sampleConcurrencyLimits = 20;
+export const sampleDefaultRetryLimits = 2;

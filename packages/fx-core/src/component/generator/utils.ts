@@ -12,6 +12,8 @@ import {
   templateAlphaVersion,
   templateFileExt,
   templatePrereleaseVersion,
+  sampleConcurrencyLimits,
+  sampleDefaultRetryLimits,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
@@ -55,9 +57,11 @@ export async function sendRequestWithRetry<T>(
       const res = await requestFn();
       if (res.status === 200 || res.status === 201) {
         return res;
+      } else if (res.status === 403) {
+        error = new Error(`HTTP Request reaches api limit: ${JSON.stringify(res)}`);
+      } else {
+        error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       }
-
-      error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       status = res.status;
     } catch (e: any) {
       error = e;
@@ -230,8 +234,69 @@ export function getSampleRelativePath(sampleName: string): string {
   return `${sampleConfig.baseFolderName}/${sampleName}/`;
 }
 
+export function getSampleUrl(sample: SampleInfo): string {
+  if (sample.url == sampleConfig.baseUrl) {
+    return `${sample.url}${sample.id}`;
+  } else {
+    return sample.url;
+  }
+}
+
 export function zipFolder(folderPath: string): AdmZip {
   const zip = new AdmZip();
   zip.addLocalFolder(folderPath);
   return zip;
+}
+
+export async function downloadDirectory(
+  sampleUrl: string,
+  dstPath: string,
+  concurrencyLimits = sampleConcurrencyLimits,
+  retryLimits = sampleDefaultRetryLimits
+): Promise<void> {
+  //step 1: get file info
+  const urlParserRegex = /https:\/\/github.com[/]([^/]+)[/]([^/]+)[/]tree[/]([^/]+)[/](.*)/;
+  const [owner, repository, ref, sampleName] = urlParserRegex.exec(sampleUrl)!.slice(1);
+  const fileInfoUrl = `https://api.github.com/repos/${owner}/${repository}/git/trees/${ref}?recursive=1`;
+  const fileInfo = (
+    await sendRequestWithRetry(async () => {
+      return await axios.get(fileInfoUrl);
+    }, retryLimits)
+  ).data as any;
+
+  const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
+  let fileInfoTree = fileInfo.tree as any[];
+  fileInfoTree = fileInfoTree.filter(
+    (node) => node.path.startsWith(sampleName) && node.type != "tree"
+  );
+
+  //step 2: download files with limited concurrency
+  const downloadCallbacks = [];
+  for (const node of fileInfoTree) {
+    const downloadCallback = async () => {
+      const file = await sendRequestWithRetry(async () => {
+        return await axios.get(filePrefixUrl + node.path, { responseType: "arraybuffer" });
+      }, retryLimits);
+      const filePath = path.join(dstPath, node.path.replace(sampleName, ""));
+      await fs.ensureFile(filePath);
+      await fs.writeFile(filePath, Buffer.from(file.data as any));
+    };
+    downloadCallbacks.push(downloadCallback);
+  }
+  await limitConcurrency(downloadCallbacks, concurrencyLimits);
+}
+
+async function limitConcurrency(callbacks: any[], limit: number) {
+  const processing: any[] = [];
+  let i = 0;
+  while (i < limit && i < callbacks.length) {
+    processing.push(callbacks[i]());
+    i++;
+  }
+  while (i < callbacks.length) {
+    await Promise.race(processing);
+    processing.push(callbacks[i]());
+    i++;
+  }
+  await Promise.all(processing);
 }

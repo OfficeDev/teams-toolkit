@@ -7,6 +7,7 @@ import fs from "fs-extra";
 import path from "path";
 import axios, { AxiosResponse } from "axios";
 import {
+  downloadDirectory,
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
@@ -441,5 +442,32 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
+  });
+});
+
+describe("Generate sample using download directory", () => {
+  const tmpDir = path.join(__dirname, "tmp");
+  const sandbox = createSandbox();
+  let mockedEnvRestore = mockedEnv({});
+  const tools = new MockTools();
+  setTools(tools);
+  const ctx = createContextV3();
+  beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      DOWNLOAD_DIRECTORY: "true",
+    });
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+    mockedEnvRestore();
+    if (await fs.pathExists(tmpDir)) {
+      await fs.rm(tmpDir, { recursive: true });
+    }
+  });
+
+  it("generate sample using download directory", async () => {
+    const result = await Generator.generateSample(ctx, path.join(tmpDir, "test1"), "bot-sso");
+    assert.isTrue(result.isOk());
   });
 });

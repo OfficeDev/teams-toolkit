@@ -73,7 +73,7 @@ describe("Collaboration", function () {
       let checkPermissionResult;
       if (isV3Enabled()) {
         checkPermissionResult = await execAsyncWithRetry(
-          `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json`,
+          `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json`,
           {
             cwd: projectPath,
             env: process.env,

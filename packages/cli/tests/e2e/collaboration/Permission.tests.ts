@@ -29,6 +29,10 @@ describe("Collaboration", function () {
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
 
+  before(() => {
+    process.env.TEAMSFX_V3 = "true";
+  });
+
   it(
     "Collaboration: CLI with permission status and permission grant",
     { testPlanCaseId: 10753319 },

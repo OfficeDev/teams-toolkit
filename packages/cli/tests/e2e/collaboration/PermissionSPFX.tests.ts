@@ -28,6 +28,10 @@ describe("Collaboration", function () {
   const creator = process.env["M365_ACCOUNT_NAME"];
   let appId: string;
 
+  before(() => {
+    process.env.TEAMSFX_V3 = "true";
+  });
+
   it(
     "Collaboration: CLI with permission status and permission grant - spfx",
     { testPlanCaseId: 12782618 },
@@ -93,7 +97,7 @@ describe("Collaboration", function () {
 
       if (isV3Enabled()) {
         grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
+          `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
           {
             cwd: projectPath,
             env: process.env,
@@ -121,7 +125,7 @@ describe("Collaboration", function () {
 
       if (isV3Enabled()) {
         listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators  --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
+          `teamsfx permission status --list-all-collaborators  --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
           {
             cwd: projectPath,
             env: process.env,

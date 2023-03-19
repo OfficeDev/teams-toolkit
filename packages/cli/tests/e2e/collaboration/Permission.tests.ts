@@ -62,7 +62,7 @@ describe("Collaboration", function () {
       let checkPermissionResult;
       if (isV3Enabled()) {
         checkPermissionResult = await execAsyncWithRetry(
-          `teamsfx permission status --env dev --interactive false`,
+          `teamsfx permission status --env dev --interactive false --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json`,
           {
             cwd: projectPath,
             env: process.env,
@@ -89,7 +89,7 @@ describe("Collaboration", function () {
       let grantCollaboratorResult;
       if (isV3Enabled()) {
         grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator} --env dev --interactive false`,
+          `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
           {
             cwd: projectPath,
             env: process.env,
@@ -118,7 +118,7 @@ describe("Collaboration", function () {
       let listCollaboratorResult;
       if (isV3Enabled()) {
         listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators --env dev --interactive false`,
+          `teamsfx permission status --list-all-collaborators --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
           {
             cwd: projectPath,
             env: process.env,

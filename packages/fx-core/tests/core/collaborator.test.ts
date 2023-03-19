@@ -57,6 +57,7 @@ import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
 import { QuestionModelMW } from "../../src/core/middleware/questionModel";
 import * as visitor from "@microsoft/teamsfx-api/src/qm/visitor";
+import { FxCore } from "../../src/core/FxCore";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -1795,6 +1796,13 @@ describe("Collaborator APIs for V3", () => {
         },
         async () => {}
       );
+    });
+
+    it("Fx Core: checkPermission", async () => {
+      const core = new FxCore(new MockTools());
+      inputs.projectPath = "";
+      const res = await core.checkPermission(inputs);
+      assert.isTrue(res.isErr());
     });
   });
 });

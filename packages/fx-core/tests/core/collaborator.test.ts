@@ -1764,5 +1764,37 @@ describe("Collaborator APIs for V3", () => {
         async () => {}
       );
     });
+
+    it("QuestionModelMW: listCollaborator", async () => {
+      sandbox
+        .stub(visitor, "traverse")
+        .callsFake(async (root, inputs, ui, telemetryReporter, visitors) => {
+          chai.assert(root.children?.length != 0);
+          return ok(Void);
+        });
+      const question = await QuestionModelMW(
+        {
+          arguments: [inputs],
+          method: "listCollaborator",
+        },
+        async () => {}
+      );
+    });
+
+    it("QuestionModelMW: grantPermission", async () => {
+      sandbox
+        .stub(visitor, "traverse")
+        .callsFake(async (root, inputs, ui, telemetryReporter, visitors) => {
+          chai.assert(root.children?.length != 0);
+          return ok(Void);
+        });
+      const question = await QuestionModelMW(
+        {
+          arguments: [inputs],
+          method: "grantPermission",
+        },
+        async () => {}
+      );
+    });
   });
 });

@@ -16,6 +16,7 @@ import {
   SingleSelectQuestion,
   StaticOptions,
   OptionItem,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -54,6 +55,8 @@ import { CoreQuestionNames } from "../../src/core/question";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
+import { QuestionModelMW } from "../../src/core/middleware/questionModel";
+import * as visitor from "@microsoft/teamsfx-api/src/qm/visitor";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -1744,6 +1747,22 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform = Platform.CLI_HELP;
       const nodeRes = await getQuestionsForListCollaborator(inputs);
       assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
+    });
+
+    it("QuestionModelMW: checkPermission", async () => {
+      sandbox
+        .stub(visitor, "traverse")
+        .callsFake(async (root, inputs, ui, telemetryReporter, visitors) => {
+          chai.assert(root.children?.length != 0);
+          return ok(Void);
+        });
+      const question = await QuestionModelMW(
+        {
+          arguments: [inputs],
+          method: "checkPermission",
+        },
+        async () => {}
+      );
     });
   });
 });

@@ -650,7 +650,8 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    EnvInfoLoaderMW_V3(isV3Enabled() ? true : false, true),
+    QuestionModelMW,
     ContextInjectorMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {

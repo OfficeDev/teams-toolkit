@@ -74,6 +74,7 @@ import {
   getQuestionsForCreateAppPackage,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
+  getQuestionsForUpdateTeamsApp,
   getQuestionsForValidateApplication,
 } from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
@@ -285,12 +286,14 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
+    QuestionMW(getQuestionsForUpdateTeamsApp),
     ConcurrentLockerMW,
     EnvLoaderMW(true),
     ContextInjectorMW,
     EnvWriterMW,
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const component = Container.get("app-manifest") as any;
     const res = await component.deployV3(context, inputs as InputsWithProjectPath);
@@ -549,7 +552,12 @@ export class FxCoreV3Implement {
     }
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForCreateAppPackage)])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForCreateAppPackage),
+    EnvLoaderMW(true),
+  ])
   async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.createAppPackage);
     inputs.stage = Stage.createAppPackage;
@@ -558,17 +566,11 @@ export class FxCoreV3Implement {
 
     const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
 
-    // load env
-    const env = inputs?.[CoreQuestionNames.TargetEnvName] as string;
-    if (env) {
-      await envUtil.readEnv(inputs.projectPath!, env);
-    }
-
     const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
     const args: CreateAppPackageArgs = {
       manifestPath: teamsAppManifestFilePath,
-      outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
-      outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
+      outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+      outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
     return await driver.run(args, context);
   }

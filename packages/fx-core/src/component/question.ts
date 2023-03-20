@@ -910,11 +910,15 @@ export async function getQuestionsForCreateAppPackage(
   // Manifest path node
   const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
   group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
 
-  // Env select node
-  const envNode = await selectEnvNode(inputs, true);
-  if (envNode) {
-    teamsAppSelectNode.addChild(envNode);
-  }
+export async function getQuestionsForUpdateTeamsApp(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
   return ok(group);
 }

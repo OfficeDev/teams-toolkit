@@ -64,11 +64,6 @@ jobs:
           sudo apt update
           sudo apt install wine64 -y
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
-
       - name: Setup npm registry
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
@@ -89,9 +84,14 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release alpha npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease' }}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
-          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
+          npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
+
+      - name: release beta packages to npmjs.org
+        if: ${{ github.ref == 'refs/heads/prerelease' }}
+        run: |
+          npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --allow-branch prerelease --yes
 
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
@@ -238,9 +238,16 @@ jobs:
           git commit -m "chore: update ai key"
 
       - name: publish alpha release to npm org
-        if: ${{ github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/prerelease' }}
+        if: ${{ github.ref == 'refs/heads/dev'}}
         run: |
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch ${GITHUB_REF#refs/*/}
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
+
+      - name: publish beta release to npm org
+        if: ${{ github.ref == refs/heads/prerelease }}
+        run: |
+          npx lerna publish from-package --dist-tag=beta --yes --allow-branch prerelease
         env:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3;${{ runner.temp }}/teamsfx_templates
 

@@ -1,6 +1,5 @@
 import React from "react";
-import { Avatar, Text } from "@fluentui/react-components";
-import { Card, CardHeader } from "@fluentui/react-components/unstable";
+import { Avatar, Text, Card, CardHeader } from "@fluentui/react-components";
 
 export const ProfileCard = (loading: boolean, data?: any) => {
   return (

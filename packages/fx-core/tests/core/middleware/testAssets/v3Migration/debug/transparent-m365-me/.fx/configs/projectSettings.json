@@ -1,6 +1,6 @@
 {
-    "appName": "bot120701",
-    "projectId": "b0773ebf-3172-4e13-ad59-c8b1b33bd1ae",
+    "appName": "transparent-m365-me",
+    "projectId": "",
     "version": "2.1.0",
     "components": [
         {
@@ -9,7 +9,7 @@
             "provision": false,
             "deploy": true,
             "capabilities": [
-                "bot"
+                "m365-search-app"
             ],
             "build": true,
             "folder": "bot"
@@ -31,15 +31,14 @@
             "provision": true
         }
     ],
-    "programmingLanguage": "typescript",
+    "isM365": true,
+    "programmingLanguage": "javascript",
     "solutionSettings": {
         "name": "fx-solution-azure",
         "version": "1.0.0",
         "hostType": "Azure",
         "azureResources": [],
-        "capabilities": [
-            "Bot"
-        ],
+        "capabilities": [],
         "activeResourcePlugins": [
             "fx-resource-local-debug",
             "fx-resource-appstudio",
@@ -53,7 +52,7 @@
         "fx-resource-bot": {
             "host-type": "app-service",
             "capabilities": [
-                "bot"
+                "m365-search-app"
             ]
         }
     }

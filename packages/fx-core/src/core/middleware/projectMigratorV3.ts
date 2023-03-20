@@ -93,6 +93,7 @@ import {
   migrateBackendWatch,
   migrateBackendStart,
   migratePreDebugCheck,
+  migrateInstallAppInTeams,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -823,6 +824,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateSetUpBot,
     migrateSetUpSSO,
     migratePrepareManifest,
+    migrateInstallAppInTeams,
     migrateValidateDependencies,
     migrateBackendExtensionsInstall,
     migrateFrontendStart,

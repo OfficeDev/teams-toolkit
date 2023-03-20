@@ -909,6 +909,20 @@ describe("updateLaunchJson", () => {
       "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
     );
   });
+
+  ["transparent-m365-tab", "transparent-m365-me"].forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await updateLaunchJson(migrationContext);
+
+      assert.equal(
+        await fs.readFile(path.join(projectPath, ".vscode", "launch.json"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "launch.json"), "utf-8")
+      );
+    });
+  });
 });
 
 describe("stateMigration", () => {
@@ -1445,6 +1459,8 @@ describe("debugMigration", () => {
     "transparent-sso-bot",
     "transparent-notification",
     "transparent-tab-bot-func",
+    "transparent-m365-tab",
+    "transparent-m365-me",
     "beforeV3.4.0-tab",
     "beforeV3.4.0-bot",
     "beforeV3.4.0-tab-bot-func",

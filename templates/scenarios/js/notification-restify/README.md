@@ -29,7 +29,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 >
 > To run the notification bot template in your local dev machine, you will need:
 >
-> - `Node.js` installed locally (recommended version: 16)
+> - [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
@@ -47,7 +47,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 
 The bot will send an Adaptive Card to Teams:
 
-![Notification Message in Teams](https://user-images.githubusercontent.com/11220663/166959087-a13abe67-e18a-4979-ab29-a8d7663b3489.png)
+![Notification Message in Teams](https://user-images.githubusercontent.com/7642967/223006044-5003574e-2aee-4a41-9b71-c103d0439012.png)
 
 ## What's included in the template
 

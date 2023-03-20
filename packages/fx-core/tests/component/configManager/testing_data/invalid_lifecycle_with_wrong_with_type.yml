@@ -1,0 +1,4 @@
+provision:
+  - name: test
+    uses: abc
+    with: 123

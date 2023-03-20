@@ -7,7 +7,7 @@ import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
-import Timer from "@dbpiper/timer";
+import { performance } from "perf_hooks";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
@@ -85,8 +85,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       const botRegistration: BotRegistration = new RemoteBotRegistration();
 
       await progressHandler?.next(getLocalizedString(progressBarKeys.creatingBotAadApp));
-      const timer = new Timer();
-      timer.start();
+      const startTime = performance.now();
       const createRes = await botRegistration.createBotRegistration(
         context.m365TokenProvider,
         args.name,
@@ -94,12 +93,12 @@ export class CreateBotAadAppDriver implements StepDriver {
         botConfig,
         context.logProvider
       );
-      const timeResult = timer.stop();
+      const durationMilliSeconds = performance.now() - startTime;
       if (createRes.isErr()) {
         throw createRes.error;
       }
 
-      const isReusingExisting = botConfig.botId && botConfig.botPassword;
+      const isReusingExisting = !(!botConfig.botId || !botConfig.botPassword);
       const successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
         createRes.value.botId
@@ -115,8 +114,8 @@ export class CreateBotAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
       context.telemetryReporter.sendTelemetryEvent(successRegisterBotAad, {
-        [propertyKeys.reusingExistingBotAad]: isReusingExisting,
-        [propertyKeys.registerBotAadTime]: timeResult.milliseconds.toString(),
+        [propertyKeys.reusingExistingBotAad]: isReusingExisting.toString(),
+        [propertyKeys.registerBotAadTime]: durationMilliSeconds.toString(),
       });
       return {
         output: new Map([

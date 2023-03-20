@@ -324,6 +324,10 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.deployAadManifest, inputs);
   }
 
+  async addWebpart(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.addWebpart, inputs);
+  }
+
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.publishApplication, inputs);
@@ -612,7 +616,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    EnvInfoLoaderMW_V3(isV3Enabled() ? true : false, true),
     QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -677,7 +681,8 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    EnvInfoLoaderMW_V3(isV3Enabled() ? true : false, true),
+    QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])

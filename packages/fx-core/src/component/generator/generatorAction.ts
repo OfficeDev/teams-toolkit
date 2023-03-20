@@ -9,7 +9,6 @@ import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 import { FeatureFlagName } from "../../common/constants";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 
 export interface GeneratorContext {
   name: string;
@@ -21,6 +20,7 @@ export interface GeneratorContext {
   zipUrl?: string;
   zip?: AdmZip;
   fallbackZipPath?: string;
+  cancelDownloading?: boolean;
 
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
   fileDataReplaceFn?: (name: string, data: Buffer) => Buffer | string;
@@ -80,7 +80,7 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
 export const fetchTemplateUrlWithTagAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateUrlWithTag,
   run: async (context: GeneratorContext) => {
-    if (context.zip || context.zipUrl) {
+    if (context.zip || context.zipUrl || context.cancelDownloading) {
       return;
     }
 
@@ -95,7 +95,7 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
 export const fetchZipFromUrlAction: GeneratorAction = {
   name: GeneratorActionName.FetchZipFromUrl,
   run: async (context: GeneratorContext) => {
-    if (context.zip) {
+    if (context.zip || context.cancelDownloading) {
       return;
     }
 

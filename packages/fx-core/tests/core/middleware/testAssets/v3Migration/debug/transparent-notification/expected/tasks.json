@@ -41,6 +41,7 @@
             "command": "debug-start-local-tunnel",
             "args": {
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "type": "ngrok",
                 "env": "local",
                 "output": {
                     // Keep consistency with upgraded configuration.

@@ -112,7 +112,7 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<VersionIn
 
 export function migrationNotificationMessage(versionForMigration: VersionForMigration): string {
   if (versionForMigration.platform === Platform.VS) {
-    return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
+    return getLocalizedString("core.migrationV3.VS.Message");
   }
   const res = getLocalizedString("core.migrationV3.Message");
   return res;
@@ -303,9 +303,9 @@ export async function readAndConvertUserdata(
   for (const line of lines) {
     if (line && line != "") {
       // in case that there are "="s in secrets
-      const key_value = line.split("=");
-      const res = namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
-      if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
+      const [key, ...value] = line.split("=");
+      const res = namingConverterV3(`state.${key}`, FileType.USERDATA, bicepContent);
+      if (res.isOk()) returnAnswer += `${res.value}=${value.join("=")}${EOL}`;
     }
   }
 
@@ -352,4 +352,24 @@ export async function updateAndSaveManifestForSpfx(
 
   await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
   await context.fsWriteFile(localTemplatePath, localTemplate);
+}
+
+export function tryExtractEnvFromUserdata(filename: string): string {
+  const userdataRegex = new RegExp(`([a-zA-Z0-9_-]*)\\.${MetadataV2.userdataSuffix}`, "g");
+  const regRes = userdataRegex.exec(filename);
+  if (regRes != null) {
+    return regRes[1];
+  }
+  return "";
+}
+
+export function buildFileName(...parts: string[]): string {
+  return parts.join(".");
+}
+export function buildEnvFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName);
+}
+
+export function buildEnvUserFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName, MetadataV3.secretFileSuffix);
 }

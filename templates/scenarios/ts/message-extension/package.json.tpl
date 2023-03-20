@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit message extension Bot sample",
     "engines": {
-        "node": ">=14 <=16"
+        "node": "14 || 16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",

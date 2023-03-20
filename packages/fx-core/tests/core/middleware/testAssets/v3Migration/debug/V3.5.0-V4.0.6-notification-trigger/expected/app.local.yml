@@ -25,7 +25,7 @@ provision:
         - name: msteams
 
 configureApp:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
 
@@ -46,7 +46,7 @@ deploy:
     with:
       func: true
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:

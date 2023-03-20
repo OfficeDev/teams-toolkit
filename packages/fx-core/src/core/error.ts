@@ -334,12 +334,12 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
-export function UpgradeV3CanceledError(link: string, version: string): UserError {
+export function UpgradeV3CanceledError(): UserError {
   return new UserError(
     CoreSource,
     "UserCancel", // @see tools.isUserCancelError()
-    getDefaultString("error.UpgradeV3CanceledError", link, version),
-    getLocalizedString("error.UpgradeV3CanceledError", link, version)
+    getDefaultString("error.UpgradeV3CanceledError"),
+    getLocalizedString("error.UpgradeV3CanceledError")
   );
 }
 
@@ -444,6 +444,17 @@ export class VideoFilterAppRemoteNotSupportedError extends UserError {
       name: VideoFilterAppRemoteNotSupportedError.name,
       message: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
       displayMessage: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+    });
+  }
+}
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: CoreSource,
+      name: NotAllowedMigrationError.name,
+      message: getLocalizedString("core.migrationV3.notAllowedMigration"),
+      displayMessage: getLocalizedString("core.migrationV3.notAllowedMigration"),
     });
   }
 }

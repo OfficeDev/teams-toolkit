@@ -1,5 +1,6 @@
 
 - [Changelog](#changelog)
+  - [4.2.4 - Feb 28, 2023](#424---feb-28-2023)
   - [4.2.2 - Feb 7, 2023](#422---feb-7-2023)
   - [4.2.0 - Dec 20, 2022](#420---dec-20-2022)
   - [4.1.3 - Nov 17, 2022](#413---nov-17-2022)
@@ -28,6 +29,12 @@
   - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.2.4 - Feb 28, 2023
+
+Incremental version for Teams Toolkit with an enhancement.
+
+- Updated SharePoint Framework from `1.16.0` to `1.16.1`.
 
 ## 4.2.2 - Feb 7, 2023
 

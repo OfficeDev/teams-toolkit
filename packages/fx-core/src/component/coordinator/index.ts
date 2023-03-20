@@ -81,7 +81,6 @@ import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { DotenvParseOutput } from "dotenv";
-import { yamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
@@ -101,6 +100,9 @@ import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
 import { MetadataV3 } from "../../common/versionMetadata";
+import { metadataUtil } from "../utils/metadataUtil";
+import { LifeCycleUndefinedError } from "../../error/yml";
+import { UnresolvedPlaceholderError } from "../../error/common";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -237,7 +239,7 @@ export class Coordinator {
 
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Capabilities]: feature,
-        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
+        [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
 
       if (feature === TabSPFxNewUIItem().id) {
@@ -520,7 +522,7 @@ export class Coordinator {
     // 1. parse yml to cycles
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -579,7 +581,7 @@ export class Coordinator {
     // 1. parse yml
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -590,6 +592,10 @@ export class Coordinator {
       projectModel.provision,
       projectModel.configureApp,
     ].filter((c) => c !== undefined) as Lifecycle[];
+
+    if (cycles.length === 0) {
+      return err(new LifeCycleUndefinedError("registerApp, provision, or configureApp"));
+    }
 
     // 2. M365 sign in and tenant check if needed.
     let containsM365 = false;
@@ -689,26 +695,10 @@ export class Coordinator {
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
 
-      // for azure action, subscription is necessary
-      if (!resolvedSubscriptionId) {
-        return err(
-          new UserError({
-            source: "coordinator",
-            name: "UnresolvedPlaceholders",
-            message: getDefaultString(
-              "core.error.unresolvedPlaceholders",
-              "AZURE_SUBSCRIPTION_ID",
-              templatePath
-            ),
-            displayMessage: getLocalizedString(
-              "core.error.unresolvedPlaceholders",
-              "AZURE_SUBSCRIPTION_ID",
-              templatePath
-            ),
-            helpLink: "https://aka.ms/teamsfx-actions",
-          })
-        );
-      }
+      // will not happen
+      // if (!resolvedSubscriptionId) {
+      //   return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
+      // }
 
       // ensure resource group
       if (resourceGroupUnresolved) {
@@ -723,7 +713,7 @@ export class Coordinator {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
-            resolvedSubscriptionId,
+            resolvedSubscriptionId!,
             undefined,
             defaultRg
           );
@@ -740,7 +730,7 @@ export class Coordinator {
       // consent user
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
       try {
-        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId); //make sure sub is correctly set if ensureSubscription() is not called.
+        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId!); //make sure sub is correctly set if ensureSubscription() is not called.
       } catch (e) {
         return err(assembleError(e));
       }
@@ -767,7 +757,7 @@ export class Coordinator {
         const createRgRes = await resourceGroupHelper.createNewResourceGroup(
           targetResourceGroupInfo.name,
           ctx.azureAccountProvider,
-          resolvedSubscriptionId,
+          resolvedSubscriptionId!,
           targetResourceGroupInfo.location
         );
         if (createRgRes.isErr()) {
@@ -869,21 +859,11 @@ export class Coordinator {
           error = reason.error;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
-          error = new UserError({
-            source: reason.failedDriver.uses,
-            name: "UnresolvedPlaceholders",
-            message: getDefaultString(
-              "core.error.unresolvedPlaceholders",
-              placeholders,
-              templatePath
-            ),
-            displayMessage: getLocalizedString(
-              "core.error.unresolvedPlaceholders",
-              placeholders,
-              templatePath
-            ),
-            helpLink: "https://aka.ms/teamsfx-actions",
-          });
+          error = new UnresolvedPlaceholderError(
+            reason.failedDriver.uses,
+            placeholders,
+            templatePath
+          );
         }
       }
     } else {
@@ -908,7 +888,7 @@ export class Coordinator {
     const output: DotenvParseOutput = {};
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -956,6 +936,8 @@ export class Coordinator {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
+    } else {
+      return err(new LifeCycleUndefinedError("deploy"));
     }
     return ok(output);
   }
@@ -973,7 +955,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
-    const maybeProjectModel = await yamlParser.parse(templatePath);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
@@ -995,6 +977,8 @@ export class Coordinator {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
+    } else {
+      return err(new LifeCycleUndefinedError("publish"));
     }
     return ok(undefined);
   }

@@ -15,9 +15,9 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { FileNotFoundUserError } from "./error/FileNotFoundUserError";
+import { InvalidActionInputError } from "../../../error/common";
 
 interface AcquireArgs {
   appPackagePath?: string; // The path of the app package
@@ -90,13 +90,16 @@ export class M365TitleAcquireDriver implements StepDriver {
         throw sideloadingTokenRes.error;
       }
       const sideloadingToken = sideloadingTokenRes.value;
-      const titleId = await packageService.sideLoading(sideloadingToken, appPackagePath);
+      const sideloadingRes = await packageService.sideLoading(sideloadingToken, appPackagePath);
 
       await progressHandler?.end(true);
 
       return {
-        output: new Map([["M365_TITLE_ID", titleId]]),
-        summaries: [getLocalizedString("driver.m365.acquire.summary", titleId)],
+        output: new Map([
+          ["M365_TITLE_ID", sideloadingRes[0]],
+          ["M365_APP_ID", sideloadingRes[1]],
+        ]),
+        summaries: [getLocalizedString("driver.m365.acquire.summary", sideloadingRes[0])],
       };
     } catch (error) {
       await progressHandler?.end(false);
@@ -124,7 +127,7 @@ export class M365TitleAcquireDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 }

@@ -3,8 +3,9 @@
 
 import {
   AzureSolutionSettings,
-  ProjectSettings,
   AppPackageFolderName,
+  ProjectSettingsV3,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
@@ -13,6 +14,8 @@ import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 import { MetadataV3 } from "../../../common/versionMetadata";
+import { hasFunctionBot, hasWebAppBot } from "../../../common/projectSettingsHelperV3";
+import { convertProjectSettingsV2ToV3 } from "../../../component/migrate";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -35,6 +38,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     appName: string | undefined;
     isFunctionBot: boolean;
     isWebAppBot: boolean;
+    useBotWebAppResourceId: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
     environmentFolder: string | undefined;
@@ -55,6 +59,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       appName: undefined,
       isFunctionBot: false,
       isWebAppBot: false,
+      useBotWebAppResourceId: false,
       isTypescript: false,
       defaultFunctionName: undefined,
       environmentFolder: undefined,
@@ -146,23 +151,14 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
   private async generateAzureHandlebarsContext(): Promise<void> {
     // isFunctionBot
-    const pluginSettings = this.oldProjectSettings.pluginSettings;
-    if (
-      pluginSettings &&
-      pluginSettings["fx-resource-bot"] &&
-      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
-    ) {
-      this.handlebarsContext.isFunctionBot = true;
-    }
-    // isWebAppBot and the resourceId in bicep should be "botWebAppResourceId", then map state.fx-resource-bot.botWebAppResourceId
-    if (
-      pluginSettings &&
-      pluginSettings["fx-resource-bot"] &&
-      pluginSettings["fx-resource-bot"]["host-type"] === "app-service" &&
-      this.bicepContent.includes("botWebAppResourceId")
-    ) {
-      this.handlebarsContext.isWebAppBot = true;
-    }
+    const projectSettings: ProjectSettingsV3 = convertProjectSettingsV2ToV3(
+      this.oldProjectSettings,
+      this.projectPath
+    );
+    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
+    this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings); // maybe use ResourceId
+    this.handlebarsContext.useBotWebAppResourceId =
+      this.bicepContent.includes("botWebAppResourceId"); // use botWebAppResourceId
 
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");

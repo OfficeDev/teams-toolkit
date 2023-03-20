@@ -154,13 +154,13 @@ describe("v3 lifecyle", () => {
 
       const lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
-      assert(result.isErr() && result.error.name === "DriverNotFoundError");
+      assert(result.isErr() && result.error.name === "InvalidYmlActionNameError");
 
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(
         execResult.isErr() &&
           execResult.error.kind === "Failure" &&
-          execResult.error.error.name === "DriverNotFoundError"
+          execResult.error.error.name === "InvalidYmlActionNameError"
       );
 
       assert(summaries.length === 0, "summary list should be empty");

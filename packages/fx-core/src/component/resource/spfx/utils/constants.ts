@@ -21,11 +21,19 @@ export class Constants {
     "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
   public static readonly CREATE_APP_CATALOG_GUIDE =
     "https://docs.microsoft.com/en-us/sharepoint/use-app-catalog#create-the-app-catalog";
-  public static readonly SPFX_VERSION = "1.16.0";
+  public static readonly SPFX_VERSION = "1.16.1";
   public static readonly SUPPORTED_NODE_VERSION = ["16"];
   public static readonly SUPPORTED_NPM_VERSION = ["7", "8"];
   public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
+  public static readonly SetUpDevEnvironmentHelpLink =
+    "https://aka.ms/teamsfx-spfx-dev-environment-setup";
   public static readonly TEMPLATE_NAME = "spfx-tab";
+  public static readonly LatestVersion = "latest";
+  public static readonly RecommendedLowestSpfxVersion = "v1.14.0";
+  public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";
+  public static readonly YeomanPackageName = "yo";
+  public static readonly DEFAULT_WEBPART_NAME = "helloworld";
+  public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
 }
 
 export class PlaceHolders {
@@ -69,6 +77,7 @@ export class ProgressTitleMessage {
   );
   static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
   static readonly ScaffoldProgressTitle = getLocalizedString("plugins.spfx.scaffold.title");
+  static readonly AddProgressTitle = getLocalizedString("driver.spfx.add.progress.title");
 }
 
 export class PreDeployProgressMessage {

@@ -10,7 +10,6 @@ import {
   placeholderDelimiters,
   templateAlphaVersion,
   templateFileExt,
-  templatePrereleasePrefix,
   templatePrereleaseVersion,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -19,6 +18,7 @@ import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
+import { CancelDownloading } from "./error";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -26,16 +26,11 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
-
-  // Prerelease feature flag has the highest priority.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease)) {
-    return templatePrereleasePrefix + preRelease;
-  }
   const versionPattern = preRelease || templateVersion;
 
   // To avoid incompatible, alpha release does not download latest template.
   if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
-    return undefined;
+    throw new CancelDownloading();
   }
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
@@ -126,16 +121,12 @@ export async function fetchZipFromUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
-  const res: AxiosResponse<any> = await sendRequestWithTimeout(
-    async (cancelToken) => {
-      return await axios.get(url, {
-        responseType: "arraybuffer",
-        cancelToken: cancelToken,
-      });
-    },
-    timeoutInMs,
-    tryLimits
-  );
+  const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+    return await axios.get(url, {
+      responseType: "arraybuffer",
+      timeout: timeoutInMs,
+    });
+  }, tryLimits);
 
   const zip = new AdmZip(res.data);
   return zip;

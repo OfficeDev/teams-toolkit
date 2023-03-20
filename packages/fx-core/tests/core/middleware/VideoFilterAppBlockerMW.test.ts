@@ -19,7 +19,7 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -61,12 +61,15 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   }
 
   const mockProjectRoot = "video-filter";
+  let mockedEnvRestore: RestoreFn;
 
   afterEach(function () {
     mockFs.restore();
+    mockedEnvRestore();
   });
 
   it("blocks video filter project", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const mock = createMock();
     mockFs({
       [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:

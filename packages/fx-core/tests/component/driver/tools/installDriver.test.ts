@@ -214,6 +214,46 @@ describe("Tools Install Driver test", () => {
       }
     });
 
+    it("Install dotnet: empty bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: [],
+        },
+      });
+      const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.includeDeepMembers([["DOTNET_PATH", ""]], Array.from(res.value.entries()));
+      }
+    });
+
+    it("Install dotnet: undefined bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: undefined,
+        },
+      });
+      const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.includeDeepMembers([["DOTNET_PATH", ""]], Array.from(res.value.entries()));
+      }
+    });
+
     it("Failed to install dotnet", async () => {
       sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
         name: ".NET Core SDK",
@@ -448,6 +488,54 @@ describe("Tools Install Driver test", () => {
       if (res.result.isOk()) {
         chai.assert.includeDeepMembers(
           [["DOTNET_PATH", "~/.fx/dotnet"]],
+          Array.from(res.result.value.entries())
+        );
+      }
+    });
+
+    it("Install dotnet: empty bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: [],
+        },
+      });
+      const res = await toolsInstallDriver.execute({ dotnet: true }, mockedDriverContext);
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.includeDeepMembers(
+          [["DOTNET_PATH", ""]],
+          Array.from(res.result.value.entries())
+        );
+      }
+    });
+
+    it("Install dotnet: undefined bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: undefined,
+        },
+      });
+      const res = await toolsInstallDriver.execute({ dotnet: true }, mockedDriverContext);
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.includeDeepMembers(
+          [["DOTNET_PATH", ""]],
           Array.from(res.result.value.entries())
         );
       }

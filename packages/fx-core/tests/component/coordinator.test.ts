@@ -40,7 +40,6 @@ import {
 } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { YamlParser } from "../../src/component/configManager/parser";
 import {
   DriverInstance,
   ExecutionError,
@@ -56,11 +55,11 @@ import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelp
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
-import { createContextV3 } from "../../src/component/utils";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { ValidateTeamsAppDriver } from "../../src/component/driver/teamsApp/validate";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import Container from "typedi";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
@@ -69,6 +68,8 @@ import { SummaryReporter } from "../../src/component/coordinator/summary";
 import { deployUtils } from "../../src/component/deployUtils";
 import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 import { pathUtils } from "../../src/component/utils/pathUtils";
+import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -395,7 +396,7 @@ describe("component coordinator test", () => {
 
   it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -423,7 +424,7 @@ describe("component coordinator test", () => {
       },
       environmentFolderPath: "./envs",
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -487,7 +488,7 @@ describe("component coordinator test", () => {
   });
   it("provision success with subscriptionId in yml", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -516,7 +517,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -555,7 +556,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -582,7 +583,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -635,7 +636,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with existing resource groups in VS Code", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -662,7 +663,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -714,7 +715,7 @@ describe("component coordinator test", () => {
   });
   it("provision spfx project shows sucess notification", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -737,7 +738,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -772,7 +773,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when user directly update yml with empty subscriptionId", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -797,7 +798,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -811,7 +812,7 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
   it("provision failed with parse error", async () => {
-    sandbox.stub(YamlParser.prototype, "parse").resolves(err(new UserError({})));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(err(new UserError({})));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -824,7 +825,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get subInfo", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -851,7 +852,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -894,7 +895,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed getLifecycleDescriptions Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -921,7 +922,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -975,7 +976,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with partial success", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1013,7 +1014,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1067,7 +1068,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getM365TenantId Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1094,7 +1095,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1134,7 +1135,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getSelectedSubscription Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1161,7 +1162,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1208,7 +1209,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1235,7 +1236,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1271,7 +1272,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs for existing resource group", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1298,7 +1299,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1336,7 +1337,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with CLI inputs: create resource group failed", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1375,7 +1376,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox
       .stub(resourceGroupHelper, "createNewResourceGroup")
       .resolves(err(new UserError({ source: "test", name: "OtherError" })));
@@ -1398,7 +1399,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when getting azure credentials", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1425,7 +1426,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1483,7 +1484,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when checking resource group existence", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1510,7 +1511,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1573,7 +1574,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [],
         run: async (ctx: DriverContext) => {
@@ -1594,7 +1595,7 @@ describe("component coordinator test", () => {
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     const inputs: Inputs = {
@@ -1612,9 +1613,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("provsision failed with check whether m365 tenant matched fail", async () => {
+  it("provision failed with check whether m365 tenant matched fail", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1641,7 +1642,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1698,7 +1699,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with no subscription permission", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1725,7 +1726,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1775,7 +1776,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1818,7 +1819,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1843,7 +1844,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      deploy: {
         name: "configureApp",
         driverDefs: [],
         run: async (ctx: DriverContext) => {
@@ -1864,7 +1865,7 @@ describe("component coordinator test", () => {
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     const inputs: Inputs = {
@@ -1912,7 +1913,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1952,7 +1953,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -1974,7 +1975,48 @@ describe("component coordinator test", () => {
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
   });
-
+  it("provision lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.provision(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
+  it("deploy lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.deploy(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
+  it("publish lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.publish(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
   it("convertExecuteResult ok", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = ok(value);
@@ -2008,7 +2050,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholders", async () => {
+  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2021,7 +2063,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
+    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
   });
 
   it("init infra happy path vsc", async () => {
@@ -2385,7 +2427,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -2437,7 +2479,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -2478,10 +2520,12 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
-    const driver1: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+    const driver1: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const driver3: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
     sandbox.stub(driver1, "run").resolves(ok(new Map()));
     sandbox.stub(driver2, "run").resolves(ok(new Map()));
+    sandbox.stub(driver3, "run").resolves(ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -2495,7 +2539,7 @@ describe("component coordinator test", () => {
     if (res1.isErr()) console.log(res1.error);
     assert.isTrue(res1.isOk());
     const res2 = await fxCore.executeUserTask(
-      { namespace: "", method: "validateManifest", params: { manifestTemplatePath: "." } },
+      { namespace: "", method: "validateManifest", params: { manifestPath: "." } },
       inputs
     );
     if (res2.isErr()) console.log(res2.error);
@@ -2510,6 +2554,11 @@ describe("component coordinator test", () => {
     );
     if (res3.isErr()) console.log(res3.error);
     assert.isTrue(res3.isOk());
+    const res4 = await fxCore.executeUserTask(
+      { namespace: "", method: "validateManifest", params: { appPackagePath: "." } },
+      inputs
+    );
+    assert.isTrue(res4.isOk());
   });
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {

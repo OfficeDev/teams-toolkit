@@ -17,7 +17,7 @@ provision:
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: file/updateJson # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile # Generate runtime appsettings to JSON file
     with:
       target: ./appsettings.Development.json
       appsettings:
@@ -34,7 +34,7 @@ provision:
         - name: msteams
 
 configureApp:
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value

@@ -69,10 +69,7 @@ async function showDialog(ctx: CoreHookContext) {
   } else if (inputs.platform === Platform.VS) {
     const res = await TOOLS?.ui.showMessage(
       "warn",
-      getLocalizedString(
-        "core.projectVersionChecker.vscodeUseNewVersion",
-        "Visual Studio 2022 17.5 Preview"
-      ),
+      getLocalizedString("core.projectVersionChecker.vs.incompatibleProject"),
       false,
       learnMoreText
     );

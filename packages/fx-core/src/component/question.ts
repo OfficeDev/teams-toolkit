@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AppPackageFolderName,
   CLIPlatforms,
   ContextV3,
   DynamicPlatforms,
   err,
+  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -18,6 +20,7 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -817,4 +820,58 @@ export function getQuestionsForInit(
     );
   }
   return ok(group);
+}
+
+export function spfxFolderQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: "spfxFolder",
+    title: getLocalizedString("core.spfxFolder.title"),
+    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, "src");
+    },
+  };
+}
+
+export function manifestFileQuestion(): SingleFileQuestion {
+  return {
+    type: "singleFile",
+    name: "manifestPath",
+    title: getLocalizedString("core.manifestPath.title"),
+    placeholder: getLocalizedString("core.manifestPath.placeholder"),
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.json");
+    },
+  };
+}
+
+export function localManifestFileQuestion(): SingleFileQuestion {
+  return {
+    type: "singleFile",
+    name: "localManifestPath",
+    title: getLocalizedString("core.localManifestPath.title"),
+    placeholder: getLocalizedString("core.localManifestPath.placeholder"),
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.local.json");
+    },
+  };
+}
+
+export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  const addWebpart = new QTreeNode({ type: "group" });
+
+  const spfxFolder = new QTreeNode(spfxFolderQuestion());
+  addWebpart.addChild(spfxFolder);
+
+  const webpartName = new QTreeNode(webpartNameQuestion);
+  spfxFolder.addChild(webpartName);
+
+  const manifestFile = new QTreeNode(manifestFileQuestion());
+  webpartName.addChild(manifestFile);
+
+  const localManifestFile = new QTreeNode(localManifestFileQuestion());
+  manifestFile.addChild(localManifestFile);
+
+  return ok(addWebpart);
 }

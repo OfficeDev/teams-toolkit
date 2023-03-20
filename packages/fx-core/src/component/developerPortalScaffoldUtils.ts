@@ -201,11 +201,9 @@ async function updateManifest(
     if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
       if (existingManifestTemplate.bots && existingManifestTemplate.bots.length > 0) {
         manifest.bots = existingManifestTemplate.bots;
-        manifest.validDomains = existingManifestTemplate.validDomains;
       } else {
         manifest.bots = BOTS_TPL_V3;
         manifest.bots[0].botId = "${{BOT_ID}}";
-        manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
 
@@ -215,11 +213,9 @@ async function updateManifest(
         existingManifestTemplate.composeExtensions.length > 0
       ) {
         manifest.composeExtensions = existingManifestTemplate.composeExtensions;
-        manifest.validDomains = existingManifestTemplate.validDomains;
       } else {
         manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
         manifest.composeExtensions[0].botId = "${{BOT_ID}}";
-        manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
   }

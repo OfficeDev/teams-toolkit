@@ -1,29 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform, ManifestUtil } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { ValidateTeamsAppArgs } from "./interfaces/ValidateTeamsAppArgs";
+import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
 
-const actionName = "teamsApp/validate";
+const actionName = "teamsApp/validateManifest";
 
 @Service(actionName)
-export class ValidateTeamsAppDriver implements StepDriver {
+export class ValidateManifestDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.validateDriver");
 
   public async run(
-    args: ValidateTeamsAppArgs,
+    args: ValidateManifestArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
@@ -32,7 +33,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
   }
 
   public async execute(
-    args: ValidateTeamsAppArgs,
+    args: ValidateManifestArgs,
     context: DriverContext
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
@@ -45,20 +46,18 @@ export class ValidateTeamsAppDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async validate(
-    args: ValidateTeamsAppArgs,
-    context: WrapDriverContext,
-    withEmptyCapabilities?: boolean
+    args: ValidateManifestArgs,
+    context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    /*const result = this.validateArgs(args);
+    TelemetryUtils.init(context);
+    const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
     }
-
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath, context.projectPath),
-      state,
-      withEmptyCapabilities
+      getAbsolutePath(args.manifestPath!, context.projectPath),
+      state
     );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
@@ -105,41 +104,43 @@ export class ValidateTeamsAppDriver implements StepDriver {
         "https://aka.ms/teamsfx-actions/teamsapp-validate"
       );
       return err(validationFailed);
-    }*/
-    const validationNotice = getLocalizedString("driver.teamsApp.validate.skip", actionName);
+    }
+    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
     if (context.platform === Platform.VS) {
-      context.logProvider.warning(validationNotice);
+      context.logProvider.info(validationSuccess);
     } else {
-      context.ui?.showMessage("warn", validationNotice, false);
+      context.ui?.showMessage("info", validationSuccess, false);
     }
     return ok(new Map());
   }
 
   private loadCurrentState() {
     return {
-      TAB_ENDPOINT: process.env.TAB_ENDPOINT,
-      TAB_DOMAIN: process.env.TAB_DOMAIN,
-      BOT_ID: process.env.BOT_ID,
-      BOT_DOMAIN: process.env.BOT_DOMAIN,
       ENV_NAME: process.env.TEAMSFX_ENV,
     };
   }
 
-  private validateArgs(args: ValidateTeamsAppArgs): Result<any, FxError> {
-    const invalidParams: string[] = [];
+  private validateArgs(args: ValidateManifestArgs): Result<any, FxError> {
     if (!args || !args.manifestPath) {
-      invalidParams.push("manifestPath");
-    }
-    if (invalidParams.length > 0) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          [
+            getDefaultString(
+              "driver.teamsApp.validate.invalidParameter",
+              "manifestPath",
+              actionName
+            ),
+            getLocalizedString(
+              "driver.teamsApp.validate.invalidParameter",
+              "manifestPath",
+              actionName
+            ),
+          ],
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );
-    } else {
-      return ok(undefined);
     }
+    return ok(undefined);
   }
 }

@@ -165,7 +165,9 @@ describe("SSO feature", () => {
   };
   context.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(telemetry, "sendErrorTelemetryThenReturnError").returns(
       new UserError({
         name: "mock error",
@@ -178,6 +180,7 @@ describe("SSO feature", () => {
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("happy path", async () => {

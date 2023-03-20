@@ -334,8 +334,7 @@ export class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryEvent(
     eventName: string,
     properties?: { [key: string]: string },
-    measurements?: { [key: string]: number },
-    errorProps?: string[]
+    measurements?: { [key: string]: number }
   ): void {
     // do nothing
   }
@@ -416,6 +415,15 @@ export class MockUserInteraction implements UserInteraction {
     ...args: any
   ): Promise<Result<T, FxError>> {
     return task.run(args);
+  }
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string;
+    shell?: string;
+    timeout?: number;
+    env?: { [k: string]: string };
+  }): Promise<Result<string, FxError>> {
+    throw new Error(`Method openUrl not implemented: runCommand`);
   }
 }
 

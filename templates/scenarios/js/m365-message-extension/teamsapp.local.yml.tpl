@@ -2,14 +2,13 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-provision:
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
       name: {%appName%}
@@ -27,8 +26,7 @@ provision:
         - name: msteams
         - name: m365extensions
 
-configureApp:
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
 
@@ -44,18 +42,19 @@ configureApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-  - uses: m365Title/acquire # Upload your app to Outlook and Office.com
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
     # Output: following environment variable will be persisted in current environment's .env file.
     # M365_TITLE_ID: the id of M365 title
+    # M365_APP_ID: the app id of M365 title
 
 deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./.localSettings
       envs:

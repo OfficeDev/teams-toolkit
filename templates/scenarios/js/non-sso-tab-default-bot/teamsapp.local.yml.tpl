@@ -27,12 +27,15 @@ provision:
         - name: msteams
 
 configureApp:
-  - uses: file/updateEnv # Generate env to .env file
+  - uses: script # Set TAB_DOMAIN for local launch
+    name: Set TAB_DOMAIN for local launch
     with:
-      envs:
-        TAB_DOMAIN: localhost:53000
-        TAB_ENDPOINT: https://localhost:53000
-  - uses: teamsApp/validate # This action is currently skipped, will be updated in the future version.
+      run: echo "::set-output TAB_DOMAIN=localhost:53000"
+  - uses: script # Set TAB_ENDPOINT for local launch
+    name: Set TAB_ENDPOINT for local launch
+    with:
+      run: echo "::set-output TAB_ENDPOINT=https://localhost:53000"
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
@@ -59,7 +62,7 @@ deploy:
     with:
       args: install --no-audit
 
-  - uses: file/updateEnv # Generate runtime environment variables for tab
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables for tab
     with:
       target: ./tab/.localSettings
       envs:
@@ -69,7 +72,7 @@ deploy:
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
 
-  - uses: file/updateEnv # Generate runtime environment variables for bot
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables for bot
     with:
       target: ./bot/.localSettings
       envs:

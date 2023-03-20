@@ -11,10 +11,10 @@ import { LocalCrypto } from "../../../../../src/core/crypto";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { MockUserInteraction, getAzureProjectRoot } from "../helper";
 import { buildTeamsAppPackage } from "../../../../../src/component/resource/appManifest/appStudio";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Build Teams Package", () => {
   const sandbox = sinon.createSandbox();
-
+  let RestoreFn: RestoreFn;
   let context: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let envInfo: v3.EnvInfoV3;
@@ -42,9 +42,11 @@ describe("Build Teams Package", () => {
 
   afterEach(() => {
     sandbox.restore();
+    RestoreFn();
   });
 
   it("Build Teams app package", async () => {
+    RestoreFn = mockedEnv({ TEAMSFX_V3: "false" });
     const zipFile = await buildTeamsAppPackage(
       context.projectSetting,
       inputs.projectPath,

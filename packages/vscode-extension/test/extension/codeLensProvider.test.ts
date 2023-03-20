@@ -19,6 +19,7 @@ describe("Manifest codelens", () => {
   });
 
   it("Template codelens", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     const document = <vscode.TextDocument>{
       fileName: "manifest.template.json",
       getText: () => {
@@ -131,6 +132,7 @@ describe("Manifest codelens", () => {
   });
 
   it("Preview codelens", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     const document = <vscode.TextDocument>{
       fileName: "manifest.dev.json",
       getText: () => {

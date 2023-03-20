@@ -33,7 +33,7 @@ describe("Collaboration", function () {
   let mockedEnvRestore: RestoreFn;
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
   });
   afterEach(() => {
     mockedEnvRestore();

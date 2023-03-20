@@ -50,7 +50,6 @@ import {
   BotNewUIOptionItem,
   WorkflowOptionItem,
   DashboardOptionItem,
-  SPFxQuestionNames,
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";

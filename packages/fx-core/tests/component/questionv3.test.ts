@@ -16,8 +16,6 @@ import {
   InitDebugProceedQuestion,
   getQuestionsForAddWebpart,
   spfxFolderQuestion,
-  manifestFileQuestion,
-  localManifestFileQuestion,
 } from "../../src/component/question";
 import {
   ApiConnectionOptionItem,
@@ -389,6 +387,7 @@ describe("question for v3", () => {
   it("getQuestionsForAddWebpart", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: "./test",
     };
 
     const res = getQuestionsForAddWebpart(inputs);
@@ -402,22 +401,6 @@ describe("question for v3", () => {
     const res = (spfxFolderQuestion() as any).default({ projectPath: projectDir });
 
     assert.equal(res, "\\test/src");
-  });
-
-  it("manifestFileQuestion", () => {
-    const projectDir = "\\test";
-
-    const res = (manifestFileQuestion() as any).default({ projectPath: projectDir });
-
-    assert.equal(res, "\\test/appPackage/manifest.json");
-  });
-
-  it("localManifestFileQuestion", () => {
-    const projectDir = "\\test";
-
-    const res = (localManifestFileQuestion() as any).default({ projectPath: projectDir });
-
-    assert.equal(res, "\\test/appPackage/manifest.local.json");
   });
 
   it("InitDebugProceedQuestion.title", async () => {

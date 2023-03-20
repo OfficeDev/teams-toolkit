@@ -1786,6 +1786,7 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(tools.ui, "showMessage").resolves(ok(undefined));
     sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);

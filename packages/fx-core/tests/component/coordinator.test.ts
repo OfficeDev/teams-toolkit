@@ -1798,6 +1798,9 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
     assert.isTrue(res.isOk());
+
+    inputs.platform = Platform.VS;
+    assert.isTrue((await fxCore.deployArtifacts(inputs)).isOk());
   });
   it("deploy cancel", async () => {
     const mockProjectModel: ProjectModel = {

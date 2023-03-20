@@ -91,6 +91,7 @@ export enum CoreQuestionNames {
   AppPackagePath = "appPackagePath",
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "manifest-path",
+  LocalTeamsAppManifestFilePath = "local-manifest-path",
   AadAppManifestFilePath = "aadAppManifestFilePath",
   TeamsAppPackageFilePath = "teamsAppPackageFilePath",
   ConfirmManifest = "confirmManifest",
@@ -895,7 +896,7 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
 export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false): QTreeNode {
   const teamsAppManifestNode: SingleFileQuestion = {
     name: isLocal
-      ? SPFxQuestionNames.LocalManifestPath
+      ? CoreQuestionNames.LocalTeamsAppManifestFilePath
       : CoreQuestionNames.TeamsAppManifestFilePath,
     title: getLocalizedString(
       isLocal
@@ -996,7 +997,7 @@ export function confirmManifestNode(
         label: isTeamsApp
           ? inputs[
               isLocal
-                ? SPFxQuestionNames.LocalManifestPath
+                ? CoreQuestionNames.LocalTeamsAppManifestFilePath
                 : CoreQuestionNames.TeamsAppManifestFilePath
             ]
           : inputs[CoreQuestionNames.AadAppManifestFilePath],

@@ -19,6 +19,7 @@ import {
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
@@ -27,6 +28,15 @@ describe("Collaboration", function () {
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
   let appId: string;
+
+  let mockedEnvRestore: RestoreFn;
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
+  });
+  afterEach(() => {
+    mockedEnvRestore();
+  });
 
   it(
     "Collaboration: CLI with permission status and permission grant - spfx",
@@ -69,7 +79,7 @@ describe("Collaboration", function () {
       let checkPermissionResult;
       if (isV3Enabled()) {
         checkPermissionResult = await execAsyncWithRetry(
-          `teamsfx permission status --env dev --interactive false`,
+          `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json`,
           {
             cwd: projectPath,
             env: process.env,
@@ -93,7 +103,7 @@ describe("Collaboration", function () {
 
       if (isV3Enabled()) {
         grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator} --env dev`,
+          `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
           {
             cwd: projectPath,
             env: process.env,
@@ -121,7 +131,7 @@ describe("Collaboration", function () {
 
       if (isV3Enabled()) {
         listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators  --env dev`,
+          `teamsfx permission status --list-all-collaborators  --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
           {
             cwd: projectPath,
             env: process.env,

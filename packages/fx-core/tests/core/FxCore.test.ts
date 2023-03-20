@@ -63,6 +63,7 @@ import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -871,5 +872,29 @@ describe("publishInDeveloperPortal", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+  });
+});
+
+describe("Teams app APIs", () => {
+  const tools = new MockTools();
+  const core = new FxCore(tools);
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("validate app package", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.TeamsAppPackageFilePath]: ".\\build\\appPackage\\appPackage.dev.zip",
+      validateMethod: "validateAgainstAppPackage",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
+    await core.validateApplication(inputs);
+    sinon.assert.calledOnce(runSpy);
   });
 });

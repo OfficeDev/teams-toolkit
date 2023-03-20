@@ -347,7 +347,7 @@ export async function listCollaborator(
   }
 
   const hasAad = isV3Enabled() ? appIds!.aadObjectId != undefined : hasAAD(ctx.projectSetting);
-  const hasTeams = appIds!.teamsAppId != undefined;
+  const hasTeams = isV3Enabled() ? appIds!.teamsAppId != undefined : true;
   const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
   const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
   const appStudioRes = hasTeams
@@ -558,7 +558,7 @@ export async function checkPermission(
   const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
   const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
-  const isTeamsActivated = appIds!.teamsAppId != undefined;
+  const isTeamsActivated = isV3Enabled() ? appIds!.teamsAppId != undefined : true;
   const appStudioRes = isTeamsActivated
     ? await appStudio.checkPermission(
         ctx,
@@ -724,7 +724,7 @@ export async function grantPermission(
     const isAadActivated = isV3Enabled()
       ? appIds!.aadObjectId != undefined
       : hasAAD(ctx.projectSetting);
-    const isTeamsActivated = appIds!.teamsAppId != undefined;
+    const isTeamsActivated = isV3Enabled() ? appIds!.teamsAppId != undefined : true;
     const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
     const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
     const appStudioRes = isTeamsActivated

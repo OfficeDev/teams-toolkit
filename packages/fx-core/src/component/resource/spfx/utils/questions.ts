@@ -13,6 +13,7 @@ import { Constants } from "./constants";
 import { Utils } from "./utils";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
 import { isV3Enabled } from "../../../../common/tools";
+import { SPFxQuestionNames } from "../../../constants";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -57,11 +58,12 @@ export const webpartNameQuestion: Question = {
 
       if (
         previousInputs &&
-        ((previousInputs.stage === Stage.addWebpart && previousInputs["spfxFolder"]) ||
+        ((previousInputs.stage === Stage.addWebpart &&
+          previousInputs[SPFxQuestionNames.SPFxFolder]) ||
           (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath))
       ) {
         const webpartFolder = isV3Enabled()
-          ? path.join(previousInputs["spfxFolder"], "src", "webparts", input)
+          ? path.join(previousInputs[SPFxQuestionNames.SPFxFolder], "src", "webparts", input)
           : path.join(previousInputs?.projectPath as any, "SPFx", "src", "webparts", input);
         if (await fs.pathExists(webpartFolder)) {
           return getLocalizedString(

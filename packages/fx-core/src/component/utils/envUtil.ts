@@ -262,7 +262,7 @@ export class DotenvUtil {
           value = value.replace(/\\r/g, "\r");
         }
         //output
-        if (value) obj[key] = value;
+        obj[key] = value;
         const parsedLine: DotenvParsedLine = { key: key, value: value };
         if (inlineComment) parsedLine.comment = inlineComment;
         if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar as '"' | "'";

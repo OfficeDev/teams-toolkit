@@ -178,6 +178,17 @@ class TreeViewManager {
         { name: "library", custom: false },
         TreeCategory.GettingStarted
       ),
+      ...(isV3Enabled() && isSPFxProject
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.addWebpartTitle"),
+              localize("teamstoolkit.commmands.addWebpart.description"),
+              "fx-extension.addWebpart",
+              "addWebpart",
+              { name: "teamsfx-add-feature", custom: false }
+            ),
+          ]
+        : []),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.guideDescription"),
@@ -194,17 +205,7 @@ class TreeViewManager {
         { name: "debug-alt", custom: false }
       ),
       ...(isV3Enabled()
-        ? isSPFxProject
-          ? [
-              new TreeViewCommand(
-                localize("teamstoolkit.commandsTreeViewProvider.addWebpartTitle"),
-                localize("teamstoolkit.commmands.addWebpart.description"),
-                "fx-extension.addWebpart",
-                "addWebpart",
-                { name: "teamsfx-add-feature", custom: false }
-              ),
-            ]
-          : []
+        ? []
         : [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),

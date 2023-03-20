@@ -457,6 +457,7 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      sinon.stub(globalVariables, "isSPFxProject").value(false);
       let tutorialOptions: OptionItem[] = [];
       sinon.stub(extension, "VS_CODE_UI").value({
         selectOption: (options: any) => {
@@ -471,6 +472,29 @@ describe("handlers", () => {
       chai.assert.equal(tutorialOptions.length, 15);
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(tutorialOptions[1].data, "https://aka.ms/teamsfx-notification-new");
+    });
+
+    it("selectTutorialsHandler() for SPFx projects - v3", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      sinon.stub(globalVariables, "isSPFxProject").value(true);
+      let tutorialOptions: OptionItem[] = [];
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: (options: any) => {
+          tutorialOptions = options.options;
+          return Promise.resolve(ok({ type: "success", result: { id: "test", data: "data" } }));
+        },
+        openUrl: () => Promise.resolve(ok(true)),
+      });
+
+      const result = await handlers.selectTutorialsHandler();
+
+      chai.assert.equal(tutorialOptions.length, 1);
+      chai.assert.isTrue(result.isOk());
+      chai.assert.equal(tutorialOptions[0].data, "https://aka.ms/teamsfx-add-cicd-new");
     });
   });
 

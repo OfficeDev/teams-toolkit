@@ -21,7 +21,7 @@ export enum SPFXQuestionNames {
   webpart_desp = "spfx-webpart-desp",
   version_check = "spfx-version-check",
   load_package_version = "spfx-load-package-version",
-  use_global_package_or_install_local = "spfx-use-global-package-or-install-local",
+  use_global_package_or_install_local = "spfx-install-latest-package",
 }
 
 export const frameworkQuestion: Question = {

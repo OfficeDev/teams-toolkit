@@ -32,7 +32,10 @@ import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { SPFxVersionOptionIds } from "../resource/spfx/utils/question-helper";
+import {
+  PackageSelectOptionsHelper,
+  SPFxVersionOptionIds,
+} from "../resource/spfx/utils/question-helper";
 import { SPFxQuestionNames } from "../constants";
 
 export class SPFxGenerator {
@@ -112,6 +115,11 @@ export class SPFxGenerator {
               throw LatestPackageInstallError();
             }
           }
+        }
+      } else {
+        const isLowerVersion = PackageSelectOptionsHelper.isLowerThanRecommendedVersion();
+        if (isLowerVersion) {
+          context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.UseNotRecommendedVersion);
         }
       }
 

@@ -1,3 +1,7 @@
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 export enum SummaryConstant {
   Succeeded = "(√) Done:",
   Failed = "(×) Error:",

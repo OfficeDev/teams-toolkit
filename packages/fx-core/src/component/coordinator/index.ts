@@ -951,7 +951,9 @@ export class Coordinator {
         const msg =
           getLocalizedString("core.common.LifecycleComplete", "deploy") +
           botTroubleShootMsg.textForLogging;
-        ctx.ui?.showMessage("info", msg, false);
+        if (ctx.platform !== Platform.VS) {
+          ctx.ui?.showMessage("info", msg, false);
+        }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);

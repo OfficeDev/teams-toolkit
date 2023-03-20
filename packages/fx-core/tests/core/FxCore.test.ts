@@ -65,6 +65,7 @@ import { pathUtils } from "../../src/component/utils/pathUtils";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -876,9 +877,15 @@ describe("publishInDeveloperPortal", () => {
   });
 });
 
-describe("Teams app APIs", () => {
+describe("Teams app APIs", async () => {
   const tools = new MockTools();
   const core = new FxCore(tools);
+
+  beforeEach(() => {
+    sinon.stub(core.tools.ui, "selectFile").resolves(ok({ type: "success" }));
+    sinon.stub(core.tools.ui, "selectOption").resolves(ok({ type: "success" }));
+    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -899,12 +906,34 @@ describe("Teams app APIs", () => {
     sinon.assert.calledOnce(runSpy);
   });
 
+  it("validate manifest", async () => {
+    const appName = await mockV3Project();
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
+      validateMethod: "validateAgainstSchema",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    try {
+      const runSpy = sinon.spy(ValidateManifestDriver.prototype, "run");
+      await core.validateApplication(inputs);
+      sinon.assert.calledOnce(runSpy);
+    } finally {
+      restore();
+    }
+  });
+
   it("create app package", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\appPackage.dev.zip",
+      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
 

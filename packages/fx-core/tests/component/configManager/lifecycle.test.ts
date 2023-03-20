@@ -145,10 +145,11 @@ class DriverThatUsesWriteToEnvironmentFileField implements StepDriver {
   }
 
   async execute(
-    args: { writeToEnvironmentFile: { [key: string]: string } },
-    context: DriverContext
+    args: unknown,
+    context: DriverContext,
+    outputVarNames: Map<string, string>
   ): Promise<ExecutionResult> {
-    const ret = Object.values(args.writeToEnvironmentFile).map(
+    const ret = [...outputVarNames.values()].map(
       (value) => [value, value.toLocaleLowerCase()] as const
     );
     return { result: ok(new Map([...ret])), summaries: [] };
@@ -876,11 +877,10 @@ describe("writeToEnvironmentFile", () => {
     const driverDefs: DriverDefinition[] = [];
     driverDefs.push({
       uses: "DriverThatUsesWriteToEnvironmentFileField",
-      with: {
-        writeToEnvironmentFile: {
-          key1: "AAA",
-          key2: "BBB",
-        },
+      with: {},
+      writeToEnvironmentFile: {
+        key1: "AAA",
+        key2: "BBB",
       },
     });
 

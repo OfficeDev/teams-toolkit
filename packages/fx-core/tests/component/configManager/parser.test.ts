@@ -194,11 +194,16 @@ describe("v3 yaml parser", () => {
     });
   });
 
-  describe(`when parsing yml with inValid writeToEnvironmentFile`, async () => {
-    it("should return ok", async () => {
+  describe(`when parsing yml with invalid writeToEnvironmentFile`, async () => {
+    it("should return YamlFieldTypeError", async () => {
       const parser = new YamlParser();
-      const result = await parser.parse(
-        path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file.yml")
+      let result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_array.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+
+      result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml")
       );
       assert(result.isErr() && result.error.name === "YamlFieldTypeError");
     });

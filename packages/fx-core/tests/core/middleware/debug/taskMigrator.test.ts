@@ -677,9 +677,9 @@ describe("debugMigration", () => {
       );
       await migrateSetUpTab(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
-      chai.assert.equal(debugContext.appYmlConfig.configureApp?.tab?.domain, "localhost:53000");
+      chai.assert.equal(debugContext.appYmlConfig.provision?.configureApp?.tab?.domain, "localhost:53000");
       chai.assert.equal(
-        debugContext.appYmlConfig.configureApp?.tab?.endpoint,
+        debugContext.appYmlConfig.provision?.configureApp?.tab?.endpoint,
         "https://localhost:53000"
       );
       chai.assert.equal(debugContext.appYmlConfig.deploy?.tab?.port, 53000);
@@ -963,8 +963,8 @@ describe("debugMigration", () => {
       );
       await migrateSetUpSSO(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
-      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
-      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.configureApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
     });
 
@@ -1002,8 +1002,8 @@ describe("debugMigration", () => {
         SECRET_AAD_APP_CLIENT_SECRET: "crypto_" + clientSecret,
         AAD_APP_ACCESS_AS_USER_PERMISSION_ID: accessAsUserScopeId,
       });
-      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
-      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.configureApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
     });
 
@@ -1042,8 +1042,8 @@ describe("debugMigration", () => {
         SECRET_AAD_APP_CLIENT_SECRET: "crypto_" + clientSecret,
         AAD_APP_ACCESS_AS_USER_PERMISSION_ID: accessAsUserScopeId,
       });
-      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
-      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.configureApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
       delete process.env.CLIENT_SECRET;
     });
@@ -1111,9 +1111,9 @@ describe("debugMigration", () => {
       );
       await migratePrepareManifest(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
-      chai.assert.equal(debugContext.appYmlConfig.registerApp?.teamsApp, true);
+      chai.assert.equal(debugContext.appYmlConfig.provision?.registerApp?.teamsApp, true);
       chai.assert.equal(
-        debugContext.appYmlConfig.configureApp?.teamsApp?.appPackagePath,
+        debugContext.appYmlConfig.provision?.configureApp?.teamsApp?.appPackagePath,
         undefined
       );
     });

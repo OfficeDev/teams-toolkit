@@ -180,14 +180,17 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       } catch {}
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision) {
+      context.appYmlConfig.provision = {};
     }
-    if (!context.appYmlConfig.configureApp.tab) {
-      context.appYmlConfig.configureApp.tab = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    context.appYmlConfig.configureApp.tab.domain = url.host;
-    context.appYmlConfig.configureApp.tab.endpoint = url.origin;
+    if (!context.appYmlConfig.provision.configureApp.tab) {
+      context.appYmlConfig.provision.configureApp.tab = {};
+    }
+    context.appYmlConfig.provision.configureApp.tab.domain = url.host;
+    context.appYmlConfig.provision.configureApp.tab.endpoint = url.origin;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -286,15 +289,18 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision) {
+      context.appYmlConfig.provision = {};
     }
-    context.appYmlConfig.registerApp.aad = true;
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
+    }
+    context.appYmlConfig.provision.registerApp.aad = true;
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    context.appYmlConfig.configureApp.aad = true;
+    context.appYmlConfig.provision.configureApp.aad = true;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -360,20 +366,24 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
       appPackagePath = task["args"]["appPackagePath"];
     }
 
-    if (!appPackagePath) {
-      if (!context.appYmlConfig.registerApp) {
-        context.appYmlConfig.registerApp = {};
-      }
-      context.appYmlConfig.registerApp.teamsApp = true;
+    if (!context.appYmlConfig.provision) {
+      context.appYmlConfig.provision = {};
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!appPackagePath) {
+      if (!context.appYmlConfig.provision.registerApp) {
+        context.appYmlConfig.provision.registerApp = {};
+      }
+      context.appYmlConfig.provision.registerApp.teamsApp = true;
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    context.appYmlConfig.configureApp.teamsApp.appPackagePath = appPackagePath;
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
+    }
+    context.appYmlConfig.provision.configureApp.teamsApp.appPackagePath = appPackagePath;
 
     const label = task["label"];
     index = handleProvisionAndDeploy(context, index, label);
@@ -723,13 +733,17 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
       continue;
     }
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision) {
+      context.appYmlConfig.provision = {};
+    }
+
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.registerApp.aad = true;
+      context.appYmlConfig.provision.registerApp.aad = true;
     }
-    context.appYmlConfig.registerApp.teamsApp = true;
+    context.appYmlConfig.provision.registerApp.teamsApp = true;
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
       if (!context.appYmlConfig.provision) {
@@ -740,20 +754,20 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
       };
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
     if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.tab = {
+      context.appYmlConfig.provision.configureApp.tab = {
         domain: "localhost:53000",
         endpoint: "https://localhost:53000",
       };
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.aad = true;
+      context.appYmlConfig.provision.configureApp.aad = true;
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
 
     const validateLocalPrerequisitesTask = context.tasks.find(

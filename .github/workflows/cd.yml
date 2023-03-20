@@ -124,10 +124,6 @@ jobs:
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
 
-      - name: generate templates
-        run: |
-          .github/scripts/template-zip-autogen.sh ${{ runner.temp }}/teamsfx_templates
-
       - name: generate templates v3
         run: |
           .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3

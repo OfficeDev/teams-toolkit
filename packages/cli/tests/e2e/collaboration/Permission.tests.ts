@@ -20,6 +20,7 @@ import {
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
@@ -29,8 +30,13 @@ describe("Collaboration", function () {
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
 
-  before(() => {
-    process.env.TEAMSFX_V3 = "true";
+  let mockedEnvRestore: RestoreFn;
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+  });
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   it(

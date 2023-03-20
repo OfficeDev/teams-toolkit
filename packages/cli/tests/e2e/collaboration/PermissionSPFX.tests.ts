@@ -19,6 +19,7 @@ import {
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
@@ -28,8 +29,13 @@ describe("Collaboration", function () {
   const creator = process.env["M365_ACCOUNT_NAME"];
   let appId: string;
 
-  before(() => {
-    process.env.TEAMSFX_V3 = "true";
+  let mockedEnvRestore: RestoreFn;
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+  });
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   it(

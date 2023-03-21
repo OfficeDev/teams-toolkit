@@ -258,10 +258,19 @@ describe("Package Service", () => {
       },
     };
 
-    const packageService = new PackageService("test-endpoint");
-    const appId = await packageService.retrieveAppId("test-token", "test-manifest-id");
+    {
+      const packageService = new PackageService("test-endpoint");
+      const appId = await packageService.retrieveAppId("test-token", "test-manifest-id");
 
-    chai.assert.equal(appId, "test-app-id");
+      chai.assert.equal(appId, "test-app-id");
+    }
+
+    {
+      const packageService = new PackageService("test-endpoint", new MockLogProvider());
+      const appId = await packageService.retrieveAppId("test-token", "test-manifest-id");
+
+      chai.assert.equal(appId, "test-app-id");
+    }
   });
 
   it("retrieveAppId throws expected error", async () => {
@@ -272,16 +281,31 @@ describe("Package Service", () => {
     };
     axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = new Error("test-post");
 
-    const packageService = new PackageService("test-endpoint");
-    let actualError: Error | undefined;
-    try {
-      await packageService.retrieveAppId("test-token", "test-manifest-id");
-    } catch (error: any) {
-      actualError = error;
+    {
+      const packageService = new PackageService("test-endpoint");
+      let actualError: Error | undefined;
+      try {
+        await packageService.retrieveAppId("test-token", "test-manifest-id");
+      } catch (error: any) {
+        actualError = error;
+      }
+
+      chai.assert.isDefined(actualError);
+      chai.assert.equal(actualError?.message, "test-post");
     }
 
-    chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-post");
+    {
+      const packageService = new PackageService("test-endpoint", new MockLogProvider());
+      let actualError: Error | undefined;
+      try {
+        await packageService.retrieveAppId("test-token", "test-manifest-id");
+      } catch (error: any) {
+        actualError = error;
+      }
+
+      chai.assert.isDefined(actualError);
+      chai.assert.equal(actualError?.message, "test-post");
+    }
   });
 
   it("retrieveAppId throws expected response error", async () => {
@@ -296,16 +320,31 @@ describe("Package Service", () => {
     };
     axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = expectedError;
 
-    const packageService = new PackageService("test-endpoint");
-    let actualError: any;
-    try {
-      await packageService.retrieveAppId("test-token", "test-manifest-id");
-    } catch (error: any) {
-      actualError = error;
+    {
+      const packageService = new PackageService("test-endpoint");
+      let actualError: any;
+      try {
+        await packageService.retrieveAppId("test-token", "test-manifest-id");
+      } catch (error: any) {
+        actualError = error;
+      }
+
+      chai.assert.isDefined(actualError);
+      chai.assert.deepEqual(actualError.innerError, expectedError);
     }
 
-    chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError.innerError, expectedError);
+    {
+      const packageService = new PackageService("test-endpoint", new MockLogProvider());
+      let actualError: any;
+      try {
+        await packageService.retrieveAppId("test-token", "test-manifest-id");
+      } catch (error: any) {
+        actualError = error;
+      }
+
+      chai.assert.isDefined(actualError);
+      chai.assert.deepEqual(actualError.innerError, expectedError);
+    }
   });
 
   it("unacquire happy path", async () => {

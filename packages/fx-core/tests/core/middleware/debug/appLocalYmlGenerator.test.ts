@@ -9,7 +9,9 @@ import * as yaml from "js-yaml";
 
 describe("AppLocalYmlGenerator", () => {
   it("empty deploy", async () => {
-    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {}, {});
+    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {
+      provision: {}
+    }, {});
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
 
@@ -20,6 +22,7 @@ describe("AppLocalYmlGenerator", () => {
     const appLocalYmlGenerator = new AppLocalYmlGenerator(
       generateProjectSettings(),
       {
+        provision: {},
         deploy: { tools: { devCert: { trust: true } } },
       },
       {}
@@ -36,6 +39,7 @@ describe("AppLocalYmlGenerator", () => {
     const appLocalYmlGenerator = new AppLocalYmlGenerator(
       generateProjectSettings(),
       {
+        provision: {},
         deploy: { npmCommands: [] },
       },
       {}
@@ -49,6 +53,7 @@ describe("AppLocalYmlGenerator", () => {
     const appLocalYmlGenerator = new AppLocalYmlGenerator(
       generateProjectSettings(),
       {
+        provision: {},
         deploy: { npmCommands: [{ args: "install" }] },
       },
       {}

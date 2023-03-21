@@ -89,7 +89,6 @@ import {
   ProgrammingLanguageQuestion,
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
-  selectEnvNode,
 } from "../core/question";
 import { createContextV3 } from "./utils";
 import {

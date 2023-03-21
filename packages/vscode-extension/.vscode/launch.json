@@ -16,9 +16,10 @@
         "${workspaceFolder}/../api/build/**/*.js"
       ],
       "env": {
+        "TEAMSFX_V3": "true",
         "NODE_ENV": "development"
       },
-      "preLaunchTask": "npm: build"
+      // "preLaunchTask": "npm: build"
     },
     {
       "name": "Run Extension with Failpoints",

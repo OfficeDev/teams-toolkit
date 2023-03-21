@@ -900,14 +900,6 @@ describe("updateLaunchJson", () => {
       updatedLaunchJson.configurations[3].url,
       "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
     );
-    assert.equal(
-      updatedLaunchJson.configurations[4].url,
-      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
-    );
-    assert.equal(
-      updatedLaunchJson.configurations[5].url,
-      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
-    );
   });
 
   ["transparent-m365-tab", "transparent-m365-me"].forEach((testCase) => {
@@ -920,6 +912,25 @@ describe("updateLaunchJson", () => {
       assert.equal(
         await fs.readFile(path.join(projectPath, ".vscode", "launch.json"), "utf-8"),
         await fs.readFile(path.join(projectPath, "expected", "launch.json"), "utf-8")
+      );
+    });
+  });
+});
+
+describe("generateAppYml-m365", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  ["transparent-m365-tab", "transparent-m365-me"].forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await generateAppYml(migrationContext);
+
+      assert.equal(
+        await fs.readFile(path.join(projectPath, "teamsapp.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "app.yml"), "utf-8")
       );
     });
   });

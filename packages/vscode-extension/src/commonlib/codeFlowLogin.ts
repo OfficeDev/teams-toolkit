@@ -275,11 +275,11 @@ export class CodeFlowLogin {
     };
 
     const res = await this.pca.acquireTokenByCode(tokenRequest);
-    if (res.account) {
+    if (res?.account) {
       this.account = res.account;
       await saveAccountId(this.accountName, this.account.homeAccountId);
     }
-    return Promise.resolve(res.accessToken);
+    return Promise.resolve(res!.accessToken);
   }
 
   async logout(): Promise<boolean> {

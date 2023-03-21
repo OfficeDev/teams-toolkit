@@ -1,3 +1,7 @@
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { ok, err, FxError, Result, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { Container } from "typedi";
@@ -240,7 +244,13 @@ export class Lifecycle implements ILifecycle {
       let result: Result<Map<string, string>, FxError>;
       let summary: string[];
       if (driver.instance.execute) {
-        const r = await driver.instance.execute(driver.with, ctx);
+        const r = await driver.instance.execute(
+          driver.with,
+          ctx,
+          driver.writeToEnvironmentFile
+            ? new Map(Object.entries(driver.writeToEnvironmentFile))
+            : undefined
+        );
         result = r.result;
         summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
       } else {

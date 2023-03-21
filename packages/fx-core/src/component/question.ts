@@ -881,25 +881,23 @@ export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | un
   return ok(addWebpart);
 }
 
-export async function getQuestionsForValidateApplication(
+export async function getQuestionsForValidateManifest(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const group = new QTreeNode({ type: "group" });
-  if (inputs.validateMethod === "validateAgainstSchema") {
-    // Manifest path node
-    const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
-    group.addChild(teamsAppSelectNode);
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
 
-    // Env select node
-    const envNode = await selectEnvNode(inputs, true);
-    if (envNode) {
-      teamsAppSelectNode.addChild(envNode);
-    }
-  } else {
-    // App package path node
-    const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
-    group.addChild(teamsAppSelectNode);
-  }
+export async function getQuestionsForValidateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // App package path node
+  const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
+  group.addChild(teamsAppSelectNode);
   return ok(group);
 }
 

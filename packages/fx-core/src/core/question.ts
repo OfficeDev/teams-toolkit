@@ -937,18 +937,11 @@ export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   };
 }
 
-export async function selectEnvNode(
-  inputs: Inputs,
-  withLocalEnv?: boolean
-): Promise<QTreeNode | undefined> {
-  let envProfilesResult;
-
-  if (withLocalEnv) {
-    envProfilesResult = await environmentManager.listAllEnvConfigs(inputs.projectPath!);
-  } else {
-    envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!, true);
-  }
-
+export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefined> {
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(
+    inputs.projectPath!,
+    true
+  );
   if (envProfilesResult.isErr()) {
     // If failed to load env, return undefined
     return undefined;

@@ -479,7 +479,19 @@ export class FxCore implements v3.ICore {
   }
 
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return this.v3Implement.dispatch(this.validateApplication, inputs);
+    if (inputs.validateMethod === "validateAgainstSchema") {
+      return await this.validateManifest(inputs);
+    } else {
+      return await this.validateAppPackage(inputs);
+    }
+  }
+
+  async validateManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.validateManifest, inputs);
+  }
+
+  async validateAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.validateAppPackage, inputs);
   }
 
   async createAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {

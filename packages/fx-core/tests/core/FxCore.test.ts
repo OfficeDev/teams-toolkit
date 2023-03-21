@@ -881,12 +881,6 @@ describe("Teams app APIs", async () => {
   const tools = new MockTools();
   const core = new FxCore(tools);
 
-  beforeEach(() => {
-    sinon.stub(core.tools.ui, "selectFile").resolves(ok({ type: "success" }));
-    sinon.stub(core.tools.ui, "selectOption").resolves(ok({ type: "success" }));
-    sinon.stub(envUtil, "readEnv").resolves(ok({}));
-  });
-
   afterEach(() => {
     sinon.restore();
   });

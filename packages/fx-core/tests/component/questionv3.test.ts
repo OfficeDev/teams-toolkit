@@ -8,7 +8,8 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
-  getQuestionsForValidateApplication,
+  getQuestionsForValidateManifest,
+  getQuestionsForValidateAppPackage,
   getQuestionsForCreateAppPackage,
   getQuestionsForUpdateTeamsApp,
   FeatureId,
@@ -438,7 +439,7 @@ describe("question for v3", () => {
       projectPath: ".",
       validateMethod: "validateAgainstSchema",
     };
-    const nodeRes = await getQuestionsForValidateApplication(inputs);
+    const nodeRes = await getQuestionsForValidateManifest(inputs);
     assert.isTrue(nodeRes.isOk());
   });
 
@@ -448,7 +449,7 @@ describe("question for v3", () => {
       projectPath: ".",
       validateMethod: "validateAgainstAppPackage",
     };
-    const nodeRes = await getQuestionsForValidateApplication(inputs);
+    const nodeRes = await getQuestionsForValidateAppPackage(inputs);
     assert.isTrue(nodeRes.isOk());
   });
 

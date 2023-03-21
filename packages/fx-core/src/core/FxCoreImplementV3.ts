@@ -75,7 +75,8 @@ import {
   getQuestionsForInit,
   getQuestionsForProvisionV3,
   getQuestionsForUpdateTeamsApp,
-  getQuestionsForValidateApplication,
+  getQuestionsForValidateManifest,
+  getQuestionsForValidateAppPackage,
 } from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
@@ -521,35 +522,38 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateApplication)])
-  async validateApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForValidateManifest),
+    EnvLoaderMW(true),
+  ])
+  async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.validateApplication);
     inputs.stage = Stage.validateApplication;
 
     const context: DriverContext = createDriverContext(inputs);
-    if (inputs.validateMethod === "validateAgainstSchema") {
-      // load env
-      const env = inputs?.[CoreQuestionNames.TargetEnvName] as string;
-      if (env) {
-        await envUtil.readEnv(inputs.projectPath!, env);
-      }
 
-      const teamsAppManifestFilePath = inputs?.[
-        CoreQuestionNames.TeamsAppManifestFilePath
-      ] as string;
-      const args: ValidateManifestArgs = {
-        manifestPath: teamsAppManifestFilePath,
-      };
-      const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-      return await driver.run(args, context);
-    } else {
-      const teamsAppPackageFilePath = inputs?.[CoreQuestionNames.TeamsAppPackageFilePath] as string;
-      const args: ValidateAppPackageArgs = {
-        appPackagePath: teamsAppPackageFilePath,
-      };
-      const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-      return await driver.run(args, context);
-    }
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+    const args: ValidateManifestArgs = {
+      manifestPath: teamsAppManifestFilePath,
+    };
+    const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
+    return await driver.run(args, context);
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
+  async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.validateApplication);
+    inputs.stage = Stage.validateApplication;
+
+    const context: DriverContext = createDriverContext(inputs);
+    const teamsAppPackageFilePath = inputs?.[CoreQuestionNames.TeamsAppPackageFilePath] as string;
+    const args: ValidateAppPackageArgs = {
+      appPackagePath: teamsAppPackageFilePath,
+    };
+    const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return await driver.run(args, context);
   }
 
   @hooks([

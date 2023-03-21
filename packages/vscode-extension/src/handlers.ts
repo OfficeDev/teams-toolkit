@@ -62,8 +62,6 @@ import {
   Void,
   VsCodeEnv,
   SettingsFolderName,
-  QTreeNode,
-  SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
@@ -94,7 +92,7 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import { envUtil, FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
+import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
@@ -176,12 +174,6 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import commandController from "./commandController";
 import { ExtensionSurvey } from "./utils/survey";
-import {
-  CoreQuestionNames,
-  selectTeamsAppManifestQuestion,
-} from "@microsoft/teamsfx-core/build/core/question";
-import { traverse } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -680,60 +672,63 @@ async function previewRemote(
   progressBar: IProgressHandler
 ): Promise<Result<null, FxError>> {
   try {
-    const inputs = getSystemInputs();
-
-    const platformSingleSelect: SingleSelectQuestion = {
-      type: "singleSelect",
-      name: "hub",
-      title: localize("teamstoolkit.preview.platform.title"),
-      staticOptions: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
-      placeholder: localize("teamstoolkit.preview.platform.placeholder"),
-    };
-
-    const node = new QTreeNode(platformSingleSelect);
-    node.addChild(selectTeamsAppManifestQuestion(inputs));
-
-    const res = await traverse(node, inputs, tools.ui, tools.telemetryReporter);
-    if (res.isErr()) {
-      throw res.error;
+    const debugConfig = await commonUtils.getDebugConfig(false, env);
+    if (!debugConfig?.appId) {
+      const error = new UserError(
+        ExtensionSource,
+        ExtensionErrors.TeamsAppIdNotFoundError,
+        util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
+      );
+      return err(error);
     }
 
-    const hub = inputs["hub"] as constants.Hub;
-    const manifestPath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
 
-    const envRes = await envUtil.readEnv(inputs.projectPath!, env, true, true);
-    if (envRes.isErr()) {
-      throw envRes.error;
+    let hub = constants.Hub.teams;
+    if (projectSettings.isM365) {
+      const platformSingleSelect: SingleSelectConfig = {
+        name: "platform",
+        title: localize("teamstoolkit.preview.platform.title"),
+        options: [constants.Hub.teams, constants.Hub.outlook],
+        placeholder: localize("teamstoolkit.preview.platform.placeholder"),
+      };
+      if (includeFrontend) {
+        (platformSingleSelect.options as string[]).push(constants.Hub.office);
+      }
+      const platformResult = await VS_CODE_UI.selectOption(platformSingleSelect);
+      if (platformResult.isErr()) {
+        return err(platformResult.error);
+      }
+
+      hub = platformResult.value.result as constants.Hub;
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath, {});
-    if (manifestRes.isErr()) {
-      throw manifestRes.error;
+    if (hub === constants.Hub.teams) {
+      await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+      await openHubWebClient(includeFrontend, debugConfig.appId, hub);
+    } else {
+      const shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
+        env,
+        debugConfig.appId
+      );
+      if (!shouldContinue) {
+        return err(UserCancelError);
+      }
+
+      const internalId = await teamsAppInstallation.getTeamsAppInternalId(debugConfig.appId);
+      if (internalId !== undefined) {
+        await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+        await openHubWebClient(includeFrontend, internalId, hub);
+      }
     }
-    VS_CODE_UI.showMessage("info", `teamsAppId: ${manifestRes.value.id}`, false);
-    tools.logProvider.info(`teamsAppId: ${manifestRes.value.id}`);
-
-    const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
-
-    await //   if (hub === constants.Hub.teams) {
-    //     await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-    await openHubWebClient(includeFrontend, debugConfig.appId, hub);
-    //   } else {
-    //     const shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
-    //       env,
-    //       debugConfig.appId
-    //     );
-    //     if (!shouldContinue) {
-    //       return err(UserCancelError);
-    //     }
-
-    //     const internalId = await teamsAppInstallation.getTeamsAppInternalId(debugConfig.appId);
-    //     if (internalId !== undefined) {
-    //       await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-    //       await openHubWebClient(includeFrontend, internalId, hub);
-    //     }
-    //   }
   } catch (error) {
     const assembledError = assembleError(error);
     showError(assembledError);

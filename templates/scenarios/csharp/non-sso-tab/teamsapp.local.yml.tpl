@@ -3,7 +3,7 @@
 version: 1.0.0
 
 
-registerApp:
+provision:
   - uses: script # Set TAB_DOMAIN for local launch
     name: Set TAB_DOMAIN for local launch
     with:
@@ -19,7 +19,6 @@ registerApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-configureApp:
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template

@@ -18,9 +18,10 @@ import * as util from "util";
 import { ManifestTemplate } from "../../resource/spfx/utils/constants";
 import { SPFxGenerator } from "../../generator/spfxGenerator";
 import { createContextV3 } from "../../utils";
-import { SPFXQuestionNames } from "../../resource/spfx/utils/questions";
 import { Constants } from "./utility/constants";
 import { NoConfigurationError } from "./error/noConfigurationError";
+import { SPFxQuestionNames } from "../../constants";
+import { SPFXQuestionNames } from "../../resource/spfx/utils/questions";
 
 @Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {
@@ -49,6 +50,7 @@ export class AddWebPartDriver implements StepDriver {
     const spfxFolder = args.spfxFolder;
     const manifestPath = args.manifestPath;
     const localManifestPath = args.localManifestPath;
+    const spfxPackage = args.spfxPackage;
 
     const yorcPath = path.join(spfxFolder, Constants.YO_RC_FILE);
     if (!(await fs.pathExists(yorcPath))) {
@@ -56,10 +58,11 @@ export class AddWebPartDriver implements StepDriver {
     }
 
     const inputs: Inputs = { platform: context.platform, stage: Stage.addWebpart };
-    inputs[SPFXQuestionNames.webpart_name] = webpartName;
-    inputs["spfxFolder"] = spfxFolder;
-    inputs["manifestPath"] = manifestPath;
-    inputs["localManifestPath"] = localManifestPath;
+    inputs[SPFxQuestionNames.WebPartName] = webpartName;
+    inputs[SPFxQuestionNames.SPFxFolder] = spfxFolder;
+    inputs[SPFxQuestionNames.ManifestPath] = manifestPath;
+    inputs[SPFxQuestionNames.LocalManifestPath] = localManifestPath;
+    inputs[SPFXQuestionNames.use_global_package_or_install_local] = spfxPackage;
     const yeomanRes = await SPFxGenerator.doYeomanScaffold(
       createContextV3(),
       inputs,

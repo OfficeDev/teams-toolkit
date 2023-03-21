@@ -29,6 +29,7 @@ import {
   AadConstants,
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
+  SPFxQuestionNames,
 } from "../component/constants";
 import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
@@ -359,10 +360,11 @@ export class FxCoreV3Implement {
   async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
-      manifestPath: inputs.manifestPath,
-      localManifestPath: inputs.localManifestPath,
-      spfxFolder: inputs.spfxFolder,
-      webpartName: inputs[SPFXQuestionNames.webpart_name],
+      manifestPath: inputs[SPFxQuestionNames.ManifestPath],
+      localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
+      spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
+      webpartName: inputs[SPFxQuestionNames.WebPartName],
+      spfxPackage: inputs[SPFXQuestionNames.use_global_package_or_install_local],
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     return await driver.run(args, contextV3);

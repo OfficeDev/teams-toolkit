@@ -34,6 +34,7 @@ describe("Add web part driver", async () => {
     webpartName: "HelloWorld",
     manifestPath: "C://TeamsApp//appPackage//manifest.json",
     localManifestPath: "C://TeamsApp//appPackage//manifest.local.json",
+    spfxPackage: "installLocally",
   };
   const driver = new AddWebPartDriver();
   const mockedDriverContext: any = {

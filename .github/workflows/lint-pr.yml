@@ -19,6 +19,24 @@ jobs:
       - uses: amannn/action-semantic-pull-request@v3.4.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const AZDO_TICKET_REGEX = 'https:\/\/(dev\.azure\.com\/msazure|msazure\.visualstudio\.com)\/Microsoft%20Teams%20Extensibility';
+            const pullRequest = context.payload.pull_request;
+            if(pullRequest.title.startsWith("feat")) {
+              const body = pullRequest.body;
+              const match = body?.match(AZDO_TICKET_REGEX);
+              if(!match) {
+                core.setFailed("Feat PR should contains AZDO tickets");
+              }
+            } else if(pullRequest.title.startsWith("fix")) {
+              const body = pullRequest.body;
+              const match = body?.match(AZDO_TICKET_REGEX);
+              if(!match && !body) {
+                core.setFailed("Fix PR should contains AZDO tickets or descrptions");
+              }
+            }
 
   npm-audit:
     if: ${{ github.event_name == 'pull_request' }}

@@ -74,6 +74,7 @@ import {
   BuiltInFeaturePluginNames,
   GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
+  SPFxQuestionNames,
 } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
@@ -98,7 +99,11 @@ import {
 } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
-import { webpartNameQuestion } from "./resource/spfx/utils/questions";
+import {
+  loadPackageVersions,
+  spfxPackageSelectQuestion,
+  webpartNameQuestion,
+} from "./resource/spfx/utils/questions";
 import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
@@ -830,7 +835,7 @@ export function getQuestionsForInit(
 export function spfxFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
-    name: "spfxFolder",
+    name: SPFxQuestionNames.SPFxFolder,
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
     default: (inputs: Inputs) => {
@@ -842,7 +847,7 @@ export function spfxFolderQuestion(): FolderQuestion {
 export function manifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
-    name: "manifestPath",
+    name: SPFxQuestionNames.ManifestPath,
     title: getLocalizedString("core.manifestPath.title"),
     placeholder: getLocalizedString("core.manifestPath.placeholder"),
     default: (inputs: Inputs) => {
@@ -854,7 +859,7 @@ export function manifestFileQuestion(): SingleFileQuestion {
 export function localManifestFileQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
-    name: "localManifestPath",
+    name: SPFxQuestionNames.LocalManifestPath,
     title: getLocalizedString("core.localManifestPath.title"),
     placeholder: getLocalizedString("core.localManifestPath.placeholder"),
     default: (inputs: Inputs) => {
@@ -866,8 +871,14 @@ export function localManifestFileQuestion(): SingleFileQuestion {
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
 
+  const loadPackage = new QTreeNode(loadPackageVersions);
+  addWebpart.addChild(loadPackage);
+
+  const spfxPackage = new QTreeNode(spfxPackageSelectQuestion);
+  loadPackage.addChild(spfxPackage);
+
   const spfxFolder = new QTreeNode(spfxFolderQuestion());
-  addWebpart.addChild(spfxFolder);
+  spfxPackage.addChild(spfxFolder);
 
   const webpartName = new QTreeNode(webpartNameQuestion);
   spfxFolder.addChild(webpartName);

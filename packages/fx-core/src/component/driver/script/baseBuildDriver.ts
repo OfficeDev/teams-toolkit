@@ -7,17 +7,11 @@
 import { BuildArgs } from "../interface/buildAndDeployArgs";
 import { asFactory, asOptional, asString, checkMissingArgs } from "../../utils/common";
 import { executeCommand } from "../../code/utils";
-import {
-  err,
-  ok,
-  FxError,
-  IProgressHandler,
-  LogProvider,
-  Result,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
+import { err, ok, IProgressHandler, LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../interface/commonArgs";
 import * as path from "path";
+import { ExecutionResult } from "../interface/stepDriver";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export abstract class BaseBuildDriver {
   args: BuildArgs;
@@ -56,7 +50,7 @@ export abstract class BaseBuildDriver {
     return BaseBuildDriver.asBuildArgs(args, helpLink);
   }
 
-  async run(): Promise<Result<Map<string, string>, FxError>> {
+  async run(): Promise<ExecutionResult> {
     this.progressBar = this.context.ui?.createProgressBar(
       this.progressBarName,
       this.progressBarSteps
@@ -78,9 +72,19 @@ export abstract class BaseBuildDriver {
       env
     );
     if (res.isErr()) {
-      return err(res.error);
+      await this.cleanup();
+      return {
+        result: err(res.error),
+        summaries: [],
+      };
     }
-    return ok(BaseBuildDriver.emptyMap);
+    await this.progressBar?.end(true);
+    return {
+      result: ok(BaseBuildDriver.emptyMap),
+      summaries: [
+        getLocalizedString("driver.script.runCommandSummary", command, this.workingDirectory),
+      ],
+    };
   }
 
   getCommand(): string {

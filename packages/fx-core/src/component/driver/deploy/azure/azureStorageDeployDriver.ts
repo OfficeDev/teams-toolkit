@@ -62,8 +62,10 @@ export class AzureStorageDeployDriver implements StepDriver {
  * deploy to Azure Storage
  */
 export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
-  protected summaries: string[] = [getLocalizedString("driver.deploy.azureStorageDeploySummary")];
-  protected summaryPrepare: string[] = [];
+  protected summaries: () => string[] = () => [
+    getLocalizedString("driver.deploy.azureStorageDeployDetailSummary", this.distDirectory),
+  ];
+  protected summaryPrepare: () => string[] = () => [];
   protected progressHandler: AsyncIterableIterator<void> = progressBarHelper(
     ProgressBarConstant.UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS,
     this.progressBar

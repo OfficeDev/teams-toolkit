@@ -53,7 +53,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
     await fs.close(fh);
-    await fs.writeFile(path.join(sysTmp, folder, "ignore"), "ignore", {
+    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
       encoding: "utf8",
       flag: "a",
     });
@@ -108,6 +108,18 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
+      data: {
+        status: 4,
+        message: "success",
+        received_time: 123,
+        start_time: 111,
+        end_time: 123,
+        last_success_end_time: 100,
+        complete: true,
+        active: 1,
+        is_readonly: true,
+        site_name: "new_name",
+      },
     });
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
@@ -416,7 +428,11 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.execute(args, context);
     assert.equal(res.result.isOk(), true);
-    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+    const tmpFile = path.join(sysTmp, "./.deployment/deployment.zip");
+    assert.equal(
+      res.summaries[0],
+      `Deployment preparations are completed. You can find the package in \`${tmpFile}\``
+    );
     // dry run will have only one progress step
     assert.equal(progressNextCaller.callCount, 1);
     expect(progressEndCaller.callCount).to.equal(1);

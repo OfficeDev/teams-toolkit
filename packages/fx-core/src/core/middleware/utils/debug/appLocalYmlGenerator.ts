@@ -8,7 +8,7 @@ import { BaseAppYmlGenerator } from "../appYmlGenerator";
 import { DebugPlaceholderMapping, OldProjectSettingsHelper } from "./debugV3MigrationUtils";
 
 export class AppLocalYmlConfig {
-  provision?: {
+  provision: {
     registerApp?: {
       aad?: boolean;
       teamsApp?: boolean;
@@ -27,7 +27,7 @@ export class AppLocalYmlConfig {
         appPackagePath?: string;
       };
     };
-  };
+  } = {};
   deploy?: {
     tools?: InstallToolArgs;
     npmCommands?: BuildArgs[];

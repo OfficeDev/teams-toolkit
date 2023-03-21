@@ -180,9 +180,6 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       } catch {}
     }
 
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
     if (!context.appYmlConfig.provision.configureApp) {
       context.appYmlConfig.provision.configureApp = {};
     }
@@ -223,9 +220,6 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
     context.appYmlConfig.provision.bot = {
       messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
     };
@@ -289,9 +283,6 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
     if (!context.appYmlConfig.provision.registerApp) {
       context.appYmlConfig.provision.registerApp = {};
     }
@@ -364,10 +355,6 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
     let appPackagePath: string | undefined = undefined;
     if (isCommentObject(task["args"]) && typeof task["args"]["appPackagePath"] === "string") {
       appPackagePath = task["args"]["appPackagePath"];
-    }
-
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
     }
 
     if (!appPackagePath) {
@@ -733,10 +720,6 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
       continue;
     }
 
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
-
     if (!context.appYmlConfig.provision.registerApp) {
       context.appYmlConfig.provision.registerApp = {};
     }
@@ -746,9 +729,6 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
     context.appYmlConfig.provision.registerApp.teamsApp = true;
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
-      if (!context.appYmlConfig.provision) {
-        context.appYmlConfig.provision = {};
-      }
       context.appYmlConfig.provision.bot = {
         messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
       };

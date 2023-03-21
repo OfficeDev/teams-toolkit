@@ -220,10 +220,7 @@ export class ProvisionUtils {
   ): Promise<Result<SubscriptionInfo, FxError>> {
     TOOLS.logProvider.info("check whether azure account is signed in.");
     // make sure the user is logged in
-    const tokenCred = await azureAccountProvider.getIdentityCredentialAsync(true);
-    if (!tokenCred) {
-      return err(new UserError({}));
-    }
+    await azureAccountProvider.getIdentityCredentialAsync(true);
     if (!givenSubscriptionId) {
       TOOLS.logProvider.info("subscription is not selected, try to select.");
       try {

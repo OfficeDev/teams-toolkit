@@ -128,11 +128,11 @@ export async function executeCommand(
       outputStrings.push(data as string);
     };
     cp.stdout?.on("data", (data: string | Buffer) => {
-      logProvider.info(maskSecretValues(data as string));
+      logProvider.info(` [script action stdout] ${maskSecretValues(data as string)}`);
       dataHandler(data);
     });
     cp.stderr?.on("data", (data: string | Buffer) => {
-      logProvider.error(maskSecretValues(data as string));
+      logProvider.warning(` [script action stderr] ${maskSecretValues(data as string)}`);
       dataHandler(data);
     });
     // }
@@ -143,8 +143,10 @@ function parseSetOutputCommand(stdout: string): DotenvOutput {
   const lines = stdout.toString().replace(/\r\n?/gm, "\n").split(/\r?\n/);
   const output: DotenvOutput = {};
   for (const line of lines) {
-    if (line.startsWith("::set-output ")) {
-      const str = line.substring(12).trim();
+    if (line.startsWith("::set-output ") || line.startsWith("set-teamsfx-env ")) {
+      const str = line.startsWith("::set-output ")
+        ? line.substring(12).trim()
+        : line.substring(15).trim();
       const arr = str.split("=");
       if (arr.length === 2) {
         const key = arr[0].trim();

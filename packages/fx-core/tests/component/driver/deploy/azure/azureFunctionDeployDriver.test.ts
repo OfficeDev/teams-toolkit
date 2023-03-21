@@ -430,6 +430,10 @@ describe("Azure Function Deploy Driver test", () => {
     const res = await deploy.execute(args, context);
 
     assert.equal(res.result.isOk(), true);
-    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+    const tmpFile = path.join(sysTmp, "./.deployment/deployment.zip");
+    assert.equal(
+      res.summaries[0],
+      `Deployment preparations are completed. You can find the package in \`${tmpFile}\``
+    );
   });
 });

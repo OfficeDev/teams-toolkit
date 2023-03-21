@@ -34,9 +34,11 @@ provision:
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install dependencies
     with:
       args: install --production
   - uses: cli/runNpmCommand # Run npm command
+    name: build app
     with:
       workingDirectory: .
       args: run build:tab --if-present

@@ -33,6 +33,7 @@ import { Generator } from "./generator";
 import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { SPFxVersionOptionIds } from "../resource/spfx/utils/question-helper";
+import { SPFxQuestionNames } from "../constants";
 
 export class SPFxGenerator {
   @hooks([
@@ -164,7 +165,7 @@ export class SPFxGenerator {
 
       try {
         await cpUtils.executeCommand(
-          isAddSPFx ? inputs["spfxFolder"] : destinationPath,
+          isAddSPFx ? inputs[SPFxQuestionNames.SPFxFolder] : destinationPath,
           context.logProvider,
           {
             timeout: 2 * 60 * 1000,

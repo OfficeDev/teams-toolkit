@@ -2506,6 +2506,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.localManifestPath.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Input the local Teams app manifest file path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Введите путь к файлу манифеста локального приложения Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.localManifestPath.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Local Teams app manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Файл манифеста локального приложения Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.log.updateFunctionAppSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Azure Functions app settings.]]></Val>
@@ -2515,6 +2533,24 @@
           <Prev Cat="Text">
             <Val><![CDATA[Updating Azure Function app settings.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.manifestPath.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Input the Teams app manifest file path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Введите путь к файлу манифеста приложения Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.manifestPath.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Файл манифеста приложения Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3160,6 +3196,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.projectVersionChecker.vs.incompatibleProject" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The project in the solution is created with Teams Toolkit preview feature - Teams App Configuration Improvements. You can turn on the preview feature to continue.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Проект в решении создан с помощью предварительной версии функции из инструментария Teams — "Улучшения конфигурации приложений Teams". Чтобы продолжить, вы можете включить предварительную версию функции.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.projectVersionChecker.vscodeUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The current project is incompatible with the installed Teams Toolkit, please install %s or above and reopen this project.]]></Val>
@@ -3387,6 +3432,24 @@
           <Val><![CDATA[Workspace folder]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Папка рабочей области]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Выберите папку, содержащую решение SPFx]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.spfxFolder.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SPFx solution folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Папка решения SPFx]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4633,11 +4696,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.env.addEnvironmentVariable.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generate environment variables to project environment file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создать переменные среды в файле среды проекта]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.env.addEnvironmentVariable.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The environment variables have been generated successfully to the .env file of '%s' environment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Переменные среды созданы в ENV-файле среды "%s".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.env.error.folderNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder %s does not exist.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Папка %s не существует.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateEnvironmentFile.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create or update variables to environment file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создайте или обновите переменные в файле среды.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateEnvironmentFile.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The variables have been generated successfully to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Переменные созданы в %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создайте или обновите настройки приложения в файле JSON.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Настройки приложения успешно сгенерированы в %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4966,6 +5083,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.spfx.add.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[add additional web part to SPFx project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[добавить дополнительную веб-часть в проект SPFx]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.add.progress.scaffoldWebpart" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generate SPFx web part using Yeoman CLI]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создать веб-часть SPFx с помощью CLI Yeoman]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.add.progress.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scaffolding web part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Формирование шаблонов веб-части]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.add.successNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Web part %s was successfully added to project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Веб-часть %s добавлена в проект.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.spfx.deploy.createAppCatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create SharePoint app catalog.]]></Val>
@@ -5253,10 +5406,13 @@
       </Item>
       <Item ItemId=";driver.teamsApp.validate.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Either %s or %s parameter should be provided for action %s]]></Val>
+          <Val><![CDATA[Parameter %s should be provided for action %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Для действия %s должен быть указан параметр %s или %s.]]></Val>
+            <Val><![CDATA[Для действия %s должен быть указан параметр %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Either %s or %s parameter should be provided for action %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5748,12 +5904,12 @@
       </Item>
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
+          <Val><![CDATA[If you are not ready to upgrade, please continue to use the old version of Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Если вы не хотите обновлять свой проект, установите другую версию набора средств Teams в %s на основе версии проекта %s.]]></Val>
+            <Val><![CDATA[Если вы не готовы к обновлению, продолжайте использовать старую версию набора средств Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
+            <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -6736,6 +6892,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.common.FileNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File not found: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Файл не найден: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.InvalidActionInputError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Следующие параметры отсутствуют или недопустимы для действия "%"': %s, файл YAML: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.InvalidProjectError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This command only works for project created by Teams Toolkit.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Эта команда работает только для проекта, созданного набором средств Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.UnresolvedPlaceholderError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following environment variables are missing: '%s', which are required for file: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Отсутствуют переменные среды "%s", необходимые для файла %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.debugHandler.AppManifestPackageNotExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[manifestPackagePath %s does not exist.]]></Val>
@@ -7198,6 +7390,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.teamsApp.AppIdNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app with ID %s does not exist in Teams Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Приложение Teams с идентификатором %s не существует на портале разработчика Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.teamsApp.InvalidAppIdError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app ID %s is invalid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Недопустимый идентификатор приложения Teams %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
@@ -7212,6 +7422,15 @@
           <Val><![CDATA[Action '%s' not found, yaml file: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Действие "%s" не найдено, файл yaml: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.yaml.LifeCycleUndefinedError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Lifecycle '%s' is undefined, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Жизненный цикл "%s" не определен, файл YAML: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -9325,11 +9544,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.devEnvironmentNotSetup" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SPFx development environment has not been set up correctly. Visit [Set up your SharePoint Framework development environment | Microsoft Learn]5D;(%s) to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Среда разработки SPFx настроена неправильно. Дополнительные сведения см. в разделе [Настройка среды разработки SharePoint Framework | Microsoft Learn]5D;(%s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.error.installDependency" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install package %s. Learn how to remediate in the [output]5D;(command:fx-extension.showOutputChannel).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось установить пакет %s. Дополнительные сведения об исправлении см. в [выходных данных]5D;(command:fx-extension.showOutputChannel).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.installLatestDependencyError" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Encountered unknown issues when setting up SPFx environment in %s folder. You could follow [Set up your SharePoint Framework development environment | Microsoft Learn]5D;(%s) to set up global SPFx environment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Возникли неизвестные проблемы при настройке среды SPFx в %s папке. Вы можете воспользоваться инструкциями из раздела [Настройка среды разработки SharePoint Framework | Microsoft Learn]5D;(%s) для настройки глобальной среды SPFx.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -9400,6 +9637,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.scaffoldError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project creation failed. A possible reason could be from Yeoman SharePoint Generator. Check [output window]5D;(%s) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось создать проект. Причина может быть связана с генератором Yeoman SharePoint. Дополнительные сведения см. в [окне вывода]5D;(%s)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.insufficientPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, use site admin account.]]></Val>
@@ -9423,19 +9669,25 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install the latest SharePoint Framework locally in Teams Toolkit directory ]]></Val>
+          <Val><![CDATA[Install the latest SPFx locally in Teams Toolkit directory ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Установить последнюю версию SharePoint Framework локально в каталог Teams Toolkit ]]></Val>
+            <Val><![CDATA[Установите последнюю версию SPFx локально в каталог набора средств Teams ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install the latest SharePoint Framework locally in Teams Toolkit directory ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install the latest SharePoint Framework (%s) locally in Teams Toolkit directory ]]></Val>
+          <Val><![CDATA[Install the latest SPFx (%s) locally in Teams Toolkit directory ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Установите последнюю версию SharePoint Framework (%s) локально в каталог Teams Toolkit ]]></Val>
+            <Val><![CDATA[Установите последнюю версию SPFx (%s) локально в каталог набора средств Teams ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install the latest SharePoint Framework (%s) locally in Teams Toolkit directory ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -9459,28 +9711,37 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Recommend SharePoint Framework %s or later]]></Val>
+          <Val><![CDATA[Recommend SPFx %s or later]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Рекомендовать SharePoint Framework %s или более позднюю версию]]></Val>
+            <Val><![CDATA[Рекомендовать SPFx %s или более поздней версии]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Recommend SharePoint Framework %s or later]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Use globally installed SharePoint Framework]]></Val>
+          <Val><![CDATA[Use globally installed SPFx]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Использовать глобально установленную платформу SharePoint Framework]]></Val>
+            <Val><![CDATA[Использовать глобально установленное решение SPFx]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Use globally installed SharePoint Framework]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Use globally installed SharePoint Framework (%s)]]></Val>
+          <Val><![CDATA[Use globally installed SPFx (%s)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Использовать глобально установленную платформу SharePoint Framework (%s)]]></Val>
+            <Val><![CDATA[Использовать глобально установленное решение SPFx (%s)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Use globally installed SharePoint Framework (%s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

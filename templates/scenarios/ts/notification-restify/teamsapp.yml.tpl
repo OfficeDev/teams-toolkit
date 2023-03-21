@@ -47,9 +47,11 @@ provision:
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install
   - uses: cli/runNpmCommand
+    name: build app
     with:
       args: run build --if-present
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce

@@ -243,10 +243,11 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.Folder]: os.tmpdir(),
-        spfxFolder: ".\\src",
-        manifestPath: ".\\appPackage\\manifest.json",
-        localManifestPath: ".\\appPackage\\manifest.local.json",
+        "spfx-folder": ".\\src",
+        "manifest-path": ".\\appPackage\\manifest.json",
+        "local-manifest-path": ".\\appPackage\\manifest.local.json",
         "spfx-webpart-name": "helloworld",
+        "spfx-use-global-package-or-install-local": "installLocally",
         stage: Stage.addWebpart,
         projectPath: path.join(os.tmpdir(), appName),
       };

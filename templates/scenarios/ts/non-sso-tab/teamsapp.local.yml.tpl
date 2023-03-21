@@ -2,14 +2,12 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-
-configureApp:
   - uses: script # Set TAB_DOMAIN for local launch
     name: Set TAB_DOMAIN for local launch
     with:

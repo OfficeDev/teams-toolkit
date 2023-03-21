@@ -72,9 +72,11 @@ provision:
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install dependencies
     with:
       args: install
   - uses: cli/runNpmCommand # Run npm command
+    name: build app
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html

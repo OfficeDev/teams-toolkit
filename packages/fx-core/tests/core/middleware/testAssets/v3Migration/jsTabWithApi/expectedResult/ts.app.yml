@@ -24,10 +24,12 @@ provision:
 
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install tab dependencies
     with:
       workingDirectory: tabs
       args: install
   - uses: cli/runNpmCommand # Run npm command
+    name: build tab app
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
@@ -46,6 +48,7 @@ deploy:
     with:      
       dotnet: true
   - uses: cli/runNpmCommand
+    name: install api dependencies
     with:
       workingDirectory: api
       args: install
@@ -55,6 +58,7 @@ deploy:
       args: build extensions.csproj -o bin --ignore-failed-sources
       execPath: ${{DOTNET_PATH}} # Use dotnet installed by prerequisite/install action
   - uses: cli/runNpmCommand
+    name: build api app
     with:
       workingDirectory: api
       args: run build --if-present

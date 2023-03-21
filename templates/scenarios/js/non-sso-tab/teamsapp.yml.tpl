@@ -27,9 +27,11 @@ provision:
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install dependencies
     with:
       args: install --production
   - uses: cli/runNpmCommand # Run npm command
+    name: build app
     with:
       args: run build --if-present
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website

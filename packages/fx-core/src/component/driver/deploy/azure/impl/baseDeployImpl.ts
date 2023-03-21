@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author FanH <Siglud@gmail.com>
+ */
 import { DeployArgs, DeployContext, DeployStepArgs } from "../../../interface/buildAndDeployArgs";
 import { BaseComponentInnerError } from "../../../../error/componentError";
 import ignore, { Ignore } from "ignore";
@@ -24,8 +27,8 @@ export abstract class BaseDeployImpl {
   protected progressBar?: IProgressHandler;
   protected static readonly emptyMap = new Map<string, string>();
   protected helpLink: string | undefined = undefined;
-  protected abstract summaries: string[];
-  protected abstract summaryPrepare: string[];
+  protected abstract summaries: () => string[];
+  protected abstract summaryPrepare: () => string[];
   protected abstract progressNames: (() => string)[];
   protected progressPrepare: (() => string)[] = [];
   protected abstract progressHandler?: AsyncIterableIterator<void>;
@@ -75,27 +78,6 @@ export abstract class BaseDeployImpl {
     return path.isAbsolute(inputPath) ? inputPath : path.join(baseFolder, inputPath);
   }
 
-  /**
-   * pack dist folder into zip
-   * @param args dist folder and ignore files
-   * @param context log provider etc..
-   * @protected
-   */
-  protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
-    const ig = await this.handleIgnore(args, context);
-    const zipFilePath = path.join(
-      this.workingDirectory,
-      DeployConstant.DEPLOYMENT_TMP_FOLDER,
-      DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
-    );
-    await this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
-    const res = await zipFolderAsync(this.distDirectory, zipFilePath, ig);
-    await this.context.logProvider?.debug(
-      `zip dist folder ${this.distDirectory} to ${zipFilePath} complete`
-    );
-    return res;
-  }
-
   protected async handleIgnore(args: DeployStepArgs, context: DeployContext): Promise<Ignore> {
     // always add deploy temp folder into ignore list
     const ig = ignore().add(DeployConstant.DEPLOYMENT_TMP_FOLDER);
@@ -122,8 +104,8 @@ export abstract class BaseDeployImpl {
   protected async wrapErrorHandler(fn: () => boolean | Promise<boolean>): Promise<ExecutionResult> {
     try {
       return (await fn())
-        ? { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaries }
-        : { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaryPrepare };
+        ? { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaries() }
+        : { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaryPrepare() };
     } catch (e) {
       await this.context.progressBar?.end(false);
       if (e instanceof BaseComponentInnerError) {

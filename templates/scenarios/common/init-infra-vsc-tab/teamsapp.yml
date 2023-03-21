@@ -62,13 +62,15 @@ provision:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-    
+
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install dependencies
     with:
       args: install --production
   - uses: cli/runNpmCommand # Run npm command
+    name: build app
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html

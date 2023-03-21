@@ -500,6 +500,103 @@ describe("debugMigration", () => {
       );
       chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
     });
+
+    it("npmArgs not object", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+              "Install npm packages"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Install npm packages",
+					"type": "teamsfx",
+					"command": "debug-npm-install",
+					"args": {
+							"projects": [
+									1
+							]
+					}
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites"
+					],
+					"dependsOrder": "sequence"
+			  }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateTransparentNpmInstall(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
+    });
+
+    it("cwd not string", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+              "Install npm packages"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Install npm packages",
+					"type": "teamsfx",
+					"command": "debug-npm-install",
+					"args": {
+							"projects": [
+                {
+                  "cwd": 1,
+                  "npmInstallArgs": "--no-audit"
+                }
+							]
+					}
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites"
+					],
+					"dependsOrder": "sequence"
+			  }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateTransparentNpmInstall(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
+    });
   });
 
   describe("migrateTransparentLocalTunnel", () => {
@@ -677,7 +774,10 @@ describe("debugMigration", () => {
       );
       await migrateSetUpTab(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
-      chai.assert.equal(debugContext.appYmlConfig.provision?.configureApp?.tab?.domain, "localhost:53000");
+      chai.assert.equal(
+        debugContext.appYmlConfig.provision?.configureApp?.tab?.domain,
+        "localhost:53000"
+      );
       chai.assert.equal(
         debugContext.appYmlConfig.provision?.configureApp?.tab?.endpoint,
         "https://localhost:53000"
@@ -1092,6 +1192,108 @@ describe("debugMigration", () => {
               "Provision",
               "Deploy",
               "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      expectedTasks.push(
+        debugV3MigrationUtils.createResourcesTask("Provision"),
+        debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
+      );
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migratePrepareManifest(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.equal(debugContext.appYmlConfig.provision?.registerApp?.teamsApp, true);
+      chai.assert.equal(
+        debugContext.appYmlConfig.provision?.configureApp?.teamsApp?.appPackagePath,
+        undefined
+      );
+    });
+
+    it("with appPackagePath", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Build & upload Teams manifest",
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          "label": "Build & upload Teams manifest",
+          "type": "teamsfx",
+          "command": "debug-prepare-manifest",
+          "args": {
+              "appPackagePath": "/path/to/appPackage.zip"
+          }
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Provision",
+              "Deploy"
+          ],
+          "dependsOrder": "sequence"
+        },
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      expectedTasks.push(
+        debugV3MigrationUtils.createResourcesTask("Provision"),
+        debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
+      );
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migratePrepareManifest(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.equal(debugContext.appYmlConfig.provision?.registerApp?.teamsApp, undefined);
+      chai.assert.equal(
+        debugContext.appYmlConfig.provision?.configureApp?.teamsApp?.appPackagePath,
+        "/path/to/appPackage.zip"
+      );
+    });
+
+    it("appPackagePath not string", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Build & upload Teams manifest",
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          "label": "Build & upload Teams manifest",
+          "type": "teamsfx",
+          "command": "debug-prepare-manifest",
+          "args": {
+              "appPackagePath": 1
+          }
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Provision",
+              "Deploy"
           ],
           "dependsOrder": "sequence"
         },

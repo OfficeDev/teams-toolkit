@@ -168,11 +168,6 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let url = new URL("https://localhost:53000");
     if (isCommentObject(task["args"]) && typeof task["args"]["baseUrl"] === "string") {
       try {
@@ -197,7 +192,7 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
     }
     context.appYmlConfig.deploy.tab.port = parseInt(url.port);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -211,11 +206,6 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
       !(task["type"] === "teamsfx") ||
       !(task["command"] === TaskCommand.setUpBot)
     ) {
-      ++index;
-      continue;
-    }
-
-    if (typeof task["label"] !== "string") {
       ++index;
       continue;
     }
@@ -260,7 +250,7 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -274,11 +264,6 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
       !(task["type"] === "teamsfx") ||
       !(task["command"] === TaskCommand.setUpSSO)
     ) {
-      ++index;
-      continue;
-    }
-
-    if (typeof task["label"] !== "string") {
       ++index;
       continue;
     }
@@ -329,7 +314,7 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -343,11 +328,6 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
       !(task["type"] === "teamsfx") ||
       !(task["command"] === TaskCommand.prepareManifest)
     ) {
-      ++index;
-      continue;
-    }
-
-    if (typeof task["label"] !== "string") {
       ++index;
       continue;
     }
@@ -372,7 +352,7 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
     }
     context.appYmlConfig.provision.configureApp.teamsApp.appPackagePath = appPackagePath;
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }

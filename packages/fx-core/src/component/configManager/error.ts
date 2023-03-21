@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { globalVars } from "../../core/globalVars";

@@ -1,5 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { assert } from "chai";
 import { describe, it } from "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -131,6 +136,23 @@ class DriverThatUsesEnvField implements StepDriver {
     } else {
       return err(mockedError);
     }
+  }
+}
+
+class DriverThatUsesWriteToEnvironmentFileField implements StepDriver {
+  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
+    throw new Error(`not implemented`);
+  }
+
+  async execute(
+    args: unknown,
+    context: DriverContext,
+    outputVarNames: Map<string, string>
+  ): Promise<ExecutionResult> {
+    const ret = [...outputVarNames.values()].map(
+      (value) => [value, value.toLocaleLowerCase()] as const
+    );
+    return { result: ok(new Map([...ret])), summaries: [] };
   }
 }
 
@@ -824,6 +846,54 @@ describe("Summary", () => {
         summaries[1].length === 1 &&
         summaries[1][0] === `${SummaryConstant.Failed} Unresolved placeholders: AAA,CCC`,
       `Summary should only contain 2 items, because of execution stops at DriverBWithSummary`
+    );
+  });
+});
+
+describe("writeToEnvironmentFile", () => {
+  const sandbox = sinon.createSandbox();
+  const restoreFn = mockedEnv({});
+
+  before(() => {
+    sandbox
+      .stub(Container, "has")
+      .withArgs(sandbox.match("DriverThatUsesWriteToEnvironmentFileField"))
+      .returns(true);
+
+    sandbox
+      .stub(Container, "get")
+      .withArgs(sandbox.match("DriverThatUsesWriteToEnvironmentFileField"))
+      .returns(new DriverThatUsesWriteToEnvironmentFileField());
+  });
+
+  after(() => {
+    sandbox.restore();
+    if (restoreFn) {
+      restoreFn();
+    }
+  });
+
+  it("should work", async () => {
+    const driverDefs: DriverDefinition[] = [];
+    driverDefs.push({
+      uses: "DriverThatUsesWriteToEnvironmentFileField",
+      with: {},
+      writeToEnvironmentFile: {
+        key1: "AAA",
+        key2: "BBB",
+      },
+    });
+
+    const lifecycle = new Lifecycle("configureApp", driverDefs);
+    const { result } = await lifecycle.execute(mockedDriverContext);
+
+    assert(
+      result.isOk() &&
+        result.value.size === 2 &&
+        result.value.has("AAA") &&
+        result.value.get("AAA") === "aaa" &&
+        result.value.has("BBB") &&
+        result.value.get("BBB") === "bbb"
     );
   });
 });

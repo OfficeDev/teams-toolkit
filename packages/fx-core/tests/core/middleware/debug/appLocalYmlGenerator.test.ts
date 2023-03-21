@@ -9,9 +9,13 @@ import * as yaml from "js-yaml";
 
 describe("AppLocalYmlGenerator", () => {
   it("empty deploy", async () => {
-    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {
-      provision: {}
-    }, {});
+    const appLocalYmlGenerator = new AppLocalYmlGenerator(
+      generateProjectSettings(),
+      {
+        provision: {},
+      },
+      {}
+    );
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
 

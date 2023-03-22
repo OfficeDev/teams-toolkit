@@ -59,6 +59,21 @@ export class Executor {
     return this.execute(command, workspace);
   }
 
+  static async addSPFxWebPart(
+    workspace: string,
+    spfxFolder: string,
+    webpartName: string,
+    manifestPath: string,
+    localManifestPath: string
+  ) {
+    const command =
+      `teamsfx add SPFxWebPart --spfx-webpart-name ${webpartName}` +
+      ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
+      ` --local-manifest-path ${localManifestPath}` +
+      ` --spfx-use-global-package-or-install-local installLocally`;
+    return this.execute(command, workspace);
+  }
+
   static async provision(workspace: string, env = "dev") {
     const command = `teamsfx provision --env ${env}`;
     return this.execute(command, workspace);

@@ -242,17 +242,18 @@ describe("Core basic APIs", () => {
     try {
       const core = new FxCore(tools);
       const appName = await mockV3Project();
-      // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+      const appPath = path.join(os.tmpdir(), appName);
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.Folder]: os.tmpdir(),
         "spfx-folder": ".\\src",
-        "manifest-path": ".\\appPackage\\manifest.json",
-        "local-manifest-path": ".\\appPackage\\manifest.local.json",
+        "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+        "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
         "spfx-webpart-name": "helloworld",
         "spfx-use-global-package-or-install-local": "installLocally",
+        "spfx-load-package-version": "loaded",
         stage: Stage.addWebpart,
-        projectPath: path.join(os.tmpdir(), appName),
+        projectPath: appPath,
       };
 
       const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");

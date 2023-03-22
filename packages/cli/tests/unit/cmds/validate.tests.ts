@@ -17,6 +17,8 @@ import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
@@ -68,6 +70,14 @@ describe("teamsfx validate", () => {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   it("should pass builder check", () => {

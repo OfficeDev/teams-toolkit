@@ -85,7 +85,11 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import {
+  ProgrammingLanguageQuestion,
+  selectTeamsAppManifestQuestion,
+  selectTeamsAppPackageQuestion,
+} from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -885,4 +889,44 @@ export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | un
   manifestFile.addChild(localManifestFile);
 
   return ok(addWebpart);
+}
+
+export async function getQuestionsForValidateManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForValidateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // App package path node
+  const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForCreateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForUpdateTeamsApp(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
 }

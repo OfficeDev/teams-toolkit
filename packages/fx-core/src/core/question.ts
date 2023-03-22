@@ -16,6 +16,8 @@ import {
   MultiSelectQuestion,
   SingleFileQuestion,
   QTreeNode,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -89,6 +91,7 @@ export enum CoreQuestionNames {
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "teamsAppManifestFilePath",
   AadAppManifestFilePath = "aadAppManifestFilePath",
+  TeamsAppPackageFilePath = "teamsAppPackageFilePath",
   ConfirmManifest = "confirmManifest",
 }
 
@@ -888,7 +891,11 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
 }
 
 export function selectTeamsAppManifestQuestion(inputs: Inputs): QTreeNode {
-  const manifestPath: string = path.join(inputs.projectPath!, "appPackage", "manifest.json");
+  const manifestPath: string = path.join(
+    inputs.projectPath!,
+    AppPackageFolderName,
+    "manifest.json"
+  );
 
   const teamsAppManifestNode: SingleFileQuestion = {
     name: CoreQuestionNames.TeamsAppManifestFilePath,
@@ -907,6 +914,27 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs): QTreeNode {
   const confirmNode = confirmManifestNode(manifestPath, true);
   res.addChild(confirmNode);
   return res;
+}
+
+export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
+  return {
+    name: CoreQuestionNames.TeamsAppPackageFilePath,
+    title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const appPackagePath: string = path.join(
+        inputs.projectPath!,
+        BuildFolderName,
+        AppPackageFolderName,
+        "appPackage.dev.zip"
+      );
+      if (fs.pathExistsSync(appPackagePath)) {
+        return appPackagePath;
+      } else {
+        return undefined;
+      }
+    },
+  };
 }
 
 export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefined> {

@@ -49,20 +49,8 @@ export class M365TenantIdNotMatchError extends UserError {
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "M365TenantIdNotMatchError",
-      message: getDefaultString(
-        key,
-        signedInTenantId,
-        dotEnvTenantId,
-        clearKeys,
-        globalVars.envFilePath
-      ),
-      displayMessage: getLocalizedString(
-        key,
-        signedInTenantId,
-        dotEnvTenantId,
-        clearKeys,
-        globalVars.envFilePath
-      ),
+      message: getDefaultString(key, signedInTenantId, dotEnvTenantId, clearKeys),
+      displayMessage: getLocalizedString(key, signedInTenantId, dotEnvTenantId, clearKeys),
       helpLink: HelpLinks.SwitchTenant,
     };
     super(errorOptions);

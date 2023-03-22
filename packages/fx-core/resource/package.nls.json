@@ -1066,5 +1066,5 @@
   "error.azure.ResourceGroupNotExistError": "The resource group '%s' does not exist in subscription: %s",
   "error.m365.M365TokenJSONNotFoundError": "Failed to get M365 token JSON object",
   "error.m365.M365TenantIdNotFoundInTokenError": "Failed to get M365 tenant id in token JSON object",
-  "error.m365.M365TenantIdNotMatchError": "You signed in a different Microsoft 365 tenant (tenant id='%s') from the one in .env file (TEAMS_APP_TENANT_ID='%s'). Please make sure you use the correct account. If you intend to switch to this tenant, please clear the value of %s in .env file (%s) so that Teams Toolkit will provision resources in your currently signed-in tenant."
+  "error.m365.M365TenantIdNotMatchError": "Your signed in Microsoft 365 tenant %s is different from the one in the .env file (TEAMS_APP_TENANT_ID='%s'). To switch to your current signed in tenant, remove the values of %s."
 }

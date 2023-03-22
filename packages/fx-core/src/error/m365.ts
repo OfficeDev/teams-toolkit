@@ -6,7 +6,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { globalVars } from "../core/globalVars";
 
 /**
  * Failed to get M365 token JSON object after sign in

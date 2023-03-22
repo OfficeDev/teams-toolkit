@@ -631,7 +631,7 @@ async function getExpandedParameterV3(ctx: v2.Context, envInfo: v3.EnvInfoV3, fi
     throw err;
   }
 }
-async function getResourceManagementClientForArmDeployment(
+export async function getResourceManagementClientForArmDeployment(
   azureAccountProvider: AzureAccountProvider,
   subscriptionId: string
 ): Promise<ResourceManagementClient> {

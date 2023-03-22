@@ -11,6 +11,7 @@ import * as constants from "./constants";
 import { generateAccountHint } from "./teamsfxDebugProvider";
 import { TempFolderManager } from "./tempFolderManager";
 import { delay } from "../utils/commonUtils";
+import VsCodeLogInstance from "../commonlib/log";
 
 export async function openHubWebClient(
   includeFrontend: boolean,
@@ -32,6 +33,12 @@ export async function openHubWebClient(
   sideloadingUrl = sideloadingUrl.replace(constants.teamsAppInternalIdPlaceholder, appId);
   const accountHint = await generateAccountHint(hub === constants.Hub.teams);
   sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, accountHint);
+
+  VsCodeLogInstance.info(constants.sideloadingDisplayMessages.title(hub));
+  VsCodeLogInstance.outputChannel.appendLine("");
+  VsCodeLogInstance.outputChannel.appendLine(
+    constants.sideloadingDisplayMessages.sideloadingUrlMessage(hub, sideloadingUrl)
+  );
 
   await VS_CODE_UI.openUrl(sideloadingUrl);
 }

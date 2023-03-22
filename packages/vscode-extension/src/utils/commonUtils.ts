@@ -373,6 +373,10 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  if (isV3Enabled()) {
+    return true;
+  }
+
   let provisionResult: Json | undefined;
 
   try {

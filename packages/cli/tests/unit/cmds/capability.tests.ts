@@ -168,7 +168,7 @@ describe("Capability Command Tests", function () {
     }
   });
 
-  it.only("Capability Add SPFx Web Part Command Builder", async () => {
+  it("Capability Add SPFx Web Part Command Builder", async () => {
     const cmd = new AddWebpart();
 
     await cmd.builder(yargs);

@@ -34,7 +34,6 @@ import {
 import { assert } from "chai";
 import {
   M365SsoLaunchPageOptionItem,
-  SolutionError,
   SolutionSource,
   TabOptionItem,
 } from "../../src/component/constants";
@@ -70,6 +69,7 @@ import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/version
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { InvalidAzureCredentialError } from "../../src/error/azure";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -1479,7 +1479,7 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
-      assert.equal(res.error.name, SolutionError.FailedToGetAzureCredential);
+      assert.isTrue(res.error instanceof InvalidAzureCredentialError);
     }
   });
   it("provision failed when checking resource group existence", async () => {

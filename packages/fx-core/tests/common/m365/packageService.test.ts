@@ -410,7 +410,7 @@ describe("Package Service", () => {
     chai.assert.deepEqual(actualError.innerError, expectedError);
   });
 
-  it("getLaunchInfo happy path", async () => {
+  it("getLaunchInfoByTitleId happy path", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
         titlesServiceUrl: "test-url",
@@ -423,12 +423,12 @@ describe("Package Service", () => {
     };
 
     const packageService = new PackageService("test-endpoint");
-    const launchInfo = await packageService.getLaunchInfo("test-token", "test-title-id");
+    const launchInfo = await packageService.getLaunchInfoByTitleId("test-token", "test-title-id");
 
     chai.assert.deepEqual(launchInfo, { foo: "bar" });
   });
 
-  it("getLaunchInfo throws expected error", async () => {
+  it("getLaunchInfoByTitleId throws expected error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
         titlesServiceUrl: "test-url",
@@ -439,7 +439,7 @@ describe("Package Service", () => {
     const packageService = new PackageService("test-endpoint");
     let actualError: Error | undefined;
     try {
-      await packageService.getLaunchInfo("test-token", "test-title-id");
+      await packageService.getLaunchInfoByTitleId("test-token", "test-title-id");
     } catch (error: any) {
       actualError = error;
     }
@@ -448,7 +448,7 @@ describe("Package Service", () => {
     chai.assert.equal(actualError?.message, "test-get");
   });
 
-  it("getLaunchInfo throws expected response error", async () => {
+  it("getLaunchInfoByTitleId throws expected response error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
         titlesServiceUrl: "test-url",
@@ -463,7 +463,7 @@ describe("Package Service", () => {
     const packageService = new PackageService("test-endpoint");
     let actualError: any;
     try {
-      await packageService.getLaunchInfo("test-token", "test-title-id");
+      await packageService.getLaunchInfoByTitleId("test-token", "test-title-id");
     } catch (error: any) {
       actualError = error;
     }
@@ -478,7 +478,7 @@ describe("Package Service", () => {
     const packageService = new PackageService("test-endpoint");
     let actualError: Error | undefined;
     try {
-      await packageService.getLaunchInfo("test-token", "test-title-id");
+      await packageService.getLaunchInfoByTitleId("test-token", "test-title-id");
     } catch (error: any) {
       actualError = error;
     }

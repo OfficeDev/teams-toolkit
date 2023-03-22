@@ -110,10 +110,10 @@ export class PackageService {
     }
   }
 
-  public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
+  public async getLaunchInfoByManifestId(token: string, manifestId: string): Promise<any> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      this.logger?.info("Retrieve TitleId ...");
+      this.logger?.info(`Getting LaunchInfo with ManifestId ${manifestId} ...`);
       const launchInfo = await this.axiosInstance.post(
         "/catalog/v1/users/titles/launchInfo",
         {
@@ -146,13 +146,10 @@ export class PackageService {
         }
       );
 
-      const titleId =
-        (launchInfo.data.acquisition?.titleId?.id as string) ??
-        (launchInfo.data.acquisition?.titleId as string);
-      this.logger?.debug(`TitleId: ${titleId}`);
-      return titleId;
+      this.logger?.debug(JSON.stringify(launchInfo.data));
+      return launchInfo.data;
     } catch (error: any) {
-      this.logger?.error("Retrieve TitleId failed.");
+      this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
         this.traceError(error);
@@ -164,56 +161,20 @@ export class PackageService {
     }
   }
 
-  public async retrieveAppId(token: string, manifestId: string): Promise<string> {
-    try {
-      const serviceUrl = await this.getTitleServiceUrl(token);
-      this.logger?.info("Retrieve AppId ...");
-      const launchInfo = await this.axiosInstance.post(
-        "/catalog/v1/users/titles/launchInfo",
-        {
-          Id: manifestId,
-          IdType: "ManifestId",
-          Filter: {
-            SupportedElementTypes: [
-              // "Extensions", // Extensions require ClientDetails to be determined later
-              "OfficeAddIns",
-              "ExchangeAddIns",
-              "FirstPartyPages",
-              "Dynamics",
-              "AAD",
-              "LineOfBusiness",
-              "StaticTabs",
-              "ComposeExtensions",
-              "Bots",
-              "GraphConnector",
-              "ConfigurableTabs",
-              "Activities",
-              "MeetingExtensionDefinition",
-            ],
-          },
-        },
-        {
-          baseURL: serviceUrl,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
+    const launchInfo = await this.getLaunchInfoByManifestId(token, manifestId);
+    const titleId =
+      (launchInfo.acquisition?.titleId?.id as string) ??
+      (launchInfo.acquisition?.titleId as string);
+    this.logger?.debug(`TitleId: ${titleId}`);
+    return titleId;
+  }
 
-      const appId = launchInfo.data.acquisition?.appId as string;
-      this.logger?.debug(`AppId: ${appId}`);
-      return appId;
-    } catch (error: any) {
-      this.logger?.error("Retrieve AppId failed.");
-      if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
-      } else {
-        this.logger?.error(error.message);
-      }
-
-      throw assembleError(error, CoreSource);
-    }
+  public async retrieveAppId(token: string, manifestId: string): Promise<string | undefined> {
+    const launchInfo = await this.getLaunchInfoByManifestId(token, manifestId);
+    const appId = launchInfo.acquisition?.appId;
+    this.logger?.debug(`AppId: ${appId}`);
+    return appId;
   }
 
   public async unacquire(token: string, titleId: string): Promise<void> {
@@ -240,7 +201,7 @@ export class PackageService {
     }
   }
 
-  public async getLaunchInfo(token: string, titleId: string): Promise<unknown> {
+  public async getLaunchInfoByTitleId(token: string, titleId: string): Promise<unknown> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
       this.logger?.info(`Getting LaunchInfo with TitleId ${titleId} ...`);

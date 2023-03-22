@@ -1,5 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import chai from "chai";
 import path from "path";
 import { describe, it } from "mocha";
@@ -169,6 +174,36 @@ describe("v3 yaml parser", () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_env_folder_path.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+    });
+  });
+
+  describe(`when parsing yml with valid writeToEnvironmentFile`, async () => {
+    it("should return ok", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "valid_write_to_environment_file.yml")
+      );
+      assert(
+        result.isOk() &&
+          result.value.provision &&
+          result.value.provision.driverDefs[0].writeToEnvironmentFile &&
+          result.value.provision.driverDefs[0].writeToEnvironmentFile["xxx"] === "YYY_XXX"
+      );
+    });
+  });
+
+  describe(`when parsing yml with invalid writeToEnvironmentFile`, async () => {
+    it("should return YamlFieldTypeError", async () => {
+      const parser = new YamlParser();
+      let result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_array.yml")
+      );
+      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+
+      result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml")
       );
       assert(result.isErr() && result.error.name === "YamlFieldTypeError");
     });

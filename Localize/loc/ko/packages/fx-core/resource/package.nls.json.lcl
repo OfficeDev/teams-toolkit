@@ -2506,6 +2506,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.localManifestPath.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Input the local Teams app manifest file path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[로컬 Teams 앱 매니페스트 파일 경로를 입력하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.localManifestPath.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Local Teams app manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[로컬 팀 앱 매니페스트 파일]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.log.updateFunctionAppSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Azure Functions app settings.]]></Val>
@@ -2515,6 +2533,24 @@
           <Prev Cat="Text">
             <Val><![CDATA[Updating Azure Function app settings.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.manifestPath.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Input the Teams app manifest file path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 매니페스트 파일 경로 입력]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.manifestPath.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 매니페스트 파일]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3160,6 +3196,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.projectVersionChecker.vs.incompatibleProject" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The project in the solution is created with Teams Toolkit preview feature - Teams App Configuration Improvements. You can turn on the preview feature to continue.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[솔루션의 프로젝트는 Teams 도구 키트 미리 보기 기능인 Teams App Configuration 개선 사항을 사용하여 만들어집니다. 계속하려면 미리 보기 기능을 켤 수 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.projectVersionChecker.vscodeUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The current project is incompatible with the installed Teams Toolkit, please install %s or above and reopen this project.]]></Val>
@@ -3387,6 +3432,24 @@
           <Val><![CDATA[Workspace folder]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[작업 영역 폴더]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx 솔루션이 포함된 폴더를 선택하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.spfxFolder.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SPFx solution folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx 솔루션 폴더]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4633,11 +4696,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.env.addEnvironmentVariable.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generate environment variables to project environment file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[프로젝트 환경 파일에 환경 변수 생성]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.env.addEnvironmentVariable.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The environment variables have been generated successfully to the .env file of '%s' environment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA['%s' 환경의 .env 파일에 환경 변수가 성공적으로 생성되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.env.error.folderNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder %s does not exist.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[%s 폴더가 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateEnvironmentFile.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create or update variables to environment file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[환경 파일에 변수를 생성하거나 업데이트합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateEnvironmentFile.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The variables have been generated successfully to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[변수가 %s에 성공적으로 생성되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[앱 설정을 JSON 파일로 생성하거나 업데이트합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[앱 설정이 %s에 생성되었습니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4966,6 +5083,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.spfx.add.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[add additional web part to SPFx project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx 프로젝트에 추가 웹 파트 추가]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.add.progress.scaffoldWebpart" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generate SPFx web part using Yeoman CLI]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Yeoman CLI를 사용하여 SPFx 웹 파트 생성]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.add.progress.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scaffolding web part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[스캐폴딩 웹 파트]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.add.successNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Web part %s was successfully added to project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[웹 파트 %s이(가) 프로젝트에 추가되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.spfx.deploy.createAppCatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create SharePoint app catalog.]]></Val>
@@ -5253,10 +5406,13 @@
       </Item>
       <Item ItemId=";driver.teamsApp.validate.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Either %s or %s parameter should be provided for action %s]]></Val>
+          <Val><![CDATA[Parameter %s should be provided for action %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s 작업에 대해 %s 또는 %s 매개 변수를 제공해야 합니다.]]></Val>
+            <Val><![CDATA[매개 변수 %s은(는) 작업 %s에 대해 제공되어야 합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Either %s or %s parameter should be provided for action %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5748,12 +5904,12 @@
       </Item>
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
+          <Val><![CDATA[If you are not ready to upgrade, please continue to use the old version of Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[프로젝트를 업그레이드하지 않으려면 프로젝트 버전 %s에 따라 %s에 다른 버전의 Teams Toolkit을 설치하세요.]]></Val>
+            <Val><![CDATA[업그레이드할 준비가 되지 않은 경우 이전 버전의 Teams Toolkit을 계속 사용하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
+            <Val><![CDATA[If you don't want to upgrade your project, install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -6736,6 +6892,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.common.FileNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[File not found: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[파일을 찾을 수 없음: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.InvalidActionInputError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following parameter(s) is(are) missing or invalid for '%s' action: %s, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[다음 매개 변수가 '%s' 작업에 대해 누락되었거나 잘못되었습니다: %s, yaml 파일: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.InvalidProjectError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This command only works for project created by Teams Toolkit.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 명령은 Teams Toolkit에서 만든 프로젝트에만 작동합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.UnresolvedPlaceholderError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The following environment variables are missing: '%s', which are required for file: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[다음 환경 변수가 없습니다: '%s', 파일에 필요함: %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.debugHandler.AppManifestPackageNotExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[manifestPackagePath %s does not exist.]]></Val>
@@ -7198,6 +7390,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.teamsApp.AppIdNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app with ID %s does not exist in Teams Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID가 %s인 Teams 앱이 Teams 개발자 포털에 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.teamsApp.InvalidAppIdError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app ID %s is invalid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 ID %s이(가) 잘못되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
@@ -7212,6 +7422,15 @@
           <Val><![CDATA[Action '%s' not found, yaml file: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA['%s' 작업이 없습니다. yaml 파일: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.yaml.LifeCycleUndefinedError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Lifecycle '%s' is undefined, yaml file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[수명 주기 '%s'이(가) 정의되지 않았습니다. yaml 파일: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -9325,11 +9544,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.devEnvironmentNotSetup" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SPFx development environment has not been set up correctly. Visit [Set up your SharePoint Framework development environment | Microsoft Learn]5D;(%s) to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx 개발 환경이 올바르게 설정되지 않았습니다. [SharePoint 프레임워크 개발 환경 설정 | Microsoft Learn]5D;(%s)에서 자세히 알아보세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.error.installDependency" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install package %s. Learn how to remediate in the [output]5D;(command:fx-extension.showOutputChannel).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[%s 패키지를 설치하지 못했습니다. [출력]5D;(command:fx-extension.showOutputChannel)에서 수정하는 방법을 알아보세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.installLatestDependencyError" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Encountered unknown issues when setting up SPFx environment in %s folder. You could follow [Set up your SharePoint Framework development environment | Microsoft Learn]5D;(%s) to set up global SPFx environment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 폴더에서 SPFx 환경을 설정할 때 알 수 없는 문제가 발생했습니다. [SharePoint 프레임워크 개발 환경 설정 | Microsoft Learn]5D;(%s) 글로벌 SPFx 환경을 설정합니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -9400,6 +9637,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.scaffoldError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project creation failed. A possible reason could be from Yeoman SharePoint Generator. Check [output window]5D;(%s) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[프로젝트 생성에 실패했습니다. 가능한 이유는 Yeoman SharePoint Generator 때문일 수 있습니다. 자세한 내용은 [출력 창]5D;(%s)을 확인하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.insufficientPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, use site admin account.]]></Val>
@@ -9423,19 +9669,25 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install the latest SharePoint Framework locally in Teams Toolkit directory ]]></Val>
+          <Val><![CDATA[Install the latest SPFx locally in Teams Toolkit directory ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams 도구 키트 디렉터리에 로컬로 최신 SharePoint 프레임워크 설치 ]]></Val>
+            <Val><![CDATA[Teams Toolkit 디렉터리에 로컬로 최신 SPFx를 설치합니다. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install the latest SharePoint Framework locally in Teams Toolkit directory ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.installLocally.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install the latest SharePoint Framework (%s) locally in Teams Toolkit directory ]]></Val>
+          <Val><![CDATA[Install the latest SPFx (%s) locally in Teams Toolkit directory ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams 도구 키트 디렉터리에 로컬로 최신 SharePoint 프레임워크(%s) 설치 ]]></Val>
+            <Val><![CDATA[최신 SPFx(%s)를 Teams Toolkit 디렉터리에 로컬로 설치합니다. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install the latest SharePoint Framework (%s) locally in Teams Toolkit directory ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -9459,28 +9711,37 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Recommend SharePoint Framework %s or later]]></Val>
+          <Val><![CDATA[Recommend SPFx %s or later]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SharePoint 프레임워크 %s 이상 권장]]></Val>
+            <Val><![CDATA[SPFx %s 이상 권장]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Recommend SharePoint Framework %s or later]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Use globally installed SharePoint Framework]]></Val>
+          <Val><![CDATA[Use globally installed SPFx]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[전역으로 설치된 SharePoint 프레임워크 사용]]></Val>
+            <Val><![CDATA[전역적으로 설치된 SPFx 사용]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Use globally installed SharePoint Framework]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Use globally installed SharePoint Framework (%s)]]></Val>
+          <Val><![CDATA[Use globally installed SPFx (%s)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[전역으로 설치된 SharePoint 프레임워크 사용(%s)]]></Val>
+            <Val><![CDATA[전체적으로 설치된 SPFx(%s) 사용]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Use globally installed SharePoint Framework (%s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

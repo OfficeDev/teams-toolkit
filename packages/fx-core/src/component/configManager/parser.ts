@@ -1,3 +1,7 @@
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
@@ -7,6 +11,7 @@ import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./in
 import { Lifecycle } from "./lifecycle";
 
 const environmentFolderPath = "environmentFolderPath";
+const writeToEnvironmentFile = "writeToEnvironmentFile";
 
 function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
   const result: RawProjectModel = {};
@@ -42,6 +47,21 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
           for (const envVar in elem["env"]) {
             if (typeof elem["env"][envVar] !== "string") {
               return err(new YamlFieldTypeError(`${name}.env.${envVar}`, "string"));
+            }
+          }
+        }
+        if (elem[writeToEnvironmentFile]) {
+          if (
+            typeof elem[writeToEnvironmentFile] !== "object" ||
+            Array.isArray(elem[writeToEnvironmentFile])
+          ) {
+            return err(new YamlFieldTypeError(`${name}.writeToEnvironmentFile`, "object"));
+          }
+          for (const envVar in elem[writeToEnvironmentFile]) {
+            if (typeof elem[writeToEnvironmentFile][envVar] !== "string") {
+              return err(
+                new YamlFieldTypeError(`${name}.writeToEnvironmentFile.${envVar}`, "string")
+              );
             }
           }
         }

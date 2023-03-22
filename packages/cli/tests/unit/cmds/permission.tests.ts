@@ -187,8 +187,8 @@ describe("Permission Command Tests V3", function () {
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["aad-app-id"]: "aadAppId",
-      ["teams-app-id"]: "teamsAppId",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
       ["env"]: "env",
     };
 
@@ -203,8 +203,8 @@ describe("Permission Command Tests V3", function () {
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["aad-app-id"]: "aadAppId",
-      ["teams-app-id"]: "teamsAppId",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
       ["env"]: "env",
       ["list-all-collaborators"]: true,
     };
@@ -220,8 +220,8 @@ describe("Permission Command Tests V3", function () {
     const cmd = new PermissionGrant();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["aad-app-id"]: "aadAppId",
-      ["teams-app-id"]: "teamsAppId",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
       ["env"]: "env",
       ["email"]: "email",
     };

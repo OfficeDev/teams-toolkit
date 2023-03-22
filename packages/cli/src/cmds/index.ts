@@ -51,7 +51,7 @@ export function registerCommands(yargs: Argv): void {
     commands.push(new Permission());
   }
   if (isV3Enabled()) {
-    commands.push(new Init());
+    // commands.push(new Init());
     commands.push(new Update());
     commands.push(new Upgrade());
   }

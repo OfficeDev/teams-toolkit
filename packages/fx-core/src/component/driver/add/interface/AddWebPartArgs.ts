@@ -18,4 +18,8 @@ export interface AddWebPartArgs {
    * SPFx solution directory
    */
   spfxFolder: string;
+  /**
+   * Whether use globally installed SPFx or locally installed SPFx
+   */
+  spfxPackage: string;
 }

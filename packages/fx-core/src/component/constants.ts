@@ -963,6 +963,13 @@ export enum AzureSolutionQuestionNames {
   Features = "features",
 }
 
+export enum SPFxQuestionNames {
+  SPFxFolder = "spfx-folder",
+  WebPartName = "spfx-webpart-name",
+  ManifestPath = "manifest-path",
+  LocalManifestPath = "local-manifest-path",
+}
+
 export function HostTypeOptionAzure(): OptionItem {
   return {
     id: "Azure",

@@ -629,6 +629,15 @@ export class FxCore implements v3.ICore {
     }
     return ok(config);
   }
+
+  async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3Enabled()) {
+      return this.v3Implement.dispatch(this.grantPermission, inputs);
+    } else {
+      return this.grantPermissionOld(inputs);
+    }
+  }
+
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMW,
@@ -640,7 +649,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async grantPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.grantPermission);
     inputs.stage = Stage.grantPermission;
     const projectPath = inputs.projectPath;
@@ -661,6 +670,14 @@ export class FxCore implements v3.ICore {
     return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
+  async checkPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3Enabled()) {
+      return this.v3Implement.dispatch(this.checkPermission, inputs);
+    } else {
+      return this.checkPermissionOld(inputs);
+    }
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -672,7 +689,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async checkPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.checkPermission);
     inputs.stage = Stage.checkPermission;
     const projectPath = inputs.projectPath;
@@ -693,6 +710,14 @@ export class FxCore implements v3.ICore {
     return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
+  async listCollaborator(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3Enabled()) {
+      return this.v3Implement.dispatch(this.listCollaborator, inputs);
+    } else {
+      return this.listCollaboratorOld(inputs);
+    }
+  }
+
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMW,
@@ -704,7 +729,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async listCollaboratorOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.listCollaborator);
     inputs.stage = Stage.listCollaborator;
     const projectPath = inputs.projectPath;

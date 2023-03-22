@@ -23,6 +23,7 @@ import {
   Void,
   BuildFolderName,
   AppPackageFolderName,
+  v2,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -69,7 +70,7 @@ import {
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
+import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
@@ -91,6 +92,7 @@ import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
+import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -357,6 +359,96 @@ export class FxCoreV3Implement {
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.grantPermission);
+    inputs.stage = Stage.grantPermission;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
+      const res = await grantPermission(
+        context,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.checkPermission);
+    inputs.stage = Stage.checkPermission;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
+      const res = await checkPermission(
+        context,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.listCollaborator);
+    inputs.stage = Stage.listCollaborator;
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    if (ctx && ctx.contextV2) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
+      const res = await listCollaborator(
+        context,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {

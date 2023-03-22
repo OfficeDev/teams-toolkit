@@ -18,7 +18,7 @@ import {
 import {
   localTelemetryReporter,
   maskArrayValue,
-  sendDebugAllStartEvent,
+  sendDebugInitialEvents,
 } from "../localTelemetryReporter";
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -71,7 +71,8 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
       if (commonUtils.checkAndSkipDebugging()) {
         throw new Error(DebugSessionExists);
       }
-      await sendDebugAllStartEvent(additionalProperties);
+      const projectPath = vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath;
+      await sendDebugInitialEvents(projectPath, additionalProperties);
       return await localTelemetryReporter.runWithTelemetryProperties(
         TelemetryEvent.DebugCheckPrerequisitesTask,
         telemetryProperties,

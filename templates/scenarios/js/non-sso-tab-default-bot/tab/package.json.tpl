@@ -6,7 +6,7 @@
     },
     "private": true,
     "dependencies": {
-        "@fluentui/react-components": "^9.11.0",
+        "@fluentui/react-components": "^9.18.0",
         "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.2.0",
         "@microsoft/teamsfx-react": "^3.0.0-alpha",

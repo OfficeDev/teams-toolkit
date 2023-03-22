@@ -29,6 +29,7 @@ import {
 import { assert } from "console";
 import { setTools } from "../../src/core/globalVars";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { InvalidAzureSubscriptionError, ResourceGroupNotExistError } from "../../src/error/azure";
 
 const expect = chai.expect;
 
@@ -110,7 +111,7 @@ describe("provisionUtils", () => {
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equals(SolutionError.SubscriptionNotFound);
+        expect(res.error instanceof InvalidAzureSubscriptionError).equal(true);
       }
     });
 
@@ -149,7 +150,7 @@ describe("provisionUtils", () => {
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equals(SolutionError.SubscriptionNotFound);
+        expect(res.error instanceof InvalidAzureSubscriptionError).equal(true);
       }
     });
 
@@ -379,7 +380,7 @@ describe("provisionUtils", () => {
       );
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equal(SolutionError.ResourceGroupNotFound);
+        expect(res.error instanceof ResourceGroupNotExistError).equal(true);
       }
     });
 
@@ -472,7 +473,7 @@ describe("provisionUtils", () => {
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equal(SolutionError.ResourceGroupNotFound);
+        expect(res.error instanceof ResourceGroupNotExistError).equal(true);
       }
     });
 

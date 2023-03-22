@@ -116,10 +116,9 @@ async function readManifest(projectPath: string, manifestPath: string): Promise<
 const defaultManifestPathsV3 = ["appPackage/manifest.json"];
 
 export const ManifestSources = Object.freeze({
-  PublishAppPackageManifestPath: "PublishAppPackageManifestPath",
-  PublishAppPackageAppPackagePath: "PublishAppPackageAppPackagePath",
+  ConfigureAppPackageManifestPath: "ConfigureAppPackageManifestPath",
+  ConfigureAppPackageAppPackagePath: "ConfigureAppPackageAppPackagePath",
   DefaultManifestPath: "DefaultManifestPath",
-  DefaultAppPackagePath: "DefaultAppPackagePath",
 });
 export type ManifestSource = typeof ManifestSources[keyof typeof ManifestSources];
 
@@ -158,7 +157,7 @@ async function tryGetManifestFromYml(
       });
       if (manifestPath) {
         return {
-          source: ManifestSources.PublishAppPackageManifestPath,
+          source: ManifestSources.ConfigureAppPackageManifestPath,
           manifest: await readManifest(projectPath, manifestPath),
         };
       }
@@ -173,7 +172,7 @@ async function tryGetManifestFromYml(
       const manifest = await readManifestFromAppPackage(configureTeamsAppPath);
       if (manifest) {
         return {
-          source: ManifestSources.PublishAppPackageAppPackagePath,
+          source: ManifestSources.ConfigureAppPackageAppPackagePath,
           manifest,
         };
       }

@@ -175,7 +175,6 @@ describe("Capability Command Tests", function () {
 
     expect(options).deep.equals(
       [
-        "spfx-load-package-version",
         "spfx-use-global-package-or-install-local",
         "spfx-folder",
         "spfx-webpart-name",

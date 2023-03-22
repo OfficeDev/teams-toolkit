@@ -102,7 +102,6 @@
             "provision": true
         }
     ],
-    "isM365": "true",
     "programmingLanguage": "typescript",
     "solutionSettings": {
         "name": "fx-solution-azure",

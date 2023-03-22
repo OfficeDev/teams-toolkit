@@ -56,7 +56,7 @@ export default class Package extends YargsCommand {
     {
       let result;
       if (isV3Enabled()) {
-        inputs[ManifestFilePathParamName] =
+        inputs[CoreQuestionNames.TeamsAppManifestFilePath] =
           args[ManifestFilePathParamName] ?? `${rootFolder}/${AppPackageFolderName}/manifest.json`;
         inputs[CoreQuestionNames.OutputZipPathParamName] =
           args[CoreQuestionNames.OutputZipPathParamName] ??

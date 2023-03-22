@@ -334,12 +334,12 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
-export function UpgradeV3CanceledError(link: string, version: string): UserError {
+export function UpgradeV3CanceledError(): UserError {
   return new UserError(
     CoreSource,
     "UserCancel", // @see tools.isUserCancelError()
-    getDefaultString("error.UpgradeV3CanceledError", link, version),
-    getLocalizedString("error.UpgradeV3CanceledError", link, version)
+    getDefaultString("error.UpgradeV3CanceledError"),
+    getLocalizedString("error.UpgradeV3CanceledError")
   );
 }
 
@@ -349,6 +349,15 @@ export function ToolkitNotSupportError(): UserError {
     "ToolkitNotSupport",
     getDefaultString("core.migrationV3.CreateNewProject"),
     getLocalizedString("core.migrationV3.CreateNewProject")
+  );
+}
+
+export function IncompatibleProjectError(messageKey: string): UserError {
+  return new UserError(
+    CoreSource,
+    "IncompatibleProject",
+    getDefaultString(messageKey),
+    getLocalizedString(messageKey)
   );
 }
 

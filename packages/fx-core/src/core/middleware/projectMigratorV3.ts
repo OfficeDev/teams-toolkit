@@ -561,11 +561,7 @@ export async function askUserConfirm(
       [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
-    const link = getDownloadLinkByVersionAndPlatform(
-      versionForMigration.currentVersion,
-      versionForMigration.platform
-    );
-    ctx.result = err(UpgradeV3CanceledError(link, versionForMigration.currentVersion));
+    ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }

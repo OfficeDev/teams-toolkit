@@ -1774,6 +1774,9 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon
+        .stub(extension.VS_CODE_UI, "selectOption")
+        .resolves(ok({ type: "success", result: "test.zip" }));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");

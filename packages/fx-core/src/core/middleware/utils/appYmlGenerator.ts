@@ -44,6 +44,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     environmentFolder: string | undefined;
     projectId: string | undefined;
     dotnetPath: string | undefined;
+    isM365: boolean | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -65,6 +66,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       environmentFolder: undefined,
       projectId: undefined,
       dotnetPath: "DOTNET_PATH",
+      isM365: undefined,
     };
   }
 
@@ -147,6 +149,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // env folder
     this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
+
+    this.handlebarsContext.isM365 = this.oldProjectSettings.isM365;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {

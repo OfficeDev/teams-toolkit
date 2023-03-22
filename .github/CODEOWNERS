@@ -54,7 +54,7 @@
 /packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
-/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
+/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn @jidddddd
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @blackchoey @wenytang-ms
 

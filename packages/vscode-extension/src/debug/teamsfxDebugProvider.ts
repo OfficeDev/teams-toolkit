@@ -135,7 +135,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
                 "https://aka.ms/teamsfx-tasks"
               );
             }
-            url = url.replace(matchResult[0], envRes.value[matchResult[matchResult.length - 1]]);
+            url = url.replace(matchResult[0], envRes.value[key]);
           }
 
           // replace ${account-hint}

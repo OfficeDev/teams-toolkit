@@ -54,28 +54,6 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Attach to Frontend in Outlook (Edge)",
-            "type": "pwa-msedge",
-            "request": "launch",
-            "url": "https://outlook.office.com/host/${localTeamsAppInternalId}?${account-hint}",
-            "presentation": {
-                "group": "all",
-                "hidden": true
-            },
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "Attach to Frontend in Outlook (Chrome)",
-            "type": "pwa-chrome",
-            "request": "launch",
-            "url": "https://outlook.office.com/host/${localTeamsAppInternalId}?${account-hint}",
-            "presentation": {
-                "group": "all",
-                "hidden": true
-            },
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
             "name": "Attach to Bot",
             "type": "pwa-node",
             "request": "attach",

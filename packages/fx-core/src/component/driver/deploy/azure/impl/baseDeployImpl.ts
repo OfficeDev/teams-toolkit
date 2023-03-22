@@ -10,7 +10,6 @@ import ignore, { Ignore } from "ignore";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { asBoolean, asFactory, asOptional, asString } from "../../../../utils/common";
 import { ExecutionResult } from "../../../interface/stepDriver";
 import { ok, err, IProgressHandler, UserInteraction, LogProvider } from "@microsoft/teamsfx-api";
@@ -22,6 +21,7 @@ export abstract class BaseDeployImpl {
   workingDirectory: string;
   distDirectory: string;
   dryRun = false;
+  zipFilePath?: string;
   protected logger?: LogProvider;
   protected ui?: UserInteraction;
   protected progressBar?: IProgressHandler;
@@ -51,10 +51,11 @@ export abstract class BaseDeployImpl {
 
   protected static asDeployArgs = asFactory<DeployArgs>({
     workingDirectory: asOptional(asString),
-    distributionPath: asString,
+    artifactFolder: asString,
     ignoreFile: asOptional(asString),
     resourceId: asString,
     dryRun: asOptional(asBoolean),
+    outputZipFile: asOptional(asString),
   });
 
   async run(): Promise<ExecutionResult> {
@@ -67,8 +68,9 @@ export abstract class BaseDeployImpl {
       // if working dir is not absolute path, then join the path with project path
       this.workingDirectory = this.handlePath(deployArgs.workingDirectory, this.workingDirectory);
       // if distribution path is not absolute path, then join the path with project path
-      this.distDirectory = this.handlePath(deployArgs.distributionPath, this.workingDirectory);
+      this.distDirectory = this.handlePath(deployArgs.artifactFolder, this.workingDirectory);
       this.dryRun = deployArgs.dryRun ?? false;
+      this.zipFilePath = deployArgs.outputZipFile;
       // call real deploy
       return await this.deploy(deployArgs);
     });

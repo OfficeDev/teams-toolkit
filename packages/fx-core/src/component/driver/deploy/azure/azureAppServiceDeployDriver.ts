@@ -14,7 +14,7 @@ import { TelemetryConstant } from "../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AzureZipDeployImpl } from "./impl/AzureZipDeployImpl";
 
-const ACTION_NAME = "azureAppService/deploy";
+const ACTION_NAME = "azureAppService/zipDeploy";
 
 @Service(ACTION_NAME)
 export class AzureAppServiceDeployDriver implements StepDriver {

@@ -1,5 +1,4 @@
-import { Button, Text } from "@fluentui/react-components";
-import { CardFooter, CardHeader, Card } from "@fluentui/react-components/unstable";
+import { Button, Text, CardFooter, CardHeader, Card } from "@fluentui/react-components";
 
 export function Design() {
   return (

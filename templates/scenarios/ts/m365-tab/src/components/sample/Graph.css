@@ -21,7 +21,7 @@
   flex-direction: column;
 }
 
-.flex.row >.fui-Card {
+.flex.row > .fui-Card {
   height: 280px;
   width: 330px;
   margin-right: 0.625rem;

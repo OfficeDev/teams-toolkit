@@ -13,7 +13,7 @@ import { globalVars } from "../core/globalVars";
  */
 export class M365TokenJSONNotFoundError extends SystemError {
   constructor() {
-    const key = "error.azure.M365TokenJSONNotFoundError";
+    const key = "error.m365.M365TokenJSONNotFoundError";
     const errorOptions: SystemErrorOptions = {
       source: "coordinator",
       name: "M365TokenJSONNotFoundError",
@@ -29,7 +29,7 @@ export class M365TokenJSONNotFoundError extends SystemError {
  */
 export class M365TenantIdNotFoundInTokenError extends SystemError {
   constructor() {
-    const key = "error.azure.M365TenantIdNotFoundInTokenError";
+    const key = "error.m365.M365TenantIdNotFoundInTokenError";
     const errorOptions: SystemErrorOptions = {
       source: "coordinator",
       name: "M365TenantIdNotFoundInTokenError",
@@ -45,7 +45,7 @@ export class M365TenantIdNotFoundInTokenError extends SystemError {
  */
 export class M365TenantIdNotMatchError extends UserError {
   constructor(signedInTenantId: string, dotEnvTenantId: string, clearKeys: string) {
-    const key = "error.azure.M365TenantIdNotMatchError";
+    const key = "error.m365.M365TenantIdNotMatchError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "M365TenantIdNotMatchError",

@@ -318,28 +318,6 @@ export class FxCoreV3Implement {
         (inputs as InputsWithProjectPath).projectPath
       );
       res = ok(path);
-    } else if (func.method === "validateManifest") {
-      if (func.params.manifestPath) {
-        const args: ValidateManifestArgs = {
-          manifestPath: func.params.manifestPath,
-        };
-        const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-        res = await driver.run(args, context);
-      } else {
-        const args: ValidateAppPackageArgs = {
-          appPackagePath: func.params.appPackagePath,
-        };
-        const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-        res = await driver.run(args, context);
-      }
-    } else if (func.method === "buildPackage") {
-      const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
-      const args: CreateAppPackageArgs = {
-        manifestPath: func.params.manifestTemplatePath,
-        outputZipPath: func.params.outputZipPath,
-        outputJsonPath: func.params.outputJsonPath,
-      };
-      res = await driver.run(args, context);
     } else if (func.method === "addSso") {
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
@@ -575,8 +553,12 @@ export class FxCoreV3Implement {
     const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
     const args: CreateAppPackageArgs = {
       manifestPath: teamsAppManifestFilePath,
-      outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
-      outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+      outputZipPath:
+        inputs[CoreQuestionNames.OutputZipPathParamName] ??
+        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+      outputJsonPath:
+        inputs[CoreQuestionNames.OutputManifestParamName] ??
+        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
     return await driver.run(args, context);
   }

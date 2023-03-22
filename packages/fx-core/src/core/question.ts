@@ -93,6 +93,8 @@ export enum CoreQuestionNames {
   AadAppManifestFilePath = "aadAppManifestFilePath",
   TeamsAppPackageFilePath = "teamsAppPackageFilePath",
   ConfirmManifest = "confirmManifest",
+  OutputZipPathParamName = "output-zip-path",
+  OutputManifestParamName = "output-manifest-path",
 }
 
 export const ProjectNamePattern =

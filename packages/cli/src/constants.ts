@@ -3,6 +3,7 @@
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { Options } from "yargs";
 
 export type OptionsMap = { [_: string]: Options };
@@ -56,8 +57,7 @@ export const CollaboratorEmailNode = new QTreeNode({
 });
 
 export const ManifestFilePathParamName = "manifest-file-path";
-export const OutputZipPathParamName = "output-zip-path";
-export const OutputManifestParamName = "output-manifest-path";
+export const AppPackageFilePathParamName = "app-package-file-path";
 export const BuildPackageOptions: OptionsMap = {
   [ManifestFilePathParamName]: {
     type: "string",
@@ -65,17 +65,32 @@ export const BuildPackageOptions: OptionsMap = {
     description:
       "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.json'",
   },
-  [OutputZipPathParamName]: {
+  [CoreQuestionNames.OutputZipPathParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the zipped app package, default to '${folder}/build/appPackage/appPackage.${env}.json'",
+      "Select the output path of the zipped app package, default to '${folder}/build/appPackage/appPackage.${env}.zip'",
   },
-  [OutputManifestParamName]: {
+  [CoreQuestionNames.OutputManifestParamName]: {
     type: "string",
     global: false,
     description:
       "Select the output path of the generated manifest path, default to '${folder}/build/appPackage/manifest.${env}.json'",
+  },
+};
+
+export const ValidateApplicationOptions: OptionsMap = {
+  [ManifestFilePathParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.json'. Validate using manifest schema.",
+  },
+  [AppPackageFilePathParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the Teams app package path, default to '${folder}/build/appPackage/appPackage.${env}.zip'. Validate app package using validation rules.",
   },
 };
 

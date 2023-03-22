@@ -13,14 +13,13 @@ import {
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import { isV3Enabled, environmentManager } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import activate from "../activate";
 import {
   RootFolderOptions,
   EnvOptions,
   BuildPackageOptions,
   ManifestFilePathParamName,
-  OutputZipPathParamName,
-  OutputManifestParamName,
 } from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -28,7 +27,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, askTargetEnvironment } from "../utils";
+import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export default class Package extends YargsCommand {
@@ -55,41 +54,28 @@ export default class Package extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-      // TODO: remove when V3 is auto enabled
-      if (!inputs.env) {
-        // include local env in interactive question
-        const selectedEnv = await askTargetEnvironment(rootFolder);
-        if (selectedEnv.isErr()) {
-          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-          return err(selectedEnv.error);
-        }
-        inputs.env = selectedEnv.value;
-      }
-
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "buildPackage",
-        params: {
-          type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-        },
-      };
-
+      let result;
       if (isV3Enabled()) {
-        func.params = {
-          manifestTemplatePath:
-            args[ManifestFilePathParamName] ??
-            `${rootFolder}/${AppPackageFolderName}/manifest.json`,
-          outputZipPath:
-            args[OutputZipPathParamName] ??
-            `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
-          outputJsonPath:
-            args[OutputManifestParamName] ??
-            `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
-          env: inputs.env,
+        inputs[ManifestFilePathParamName] =
+          args[ManifestFilePathParamName] ?? `${rootFolder}/${AppPackageFolderName}/manifest.json`;
+        inputs[CoreQuestionNames.OutputZipPathParamName] =
+          args[CoreQuestionNames.OutputZipPathParamName] ??
+          `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`;
+        inputs[CoreQuestionNames.OutputManifestParamName] =
+          args[CoreQuestionNames.OutputManifestParamName] ??
+          `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`;
+        result = await core.createAppPackage(inputs);
+      } else {
+        const func: Func = {
+          namespace: "fx-solution-azure",
+          method: "buildPackage",
+          params: {
+            type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
+          },
         };
+        result = await core.executeUserTask!(func, inputs);
       }
 
-      const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.Build,

@@ -299,7 +299,7 @@ export async function readAndConvertUserdata(
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
+  const userdataContent = fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
   const secretes = dotenv.parse(userdataContent);
   for (const secreteKey of Object.keys(secretes)) {
     const res = namingConverterV3("state." + secreteKey, FileType.USERDATA, bicepContent);

@@ -1035,13 +1035,20 @@ describe("configMigration", () => {
 describe("userdataMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
+    sandbox
+      .stub(fs, "readFileSync")
+      .returns(
+        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n"
+      );
   });
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sandbox.restore();
   });
 
   it("happy path for userdata migration", async () => {
@@ -1081,6 +1088,18 @@ describe("userdataMigration", () => {
       "local"
     );
     assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+
+  it("Should successfully resolve different EOLs of userdata", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await userdataMigration(migrationContext);
+
+    await assertFileContent(
+      projectPath,
+      path.join(Constants.environmentFolder, buildEnvUserFileName("dev")),
+      "userdataenv"
+    );
   });
 });
 
@@ -1577,7 +1596,7 @@ async function assertFileContent(
   assert.equal(actualFileContent, expectedFileContent);
 }
 
-async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
+export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
   await fs.copy(getTestAssetsPath(projectName), targetPath);
 }
 

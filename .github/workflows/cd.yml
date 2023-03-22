@@ -241,7 +241,7 @@ jobs:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish beta release to npm org
-        if: ${{ github.ref == refs/heads/prerelease }}
+        if: ${{ github.ref == 'refs/heads/prerelease' }}
         run: |
           npx lerna publish from-package --dist-tag=beta --yes --allow-branch prerelease
         env:

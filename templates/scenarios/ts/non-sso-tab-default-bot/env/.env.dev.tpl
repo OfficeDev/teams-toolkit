@@ -13,6 +13,3 @@ TAB_ENDPOINT=
 BOT_ID=
 BOT_AZURE_APP_SERVICE_RESOURCE_ID=
 BOT_DOMAIN=
-
-# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
-SECRET_BOT_PASSWORD=

@@ -16,6 +16,3 @@ TEAMS_APP_PACKAGE_PATH=
 # Generated during deploy, you can also add your own variables.
 SSL_CRT_FILE=
 SSL_KEY_FILE=
-
-# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
-SECRET_AAD_APP_CLIENT_SECRET=

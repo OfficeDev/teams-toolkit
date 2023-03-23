@@ -14,6 +14,3 @@ BOT_ENDPOINT=
 # Generated during deploy, you can also add your own variables.
 SSL_CRT_FILE=
 SSL_KEY_FILE=
-
-# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
-SECRET_BOT_PASSWORD=

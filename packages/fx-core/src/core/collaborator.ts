@@ -19,10 +19,7 @@ import {
   ContextV3,
   M365TokenProvider,
   SystemError,
-  SingleSelectQuestion,
-  OptionItem,
   MultiSelectQuestion,
-  ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import {
@@ -30,7 +27,6 @@ import {
   AppIds,
   CollaborationState,
   CollaborationStateResult,
-  Collaborator,
   ListCollaboratorResult,
   PermissionsResult,
   ResourcePermission,
@@ -166,7 +162,7 @@ export class CollaborationUtil {
     try {
       const result: { [key: string]: string } = {};
       if (!(await fs.pathExists(dotEnvFilePath))) {
-        throw new Error(getLocalizedString("core.collaboration.error.dotEnvFileNotExist"));
+        throw new FileNotFoundError("CollaboratorUtil", dotEnvFilePath);
       }
 
       const envs = dotenv.parse(await fs.readFile(dotEnvFilePath));

@@ -2,13 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  Result,
-  FxError,
-  Platform,
-  M365TokenProvider,
-  PathNotExistError,
-} from "@microsoft/teamsfx-api";
+import { Result, FxError, Platform, M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import fs from "fs-extra";
 import path from "path";
@@ -16,6 +10,7 @@ import { Service } from "typedi";
 
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { getSPFxToken, GraphScopes } from "../../../../common/tools";
+import { FileNotFoundError } from "../../../../error/common";
 import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
@@ -215,7 +210,7 @@ export class SPFxDeployDriver implements StepDriver {
 
   public async getPackagePath(solutionConfigPath: string): Promise<string> {
     if (!(await fs.pathExists(solutionConfigPath))) {
-      throw new PathNotExistError(Constants.DeployDriverName, solutionConfigPath);
+      throw new FileNotFoundError(Constants.DeployDriverName, solutionConfigPath);
     }
     const solutionConfig = await fs.readJson(solutionConfigPath);
     const sharepointFolder = path.dirname(solutionConfigPath).replace("config", "sharepoint");
@@ -224,7 +219,7 @@ export class SPFxDeployDriver implements StepDriver {
 
   public async getAppID(solutionConfigPath: string): Promise<string> {
     if (!(await fs.pathExists(solutionConfigPath))) {
-      throw new PathNotExistError(Constants.DeployDriverName, solutionConfigPath);
+      throw new FileNotFoundError(Constants.DeployDriverName, solutionConfigPath);
     }
     const solutionConfig = await fs.readJson(solutionConfigPath);
     const appID = solutionConfig["solution"]["id"];

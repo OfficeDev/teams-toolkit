@@ -54,6 +54,7 @@ import set from "lodash/set";
 import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
 import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
+import { FileNotFoundError } from "../../../error/common";
 
 /**
  * Create Teams app if not exists
@@ -901,12 +902,7 @@ export async function updateTeamsAppV3ForPublish(
     }
   } else {
     // missing manifest file
-    validationError = AppStudioResultFactory.UserError(
-      AppStudioError.ValidationFailedError.name,
-      AppStudioError.ValidationFailedError.message([
-        getLocalizedString("error.appstudio.noManifestError"),
-      ])
-    );
+    validationError = new FileNotFoundError("appManifest", "manifest.json");
   }
 
   if (validationError) {

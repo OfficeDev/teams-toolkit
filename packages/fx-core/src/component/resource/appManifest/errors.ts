@@ -8,8 +8,8 @@ export class AppStudioError {
   public static readonly FileNotFoundError = {
     name: "FileNotFoundError",
     message: (filePath: string): [string, string] => [
-      getDefaultString("error.appstudio.fileNotFoundError", filePath),
-      getLocalizedString("error.appstudio.fileNotFoundError", filePath),
+      getDefaultString("error.common.FileNotFoundError", filePath),
+      getLocalizedString("error.common.FileNotFoundError", filePath),
     ],
   };
 

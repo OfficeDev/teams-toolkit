@@ -13,14 +13,8 @@ export function AppManifestPackageNotExistError(appManifestPackagePath: string):
   return new UserError(
     errorSource,
     "InvalidDebugArgsError",
-    util.format(
-      getDefaultString("error.debugHandler.AppManifestPackageNotExistError"),
-      appManifestPackagePath
-    ),
-    util.format(
-      getLocalizedString("error.debugHandler.AppManifestPackageNotExistError"),
-      appManifestPackagePath
-    )
+    util.format(getDefaultString("error.common.FileNotFoundError"), appManifestPackagePath),
+    util.format(getLocalizedString("error.common.FileNotFoundError"), appManifestPackagePath)
   );
 }
 

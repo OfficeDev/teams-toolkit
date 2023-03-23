@@ -11,7 +11,6 @@ import {
   Inputs,
   ok,
   Platform,
-  ProjectSettingsFileName,
   Result,
   SettingsFolderName,
   UserCancelError,
@@ -24,11 +23,11 @@ import * as os from "os";
 import * as path from "path";
 import { getLockFolder, ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
 import { CallbackRegistry } from "../../../src/core/callback";
-import { CoreSource, NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
+import { CoreSource, NoProjectOpenedError } from "../../../src/core/error";
 import { randomAppName } from "../utils";
 import * as tools from "../../../src/common/tools";
 import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
-import { InvalidProjectError } from "../../../src/error/common";
+import { FileNotFoundError, InvalidProjectError } from "../../../src/error/common";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {
@@ -133,12 +132,12 @@ describe("Middleware - ConcurrentLockerMW", () => {
     assert.isTrue(my.count === 0);
   });
 
-  it("single: invalid PathNotExistError", async () => {
+  it("single: invalid FileNotFoundError", async () => {
     const my = new MyClass();
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res = await my.methodReturnOK(inputs);
-    assert.isTrue(res.isErr() && res.error instanceof PathNotExistError);
+    assert.isTrue(res.isErr() && res.error instanceof FileNotFoundError);
     assert.isTrue(my.count === 0);
   });
 

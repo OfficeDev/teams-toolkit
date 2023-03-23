@@ -18,13 +18,13 @@ import { lock, unlock } from "proper-lockfile";
 import { TOOLS } from "../globalVars";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
-import { CoreSource, NoProjectOpenedError, PathNotExistError } from "../error";
+import { CoreSource, NoProjectOpenedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import crypto from "crypto";
 import * as os from "os";
 import { waitSeconds } from "../../common/tools";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
-import { InvalidProjectError } from "../../error/common";
+import { FileNotFoundError, InvalidProjectError } from "../../error/common";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -38,7 +38,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     return;
   }
   if (!(await fs.pathExists(inputs.projectPath))) {
-    ctx.result = err(new PathNotExistError(inputs.projectPath));
+    ctx.result = err(new FileNotFoundError("ConcurrentLockerMW", inputs.projectPath));
     return;
   }
   let configFolder = "";

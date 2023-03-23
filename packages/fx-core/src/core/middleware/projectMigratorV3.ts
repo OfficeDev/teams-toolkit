@@ -93,6 +93,7 @@ import {
   migrateBackendWatch,
   migrateBackendStart,
   migratePreDebugCheck,
+  migrateInstallAppInTeams,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -375,8 +376,10 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
       launchJsonContent = JSON.stringify(jsonObject, null, 4);
     }
     const result = launchJsonContent
-      .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
-      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
+      .replace(/\${teamsAppId}/g, "${{TEAMS_APP_ID}}")
+      .replace(/\${teamsAppInternalId}/g, "${{M365_APP_ID}}") // For M365 apps
+      .replace(/\${localTeamsAppId}/g, "${{local:TEAMS_APP_ID}}")
+      .replace(/\${localTeamsAppInternalId}/g, "${{local:M365_APP_ID}}"); // For M365 apps
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }
@@ -823,6 +826,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateSetUpBot,
     migrateSetUpSSO,
     migratePrepareManifest,
+    migrateInstallAppInTeams,
     migrateValidateDependencies,
     migrateBackendExtensionsInstall,
     migrateFrontendStart,

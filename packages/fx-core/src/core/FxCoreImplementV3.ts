@@ -21,6 +21,8 @@ import {
   Tools,
   UserCancelError,
   Void,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -73,8 +75,12 @@ import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
+  getQuestionsForCreateAppPackage,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
+  getQuestionsForUpdateTeamsApp,
+  getQuestionsForValidateManifest,
+  getQuestionsForValidateAppPackage,
 } from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
@@ -87,6 +93,7 @@ import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { InvalidProjectError } from "../error/common";
+import { CoreQuestionNames } from "./question";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -287,12 +294,14 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
+    QuestionMW(getQuestionsForUpdateTeamsApp),
     ConcurrentLockerMW,
     EnvLoaderMW(true),
     ContextInjectorMW,
     EnvWriterMW,
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const component = Container.get("app-manifest") as any;
     const res = await component.deployV3(context, inputs as InputsWithProjectPath);
@@ -315,28 +324,6 @@ export class FxCoreV3Implement {
         (inputs as InputsWithProjectPath).projectPath
       );
       res = ok(path);
-    } else if (func.method === "validateManifest") {
-      if (func.params.manifestPath) {
-        const args: ValidateManifestArgs = {
-          manifestPath: func.params.manifestPath,
-        };
-        const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-        res = await driver.run(args, context);
-      } else {
-        const args: ValidateAppPackageArgs = {
-          appPackagePath: func.params.appPackagePath,
-        };
-        const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-        res = await driver.run(args, context);
-      }
-    } else if (func.method === "buildPackage") {
-      const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
-      const args: CreateAppPackageArgs = {
-        manifestPath: func.params.manifestTemplatePath,
-        outputZipPath: func.params.outputZipPath,
-        outputJsonPath: func.params.outputJsonPath,
-      };
-      res = await driver.run(args, context);
     } else if (func.method === "addSso") {
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
@@ -519,5 +506,66 @@ export class FxCoreV3Implement {
     const contextV3: DriverContext = createDriverContext(inputs);
     await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForValidateManifest),
+    EnvLoaderMW(true),
+  ])
+  async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.validateApplication);
+    inputs.stage = Stage.validateApplication;
+
+    const context: DriverContext = createDriverContext(inputs);
+
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+    const args: ValidateManifestArgs = {
+      manifestPath: teamsAppManifestFilePath,
+    };
+    const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
+    return await driver.run(args, context);
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
+  async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.validateApplication);
+    inputs.stage = Stage.validateApplication;
+
+    const context: DriverContext = createDriverContext(inputs);
+    const teamsAppPackageFilePath = inputs?.[CoreQuestionNames.TeamsAppPackageFilePath] as string;
+    const args: ValidateAppPackageArgs = {
+      appPackagePath: teamsAppPackageFilePath,
+    };
+    const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return await driver.run(args, context);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForCreateAppPackage),
+    EnvLoaderMW(true),
+  ])
+  async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.createAppPackage);
+    inputs.stage = Stage.createAppPackage;
+
+    const context: DriverContext = createDriverContext(inputs);
+
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+
+    const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const args: CreateAppPackageArgs = {
+      manifestPath: teamsAppManifestFilePath,
+      outputZipPath:
+        inputs[CoreQuestionNames.OutputZipPathParamName] ??
+        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+      outputJsonPath:
+        inputs[CoreQuestionNames.OutputManifestParamName] ??
+        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+    };
+    return await driver.run(args, context);
   }
 }

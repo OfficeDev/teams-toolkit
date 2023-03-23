@@ -14,7 +14,7 @@ import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
-import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
+import { DotenvOutput, dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
 import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
@@ -53,9 +53,9 @@ describe("env utils", () => {
   });
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
+    // mockedEnvRestore = mockedEnv({
+    //   TEAMSFX_V3: "true",
+    // });
   });
   it("pathUtils.getYmlFilePath case 1", async () => {
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(true);
@@ -209,6 +209,43 @@ describe("env utils", () => {
       assert.deepEqual(res.value, ["dev", "prod"]);
     }
   });
+
+  it("envUtil.mergeEnv case 1", async () => {
+    const env: DotenvOutput = {};
+    mockedEnvRestore = mockedEnv({
+      mykey: "myvalue",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
+  it("envUtil.mergeEnv case 2", async () => {
+    const env: DotenvOutput = { mykey: "myvalue" };
+    mockedEnvRestore = mockedEnv({
+      mykey: "",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
+  it("envUtil.mergeEnv case 3", async () => {
+    const env: DotenvOutput = { mykey: "myvalue2" };
+    mockedEnvRestore = mockedEnv({
+      mykey: "myvalue",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
+  it("envUtil.mergeEnv case 4", async () => {
+    const env: DotenvOutput = { mykey: "" };
+    mockedEnvRestore = mockedEnv({
+      mykey: "myvalue",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
   it("environmentManager.listAllEnvConfigs", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
@@ -239,6 +276,23 @@ describe("env utils", () => {
     if (process.env.SECRET_ABC || process.env.SECRET_ABC === undefined) {
       delete process.env.SECRET_ABC;
     }
+    sandbox
+      .stub(dotenvUtil, "deserialize")
+      .onFirstCall()
+      .returns({
+        lines: [],
+        obj: {},
+      })
+      .onSecondCall()
+      .returns({
+        lines: [],
+        obj: { SECRET_ABC: encrypted },
+      })
+      .onThirdCall()
+      .returns({
+        lines: [],
+        obj: {},
+      });
     process.env.ENV_VAR = "1";
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -261,9 +315,9 @@ describe("env utils", () => {
     assert.isUndefined(process.env.SECRET_ABC);
     assert.equal(process.env.ENV_VAR, "1", "process.env.ENV_VAR should be restored to 1");
 
-    const core = new FxCore(tools);
-    const getDotEnvRes = await core.getDotEnv(inputs);
-    assert.isTrue(getDotEnvRes.isOk());
+    // const core = new FxCore(tools);
+    // const getDotEnvRes = await core.getDotEnv(inputs);
+    // assert.isTrue(getDotEnvRes.isOk());
   });
   it("EnvLoaderMW success for F5 (missing .env file)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
@@ -287,6 +341,9 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
+    const core = new FxCore(tools);
+    const getDotEnvRes = await core.getDotEnv(inputs);
+    assert.isTrue(getDotEnvRes.isOk());
   });
   it("EnvLoaderMW failed for F5 (missing .env file and getEnvFilePath Error)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserError({})));
@@ -450,6 +507,24 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    sandbox
+      .stub(dotenvUtil, "deserialize")
+      .onFirstCall()
+      .returns({
+        lines: [],
+        obj: {},
+      })
+      .onSecondCall()
+      .returns({
+        lines: [],
+        obj: { SECRET_ABC: encrypted },
+      })
+      .onThirdCall()
+      .returns({
+        lines: [],
+        obj: {},
+      });
+
     if (process.env.SECRET_ABC || process.env.SECRET_ABC === undefined) {
       delete process.env.SECRET_ABC;
     }

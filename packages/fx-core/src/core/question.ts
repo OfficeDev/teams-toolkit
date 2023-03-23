@@ -16,6 +16,8 @@ import {
   MultiSelectQuestion,
   SingleFileQuestion,
   QTreeNode,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -87,9 +89,14 @@ export enum CoreQuestionNames {
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
   AppPackagePath = "appPackagePath",
   ReplaceBotIds = "replaceBotIds",
-  TeamsAppManifestFilePath = "teamsAppManifestFilePath",
+  TeamsAppManifestFilePath = "manifest-path",
+  LocalTeamsAppManifestFilePath = "local-manifest-path",
   AadAppManifestFilePath = "aadAppManifestFilePath",
+  TeamsAppPackageFilePath = "teamsAppPackageFilePath",
   ConfirmManifest = "confirmManifest",
+  ConfirmLocalManifest = "confirmLocalManifest",
+  OutputZipPathParamName = "output-zip-path",
+  OutputManifestParamName = "output-manifest-path",
 }
 
 export const ProjectNamePattern =
@@ -887,14 +894,23 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
   return res;
 }
 
-export function selectTeamsAppManifestQuestion(inputs: Inputs): QTreeNode {
-  const manifestPath: string = path.join(inputs.projectPath!, "appPackage", "manifest.json");
-
+export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false): QTreeNode {
   const teamsAppManifestNode: SingleFileQuestion = {
-    name: CoreQuestionNames.TeamsAppManifestFilePath,
-    title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
+    name: isLocal
+      ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+      : CoreQuestionNames.TeamsAppManifestFilePath,
+    title: getLocalizedString(
+      isLocal
+        ? "core.selectLocalTeamsAppManifestQuestion.title"
+        : "core.selectTeamsAppManifestQuestion.title"
+    ),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
+      const manifestPath = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        isLocal ? "manifest.local.json" : "manifest.json"
+      );
       if (fs.pathExistsSync(manifestPath)) {
         return manifestPath;
       } else {
@@ -904,9 +920,37 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs): QTreeNode {
   };
 
   const res = new QTreeNode(teamsAppManifestNode);
-  const confirmNode = confirmManifestNode(manifestPath, true);
-  res.addChild(confirmNode);
+  if (inputs.platform !== Platform.CLI_HELP) {
+    const manifestPath = path.join(
+      inputs.projectPath!,
+      AppPackageFolderName,
+      isLocal ? "manifest.local.json" : "manifest.json"
+    );
+    const confirmNode = confirmManifestNode(manifestPath, true, isLocal);
+    res.addChild(confirmNode);
+  }
   return res;
+}
+
+export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
+  return {
+    name: CoreQuestionNames.TeamsAppPackageFilePath,
+    title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const appPackagePath: string = path.join(
+        inputs.projectPath!,
+        BuildFolderName,
+        AppPackageFolderName,
+        "appPackage.dev.zip"
+      );
+      if (fs.pathExistsSync(appPackagePath)) {
+        return appPackagePath;
+      } else {
+        return undefined;
+      }
+    },
+  };
 }
 
 export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefined> {
@@ -927,11 +971,19 @@ export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefin
   return envNode;
 }
 
-export function confirmManifestNode(defaultManifestFilePath: string, isTeamsApp = true): QTreeNode {
+export function confirmManifestNode(
+  defaultManifestFilePath: string,
+  isTeamsApp = true,
+  isLocal = false
+): QTreeNode {
   const confirmManifestQuestion: SingleSelectQuestion = {
-    name: CoreQuestionNames.ConfirmManifest,
+    name: isLocal ? CoreQuestionNames.ConfirmLocalManifest : CoreQuestionNames.ConfirmManifest,
     title: isTeamsApp
-      ? getLocalizedString("core.selectTeamsAppManifestQuestion.title")
+      ? getLocalizedString(
+          isLocal
+            ? "core.selectLocalTeamsAppManifestQuestion.title"
+            : "core.selectTeamsAppManifestQuestion.title"
+        )
       : getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleSelect",
     staticOptions: [],
@@ -944,7 +996,11 @@ export function confirmManifestNode(defaultManifestFilePath: string, isTeamsApp 
       {
         id: "manifest",
         label: isTeamsApp
-          ? inputs[CoreQuestionNames.TeamsAppManifestFilePath]
+          ? inputs[
+              isLocal
+                ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                : CoreQuestionNames.TeamsAppManifestFilePath
+            ]
           : inputs[CoreQuestionNames.AadAppManifestFilePath],
       },
     ];

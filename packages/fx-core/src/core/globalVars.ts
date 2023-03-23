@@ -38,5 +38,6 @@ export class GlobalVars {
   m365TenantId = "";
   trackingId?: string;
   ymlFilePath?: string;
+  envFilePath?: string;
 }
 export const globalVars = new GlobalVars();

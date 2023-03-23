@@ -4,7 +4,7 @@ import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { pathUtils } from "./pathUtils";
-import { TOOLS } from "../../core/globalVars";
+import { globalVars, TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
@@ -58,6 +58,10 @@ export class EnvUtil {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
       }
     }
+
+    //global var
+    globalVars.envFilePath = dotEnvFilePath;
+
     // deserialize
     const parseResult = dotenvUtil.deserialize(
       await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
@@ -90,10 +94,13 @@ export class EnvUtil {
       }
     }
 
+    // set process.env
     parseResult.obj.TEAMSFX_ENV = env;
     if (loadToProcessEnv) {
-      merge(process.env, parseResult.obj);
-      if (parseResultSecret) merge(process.env, parseResultSecret.obj);
+      // '.env.xxx' has higher priority than '.env.xxx.user'
+      if (parseResultSecret) this.mergeEnv(parseResult.obj, parseResultSecret.obj);
+      // 'process.env' has higher priority than '.env.xxx'
+      this.mergeEnv(process.env, parseResult.obj);
     }
 
     const props: { [key: string]: string } = {};
@@ -114,6 +121,17 @@ export class EnvUtil {
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
 
     return ok(parseResult.obj);
+  }
+
+  mergeEnv(
+    envWithHigherPriority: NodeJS.ProcessEnv | DotenvOutput,
+    envWithLowerPriority: DotenvOutput
+  ) {
+    for (const key of Object.keys(envWithLowerPriority)) {
+      if (!envWithHigherPriority[key]) {
+        envWithHigherPriority[key] = envWithLowerPriority[key];
+      }
+    }
   }
 
   /**

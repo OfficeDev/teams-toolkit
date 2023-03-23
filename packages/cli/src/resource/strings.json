@@ -3,6 +3,15 @@
     "NotAllowedMigrationErrorMessage": "Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run \"teamsfx upgrade\" to upgrade your project first."
   },
   "command": {
+    "provision": {
+      "description": "Runs the provision stage in teamsapp.yml."
+    },
+    "deploy": {
+      "description": "Runs the deploy stage in teamsapp.yml."
+    },
+    "publish": {
+      "description": "Runs the publish stage in teamsapp.yml."
+    },
     "upgrade": {
       "description": "Upgrade the project to work with the latest version of Teams Toolkit.",
       "options": {

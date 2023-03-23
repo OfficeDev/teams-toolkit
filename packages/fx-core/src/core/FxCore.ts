@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-/**
- * @author Huajie Zhang <huajiezhang@microsoft.com>
- */
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";

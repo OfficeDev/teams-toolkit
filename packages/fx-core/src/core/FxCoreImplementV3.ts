@@ -91,6 +91,7 @@ import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
+import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 
 export class FxCoreV3Implement {
   tools: Tools;

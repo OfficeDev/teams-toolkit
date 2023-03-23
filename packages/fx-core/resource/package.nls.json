@@ -1061,9 +1061,9 @@
   "error.collaboration.FailedToLoadManifest": "Failed to load manifest file. Reason: %s.",
   "error.azure.InvalidAzureCredentialError": "Failed to get Azure credential.",
   "error.azure.InvalidAzureSubscriptionError": "The Azure subscription '%s' is not available in current account.",
-  "error.azure.ResourceGroupConflictError": "Failed to create resource group '%s', which already exists in subscription: %s",
+  "error.azure.ResourceGroupConflictError": "Failed to create resource group '%s', which already exists in subscription '%s'",
   "error.azure.SelectSubscriptionError": "Failed to select subscription in current account.",
-  "error.azure.ResourceGroupNotExistError": "The resource group '%s' does not exist in subscription: %s",
+  "error.azure.ResourceGroupNotExistError": "The resource group '%s' does not exist in subscription '%s'",
   "error.m365.M365TokenJSONNotFoundError": "Failed to get Microsoft 365 token JSON object",
   "error.m365.M365TenantIdNotFoundInTokenError": "Failed to get Microsoft 365 tenant id in token JSON object",
   "error.m365.M365TenantIdNotMatchError": "Your signed in Microsoft 365 tenant '%s' which is different from the one in the .env file (TEAMS_APP_TENANT_ID='%s'). To switch to your current signed in tenant, remove the values of %s."

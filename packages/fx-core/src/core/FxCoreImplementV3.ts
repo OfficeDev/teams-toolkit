@@ -34,13 +34,10 @@ import {
 import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW } from "./middleware/questionModel";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";

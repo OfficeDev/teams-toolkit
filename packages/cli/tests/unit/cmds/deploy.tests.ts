@@ -19,6 +19,8 @@ import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import CLIUIInstance from "../../../src/userInteraction";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Deploy Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -83,6 +85,14 @@ describe("Deploy Command Tests", function () {
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     CLIUIInstance.interactive = false;
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

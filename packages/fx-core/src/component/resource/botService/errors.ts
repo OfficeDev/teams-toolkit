@@ -76,6 +76,12 @@ function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>
       const helpLink = helpLinkMap.get(errorCode);
       if (helpLink) target.helpLink = helpLink;
     }
+    // Try to concat error messages in response payload to expose specific reasons.
+    // Based on https://learn.microsoft.com/en-us/graph/errors
+    const errorMessage = target.innerError.response.data?.error?.message;
+    if (errorMessage) {
+      target.details[0] += errorMessage;
+    }
   }
 }
 

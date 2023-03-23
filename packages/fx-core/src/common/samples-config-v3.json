@@ -214,9 +214,7 @@
             "tags": ["Live Share", "JS", "ReactJS", "Teams-JS 2.0"],
             "time": "5 min to run",
             "configuration": "Manual configuration required",
-            "suggested": false,
-            "url": "https://github.com/microsoft/live-share-sdk/tree/main/samples/javascript/01.dice-roller",
-            "packageurl": "https://github.com/microsoft/live-share-sdk/archive/refs/tags/v1.0.0-preview.1.zip"
+            "suggested": false
         }
     ]
 }

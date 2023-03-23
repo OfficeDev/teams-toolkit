@@ -342,18 +342,6 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("validateManifestHandler()", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-
-      await handlers.validateManifestHandler();
-
-      sinon.assert.calledOnce(sendTelemetryErrorEvent);
-      sinon.restore();
-    });
-
     it("validateManifestHandler() - app package", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
@@ -361,53 +349,18 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+      sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      const validateApplication = sinon.spy(handlers.core, "validateApplication");
 
       sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(ok({ type: "success", result: "dev" }));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
-          }
+        selectOption: () => {
+          return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
         },
       });
 
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, ExtensionErrors.DefaultAppPackageNotExistsError);
-      }
-      sinon.restore();
-    });
-
-    it("validateManifestHandler() - manifest file", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(ok({ type: "success", result: "dev" }));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstSchema" }));
-          }
-        },
-      });
-
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, ExtensionErrors.DefaultManifestTemplateNotExistsError);
-      }
-      sinon.restore();
+      await handlers.validateManifestHandler();
+      sinon.assert.calledOnce(validateApplication);
     });
 
     it("validateManifestHandler() - user cancel", async () => {
@@ -429,59 +382,6 @@ describe("handlers", () => {
       if (res.isErr()) {
         chai.assert.equal(res.error.message, "User cancel");
       }
-      sinon.restore();
-    });
-
-    it("validateManifestHandler() - user cancel env", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(err(new Error("User cancel")));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstSchema" }));
-          }
-        },
-      });
-
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.message, "User cancel");
-      }
-      sinon.restore();
-    });
-
-    it("validateManifestHandler() - telemetries", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(handlers, "runUserTask").resolves(ok(new Map()));
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(ok({ type: "success", result: "dev" }));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
-          }
-        },
-      });
-
-      await handlers.validateManifestHandler();
       sinon.restore();
     });
 

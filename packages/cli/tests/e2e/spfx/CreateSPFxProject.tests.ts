@@ -17,12 +17,7 @@ import {
   readContextMultiEnvV3,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
-import {
-  environmentManager,
-  isV3Enabled,
-  isValidationEnabled,
-  ProgrammingLanguage,
-} from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 import { Executor } from "../../utils/executor";
 import { Capability } from "../../utils/constants";
@@ -89,7 +84,7 @@ describe("Start a new project", function () {
         expect(result.success).to.be.true;
       }
 
-      if (isValidationEnabled()) {
+      {
         // validation local env succeed without local debug
         const result = await Executor.validate(projectPath, environmentManager.getLocalEnvName());
         expect(result.success).to.be.true;

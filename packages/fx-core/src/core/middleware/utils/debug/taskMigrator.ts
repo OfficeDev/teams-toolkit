@@ -357,6 +357,28 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
   }
 }
 
+export async function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.install-app-in-teams}")
+    ) {
+      ++index;
+      continue;
+    }
+
+    const label = task["label"];
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
+  }
+}
+
 export async function migrateValidateDependencies(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {

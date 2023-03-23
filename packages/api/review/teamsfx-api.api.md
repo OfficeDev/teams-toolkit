@@ -1784,6 +1784,8 @@ export enum Stage {
     // (undocumented)
     create = "create",
     // (undocumented)
+    createAppPackage = "createAppPackage",
+    // (undocumented)
     createEnv = "createEnv",
     // (undocumented)
     debug = "debug",
@@ -1824,7 +1826,9 @@ export enum Stage {
     // (undocumented)
     update = "update",
     // (undocumented)
-    userTask = "userTask"
+    userTask = "userTask",
+    // (undocumented)
+    validateApplication = "validateApplication"
 }
 
 // @public (undocumented)

@@ -24,9 +24,10 @@ import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { ProjectSettingsLoaderMW } from "../../../src/core/middleware/projectSettingsLoader";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
-import { NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
+import { NoProjectOpenedError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { FileNotFoundError } from "../../../src/error/common";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -56,14 +57,14 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () =
     await my.other(inputs);
   });
 
-  it("failed to load: NoProjectOpenedError, PathNotExistError", async () => {
+  it("failed to load: NoProjectOpenedError, FileNotFoundError", async () => {
     const my = new MyClass();
     const inputs: Inputs = { platform: Platform.VSCode };
     const res = await my.other(inputs);
     assert.isTrue(res.isErr() && res.error instanceof NoProjectOpenedError);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res2 = await my.other(inputs);
-    assert.isTrue(res2.isErr() && res2.error instanceof PathNotExistError);
+    assert.isTrue(res2.isErr() && res2.error instanceof FileNotFoundError);
   });
 });
 

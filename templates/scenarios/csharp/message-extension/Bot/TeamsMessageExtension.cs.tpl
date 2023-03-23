@@ -5,7 +5,7 @@ using Microsoft.Bot.Schema.Teams;
 
 using Newtonsoft.Json.Linq;
 
-namespace {%SafeProjectName%}.Bot;
+namespace {{SafeProjectName}}.Bot;
 
 public class TeamsMessageExtension : TeamsActivityHandler
 {
@@ -201,7 +201,7 @@ public class TeamsMessageExtension : TeamsActivityHandler
             Type = "setCachePolicy",
             Value = "{\"type\":\"no-cache\"}",
         };
-        
+
         var attachments = new MessagingExtensionAttachment(HeroCard.ContentType, null, heroCard);
         var suggestedActions = new MessagingExtensionSuggestedAction(new[] { action });
         var result = new MessagingExtensionResult("list", "result", new[] { attachments }, suggestedActions);

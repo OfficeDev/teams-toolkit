@@ -5,7 +5,7 @@
             "name": "Launch Remote in Teams (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "group 1: Teams",
                 "order": 3
@@ -16,7 +16,7 @@
             "name": "Launch Remote in Teams (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "group 1: Teams",
                 "order": 3
@@ -49,7 +49,7 @@
             "name": "Launch App in Teams (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "cascadeTerminateToConfigurations": [
                 "Attach to Local Service"
             ],
@@ -63,7 +63,7 @@
             "name": "Launch App in Teams (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "cascadeTerminateToConfigurations": [
                 "Attach to Local Service"
             ],

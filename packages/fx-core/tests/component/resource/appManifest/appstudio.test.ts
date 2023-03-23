@@ -237,7 +237,7 @@ describe("appStudio", () => {
       const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+        chai.assert.equal(res.error.name, "FileNotFoundError");
       }
     });
 

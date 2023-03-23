@@ -22,7 +22,7 @@ describe("UpdateJsonDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.file.error.invalidParameter") {
+      if (key === "error.common.InvalidActionInputError") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params

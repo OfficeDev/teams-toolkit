@@ -21,12 +21,10 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
-  StaticOptions,
   Stage,
   UserError,
   Void,
   VsCodeEnv,
-  PathNotExistError,
   UserCancelError,
   OptionItem,
   TeamsAppManifest,
@@ -37,7 +35,6 @@ import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
-
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import M365TokenInstance from "../../src/commonlib/m365Login";
@@ -66,7 +63,6 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
-import { assert } from "console";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
@@ -74,6 +70,7 @@ import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as question from "@microsoft/teamsfx-core/build/core/question";
 import * as visitor from "@microsoft/teamsfx-api/build/qm/visitor";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
@@ -150,7 +147,7 @@ describe("handlers", () => {
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
       .stub(MockCore.prototype, "getProjectConfigV3")
-      .resolves(err(new PathNotExistError("path not exist", "fake path")));
+      .resolves(err(new FileNotFoundError("path not exist", "fake path")));
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.isUndefined(res);
   });

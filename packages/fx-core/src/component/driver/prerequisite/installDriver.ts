@@ -28,7 +28,6 @@ import {
 } from "./constant";
 import { DotnetInstallationUserError } from "./error/dotnetInstallationUserError";
 import { FuncInstallationUserError } from "./error/funcInstallationUserError";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 import { InvalidActionInputError } from "../../../error/common";
 

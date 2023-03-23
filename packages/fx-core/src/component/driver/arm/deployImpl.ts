@@ -25,6 +25,7 @@ import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
 import { InvalidActionInputError } from "../../../error/common";
+import { InvalidAzureCredentialError } from "../../../error/azure";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -70,12 +71,7 @@ export class ArmDeployImpl {
   private async createClient(): Promise<void> {
     const azureToken = await this.context.azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken) {
-      throw new SystemError(
-        PluginDisplayName.Solution,
-        SolutionError.FailedToGetAzureCredential,
-        getDefaultString("core.deployArmTemplates.InvalidAzureCredential"),
-        getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")
-      );
+      throw new InvalidAzureCredentialError();
     }
     this.client = new ResourceManagementClient(azureToken, this.args.subscriptionId);
   }

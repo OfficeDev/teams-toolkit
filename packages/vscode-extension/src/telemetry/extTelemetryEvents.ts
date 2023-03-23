@@ -292,6 +292,7 @@ export enum TelemetryProperty {
   DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
+  DebugMetadataSource = "debug-metadata-source",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

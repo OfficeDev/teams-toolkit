@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ContextV3, TeamsAppManifest, Tools } from "@microsoft/teamsfx-api";
+import { ContextV3, ok, TeamsAppManifest, Tools } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core/build/common/local";
 import { pathUtils, PathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
@@ -13,6 +13,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import {
   getTaskInfo,
+  ManifestSources,
   maskArrayValue,
   maskValue,
   sendDebugMetadataEvent,
@@ -20,11 +21,15 @@ import {
 import * as globalVariables from "../../src/globalVariables";
 import { MockLogProvier, MockTelemetryReporter, MockUserInteraction } from "./testUtils";
 import * as fs from "fs-extra";
+import * as nodeFs from "fs";
 import * as chaiAsPromised from "chai-as-promised";
 import * as tmp from "tmp";
 import { actionName as createAppPackageActionName } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/createAppPackage";
 import { actionName as configureAppPackageActionName } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/configure";
 import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
+import { TelemetryProperty } from "../../src/telemetry/extTelemetryEvents";
+import { yamlParser } from "@microsoft/teamsfx-core/build/component/configManager/parser";
+import { PathLike } from "fs";
 chai.use(chaiAsPromised);
 
 describe("LocalTelemetryReporter", () => {
@@ -415,6 +420,42 @@ describe("sendDebugMetadataEvent()", () => {
     chai.assert.equal(mockReporter.events[1].eventName, TelemetryEvent.MetaData);
     chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.id"]);
     chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.bots"]);
+    chai.assert.equal(
+      mockReporter.events[1].properties?.[TelemetryProperty.DebugMetadataSource],
+      ManifestSources.ConfigureAppPackageManifestPath
+    );
+  });
+
+  it("Notification bot user manually build & upload manifest", async () => {
+    let projectPath: string;
+    {
+      const tmpobj = tmp.dirSync({ unsafeCleanup: true });
+      projectPath = tmpobj.name;
+      after(() => {
+        tmpobj.removeCallback();
+      });
+      const result = await Generator.generateTemplate(
+        mockCtx,
+        tmpobj.name,
+        "notification-restify",
+        "js"
+      );
+      chai.assert.isTrue(result.isOk());
+    }
+
+    sandbox.stub(metadataUtil, "parse").resolves(ok({}));
+
+    // prevent being affected by events sent from previous actions
+    mockReporter.resetEvents();
+    await sendDebugMetadataEvent(projectPath);
+    chai.assert.equal(mockReporter.events.length, 1);
+    chai.assert.equal(mockReporter.events[0].eventName, TelemetryEvent.MetaData);
+    chai.assert.isNotEmpty(mockReporter.events[0].properties?.["manifest.id"]);
+    chai.assert.isNotEmpty(mockReporter.events[0].properties?.["manifest.bots"]);
+    chai.assert.equal(
+      mockReporter.events[0].properties?.[TelemetryProperty.DebugMetadataSource],
+      ManifestSources.DefaultManifestPath
+    );
   });
 
   it("SSO tab happy path", async () => {
@@ -452,6 +493,10 @@ describe("sendDebugMetadataEvent()", () => {
       mockReporter.events[1].properties?.["manifest.configurableTabs.configurationUrl"]
     );
     chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.webApplicationInfo.id"]);
+    chai.assert.equal(
+      mockReporter.events[1].properties?.[TelemetryProperty.DebugMetadataSource],
+      ManifestSources.ConfigureAppPackageManifestPath
+    );
   });
 
   describe("Telemetry failure should not block execution", () => {

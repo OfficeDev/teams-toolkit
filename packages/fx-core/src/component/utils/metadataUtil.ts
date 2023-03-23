@@ -7,9 +7,13 @@ import { yamlParser } from "../configManager/parser";
 import { createHash } from "crypto";
 
 export class MetadataUtil {
-  async parse(path: string, env: string | undefined): Promise<Result<ProjectModel, FxError>> {
+  async parse(
+    path: string,
+    env: string | undefined,
+    additionalProperties?: { [key: string]: string }
+  ): Promise<Result<ProjectModel, FxError>> {
     const res = await yamlParser.parse(path);
-    const props: { [key: string]: string } = {};
+    let props: { [key: string]: string } = {};
     props[TelemetryProperty.YmlName] = (
       env === "local" ? MetadataV3.localConfigFile : MetadataV3.configFile
     )
@@ -25,14 +29,20 @@ export class MetadataUtil {
         props[name + ".actions"] = str ?? "";
       }
 
+      if (additionalProperties) {
+        props = { ...props, ...additionalProperties };
+      }
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }
 
     return res;
   }
 
-  parseManifest(manifest: TeamsAppManifest): void {
-    const props: { [key: string]: string } = {};
+  parseManifest(
+    manifest: TeamsAppManifest,
+    additionalProperties?: { [key: string]: string }
+  ): void {
+    let props: { [key: string]: string } = {};
     const prefix = "manifest.";
     props[prefix + "id"] = manifest.id ?? "";
     props[prefix + "version"] = manifest.version ?? "";
@@ -55,6 +65,10 @@ export class MetadataUtil {
         )
         .toString() ?? "";
     props[prefix + "webApplicationInfo.id"] = manifest.webApplicationInfo?.id ?? "";
+
+    if (additionalProperties) {
+      props = { ...props, ...additionalProperties };
+    }
 
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
   }

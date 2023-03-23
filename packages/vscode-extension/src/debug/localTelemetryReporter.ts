@@ -133,9 +133,9 @@ async function tryGetManifestFromYml(
   const configureTeamsAppArgs = configureTeamsApp?.with as
     | Partial<ConfigureTeamsAppArgs>
     | undefined;
-  const configureTeamsAppPath = configureTeamsAppArgs?.appPackagePath;
+  const configureTeamsAppAppPackagePath = configureTeamsAppArgs?.appPackagePath;
 
-  if (configureTeamsAppPath) {
+  if (configureTeamsAppAppPackagePath) {
     // Case 1: Happy path
     // Start from "teamsApp/update".appPackagePath
     // => "teamsApp/zipAppPackage".outputZipPath
@@ -151,7 +151,7 @@ async function tryGetManifestFromYml(
           return;
         }
 
-        if (createAppPackageArgs.outputZipPath === createAppPackageActionName) {
+        if (createAppPackageArgs.outputZipPath === configureTeamsAppAppPackagePath) {
           manifestPath = createAppPackageArgs.manifestPath;
         }
       });
@@ -169,7 +169,7 @@ async function tryGetManifestFromYml(
     // Start from "teamsApp/zipAppPackage".appPackagePath
     // => Unzip appPackage (in memory) to get manifest
     try {
-      const manifest = await readManifestFromAppPackage(configureTeamsAppPath);
+      const manifest = await readManifestFromAppPackage(configureTeamsAppAppPackagePath);
       if (manifest) {
         return {
           source: ManifestSources.ConfigureAppPackageAppPackagePath,
@@ -224,7 +224,7 @@ export async function sendDebugMetadataEvent(projectPath: string) {
     // TODO: add source to properties of metadataUtil.parseManifest (currently not exposed)
     const { source, manifest } = manifestData;
     // send manifest metadata
-    metadataUtil.parseManifest(manifest);
+    metadataUtil.parseManifest(manifest, { [TelemetryProperty.DebugMetadataSource]: source });
   } catch (e) {
     // ignore telemetry errors
   }

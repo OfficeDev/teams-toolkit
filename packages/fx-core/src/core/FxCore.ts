@@ -648,6 +648,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -672,6 +673,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -694,6 +696,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,

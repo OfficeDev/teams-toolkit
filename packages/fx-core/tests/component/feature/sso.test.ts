@@ -354,7 +354,7 @@ describe("SSO can add in VS V3 project", () => {
 
     sandbox.stub(fs, "pathExists").resolves(false);
     const ssoRes = await component.add(context, inputs);
-    assert.isTrue(ssoRes.isErr() && ssoRes.error.name === "InvalidProjectPath");
+    assert.isTrue(ssoRes.isErr() && ssoRes.error.name === "FileNotFoundError");
   });
 
   it("add sso failed for VS v3 project due to unexpected error", async () => {

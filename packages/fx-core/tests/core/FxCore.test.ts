@@ -386,12 +386,10 @@ describe("Core basic APIs", () => {
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
       const res = await core.deployAadManifest(inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
         assert.isTrue(res.error instanceof FileNotFoundError);
-        assert.equal(res.error.message, errMsg);
       }
       await deleteTestProject(appName);
     } finally {

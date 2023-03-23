@@ -93,7 +93,7 @@ import {
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
-import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
+import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";

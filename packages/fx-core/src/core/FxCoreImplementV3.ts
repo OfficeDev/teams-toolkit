@@ -84,7 +84,6 @@ import { MissingEnvInFileUserError } from "../component/driver/aad/error/missing
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
-import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";

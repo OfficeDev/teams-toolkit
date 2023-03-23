@@ -41,9 +41,9 @@ import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/create";
 
-const outputNames = {
-  TEAMS_APP_ID: "TEAMS_APP_ID",
-  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
+const defaultOutputNames = {
+  teamsAppId: "TEAMS_APP_ID",
+  teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
 @Service(actionName)
@@ -58,9 +58,13 @@ export class CreateTeamsAppDriver implements StepDriver {
     return res;
   }
 
-  public async execute(args: CreateTeamsAppArgs, context: DriverContext): Promise<ExecutionResult> {
+  public async execute(
+    args: CreateTeamsAppArgs,
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.create(args, wrapContext);
+    const res = await this.create(args, wrapContext, outputEnvVarNames);
     return {
       result: res,
       summaries: wrapContext.summaries,
@@ -70,7 +74,8 @@ export class CreateTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   async create(
     args: CreateTeamsAppArgs,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
 
@@ -78,6 +83,11 @@ export class CreateTeamsAppDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
+
+    if (!outputEnvVarNames) {
+      outputEnvVarNames = new Map(Object.entries(defaultOutputNames));
+    }
+    const state = this.loadStateFromEnv(outputEnvVarNames);
 
     let create = true;
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
@@ -95,7 +105,7 @@ export class CreateTeamsAppDriver implements StepDriver {
     progressHandler?.start();
 
     let createdAppDefinition: AppDefinition;
-    const teamsAppId = process.env.TEAMS_APP_ID;
+    const teamsAppId = state.teamsAppId;
     if (teamsAppId) {
       try {
         createdAppDefinition = await AppStudioClient.getApp(
@@ -151,8 +161,8 @@ export class CreateTeamsAppDriver implements StepDriver {
         progressHandler?.end(true);
         return ok(
           new Map([
-            [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],
-            [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition.tenantId!],
+            [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition.teamsAppId!],
+            [outputEnvVarNames.get("teamsAppTenantId") as string, createdAppDefinition.tenantId!],
           ])
         );
       } catch (e: any) {
@@ -178,8 +188,8 @@ export class CreateTeamsAppDriver implements StepDriver {
       progressHandler?.end(true);
       return ok(
         new Map([
-          [outputNames.TEAMS_APP_ID, createdAppDefinition!.teamsAppId!],
-          [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition!.tenantId!],
+          [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition!.teamsAppId!],
+          [outputEnvVarNames.get("teamsAppTenantId") as string, createdAppDefinition!.tenantId!],
         ])
       );
     }
@@ -201,5 +211,15 @@ export class CreateTeamsAppDriver implements StepDriver {
     } else {
       return ok(undefined);
     }
+  }
+
+  private loadStateFromEnv(
+    outputEnvVarNames: Map<string, string>
+  ): Record<string, string | undefined> {
+    const result: Record<string, string | undefined> = {};
+    for (const [propertyName, envVarName] of outputEnvVarNames) {
+      result[propertyName] = process.env[envVarName];
+    }
+    return result;
   }
 }

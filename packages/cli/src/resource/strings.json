@@ -4,13 +4,13 @@
   },
   "command": {
     "provision": {
-      "description": "Runs the provision stage in teamsapp.yml."
+      "description": "Run the provision stage in teamsapp.yml."
     },
     "deploy": {
-      "description": "Runs the deploy stage in teamsapp.yml."
+      "description": "Run the deploy stage in teamsapp.yml."
     },
     "publish": {
-      "description": "Runs the publish stage in teamsapp.yml."
+      "description": "Run the publish stage in teamsapp.yml."
     },
     "upgrade": {
       "description": "Upgrade the project to work with the latest version of Teams Toolkit.",

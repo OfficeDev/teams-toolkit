@@ -1,5 +1,5 @@
-using {%SafeProjectName%};
-using {%SafeProjectName%}.Interop.TeamsSDK;
+using {{SafeProjectName}};
+using {{SafeProjectName}}.Interop.TeamsSDK;
 
 var builder = WebApplication.CreateBuilder(args);
 

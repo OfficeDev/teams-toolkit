@@ -8,7 +8,7 @@ environmentFolderPath: ./env
 provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {%appName%}-${{TEAMSFX_ENV}}
+      name: {{appName}}-${{TEAMSFX_ENV}}
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 

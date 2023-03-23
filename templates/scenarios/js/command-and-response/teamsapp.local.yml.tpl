@@ -5,13 +5,13 @@ version: 1.0.0
 provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
-      name: {%appName%}
+      name: {{appName}}
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
@@ -19,7 +19,7 @@ provision:
   - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
-      name: {%appName%}
+      name: {{appName}}
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
       channels:
@@ -45,7 +45,7 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-  
+
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./.localSettings

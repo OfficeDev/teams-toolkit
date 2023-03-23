@@ -1,4 +1,4 @@
-using {%SafeProjectName%}.Models;
+using {{SafeProjectName}}.Models;
 using AdaptiveCards.Templating;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
-namespace {%SafeProjectName%}
+namespace {{SafeProjectName}}
 {
     public sealed class NotifyTimerTrigger
     {

@@ -1,4 +1,4 @@
-﻿namespace {%SafeProjectName%}.Models
+﻿namespace {{SafeProjectName}}.Models
 {
     public class HelloWorldModel
     {

@@ -8,12 +8,12 @@ environmentFolderPath: ./env
 provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
-      name: {%appName%}
+      name: {{appName}}
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for Bot Registration.
     # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.

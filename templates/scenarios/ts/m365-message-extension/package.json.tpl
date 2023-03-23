@@ -1,5 +1,5 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit m365 message extension sample",
     "engines": {

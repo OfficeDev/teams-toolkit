@@ -406,7 +406,7 @@ jobs:
                   fi
                 elif [[ ! -z `echo $test | jq 'select(.skipped==true)'` || ! -z `echo $test | jq 'select(.pending==true)'` ]]; then
                   skipped=$((skipped+1))
-                  label="<span style=\\\"background-color: #839496;color:white;font-weight:bold;\\\">SKIPPED</span>"
+                  label="<span style=\\\"background-color: #b58900;color:white;font-weight:bold;\\\">SKIPPED</span>"
                 fi
                 
                 row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: left;\\\">$name</td> <td style=\\\"text-align: center;\\\">$target_type</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$((duration/1000)) sec</td> </tr>"

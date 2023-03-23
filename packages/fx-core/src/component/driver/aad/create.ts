@@ -27,6 +27,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { InvalidActionInputError } from "../../../error/common";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -79,7 +80,7 @@ export class CreateAadAppDriver implements StepDriver {
         outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
       }
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
-      const aadAppState: CreateAadAppOutput = this.loadStateFromEnv(outputEnvVarNames);
+      const aadAppState: CreateAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       await progressHandler?.next(progressBarSettings.stepMessages.shift());
       if (!aadAppState.clientId) {
         context.logProvider?.info(
@@ -93,7 +94,7 @@ export class CreateAadAppDriver implements StepDriver {
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
-        outputs = this.mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
+        outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
 
         const summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
         context.logProvider?.info(summary);
@@ -207,30 +208,6 @@ export class CreateAadAppDriver implements StepDriver {
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private loadStateFromEnv(
-    outputEnvVarNames: Map<string, string>
-  ): Record<string, string | undefined> {
-    const result: Record<string, string | undefined> = {};
-    for (const [propertyName, envVarName] of outputEnvVarNames) {
-      result[propertyName] = process.env[envVarName];
-    }
-    return result;
-  }
-
-  private mapStateToEnv(
-    state: Record<string, string>,
-    outputEnvVarNames: Map<string, string>,
-    excludedProperties?: string[]
-  ): Map<string, string> {
-    const result = new Map<string, string>();
-    for (const [outputName, envVarName] of outputEnvVarNames) {
-      if (!excludedProperties?.includes(outputName)) {
-        result.set(envVarName, state[outputName]);
-      }
-    }
-    return result;
   }
 
   // logic from

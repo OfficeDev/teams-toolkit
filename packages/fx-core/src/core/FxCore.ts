@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -650,24 +653,7 @@ export class FxCore implements v3.ICore {
     ContextInjectorMW,
   ])
   async grantPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.grantPermission);
-    inputs.stage = Stage.grantPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await grantPermission(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+    return grantPermissionFunc(inputs, ctx);
   }
 
   async checkPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -690,24 +676,7 @@ export class FxCore implements v3.ICore {
     ContextInjectorMW,
   ])
   async checkPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.checkPermission);
-    inputs.stage = Stage.checkPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await checkPermission(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+    return checkPermissionFunc(inputs, ctx);
   }
 
   async listCollaborator(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -730,24 +699,7 @@ export class FxCore implements v3.ICore {
     ContextInjectorMW,
   ])
   async listCollaboratorOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.listCollaborator);
-    inputs.stage = Stage.listCollaborator;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await listCollaborator(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+    return listCollaboratorFunc(inputs, ctx);
   }
 
   @hooks([
@@ -1178,4 +1130,76 @@ export async function ensureBasicFolderStructure(
     return err(WriteFileError(e));
   }
   return ok(null);
+}
+
+export async function listCollaboratorFunc(
+  inputs: Inputs,
+  ctx?: CoreHookContext
+): Promise<Result<any, FxError>> {
+  setCurrentStage(Stage.listCollaborator);
+  inputs.stage = Stage.listCollaborator;
+  const projectPath = inputs.projectPath;
+  if (!projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    context.envInfo = ctx.envInfoV3;
+    const res = await listCollaborator(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      ctx.envInfoV3,
+      TOOLS.tokenProvider
+    );
+    return res;
+  }
+  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+}
+
+export async function checkPermissionFunc(
+  inputs: Inputs,
+  ctx?: CoreHookContext
+): Promise<Result<any, FxError>> {
+  setCurrentStage(Stage.checkPermission);
+  inputs.stage = Stage.checkPermission;
+  const projectPath = inputs.projectPath;
+  if (!projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    context.envInfo = ctx.envInfoV3;
+    const res = await checkPermission(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      ctx.envInfoV3,
+      TOOLS.tokenProvider
+    );
+    return res;
+  }
+  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+}
+
+export async function grantPermissionFunc(
+  inputs: Inputs,
+  ctx?: CoreHookContext
+): Promise<Result<any, FxError>> {
+  setCurrentStage(Stage.grantPermission);
+  inputs.stage = Stage.grantPermission;
+  const projectPath = inputs.projectPath;
+  if (!projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    context.envInfo = ctx.envInfoV3;
+    const res = await grantPermission(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      ctx.envInfoV3,
+      TOOLS.tokenProvider
+    );
+    return res;
+  }
+  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
 }

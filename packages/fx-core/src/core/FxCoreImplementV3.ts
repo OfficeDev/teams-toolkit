@@ -93,6 +93,7 @@ import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
+import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -371,24 +372,7 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.grantPermission);
-    inputs.stage = Stage.grantPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await grantPermission(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+    return grantPermissionFunc(inputs, ctx);
   }
 
   @hooks([
@@ -401,24 +385,7 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.checkPermission);
-    inputs.stage = Stage.checkPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await checkPermission(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+    return checkPermissionFunc(inputs, ctx);
   }
 
   @hooks([
@@ -431,24 +398,7 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.listCollaborator);
-    inputs.stage = Stage.listCollaborator;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await listCollaborator(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+    return listCollaboratorFunc(inputs, ctx);
   }
 
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {

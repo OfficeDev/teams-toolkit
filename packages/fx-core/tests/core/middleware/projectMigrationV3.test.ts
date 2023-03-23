@@ -1095,6 +1095,7 @@ describe("userdataMigration", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await userdataMigration(migrationContext);
+    sandbox.restore(); // in case that assertFileContent uses readFileSync
 
     await assertFileContent(
       projectPath,

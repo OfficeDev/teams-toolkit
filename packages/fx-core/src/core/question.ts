@@ -953,11 +953,13 @@ export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   };
 }
 
-export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefined> {
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(
-    inputs.projectPath!,
-    true
-  );
+export async function selectEnvNode(
+  inputs: Inputs,
+  isRemote = true
+): Promise<QTreeNode | undefined> {
+  const envProfilesResult = isRemote
+    ? await environmentManager.listRemoteEnvConfigs(inputs.projectPath!, true)
+    : await environmentManager.listAllEnvConfigs(inputs.projectPath!);
   if (envProfilesResult.isErr()) {
     // If failed to load env, return undefined
     return undefined;

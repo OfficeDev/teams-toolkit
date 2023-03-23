@@ -188,7 +188,7 @@ async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> 
   const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
 
   // Env select node
-  const envNode = await selectEnvNode(inputs);
+  const envNode = await selectEnvNode(inputs, false);
   if (!envNode) {
     return aadAppSelectNode;
   }

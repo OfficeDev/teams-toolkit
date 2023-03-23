@@ -1002,10 +1002,10 @@
   "driver.script.npmDescription": "running npm command.",
   "driver.script.npxDescription": "running npx command.",
   "driver.script.runCommandSummary": "Successful execution of the `%s` command at `%s`.",
-  "driver.m365.acquire.description": "acquire an M365 title with the app package",
-  "driver.m365.acquire.progress.message": "Acquiring M365 title with the app package.",
-  "driver.m365.acquire.progress.title": "m365Title/acquire",
-  "driver.m365.acquire.summary": "The M365 title has been acquired successfully (%s).",
+  "driver.m365.acquire.description": "acquire an Microsoft 365 title with the app package",
+  "driver.m365.acquire.progress.message": "Acquiring Microsoft 365 title with the app package.",
+  "driver.m365.acquire.progress.title": "Microsoft 365 Title/acquire",
+  "driver.m365.acquire.summary": "The Microsoft 365 title has been acquired successfully (%s).",
   "driver.m365.error.fileNotFound": "The input file not found for %s action: %s.",
   "driver.m365.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.m365.error.unhandledError": "Unhandled error happened in %s action: %s",
@@ -1064,7 +1064,7 @@
   "error.azure.ResourceGroupConflictError": "Failed to create resource group '%s', which already exists in subscription: %s",
   "error.azure.SelectSubscriptionError": "Failed to select subscription in current account.",
   "error.azure.ResourceGroupNotExistError": "The resource group '%s' does not exist in subscription: %s",
-  "error.m365.M365TokenJSONNotFoundError": "Failed to get M365 token JSON object",
-  "error.m365.M365TenantIdNotFoundInTokenError": "Failed to get M365 tenant id in token JSON object",
-  "error.m365.M365TenantIdNotMatchError": "Your signed in Microsoft 365 tenant '%s' is different from the one in the .env file (TEAMS_APP_TENANT_ID='%s'). To switch to your current signed in tenant, remove the values of %s."
+  "error.m365.M365TokenJSONNotFoundError": "Failed to get Microsoft 365 token JSON object",
+  "error.m365.M365TenantIdNotFoundInTokenError": "Failed to get Microsoft 365 tenant id in token JSON object",
+  "error.m365.M365TenantIdNotMatchError": "Your signed in Microsoft 365 tenant '%s' which is different from the one in the .env file (TEAMS_APP_TENANT_ID='%s'). To switch to your current signed in tenant, remove the values of %s."
 }

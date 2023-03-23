@@ -4,7 +4,7 @@ import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { pathUtils } from "./pathUtils";
-import { TOOLS } from "../../core/globalVars";
+import { globalVars, TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
@@ -58,6 +58,10 @@ export class EnvUtil {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
       }
     }
+
+    //global var
+    globalVars.envFilePath = dotEnvFilePath;
+
     // deserialize
     const parseResult = dotenvUtil.deserialize(
       await fs.readFile(dotEnvFilePath, { encoding: "utf8" })

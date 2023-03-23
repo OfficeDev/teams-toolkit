@@ -1598,7 +1598,7 @@ async function assertFileContent(
   assert.equal(actualFileContent, expectedFileContent);
 }
 
-export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
+async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
   await fs.copy(getTestAssetsPath(projectName), targetPath);
 }
 

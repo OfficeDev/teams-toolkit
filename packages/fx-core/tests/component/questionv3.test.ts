@@ -400,7 +400,7 @@ describe("question for v3", () => {
 
     const res = (spfxFolderQuestion() as any).default({ projectPath: projectDir });
 
-    assert.equal(res, "\\test\\src");
+    assert.equal(res, "\\test/src");
   });
 
   it("InitDebugProceedQuestion.title", async () => {

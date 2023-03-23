@@ -943,9 +943,16 @@ export function confirmManifestNode(defaultManifestFilePath: string, isTeamsApp 
     return [
       {
         id: "manifest",
-        label: isTeamsApp
-          ? inputs[CoreQuestionNames.TeamsAppManifestFilePath]
-          : inputs[CoreQuestionNames.AadAppManifestFilePath],
+        label: `$(file) ${path.basename(
+          isTeamsApp
+            ? inputs[CoreQuestionNames.TeamsAppManifestFilePath]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        )}`,
+        description: path.dirname(
+          isTeamsApp
+            ? inputs[CoreQuestionNames.TeamsAppManifestFilePath]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        ),
       },
     ];
   };

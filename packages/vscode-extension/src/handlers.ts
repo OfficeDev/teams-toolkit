@@ -1070,7 +1070,7 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
-let lastAppPackageFile: string;
+let lastAppPackageFile: string | undefined;
 
 export async function publishInDeveloperPortalHandler(
   args?: any[]
@@ -1095,9 +1095,6 @@ export async function publishInDeveloperPortalHandler(
         return path.join(zipDefaultFolder, file);
       });
   }
-  if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
-    files.unshift(lastAppPackageFile);
-  }
   while (true) {
     const selectFileConfig: SelectFileConfig = {
       name: "appPackagePath",
@@ -1106,14 +1103,20 @@ export async function publishInDeveloperPortalHandler(
       filters: {
         "Zip files": ["zip"],
       },
-      possibleFiles: files.map((file) => {
+    };
+    if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
+      selectFileConfig.default = lastAppPackageFile;
+    } else {
+      selectFileConfig.possibleFiles = files.map((file) => {
+        const appPackageFilename = path.basename(file);
+        const appPackageFilepath = path.dirname(file);
         return {
           id: file,
-          label: `$(file-zip) ${file}`,
+          label: `$(file) ${appPackageFilename}`,
+          description: appPackageFilepath,
         };
-      }),
-      default: files.length > 0 ? files[0] : undefined,
-    };
+      });
+    }
     const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
     if (selectFileResult.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(
@@ -1123,20 +1126,29 @@ export async function publishInDeveloperPortalHandler(
       );
       return ok(null);
     }
-    lastAppPackageFile = selectFileResult.value.result!;
+    if (
+      (lastAppPackageFile && selectFileResult.value.result === lastAppPackageFile) ||
+      (!lastAppPackageFile && files.indexOf(selectFileResult.value.result!) !== -1)
+    ) {
+      // user selected file in options
+      lastAppPackageFile = selectFileResult.value.result;
+      break;
+    }
     // final confirmation
+    lastAppPackageFile = selectFileResult.value.result!;
     const appPackageFilename = path.basename(lastAppPackageFile);
     const appPackageFilepath = path.dirname(lastAppPackageFile);
     const confirmOption: SingleSelectConfig = {
       options: [
         {
           id: "yes",
-          label: `$(file-zip) ${appPackageFilename}`,
+          label: `$(file) ${appPackageFilename}`,
           description: appPackageFilepath,
         },
       ],
       name: "confirm",
-      title: localize("teamstoolkit.common.confirm"),
+      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+      placeholder: localize("teamstoolkit.publishInDevPortal.confirmFile.placeholder"),
       step: 2,
     };
     const confirm = await VS_CODE_UI.selectOption(confirmOption);

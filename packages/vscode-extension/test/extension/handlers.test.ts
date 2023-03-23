@@ -1798,7 +1798,7 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon
         .stub(extension.VS_CODE_UI, "selectFile")
-        .resolves(ok({ type: "success", result: "test.zip" }));
+        .resolves(ok({ type: "success", result: "test2.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
       sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(UserCancelError));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");

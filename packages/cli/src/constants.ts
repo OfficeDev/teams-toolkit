@@ -63,19 +63,19 @@ export const BuildPackageOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.json'",
+      "Select the Teams app manifest template path, defaults to '${folder}/appPackage/manifest.json'",
   },
   [CoreQuestionNames.OutputZipPathParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the zipped app package, default to '${folder}/build/appPackage/appPackage.${env}.zip'",
+      "Select the output path of the zipped app package, defaults to '${folder}/build/appPackage/appPackage.${env}.zip'",
   },
   [CoreQuestionNames.OutputManifestParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the generated manifest path, default to '${folder}/build/appPackage/manifest.${env}.json'",
+      "Select the output path of the generated manifest path, defaults to '${folder}/build/appPackage/manifest.${env}.json'",
   },
 };
 
@@ -84,13 +84,13 @@ export const ValidateApplicationOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.json'. Validate using manifest schema.",
+      "Select the input Teams app manifest file path, defaults to '${folder}/appPackage/manifest.json'. Ihis manifest will be validated using manifest schema.",
   },
   [AppPackageFilePathParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the Teams app package path, default to '${folder}/build/appPackage/appPackage.${env}.zip'. Validate app package using validation rules.",
+      "Select the zipped Teams app package path, defaults to '${folder}/build/appPackage/appPackage.${env}.zip'. This package will be validated with validation rules.",
   },
 };
 
@@ -100,7 +100,7 @@ export const AadManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.json'",
+      "Enter the AAD app manifest template file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
   },
 };
 
@@ -110,7 +110,7 @@ export const TeamsAppManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the Teams app manifest template file path, it's a relative path to project root folder, default to './appPackage/manifest.json'",
+      "Enter the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
   },
 };
 

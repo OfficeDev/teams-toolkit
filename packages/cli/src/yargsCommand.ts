@@ -120,6 +120,8 @@ export abstract class YargsCommand {
           if (
             this.commandHead !== "new" &&
             this.commandHead !== "template" &&
+            this.commandHead !== "infra" &&
+            this.commandHead !== "debug" &&
             args.folder &&
             !args.global
           ) {

@@ -82,6 +82,12 @@ describe("Yargs Command Tests", function () {
     mockedEnvRestore();
   });
 
+  it("- failed to check project version", async () => {
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(err(UserCancelError));
+    const cmd = new TestCommand();
+    await expect(cmd.handler({ folder: "test" })).to.be.rejected;
+  });
+
   it("- project not support", async () => {
     sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
       ok<VersionCheckRes, FxError>({
@@ -112,7 +118,7 @@ describe("Yargs Command Tests", function () {
   it("- project upgradable (cancel)", async () => {
     sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
       ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.unsupported,
+        isSupport: VersionState.upgradeable,
         versionSource: "",
         currentVersion: "1.0.0",
         trackingId: "",

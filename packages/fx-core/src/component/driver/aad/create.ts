@@ -150,12 +150,7 @@ export class CreateAadAppDriver implements StepDriver {
       await progressHandler?.end(true);
 
       return {
-        result: ok(
-          new Map(
-            Object.entries(aadAppState) // convert each property to Map item
-              .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
-          )
-        ),
+        result: ok(outputs),
         summaries: summaries,
       };
     } catch (error) {

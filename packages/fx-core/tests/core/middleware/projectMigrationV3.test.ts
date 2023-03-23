@@ -1039,11 +1039,6 @@ describe("userdataMigration", () => {
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
-    sandbox
-      .stub(fs, "readFileSync")
-      .returns(
-        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n"
-      );
   });
 
   afterEach(async () => {
@@ -1091,6 +1086,12 @@ describe("userdataMigration", () => {
   });
 
   it("Should successfully resolve different EOLs of userdata", async () => {
+    sandbox
+      .stub(fs, "readFileSync")
+      .returns(
+        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n"
+      );
+
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await userdataMigration(migrationContext);

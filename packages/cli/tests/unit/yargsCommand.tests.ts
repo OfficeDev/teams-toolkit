@@ -1,27 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
+import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import "mocha";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-
-import { err, FxError, ok, Result, UserCancelError, Void } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
-
-import Provision from "../../src/cmds/provision";
-import CliTelemetry from "../../src/telemetry/cliTelemetry";
-import { TelemetryEvent } from "../../src/telemetry/cliTelemetryEvents";
-import * as constants from "../../src/constants";
-import * as Utils from "../../src/utils";
-import { expect } from "./utils";
-import { NotFoundSubscriptionId } from "../../src/error";
-import UI from "../../src/userInteraction";
+import { WorkspaceNotSupported } from "../../src/cmds/preview/errors";
 import LogProvider from "../../src/commonlib/log";
-import CLIUIInstance from "../../src/userInteraction";
-import { RestoreFn } from "mocked-env";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { NotFoundSubscriptionId } from "../../src/error";
+import CliTelemetry from "../../src/telemetry/cliTelemetry";
+import { default as CLIUIInstance, default as UI } from "../../src/userInteraction";
+import * as Utils from "../../src/utils";
 import { YargsCommand } from "../../src/yargsCommand";
+import { expect } from "./utils";
 
 class TestCommand extends YargsCommand {
   public commandHead = "test";
@@ -83,7 +78,9 @@ describe("Yargs Command Tests", function () {
   });
 
   it("- failed to check project version", async () => {
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(err(UserCancelError));
+    sandbox
+      .stub(FxCore.prototype, "projectVersionCheck")
+      .resolves(err(WorkspaceNotSupported("./")));
     const cmd = new TestCommand();
     await expect(cmd.handler({ folder: "test" })).to.be.rejected;
   });
@@ -124,7 +121,7 @@ describe("Yargs Command Tests", function () {
         trackingId: "",
       })
     );
-    sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(err(UserCancelError));
+    sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(err(WorkspaceNotSupported("./")));
     const cmd = new TestCommand();
     await expect(cmd.handler({ folder: "test" })).to.be.rejected;
   });

@@ -36,6 +36,9 @@ import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
+import { QuestionModelMW } from "./middleware/questionModel";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
@@ -228,8 +231,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
     ProjectConsolidateMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
     EnvLoaderMW(false),
     ContextInjectorMW,
+    QuestionModelMW,
     EnvWriterMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {

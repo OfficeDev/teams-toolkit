@@ -103,6 +103,7 @@ import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import { UnresolvedPlaceholderError } from "../../error/common";
+import { SelectSubscriptionError } from "../../error/azure";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -736,13 +737,7 @@ export class Coordinator {
       }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
-        return err(
-          new UserError(
-            "coordinator",
-            "SubscriptionNotFound",
-            getLocalizedString("core.provision.subscription.failToSelect")
-          )
-        );
+        return err(new SelectSubscriptionError());
       }
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,

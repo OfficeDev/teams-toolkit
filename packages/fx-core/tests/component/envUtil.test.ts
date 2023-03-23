@@ -30,8 +30,8 @@ import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
 import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
-import { PathNotExistError } from "../../src";
 import { MetadataV3 } from "../../src/common/versionMetadata";
+import { FileNotFoundError } from "../../src/error/common";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -680,7 +680,7 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr() instanceof PathNotExistError);
+    assert.isTrue(res._unsafeUnwrapErr() instanceof FileNotFoundError);
   });
 });
 

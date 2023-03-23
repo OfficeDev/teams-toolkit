@@ -43,8 +43,6 @@ import {
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
-import AdmZip from "adm-zip";
-import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { YamlParser } from "../../src/component/configManager/parser";
@@ -66,6 +64,7 @@ import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
+import { FileNotFoundError } from "../../src/error/common";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -387,12 +386,10 @@ describe("Core basic APIs", () => {
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
       const res = await core.deployAadManifest(inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
-        assert.isTrue(res.error instanceof NoAadManifestExistError);
-        assert.equal(res.error.message, errMsg);
+        assert.isTrue(res.error instanceof FileNotFoundError);
       }
       await deleteTestProject(appName);
     } finally {

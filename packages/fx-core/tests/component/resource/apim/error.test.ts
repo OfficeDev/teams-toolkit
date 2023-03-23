@@ -7,7 +7,6 @@ import {
   AssertNotEmpty,
   BuildError,
   InvalidAadObjectId,
-  UnhandledError,
 } from "../../../../src/component/resource/apim/error";
 
 describe("Error", () => {
@@ -45,16 +44,6 @@ describe("Error", () => {
         error.message,
         "The Azure Active Directory application with object id 'test' could not be found."
       );
-    });
-
-    it("UnhandledError(error)", () => {
-      const error = BuildError(UnhandledError, new Error("inner error"));
-      chai.assert.equal(error.message, `Unhandled error. inner error`);
-    });
-
-    it("UnhandledError()", () => {
-      const error = BuildError(UnhandledError);
-      chai.assert.equal(error.message, `Unhandled error.`);
     });
 
     it("AadOperationError(error)", () => {

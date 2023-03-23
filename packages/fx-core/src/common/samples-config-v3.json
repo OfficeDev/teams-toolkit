@@ -1,7 +1,7 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.0.0/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v2.0.0.zip",
-    "baseFolderName": "TeamsFx-Samples-2.0.0",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.1.0/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v2.1.0.zip",
+    "baseFolderName": "TeamsFx-Samples-2.1.0",
     "samples": [
         {
             "id": "hello-world-tab-with-backend",

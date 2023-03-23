@@ -64,7 +64,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "grantPermission") {
     getQuestionRes = await getQuestionsForGrantPermission(inputs);
-  } else if (isV3Enabled() && method === "listCollaborator") {
+  } else if (isV3Enabled() && (method === "listCollaborator" || method == "checkPermission")) {
     getQuestionRes = await getQuestionsForListCollaborator(inputs);
   }
 

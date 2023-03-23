@@ -478,6 +478,26 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.deployTeamsManifest, inputs);
   }
 
+  async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (inputs.validateMethod === "validateAgainstSchema") {
+      return await this.validateManifest(inputs);
+    } else {
+      return await this.validateAppPackage(inputs);
+    }
+  }
+
+  async validateManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.validateManifest, inputs);
+  }
+
+  async validateAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.validateAppPackage, inputs);
+  }
+
+  async createAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.createAppPackage, inputs);
+  }
+
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
@@ -616,7 +636,6 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(isV3Enabled() ? true : false, true),
     QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -650,7 +669,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    QuestionModelMW,
     ContextInjectorMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -681,7 +700,6 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(isV3Enabled() ? true : false, true),
     QuestionModelMW,
     ConcurrentLockerMW,
     ContextInjectorMW,

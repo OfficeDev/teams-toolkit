@@ -90,10 +90,13 @@ export class EnvUtil {
       }
     }
 
+    // set process.env
     parseResult.obj.TEAMSFX_ENV = env;
     if (loadToProcessEnv) {
-      merge(process.env, parseResult.obj);
-      if (parseResultSecret) merge(process.env, parseResultSecret.obj);
+      // '.env.xxx' has higher priority than '.env.xxx.user'
+      if (parseResultSecret) this.mergeEnv(parseResult.obj, parseResultSecret.obj);
+      // 'process.env' has higher priority than '.env.xxx'
+      this.mergeEnv(process.env, parseResult.obj);
     }
 
     const props: { [key: string]: string } = {};
@@ -114,6 +117,17 @@ export class EnvUtil {
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
 
     return ok(parseResult.obj);
+  }
+
+  mergeEnv(
+    envWithHigherPriority: NodeJS.ProcessEnv | DotenvOutput,
+    envWithLowerPriority: DotenvOutput
+  ) {
+    for (const key of Object.keys(envWithLowerPriority)) {
+      if (!envWithHigherPriority[key]) {
+        envWithHigherPriority[key] = envWithLowerPriority[key];
+      }
+    }
   }
 
   /**

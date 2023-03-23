@@ -1,7 +1,8 @@
 version: 1.0.0
 
-{{#config.registerApp}}
-registerApp:
+{{#config.provision}}
+provision:
+  {{#registerApp}}
   {{#if aad}}
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
@@ -24,9 +25,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
   {{/if}}
 
-{{/config.registerApp}}
-{{#config.provision}}
-provision:
+  {{/registerApp}}
   {{#bot}}
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
@@ -46,24 +45,22 @@ provision:
         {{#if isM365}}
         - name: m365extensions
         {{/if}}
-  {{/bot}}
 
-{{/config.provision}}
-{{#config.configureApp}}
-configureApp:
+  {{/bot}}
+  {{#configureApp}}
   {{#tab}}
   - uses: script # Set env for local launch
-    name: Set {{../../placeholderMappings.tabDomain}} for local launch
+    name: Set {{../../../placeholderMappings.tabDomain}} for local launch
     with:
-      run: echo "::set-output {{../../placeholderMappings.tabDomain}}={{domain}}"
+      run: echo "::set-output {{../../../placeholderMappings.tabDomain}}={{domain}}"
   - uses: script # Set env for local launch
-    name: Set {{../../placeholderMappings.tabEndpoint}} for local launch
+    name: Set {{../../../placeholderMappings.tabEndpoint}} for local launch
     with:
-      run: echo "::set-output {{../../placeholderMappings.tabEndpoint}}={{endpoint}}"
+      run: echo "::set-output {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}"
   - uses: script # Set env for local launch
-    name: Set {{../../placeholderMappings.tabIndexPath}} for local launch
+    name: Set {{../../../placeholderMappings.tabIndexPath}} for local launch
     with:
-      run: echo "::set-output {{../../placeholderMappings.tabIndexPath}}=/index.html#"
+      run: echo "::set-output {{../../../placeholderMappings.tabIndexPath}}=/index.html#"
 
   {{/tab}}
   {{#if aad}}
@@ -99,9 +96,19 @@ configureApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
   {{/if}}
-  {{/teamsApp}}
 
-{{/config.configureApp}}
+  {{/teamsApp}}
+  {{#if isM365}}
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+    with:
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # M365_TITLE_ID: the id of M365 title
+    # M365_APP_ID: the app id of M365 title
+
+  {{/if}}
+  {{/configureApp}}
+{{/config.provision}}
 {{#config.deploy}}
 deploy:
   {{#tools}}

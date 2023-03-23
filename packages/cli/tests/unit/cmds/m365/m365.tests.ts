@@ -118,7 +118,7 @@ describe("M365", () => {
     sandbox
       .stub(M365TokenProvider, "getStatus")
       .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
-    sandbox.stub(PackageService.prototype, "getLaunchInfo").resolves({ foo: "bar" });
+    sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves({ foo: "bar" });
 
     const m365 = new M365();
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
@@ -134,7 +134,7 @@ describe("M365", () => {
       .stub(M365TokenProvider, "getStatus")
       .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
     sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("test-title-id");
-    sandbox.stub(PackageService.prototype, "getLaunchInfo").resolves({ foo: "bar" });
+    sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves({ foo: "bar" });
 
     const m365 = new M365();
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
@@ -176,7 +176,7 @@ describe("M365", () => {
     sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
     sandbox.stub(M365TokenProvider, "getStatus").returns(Promise.resolve(err(UserCancelError)));
     sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("test-title-id");
-    sandbox.stub(PackageService.prototype, "getLaunchInfo").resolves({ foo: "bar" });
+    sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves({ foo: "bar" });
 
     const m365 = new M365();
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");

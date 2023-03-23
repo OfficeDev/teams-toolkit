@@ -63,6 +63,9 @@ import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -239,17 +242,18 @@ describe("Core basic APIs", () => {
     try {
       const core = new FxCore(tools);
       const appName = await mockV3Project();
-      // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+      const appPath = path.join(os.tmpdir(), appName);
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.Folder]: os.tmpdir(),
         "spfx-folder": ".\\src",
-        "manifest-path": ".\\appPackage\\manifest.json",
-        "local-manifest-path": ".\\appPackage\\manifest.local.json",
+        "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+        "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
         "spfx-webpart-name": "helloworld",
         "spfx-use-global-package-or-install-local": "installLocally",
+        "spfx-load-package-version": "loaded",
         stage: Stage.addWebpart,
-        projectPath: path.join(os.tmpdir(), appName),
+        projectPath: appPath,
       };
 
       const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");
@@ -872,5 +876,65 @@ describe("publishInDeveloperPortal", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+  });
+});
+
+describe("Teams app APIs", async () => {
+  const tools = new MockTools();
+  const core = new FxCore(tools);
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("validate app package", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.TeamsAppPackageFilePath]: ".\\build\\appPackage\\appPackage.dev.zip",
+      validateMethod: "validateAgainstAppPackage",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
+    await core.validateApplication(inputs);
+    sinon.assert.calledOnce(runSpy);
+  });
+
+  it("validate manifest", async () => {
+    const appName = await mockV3Project();
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
+      validateMethod: "validateAgainstSchema",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    try {
+      const runSpy = sinon.spy(ValidateManifestDriver.prototype, "run");
+      await core.validateApplication(inputs);
+      sinon.assert.calledOnce(runSpy);
+    } finally {
+      restore();
+    }
+  });
+
+  it("create app package", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    const runSpy = sinon.spy(CreateAppPackageDriver.prototype, "run");
+    await core.createAppPackage(inputs);
+    sinon.assert.calledOnce(runSpy);
   });
 });

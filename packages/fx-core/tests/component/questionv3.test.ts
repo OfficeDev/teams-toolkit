@@ -8,12 +8,14 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
+  getQuestionsForValidateManifest,
+  getQuestionsForValidateAppPackage,
+  getQuestionsForCreateAppPackage,
+  getQuestionsForUpdateTeamsApp,
   FeatureId,
   InitDebugProceedQuestion,
   getQuestionsForAddWebpart,
   spfxFolderQuestion,
-  manifestFileQuestion,
-  localManifestFileQuestion,
 } from "../../src/component/question";
 import {
   ApiConnectionOptionItem,
@@ -385,6 +387,7 @@ describe("question for v3", () => {
   it("getQuestionsForAddWebpart", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: "./test",
     };
 
     const res = getQuestionsForAddWebpart(inputs);
@@ -400,22 +403,6 @@ describe("question for v3", () => {
     assert.equal(res, "\\test/src");
   });
 
-  it("manifestFileQuestion", () => {
-    const projectDir = "\\test";
-
-    const res = (manifestFileQuestion() as any).default({ projectPath: projectDir });
-
-    assert.equal(res, "\\test/appPackage/manifest.json");
-  });
-
-  it("localManifestFileQuestion", () => {
-    const projectDir = "\\test";
-
-    const res = (localManifestFileQuestion() as any).default({ projectPath: projectDir });
-
-    assert.equal(res, "\\test/appPackage/manifest.local.json");
-  });
-
   it("InitDebugProceedQuestion.title", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI_HELP,
@@ -427,5 +414,43 @@ describe("question for v3", () => {
     const res2 = await (InitDebugProceedQuestion() as any).title(inputs);
     assert.isDefined(res1);
     assert.isDefined(res2);
+  });
+
+  it("validate manifest question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      validateMethod: "validateAgainstSchema",
+    };
+    const nodeRes = await getQuestionsForValidateManifest(inputs);
+    assert.isTrue(nodeRes.isOk());
+  });
+
+  it("validate app package question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      validateMethod: "validateAgainstAppPackage",
+    };
+    const nodeRes = await getQuestionsForValidateAppPackage(inputs);
+    assert.isTrue(nodeRes.isOk());
+  });
+
+  it("create app package question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
+    assert.isTrue(nodeRes.isOk());
+  });
+
+  it("update Teams app question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const nodeRes = await getQuestionsForUpdateTeamsApp(inputs);
+    assert.isTrue(nodeRes.isOk());
   });
 });

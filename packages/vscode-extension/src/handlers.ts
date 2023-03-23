@@ -817,11 +817,6 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   );
 
   if (isV3Enabled()) {
-    // Use default manifest template
-    // Throw error if not exists and remind user to use CLI
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
-
     const schemaOption: OptionItem = {
       id: "validateAgainstSchema",
       label: localize("teamstoolkit.handlers.validate.schemaOption"),
@@ -844,67 +839,11 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
       });
       return err(result.error);
     } else {
-      const selectedEnv = await askTargetEnvironment();
-      if (selectedEnv.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-        showError(selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      const env = selectedEnv.value;
-
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "validateManifest",
-        params: {},
-      };
-      if (result.value.result === schemaOption.id) {
-        if (!(await fs.pathExists(manifestTemplatePath))) {
-          const error = new UserError(
-            ExtensionSource,
-            ExtensionErrors.DefaultManifestTemplateNotExistsError,
-            util.format(
-              localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-              manifestTemplatePath
-            )
-          );
-
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-          showError(error);
-          return err(error);
-        }
-        func.params = {
-          manifestPath: manifestTemplatePath,
-        };
-      } else {
-        const appPackagePath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
-        if (!(await fs.pathExists(appPackagePath))) {
-          const error = new UserError(
-            ExtensionSource,
-            ExtensionErrors.DefaultAppPackageNotExistsError,
-            util.format(
-              localize("teamstoolkit.handlers.defaultAppPackageNotExists"),
-              appPackagePath
-            )
-          );
-
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-          showError(error);
-          return err(error);
-        }
-
-        func.params = {
-          appPackagePath: appPackagePath,
-        };
-      }
       const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
       telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
-      return await runUserTask(
-        func,
-        TelemetryEvent.ValidateManifest,
-        false,
-        env,
-        telemetryProperties
-      );
+      const inputs = getSystemInputs();
+      inputs.validateMethod = result.value.result;
+      return await runCommand(Stage.validateApplication, inputs, telemetryProperties);
     }
   } else {
     const func: Func = {
@@ -964,46 +903,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   if (isV3Enabled()) {
-    // Use default manifest template
-    // Throw error if not exists and remind user to use CLI
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
-
-    if (!(await fs.pathExists(manifestTemplatePath))) {
-      const error = new UserError(
-        ExtensionSource,
-        ExtensionErrors.DefaultManifestTemplateNotExistsError,
-        util.format(
-          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-          manifestTemplatePath
-        )
-      );
-
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-      showError(error);
-      return err(error);
-    }
-
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-      showError(selectedEnv.error);
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "buildPackage",
-      params: {
-        manifestTemplatePath: manifestTemplatePath,
-        outputZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
-        outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
-        env: env,
-      },
-    };
-
-    return await runUserTask(func, TelemetryEvent.Build, false, env);
+    return await runCommand(Stage.createAppPackage);
   } else {
     const func: Func = {
       namespace: "fx-solution-azure",
@@ -1207,7 +1107,8 @@ export async function addWebpart(args?: any[]) {
 
 export async function runCommand(
   stage: Stage,
-  defaultInputs?: Inputs
+  defaultInputs?: Inputs,
+  telemetryProperties?: { [key: string]: string }
 ): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -1289,6 +1190,14 @@ export async function runCommand(
         result = await core.addWebpart(inputs);
         break;
       }
+      case Stage.validateApplication: {
+        result = await core.validateApplication(inputs);
+        break;
+      }
+      case Stage.createAppPackage: {
+        result = await core.createAppPackage(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -1300,7 +1209,7 @@ export async function runCommand(
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
 }

@@ -349,8 +349,8 @@ export class MockTelemetryReporter implements TelemetryReporter {
 }
 
 export class MockUserInteraction implements UserInteraction {
-  selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    throw new Error(`Method selectOption not implemented: ${JSON.stringify(config)}`);
+  async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    return ok({ type: "success" });
   }
 
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {

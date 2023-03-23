@@ -200,6 +200,20 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
+                        <string>token.info-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>Teams web client is being launched for you to debug the Teams app: (https://.*)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.launchLink</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
                         <string>token.error-token</string>
                     </dict>
                     <key>2</key>

@@ -7,6 +7,7 @@ import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
+  oldPlaceholderDelimiters,
   placeholderDelimiters,
   templateAlphaVersion,
   templateFileExt,
@@ -173,7 +174,9 @@ export function renderTemplateFileData(
   if (path.extname(fileName) === templateFileExt) {
     const token = escapeEmptyVariable(fileData.toString(), variables ?? {});
     const writer = new Writer();
-    return writer.renderTokens(token, new Context(variables));
+    const result = writer.renderTokens(token, new Context(variables));
+    // Be compatible with current stable templates, can be removed after new template released.
+    return Mustache.render(result, variables, {}, oldPlaceholderDelimiters);
   }
   // Return Buffer instead of string if the file is not a template. Because `toString()` may break binary resources, like png files.
   return fileData;

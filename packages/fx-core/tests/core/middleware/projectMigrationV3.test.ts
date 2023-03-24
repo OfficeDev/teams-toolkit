@@ -408,7 +408,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for js webapp bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsWebappBotId", projectPath);
+    await copyTestProject("jsWebappBot_botWebAppId", projectPath);
 
     await generateAppYml(migrationContext);
 
@@ -416,7 +416,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsWebappBotId", projectPath);
+    await copyTestProject("jsWebappBot_botWebAppId", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
     projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
@@ -430,7 +430,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for js function bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsFuncBotWebAppId", projectPath);
+    await copyTestProject("jsFuncBot_botWebAppId", projectPath);
 
     await generateAppYml(migrationContext);
 
@@ -438,7 +438,51 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for ts function bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsFuncBotWebAppId", projectPath);
+    await copyTestProject("jsFuncBot_botWebAppId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
+  });
+
+  it("should success for js webApp bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsWebAppBot_webAppId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
+  });
+
+  it("should success for ts webApp bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsWebAppBot_webAppId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
+  });
+
+  it("should success for js function bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsFuncBot_webAppId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
+  });
+
+  it("should success for ts function bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsFuncBot_webAppId", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
     projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(

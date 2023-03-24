@@ -989,6 +989,7 @@ function generateDriverContext(
     azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
     m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
     ui: ctx.userInteraction,
+    progressBar: undefined,
     logProvider: ctx.logProvider,
     telemetryReporter: ctx.telemetryReporter,
     projectPath: ctx.projectPath!,

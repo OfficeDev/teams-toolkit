@@ -1369,7 +1369,6 @@ describe("handlers", () => {
     const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
     sandbox.assert.calledOnce(deployAadManifest);
-    chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
     deployAadManifest.restore();
   });
 

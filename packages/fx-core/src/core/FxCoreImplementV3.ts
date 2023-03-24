@@ -36,7 +36,8 @@ import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
@@ -69,7 +70,7 @@ import {
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
+import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
@@ -91,6 +92,7 @@ import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
+import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -370,6 +372,48 @@ export class FxCoreV3Implement {
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs, ctx);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs, ctx);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return listCollaboratorFunc(inputs, ctx);
   }
 
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {

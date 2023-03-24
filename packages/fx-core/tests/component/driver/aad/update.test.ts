@@ -6,7 +6,10 @@ import * as sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { UpdateAadAppDriver } from "../../../../src/component/driver/aad/update";
+import {
+  UpdateAadAppDriver,
+  getQuestionForDeployAadManifest,
+} from "../../../../src/component/driver/aad/update";
 import {
   MockedLogProvider,
   MockedM365Provider,
@@ -23,7 +26,11 @@ import {
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { cwd } from "process";
 import { InvalidActionInputError, UnresolvedPlaceholderError } from "../../../../src/error/common";
-
+import { Inputs, Platform, v2, ok } from "@microsoft/teamsfx-api";
+import os from "os";
+import { MockTools, randomAppName } from "../../../core/utils";
+import { CoreQuestionNames } from "../../../../src/core/question";
+import { environmentManager } from "../../../../src/core/environment";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -44,6 +51,10 @@ describe("aadAppUpdate", async () => {
     logProvider: new MockedLogProvider(),
     projectPath: cwd(),
     ui: new MockedUserInteraction(),
+  };
+  const inputs: v2.InputsWithProjectPath = {
+    platform: Platform.VSCode,
+    projectPath: path.join(os.tmpdir(), randomAppName()),
   };
 
   let envRestore: RestoreFn | undefined;
@@ -531,5 +542,29 @@ describe("aadAppUpdate", async () => {
 
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
+  });
+
+  it("if getQuestionForDeployAadManifest not dynamic", async () => {
+    inputs.platform = Platform.CLI_HELP;
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
+  });
+
+  it("getQuestionForDeployAadManifest happy path", async () => {
+    inputs.platform = Platform.VSCode;
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs[CoreQuestionNames.TargetEnvName] = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(true);
+    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 2);
+      const aadAppManifestQuestion = node?.children?.[0];
+      const envQuestion = node?.children?.[1];
+      chai.assert.isNotNull(aadAppManifestQuestion);
+      chai.assert.isNotNull(envQuestion);
+    }
   });
 });

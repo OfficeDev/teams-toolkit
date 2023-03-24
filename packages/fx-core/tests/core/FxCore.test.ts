@@ -312,6 +312,7 @@ describe("Core basic APIs", () => {
       const core = new FxCore(tools);
       const appName = await mockV3Project();
       const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.template.json");
+      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -346,6 +347,7 @@ describe("Core basic APIs", () => {
       const core = new FxCore(tools);
       const appName = await mockV3Project();
       const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.template.json");
+      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,

@@ -1662,7 +1662,7 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("publish in developer portal", async () => {
+    it("publish in developer portal - success", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
@@ -1670,6 +1670,9 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon
+        .stub(extension.VS_CODE_UI, "selectOption")
+        .resolves(ok({ type: "success", result: "test.zip" }));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
@@ -1682,6 +1685,30 @@ describe("handlers", () => {
         console.log(res.error);
       }
       chai.assert.isTrue(publish.calledOnce);
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("publish in developer portal - cancelled", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon
+        .stub(extension.VS_CODE_UI, "selectFile")
+        .resolves(ok({ type: "success", result: "test2.zip" }));
+      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(UserCancelError));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
+
+      const res = await handlers.publishInDeveloperPortalHandler();
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      chai.assert.isTrue(publish.notCalled);
       chai.assert.isTrue(res.isOk());
     });
 

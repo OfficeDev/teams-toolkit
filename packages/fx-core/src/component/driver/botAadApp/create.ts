@@ -22,6 +22,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { logMessageKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { progressBarKeys } from "../../resource/botService/botRegistration/constants";
+import { loadStateFromEnv, mapStateToEnv } from "../util/util";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -30,6 +31,11 @@ const successRegisterBotAad = `${actionName}/success`;
 const propertyKeys = {
   reusingExistingBotAad: "reuse-existing-bot-aad",
   registerBotAadTime: "register-bot-aad-time",
+};
+
+const defaultOutputEnvVarNames = {
+  botId: "BOT_ID",
+  botPassword: "SECRET_BOT_PASSWORD",
 };
 
 @Service(actionName) // DO NOT MODIFY the service name
@@ -49,10 +55,14 @@ export class CreateBotAadAppDriver implements StepDriver {
   }
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
-  public async execute(args: CreateBotAadAppArgs, ctx: DriverContext): Promise<ExecutionResult> {
+  public async execute(
+    args: CreateBotAadAppArgs,
+    ctx: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
-      const result = await this.handler(args, ctx);
+      const result = await this.handler(args, ctx, outputEnvVarNames);
       summaries = result.summaries;
       return result.output;
     });
@@ -64,7 +74,8 @@ export class CreateBotAadAppDriver implements StepDriver {
 
   public async handler(
     args: CreateBotAadAppArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<{
     output: Map<string, string>;
     summaries: string[];
@@ -77,6 +88,10 @@ export class CreateBotAadAppDriver implements StepDriver {
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       this.validateArgs(args);
+      // TODO: Remove this logic when config manager forces schema validation
+      if (!outputEnvVarNames) {
+        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+      }
       const botAadAppState = this.loadCurrentState();
       const botConfig: BotAadCredentials = {
         botId: botAadAppState.BOT_ID ?? "",

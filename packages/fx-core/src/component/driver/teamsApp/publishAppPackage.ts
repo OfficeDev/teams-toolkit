@@ -30,6 +30,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/publishAppPackage";
 
@@ -65,7 +66,10 @@ export class PublishAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2")),
+  ])
   public async publish(
     args: PublishAppPackageArgs,
     context: WrapDriverContext
@@ -76,12 +80,6 @@ export class PublishAppPackageDriver implements StepDriver {
     if (argsValidationResult.isErr()) {
       return err(argsValidationResult.error);
     }
-
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppTitle"),
-      2
-    );
-    await progressHandler?.start();
 
     const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
     if (!(await fs.pathExists(appPackagePath))) {
@@ -121,7 +119,6 @@ export class PublishAppPackageDriver implements StepDriver {
     let result;
 
     const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1");
-    await progressHandler?.next(message);
     context.addSummary(message);
 
     try {
@@ -155,7 +152,6 @@ export class PublishAppPackageDriver implements StepDriver {
 
         if (executePublishUpdate) {
           const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
-          await progressHandler?.next(message);
           context.addSummary(message);
           const appId = await AppStudioClient.publishTeamsAppUpdate(
             manifest.id,
@@ -175,7 +171,6 @@ export class PublishAppPackageDriver implements StepDriver {
           getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
         );
         const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
-        await progressHandler?.next(message);
         context.addSummary(message);
         const appId = await AppStudioClient.publishTeamsApp(
           manifest.id,
@@ -188,37 +183,13 @@ export class PublishAppPackageDriver implements StepDriver {
         });
       }
     } catch (e: any) {
-      await progressHandler?.end(false);
       return err(e);
-    } finally {
-      await progressHandler?.end(true);
     }
 
     context.logProvider.info(`Publish success!`);
     context.addSummary(
       getLocalizedString("driver.teamsApp.summary.publishTeamsAppSuccess", manifest.id)
     );
-    if (context.platform === Platform.CLI) {
-      const msg = getLocalizedString(
-        "plugins.appstudio.publishSucceedNotice.cli",
-        manifest.name.short,
-        Constants.TEAMS_ADMIN_PORTAL,
-        Constants.TEAMS_MANAGE_APP_DOC
-      );
-      context.ui?.showMessage("info", msg, false);
-    } else {
-      const msg = getLocalizedString(
-        "plugins.appstudio.publishSucceedNotice",
-        manifest.name.short,
-        Constants.TEAMS_MANAGE_APP_DOC
-      );
-      const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
-      context.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
-        if (value.isOk() && value.value === adminPortal) {
-          context.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-        }
-      });
-    }
     return ok(result);
   }
 

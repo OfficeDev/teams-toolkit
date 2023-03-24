@@ -91,7 +91,7 @@ import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
-import { AppStudioScopes } from "../resource/appManifest/constants";
+import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
@@ -956,6 +956,13 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
+      const steps = projectModel.publish.driverDefs.length;
+      ctx.progressBar = ctx.ui?.createProgressBar(
+        getLocalizedString("core.progress.publish"),
+        steps
+      );
+      await ctx.progressBar?.start();
+
       const summaryReporter = new SummaryReporter([projectModel.publish], ctx.logProvider);
       try {
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
@@ -967,7 +974,28 @@ export class Coordinator {
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
         summaryReporter.updateLifecycleState(0, execRes);
-        if (result[1]) return err(result[1]);
+        if (result[1]) {
+          await ctx.progressBar?.end(false);
+          const msg = getLocalizedString(
+            "core.progress.failureResult",
+            getLocalizedString("core.progress.publish")
+          );
+          return err(result[1]);
+        } else {
+          await ctx.progressBar?.end(true);
+          const msg = getLocalizedString(
+            "core.progress.successResult",
+            steps,
+            steps,
+            getLocalizedString("core.progress.publish")
+          );
+          const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+          ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+            if (value.isOk() && value.value === adminPortal) {
+              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+            }
+          });
+        }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);

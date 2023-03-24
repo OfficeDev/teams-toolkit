@@ -366,8 +366,7 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false),
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -381,8 +380,7 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false),
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -396,8 +394,7 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false),
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,

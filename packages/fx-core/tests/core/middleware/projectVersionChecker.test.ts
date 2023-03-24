@@ -85,14 +85,16 @@ describe("Middleware - projectVersionChecker.test", () => {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    await my.myMethod(inputs1);
+    const res1 = await my.myMethod(inputs1);
+    assert.isTrue(res1.isErr());
+    assert.isTrue(showMessageFunc.calledOnce);
+
     const inputs2: Inputs = {
       platform: Platform.CLI,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    await my.myMethod(inputs2);
-
-    assert.isTrue(showMessageFunc.calledOnce);
+    const res2 = await my.myMethod(inputs2);
+    assert.isTrue(res2.isErr());
     assert.isTrue(showLog.calledOnce);
   });
 

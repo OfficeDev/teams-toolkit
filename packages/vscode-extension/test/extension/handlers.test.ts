@@ -1360,17 +1360,17 @@ describe("handlers", () => {
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
   });
 
-  it("deployAadAppManifest v3", async () => {
+  it("deployAadAppManifest on codelens only for v2", async () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
+    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sandbox.assert.calledOnce(deployAadManifest);
-    chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
-    deployAadManifest.restore();
+    sandbox.assert.calledOnce(deployArtifacts);
+    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
+    deployArtifacts.restore();
   });
 
   it("showError", async () => {

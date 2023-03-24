@@ -26,7 +26,7 @@ import {
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { cwd } from "process";
 import { InvalidActionInputError, UnresolvedPlaceholderError } from "../../../../src/error/common";
-import { Inputs, Platform, v2, ok } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, v2, ok, err } from "@microsoft/teamsfx-api";
 import os from "os";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { CoreQuestionNames } from "../../../../src/core/question";
@@ -565,6 +565,19 @@ describe("aadAppUpdate", async () => {
       const envQuestion = node?.children?.[1];
       chai.assert.isNotNull(aadAppManifestQuestion);
       chai.assert.isNotNull(envQuestion);
+    }
+  });
+  it("getQuestionForDeployAadManifest without env", async () => {
+    inputs.platform = Platform.VSCode;
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs[CoreQuestionNames.TargetEnvName] = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(false);
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 1);
     }
   });
 });

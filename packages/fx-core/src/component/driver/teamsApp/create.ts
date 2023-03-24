@@ -38,11 +38,15 @@ import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getTemplatesFolder } from "../../../folder";
 import { InvalidActionInputError } from "../../../error/common";
+import { loadStateFromEnv } from "../util/utils";
 
 const actionName = "teamsApp/create";
 
 const defaultOutputNames = {
   teamsAppId: "TEAMS_APP_ID",
+};
+
+export const internalOutputNames = {
   teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
@@ -87,7 +91,8 @@ export class CreateTeamsAppDriver implements StepDriver {
     if (!outputEnvVarNames) {
       outputEnvVarNames = new Map(Object.entries(defaultOutputNames));
     }
-    const state = this.loadStateFromEnv(outputEnvVarNames);
+    outputEnvVarNames = new Map([...outputEnvVarNames, ...Object.entries(internalOutputNames)]);
+    const state = loadStateFromEnv(outputEnvVarNames);
 
     let create = true;
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
@@ -211,15 +216,5 @@ export class CreateTeamsAppDriver implements StepDriver {
     } else {
       return ok(undefined);
     }
-  }
-
-  private loadStateFromEnv(
-    outputEnvVarNames: Map<string, string>
-  ): Record<string, string | undefined> {
-    const result: Record<string, string | undefined> = {};
-    for (const [propertyName, envVarName] of outputEnvVarNames) {
-      result[propertyName] = process.env[envVarName];
-    }
-    return result;
   }
 }

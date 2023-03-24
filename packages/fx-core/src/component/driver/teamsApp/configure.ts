@@ -27,11 +27,11 @@ export const actionName = "teamsApp/update";
 
 export const defaultOutputNames = {
   teamsAppId: "TEAMS_APP_ID",
-  teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
 export const internalOutputNames = {
-  TEAMS_APP_UPDATE_TIME: "TEAMS_APP_UPDATE_TIME",
+  teamsAppUpdateTime: "TEAMS_APP_UPDATE_TIME",
+  teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
 @Service(actionName)
@@ -166,7 +166,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         new Map([
           [outputEnvVarNames.get("teamsAppId") as string, appDefinition.teamsAppId!],
           [outputEnvVarNames.get("teamsAppTenantId") as string, appDefinition.tenantId!],
-          [outputEnvVarNames.get("TEAMS_APP_UPDATE_TIME") as string, appDefinition.updatedAt!],
+          [outputEnvVarNames.get("teamsAppUpdateTime") as string, appDefinition.updatedAt!],
         ])
       );
     } catch (e: any) {

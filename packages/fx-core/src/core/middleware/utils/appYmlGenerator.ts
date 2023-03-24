@@ -174,19 +174,19 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
     this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings);
 
-    const preffix = "state.fx-resource-bot.";
+    const prefix = "state.fx-resource-bot.";
     if (this.bicepContent.includes("botWebAppResourceId:")) {
       this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${preffix}botWebAppResourceId`];
+        this.handlebarsContext.placeholderMappings[`${prefix}botWebAppResourceId`];
     } else if (this.bicepContent.includes("webAppResourceId:")) {
       this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${preffix}webAppResourceId`];
+        this.handlebarsContext.placeholderMappings[`${prefix}webAppResourceId`];
     } else if (this.bicepContent.includes("functionAppResourceId:")) {
       this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${preffix}functionAppResourceId`];
+        this.handlebarsContext.placeholderMappings[`${prefix}functionAppResourceId`];
     } else if (this.bicepContent.includes("resourceId:")) {
       this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${preffix}resourceId`];
+        this.handlebarsContext.placeholderMappings[`${prefix}resourceId`];
     }
   }
 

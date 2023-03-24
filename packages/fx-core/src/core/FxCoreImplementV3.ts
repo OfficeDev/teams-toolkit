@@ -36,7 +36,8 @@ import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
@@ -365,6 +366,8 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false),
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -378,6 +381,8 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false),
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -391,6 +396,8 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false),
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,

@@ -38,7 +38,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     appName: string | undefined;
     isFunctionBot: boolean;
     isWebAppBot: boolean;
-    useBotWebAppResourceId: boolean;
+    botResourceId: string | undefined;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
     environmentFolder: string | undefined;
@@ -60,7 +60,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       appName: undefined,
       isFunctionBot: false,
       isWebAppBot: false,
-      useBotWebAppResourceId: false,
+      botResourceId: undefined,
       isTypescript: false,
       defaultFunctionName: undefined,
       environmentFolder: undefined,
@@ -159,11 +159,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.oldProjectSettings,
       this.projectPath
     );
-    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
-    this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings); // maybe use ResourceId
-    this.handlebarsContext.useBotWebAppResourceId =
-      this.bicepContent.includes("botWebAppResourceId"); // use botWebAppResourceId
-
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
@@ -171,9 +166,28 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.indexPath");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-bot.webAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
+
+    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
+    this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings);
+
+    const preffix = "state.fx-resource-bot.";
+    if (this.bicepContent.includes("botWebAppResourceId:")) {
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${preffix}botWebAppResourceId`];
+    } else if (this.bicepContent.includes("webAppResourceId:")) {
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${preffix}webAppResourceId`];
+    } else if (this.bicepContent.includes("functionAppResourceId:")) {
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${preffix}functionAppResourceId`];
+    } else if (this.bicepContent.includes("resourceId:")) {
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${preffix}resourceId`];
+    }
   }
 
   private setPlaceholderMapping(placeholder: string): void {

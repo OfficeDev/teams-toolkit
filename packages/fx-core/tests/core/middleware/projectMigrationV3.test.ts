@@ -452,7 +452,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for js webApp bot as resourceId eq webAppResourceId", async () => {
-    await copyTestProject("jsWebAppBot_webAppId", projectPath);
+    await copyTestProject("jsWebappBot_webAppId", projectPath);
 
     await generateAppYml(migrationContext);
 
@@ -460,7 +460,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for ts webApp bot as resourceId eq webAppResourceId", async () => {
-    await copyTestProject("jsWebAppBot_webAppId", projectPath);
+    await copyTestProject("jsWebappBot_webAppId", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
     projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(

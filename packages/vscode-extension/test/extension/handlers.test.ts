@@ -1361,7 +1361,7 @@ describe("handlers", () => {
   });
 
   it("deployAadAppManifest v3", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");

@@ -995,21 +995,21 @@ export function confirmManifestNode(
         id: "manifest",
         label: `$(file) ${path.basename(
           isTeamsApp
-          ? inputs[
-              isLocal
-                ? CoreQuestionNames.LocalTeamsAppManifestFilePath
-                : CoreQuestionNames.TeamsAppManifestFilePath
-            ]
-          : inputs[CoreQuestionNames.AadAppManifestFilePath]
-          )}`,
+            ? inputs[
+                isLocal
+                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                  : CoreQuestionNames.TeamsAppManifestFilePath
+              ]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        )}`,
         description: path.dirname(
           isTeamsApp
-          ? inputs[
-              isLocal
-                ? CoreQuestionNames.LocalTeamsAppManifestFilePath
-                : CoreQuestionNames.TeamsAppManifestFilePath
-            ]
-          : inputs[CoreQuestionNames.AadAppManifestFilePath]
+            ? inputs[
+                isLocal
+                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                  : CoreQuestionNames.TeamsAppManifestFilePath
+              ]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
         ),
       },
     ];

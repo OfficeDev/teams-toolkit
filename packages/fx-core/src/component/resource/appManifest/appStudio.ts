@@ -43,7 +43,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
-import { ConfigureTeamsAppDriver, outputNames } from "../../driver/teamsApp/configure";
+import { ConfigureTeamsAppDriver, defaultOutputNames } from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
@@ -924,7 +924,7 @@ export async function updateTeamsAppV3ForPublish(
     return err(result.error);
   }
 
-  return ok(result.value.get(outputNames.TEAMS_APP_ID));
+  return ok(result.value.get(defaultOutputNames.teamsAppId));
 }
 
 export async function getAppPackage(

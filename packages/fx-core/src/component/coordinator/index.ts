@@ -948,7 +948,8 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<DotenvParseOutput, FxError>> {
+    const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
@@ -973,6 +974,7 @@ export class Coordinator {
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
+        merge(output, result[0]);
         summaryReporter.updateLifecycleState(0, execRes);
         if (result[1]) {
           await ctx.progressBar?.end(false);
@@ -980,6 +982,8 @@ export class Coordinator {
             "core.progress.failureResult",
             getLocalizedString("core.progress.publish")
           );
+          ctx.ui?.showMessage("error", msg, false);
+          inputs.envVars = output;
           return err(result[1]);
         } else {
           await ctx.progressBar?.end(true);
@@ -1003,7 +1007,7 @@ export class Coordinator {
     } else {
       return err(new LifeCycleUndefinedError("publish"));
     }
-    return ok(undefined);
+    return ok(output);
   }
 
   @hooks([

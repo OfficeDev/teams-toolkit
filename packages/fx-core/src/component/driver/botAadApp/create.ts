@@ -22,7 +22,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { logMessageKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { progressBarKeys } from "../../resource/botService/botRegistration/constants";
-import { loadStateFromEnv, mapStateToEnv } from "../util/util";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -92,10 +92,10 @@ export class CreateBotAadAppDriver implements StepDriver {
       if (!outputEnvVarNames) {
         outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
       }
-      const botAadAppState = this.loadCurrentState();
+      const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       const botConfig: BotAadCredentials = {
-        botId: botAadAppState.BOT_ID ?? "",
-        botPassword: botAadAppState.SECRET_BOT_PASSWORD ?? "",
+        botId: botAadAppState.botId ?? "",
+        botPassword: botAadAppState.botPassword ?? "",
       };
       const botRegistration: BotRegistration = new RemoteBotRegistration();
 
@@ -112,7 +112,9 @@ export class CreateBotAadAppDriver implements StepDriver {
       if (createRes.isErr()) {
         throw createRes.error;
       }
-
+      botAadAppState.botId = createRes.value.botId;
+      botAadAppState.botPassword = createRes.value.botPassword;
+      const outputs = mapStateToEnv(botAadAppState, outputEnvVarNames);
       const isReusingExisting = !(!botConfig.botId || !botConfig.botPassword);
       const successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
@@ -133,10 +135,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         [propertyKeys.registerBotAadTime]: durationMilliSeconds.toString(),
       });
       return {
-        output: new Map([
-          ["BOT_ID", createRes.value.botId],
-          ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
-        ]),
+        output: outputs,
         summaries: [summary],
       };
     } catch (error) {
@@ -177,12 +176,5 @@ export class CreateBotAadAppDriver implements StepDriver {
     if (invalidParameters.length > 0) {
       throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private loadCurrentState(): CreateBotAadAppOutput {
-    return {
-      BOT_ID: process.env.BOT_ID,
-      SECRET_BOT_PASSWORD: process.env.SECRET_BOT_PASSWORD,
-    };
   }
 }

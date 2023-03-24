@@ -323,7 +323,7 @@
     "teamstoolkit.preview.prepareTeamsApp": "Preparing Teams app registration...",
     "teamstoolkit.preview.progressHandler.title": "Preview App",
     "teamstoolkit.preview.progressHandler.getTeamsAppId": "Getting Teams app id from manifest...",
-    "teamstoolkit.preview.progressHandler.getM365Title": "Getting M365 Title by Teams app id...",
+    "teamstoolkit.preview.progressHandler.getM365Title": "Getting Microsoft 365 Title by Teams app id...",
     "teamstoolkit.preview.progressHandler.openWebClient": "Opening %s web client...",
     "teamstoolkit.progressHandler.prepareTask": " Prepare task.",
     "teamstoolkit.progressHandler.reloadNotice": "%s%s%s",

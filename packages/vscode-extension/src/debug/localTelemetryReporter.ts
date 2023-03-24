@@ -221,7 +221,6 @@ export async function sendDebugMetadataEvent(projectPath: string) {
       return;
     }
 
-    // TODO: add source to properties of metadataUtil.parseManifest (currently not exposed)
     const { source, manifest } = manifestData;
     // send manifest metadata
     metadataUtil.parseManifest(manifest, { [TelemetryProperty.DebugMetadataSource]: source });

@@ -995,13 +995,24 @@ export function confirmManifestNode(
     return [
       {
         id: "manifest",
-        label: isTeamsApp
-          ? inputs[
-              isLocal
-                ? CoreQuestionNames.LocalTeamsAppManifestFilePath
-                : CoreQuestionNames.TeamsAppManifestFilePath
-            ]
-          : inputs[CoreQuestionNames.AadAppManifestFilePath],
+        label: `$(file) ${path.basename(
+          isTeamsApp
+            ? inputs[
+                isLocal
+                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                  : CoreQuestionNames.TeamsAppManifestFilePath
+              ]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        )}`,
+        description: path.dirname(
+          isTeamsApp
+            ? inputs[
+                isLocal
+                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                  : CoreQuestionNames.TeamsAppManifestFilePath
+              ]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        ),
       },
     ];
   };

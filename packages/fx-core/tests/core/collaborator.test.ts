@@ -1897,8 +1897,8 @@ describe("Collaborator APIs for V3", () => {
           const aadAppConfirmOption = (aadAppConfirmNode?.data as SingleSelectQuestion)
             .dynamicOptions!(inputs) as StaticOptions;
           assert.isTrue(
-            (teamsAppConfirmOption[0] as OptionItem).label == "teamsAppManifest" &&
-              (aadAppConfirmOption[0] as OptionItem).label == "aadAppManifest"
+            (teamsAppConfirmOption[0] as OptionItem).label == "$(file) teamsAppManifest" &&
+              (aadAppConfirmOption[0] as OptionItem).label == "$(file) aadAppManifest"
           );
         }
         {

@@ -275,14 +275,27 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
-  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createDriverContext(inputs);
     const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    return ok(Void);
+    if (res.isOk()) {
+      ctx!.envVars = res.value;
+      return ok(Void);
+    } else {
+      // for partial success scenario, output is set in inputs object
+      ctx!.envVars = inputs.envVars;
+      return err(res.error);
+    }
   }
 
   @hooks([

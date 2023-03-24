@@ -934,4 +934,18 @@ describe("Teams app APIs", async () => {
     await core.createAppPackage(inputs);
     sinon.assert.calledOnce(runSpy);
   });
+
+  it("publish application", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    sinon
+      .stub(coordinator, "publish")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage")));
+    await core.publishApplication(inputs);
+  });
 });

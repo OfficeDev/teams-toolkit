@@ -3,9 +3,7 @@
 
 import { FxError, Settings, Result, ok, err } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import * as path from "path";
 import * as uuid from "uuid";
-import { PathNotExistError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
 import { parseDocument } from "yaml";
 import {
@@ -15,6 +13,7 @@ import {
   TelemetryProperty,
 } from "../../common/telemetry";
 import { getProjectSettingPathV3 } from "../../core/middleware/projectSettingsLoader";
+import { FileNotFoundError } from "../../error/common";
 
 export class SettingsUtils {
   async readSettings(
@@ -23,7 +22,7 @@ export class SettingsUtils {
   ): Promise<Result<Settings, FxError>> {
     const projectYamlPath: string = getProjectSettingPathV3(projectPath);
     if (!(await fs.pathExists(projectYamlPath))) {
-      return err(new PathNotExistError(projectYamlPath));
+      return err(new FileNotFoundError("SettingsUtils", projectYamlPath));
     }
     const yamlFileContent: string = await fs.readFile(projectYamlPath, "utf8");
     const appYaml = parseDocument(yamlFileContent);
@@ -47,7 +46,7 @@ export class SettingsUtils {
   async writeSettings(projectPath: string, settings: Settings): Promise<Result<string, FxError>> {
     const projectYamlPath: string = getProjectSettingPathV3(projectPath);
     if (!(await fs.pathExists(projectYamlPath))) {
-      return err(new PathNotExistError(projectYamlPath));
+      return err(new FileNotFoundError("SettingsUtils", projectYamlPath));
     }
     const yamlFileContent: string = await fs.readFile(projectYamlPath, "utf8");
     const appYaml = parseDocument(yamlFileContent);

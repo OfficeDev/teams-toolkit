@@ -25,15 +25,13 @@ deploy:
 
 
 # Triggered when 'teamsfx provision' is executed
-registerApp:
+provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-# Triggered when 'teamsfx provision' is executed
-configureApp:
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template

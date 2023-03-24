@@ -589,13 +589,13 @@ export class Coordinator {
     const projectModel = maybeProjectModel.value;
 
     const cycles = [
-      projectModel.registerApp,
+      // projectModel.registerApp,
       projectModel.provision,
-      projectModel.configureApp,
+      // projectModel.configureApp,
     ].filter((c) => c !== undefined) as Lifecycle[];
 
     if (cycles.length === 0) {
-      return err(new LifeCycleUndefinedError("registerApp, provision, or configureApp"));
+      return err(new LifeCycleUndefinedError("provision"));
     }
 
     // 2. M365 sign in and tenant check if needed.

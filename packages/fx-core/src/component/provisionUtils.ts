@@ -68,6 +68,11 @@ import {
   ResourceGroupNotExistError,
   SelectSubscriptionError,
 } from "../error/azure";
+import {
+  M365TenantIdNotFoundInTokenError,
+  M365TenantIdNotMatchError,
+  M365TokenJSONNotFoundError,
+} from "../error/m365";
 export interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
@@ -676,26 +681,12 @@ export class ProvisionUtils {
       ? appStudioTokenJsonRes.value
       : undefined;
     if (appStudioTokenJson === undefined) {
-      return err(
-        new SystemError(
-          SolutionSource,
-          SolutionError.NoAppStudioToken,
-          getDefaultString("error.NoM365Token"),
-          getLocalizedString("error.NoM365Token")
-        )
-      );
+      return err(new M365TokenJSONNotFoundError());
     }
     const tenantIdInToken = (appStudioTokenJson as any).tid;
     const tenantUserName = (appStudioTokenJson as any).upn;
     if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
-      return err(
-        new SystemError(
-          SolutionSource,
-          SolutionError.NoTeamsAppTenantId,
-          getDefaultString("error.NoTeamsAppTenantId"),
-          getLocalizedString("error.NoTeamsAppTenantId")
-        )
-      );
+      return err(new M365TenantIdNotFoundInTokenError());
     }
     return ok({ tenantIdInToken, tenantUserName });
   }
@@ -773,14 +764,11 @@ export class ProvisionUtils {
         keysNeedToUpdate.push("BOT_ID");
       }
     }
-    const msg = getLocalizedString(
-      "error.m365tenantcheck.tenantNotMatch",
-      keysNeedToUpdate.join(", "),
-      env,
-      "[SwitchTenant]" + "(" + HelpLinks.SwitchTenant + ")"
+    const error = new M365TenantIdNotMatchError(
+      tenantId,
+      process.env.TEAMS_APP_TENANT_ID!,
+      keysNeedToUpdate.join(", ")
     );
-
-    const error = new UserError(source, "M365TenantNotMatch", msg, msg);
     error.helpLink = HelpLinks.SwitchTenant;
     return !hasSwitched ? ok(undefined) : err(error);
   }
@@ -1029,14 +1017,7 @@ export function parseTeamsAppTenantId(
     !(typeof teamsAppTenantId === "string") ||
     teamsAppTenantId.length === 0
   ) {
-    return err(
-      new SystemError(
-        SolutionSource,
-        SolutionError.NoTeamsAppTenantId,
-        getDefaultString("error.NoTeamsAppTenantId"),
-        getLocalizedString("error.NoTeamsAppTenantId")
-      )
-    );
+    return err(new M365TenantIdNotFoundInTokenError());
   }
   return ok(teamsAppTenantId);
 }

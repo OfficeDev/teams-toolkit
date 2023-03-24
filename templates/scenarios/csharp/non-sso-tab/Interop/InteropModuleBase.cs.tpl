@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace {%SafeProjectName%}.Interop;
+namespace {{SafeProjectName}}.Interop;
 
 public abstract class InteropModuleBase
 {

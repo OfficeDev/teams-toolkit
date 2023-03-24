@@ -36,6 +36,7 @@ import {
   SelectSubscriptionError,
 } from "../../src/error/azure";
 import { getResourceManagementClientForArmDeployment } from "../../src/component/arm";
+import { M365TenantIdNotFoundInTokenError, M365TokenJSONNotFoundError } from "../../src/error/m365";
 
 const expect = chai.expect;
 
@@ -1434,7 +1435,37 @@ describe("provisionUtils", () => {
       }
     });
   });
+  describe("getM365TenantId", () => {
+    let mockedEnvRestore: RestoreFn | undefined;
+    const mocker = sinon.createSandbox();
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+      mocker.restore();
+    });
+    it("M365TokenJSONNotFoundError", async () => {
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok(""));
+      mocker
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(err(new UserError({})));
+      const res = await provisionUtils.getM365TenantId(tools.tokenProvider.m365TokenProvider);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof M365TokenJSONNotFoundError);
+      }
+    });
 
+    it("M365TenantIdNotFoundInTokenError", async () => {
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok(""));
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(ok({}));
+      const res = await provisionUtils.getM365TenantId(tools.tokenProvider.m365TokenProvider);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof M365TenantIdNotFoundInTokenError);
+      }
+    });
+  });
   describe("arm", () => {
     let mockedEnvRestore: RestoreFn | undefined;
     const mocker = sinon.createSandbox();

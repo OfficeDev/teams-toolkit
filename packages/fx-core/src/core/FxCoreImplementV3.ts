@@ -31,7 +31,7 @@ import {
   SingleSignOnOptionItem,
   SPFxQuestionNames,
 } from "../component/constants";
-import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
+import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -84,13 +84,13 @@ import { MissingEnvInFileUserError } from "../component/driver/aad/error/missing
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
-import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
-import { InvalidProjectError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
+import { YamlFieldMissingError } from "../error/yml";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -248,7 +248,7 @@ export class FxCoreV3Implement {
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new NoAadManifestExistError(manifestTemplatePath));
+      return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
@@ -331,28 +331,6 @@ export class FxCoreV3Implement {
         (inputs as InputsWithProjectPath).projectPath
       );
       res = ok(path);
-    } else if (func.method === "validateManifest") {
-      if (func.params.manifestPath) {
-        const args: ValidateManifestArgs = {
-          manifestPath: func.params.manifestPath,
-        };
-        const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-        res = await driver.run(args, context);
-      } else {
-        const args: ValidateAppPackageArgs = {
-          appPackagePath: func.params.appPackagePath,
-        };
-        const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-        res = await driver.run(args, context);
-      }
-    } else if (func.method === "buildPackage") {
-      const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
-      const args: CreateAppPackageArgs = {
-        manifestPath: func.params.manifestTemplatePath,
-        outputZipPath: func.params.outputZipPath,
-        outputJsonPath: func.params.outputJsonPath,
-      };
-      res = await driver.run(args, context);
     } else if (func.method === "addSso") {
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
@@ -491,11 +469,9 @@ export class FxCoreV3Implement {
     if (res.isErr()) return err(res.error);
     const targetDotEnvFile = res.value;
     if (!sourceDotEnvFile || !targetDotEnvFile)
-      return err(
-        new InvalidEnvFolderPath(
-          "missing 'environmentFolderPath' field or environment folder not exist"
-        )
-      );
+      return err(new YamlFieldMissingError("environmentFolderPath"));
+    if (!(await fs.pathExists(sourceDotEnvFile)))
+      return err(new FileNotFoundError("createEnvCopyV3", sourceDotEnvFile));
     const source = await fs.readFile(sourceDotEnvFile);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
@@ -524,7 +500,7 @@ export class FxCoreV3Implement {
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new NoAadManifestExistError(manifestTemplatePath));
+      return err(new FileNotFoundError("previewAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
@@ -588,8 +564,12 @@ export class FxCoreV3Implement {
     const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
     const args: CreateAppPackageArgs = {
       manifestPath: teamsAppManifestFilePath,
-      outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
-      outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+      outputZipPath:
+        inputs[CoreQuestionNames.OutputZipPathParamName] ??
+        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+      outputJsonPath:
+        inputs[CoreQuestionNames.OutputManifestParamName] ??
+        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
     return await driver.run(args, context);
   }

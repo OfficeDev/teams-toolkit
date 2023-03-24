@@ -3,7 +3,6 @@
 "use strict";
 
 import {
-  assembleError,
   Func,
   FxError,
   Inputs,
@@ -89,26 +88,6 @@ export class NoProjectOpenedError extends UserError {
     super({
       message: getDefaultString("error.NoProjectOpenedError"),
       displayMessage: getLocalizedString("error.NoProjectOpenedError"),
-      source: CoreSource,
-    });
-  }
-}
-
-export class PathNotExistError extends UserError {
-  constructor(path: string) {
-    super({
-      message: getDefaultString("error.PathNotExistError", path),
-      displayMessage: getLocalizedString("error.PathNotExistError", path),
-      source: CoreSource,
-    });
-  }
-}
-
-export class InvalidProjectError extends UserError {
-  constructor(msg?: string) {
-    super({
-      message: getDefaultString("error.InvalidProjectError", msg || ""),
-      displayMessage: getLocalizedString("error.InvalidProjectError", msg || ""),
       source: CoreSource,
     });
   }
@@ -215,15 +194,6 @@ export function MultipleEnvNotEnabledError(): SystemError {
     "MultipleEnvNotEnabledError",
     getDefaultString("error.MultipleEnvNotEnabledError"),
     getLocalizedString("error.MultipleEnvNotEnabledError")
-  );
-}
-
-export function ProjectEnvNotExistError(env: string): UserError {
-  return new UserError(
-    CoreSource,
-    "ProjectEnvNotExistError",
-    getDefaultString("error.ProjectEnvNotExistError", env, env),
-    getLocalizedString("error.ProjectEnvNotExistError", env, env)
   );
 }
 
@@ -423,16 +393,6 @@ export class NoCapabilityFoundError extends UserError {
       source: CoreSource,
       message: getDefaultString("core.deploy.noCapabilityFound", operation),
       displayMessage: getLocalizedString("core.deploy.noCapabilityFound", operation),
-    });
-  }
-}
-
-export class NoAadManifestExistError extends UserError {
-  constructor(filePath: string) {
-    super({
-      source: CoreSource,
-      message: getDefaultString("error.aad.AadManifestNotExistError", filePath),
-      displayMessage: getLocalizedString("error.aad.AadManifestNotExistError", filePath),
     });
   }
 }

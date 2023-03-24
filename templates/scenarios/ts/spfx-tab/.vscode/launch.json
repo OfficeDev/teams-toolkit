@@ -53,7 +53,7 @@
             "name": "Start Teams workbench (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
@@ -72,7 +72,7 @@
             "name": "Start Teams workbench (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
@@ -91,7 +91,7 @@
             "name": "Attach to Frontend in Outlook (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}",
+            "url": "https://outlook.office.com/host/${{local:M365_APP_ID}}?${account-hint}",
             "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
@@ -111,7 +111,7 @@
             "name": "Attach to Frontend in Outlook (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}",
+            "url": "https://outlook.office.com/host/${{local:M365_APP_ID}}?${account-hint}",
             "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
@@ -131,7 +131,7 @@
             "name": "Attach to Frontend in the Microsoft 365 app (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://www.office.com/m365apps/${local:teamsAppInternalId}?auth=2&${account-hint}",
+            "url": "https://www.office.com/m365apps/${{local:M365_APP_ID}}?auth=2&${account-hint}",
             "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
@@ -151,7 +151,7 @@
             "name": "Attach to Frontend in the Microsoft 365 app (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://www.office.com/m365apps/${local:teamsAppInternalId}?auth=2&${account-hint}",
+            "url": "https://www.office.com/m365apps/${{local:M365_APP_ID}}?auth=2&${account-hint}",
             "webRoot": "${workspaceRoot}/src",
             "sourceMaps": true,
             "sourceMapPathOverrides": {

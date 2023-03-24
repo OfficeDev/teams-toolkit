@@ -5,26 +5,6 @@ import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { concatErrorMessageWithSuggestions, ErrorMessage, LocalizedMessage } from "./messages";
 
-export class ActionNotExist extends SystemError {
-  constructor(action: string) {
-    super({
-      source: "fx",
-      message: getDefaultString("error.ActionNotExist", action),
-      displayMessage: getLocalizedString("error.ActionNotExist", action),
-    });
-  }
-}
-
-export class ComponentNotExist extends SystemError {
-  constructor(component: string) {
-    super({
-      source: "fx",
-      message: getDefaultString("error.ComponentNotExist", component),
-      displayMessage: getLocalizedString("error.ComponentNotExist", component),
-    });
-  }
-}
-
 export class BadComponent extends SystemError {
   constructor(source: string, component: string, property: string) {
     super({

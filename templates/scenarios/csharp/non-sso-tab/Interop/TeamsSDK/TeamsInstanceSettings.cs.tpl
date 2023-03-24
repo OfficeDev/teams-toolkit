@@ -1,4 +1,4 @@
-﻿namespace {%SafeProjectName%}.Interop.TeamsSDK;
+﻿namespace {{SafeProjectName}}.Interop.TeamsSDK;
 
 public class TeamsInstanceSettings
 {

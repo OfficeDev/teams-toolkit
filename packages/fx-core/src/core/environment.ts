@@ -45,12 +45,7 @@ import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import { ConstantString, ManifestVariables } from "../common/constants";
-import {
-  InvalidEnvConfigError,
-  PathNotExistError,
-  ProjectEnvNotExistError,
-  WriteFileError,
-} from "./error";
+import { InvalidEnvConfigError, WriteFileError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { Container } from "typedi";
@@ -59,6 +54,7 @@ import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migra
 import { LocalCrypto } from "./crypto";
 import { envUtil } from "../component/utils/envUtil";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { FileNotFoundError } from "../error/common";
 
 export interface EnvStateFiles {
   envState: string;
@@ -93,7 +89,7 @@ class EnvironmentManager {
     v3 = false
   ): Promise<Result<v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(new PathNotExistError(projectPath));
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
     envName = envName ?? this.getDefaultEnvName();
     const configResult = await this.loadEnvConfig(projectPath, envName);
@@ -146,7 +142,7 @@ class EnvironmentManager {
     envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(new PathNotExistError(projectPath));
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -174,7 +170,7 @@ class EnvironmentManager {
     isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(new PathNotExistError(projectPath));
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
 
     const envStatesFolder = this.getEnvStatesFolder(projectPath);
@@ -208,7 +204,7 @@ class EnvironmentManager {
 
   public async listAllEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(new PathNotExistError(projectPath));
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
 
     if (isV3Enabled()) {
@@ -235,7 +231,7 @@ class EnvironmentManager {
     returnErrorIfEmpty = false
   ): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(new PathNotExistError(projectPath));
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
 
     if (isV3Enabled()) {
@@ -355,7 +351,7 @@ class EnvironmentManager {
         await this.createLocalEnv(projectPath);
       }
       if (!(await fs.pathExists(envConfigPath))) {
-        return err(ProjectEnvNotExistError(envName));
+        return err(new FileNotFoundError("EnvironmentManager", envConfigPath));
       }
     }
 

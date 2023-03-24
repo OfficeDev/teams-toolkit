@@ -148,7 +148,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (triggerNodeRes.value) {
     capNode.addChild(triggerNodeRes.value);
   }
-  const spfxNode = await getSPFxScaffoldQuestion();
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     capNode.addChild(spfxNode);
@@ -237,7 +237,7 @@ async function getQuestionsForCreateProjectWithDotNet(
   if (triggerNodeRes.value) {
     dotnetCapNode.addChild(triggerNodeRes.value);
   }
-  const spfxNode = await getSPFxScaffoldQuestion();
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     dotnetCapNode.addChild(spfxNode);

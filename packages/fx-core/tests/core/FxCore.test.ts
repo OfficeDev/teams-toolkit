@@ -43,8 +43,6 @@ import {
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
-import AdmZip from "adm-zip";
-import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { YamlParser } from "../../src/component/configManager/parser";
@@ -60,12 +58,16 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import * as coreImplement from "../../src/core/FxCore";
 import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
+import { FileNotFoundError } from "../../src/error/common";
+import * as collaborator from "../../src/core/collaborator";
+import { CollaborationUtil } from "../../src/core/collaborator";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -256,7 +258,7 @@ describe("Core basic APIs", () => {
         "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
         "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
         "spfx-webpart-name": "helloworld",
-        "spfx-use-global-package-or-install-local": "installLocally",
+        "spfx-install-latest-package": "true",
         "spfx-load-package-version": "loaded",
         stage: Stage.addWebpart,
         projectPath: appPath,
@@ -411,12 +413,10 @@ describe("Core basic APIs", () => {
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
       const res = await core.deployAadManifest(inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
-        assert.isTrue(res.error instanceof NoAadManifestExistError);
-        assert.equal(res.error.message, errMsg);
+        assert.isTrue(res.error instanceof FileNotFoundError);
       }
       await deleteTestProject(appName);
     } finally {
@@ -438,6 +438,82 @@ describe("Core basic APIs", () => {
       const res = await core.phantomMigrationV3(inputs);
       assert.isTrue(res.isOk());
       await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
+  it("permission v3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      let res;
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.listCollaborator,
+        projectPath: path.join(os.tmpdir(), appName),
+      };
+      sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
+      sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+      sandbox.stub(coreImplement, "listCollaboratorFunc").resolves(ok(undefined));
+      sandbox.stub(coreImplement, "checkPermissionFunc").resolves(ok(undefined));
+      sandbox.stub(coreImplement, "grantPermissionFunc").resolves(ok(undefined));
+      res = await core.listCollaborator(inputs);
+      assert.isTrue(res.isOk());
+      res = await core.checkPermission(inputs);
+      assert.isTrue(res.isOk());
+      res = await core.grantPermission(inputs);
+      assert.isTrue(res.isOk());
+    } finally {
+      restore();
+    }
+  });
+
+  it("permission v2", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
+    try {
+      let res;
+      const core = new FxCore(tools);
+      const appName = await mockV2Project();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.listCollaborator,
+        projectPath: path.join(os.tmpdir(), appName),
+      };
+      sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
+      sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+      sandbox.stub(coreImplement, "listCollaboratorFunc").resolves(ok(undefined));
+      sandbox.stub(coreImplement, "checkPermissionFunc").resolves(ok(undefined));
+      sandbox.stub(coreImplement, "grantPermissionFunc").resolves(ok(undefined));
+      sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
+        tenantId: "fake_tid",
+        aadId: "fake_oid",
+        userPrincipalName: "fake_unique_name",
+        displayName: "displayName",
+        isAdministrator: true,
+      });
+
+      res = await core.listCollaborator(inputs);
+      assert.isTrue(res.isOk());
+      res = await core.checkPermission(inputs);
+      assert.isTrue(res.isOk());
+      res = await core.grantPermission(inputs);
+      assert.isTrue(res.isOk());
     } finally {
       restore();
     }
@@ -783,6 +859,16 @@ async function mockV3Project(): Promise<string> {
   return appName;
 }
 
+async function mockV2Project(): Promise<string> {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  await fs.copy(
+    path.join(__dirname, "../core/middleware/testAssets/v3Migration/happyPath"),
+    path.join(projectPath)
+  );
+  return appName;
+}
+
 async function deleteTestProject(appName: string) {
   await fs.remove(path.join(os.tmpdir(), appName));
 }
@@ -960,5 +1046,19 @@ describe("Teams app APIs", async () => {
     const runSpy = sinon.spy(CreateAppPackageDriver.prototype, "run");
     await core.createAppPackage(inputs);
     sinon.assert.calledOnce(runSpy);
+  });
+
+  it("publish application", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    sinon
+      .stub(coordinator, "publish")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage")));
+    await core.publishApplication(inputs);
   });
 });

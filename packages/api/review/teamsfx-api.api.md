@@ -1260,11 +1260,6 @@ export class PathAlreadyExistsError extends UserError {
     constructor(source: string, path: string);
 }
 
-// @public (undocumented)
-export class PathNotExistError extends UserError {
-    constructor(source: string, path: string);
-}
-
 // @public
 export interface PermissionRequestProvider {
     checkPermissionRequest(): Promise<Result<undefined, FxError>>;

@@ -21,14 +21,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "../../common/tools";
 import { ComponentNames } from "../../component/constants";
-import { EnvLoaderMW, envLoaderMWImpl } from "../../component/middleware/envMW";
+import { envLoaderMWImpl } from "../../component/middleware/envMW";
 import { LocalCrypto } from "../crypto";
 import { environmentManager, newEnvInfoV3 } from "../environment";
-import {
-  NoProjectOpenedError,
-  ProjectEnvNotExistError,
-  ProjectSettingsUndefinedError,
-} from "../error";
+import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
 import { globalVars, TOOLS } from "../globalVars";
 import {
   getQuestionNewTargetEnvironmentName,
@@ -37,6 +33,7 @@ import {
 } from "../question";
 import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { FileNotFoundError } from "../../error/common";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -294,7 +291,7 @@ export async function useUserSetEnv(
       envExists = checkEnv.value;
     }
     if (!envExists) {
-      return err(ProjectEnvNotExistError(env));
+      return err(new FileNotFoundError("EnvInfoLoaderMW_V3", `config.${env}.json`));
     }
   }
 

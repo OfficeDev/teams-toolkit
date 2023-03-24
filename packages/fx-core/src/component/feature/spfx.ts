@@ -10,6 +10,7 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
+  Platform,
   ProjectSettingsV3,
   QTreeNode,
   Result,
@@ -81,19 +82,28 @@ export class SPFxTab {
   }
 }
 
-export function getSPFxScaffoldQuestion(): QTreeNode {
+export function getSPFxScaffoldQuestion(platform: Platform): QTreeNode {
   const spfx_frontend_host = new QTreeNode({
     type: "group",
   });
-  const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
-  spfx_frontend_host.addChild(spfx_load_package_versions);
-  const spfx_first_question = new QTreeNode(spfxPackageSelectQuestion);
-  spfx_load_package_versions.addChild(spfx_first_question);
 
+  const spfx_select_package_question = new QTreeNode(spfxPackageSelectQuestion);
   const spfx_framework_type = new QTreeNode(frameworkQuestion);
-  spfx_first_question.addChild(spfx_framework_type);
   const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-  spfx_first_question.addChild(spfx_webpart_name);
+
+  if (platform !== Platform.CLI_HELP) {
+    const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
+    spfx_load_package_versions.addChild(spfx_select_package_question);
+    spfx_select_package_question.addChild(spfx_framework_type);
+    spfx_select_package_question.addChild(spfx_webpart_name);
+
+    spfx_frontend_host.addChild(spfx_load_package_versions);
+  } else {
+    spfx_frontend_host.addChild(spfx_select_package_question);
+    spfx_frontend_host.addChild(spfx_framework_type);
+    spfx_frontend_host.addChild(spfx_webpart_name);
+  }
+
   return spfx_frontend_host;
 }
 

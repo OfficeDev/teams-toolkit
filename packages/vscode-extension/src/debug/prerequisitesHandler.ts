@@ -16,7 +16,6 @@ import {
   UserError,
   UserErrorOptions,
   Void,
-  PathNotExistError,
   M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
@@ -51,7 +50,7 @@ import {
   isV3Enabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
-
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -1117,7 +1116,7 @@ function checkNpmInstall(
           result: ResultStatus.warn,
           successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
           failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
-          error: new PathNotExistError(ExtensionSource, folder),
+          error: new FileNotFoundError(ExtensionSource, folder),
         };
       }
 

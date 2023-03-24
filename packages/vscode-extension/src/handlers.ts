@@ -93,7 +93,7 @@ import {
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
-import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
+import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -970,6 +970,8 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+let lastAppPackageFile: string | undefined;
+
 export async function publishInDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
@@ -993,32 +995,77 @@ export async function publishInDeveloperPortalHandler(
         return path.join(zipDefaultFolder, file);
       });
   }
-  const selectFileConfig: SelectFileConfig = {
-    name: "appPackagePath",
-    title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
-    placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
-    filters: {
-      "Zip files": ["zip"],
-    },
-    possibleFiles: files.map((file) => {
-      return {
-        id: file,
-        label: file,
-      };
-    }),
-    default: files.length > 0 ? files[0] : undefined,
-  };
-  const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
-  if (selectFileResult.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.PublishInDeveloperPortal,
-      selectFileResult.error,
-      getTriggerFromProperty(args)
-    );
-    return ok(null);
+  while (true) {
+    const selectFileConfig: SelectFileConfig = {
+      name: "appPackagePath",
+      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+      placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
+      filters: {
+        "Zip files": ["zip"],
+      },
+    };
+    if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
+      selectFileConfig.default = lastAppPackageFile;
+    } else {
+      selectFileConfig.possibleFiles = files.map((file) => {
+        const appPackageFilename = path.basename(file);
+        const appPackageFilepath = path.dirname(file);
+        return {
+          id: file,
+          label: `$(file) ${appPackageFilename}`,
+          description: appPackageFilepath,
+        };
+      });
+    }
+    const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
+    if (selectFileResult.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PublishInDeveloperPortal,
+        selectFileResult.error,
+        getTriggerFromProperty(args)
+      );
+      return ok(null);
+    }
+    if (
+      (lastAppPackageFile && selectFileResult.value.result === lastAppPackageFile) ||
+      (!lastAppPackageFile && files.indexOf(selectFileResult.value.result!) !== -1)
+    ) {
+      // user selected file in options
+      lastAppPackageFile = selectFileResult.value.result;
+      break;
+    }
+    // final confirmation
+    lastAppPackageFile = selectFileResult.value.result!;
+    const appPackageFilename = path.basename(lastAppPackageFile);
+    const appPackageFilepath = path.dirname(lastAppPackageFile);
+    const confirmOption: SingleSelectConfig = {
+      options: [
+        {
+          id: "yes",
+          label: `$(file) ${appPackageFilename}`,
+          description: appPackageFilepath,
+        },
+      ],
+      name: "confirm",
+      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+      placeholder: localize("teamstoolkit.publishInDevPortal.confirmFile.placeholder"),
+      step: 2,
+    };
+    const confirm = await VS_CODE_UI.selectOption(confirmOption);
+    if (confirm.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PublishInDeveloperPortal,
+        confirm.error,
+        getTriggerFromProperty(args)
+      );
+      return ok(null);
+    }
+    if (confirm.value.type === "success") {
+      break;
+    }
   }
   const inputs = getSystemInputs();
-  inputs["appPackagePath"] = selectFileResult.value.result;
+  inputs["appPackagePath"] = lastAppPackageFile;
   const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(

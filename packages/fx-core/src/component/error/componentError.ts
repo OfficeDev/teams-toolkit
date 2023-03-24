@@ -104,7 +104,7 @@ export class BaseComponentInnerError extends Error {
       source,
       "SystemError",
       "UnknownError",
-      "driver.deploy.error.unknownError",
+      "error.common.UnhandledError",
       [JSON.stringify(error)]
     );
   }
@@ -268,7 +268,7 @@ export class PrerequisiteError extends BaseComponentInnerError {
     return new PrerequisiteError(
       source,
       "FolderNotExists",
-      "driver.env.error.folderNotExist",
+      "error.common.FileNotFoundError",
       [name],
       undefined,
       helpLink

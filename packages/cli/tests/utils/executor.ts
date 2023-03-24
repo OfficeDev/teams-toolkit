@@ -70,7 +70,7 @@ export class Executor {
       `teamsfx add SPFxWebPart --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
       ` --local-manifest-path ${localManifestPath}` +
-      ` --spfx-use-global-package-or-install-local installLocally`;
+      ` --spfx-install-latest-package true`;
     return this.execute(command, workspace);
   }
 

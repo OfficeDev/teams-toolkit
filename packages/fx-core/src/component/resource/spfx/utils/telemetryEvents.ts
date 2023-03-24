@@ -11,6 +11,7 @@ export enum TelemetryEvents {
   EnsureSharepointGenerator = "ensure-sharepoint-generator",
   EnsureLatestSharepointGeneratorStart = "ensure-latest-sharepoint-start",
   EnsureLatestSharepointGenerator = "ensure-latest-sharepoint",
+  UseNotRecommendedVersion = "use-not-recommended-spfx-version",
 }
 
 export enum TelemetryProperty {

@@ -31,11 +31,12 @@ import {
   SingleSignOnOptionItem,
   SPFxQuestionNames,
 } from "../component/constants";
-import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
+import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
@@ -83,13 +84,14 @@ import { MissingEnvInFileUserError } from "../component/driver/aad/error/missing
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
-import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
-import { InvalidProjectError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
+import { YamlFieldMissingError } from "../error/yml";
+import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -245,7 +247,7 @@ export class FxCoreV3Implement {
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
     const manifestTemplatePath: string = inputs[CoreQuestionNames.AadAppManifestFilePath];
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new NoAadManifestExistError(manifestTemplatePath));
+      return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
@@ -272,14 +274,27 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
-  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createDriverContext(inputs);
     const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    return ok(Void);
+    if (res.isOk()) {
+      ctx!.envVars = res.value;
+      return ok(Void);
+    } else {
+      // for partial success scenario, output is set in inputs object
+      ctx!.envVars = inputs.envVars;
+      return err(res.error);
+    }
   }
 
   @hooks([
@@ -354,6 +369,48 @@ export class FxCoreV3Implement {
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs, ctx);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs, ctx);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return listCollaboratorFunc(inputs, ctx);
   }
 
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
@@ -453,11 +510,9 @@ export class FxCoreV3Implement {
     if (res.isErr()) return err(res.error);
     const targetDotEnvFile = res.value;
     if (!sourceDotEnvFile || !targetDotEnvFile)
-      return err(
-        new InvalidEnvFolderPath(
-          "missing 'environmentFolderPath' field or environment folder not exist"
-        )
-      );
+      return err(new YamlFieldMissingError("environmentFolderPath"));
+    if (!(await fs.pathExists(sourceDotEnvFile)))
+      return err(new FileNotFoundError("createEnvCopyV3", sourceDotEnvFile));
     const source = await fs.readFile(sourceDotEnvFile);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
@@ -486,7 +541,7 @@ export class FxCoreV3Implement {
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new NoAadManifestExistError(manifestTemplatePath));
+      return err(new FileNotFoundError("previewAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(

@@ -1,10 +1,10 @@
-﻿using {%SafeProjectName%}.Models;
+﻿using {{SafeProjectName}}.Models;
 using AdaptiveCards.Templating;
 using Microsoft.Bot.Builder;
 using Microsoft.TeamsFx.Conversation;
 using Newtonsoft.Json;
 
-namespace {%SafeProjectName%}.CardActions
+namespace {{SafeProjectName}}.CardActions
 {
     public class DoStuffActionHandler : IAdaptiveCardActionHandler
     {

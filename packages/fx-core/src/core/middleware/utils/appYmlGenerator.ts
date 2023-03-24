@@ -174,19 +174,36 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
     this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings);
 
-    const prefix = "state.fx-resource-bot.";
-    if (this.bicepContent.includes("botWebAppResourceId:")) {
-      this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${prefix}botWebAppResourceId`];
-    } else if (this.bicepContent.includes("webAppResourceId:")) {
-      this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${prefix}webAppResourceId`];
-    } else if (this.bicepContent.includes("functionAppResourceId:")) {
-      this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${prefix}functionAppResourceId`];
-    } else if (this.bicepContent.includes("resourceId:")) {
-      this.handlebarsContext.botResourceId =
-        this.handlebarsContext.placeholderMappings[`${prefix}resourceId`];
+    // Match teams-bot or fx-resource-bot output obj
+    const pluginRegex = new RegExp(
+      "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
+        "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
+        "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+        "[^}]*}", // Matches until end of obj as '}'
+      "g"
+    );
+    const outputContents = pluginRegex.exec(this.bicepContent);
+    if (outputContents) {
+      const prefix = "state.fx-resource-bot.";
+      for (const outputContent of outputContents) {
+        if (outputContent.includes("botWebAppResourceId:")) {
+          this.handlebarsContext.botResourceId =
+            this.handlebarsContext.placeholderMappings[`${prefix}botWebAppResourceId`];
+          break;
+        } else if (outputContent.includes("webAppResourceId:")) {
+          this.handlebarsContext.botResourceId =
+            this.handlebarsContext.placeholderMappings[`${prefix}webAppResourceId`];
+          break;
+        } else if (outputContent.includes("functionAppResourceId:")) {
+          this.handlebarsContext.botResourceId =
+            this.handlebarsContext.placeholderMappings[`${prefix}functionAppResourceId`];
+          break;
+        } else if (outputContent.includes("resourceId:")) {
+          this.handlebarsContext.botResourceId =
+            this.handlebarsContext.placeholderMappings[`${prefix}resourceId`];
+          break;
+        }
+      }
     }
   }
 

@@ -217,6 +217,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+          os.tmpdir(),
+          appName,
+          "aad.manifest.json"
+        ),
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -280,6 +286,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+          os.tmpdir(),
+          appName,
+          "aad.manifest.json"
+        ),
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -307,6 +319,8 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -339,6 +353,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -384,6 +399,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+          os.tmpdir(),
+          appName,
+          "aad.manifest.json"
+        ),
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };

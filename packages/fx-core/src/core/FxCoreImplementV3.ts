@@ -244,9 +244,7 @@ export class FxCoreV3Implement {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
-      ? inputs.AAD_MANIFEST_FILE
-      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    const manifestTemplatePath: string = inputs[CoreQuestionNames.AadAppManifestFilePath];
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
@@ -254,7 +252,7 @@ export class FxCoreV3Implement {
     const manifestOutputPath: string = path.join(
       inputs.projectPath!,
       "build",
-      `aad.${inputs.env}.json`
+      `aad.${inputs[CoreQuestionNames.TargetEnvName]}.json`
     );
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,

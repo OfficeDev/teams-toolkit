@@ -37,7 +37,7 @@ import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { QuestionModelMW } from "./middleware/questionModel";
+import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
@@ -69,7 +69,6 @@ import {
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,

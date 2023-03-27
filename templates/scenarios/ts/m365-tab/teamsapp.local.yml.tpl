@@ -65,9 +65,9 @@ deploy:
     with:
       devCert:
         trust: true
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # SSL_CRT_FILE: certificate file
-    # SSL_KEY_FILE: certificate key
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
 
   - uses: cli/runNpmCommand # Run npm command
     with:

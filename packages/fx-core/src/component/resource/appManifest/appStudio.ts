@@ -539,25 +539,7 @@ export async function updateManifest(
   let manifest: any;
   const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
   if (manifestResult.isErr()) {
-    ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
-    const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
-    if (
-      manifestResult.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
-      !isProvisionSucceeded
-    ) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.GetRemoteConfigFailedError.name,
-          AppStudioError.GetRemoteConfigFailedError.message(
-            getLocalizedString("error.appstudio.updateManifestFailed"),
-            isProvisionSucceeded
-          ),
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    } else {
-      return err(manifestResult.error);
-    }
+    return err(manifestResult.error);
   } else {
     manifest = manifestResult.value;
   }
@@ -717,21 +699,7 @@ export async function updateManifestV3(
   let manifest: any;
   const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath, state, false);
   if (manifestResult.isErr()) {
-    ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
-    if (manifestResult.error.name === AppStudioError.GetRemoteConfigFailedError.name) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.GetRemoteConfigFailedError.name,
-          AppStudioError.GetRemoteConfigFailedError.message(
-            getLocalizedString("error.appstudio.updateManifestFailed"),
-            false
-          ),
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    } else {
-      return err(manifestResult.error);
-    }
+    return err(manifestResult.error);
   } else {
     manifest = manifestResult.value;
   }

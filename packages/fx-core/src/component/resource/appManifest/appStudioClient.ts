@@ -194,7 +194,7 @@ export namespace AppStudioClient {
           );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
-          if (e.response?.status == HttpStatusCode.NOTFOUND) {
+          if (e.response?.status == 404) {
             requester = createRequesterWithToken(appStudioToken);
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -481,7 +481,7 @@ export namespace AppStudioClient {
           response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
-          if (e.response?.status == HttpStatusCode.NOTFOUND) {
+          if (e.response?.status == 404) {
             requester = createRequesterWithToken(appStudioToken);
             response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
           } else {

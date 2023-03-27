@@ -47,7 +47,6 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
         }
       } catch (err) {
         // ECONNREFUSED if ngrok is not started
-        console.log(err);
       }
       await delay(2000);
       --numRetries;

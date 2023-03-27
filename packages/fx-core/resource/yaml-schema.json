@@ -890,7 +890,7 @@
       "type": "object",
       "additionalProperties": false,
       "description": "Create a new or reuse an existing Azure Active Directory application for bot. Please refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
-      "required": ["uses", "with"],
+      "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "name": {
           "type": "string",
@@ -917,6 +917,22 @@
             "name": {
               "type": "string",
               "description": "The user-facing display name for this Azure Active Directory application"
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["botId", "botPassword"],
+          "properties": {
+            "botId": {
+              "description": "Required. Client (application) id of the Azure Active Directory application created for bot.",
+              "$ref": "#/definitions/envVarName"
+            },
+            "botPassword": {
+              "description": "Required. Client secret of the Azure Active Directory application created for bot.",
+              "$ref": "#/definitions/secretEnvVarName"
             }
           }
         }        
@@ -1178,7 +1194,7 @@
     "prerequisiteInstall": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Install prerequisite(s) for debugging. Please refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
+      "description": "Install prerequisite(s). Please refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -1194,7 +1210,7 @@
         },
         "uses": {
           "type": "string",
-          "description": "Install prerequisite(s) for debugging. Please refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
+          "description": "Install prerequisite(s). Please refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
           "const": "prerequisite/install"
         },
         "with": {
@@ -1204,7 +1220,7 @@
           "properties": {
             "devCert": {
               "type": "object",
-              "description": "Generate an SSL certificate and install it to the system certificate management center. This will output SSL_CRT_FILE and SSL_KEY_FILE environment variables to current environment's .env file.",
+              "description": "Generate an SSL certificate and install it to the system certificate management center. This will output environment variables specified by `sslCertFile` and `sslKeyFile` to current environment's .env file.",
               "additionalProperties": false,
               "required": ["trust"],
               "properties": {
@@ -1216,11 +1232,34 @@
             },
             "func": {
               "type": "boolean",
-              "description": "Install Azure Functions Core Tools. This will output FUNC_PATH environment variable to current environment's .env file."
+              "description": "Install Azure Functions Core Tools. This will output environment variable specified by `funcPath` to current environment's .env file."
             },
             "dotnet": {
               "type": "boolean",
-              "description": "Install .NET SDK. This will output DOTNET_PATH environment variable to current environment's .env file."
+              "description": "Install .NET SDK. This will output environment variables specified by `dotnetPath` to current environment's .env file."
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "properties": {
+            "sslCertFile": {
+              "description": "The path of the certificate file of the SSL certificate. This parameter takes effect only when `devCert` is specified.",
+              "$ref": "#/definitions/envVarName"
+            },
+            "sslKeyFile": {
+              "description": "The path of the key file of the SSL certificate. This parameter takes effect only when `devCert` is specified.",
+              "$ref": "#/definitions/envVarName"
+            },
+            "funcPath": {
+              "description": "The path of the Azure Functions Core Tools binary. This parameter takes effect only when `func` is `true`.",
+              "$ref": "#/definitions/envVarName"
+            },
+            "dotnetPath": {
+              "description": "The path of the .NET binary. This parameter takes effect only when `dotnet` is `true`.",
+              "$ref": "#/definitions/envVarName"
             }
           }
         }
@@ -1252,10 +1291,27 @@
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
+          "required": ["appPackagePath"],
           "properties": {
             "appPackagePath": {
               "type": "string",
               "description": "path to Teams app package"
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["titleId", "appId"],
+          "properties": {
+            "titleId": {
+              "description": "Required. The ID of M365 title.",
+              "$ref": "#/definitions/envVarName"
+            },
+            "appId": {
+              "description": "Required. The app ID of M365 title.",
+              "$ref": "#/definitions/envVarName"
             }
           }
         }

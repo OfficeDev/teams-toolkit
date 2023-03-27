@@ -2,24 +2,26 @@
 // Licensed under the MIT license.
 
 import { Result, FxError, err, ok } from "@microsoft/teamsfx-api";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
-import path from "path";
+import { isV3Enabled, getHashedEnv } from "@microsoft/teamsfx-core";
 import { Argv } from "yargs";
 import activate from "../activate";
 import { RootFolderOptions, EnvOptions } from "../constants";
+import { strings } from "../resource";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, askTargetEnvironment, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { getSystemInputs, getTeamsAppTelemetryInfoByEnv } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Publish the app to Teams.";
+  public readonly description = isV3Enabled()
+    ? strings.command.publish.description
+    : "Publish the app to Teams.";
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.version(false).options(RootFolderOptions).options(EnvOptions);

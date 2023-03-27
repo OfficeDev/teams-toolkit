@@ -21,6 +21,7 @@ import {
   wrapError,
   ErrorType,
   CreateAADAppError,
+  ConfigUpdatingError,
 } from "../../../../src/component/resource/botService/errors";
 import { Messages } from "../../../../src/component/resource/botService/messages";
 
@@ -60,6 +61,11 @@ describe("wrap error", () => {
   it("Increase UT - BotFrameworkForbiddenResultError", () => {
     const e = new BotFrameworkForbiddenResultError();
     assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
+  });
+
+  it("Increase UT - ConfigUpdatingError", () => {
+    const e = new ConfigUpdatingError("anything");
+    assert.isTrue(e.name === ErrorNames.CONFIG_UPDATING_ERROR);
   });
 
   it("Increase UT - genMessage & genDisplayMessage", () => {

@@ -96,4 +96,4 @@ publish:
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
     writeToEnvironmentFile:
-      publishedAppId: PUBLISHED_APP_ID
+      publishedAppId: TEAMS_APP_PUBLISHED_APP_ID

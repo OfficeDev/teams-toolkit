@@ -30,14 +30,7 @@ export class AppStudioError {
         correlationId,
         extraData
       ),
-      getLocalizedString(
-        "error.appstudio.apiFailed",
-        e.name,
-        e.message,
-        requestPath,
-        correlationId,
-        extraData
-      ),
+      getLocalizedString("error.appstudio.apiFailed"),
     ],
   };
 

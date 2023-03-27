@@ -8,7 +8,10 @@ import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import { getDefaultString } from "../../../../src/common/localizeUtils";
-import { CreateSecretError } from "../../../../src/component/resource/aadApp/errors";
+import {
+  CreateAppError,
+  CreateSecretError,
+} from "../../../../src/component/resource/aadApp/errors";
 import { ErrorNames } from "../../../../src/component/resource/botService/constants";
 import {
   BotFrameworkConflictResultError,
@@ -17,6 +20,7 @@ import {
   CreateAADSecretError,
   wrapError,
   ErrorType,
+  CreateAADAppError,
 } from "../../../../src/component/resource/botService/errors";
 import { Messages } from "../../../../src/component/resource/botService/messages";
 
@@ -91,5 +95,22 @@ describe("wrap error", () => {
     });
     assert.isTrue(e.name === CreateSecretError.name);
     assert.isTrue(e.errorType === ErrorType.SYSTEM);
+  });
+
+  it("Increase UT - CreateAADAppError", () => {
+    const e = new CreateAADAppError({
+      response: {
+        status: 419,
+        data: {
+          error: {
+            code: 419,
+            message: "Hello419",
+          },
+        },
+      },
+    });
+    assert.isTrue(e.name === CreateAppError.name);
+    assert.isTrue(e.errorType === ErrorType.USER);
+    assert.isTrue(e.details[0].endsWith("Hello419"));
   });
 });

@@ -33,7 +33,7 @@ if (!semver.prerelease(templateVersion)) {
     console.log(
       "================== template config version is not match with template latest release version, need bump up config version ^${templateVersion} =================="
     );
-    templateConfigFile.version = `^${result.major}.${result.minor}.0`;
+    templateConfigFile.version = `^${result.major}.0.0`;
     fse.writeFileSync(
       templateConfig,
       JSON.stringify(templateConfigFile, null, 4)

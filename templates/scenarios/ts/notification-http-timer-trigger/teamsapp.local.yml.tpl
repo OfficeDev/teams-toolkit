@@ -42,9 +42,11 @@ provision:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: prerequisite/install
+  - uses: prerequisite/install # Install dependencies
     with:
       func: true
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      funcPath: FUNC_PATH
 
   - uses: cli/runNpmCommand # Run npm command
     with:

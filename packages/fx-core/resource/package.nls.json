@@ -402,8 +402,6 @@
   "error.appstudio.apiFailed.telemetry": "API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.",
   "_error.appstudio.apiFailed.telemetry.comment": " This is to describe API call, no need to translate 'X-Correlation-ID'.",
   "error.appstudio.authServiceApiFailed": "API call to Developer Portal failed: %s, %s, Request path: %s",
-  "error.appstudio.getLocalConfigFailed": "Missing configuration data for manifest. You may need to run 'debug' first. %s",
-  "error.appstudio.getRemoteConfigFailed": "Missing configuration data for manifest. %s",
   "error.appstudio.publishFailed": "Failed to publish Teams app with ID %s.",
   "error.appstudio.buildError": "Teams Package built failed!",
   "error.appstudio.checkPermissionFailed": "Check permission failed. Reason: %s",

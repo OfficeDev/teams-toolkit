@@ -28,7 +28,7 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
     let numRetries = 5;
     while (numRetries > 0) {
       try {
-        const resp = await axios.get(`http://localhost:${ngrokWebInterfacePort}/api/tunnels`);
+        const resp = await axios.get(`http://127.0.0.1:${ngrokWebInterfacePort}/api/tunnels`);
         if (resp && resp.data) {
           const tunnels = (<NgrokApiTunnelsResponse>resp.data).tunnels;
           // tunnels will be empty if tunnel connection is not completed
@@ -47,6 +47,7 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
         }
       } catch (err) {
         // ECONNREFUSED if ngrok is not started
+        console.log(err);
       }
       await delay(2000);
       --numRetries;

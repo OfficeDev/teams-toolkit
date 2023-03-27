@@ -37,7 +37,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
-    isWebAppBot: boolean;
     botResourceId: string | undefined;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
@@ -59,7 +58,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
-      isWebAppBot: false,
       botResourceId: undefined,
       isTypescript: false,
       defaultFunctionName: undefined,
@@ -171,8 +169,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
 
-    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
-    this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings);
+    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings); // if not function bot but a resource bot, then a webApp bot
 
     // Match teams-bot or fx-resource-bot output obj
     const pluginRegex = new RegExp(
@@ -185,7 +182,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       "g"
     );
     const outputContents = pluginRegex.exec(this.bicepContent);
-    if (outputContents && outputContents.length > 3) {
+    if (outputContents) {
       const prefix = "state.fx-resource-bot.";
       this.handlebarsContext.botResourceId =
         this.handlebarsContext.placeholderMappings[`${prefix}${outputContents[3]}`];

@@ -2045,6 +2045,7 @@ describe("component coordinator test", () => {
       start: progressStartStub,
       end: progressEndStub,
     } as any as IProgressHandler);
+    const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(ok(""));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
@@ -2055,6 +2056,7 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
+    assert.isTrue(showMessageStub.calledOnce);
     assert.isTrue(progressStartStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(true));
   });
@@ -2101,6 +2103,7 @@ describe("component coordinator test", () => {
       start: progressStartStub,
       end: progressEndStub,
     } as any as IProgressHandler);
+    const showMessageStub = sandbox.stub(tools.ui, "showMessage");
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
@@ -2112,6 +2115,7 @@ describe("component coordinator test", () => {
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isErr());
     assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(showMessageStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(false));
   });
   it("provision lifecycle undefined", async () => {

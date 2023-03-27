@@ -370,7 +370,6 @@ describe("updateAadManifestQeustion()", async () => {
   it("getQuestionForDeployAadManifest without env", async () => {
     inputs.platform = Platform.VSCode;
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
     inputs[CoreQuestionNames.TargetEnvName] = "dev";
     sinon.stub(fs, "pathExistsSync").returns(false);
     sinon.stub(fs, "pathExists").resolves(true);
@@ -383,20 +382,13 @@ describe("updateAadManifestQeustion()", async () => {
     }
   });
   it("validateAadManifestContainsPlaceholder skip condition", async () => {
-    const testFilePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "samples",
-      "sampleV3",
-      "aad.manifest.json"
-    );
-    inputs[CoreQuestionNames.AadAppManifestFilePath] = testFilePath;
-    sinon.stub(fs, "readFile").resolves(Buffer.from("fake_test"));
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    inputs.platform = Platform.VSCode;
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
     inputs[CoreQuestionNames.TargetEnvName] = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(true);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
+    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     const nodeRes = await getQuestionForDeployAadManifest(inputs);
     chai.assert.isTrue(nodeRes.isOk());
     if (nodeRes.isOk()) {

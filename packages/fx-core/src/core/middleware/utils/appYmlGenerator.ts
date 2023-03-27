@@ -179,31 +179,16 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
         "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
         "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+        "[^}]*" + // Mathches anything except '}'
+        "(botWebAppResourceId|webAppResourceId|functionAppResourceId|resourceId) *:" + // Matches resource id and tries not to mismatch key and value
         "[^}]*}", // Matches until end of obj as '}'
       "g"
     );
     const outputContents = pluginRegex.exec(this.bicepContent);
-    if (outputContents) {
+    if (outputContents && outputContents.length > 3) {
       const prefix = "state.fx-resource-bot.";
-      for (const outputContent of outputContents) {
-        if (outputContent.includes("botWebAppResourceId:")) {
-          this.handlebarsContext.botResourceId =
-            this.handlebarsContext.placeholderMappings[`${prefix}botWebAppResourceId`];
-          break;
-        } else if (outputContent.includes("webAppResourceId:")) {
-          this.handlebarsContext.botResourceId =
-            this.handlebarsContext.placeholderMappings[`${prefix}webAppResourceId`];
-          break;
-        } else if (outputContent.includes("functionAppResourceId:")) {
-          this.handlebarsContext.botResourceId =
-            this.handlebarsContext.placeholderMappings[`${prefix}functionAppResourceId`];
-          break;
-        } else if (outputContent.includes("resourceId:")) {
-          this.handlebarsContext.botResourceId =
-            this.handlebarsContext.placeholderMappings[`${prefix}resourceId`];
-          break;
-        }
-      }
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${prefix}${outputContents[3]}`];
     }
   }
 

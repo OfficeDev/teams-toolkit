@@ -6,6 +6,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
+import { PluginContext, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
@@ -13,8 +14,8 @@ import { AppStudioError } from "../../../../../src/component/resource/appManifes
 import { TelemetryUtils } from "../../../../../src/component/resource/appManifest/utils/telemetry";
 import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
 import { newEnvInfo } from "../../../../../src/core/environment";
-import { PluginContext } from "@microsoft/teamsfx-api";
 import { PublishingState } from "../../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
+import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils/ManifestUtils";
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
@@ -194,6 +195,35 @@ describe("App Studio API Test", () => {
           error.name,
           AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name
         );
+      }
+    });
+
+    it("invalid Teams app id", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sinon
+        .stub(manifestUtils, "extractManifestFromArchivedFile")
+        .returns(ok(new TeamsAppManifest()));
+
+      const error = {
+        response: {
+          status: 400,
+          data: "App Id must be a GUID",
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.InvalidTeamsAppIdError.name);
       }
     });
 

@@ -1011,7 +1011,7 @@
   "error.teamsApp.validate.apiFailed": "Teams app package validation failed due to  %s",
   "error.teamsApp.validate.apiFailed.display": "Teams app pacakge validation failed. Check [output window](%s) for details.",
   "error.teamsApp.AppIdNotExistError": "Teams app with ID %s does not exist in Teams Developer Portal.",
-  "error.teamsApp.InvalidAppIdError": "Teams app ID %s is invalid",
+  "error.teamsApp.InvalidAppIdError": "Teams app ID %s is invalid, must be a GUID.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.botFramework.description": "creates or updates the bot registration on dev.botframework.com",
   "driver.botFramework.summary.create": "The bot registration has been created successfully (%s).",

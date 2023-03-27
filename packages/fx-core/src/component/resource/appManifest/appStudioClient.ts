@@ -26,6 +26,8 @@ import {
 } from "../../../common/telemetry";
 import { waitSeconds } from "../../../common/tools";
 import { IValidationResult } from "./interfaces/IValidationResult";
+import { HttpStatusCode } from "../../constant/commonConstant";
+import { manifestUtils } from "./utils/ManifestUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -132,7 +134,7 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
-      if (e.response?.status === 409) {
+      if (e.response?.status === HttpStatusCode.CONFLICT) {
         const error = AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message(),
@@ -143,7 +145,7 @@ export namespace AppStudioClient {
       // Corner case: The provided app ID conflict with an existing published app
       // See Developer Portal PR: 507264
       if (
-        e.response?.status == 422 &&
+        e.response?.status == HttpStatusCode.UNPROCESSABLE_ENTITY &&
         e.response?.data.includes("App already exists and published")
       ) {
         const error = AppStudioResultFactory.UserError(
@@ -152,6 +154,24 @@ export namespace AppStudioClient {
         );
         throw error;
       }
+      // Corner case: App Id must be a GUID
+      if (
+        e.response?.status === HttpStatusCode.BAD_REQUEST &&
+        e.response?.data.includes("App Id must be a GUID")
+      ) {
+        const manifest = manifestUtils.extractManifestFromArchivedFile(file);
+        if (manifest.isErr()) {
+          throw manifest.error;
+        } else {
+          const teamsAppId = manifest.value.id;
+          const error = AppStudioResultFactory.UserError(
+            AppStudioError.InvalidTeamsAppIdError.name,
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)
+          );
+          throw error;
+        }
+      }
+
       const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
       throw error;
     }
@@ -174,7 +194,7 @@ export namespace AppStudioClient {
           );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
-          if (e.response?.status == 404) {
+          if (e.response?.status == HttpStatusCode.NOTFOUND) {
             requester = createRequesterWithToken(appStudioToken);
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -461,7 +481,7 @@ export namespace AppStudioClient {
           response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
-          if (e.response?.status == 404) {
+          if (e.response?.status == HttpStatusCode.NOTFOUND) {
             requester = createRequesterWithToken(appStudioToken);
             response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
           } else {

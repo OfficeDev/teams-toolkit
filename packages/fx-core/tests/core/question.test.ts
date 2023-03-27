@@ -8,6 +8,8 @@ import {
   handleSelectionConflict,
   ProgrammingLanguageQuestion,
   ScratchOptionYesVSC,
+  CoreQuestionNames,
+  getQuestionForDeployAadManifest,
 } from "../../src/core/question";
 import { FuncValidation, Inputs, Platform, QTreeNode, v2, ok, err } from "@microsoft/teamsfx-api";
 import {
@@ -33,7 +35,6 @@ import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel
 import * as featureFlags from "../../src/common/featureFlags";
 import os from "os";
 import { MockTools, randomAppName } from "./utils";
-import { CoreQuestionNames, getQuestionForDeployAadManifest } from "../../src/core/question";
 import { environmentManager } from "../../src/core/environment";
 import path from "path";
 import * as fs from "fs-extra";
@@ -352,6 +353,8 @@ describe("updateAadManifestQeustion()", async () => {
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
     inputs[CoreQuestionNames.TargetEnvName] = "dev";
     sinon.stub(fs, "pathExistsSync").returns(true);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
     sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     const nodeRes = await getQuestionForDeployAadManifest(inputs);
     chai.assert.isTrue(nodeRes.isOk());
@@ -370,6 +373,30 @@ describe("updateAadManifestQeustion()", async () => {
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
     inputs[CoreQuestionNames.TargetEnvName] = "dev";
     sinon.stub(fs, "pathExistsSync").returns(false);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 1);
+    }
+  });
+  it("validateAadManifestContainsPlaceholder skip condition", async () => {
+    const testFilePath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "samples",
+      "sampleV3",
+      "aad.manifest.json"
+    );
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = testFilePath;
+    sinon.stub(fs, "readFile").resolves(Buffer.from("fake_test"));
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs[CoreQuestionNames.TargetEnvName] = "dev";
     const nodeRes = await getQuestionForDeployAadManifest(inputs);
     chai.assert.isTrue(nodeRes.isOk());
     if (nodeRes.isOk()) {

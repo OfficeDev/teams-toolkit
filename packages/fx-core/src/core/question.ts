@@ -18,6 +18,10 @@ import {
   QTreeNode,
   BuildFolderName,
   AppPackageFolderName,
+  DynamicPlatforms,
+  Result,
+  FxError,
+  ok,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -1023,4 +1027,28 @@ export function confirmManifestNode(
     notEquals: defaultManifestFilePath,
   };
   return confirmManifestNode;
+}
+
+export async function getQuestionForDeployAadManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  if (isDynamicQuestion) {
+    const root = await getUpdateAadManifestQuestion(inputs);
+    return ok(root);
+  }
+  return ok(undefined);
+}
+
+async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> {
+  // Teams app manifest select node
+  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
+
+  // Env select node
+  const envNode = await selectEnvNode(inputs, false);
+  if (!envNode) {
+    return aadAppSelectNode;
+  }
+  aadAppSelectNode.addChild(envNode);
+  return aadAppSelectNode;
 }

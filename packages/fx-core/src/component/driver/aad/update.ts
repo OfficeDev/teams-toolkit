@@ -7,17 +7,7 @@ import { Service } from "typedi";
 import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import {
-  SystemError,
-  UserError,
-  Inputs,
-  ok,
-  err,
-  FxError,
-  Result,
-  QTreeNode,
-  DynamicPlatforms,
-} from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
@@ -26,7 +16,6 @@ import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 import { InvalidActionInputError } from "../../../error/common";
-import { selectAadAppManifestQuestion, selectEnvNode } from "../../../core/question";
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 
@@ -170,29 +159,4 @@ export class UpdateAadAppDriver implements StepDriver {
       AAD_APP_ACCESS_AS_USER_PERMISSION_ID: process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID,
     };
   }
-}
-
-export async function getQuestionForDeployAadManifest(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (isDynamicQuestion) {
-    const root = await getUpdateAadManifestQuestion(inputs);
-    return ok(root);
-  }
-  return ok(undefined);
-}
-
-async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> {
-  // Teams app manifest select node
-  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
-
-  // Env select node
-  const envNode = await selectEnvNode(inputs, false);
-  if (!envNode) {
-    return aadAppSelectNode;
-  }
-  aadAppSelectNode.addChild(envNode);
-
-  return aadAppSelectNode;
 }

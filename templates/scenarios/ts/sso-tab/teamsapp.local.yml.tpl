@@ -3,7 +3,7 @@
 version: 1.0.0
 
 provision:
-  - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
+  - uses: aadApp/create # Creates a new AAD app to authenticate users if the environment variable that stores clientId is empty
     with:
       name: {{appName}}-aad # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
       generateClientSecret: true # If the value is false, the action will not generate client secret for you

@@ -327,6 +327,37 @@ describe("App Studio API Test", () => {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       }
     });
+
+    it("region - 404", async () => {
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          status: 404,
+          headers: {
+            "x-correlation-id": "fakeCorrelationId",
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      } finally {
+        AppStudioClient.setRegion(undefined as unknown as string);
+      }
+    });
   });
 
   describe("Check exists in tenant", () => {

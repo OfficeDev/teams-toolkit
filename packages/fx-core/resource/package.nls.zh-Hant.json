@@ -1058,7 +1058,7 @@
   "error.yaml.LifeCycleUndefinedError": "生命週期 '%s' 未定義，yaml 檔案: %s",
   "error.common.UnresolvedPlaceholderError": "遺漏以下環境變數: '%s',，這是檔案 %s 所需的。",
   "error.common.InvalidProjectError": "此命令僅適用於由 Teams 工具組建立的專案。",
-  "error.yaml.InvalidActionInputError": "下列參數遺漏或對 '%s' 動作無效: %s，yaml檔案: %s",
+  "error.common.InvalidActionInputError": "下列參數遺漏或對 '%s' 動作無效: %s，yaml檔案: %s",
   "error.common.FileNotFoundError": "No such file or directory, open '%s'",
   "error.common.JSONSyntaxError": "JSON syntax error: %s",
   "error.common.UnhandledError": "Unhandled error: %s",

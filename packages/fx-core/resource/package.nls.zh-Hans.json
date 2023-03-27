@@ -1058,7 +1058,7 @@
   "error.yaml.LifeCycleUndefinedError": "生命周期“%s”未定义，yaml 文件: %s",
   "error.common.UnresolvedPlaceholderError": "缺少以下环境变量:“%s”，以下文件需要这些变量: %s。",
   "error.common.InvalidProjectError": "此命令仅适用于 Teams 工具包创建的项目。",
-  "error.yaml.InvalidActionInputError": "以下参数对于“%s”操作缺失或无效: %s，yaml 文件: %s",
+  "error.common.InvalidActionInputError": "以下参数对于“%s”操作缺失或无效: %s，yaml 文件: %s",
   "error.common.FileNotFoundError": "No such file or directory, open '%s'",
   "error.common.JSONSyntaxError": "JSON syntax error: %s",
   "error.common.UnhandledError": "Unhandled error: %s",

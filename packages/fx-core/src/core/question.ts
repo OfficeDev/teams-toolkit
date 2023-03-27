@@ -22,6 +22,8 @@ import {
   Result,
   FxError,
   ok,
+  err,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -54,6 +56,8 @@ import {
   BotNewUIOptionItem,
   WorkflowOptionItem,
   DashboardOptionItem,
+  SolutionSource,
+  SolutionError,
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -66,7 +70,7 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
-
+import { FileNotFoundError, ReadFileError } from "../error/common";
 export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",
@@ -1050,5 +1054,29 @@ async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> 
     return aadAppSelectNode;
   }
   aadAppSelectNode.addChild(envNode);
+  envNode.condition = {
+    validFunc: validateAadManifestContainsPlaceholder,
+  };
   return aadAppSelectNode;
+}
+
+async function validateAadManifestContainsPlaceholder(
+  input: any,
+  inputs?: Inputs
+): Promise<string | undefined> {
+  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
+  const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
+  const regexObj = new RegExp(placeholderRegex);
+  try {
+    if (!aadManifestPath || !(await fs.pathExists(aadManifestPath))) {
+      return "Skip Current Question";
+    }
+    const manifest = await fs.readFile(aadManifestPath, ConstantString.UTF8Encoding);
+    if (regexObj.test(manifest)) {
+      return undefined;
+    }
+  } catch (e) {
+    return "Skip Current Question";
+  }
+  return "Skip Current Question";
 }

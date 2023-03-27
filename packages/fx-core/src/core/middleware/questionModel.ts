@@ -23,7 +23,7 @@ import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
-import { getQuestionForDeployAadManifest } from "../../component/driver/aad/update";
+import { getQuestionForDeployAadManifest } from "../question";
 import { TOOLS } from "../globalVars";
 import {
   BotIdsQuestion,

@@ -200,6 +200,34 @@ describe("App Studio API Test", () => {
       }
     });
 
+    it("422 other error", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          status: 422,
+          data: "fake error message",
+          headers: {
+            "x-correlation-id": uuid(),
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      }
+    });
+
     it("invalid Teams app id", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);

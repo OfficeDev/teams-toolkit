@@ -475,4 +475,32 @@ export class CliHelper {
       }
     }
   }
+
+  static async installCLI(version: string, global: boolean, cwd: string) {
+    console.log(`install CLI with version ${version}`);
+    try {
+      if (global) {
+        const result = await execAsync(`npm install -g @microsoft/teamsfx-cli@${version}`, {
+          cwd,
+        });
+        if (result.stderr) {
+          console.log(`[CLI] ${result.stderr}`);
+          return;
+        }
+      } else {
+        const result = await execAsync(`npm install @microsoft/teamsfx-cli@${version}`, {
+          cwd,
+        });
+        if (result.stderr) {
+          console.log(`[CLI] ${result.stderr}`);
+          return;
+        }
+      }
+      const message = `install CLI successfully`;
+      console.log(message);
+    } catch (error: any) {
+      console.error(error);
+      throw new Error(error);
+    }
+  }
 }

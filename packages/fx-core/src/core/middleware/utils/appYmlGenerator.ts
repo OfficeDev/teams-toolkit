@@ -14,9 +14,8 @@ import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 import { MetadataV3 } from "../../../common/versionMetadata";
-import { hasFunctionBot, hasWebAppBot } from "../../../common/projectSettingsHelperV3";
+import { hasFunctionBot } from "../../../common/projectSettingsHelperV3";
 import { convertProjectSettingsV2ToV3 } from "../../../component/migrate";
-
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
   constructor(protected oldProjectSettings: ProjectSettings) {}

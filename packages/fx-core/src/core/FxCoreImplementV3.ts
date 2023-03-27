@@ -235,10 +235,9 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
-    EnvLoaderMW(false),
+    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
     ContextInjectorMW,
-    EnvWriterMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);

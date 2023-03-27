@@ -16,6 +16,7 @@ import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 import { InvalidActionInputError } from "../../../error/common";
+
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 

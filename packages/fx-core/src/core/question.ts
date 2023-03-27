@@ -22,8 +22,6 @@ import {
   Result,
   FxError,
   ok,
-  err,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -56,11 +54,7 @@ import {
   BotNewUIOptionItem,
   WorkflowOptionItem,
   DashboardOptionItem,
-  SolutionSource,
-  SolutionError,
 } from "../component/constants";
-import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
-import { ResourceManagementClient } from "@azure/arm-resources";
 import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 import {
   answerToRepaceBotId,
@@ -70,7 +64,6 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
-import { FileNotFoundError, ReadFileError } from "../error/common";
 export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",

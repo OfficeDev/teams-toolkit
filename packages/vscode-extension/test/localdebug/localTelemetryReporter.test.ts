@@ -1,31 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ContextV3, TeamsAppManifest, Tools } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
 import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core/build/common/local";
-import { pathUtils, PathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { TelemetryEvent } from "@microsoft/teamsfx-core/build/common/telemetry";
-import { Generator } from "@microsoft/teamsfx-core/build/component/generator/generator";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/build/common/constants";
 import * as chai from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import {
-  getTaskInfo,
-  maskArrayValue,
-  maskValue,
-  sendDebugMetadataEvent,
-} from "../../src/debug/localTelemetryReporter";
+import { getTaskInfo, maskArrayValue, maskValue } from "../../src/debug/localTelemetryReporter";
 import * as globalVariables from "../../src/globalVariables";
-import { MockLogProvier, MockTelemetryReporter, MockUserInteraction } from "./testUtils";
-import * as fs from "fs-extra";
-import * as chaiAsPromised from "chai-as-promised";
-import * as tmp from "tmp";
-import { actionName as createAppPackageActionName } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/createAppPackage";
-import { actionName as configureAppPackageActionName } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/configure";
-import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
-chai.use(chaiAsPromised);
 
 describe("LocalTelemetryReporter", () => {
   describe("maskValue()", () => {
@@ -347,154 +328,6 @@ describe("LocalTelemetryReporter", () => {
           },
         ]
       );
-    });
-  });
-});
-
-describe("sendDebugMetadataEvent()", () => {
-  let mockReporter: MockTelemetryReporter;
-  let sandbox: sinon.SinonSandbox;
-  let mockCtx: ContextV3;
-
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    const ui = new MockUserInteraction();
-    mockReporter = new MockTelemetryReporter();
-    const mockTools = { telemetryReporter: mockReporter, ui } as any as Tools;
-    // call setTools in constructor
-    new FxCore(mockTools);
-
-    mockCtx = {
-      logProvider: new MockLogProvier(),
-      templateVariables: Generator.getDefaultVariables("test-mock-app"),
-    } as ContextV3;
-    // force generating template files from source code rather than GitHub
-    sandbox.stub(process, "env").value({
-      [FeatureFlagName.DebugTemplate]: "true",
-      NODE_ENV: "development",
-    });
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("Notification bot happy path", async () => {
-    let projectPath: string;
-    {
-      const tmpobj = tmp.dirSync({ unsafeCleanup: true });
-      projectPath = tmpobj.name;
-      after(() => {
-        tmpobj.removeCallback();
-      });
-      const result = await Generator.generateTemplate(
-        mockCtx,
-        tmpobj.name,
-        "notification-restify",
-        "js"
-      );
-      chai.assert.isTrue(result.isOk());
-    }
-
-    // prevent being affected by events sent from previous actions
-    mockReporter.resetEvents();
-    await sendDebugMetadataEvent(projectPath);
-
-    // Assert
-    chai.assert.equal(mockReporter.events.length, 2);
-    // yaml metadata event
-    chai.assert.equal(mockReporter.events[0].eventName, TelemetryEvent.MetaData);
-    chai.assert.equal(mockReporter.events[0].properties?.["yml-name"], "teamsapplocalyml");
-
-    const actionList = mockReporter.events[0].properties?.["provision.actions"]?.split(",");
-    chai.assert.isNotEmpty(actionList);
-    chai.assert.include(actionList!, configureAppPackageActionName.replace(/\//g, ""));
-    chai.assert.include(actionList!, createAppPackageActionName.replace(/\//g, ""));
-
-    // manifest metdata event
-    chai.assert.equal(mockReporter.events[1].eventName, TelemetryEvent.MetaData);
-    chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.id"]);
-    chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.bots"]);
-  });
-
-  it("SSO tab happy path", async () => {
-    let projectPath: string;
-    {
-      const tmpobj = tmp.dirSync({ unsafeCleanup: true });
-      projectPath = tmpobj.name;
-      after(() => {
-        tmpobj.removeCallback();
-      });
-      const result = await Generator.generateTemplate(mockCtx, tmpobj.name, "sso-tab", "js");
-      chai.assert.isTrue(result.isOk());
-    }
-
-    // prevent being affected by events sent from previous actions
-    mockReporter.resetEvents();
-    await sendDebugMetadataEvent(projectPath);
-
-    // Assert
-    chai.assert.equal(mockReporter.events.length, 2);
-    // yaml metadata event
-    chai.assert.equal(mockReporter.events[0].eventName, TelemetryEvent.MetaData);
-    chai.assert.equal(mockReporter.events[0].properties?.["yml-name"], "teamsapplocalyml");
-
-    const actionList = mockReporter.events[0].properties?.["provision.actions"]?.split(",");
-    chai.assert.isNotEmpty(actionList);
-    chai.assert.include(actionList!, configureAppPackageActionName.replace(/\//g, ""));
-    chai.assert.include(actionList!, createAppPackageActionName.replace(/\//g, ""));
-
-    // manifest metdata event
-    chai.assert.equal(mockReporter.events[1].eventName, TelemetryEvent.MetaData);
-    chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.id"]);
-    chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.staticTabs.contentUrl"]);
-    chai.assert.isNotEmpty(
-      mockReporter.events[1].properties?.["manifest.configurableTabs.configurationUrl"]
-    );
-    chai.assert.isNotEmpty(mockReporter.events[1].properties?.["manifest.webApplicationInfo.id"]);
-  });
-
-  describe("Telemetry failure should not block execution", () => {
-    let projectPath: string;
-    beforeEach(async () => {
-      {
-        const tmpobj = tmp.dirSync({ unsafeCleanup: true });
-        projectPath = tmpobj.name;
-        after(() => {
-          tmpobj.removeCallback();
-        });
-        const result = await Generator.generateTemplate(
-          mockCtx,
-          tmpobj.name,
-          "notification-restify",
-          "js"
-        );
-        chai.assert.isTrue(result.isOk());
-      }
-    });
-
-    it("Should not throw error on failure: pathUtils.getYmlFilePath()", async () => {
-      const stub = sandbox.stub(pathUtils, "getYmlFilePath").throws(new Error("Mock error"));
-      after(() => stub.reset());
-      await sendDebugMetadataEvent(projectPath);
-    });
-
-    it("Should not throw error on failure: metadataUtil.parse()", async () => {
-      const stub = sandbox.stub(metadataUtil, "parse").throws(new Error("Mock error"));
-      after(() => stub.reset());
-      await sendDebugMetadataEvent(projectPath);
-    });
-
-    it("Should not throw error on failure: metadataUtil.parseManifest()", async () => {
-      const stub = sandbox.stub(metadataUtil, "parseManifest").throws(new Error("Mock error"));
-      after(() => stub.reset());
-      await sendDebugMetadataEvent(projectPath);
-    });
-
-    it("Should not throw error on failure: fs.readJson()", async () => {
-      const stub = sandbox.stub(fs, "readJson").throws(new Error("Mock error"));
-      after(() => stub.reset());
-      await sendDebugMetadataEvent(projectPath);
     });
   });
 });

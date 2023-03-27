@@ -134,7 +134,7 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
-      if (e.response?.status === HttpStatusCode.CONFLICT) {
+      if (e.response?.status === 409) {
         const error = AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message(),
@@ -145,7 +145,7 @@ export namespace AppStudioClient {
       // Corner case: The provided app ID conflict with an existing published app
       // See Developer Portal PR: 507264
       if (
-        e.response?.status == HttpStatusCode.UNPROCESSABLE_ENTITY &&
+        e.response?.status == 422 &&
         e.response?.data.includes("App already exists and published")
       ) {
         const error = AppStudioResultFactory.UserError(

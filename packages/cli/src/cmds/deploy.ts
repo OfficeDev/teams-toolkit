@@ -14,37 +14,34 @@ import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
-import * as constants from "../constants";
+import { deployPluginNodeName, EnvOptions, RootFolderOptions } from "../constants";
 import HelpParamGenerator from "../helpParamGenerator";
+import { strings } from "../resource";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import {
-  toLocaleLowerCase,
-  getSystemInputs,
-  askTargetEnvironment,
-  flattenNodes,
-  promptSPFxUpgrade,
-} from "../utils";
+import { toLocaleLowerCase, getSystemInputs, flattenNodes, promptSPFxUpgrade } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
   public readonly command = `${this.commandHead}${isV3Enabled() ? "" : " [components...]"}`;
-  public readonly description = "Deploy the current application.";
+  public readonly description = isV3Enabled()
+    ? strings.command.deploy.description
+    : "Deploy the current application.";
 
-  public readonly deployPluginNodeName = constants.deployPluginNodeName;
+  public readonly deployPluginNodeName = deployPluginNodeName;
 
   public builder(yargs: Argv): Argv<any> {
     if (isV3Enabled()) {
       return yargs
         .hide("interactive")
         .version(false)
-        .options(constants.EnvOptions)
-        .options(constants.RootFolderOptions);
+        .options(EnvOptions)
+        .options(RootFolderOptions);
     }
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.deploy);
     const deployPluginOption = this.params[this.deployPluginNodeName];

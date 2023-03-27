@@ -1053,7 +1053,7 @@ async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> 
   return aadAppSelectNode;
 }
 
-async function validateAadManifestContainsPlaceholder(
+export async function validateAadManifestContainsPlaceholder(
   input: any,
   inputs?: Inputs
 ): Promise<string | undefined> {

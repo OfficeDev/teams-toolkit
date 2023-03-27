@@ -10,6 +10,7 @@ import {
   ScratchOptionYesVSC,
   CoreQuestionNames,
   getQuestionForDeployAadManifest,
+  validateAadManifestContainsPlaceholder,
 } from "../../src/core/question";
 import { FuncValidation, Inputs, Platform, QTreeNode, v2, ok, err } from "@microsoft/teamsfx-api";
 import {
@@ -381,19 +382,25 @@ describe("updateAadManifestQeustion()", async () => {
       chai.assert.isTrue(node != undefined && node?.children?.length == 1);
     }
   });
-  it("validateAadManifestContainsPlaceholder skip condition", async () => {
-    inputs.platform = Platform.VSCode;
+  it("validateAadManifestContainsPlaceholder return undefined", async () => {
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = path.join(
+      __dirname,
+      "..",
+      "samples",
+      "sampleV3",
+      "aad.manifest.json"
+    );
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
+    chai.assert.isUndefined(res);
+  });
+  it("validateAadManifestContainsPlaceholder skip", async () => {
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs[CoreQuestionNames.TargetEnvName] = "dev";
-    sinon.stub(fs, "pathExistsSync").returns(true);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
-    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    chai.assert.isTrue(nodeRes.isOk());
-    if (nodeRes.isOk()) {
-      const node = nodeRes.value;
-      chai.assert.isTrue(node != undefined && node?.children?.length == 1);
-    }
+    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
+    const expectRes = "Skip Current Question";
+    chai.expect(res).to.equal(expectRes);
   });
 });

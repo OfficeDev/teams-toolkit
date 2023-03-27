@@ -459,5 +459,45 @@ describe("App Studio API Test", () => {
         chai.assert.equal(e.name, error.name);
       }
     });
+
+    it("region - 404", async () => {
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          status: 404,
+          headers: {
+            "x-correlation-id": "fakeCorrelationId",
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sinon.stub(fakeAxiosInstance, "get").resolves({ data: appDef });
+
+      const appUser: AppUser = {
+        tenantId: uuid(),
+        aadId: uuid(),
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.grantPermission(appDef.teamsAppId!, appStudioToken, appUser);
+      } catch (e) {
+        chai.assert.equal(e.response.status, 404);
+      } finally {
+        AppStudioClient.setRegion(undefined as unknown as string);
+      }
+    });
   });
 });

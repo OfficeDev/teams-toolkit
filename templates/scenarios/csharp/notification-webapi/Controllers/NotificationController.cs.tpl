@@ -1,10 +1,10 @@
-﻿using {%SafeProjectName%}.Models;
+﻿using {{SafeProjectName}}.Models;
 using AdaptiveCards.Templating;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.TeamsFx.Conversation;
 using Newtonsoft.Json;
 
-namespace {%SafeProjectName%}.Controllers
+namespace {{SafeProjectName}}.Controllers
 {
     [Route("api/notification")]
     [ApiController]

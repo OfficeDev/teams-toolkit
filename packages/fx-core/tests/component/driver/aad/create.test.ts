@@ -144,7 +144,54 @@ describe("aadAppCreate", async () => {
     );
   });
 
-  it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists", async () => {
+  it("should output to specific environment variable based on writeToEnvironmentFile declaration", async () => {
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const outputEnvVarNames = new Map<string, string>(
+      Object.entries({
+        clientId: "MY_CLIENT_ID",
+        objectId: "MY_OBJECT_ID",
+        tenantId: "MY_TENANT_ID",
+        authorityHost: "MY_AUTHORITY_HOST",
+        authority: "MY_AUTHORITY",
+        clientSecret: "MY_CLIENT_SECRET",
+      })
+    );
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
+    expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
+    expect(result.result._unsafeUnwrap().get("MY_TENANT_ID")).to.equal("tenantId");
+    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY")).to.equal(
+      "https://login.microsoftonline.com/tenantId"
+    );
+    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+    expect(result.summaries).includes(
+      `Created Azure Active Directory application with object id ${expectedObjectId}`
+    );
+    expect(result.summaries).includes(
+      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+    );
+  });
+
+  it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists and only output generated client secret", async () => {
     sinon.stub(AadAppClient.prototype, "createAadApp").rejects("createAadApp should not be called");
     sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
 
@@ -160,16 +207,10 @@ describe("aadAppCreate", async () => {
 
     const result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
-      "existing value"
-    );
     expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
       expectedSecretText
     );
-    expect(result.result._unsafeUnwrap().size).to.equal(3); // 1 new env and 2 existing env
+    expect(result.result._unsafeUnwrap().size).to.equal(1); // 1 new env and 2 existing env
     expect(result.summaries.length).to.equal(1);
     expect(result.summaries).includes(
       `Generated client secret for Azure Active Directory application with object id existing value`
@@ -195,20 +236,11 @@ describe("aadAppCreate", async () => {
 
     const result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().size).to.equal(3);
+    expect(result.result._unsafeUnwrap().size).to.equal(0);
     expect(result.summaries.length).to.equal(0); // no summary when action does nothing
   });
 
-  it("should not generate client secret when generateClientSecret is false", async () => {
+  it("should not generate client secret when generateClientSecret is false and output nothing", async () => {
     sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
       id: expectedObjectId,
       displayName: expectedDisplayName,

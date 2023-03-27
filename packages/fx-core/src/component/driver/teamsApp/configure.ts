@@ -25,10 +25,13 @@ import { FileNotFoundError, InvalidActionInputError } from "../../../error/commo
 
 export const actionName = "teamsApp/update";
 
-export const outputNames = {
-  TEAMS_APP_ID: "TEAMS_APP_ID",
-  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
-  TEAMS_APP_UPDATE_TIME: "TEAMS_APP_UPDATE_TIME",
+export const defaultOutputNames = {
+  teamsAppId: "TEAMS_APP_ID",
+};
+
+export const internalOutputNames = {
+  teamsAppUpdateTime: "TEAMS_APP_UPDATE_TIME",
+  teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
 @Service(actionName)
@@ -46,10 +49,11 @@ export class ConfigureTeamsAppDriver implements StepDriver {
 
   public async execute(
     args: ConfigureTeamsAppArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.update(args, wrapContext);
+    const res = await this.update(args, wrapContext, outputEnvVarNames);
     return {
       result: res,
       summaries: wrapContext.summaries,
@@ -59,7 +63,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   async update(
     args: ConfigureTeamsAppArgs,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
 
@@ -67,6 +72,11 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
+
+    if (!outputEnvVarNames) {
+      outputEnvVarNames = new Map(Object.entries(defaultOutputNames));
+    }
+    outputEnvVarNames = new Map([...outputEnvVarNames, ...Object.entries(internalOutputNames)]);
 
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
@@ -154,9 +164,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       }
       return ok(
         new Map([
-          [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],
-          [outputNames.TEAMS_APP_TENANT_ID, appDefinition.tenantId!],
-          [outputNames.TEAMS_APP_UPDATE_TIME, appDefinition.updatedAt!],
+          [outputEnvVarNames.get("teamsAppId") as string, appDefinition.teamsAppId!],
+          [outputEnvVarNames.get("teamsAppTenantId") as string, appDefinition.tenantId!],
+          [outputEnvVarNames.get("teamsAppUpdateTime") as string, appDefinition.updatedAt!],
         ])
       );
     } catch (e: any) {

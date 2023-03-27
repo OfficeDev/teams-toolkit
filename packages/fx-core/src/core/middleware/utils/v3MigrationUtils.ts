@@ -31,6 +31,7 @@ import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
+import * as dotenv from "dotenv";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -298,15 +299,11 @@ export async function readAndConvertUserdata(
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
-  const lines = userdataContent.split(EOL);
-  for (const line of lines) {
-    if (line && line != "") {
-      // in case that there are "="s in secrets
-      const [key, ...value] = line.split("=");
-      const res = namingConverterV3(`state.${key}`, FileType.USERDATA, bicepContent);
-      if (res.isOk()) returnAnswer += `${res.value}=${value.join("=")}${EOL}`;
-    }
+  const userdataContent = fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const secretes = dotenv.parse(userdataContent);
+  for (const secreteKey of Object.keys(secretes)) {
+    const res = namingConverterV3("state." + secreteKey, FileType.USERDATA, bicepContent);
+    if (res.isOk()) returnAnswer += `${res.value}=${secretes[secreteKey]}${EOL}`;
   }
 
   return returnAnswer;

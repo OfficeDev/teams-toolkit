@@ -16,9 +16,6 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
-  Settings,
-  SettingsFileName,
-  SettingsFolderName,
   SolutionContext,
   Stage,
   StaticPlatforms,
@@ -35,18 +32,14 @@ import {
 import { createV2Context, isV3Enabled } from "../../common/tools";
 import { LocalCrypto } from "../crypto";
 import { newEnvInfo } from "../environment";
-import {
-  InvalidProjectSettingsFileError,
-  NoProjectOpenedError,
-  PathNotExistError,
-  ReadFileError,
-} from "../error";
+import { InvalidProjectSettingsFileError, NoProjectOpenedError, ReadFileError } from "../error";
 import { globalVars } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { settingsUtil } from "../../component/utils/settingsUtil";
+import { FileNotFoundError } from "../../error/common";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -60,7 +53,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     }
     const projectPathExist = await fs.pathExists(inputs.projectPath);
     if (!projectPathExist) {
-      ctx.result = err(new PathNotExistError(inputs.projectPath));
+      ctx.result = err(new FileNotFoundError("ProjectSettingsLoaderMW", inputs.projectPath));
       return;
     }
     const loadRes = await loadProjectSettings(inputs, true);

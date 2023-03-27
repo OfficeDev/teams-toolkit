@@ -224,7 +224,7 @@ describe("APIs of Environment Manager", () => {
         "this does not exist"
       );
       if (actualEnvDataResult.isErr()) {
-        assert.equal(actualEnvDataResult.error.name, "ProjectEnvNotExistError");
+        assert.equal(actualEnvDataResult.error.name, "FileNotFoundError");
       } else {
         assert.fail("Failed to get expected error.");
       }

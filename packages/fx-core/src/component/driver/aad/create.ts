@@ -6,7 +6,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
-import { CreateAadAppOutput } from "./interface/createAadAppOutput";
+import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
 import { ProgressBarSetting } from "./interface/progressBarSetting";
 import {
   FxError,
@@ -27,14 +27,22 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { InvalidActionInputError } from "../../../error/common";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
 const driverConstants = {
   generateSecretErrorMessageKey: "driver.aadApp.error.generateSecretFailed",
 };
-const SECRET_AAD_APP_CLIENT_SECRET = "SECRET_AAD_APP_CLIENT_SECRET";
-const AAD_APP_CLIENT_ID = "AAD_APP_CLIENT_ID";
+
+const defaultOutputEnvVarNames = {
+  clientId: "AAD_APP_CLIENT_ID",
+  objectId: "AAD_APP_OBJECT_ID",
+  tenantId: "AAD_APP_TENANT_ID",
+  authorityHost: "AAD_APP_OAUTH_AUTHORITY_HOST",
+  authority: "AAD_APP_OAUTH_AUTHORITY",
+  clientSecret: "SECRET_AAD_APP_CLIENT_SECRET",
+};
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
@@ -49,71 +57,90 @@ export class CreateAadAppDriver implements StepDriver {
   }
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
-  public async execute(args: CreateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
+  public async execute(
+    args: CreateAadAppArgs,
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult> {
     const progressBarSettings = this.getProgressBarSetting();
     const progressHandler = context.ui?.createProgressBar(
       progressBarSettings.title,
       progressBarSettings.stepMessages.length
     );
     const summaries: string[] = [];
+    let outputs: Map<string, string> = new Map<string, string>();
     try {
       await progressHandler?.start();
 
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
       this.validateArgs(args);
+      // TODO: Remove this logic when config manager forces schema validation
+      if (!outputEnvVarNames) {
+        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+      }
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
-      const aadAppState = this.loadCurrentState();
-
+      const aadAppState: CreateAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       await progressHandler?.next(progressBarSettings.stepMessages.shift());
-      if (!aadAppState.AAD_APP_CLIENT_ID) {
+      if (!aadAppState.clientId) {
         context.logProvider?.info(
-          getLocalizedString(logMessageKeys.startCreateAadApp, AAD_APP_CLIENT_ID)
+          getLocalizedString(
+            logMessageKeys.startCreateAadApp,
+            outputEnvVarNames.get(OutputKeys.clientId)
+          )
         );
         // Create new AAD app if no client id exists
         const aadApp = await aadAppClient.createAadApp(args.name);
-        aadAppState.AAD_APP_CLIENT_ID = aadApp.appId!;
-        aadAppState.AAD_APP_OBJECT_ID = aadApp.id!;
+        aadAppState.clientId = aadApp.appId!;
+        aadAppState.objectId = aadApp.id!;
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
+        outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
+
         const summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
         context.logProvider?.info(summary);
         summaries.push(summary);
       } else {
         context.logProvider?.info(
-          getLocalizedString(logMessageKeys.skipCreateAadApp, AAD_APP_CLIENT_ID)
+          getLocalizedString(
+            logMessageKeys.skipCreateAadApp,
+            outputEnvVarNames.get(OutputKeys.clientId)
+          )
         );
       }
 
       await progressHandler?.next(progressBarSettings.stepMessages.shift());
       if (args.generateClientSecret) {
-        if (!aadAppState.SECRET_AAD_APP_CLIENT_SECRET) {
+        if (!aadAppState.clientSecret) {
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.startGenerateClientSecret,
-              SECRET_AAD_APP_CLIENT_SECRET
+              outputEnvVarNames.get(OutputKeys.clientSecret)
             )
           );
           // Create new client secret if no client secret exists
-          if (!aadAppState.AAD_APP_OBJECT_ID) {
+          if (!aadAppState.objectId) {
             throw new MissingEnvUserError(
               actionName,
-              "AAD_APP_OBJECT_ID",
+              outputEnvVarNames.get(OutputKeys.objectId)!,
               helpLink,
               driverConstants.generateSecretErrorMessageKey
             );
           }
-          aadAppState.SECRET_AAD_APP_CLIENT_SECRET = await aadAppClient.generateClientSecret(
-            aadAppState.AAD_APP_OBJECT_ID
-          );
+          aadAppState.clientSecret = await aadAppClient.generateClientSecret(aadAppState.objectId);
+          outputs.set(outputEnvVarNames.get(OutputKeys.clientSecret)!, aadAppState.clientSecret);
+
           const summary = getLocalizedString(
             logMessageKeys.successGenerateClientSecret,
-            aadAppState.AAD_APP_OBJECT_ID
+            aadAppState.objectId
           );
           context.logProvider?.info(summary);
           summaries.push(summary);
         } else {
           context.logProvider?.info(
-            getLocalizedString(logMessageKeys.skipCreateAadApp, SECRET_AAD_APP_CLIENT_SECRET)
+            getLocalizedString(
+              logMessageKeys.skipCreateAadApp,
+              outputEnvVarNames.get(OutputKeys.clientSecret)
+            )
           );
         }
       }
@@ -124,12 +151,7 @@ export class CreateAadAppDriver implements StepDriver {
       await progressHandler?.end(true);
 
       return {
-        result: ok(
-          new Map(
-            Object.entries(aadAppState) // convert each property to Map item
-              .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
-          )
-        ),
+        result: ok(outputs),
         summaries: summaries,
       };
     } catch (error) {
@@ -188,17 +210,6 @@ export class CreateAadAppDriver implements StepDriver {
     }
   }
 
-  private loadCurrentState(): CreateAadAppOutput {
-    return {
-      AAD_APP_CLIENT_ID: process.env.AAD_APP_CLIENT_ID,
-      SECRET_AAD_APP_CLIENT_SECRET: process.env.SECRET_AAD_APP_CLIENT_SECRET,
-      AAD_APP_OBJECT_ID: process.env.AAD_APP_OBJECT_ID,
-      AAD_APP_TENANT_ID: process.env.AAD_APP_TENANT_ID,
-      AAD_APP_OAUTH_AUTHORITY: process.env.AAD_APP_OAUTH_AUTHORITY,
-      AAD_APP_OAUTH_AUTHORITY_HOST: process.env.AAD_APP_OAUTH_AUTHORITY_HOST,
-    };
-  }
-
   // logic from
   // src\component\resource\aadApp\utils\tokenProvider.ts
   // src\component\resource\aadApp\utils\configs.ts
@@ -209,9 +220,9 @@ export class CreateAadAppDriver implements StepDriver {
     }
 
     const tenantId = tokenObjectResponse.value.tid as string; // The tid claim is AAD tenant id
-    state.AAD_APP_TENANT_ID = tenantId;
-    state.AAD_APP_OAUTH_AUTHORITY_HOST = Constants.oauthAuthorityPrefix;
-    state.AAD_APP_OAUTH_AUTHORITY = `${Constants.oauthAuthorityPrefix}/${tenantId}`;
+    state.tenantId = tenantId;
+    state.authorityHost = Constants.oauthAuthorityPrefix;
+    state.authority = `${Constants.oauthAuthorityPrefix}/${tenantId}`;
   }
 
   private getProgressBarSetting(): ProgressBarSetting {

@@ -589,13 +589,13 @@ export class Coordinator {
     const projectModel = maybeProjectModel.value;
 
     const cycles = [
-      projectModel.registerApp,
+      // projectModel.registerApp,
       projectModel.provision,
-      projectModel.configureApp,
+      // projectModel.configureApp,
     ].filter((c) => c !== undefined) as Lifecycle[];
 
     if (cycles.length === 0) {
-      return err(new LifeCycleUndefinedError("registerApp, provision, or configureApp"));
+      return err(new LifeCycleUndefinedError("provision"));
     }
 
     // 2. M365 sign in and tenant check if needed.
@@ -948,7 +948,8 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<DotenvParseOutput, FxError>> {
+    const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
@@ -966,8 +967,12 @@ export class Coordinator {
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
+        merge(output, result[0]);
         summaryReporter.updateLifecycleState(0, execRes);
-        if (result[1]) return err(result[1]);
+        if (result[1]) {
+          inputs.envVars = output;
+          return err(result[1]);
+        }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
@@ -975,7 +980,7 @@ export class Coordinator {
     } else {
       return err(new LifeCycleUndefinedError("publish"));
     }
-    return ok(undefined);
+    return ok(output);
   }
 
   @hooks([

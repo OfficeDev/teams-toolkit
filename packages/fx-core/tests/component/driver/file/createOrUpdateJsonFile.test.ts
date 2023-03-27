@@ -22,8 +22,8 @@ describe("CreateOrUpdateJsonFileDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.file.error.invalidParameter") {
-        return util.format("driver.file.error.invalidParameter. %s. %s.", ...params);
+      if (key === "error.common.InvalidActionInputError") {
+        return util.format("error.common.InvalidActionInputError. %s. %s.", ...params);
       } else if (key === "driver.file.error.unhandledError") {
         return util.format("driver.file.error.unhandledError. %s. %s", ...params);
       }

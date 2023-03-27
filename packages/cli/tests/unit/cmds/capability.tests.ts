@@ -175,7 +175,7 @@ describe("Capability Command Tests", function () {
 
     expect(options).deep.equals(
       [
-        "spfx-use-global-package-or-install-local",
+        "spfx-install-latest-package",
         "spfx-folder",
         "spfx-webpart-name",
         "manifest-path",
@@ -195,7 +195,7 @@ describe("Capability Command Tests", function () {
       ["spfx-webpart-name"]: "hiworld",
       ["manifest-path"]: "/appPackage/manifest.json",
       ["local-manifest-path"]: "/appPackage/manifest.local.json",
-      ["spfx-use-global-package-or-install-local"]: "installLocally",
+      ["spfx-install-latest-package"]: "true",
     };
     await cmd.handler(args);
     expect(addWebpartStub.calledOnce).to.be.true;

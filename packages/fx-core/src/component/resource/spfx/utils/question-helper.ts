@@ -5,10 +5,11 @@ import { OptionItem } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
+import semver from "semver";
 
 export enum SPFxVersionOptionIds {
-  installLocally = "installLocally",
-  globalPackage = "globalPackage",
+  installLocally = "true",
+  globalPackage = "false",
 }
 
 export class PackageSelectOptionsHelper {
@@ -79,5 +80,15 @@ export class PackageSelectOptionsHelper {
 
   public static getLatestSpGeneratorVersion(): string | undefined {
     return PackageSelectOptionsHelper.latestSpGeneratorVersion;
+  }
+
+  public static isLowerThanRecommendedVersion(): boolean | undefined {
+    const installedVersion = PackageSelectOptionsHelper.globalPackageVersions[0];
+    if (!installedVersion) {
+      return undefined;
+    }
+
+    const recommendedLowestVersion = Constants.RecommendedLowestSpfxVersion.substring(1); // remove "v"
+    return semver.lte(installedVersion, recommendedLowestVersion);
   }
 }

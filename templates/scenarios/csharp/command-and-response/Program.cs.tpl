@@ -1,5 +1,5 @@
-using {%SafeProjectName%};
-using {%SafeProjectName%}.Commands;
+using {{SafeProjectName}};
+using {{SafeProjectName}}.Commands;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.TeamsFx.Conversation;

@@ -639,7 +639,7 @@ describe("Middleware - others", () => {
 
         // Assert
         assert.isTrue(res.isErr());
-        assert.equal((res as Err<string, FxError>).error.name, "ProjectEnvNotExistError");
+        assert.equal((res as Err<string, FxError>).error.name, "FileNotFoundError");
         assert(!envInfo);
       });
     });

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { remove, find } from "lodash";
+import * as path from "path";
 import {
   commands,
   Disposable,
@@ -616,8 +617,8 @@ export class VsCodeUI implements UserInteraction {
             ? [
                 {
                   id: "default",
-                  label: localize("teamstoolkit.qm.defaultFile"),
-                  description: defaultValue,
+                  label: `$(file) ${path.basename(defaultValue)}`,
+                  description: path.dirname(defaultValue),
                 },
               ]
             : []),

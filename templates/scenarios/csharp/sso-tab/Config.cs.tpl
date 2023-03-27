@@ -1,6 +1,6 @@
 using Microsoft.TeamsFx.Configuration;
 
-namespace {%SafeProjectName%}
+namespace {{SafeProjectName}}
 {
     public class ConfigOptions
     {

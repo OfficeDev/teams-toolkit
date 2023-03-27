@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { PluginContext, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
+import { PluginContext, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
@@ -16,6 +16,8 @@ import { RetryHandler } from "../../../../../src/component/resource/appManifest/
 import { newEnvInfo } from "../../../../../src/core/environment";
 import { PublishingState } from "../../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
 import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../../../../../src/component/resource/appManifest/results";
+import { Constants } from "../../../../../src/component/resource/appManifest/constants";
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
@@ -224,6 +226,37 @@ describe("App Studio API Test", () => {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.InvalidTeamsAppIdError.name);
+      }
+    });
+
+    it("extract manifet failed", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      const fileNotFoundError = AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+      );
+      sinon.stub(manifestUtils, "extractManifestFromArchivedFile").returns(err(fileNotFoundError));
+
+      const error = {
+        response: {
+          status: 400,
+          data: "App Id must be a GUID",
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.FileNotFoundError.name);
       }
     });
 

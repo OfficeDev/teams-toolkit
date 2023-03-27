@@ -71,6 +71,7 @@ import { pathUtils } from "../../src/component/utils/pathUtils";
 import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { InvalidAzureCredentialError, SelectSubscriptionError } from "../../src/error/azure";
+import { DotenvParseOutput } from "dotenv";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -2103,7 +2104,7 @@ describe("component coordinator test", () => {
       start: progressStartStub,
       end: progressEndStub,
     } as any as IProgressHandler);
-    const showMessageStub = sandbox.stub(tools.ui, "showMessage");
+    const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(undefined);
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
@@ -2114,6 +2115,10 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error.message.indexOf("test") !== -1);
+    }
+    assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
     assert.isTrue(progressStartStub.calledOnce);
     assert.isTrue(showMessageStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(false));

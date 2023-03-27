@@ -8,12 +8,15 @@ import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import { getDefaultString } from "../../../../src/common/localizeUtils";
+import { CreateSecretError } from "../../../../src/component/resource/aadApp/errors";
 import { ErrorNames } from "../../../../src/component/resource/botService/constants";
 import {
   BotFrameworkConflictResultError,
   BotFrameworkForbiddenResultError,
   BotFrameworkNotAllowedToAcquireTokenError,
+  CreateAADSecretError,
   wrapError,
+  ErrorType,
 } from "../../../../src/component/resource/botService/errors";
 import { Messages } from "../../../../src/component/resource/botService/messages";
 
@@ -72,5 +75,21 @@ describe("wrap error", () => {
       [Messages.CheckOutputLogAndTryToFix].join(" ")
     );
     assert.isTrue(e.genDisplayMessage() === expectedDisplayMsg);
+  });
+
+  it("Increase UT - CreateAADSecretError", () => {
+    const e = new CreateAADSecretError({
+      response: {
+        status: 500,
+        data: {
+          error: {
+            code: 500,
+            message: "Hello500",
+          },
+        },
+      },
+    });
+    assert.isTrue(e.name === CreateSecretError.name);
+    assert.isTrue(e.errorType === ErrorType.SYSTEM);
   });
 });

@@ -11,6 +11,7 @@ import { assembleError, err, FxError, ok, Result, UserError, Void } from "@micro
 import { envUtil, isV3Enabled, TunnelType } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
+import { DotenvOutput } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -27,15 +28,10 @@ import { baseTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { DotenvOutput } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 
 export interface IBaseTunnelArgs {
   type?: string;
   env?: string;
-  output?: {
-    endpoint?: string;
-    domain?: string;
-  };
 }
 
 export type OutputInfo = {
@@ -106,24 +102,13 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
         typeof args.type !== "string" ||
         !(Object.values(TunnelType) as string[]).includes(args.type)
       ) {
-        throw BaseTaskTerminal.taskDefinitionError("type");
+        throw BaseTaskTerminal.taskDefinitionError("args.type");
       }
     }
 
     if (isV3Enabled()) {
       if (typeof args.env !== "undefined" && typeof args.env !== "string") {
         throw BaseTaskTerminal.taskDefinitionError("args.env");
-      }
-
-      if (typeof args.output?.domain !== "undefined" && typeof args.output?.domain !== "string") {
-        throw BaseTaskTerminal.taskDefinitionError("args.output.domain");
-      }
-
-      if (
-        typeof args.output?.endpoint !== "undefined" &&
-        typeof args.output?.endpoint !== "string"
-      ) {
-        throw BaseTaskTerminal.taskDefinitionError("args.output.endpoint");
       }
     }
   }
@@ -143,7 +128,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
 
   protected async outputSuccessSummary(
     tunnelDisplayMessages: TunnelDisplayMessages,
-    tunnelInfo: EndpointInfo,
+    tunnelInfoArr: EndpointInfo[],
     envs: OutputInfo
   ): Promise<void> {
     const duration = this.getDurationInSeconds();
@@ -154,14 +139,20 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Tick} ${outputMessage}`);
     }
 
-    VsCodeLogInstance.outputChannel.appendLine(
-      `${doctorConstant.Tick} ${tunnelDisplayMessages.successSummary(
-        tunnelInfo.src,
-        tunnelInfo.dest,
-        envs.file,
-        envs.keys
-      )}`
-    );
+    let isFirstTunnel = true;
+    for (const tunnelInfo of tunnelInfoArr) {
+      VsCodeLogInstance.outputChannel.appendLine(
+        `${
+          isFirstTunnel ? doctorConstant.Tick : doctorConstant.TickWhiteSpace
+        } ${tunnelDisplayMessages.successSummary(
+          tunnelInfo.src,
+          tunnelInfo.dest,
+          envs.file,
+          envs.keys
+        )}`
+      );
+      isFirstTunnel = false;
+    }
 
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
@@ -172,14 +163,16 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       VsCodeLogInstance.info(tunnelDisplayMessages.durationMessage(duration));
     }
 
-    this.writeEmitter.fire(
-      `\r\n${tunnelDisplayMessages.terminalSuccessSummary(
-        tunnelInfo.src,
-        tunnelInfo.dest,
-        envs.file,
-        envs.keys
-      )}\r\n`
-    );
+    for (const tunnelInfo of tunnelInfoArr) {
+      this.writeEmitter.fire(
+        `\r\n${tunnelDisplayMessages.terminalSuccessSummary(
+          tunnelInfo.src,
+          tunnelInfo.dest,
+          envs.file,
+          envs.keys
+        )}\r\n`
+      );
+    }
     this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.successTerminalMessage}\r\n\r\n`);
 
     await this.progressHandler.end(true);

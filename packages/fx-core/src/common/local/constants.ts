@@ -156,7 +156,6 @@ export const TaskDefaultValue = Object.freeze({
     output: {
       endpoint: "BOT_ENDPOINT",
       domain: "BOT_DOMAIN",
-      id: "DEV_TUNNEL_ID",
     },
   },
   setUpTab: {

@@ -92,13 +92,6 @@ export class CreateAadAppDriver implements StepDriver {
           )
         );
         // Create new AAD app if no client id exists
-        // Throw error if unexpected signInAudience
-        if (
-          args.signInAudience &&
-          !(<any>Object).values(SignInAudience).includes(args.signInAudience)
-        ) {
-          throw new InvalidParameterUserError(actionName, "signInAudience", helpLink);
-        }
         const signInAudience = args.signInAudience
           ? (args.signInAudience as SignInAudience)
           : SignInAudience.AzureADMyOrg;
@@ -215,6 +208,15 @@ export class CreateAadAppDriver implements StepDriver {
 
     if (args.generateClientSecret === undefined || typeof args.generateClientSecret !== "boolean") {
       invalidParameters.push("generateClientSecret");
+    }
+
+    // Throw error if unexpected signInAudience
+    if (
+      args.signInAudience &&
+      (typeof args.signInAudience !== "string" ||
+        !(<any>Object).values(SignInAudience).includes(args.signInAudience))
+    ) {
+      invalidParameters.push("signInAudience");
     }
 
     if (invalidParameters.length > 0) {

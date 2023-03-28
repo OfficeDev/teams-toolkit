@@ -5,11 +5,11 @@
   "properties": {
     "projectId": {
       "type": "string",
-      "description": "projectId used for telemetry"
+      "description": "The projectId used for telemetry."
     },
     "environmentFolderPath": {
       "type": "string",
-      "description": "path to the environment folder"
+      "description": "The folder path of .env files used for variables and different envrironments."
     },
     "version": {
       "type": "string",
@@ -17,15 +17,15 @@
     },
     "provision": {
       "$ref": "#/definitions/lifeCycleArray",
-      "description": "Triggered by `teamsfx provision`"
+      "description": "Called by `teamsfx provision`"
     },
     "deploy": {
       "$ref": "#/definitions/lifeCycleArray",
-      "description": "Triggered by `teamsfx deploy`"
+      "description": "Called by `teamsfx deploy`"
     },
     "publish": {
       "$ref": "#/definitions/lifeCycleArray",
-      "description": "Triggered by `teamsfx publish`"
+      "description": "Called by `teamsfx publish`"
     }
   },
   "required": ["version"],
@@ -66,23 +66,23 @@
     },
     "aadAppCreateBase": {
       "type": "object",
-      "description": "Create Azure Active Directory application and client secret (optional). Please refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
+      "description": "Create Azure Active Directory application and client secret (optional). Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
       "required": ["uses", "writeToEnvironmentFile"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Create Azure Active Directory application when the environment variable that stores clientId is empty. Also create client secret for the application when generateClientSecret parameter is true and the environment variable that stores clientSecret is empty. When creating new Azure Active Directory application, this action generates clientId, objectId, tenantId, authority and authorityHost. When creating new client secret, this action generates clientSecret. Please refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
+          "description": "Create Azure Active Directory application when the environment variable that stores clientId is empty. Also create client secret for the application when generateClientSecret parameter is true and the environment variable that stores clientSecret is empty. When creating new Azure Active Directory application, this action generates clientId, objectId, tenantId, authority and authorityHost. When creating new client secret, this action generates clientSecret. Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
           "const": "aadApp/create"
         }
       }
@@ -213,23 +213,23 @@
     "aadAppUpdate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Update Azure Active Directory application. Please refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
+      "description": "Update Azure Active Directory application. Refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Update Azure Active Directory application based on the given Azure Active Directory application manifest. If the manifest uses AAD_APP_ACCESS_AS_USER_PERMISSION_ID and the environment variable is empty, this action will generate a random id and output it. Please refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
+          "description": "Update Azure Active Directory application based on the given Azure Active Directory application manifest. If the manifest uses AAD_APP_ACCESS_AS_USER_PERMISSION_ID and the environment variable is empty, this action will generate a random id and output it. Refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
           "const": "aadApp/update"
         },
         "with": {
@@ -253,23 +253,23 @@
     "armDeploy": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Execute ARM deployment. Refer to https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming convertion rule.",
+      "description": "Create Azure resources using the referenced Bicep/JSON files. Refer to https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming convertion rule.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Execute ARM deployment. Every bicep output will be persisted in current environment's .env file with certain naming convertion. Refer to https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming convertion rule.",
+          "description": "Create Azure resources using the referenced Bicep/JSON files. Outputs from Bicep/JSON will be persisted in the current Teams Toolkit environment following certain naming convertion. Refer to https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming convertion rule.",
           "const": "arm/deploy"
         },
         "with": {
@@ -288,7 +288,7 @@
             },
             "bicepCliVersion": {
               "type": "string",
-              "description": "The bicep CLI version. Bicep CLI will be downloaded to {Home}/.fx/bin/bicep.\n Teams Toolkit defaults to bicep in PATH if version is not defined."
+              "description": "The Bicep CLI version. Bicep CLI will be downloaded to {Home}/.fx/bin/bicep.\n Teams Toolkit defaults to Bicep in PATH if version is not defined."
             },
             "templates": {
               "type": "array",
@@ -304,7 +304,7 @@
                   },
                   "path": {
                     "type": "string",
-                    "description": "Relative path to ARM template. Both bicep and json format are supported."
+                    "description": "Relative path to ARM template. Both Bicep and JSON format are supported."
                   },
                   "parameters": {
                     "type": "string",
@@ -320,23 +320,23 @@
     "azureStorageEnableStaticWebsite": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Enable static website config for Azure Storage. Please refer to https://aka.ms/teamsfx-actions/azure-storage-enable-static-website for more details.",
+      "description": "Enable static website config for Azure Storage. Refer to https://aka.ms/teamsfx-actions/azure-storage-enable-static-website for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Enable static website config for Azure Storage. This action has no output. Please refer to https://aka.ms/teamsfx-actions/azure-storage-enable-static-website for more details.",
+          "description": "Enable static website config for Azure Storage. This action has no output. Refer to https://aka.ms/teamsfx-actions/azure-storage-enable-static-website for more details.",
           "const": "azureStorage/enableStaticWebsite"
         },
         "with": {
@@ -364,23 +364,23 @@
     "cliRunNpmCommand": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Execute npm command with arguments. Please refer to https://aka.ms/teamsfx-actions/cli-run-npm-command for more details.",
+      "description": "Execute npm command with arguments. Refer to https://aka.ms/teamsfx-actions/cli-run-npm-command for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Execute npm command with arguments. Please refer to https://aka.ms/teamsfx-actions/cli-run-npm-command for more details.",
+          "description": "Execute npm command with arguments. Refer to https://aka.ms/teamsfx-actions/cli-run-npm-command for more details.",
           "const": "cli/runNpmCommand"
         },
         "with": {
@@ -404,23 +404,23 @@
     "cliRunDotnetCommand": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Execute dotnet command with arguments. Please refer to https://aka.ms/teamsfx-actions/cli-run-dotnet-command for more details.",
+      "description": "Execute dotnet command with arguments. Refer to https://aka.ms/teamsfx-actions/cli-run-dotnet-command for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Execute dotnet command with arguments. Please refer to https://aka.ms/teamsfx-actions/cli-run-dotnet-command for more details.",
+          "description": "Execute dotnet command with arguments. Refer to https://aka.ms/teamsfx-actions/cli-run-dotnet-command for more details.",
           "const": "cli/runDotnetCommand"
         },
         "with": {
@@ -448,23 +448,23 @@
     "cliRunNpxCommand": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Execute npx command with arguments. Please refer to https://aka.ms/teamsfx-actions/cli-run-npx-command for more details.",
+      "description": "Execute npx command with arguments. Refer to https://aka.ms/teamsfx-actions/cli-run-npx-command for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Execute npx command with arguments. Please refer to https://aka.ms/teamsfx-actions/cli-run-npx-command for more details.",
+          "description": "Execute npx command with arguments. Refer to https://aka.ms/teamsfx-actions/cli-run-npx-command for more details.",
           "const": "cli/runNpxCommand"
         },
         "with": {
@@ -488,23 +488,23 @@
     "azureStorageDeploy": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Upload and deploy the project to Azure Storage Service. Please refer to https://aka.ms/teamsfx-actions/azure-storage-deploy for more details.",
+      "description": "Upload and deploy the project to Azure Storage Service. Refer to https://aka.ms/teamsfx-actions/azure-storage-deploy for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will upload and deploy the project to Azure Storage Service. This action has no output. Please refer to https://aka.ms/teamsfx-actions/azure-storage-deploy for more details.",
+          "description": "This action will upload and deploy the project to Azure Storage Service. This action has no output. Refer to https://aka.ms/teamsfx-actions/azure-storage-deploy for more details.",
           "const": "azureStorage/deploy"
         },
         "with": {
@@ -536,23 +536,23 @@
     "azureAppServiceDeploy": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Upload and deploy the project to Azure App Service. Please refer to https://aka.ms/teamsfx-actions/azure-app-service-deploy for more details.",
+      "description": "Upload and deploy the project to Azure App Service. Refer to https://aka.ms/teamsfx-actions/azure-app-service-deploy for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will upload and deploy the project to Azure App Service. This action has no output. Please refer to https://aka.ms/teamsfx-actions/azure-app-service-deploy for more details.",
+          "description": "This action will upload and deploy the project to Azure App Service. This action has no output. Refer to https://aka.ms/teamsfx-actions/azure-app-service-deploy for more details.",
           "const": "azureAppService/deploy"
         },
         "with": {
@@ -584,23 +584,23 @@
     "azureFunctionsDeploy": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Upload and deploy the project to Azure Functions. Please refer to https://aka.ms/teamsfx-actions/azure-functions-deploy for more details.",
+      "description": "Upload and deploy the project to Azure Functions. Refer to https://aka.ms/teamsfx-actions/azure-functions-deploy for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will upload and deploy the project to Azure Functions. This action has no output. Please refer to https://aka.ms/teamsfx-actions/azure-functions-deploy for more details.",
+          "description": "This action will upload and deploy the project to Azure Functions. This action has no output. Refer to https://aka.ms/teamsfx-actions/azure-functions-deploy for more details.",
           "const": "azureFunctions/deploy"
         },
         "with": {
@@ -632,23 +632,23 @@
     "teamsAppCreate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create a Teams app in Teams Developer Portal. Please refer to https://aka.ms/teamsfx-actions/teamsapp-create for more details.",
+      "description": "Create a Teams app in Teams Developer Portal. Refer to https://aka.ms/teamsfx-actions/teamsapp-create for more details.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will create a new Teams app for you if TEAMS_APP_ID environment variable is empty or the app with TEAMS_APP_ID is not found from Teams Developer Portal. Please refer to https://aka.ms/teamsfx-actions/teamsapp-create for more details",
+          "description": "This action will create a new Teams app for you if TEAMS_APP_ID environment variable is empty or the app with TEAMS_APP_ID is not found from Teams Developer Portal. Refer to https://aka.ms/teamsfx-actions/teamsapp-create for more details",
           "const": "teamsApp/create"
         },
         "with": {
@@ -679,23 +679,23 @@
     "teamsAppValidateManifest": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Validate Teams app manifest. Please refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+      "description": "Validate Teams app manifest. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will validate Teams app manifest with manifest schema. Please refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+          "description": "This action will validate Teams app manifest with manifest schema. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
           "const": "teamsApp/validateManifest"
         },
         "with": {
@@ -715,23 +715,23 @@
     "teamsAppValidateAppPackage": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Validate Teams app manifest. Please refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+      "description": "Validate Teams app manifest. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will validate Teams app package file using validation rules. Please refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+          "description": "This action will validate Teams app package file using validation rules. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
           "const": "teamsApp/validateAppPackage"
         },
         "with": {
@@ -751,23 +751,23 @@
     "teamsAppZipAppPackage": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Zip app package with manifest file and icons. Please refer to https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage for more details.",
+      "description": "Zip app package with manifest file and icons. Refer to https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "This action will render Teams app manifest template with environment variables, and zip manifest file with two icons. Please refer to https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage for more details.",
+          "description": "This action will render Teams app manifest template with environment variables, and zip manifest file with two icons. Refer to https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage for more details.",
           "const": "teamsApp/zipAppPackage"
         },
         "with": {
@@ -795,23 +795,23 @@
     "teamsAppUpdate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Update Teams app in Teams Developer Portal. Please refer to https://aka.ms/teamsfx-actions/teamsapp-update for more details.",
+      "description": "Update Teams app in Teams Developer Portal. Refer to https://aka.ms/teamsfx-actions/teamsapp-update for more details.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest.json file to determine which Teams app to update. Please refer to https://aka.ms/teamsfx-actions/teamsapp-update for more details.",
+          "description": "Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest.json file to determine which Teams app to update. Refer to https://aka.ms/teamsfx-actions/teamsapp-update for more details.",
           "const": "teamsApp/update"
         },
         "with": {
@@ -842,23 +842,23 @@
     "teamsAppPublishAppPackage": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Publish Teams app package to Teams Admin center. Please refer to https://aka.ms/teamsfx-actions/teamsapp-publish for more details.",
+      "description": "Publish Teams app package to Teams Admin center. Refer to https://aka.ms/teamsfx-actions/teamsapp-publish for more details.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Publish Teams app package to Teams Admin center. Please refer to https://aka.ms/teamsfx-actions/teamsapp-publish for more details.",
+          "description": "Publish Teams app package to Teams Admin center. Refer to https://aka.ms/teamsfx-actions/teamsapp-publish for more details.",
           "const": "teamsApp/publishAppPackage"
         },
         "with": {
@@ -889,23 +889,23 @@
     "botAadAppCreate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create a new or reuse an existing Azure Active Directory application for bot. Please refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
+      "description": "Create a new or reuse an existing Azure Active Directory application for bot. Refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Create a new or reuse an existing Azure Active Directory application for bot. Please refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
+          "description": "Create a new or reuse an existing Azure Active Directory application for bot. Refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
           "const": "botAadApp/create"
         },
         "with": {
@@ -941,23 +941,23 @@
     "botframeworkCreate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create or update the bot registration on dev.botframework.com. Please refer to https://aka.ms/teamsfx-actions/botframework-create for more details.",
+      "description": "Create or update the bot registration on dev.botframework.com. Refer to https://aka.ms/teamsfx-actions/botframework-create for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Create or update the bot registration on dev.botframework.com. Please refer to https://aka.ms/teamsfx-actions/botframework-create for more details.",
+          "description": "Create or update the bot registration on dev.botframework.com. Refer to https://aka.ms/teamsfx-actions/botframework-create for more details.",
           "const": "botFramework/create"
         },
         "with": {
@@ -1030,23 +1030,23 @@
     "fileCreateOrUpdateEnvironmentFile": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create or update variables to environment file. Please refer to https://aka.ms/teamsfx-actions/file-createorupdateenvironmentfile for more details.",
+      "description": "Create or update variables to environment file. Refer to https://aka.ms/teamsfx-actions/file-createorupdateenvironmentfile for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Create or update variables to environment file. Please refer to https://aka.ms/teamsfx-actions/file-createorupdateenvironmentfile for more details.",
+          "description": "Create or update variables to environment file. Refer to https://aka.ms/teamsfx-actions/file-createorupdateenvironmentfile for more details.",
           "const": "file/createOrUpdateEnvironmentFile"
         },
         "with": {
@@ -1071,23 +1071,23 @@
     "fileCreateOrUpdateJsonFile": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create or update appsettings to JSON file. Please refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
+      "description": "Create or update appsettings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Create or update appsettings to JSON file. Please refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
+          "description": "Create or update appsettings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
           "const": "file/createOrUpdateJsonFile"
         },
         "with": {
@@ -1111,23 +1111,23 @@
     "fileUpdateJson": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Generate app settings to json file. Please refer to https://aka.ms/teamsfx-actions/file-updatejson for more details.",
+      "description": "Generate app settings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-updatejson for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Generate app settings to json file. Please refer to https://aka.ms/teamsfx-actions/file-updatejson for more details.",
+          "description": "Generate app settings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-updatejson for more details.",
           "const": "file/updateJson",
           "deprecationMessage": "Deprecated. Use 'file/createOrUpdateJsonFile' instead"
         },
@@ -1152,23 +1152,23 @@
     "fileUpdateEnv": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Generate env to .env file. Please refer to https://aka.ms/teamsfx-actions/file-updateenv for more details.",
+      "description": "Generate env to .env file. Refer to https://aka.ms/teamsfx-actions/file-updateenv for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Generate env to .env file. Please refer to https://aka.ms/teamsfx-actions/file-updateenv for more details.",
+          "description": "Generate env to .env file. Refer to https://aka.ms/teamsfx-actions/file-updateenv for more details.",
           "const": "file/updateEnv",
           "deprecationMessage": "Deprecated. Use 'script' or 'file/createOrUpdateEnvironmentFile' instead"
         },
@@ -1194,23 +1194,23 @@
     "prerequisiteInstall": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Install prerequisite(s). Please refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
+      "description": "Install prerequisite(s). Refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Install prerequisite(s). Please refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
+          "description": "Install prerequisite(s). Refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
           "const": "prerequisite/install"
         },
         "with": {
@@ -1268,23 +1268,23 @@
     "m365TitleAcquire": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Upload app as M365 title. Please refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
+      "description": "Upload app as M365 title. Refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Upload app as M365 title. Please refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
+          "description": "Upload app as M365 title. Refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
           "const": "m365Title/acquire"
         },
         "with": {
@@ -1320,23 +1320,23 @@
     "spfxDeploy": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Deploy the SPFx package to SharePoint app catalog. Please refer to https://aka.ms/teamsfx-actions/spfx-deploy for more details.",
+      "description": "Deploy the SPFx package to SharePoint app catalog. Refer to https://aka.ms/teamsfx-actions/spfx-deploy for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Deploy the SPFx package to SharePoint app catalog. Please refer to https://aka.ms/teamsfx-actions/spfx-deploy for more details.",
+          "description": "Deploy the SPFx package to SharePoint app catalog. Refer to https://aka.ms/teamsfx-actions/spfx-deploy for more details.",
           "const": "spfx/deploy"
         },
         "with": {
@@ -1360,23 +1360,23 @@
     "teamsAppCopyAppPackageToSPFx": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Copy the generated Teams app package to SPFx solution. Please refer to https://aka.ms/teamsfx-actions/teams-app-copy-app-package-to-spfx for more details.",
+      "description": "Copy the generated Teams app package to SPFx solution. Refer to https://aka.ms/teamsfx-actions/teams-app-copy-app-package-to-spfx for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Copy the generated Teams app package to SPFx solution. Please refer to https://aka.ms/teamsfx-actions/teams-app-copy-app-package-to-spfx for more details.",
+          "description": "Copy the generated Teams app package to SPFx solution. Refer to https://aka.ms/teamsfx-actions/teams-app-copy-app-package-to-spfx for more details.",
           "const": "teamsApp/copyAppPackageToSPFx"
         },
         "with": {
@@ -1400,23 +1400,23 @@
     "script": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Execute a user defined script. Please refer to https://aka.ms/teamsfx-actions/script for more details.",
+      "description": "Execute a user defined script. Refer to https://aka.ms/teamsfx-actions/script for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
-          "description": "An optional name of this action"
+          "description": "An optional name of this action."
         },
         "env": {
           "type": "object",
-          "description": "Define environment variables",
+          "description": "Define environment variables for this action.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "uses": {
           "type": "string",
-          "description": "Execute a user defined script. Please refer to https://aka.ms/teamsfx-actions/script for more details.",
+          "description": "Execute a user defined script. Refer to https://aka.ms/teamsfx-actions/script for more details.",
           "const": "script"
         },
         "with": {

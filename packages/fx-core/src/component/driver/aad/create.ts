@@ -28,6 +28,8 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { InvalidActionInputError } from "../../../error/common";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { InvalidParameterUserError } from "./error/invalidParameterUserError";
+import { SignInAudience } from "./interface/signInAudience";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -90,7 +92,16 @@ export class CreateAadAppDriver implements StepDriver {
           )
         );
         // Create new AAD app if no client id exists
-        const signInAudience = args.signInAudience ?? "AzureADMyOrg";
+        // Throw error if unexpected signInAudience
+        if (
+          args.signInAudience &&
+          !(<any>Object).values(SignInAudience).includes(args.signInAudience)
+        ) {
+          throw new InvalidParameterUserError(actionName, "signInAudience", helpLink);
+        }
+        const signInAudience = args.signInAudience
+          ? (args.signInAudience as SignInAudience)
+          : SignInAudience.AzureADMyOrg;
         const aadApp = await aadAppClient.createAadApp(args.name, signInAudience);
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;

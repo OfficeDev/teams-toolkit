@@ -13,6 +13,7 @@ import axiosRetry from "axios-retry";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/resource/aadApp/interfaces/AADManifest";
 import { IAADDefinition } from "../../../../src/component/resource/aadApp/interfaces/IAADDefinition";
+import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -154,7 +155,7 @@ describe("AadAppClient", async () => {
 
       const createAadAppResult = await aadAppClient.createAadApp(
         expectedDisplayName,
-        "AzureADMultipleOrgs"
+        SignInAudience.AzureADMultipleOrgs
       );
 
       expect(createAadAppResult.displayName).to.equal(expectedDisplayName);

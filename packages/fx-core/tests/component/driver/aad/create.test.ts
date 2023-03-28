@@ -20,6 +20,7 @@ import {
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
 import { InvalidActionInputError } from "../../../../src/error/common";
+import { UserError } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -516,5 +517,21 @@ describe("aadAppCreate", async () => {
     expect(result.summaries).includes(
       `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
     );
+  });
+
+  it("should throw user error when invaliad signInAudience", async () => {
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+      signInAudience: "WrongAudience",
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(UserError)
+      .and.has.property("message")
+      .and.contains("Following parameter is missing or invalid for");
   });
 });

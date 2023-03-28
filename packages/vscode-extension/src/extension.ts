@@ -79,7 +79,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   VS_CODE_UI = new VsCodeUI(context);
-  initializeGlobalVariables(context);
+  await initializeGlobalVariables(context);
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
@@ -1063,7 +1063,7 @@ async function checkProjectUpgradable(): Promise<boolean> {
 
 async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   const wasTeamsFxProject = isTeamsFxProject;
-  initializeGlobalVariables(context);
+  await initializeGlobalVariables(context);
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 

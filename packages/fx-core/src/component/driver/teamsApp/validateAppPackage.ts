@@ -155,9 +155,10 @@ export class ValidateAppPackageDriver implements StepDriver {
             validationResult.notes.length,
             errors,
             warnings,
-            undefined
+            context.logProvider?.getLogFilePath()
           );
         context.logProvider?.info(outputMessage);
+        context.logProvider?.info(outputMessage, true);
         const message = getLocalizedString(
           "driver.teamsApp.validate.result",
           validationResult.errors.length + validationResult.warnings.length,

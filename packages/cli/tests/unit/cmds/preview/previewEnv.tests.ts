@@ -137,9 +137,26 @@ describe("Preview --env", () => {
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
 
+  it("Preview Command Running - check account error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox
+      .stub(PreviewEnv.prototype, <any>"checkM365Account")
+      .resolves(err({ foo: "bar" } as any));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
+  });
+
   it("Preview Command Running - getManifestV3 error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox
       .stub(manifestUtils, "getManifestV3")
       .resolves(
@@ -155,28 +172,11 @@ describe("Preview --env", () => {
     expect((result as any).error.name).equals("UnresolvedPlaceholderError");
   });
 
-  it("Preview Command Running - check account error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
-    sandbox
-      .stub(PreviewEnv.prototype, <any>"checkM365Account")
-      .resolves(err({ foo: "bar" } as any));
-
-    const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
-    const result = await cmd.runCommand(defaultOptions);
-
-    expect(result.isErr()).to.be.true;
-    expect((result as any).error).to.deep.equal({ foo: "bar" });
-  });
-
   it("Preview Command Running - detect run command error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sandbox
       .stub(PreviewEnv.prototype, <any>"detectRunCommand")
       .resolves(err({ foo: "bar" } as any));
@@ -193,8 +193,8 @@ describe("Preview --env", () => {
   it("Preview Command Running - run task error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sandbox
       .stub(PreviewEnv.prototype, <any>"detectRunCommand")
       .resolves(ok({ runCommand: "npm start" }));
@@ -214,8 +214,8 @@ describe("Preview --env", () => {
   it("Preview Command Running - launch browser error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(err({ foo: "bar" } as any));

@@ -32,6 +32,7 @@ import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as yaml from "yaml";
+import { getV3TeamsAppId } from "../debug/commonUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -373,21 +374,31 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
-  let provisionResult: Json | undefined;
+  if (isV3Enabled()) {
+    // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
+    try {
+      const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+      return teamsAppId !== "";
+    } catch (error) {
+      return false;
+    }
+  } else {
+    let provisionResult: Json | undefined;
 
-  try {
-    provisionResult = await getProvisionResultJson(env);
-  } catch (error) {
-    // ignore error on tree view when load provision result failed.
+    try {
+      provisionResult = await getProvisionResultJson(env);
+    } catch (error) {
+      // ignore error on tree view when load provision result failed.
 
-    return undefined;
+      return undefined;
+    }
+
+    if (!provisionResult) {
+      return undefined;
+    }
+
+    return provisionResult.solution?.provisionSucceeded;
   }
-
-  if (!provisionResult) {
-    return undefined;
-  }
-
-  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {

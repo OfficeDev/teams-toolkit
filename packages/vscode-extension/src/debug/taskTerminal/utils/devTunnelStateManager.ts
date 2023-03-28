@@ -20,6 +20,7 @@ export interface IDevTunnelState {
 }
 
 export class DevTunnelStateManager {
+  // TODO: use read-write lock
   private static mutex = withTimeout(new Mutex(), 1000);
   private readonly devTunnelStateKey = "teamsToolkit:devtunnel";
   private stateService: IStateService;

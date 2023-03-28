@@ -89,8 +89,9 @@ export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: source || "unknown",
-      message: getDefaultString("error.common.UnhandledError", e.message),
-      displayMessage: getLocalizedString("error.common.UnhandledError", e.message),
+      message: getDefaultString("error.common.UnhandledError", source || "", e.message),
+      displayMessage: getLocalizedString("error.common.UnhandledError", source || "", e.message),
+      issueLink: `https://github.com/OfficeDev/TeamsFx/issues/new?title=new+bug+report`,
     });
     if (e.stack) super.stack = e.stack;
   }

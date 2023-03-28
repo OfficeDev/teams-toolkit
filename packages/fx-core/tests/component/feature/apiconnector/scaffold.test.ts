@@ -404,7 +404,7 @@ describe("Api Connector scaffold sample code", async () => {
       chai.assert.strictEqual(err.source, "api-connector");
       chai.assert.strictEqual(
         err.displayMessage,
-        "Failed to scaffold connect API files, Reason: fake error"
+        "Unable to scaffold connect API files, Reason: fake error"
       );
     }
     expect(await fs.pathExists(path.join(botPath, Constants1.sampleCodeDir, "fake.ts"))).to.be

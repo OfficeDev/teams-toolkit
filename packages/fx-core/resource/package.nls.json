@@ -1021,7 +1021,7 @@
   "error.yaml.InvalidActionInputError": "The '%s' action cannot be completed as the following parameter(s): %s, are either missing or have an invalid value in the provided yaml file: %s. Ensure that the required parameters are provided and have valid values and try again.",
   "error.common.UnresolvedPlaceholderError": "The program cannot proceed as the following environment variables are missing: '%s', which are required for file: %s.",
   "error.common.InvalidProjectError": "This command only works for project created by Teams Toolkit.",
-  "error.common.FileNotFoundError": "The specified file or directory is not found: '%s'. Check if it exists and you have permission to access it.",
+  "error.common.FileNotFoundError": "The file or directory is not found: '%s'. Check if it exists and you have permission to access it.",
   "error.common.JSONSyntaxError": "JSON syntax error: %s. Please check the JSON syntax to ensure it is properly formatted.",
   "error.common.UnhandledError": "An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided \"Issue Link\", so that we can investigate and resolve the problem as soon as possible.",
   "error.collaboration.InvalidManifestError": "Unable to process your manifest file ('%s') due to the absence of the 'id' key. To identify your application correctly, please make sure that the 'id' key is present in the manifest file.",

@@ -47,19 +47,6 @@ export class UpdateAadApp extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
 
-    if (args[AadManifestFilePathName]) {
-      inputs.AAD_MANIFEST_FILE = args[AadManifestFilePathName];
-    } else {
-      const manifestPath = await askManifestFilePath();
-      if (manifestPath.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, manifestPath.error);
-        return err(manifestPath.error);
-      }
-      inputs.AAD_MANIFEST_FILE = path.isAbsolute(manifestPath.value)
-        ? manifestPath.value
-        : path.join(rootFolder, manifestPath.value);
-    }
-
     // Update the aad manifest
     const result = await core.deployAadManifest(inputs);
     if (result.isErr()) {

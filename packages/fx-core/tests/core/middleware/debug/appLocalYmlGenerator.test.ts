@@ -35,7 +35,11 @@ describe("AppLocalYmlGenerator", () => {
     const obj = yaml.load(res) as any;
 
     chai.assert.deepEqual(obj.deploy, [
-      { uses: "prerequisite/install", with: { devCert: { trust: true } } },
+      {
+        uses: "prerequisite/install",
+        with: { devCert: { trust: true } },
+        writeToEnvironmentFile: { sslCertFile: "SSL_CRT_FILE", sslKeyFile: "SSL_KEY_FILE" },
+      },
     ]);
   });
 

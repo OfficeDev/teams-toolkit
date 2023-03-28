@@ -319,6 +319,26 @@ describe("env utils", () => {
     // const getDotEnvRes = await core.getDotEnv(inputs);
     // assert.isTrue(getDotEnvRes.isOk());
   });
+
+  it("EnvLoaderMW skip load", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW(true, true)],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isOk());
+  });
+
   it("EnvLoaderMW success for F5 (missing .env file)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").returns(false);

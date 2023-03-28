@@ -1046,6 +1046,7 @@ async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> 
   if (!envNode) {
     return aadAppSelectNode;
   }
+  envNode.data.name = "env";
   aadAppSelectNode.addChild(envNode);
   envNode.condition = {
     validFunc: validateAadManifestContainsPlaceholder,

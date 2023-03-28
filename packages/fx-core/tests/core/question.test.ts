@@ -352,7 +352,7 @@ describe("updateAadManifestQeustion()", async () => {
   it("getQuestionForDeployAadManifest happy path", async () => {
     inputs.platform = Platform.VSCode;
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs[CoreQuestionNames.TargetEnvName] = "dev";
+    inputs.env = "dev";
     sinon.stub(fs, "pathExistsSync").returns(true);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
@@ -371,7 +371,7 @@ describe("updateAadManifestQeustion()", async () => {
   it("getQuestionForDeployAadManifest without env", async () => {
     inputs.platform = Platform.VSCode;
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs[CoreQuestionNames.TargetEnvName] = "dev";
+    inputs.env = "dev";
     sinon.stub(fs, "pathExistsSync").returns(false);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));

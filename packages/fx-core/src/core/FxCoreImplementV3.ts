@@ -235,8 +235,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
-    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
+    EnvLoaderMW(true, true),
     ContextInjectorMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -248,12 +248,11 @@ export class FxCoreV3Implement {
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
-    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-    const manifestOutputPath: string = path.join(
-      inputs.projectPath!,
-      "build",
-      `aad.${inputs[CoreQuestionNames.TargetEnvName]}.json`
-    );
+    let manifestOutputPath: string = manifestTemplatePath;
+    if (inputs.env) {
+      await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+    }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,

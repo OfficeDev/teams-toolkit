@@ -13,6 +13,7 @@ import path = require("path");
 import {
   ConfigFolderName,
   InputConfigsFolderName,
+  ok,
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../src/globalVariables";
@@ -21,6 +22,7 @@ import * as tmp from "tmp";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import { expect } from "chai";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -328,6 +330,52 @@ describe("CommonUtils", () => {
 
       const res = commonUtils.getAppName();
       expect(res).equal(undefined);
+    });
+  });
+
+  describe("getProvisionSucceedFromEnv", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns false if teamsAppId is empty", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(
+        ok({
+          TEAMS_APP_ID: "",
+        })
+      );
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(false);
+    });
+
+    it("returns true if teamsAppId is not empty", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(
+        ok({
+          TEAMS_APP_ID: "xxx",
+        })
+      );
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(true);
+    });
+
+    it("returns false if teamsAppId has error", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(false);
     });
   });
 });

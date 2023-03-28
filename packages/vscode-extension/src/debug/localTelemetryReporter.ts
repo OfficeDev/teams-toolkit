@@ -3,7 +3,7 @@
 
 import { performance } from "perf_hooks";
 
-import { FxError, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { FxError } from "@microsoft/teamsfx-api";
 import {
   LocalEnvManager,
   LocalTelemetryReporter,
@@ -11,8 +11,6 @@ import {
   TaskLabel,
   TaskOverallLabel,
 } from "@microsoft/teamsfx-core/build/common/local";
-import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 import * as globalVariables from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -24,16 +22,6 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getLocalDebugSession, getProjectComponents } from "./commonUtils";
 import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
-import { actionName as createAppPackageActionName } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/createAppPackage";
-import { actionName as updateAppPackageActionName } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/configure";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { CreateAppPackageArgs } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
-import { ConfigureTeamsAppArgs } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
-import { ProjectModel } from "@microsoft/teamsfx-core/build/component/configManager/interface";
-import { Constants as ManifestConstants } from "@microsoft/teamsfx-core/build/component/resource/appManifest/constants";
-import AdmZip = require("adm-zip");
-import { environmentManager } from "@microsoft/teamsfx-core";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -64,18 +52,6 @@ export const localTelemetryReporter = new LocalTelemetryReporter(
   saveEventTime
 );
 
-export async function sendDebugInitialEvents(
-  projectPath: string | undefined,
-  debugAllStartAdditionalProperties: {
-    [key: string]: string;
-  }
-): Promise<void> {
-  sendDebugAllStartEvent(debugAllStartAdditionalProperties);
-  if (projectPath) {
-    sendDebugMetadataEvent(projectPath);
-  }
-}
-
 export async function sendDebugAllStartEvent(additionalProperties: {
   [key: string]: string;
 }): Promise<void> {
@@ -89,145 +65,6 @@ export async function sendDebugAllStartEvent(additionalProperties: {
     session.properties
   );
   localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAllStart, properties);
-}
-
-async function readManifestFromAppPackage(
-  appPackagePath: string
-): Promise<TeamsAppManifest | undefined> {
-  const appPackageBuffer = await fs.readFile(appPackagePath);
-  const admzip = new AdmZip(appPackageBuffer);
-  const zipEntries = admzip.getEntries();
-  const manifestFile = zipEntries.find((x) => x.entryName === ManifestConstants.MANIFEST_FILE);
-  if (manifestFile) {
-    const manifestString = manifestFile.getData().toString("utf-8");
-    return JSON.parse(manifestString);
-  } else {
-    return undefined;
-  }
-}
-
-async function readManifest(projectPath: string, manifestPath: string): Promise<TeamsAppManifest> {
-  if (!path.isAbsolute(manifestPath)) {
-    manifestPath = path.join(projectPath, manifestPath);
-  }
-  return await fs.readJson(manifestPath, { encoding: "utf-8" });
-}
-
-const defaultManifestPathsV3 = ["appPackage/manifest.json"];
-
-export const ManifestSources = Object.freeze({
-  ConfigureAppPackageManifestPath: "ConfigureAppPackageManifestPath",
-  ConfigureAppPackageAppPackagePath: "ConfigureAppPackageAppPackagePath",
-  DefaultManifestPath: "DefaultManifestPath",
-});
-export type ManifestSource = typeof ManifestSources[keyof typeof ManifestSources];
-
-// Find manifest by search in the yaml file with best effort.
-async function tryGetManifestFromYml(
-  projectPath: string,
-  yml: ProjectModel
-): Promise<{ source: ManifestSource; manifest: TeamsAppManifest } | undefined> {
-  const configureTeamsApp = yml.provision?.driverDefs?.find(
-    (item) => item.uses === updateAppPackageActionName
-  );
-  const configureTeamsAppArgs = configureTeamsApp?.with as
-    | Partial<ConfigureTeamsAppArgs>
-    | undefined;
-  const configureTeamsAppPath = configureTeamsAppArgs?.appPackagePath;
-
-  if (configureTeamsAppPath) {
-    // Case 1: Happy path
-    // Start from "teamsApp/update".appPackagePath
-    // => "teamsApp/zipAppPackage".outputZipPath
-    // => "teamsApp/zipAppPackage".manifestPath
-    try {
-      let manifestPath: string | undefined;
-      yml.provision?.driverDefs?.forEach((item) => {
-        if (item.uses !== createAppPackageActionName) {
-          return;
-        }
-        const createAppPackageArgs = item.with as Partial<CreateAppPackageArgs> | undefined;
-        if (!createAppPackageArgs?.outputZipPath) {
-          return;
-        }
-
-        if (createAppPackageArgs.outputZipPath === createAppPackageActionName) {
-          manifestPath = createAppPackageArgs.manifestPath;
-        }
-      });
-      if (manifestPath) {
-        return {
-          source: ManifestSources.ConfigureAppPackageManifestPath,
-          manifest: await readManifest(projectPath, manifestPath),
-        };
-      }
-    } catch (e) {
-      // fall through next case
-    }
-
-    // Case 2: Assume user uploads app package manually
-    // Start from "teamsApp/zipAppPackage".appPackagePath
-    // => Unzip appPackage (in memory) to get manifest
-    try {
-      const manifest = await readManifestFromAppPackage(configureTeamsAppPath);
-      if (manifest) {
-        return {
-          source: ManifestSources.ConfigureAppPackageAppPackagePath,
-          manifest,
-        };
-      }
-    } catch (e) {
-      // fall through next case
-    }
-  }
-
-  // Case 3: Assume user zips & uploads app package manually
-  // Try default location of manifest: appPackage/manifest.json
-  try {
-    for (const defaultPath of defaultManifestPathsV3) {
-      const manifest = await readManifest(projectPath, defaultPath);
-      if (manifest) {
-        return {
-          source: ManifestSources.DefaultManifestPath,
-          manifest,
-        };
-      }
-    }
-  } catch (e) {
-    // fall through next case
-  }
-
-  return undefined;
-}
-
-export async function sendDebugMetadataEvent(projectPath: string) {
-  // send metadata events before debug
-  // - yaml file
-  // - manifest template => determine project capabilities (tab, bot, me, spfx)
-  // - tasks.json (TODO) => determine project scenario (restify-notification/func-notification, sso/non-sso tab)
-
-  try {
-    const localEnv = environmentManager.getLocalEnvName();
-    const yamlFilePath = pathUtils.getYmlFilePath(projectPath, localEnv);
-
-    // send yaml metadata
-    const yamlResult = await metadataUtil.parse(yamlFilePath, localEnv);
-    if (yamlResult.isErr()) {
-      return;
-    }
-
-    const manifestData = await tryGetManifestFromYml(projectPath, yamlResult.value);
-    if (manifestData === undefined) {
-      return;
-    }
-
-    // TODO: add source to properties of metadataUtil.parseManifest (currently not exposed)
-    const { source, manifest } = manifestData;
-    // send manifest metadata
-    metadataUtil.parseManifest(manifest);
-  } catch (e) {
-    // ignore telemetry errors
-  }
 }
 
 export async function sendDebugAllEvent(

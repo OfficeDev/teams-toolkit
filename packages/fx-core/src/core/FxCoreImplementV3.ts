@@ -34,11 +34,11 @@ import {
 import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
+import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
@@ -70,7 +70,6 @@ import {
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
@@ -238,28 +237,24 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
-    ProjectConsolidateMW,
-    EnvLoaderMW(false),
+    QuestionModelMW,
+    EnvLoaderMW(true, true),
     ContextInjectorMW,
-    EnvWriterMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
-      ? inputs.AAD_MANIFEST_FILE
-      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    const manifestTemplatePath: string = inputs[CoreQuestionNames.AadAppManifestFilePath];
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
-    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-    const manifestOutputPath: string = path.join(
-      inputs.projectPath!,
-      "build",
-      `aad.${inputs.env}.json`
-    );
+    let manifestOutputPath: string = manifestTemplatePath;
+    if (inputs.env) {
+      await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+    }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,

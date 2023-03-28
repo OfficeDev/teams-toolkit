@@ -10,11 +10,17 @@ import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 
-export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
+/**
+ *
+ * @param withLocalEnv whether include local env in env selection list
+ * @param skipLoadIfNoEnvInput whether to ignore this middleware if input.env is not available
+ * @returns
+ */
+export function EnvLoaderMW(withLocalEnv: boolean, skipLoadIfNoEnvInput = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     const envBefore = _.cloneDeep(process.env);
     try {
-      await envLoaderMWImpl(withLocalEnv, ctx, next);
+      await envLoaderMWImpl(withLocalEnv, ctx, next, skipLoadIfNoEnvInput);
       return;
     } finally {
       const keys = Object.keys(process.env);
@@ -32,7 +38,8 @@ export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
 export const envLoaderMWImpl = async (
   withLocalEnv: boolean,
   ctx: CoreHookContext,
-  next: NextFunction
+  next: NextFunction,
+  skipLoadIfNoEnvInput = false
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
@@ -44,6 +51,10 @@ export const envLoaderMWImpl = async (
     inputs.env = environmentManager.getDefaultEnvName();
   }
   if (!inputs.env) {
+    if (skipLoadIfNoEnvInput) {
+      await next();
+      return;
+    }
     const question = SelectEnvQuestion();
     const envListRes = await envUtil.listEnv(projectPath);
     if (envListRes.isErr()) {
@@ -67,10 +78,6 @@ export const envLoaderMWImpl = async (
         ctx.result = err(res.error);
         return;
       }
-      // if (!inputs.env) {
-      //   ctx.result = err(UserCancelError);
-      //   return;
-      // }
     }
   }
   const res = await envUtil.readEnv(projectPath, inputs.env!);

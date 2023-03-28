@@ -28,7 +28,6 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { InvalidActionInputError } from "../../../error/common";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { SignInAudience } from "./interface/signInAudience";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name

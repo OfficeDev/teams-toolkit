@@ -10,7 +10,7 @@ import {
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "UnhandledError";
-const messageKey = "driver.aadApp.error.unhandledError";
+const messageKey = "error.common.UnhandledError";
 
 export class UnhandledUserError extends UserError {
   constructor(actionName: string, detail: string, helpLink: string) {

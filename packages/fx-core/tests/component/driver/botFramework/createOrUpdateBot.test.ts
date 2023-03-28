@@ -29,7 +29,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.botFramework.error.unhandledError") {
+      } else if (key === "error.common.UnhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
       } else if (key === "driver.botFramework.summary.create") {
         return util.format("The bot registration has been created successfully (%s).", ...params);

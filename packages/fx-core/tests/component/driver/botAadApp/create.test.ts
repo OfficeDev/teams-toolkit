@@ -141,7 +141,9 @@ describe("botAadAppCreate", async () => {
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
         expect(error instanceof UnhandledUserError).to.be.true;
-        expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+        expect(error.message).contains(
+          "An unexpected error has occurred while performing the botAadApp/create task"
+        );
       }
     );
   });
@@ -168,7 +170,9 @@ describe("botAadAppCreate", async () => {
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
         expect(error instanceof UnhandledSystemError).to.be.true;
-        expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+        expect(error.message).contains(
+          "An unexpected error has occurred while performing the botAadApp/create task"
+        );
       }
     );
   });

@@ -325,7 +325,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledUserError)
       .and.has.property("message")
-      .and.contains("Unhandled error happened in aadApp/create action");
+      .and.contains("An unexpected error has occurred while performing the aadApp/create task");
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -352,7 +352,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledSystemError)
       .and.has.property("message")
-      .and.contains("Unhandled error happened in aadApp/create action");
+      .and.contains("An unexpected error has occurred while performing the aadApp/create task");
   });
 
   it("should send telemetries when success", async () => {
@@ -465,7 +465,7 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.properties["error-code"]).to.equal("aadApp/create.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
     expect(endTelemetry.properties["error-message"])
-      .contain("Unhandled error happened in aadApp/create action")
+      .contain("An unexpected error has occurred while performing the aadApp/create task")
       .and.contain("Invalid value specified for property");
   });
 });

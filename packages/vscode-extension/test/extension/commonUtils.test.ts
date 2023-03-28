@@ -367,5 +367,15 @@ describe("CommonUtils", () => {
 
       chai.expect(result).equals(true);
     });
+
+    it("returns false if teamsAppId has error", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(false);
+    });
   });
 });

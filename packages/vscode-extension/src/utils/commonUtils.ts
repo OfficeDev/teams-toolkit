@@ -382,23 +382,22 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
     } catch (error) {
       return false;
     }
-  } else {
-    let provisionResult: Json | undefined;
-
-    try {
-      provisionResult = await getProvisionResultJson(env);
-    } catch (error) {
-      // ignore error on tree view when load provision result failed.
-
-      return undefined;
-    }
-
-    if (!provisionResult) {
-      return undefined;
-    }
-
-    return provisionResult.solution?.provisionSucceeded;
   }
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {

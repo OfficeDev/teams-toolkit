@@ -32,7 +32,7 @@ describe("UpdateEnvDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "error.common.InvalidActionInputError") {
+      if (key === "error.yaml.InvalidActionInputError") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params

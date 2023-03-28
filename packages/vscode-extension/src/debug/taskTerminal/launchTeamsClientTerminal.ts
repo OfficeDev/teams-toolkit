@@ -5,7 +5,6 @@
 import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as util from "util";
-import * as commonUtils from "../commonUtils";
 import * as globalVariables from "../../globalVariables";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -23,9 +22,12 @@ import {
   openTerminalDisplayMessage,
   openTerminalMessage,
 } from "../constants";
+import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
 
 export interface LaunchTeamsClientArgs {
   env: string;
+  manifestPath: string;
 }
 
 export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
@@ -56,10 +58,11 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("env");
     }
 
-    const teamsAppId = await commonUtils.getV3TeamsAppId(
-      globalVariables.workspaceUri?.fsPath as string,
-      this.args.env
-    );
+    if (!this.args?.manifestPath) {
+      throw BaseTaskTerminal.taskDefinitionError("manifestPath");
+    }
+
+    const teamsAppId = await this.getTeamsAppId(this.args.env, this.args.manifestPath);
     const accountHint = await generateAccountHint(false);
     const launchUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${accountHint}`;
 
@@ -68,6 +71,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine(
       launchingTeamsClientDisplayMessages.launchUrlMessage(launchUrl)
     );
+
     if (this.args.env == "local") {
       VsCodeLogInstance.outputChannel.appendLine("");
       VsCodeLogInstance.outputChannel.appendLine(
@@ -76,6 +80,23 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     }
 
     return await this.openUrl(launchUrl);
+  }
+
+  private async getTeamsAppId(env: string, manifestPath: string): Promise<string> {
+    // load env from .env
+    const projectPath = globalVariables.workspaceUri?.fsPath as string;
+    const envRes = await envUtil.readEnv(projectPath, env, true, true);
+    if (envRes.isErr()) {
+      throw envRes.error;
+    }
+
+    // read manifest
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, {});
+    if (manifestRes.isErr()) {
+      throw manifestRes.error;
+    }
+
+    return manifestRes.value.id;
   }
 
   private openUrl(url: string): Promise<Result<Void, FxError>> {

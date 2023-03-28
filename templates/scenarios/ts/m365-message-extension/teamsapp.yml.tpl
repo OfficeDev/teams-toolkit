@@ -12,12 +12,12 @@ provision:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-  - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
+  - uses: botAadApp/create # Creates a new or reuses an existing AAD app for bot
     with:
       name: {{appName}}
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for Bot Registration.
-    # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
+    writeToEnvironmentFile:
+      botId: BOT_ID
+      botPassword: SECRET_BOT_PASSWORD
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:

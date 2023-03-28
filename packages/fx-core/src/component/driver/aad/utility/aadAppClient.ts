@@ -47,10 +47,13 @@ export class AadAppClient {
     });
   }
 
-  public async createAadApp(displayName: string): Promise<AADApplication> {
+  public async createAadApp(
+    displayName: string,
+    signInAudience = "AzureADMyOrg"
+  ): Promise<AADApplication> {
     const requestBody: IAADDefinition = {
       displayName: displayName,
-      signInAudience: "AzureADMyOrg", // Create single tenant by default, can be changed using manifest with aadApp/update action
+      signInAudience: signInAudience,
     }; // Create an AAD app without setting anything
 
     const response = await this.axios.post("applications", requestBody);

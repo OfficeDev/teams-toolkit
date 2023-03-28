@@ -468,4 +468,53 @@ describe("aadAppCreate", async () => {
       .contain("Unhandled error happened in aadApp/create action")
       .and.contain("Invalid value specified for property");
   });
+
+  it("should use input signInAudience when provided", async () => {
+    sinon
+      .stub(AadAppClient.prototype, "createAadApp")
+      .callsFake(async (displayName, signInAudience) => {
+        expect(signInAudience).to.equal("AzureADMultipleOrgs");
+        return {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+          appId: expectedClientId,
+        } as AADApplication;
+      });
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+      signInAudience: "AzureADMultipleOrgs",
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
+      expectedClientId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
+      expectedObjectId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_TENANT_ID)).to.equal("tenantId");
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY)).to.equal(
+      "https://login.microsoftonline.com/tenantId"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY_HOST)).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
+      expectedSecretText
+    );
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+    expect(result.summaries).includes(
+      `Created Azure Active Directory application with object id ${expectedObjectId}`
+    );
+    expect(result.summaries).includes(
+      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+    );
+  });
 });

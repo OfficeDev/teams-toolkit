@@ -90,7 +90,8 @@ export class CreateAadAppDriver implements StepDriver {
           )
         );
         // Create new AAD app if no client id exists
-        const aadApp = await aadAppClient.createAadApp(args.name);
+        const signInAudience = args.signInAudience ?? "AzureADMyOrg";
+        const aadApp = await aadAppClient.createAadApp(args.name, signInAudience);
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);

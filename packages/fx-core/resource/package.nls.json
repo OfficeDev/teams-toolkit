@@ -235,6 +235,7 @@
   "plugins.appstudio.whetherToDeployManifest": "Whether to deploy app manifest to Teams platform",
   "plugins.appstudio.validationFailedNotice": "Manifest Validation failed!",
   "plugins.appstudio.validationSucceedNotice": "Manifest Validation succeed!",
+  "plugins.appstudio.validateManifest.progressBar.message": "Validating manifest...",
   "plugins.appstudio.adminApprovalTip": "Successfully created %s app package file at %s. Send this to your administrator for approval.",
   "plugins.appstudio.adminPortal": "Go to admin portal",
   "plugins.appstudio.publishSucceedNotice": "[%s] successfully published to the admin portal. Once approved, your app will be available for your organization. [Learn more](%s)",

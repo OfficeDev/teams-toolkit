@@ -1028,7 +1028,7 @@
   "error.common.FileNotFoundError": "No such file or directory, open '%s'",
   "error.common.JSONSyntaxError": "JSON syntax error: %s. Please check the JSON syntax to ensure it is properly formatted.",
   "error.common.UnhandledError": "An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided \"Issue Link\", so that we can investigate and resolve the problem as soon as possible.",
-  "error.collaboration.InvalidManifestError": "Unable to process your manifest file ('%s') due to the absence of the 'id' key. To identify your application correctly, please make sure that the 'id' key is present and has a valid UUID value assigned to it in the manifest file.",
+  "error.collaboration.InvalidManifestError": "Unable to process your manifest file ('%s') due to the absence of the 'id' key. To identify your application correctly, please make sure that the 'id' key is present in the manifest file.",
   "error.collaboration.FailedToLoadManifest": "Unable to load manifest file. Reason: %s.",
   "error.azure.InvalidAzureCredentialError": "Unable to obtain your Azure credentials. Ensure that your Azure account is properly authenticated and try again.",
   "error.azure.InvalidAzureSubscriptionError": "The Azure subscription '%s' is not available in your current account. Ensure that you have signed in with the correct Azure account and that you have the necessary permissions to access the subscription.",

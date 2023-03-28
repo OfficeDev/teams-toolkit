@@ -27,8 +27,11 @@ describe("UpdateJsonDriver", () => {
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.file.error.unhandledError") {
-        return util.format("Unhandled error happened in %s action: %s", ...params);
+      } else if (key === "error.common.UnhandledError") {
+        return util.format(
+          'An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.',
+          ...params
+        );
       }
       return "";
     });

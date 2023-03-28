@@ -26,37 +26,36 @@ function delay(ms: number) {
 export class AadManager {
   private static instance: AadManager;
 
-  private static axios?: AxiosInstance;
+  private axios: AxiosInstance;
 
-  private static provider?: M365TokenProvider;
-
-  private constructor() {
-    AadManager.axios = undefined;
-    AadManager.provider = undefined;
+  private constructor(access?: string) {
+    this.axios = axios.create({
+      baseURL: "https://graph.microsoft.com/v1.0/",
+      headers: {
+        authorization: `Bearer ${access}`,
+        ConsistencyLevel: "eventual",
+        "content-type": "application/json",
+      },
+    });
   }
 
-  public static async init(provider?: M365TokenProvider): Promise<AadManager> {
+  public static async init(
+    provider: M365TokenProvider = MockM365TokenProvider
+  ): Promise<AadManager> {
     if (!AadManager.instance) {
-      AadManager.instance = new AadManager();
-    }
-    if (AadManager.provider !== (provider || MockM365TokenProvider)) {
-      AadManager.provider = provider || MockM365TokenProvider;
-      const graphTokenRes = await AadManager.provider.getAccessToken({ scopes: GraphScopes });
-      const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
-      AadManager.axios = axios.create({
-        baseURL: "https://graph.microsoft.com/v1.0/",
-        headers: {
-          authorization: `Bearer ${graphToken}`,
-          ConsistencyLevel: "eventual",
-          "content-type": "application/json",
-        },
+      const res = await provider.getAccessToken({
+        scopes: GraphScopes,
       });
+      if (res.isErr()) {
+        throw res.error;
+      }
+      this.instance = new AadManager(res.value);
     }
-    return Promise.resolve(AadManager.instance);
+    return this.instance;
   }
 
   public async searchAliveAadApps(prefix: string, offsetHour = 0): Promise<IAadAppInfo[]> {
-    const result = await AadManager.axios!.get(
+    const result = await this.axios!.get(
       `applications?$filter=startswith(displayName, '${prefix}')&$count=true&$top=100&$orderby=displayName`
     );
     const apps = result.data.value as IAadAppInfo[];
@@ -68,7 +67,7 @@ export class AadManager {
   }
 
   public async searchDeletedAadApps(prefix: string, offsetHour = 0): Promise<IAadAppInfo[]> {
-    const result = await AadManager.axios!.get(
+    const result = await this.axios!.get(
       `directory/deleteditems/microsoft.graph.application?$filter=startswith(displayName, '${prefix}')&$count=true&$top=100&$orderby=displayName`
     );
     const apps = result.data.value as IAadAppInfo[];
@@ -89,23 +88,53 @@ export class AadManager {
     });
   }
 
+  public async searchAadAppsByClientId(clientId: string): Promise<IAadAppInfo[]> {
+    return new Promise<IAadAppInfo[]>(async (resolve) => {
+      const result = await this.axios!.get(`applications?$filter=appId eq '${clientId}'`);
+      const apps = result.data.value as IAadAppInfo[];
+      return resolve(apps);
+    });
+  }
+
   public async deleteAadAppById(id: string, retryTimes = 5) {
     return new Promise<boolean>(async (resolve) => {
       try {
-        await AadManager.axios!.delete(`applications/${id}`);
+        await this.axios!.delete(`applications/${id}`);
       } finally {
         for (let i = 0; i < retryTimes; ++i) {
           try {
-            await AadManager.axios!.delete(`directory/deletedItems/${id}`);
+            await this.axios!.delete(`directory/deletedItems/${id}`);
             return resolve(true);
           } catch {
             await delay(2000);
             if (i < retryTimes - 1) {
-              console.warn(`[Retry] clean up the Aad app failed with id: ${id}`);
+              console.warn(`[Retry] failed to delete the Aad app with id: ${id}`);
             }
           }
         }
         return resolve(false);
+      }
+    });
+  }
+
+  public async deleteAadAppsByClientId(clientId: string, retryTimes = 5) {
+    if (!clientId) {
+      return [true];
+    }
+    const aadApps = await this.searchAadAppsByClientId(clientId);
+    const promises = aadApps.map((app) => this.deleteAadAppById(app.id, retryTimes));
+    const results = await Promise.all(promises);
+    return results.map((result, index) => {
+      if (result) {
+        console.log(
+          `[Success] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
+        );
+        return true;
+      } else {
+        console.log(
+          `[Failed] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
+        );
+        return false;
       }
     });
   }
@@ -121,11 +150,11 @@ export class AadManager {
     results.forEach((result, index) => {
       if (result) {
         console.log(
-          `[Sucessfully] clean up the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
+          `[Success] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
         );
       } else {
         console.log(
-          `[Failed] no permission to clean up the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
+          `[Failed] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
         );
       }
     });

@@ -32,7 +32,7 @@ export class UnresolvedPlaceholderError extends UserError {
 
 export class InvalidActionInputError extends UserError {
   constructor(actionName: string, parameters: string[], helpLink?: string) {
-    const key = "error.common.InvalidActionInputError";
+    const key = "error.yaml.InvalidActionInputError";
     const errorOptions: UserErrorOptions = {
       source: actionName,
       name: "InvalidActionInputError",

@@ -32,6 +32,7 @@ import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as yaml from "yaml";
+import { getV3TeamsAppId } from "../debug/commonUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -373,6 +374,15 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  if (isV3Enabled()) {
+    // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
+    try {
+      const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+      return teamsAppId !== "";
+    } catch (error) {
+      return false;
+    }
+  }
   let provisionResult: Json | undefined;
 
   try {

@@ -194,6 +194,15 @@ export class PublishAppPackageDriver implements StepDriver {
     context.addSummary(
       getLocalizedString("driver.teamsApp.summary.publishTeamsAppSuccess", manifest.id)
     );
+    if (context.platform === Platform.CLI) {
+      const msg = getLocalizedString(
+        "plugins.appstudio.publishSucceedNotice.cli",
+        manifest.name.short,
+        Constants.TEAMS_ADMIN_PORTAL,
+        Constants.TEAMS_MANAGE_APP_DOC
+      );
+      context.ui?.showMessage("info", msg, false);
+    }
     return ok(result);
   }
 

@@ -1,18 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
-import { Result, FxError, ok, Tools, err } from "@microsoft/teamsfx-api";
-
-import { FxCore, AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core";
-
+import { Result, FxError, err, Tools, ok } from "@microsoft/teamsfx-api";
+import { FxCore } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
-import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
-import { CliTelemetry } from "./telemetry/cliTelemetry";
-import CLIUIInstance from "./userInteraction";
+import M365Login from "./commonlib/m365Login";
 import { UnknownError } from "./error";
+import { CliTelemetry } from "./telemetry/cliTelemetry";
+import CLIUserInteraction from "./userInteraction";
 
 export default async function activate(
   rootPath?: string,
@@ -37,10 +33,10 @@ export default async function activate(
     logProvider: CLILogProvider,
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
-      m365TokenProvider: M365TokenProvider,
+      m365TokenProvider: M365Login,
     },
     telemetryReporter: CliTelemetry.getReporter(),
-    ui: CLIUIInstance,
+    ui: CLIUserInteraction,
   };
   const core = new FxCore(tools);
   return ok(core);

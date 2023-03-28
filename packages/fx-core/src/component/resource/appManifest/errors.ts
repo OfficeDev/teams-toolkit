@@ -97,24 +97,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly GetLocalDebugConfigFailedError = {
-    name: "GetLocalDebugConfigFailed",
-    message: (error: any): [string, string] => [
-      getDefaultString("error.appstudio.getLocalConfigFailed", error.message),
-      getLocalizedString("error.appstudio.getLocalConfigFailed", error.message),
-    ],
-  };
-
-  public static readonly GetRemoteConfigFailedError = {
-    name: "GetRemoteConfigFailed",
-    message: (errorMessage: string, isProvisionSucceeded: boolean): [string, string] => [
-      getDefaultString("error.appstudio.getRemoteConfigFailed", errorMessage) +
-        `${isProvisionSucceeded ? "" : getDefaultString("plugins.appstudio.provisionTip")}`,
-      getLocalizedString("error.appstudio.getRemoteConfigFailed", errorMessage) +
-        `${isProvisionSucceeded ? "" : getLocalizedString("plugins.appstudio.provisionTip")}`,
-    ],
-  };
-
   public static readonly TeamsAppPublishFailedError = {
     name: "TeamsAppPublishFailed",
     message: (

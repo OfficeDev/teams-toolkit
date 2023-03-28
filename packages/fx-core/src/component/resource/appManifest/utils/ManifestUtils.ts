@@ -52,8 +52,6 @@ import {
 import { getCustomizedKeys } from "./utils";
 import { TelemetryPropertyKey } from "./telemetry";
 import Mustache from "mustache";
-import { getLocalizedString } from "../../../../common/localizeUtils";
-import { HelpLinks } from "../../../../common/constants";
 import { ComponentNames } from "../../../constants";
 import {
   compileHandlebarsTemplateString,
@@ -492,28 +490,11 @@ export class ManifestUtils {
           .map((x) => x[1])
       ),
     ];
+    const manifestTemplatePath = await this.getTeamsAppManifestPath(projectPath);
     if (tokens.length > 0) {
-      if (isLocalDebug) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetLocalDebugConfigFailedError.name,
-            AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
-            )
-          )
-        );
-      } else {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
-              isProvisionSucceeded
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      }
+      return err(
+        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+      );
     }
     const manifest: TeamsAppManifest = JSON.parse(resolvedManifestString);
     // dynamically set validDomains for manifest, which can be refactored by static manifest templates
@@ -534,14 +515,7 @@ export class ManifestUtils {
       if (botId) {
         if (!botDomain && !ignoreEnvStateValueMissing) {
           return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(
-                getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
-                isProvisionSucceeded
-              ),
-              HelpLinks.WhyNeedProvision
-            )
+            new UnresolvedPlaceholderError("teamsApp", "validDomain", manifestTemplatePath)
           );
         } else if (botDomain) {
           validDomains.push(botDomain);

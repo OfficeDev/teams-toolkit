@@ -1,3 +1,5 @@
+# This file includes environment variables that will be committed to git by default.
+
 # Built-in environment variables
 TEAMSFX_ENV=dev
 
@@ -16,10 +18,3 @@ AAD_APP_OAUTH_AUTHORITY_HOST=
 AAD_APP_OAUTH_AUTHORITY=
 TAB_AZURE_STORAGE_RESOURCE_ID=
 TAB_ENDPOINT=
-M365_CLIENT_ID=
-M365_CLIENT_SECRET=
-M365_TENANT_ID=
-M365_OAUTH_AUTHORITY_HOST=
-
-# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
-SECRET_AAD_APP_CLIENT_SECRET=

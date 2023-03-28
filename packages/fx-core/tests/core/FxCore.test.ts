@@ -1042,8 +1042,10 @@ describe("Teams app APIs", async () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
+      [CoreQuestionNames.OutputZipPathParamName]: ".\\build\\appPackage\\appPackage.dev.zip",
     };
 
+    sinon.stub(process, "platform").value("win32");
     const runStub = sinon.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
     const showMessageStub = sinon.stub(tools.ui, "showMessage");
     await core.createAppPackage(inputs);

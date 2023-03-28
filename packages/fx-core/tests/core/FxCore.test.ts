@@ -1011,6 +1011,7 @@ describe("Teams app APIs", async () => {
   });
 
   it("create app package", async () => {
+    setTools(tools);
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1019,9 +1020,11 @@ describe("Teams app APIs", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sinon.spy(CreateAppPackageDriver.prototype, "run");
+    const runStub = sinon.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
+    const showMessageStub = sinon.stub(tools.ui, "showMessage");
     await core.createAppPackage(inputs);
-    sinon.assert.calledOnce(runSpy);
+    sinon.assert.calledOnce(runStub);
+    sinon.assert.calledOnce(showMessageStub);
   });
 
   it("publish application", async () => {

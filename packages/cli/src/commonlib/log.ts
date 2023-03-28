@@ -5,7 +5,7 @@
 
 import chalk from "chalk";
 import figures from "figures";
-import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
+import { LogLevel, LogProvider, Colors, NotImplementedError } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
 import { getColorizedString } from "../utils";
@@ -34,6 +34,10 @@ export class CLILogProvider implements LogProvider {
     }
 
     return CLILogProvider.instance;
+  }
+
+  getLogFilePath(): string {
+    throw new NotImplementedError("CLILogProvider", "getLogFilePath");
   }
 
   trace(message: string): Promise<boolean> {

@@ -33,6 +33,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import AdmZip from "adm-zip";
 import { Constants } from "../../resource/appManifest/constants";
 import { metadataUtil } from "../../utils/metadataUtil";
+import { SummaryConstant } from "../../configManager/constant";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -135,16 +136,21 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
-              error.helpUrl
-            }`;
+            return `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
+              "core.option.learnMore"
+            )}: ${error.helpUrl}`;
           })
           .join(EOL);
         const warnings = validationResult.warnings
           .map((warning) => {
-            return `(!) Warning: ${warning.content} \n${getLocalizedString(
+            return `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
               "core.option.learnMore"
             )}: ${warning.helpUrl}`;
+          })
+          .join(EOL);
+        const notes = validationResult.notes
+          .map((note) => {
+            return `${SummaryConstant.Succeeded} ${note.content}`;
           })
           .join(EOL);
         const outputMessage =
@@ -155,10 +161,12 @@ export class ValidateAppPackageDriver implements StepDriver {
             validationResult.notes.length,
             errors,
             warnings,
-            context.logProvider?.getLogFilePath()
+            path.resolve(context.logProvider?.getLogFilePath())
           );
         context.logProvider?.info(outputMessage);
-        context.logProvider?.info(outputMessage, true);
+        // logs in log file
+        context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
+
         const message = getLocalizedString(
           "driver.teamsApp.validate.result",
           validationResult.errors.length + validationResult.warnings.length,

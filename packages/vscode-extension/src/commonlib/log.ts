@@ -93,7 +93,7 @@ export class VsCodeLogProvider implements LogProvider {
       const dateString = new Date().toJSON();
       const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;
       if (logToFile) {
-        await fs.appendFile(this.getLogFilePath(), formattedMessage);
+        await fs.appendFile(this.getLogFilePath(), formattedMessage + "\n");
       } else {
         this.outputChannel.appendLine(formattedMessage);
       }

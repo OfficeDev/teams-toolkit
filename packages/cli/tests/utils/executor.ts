@@ -93,4 +93,14 @@ export class Executor {
     const command = `teamsfx publish --env ${env}`;
     return this.execute(command, workspace);
   }
+
+  static async installCLI(workspace: string, version: string, global: boolean) {
+    if (global) {
+      const command = `npm install -g @microsoft/teamsfx-cli@${version}`;
+      return this.execute(command, workspace);
+    } else {
+      const command = `npm install @microsoft/teamsfx-cli@${version}`;
+      return this.execute(command, workspace);
+    }
+  }
 }

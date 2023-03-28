@@ -98,6 +98,6 @@ describe("BicepChecker", () => {
       });
 
     // If timeout is not handled, there will be unhandled promise rejection but it seems chai has no way to assert that
-    await chai.expect(ensureBicep(context)).to.be.rejectedWith(/Failed to install/);
+    await chai.expect(ensureBicep(context)).to.be.rejectedWith(/Unable to install/);
   });
 });

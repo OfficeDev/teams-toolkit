@@ -532,6 +532,6 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UserError)
       .and.has.property("message")
-      .and.contains("The following parameter(s) is(are) missing or invalid for");
+      .and.contains("action cannot be completed as the following parameter(s):");
   });
 });

@@ -1123,6 +1123,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.aadAppQuestion.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your Azure Active Directory app for Single Sign On]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ihre Azure Active Directory-App für einmaliges Anmelden]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.aadAppQuestion.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Active Directory app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory-App]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.aadManifestMigration.ParsePermissionsFailedWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot parse permissions.json file when migration, and please follow this link to update permissions in aad.template.json file if necessary: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
@@ -1423,6 +1441,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.collaboration.AadAppOwner" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Active Directory App Owner: ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory-App-Besitzer: ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.collaboration.AccountToGrantPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Account to grant permission: ]]></Val>
@@ -1512,12 +1539,12 @@
       </Item>
       <Item ItemId=";core.collaboration.ListCollaboratorsSuccess" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[List Microsoft 365 Teams App%s owners success, you can view it in [output channel]5D;(%s).]]></Val>
+          <Val><![CDATA['List Microsoft 365 App owners' succeeded, you can view it in [output channel]5D;(%s).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Das Erstellen der Liste der Besitzer der Microsoft 365 Teams-App war erfolgreich, Sie können sie im [Ausgabekanal]5D;(%s) anzeigen.]]></Val>
+            <Val><![CDATA[„Microsoft 365 App-Besitzer auflisten“ war erfolgreich. Sie können sie im [Ausgabekanal]5D;(%s) anzeigen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[List M365 Teams App%s owners success, you can view it in [output channel]5D;(%s).]]></Val>
+            <Val><![CDATA[List Microsoft 365 Teams App%s owners success, you can view it in [output channel]5D;(%s).]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1596,37 +1623,58 @@
       </Item>
       <Item ItemId=";core.collaboration.SsoAadAppId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[), SSO AAD App (ID: ]]></Val>
+          <Val><![CDATA[SSO AAD App (ID: ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[), SSO AAD App (ID: ]]></Val>
+            <Val><![CDATA[SSO-AAD-App (ID: ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[), SSO AAD App (ID: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.StaringCheckPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Starting check permission for environment: ]]></Val>
+          <Val><![CDATA[Starting to check permission for environment: ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Prüfberechtigung für Umgebung starten: ]]></Val>
+            <Val><![CDATA[Die Überprüfung der Berechtigung für die Umgebung wird gestartet: ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Starting check permission for environment: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.StartingGrantPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Starting grant permission for environment: ]]></Val>
+          <Val><![CDATA[Starting to grant permission for environment: ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die Berechtigungszuweisung für die Umgebung wird gestartet: ]]></Val>
+            <Val><![CDATA[Die Erteilung der Berechtigung für die Umgebung wird gestartet: ]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Starting grant permission for environment: ]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.collaboration.StartingListAllAadAppOwners" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[]A;Starting to list all Azure Active Directory app owners for environment: ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[]A;Das Auflisten aller Azure Active Directory-App-Besitzer für die Umgebung wird gestartet: ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.StartingListAllTeamsAppOwners" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Starting list all teams app owners for environment: ]]></Val>
+          <Val><![CDATA[]A;Starting to list all teams app owners for environment: ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Liste aller Teams-App-Besitzer für die Umgebung wird gestartet: ]]></Val>
+            <Val><![CDATA[]A;Das Auflisten aller Teams-App-Besitzer für die Umgebung wird gestartet: ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Starting list all teams app owners for environment: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1654,18 +1702,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[nicht definiert]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.collaboration.WithAadApp" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[(with AAD App)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(mit AAD-App)]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[(With AAD App)]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1806,6 +1842,15 @@
           <Val><![CDATA[Teams web client id]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams-Webclient-ID]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.confirmManifestQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Confirm manifest is correctly selected]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bestätigen, dass das Manifest richtig ausgewählt wurde]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2613,12 +2658,12 @@
       </Item>
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit.]A;The auto-upgrade process will generate backups in case an error occurs.]]></Val>
+          <Val><![CDATA[Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aktualisieren Sie Ihr Projekt, um mit der neuesten Version kompatibel zu bleiben. Ihr aktuelles Projekt enthält Konfigurationen aus einem älteren Teams-Toolkit.]A;Beim automatischen Upgradevorgang werden Sicherungen generiert, falls ein Fehler auftritt.]]></Val>
+            <Val><![CDATA[Führen Sie ein Upgrade Ihres Teams Toolkit-Projekts durch, um mit der neuesten Version kompatibel zu bleiben. Ein Sicherungsverzeichnis wird zusammen mit einer Upgradezusammenfassung erstellt.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. You can also download from this link %s.]]></Val>
+            <Val><![CDATA[Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit.]A;The auto-upgrade process will generate backups in case an error occurs.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2752,6 +2797,15 @@
       <Item ItemId=";core.option.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Weitere Informationen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.option.moreInfo" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[More Info]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Weitere Informationen]]></Val>
           </Tgt>
@@ -3436,6 +3490,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.selectAadAppManifestQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select Azure Active Directory manifest.json file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory-Datei „manifest.json“ auswählen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectCollaborationAppTypeQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select app you want to manage the collaborators]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die App auswählen, mit der Sie die Projektmitarbeiter verwalten möchten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectTeamsAppManifestQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select Teams manifest.json file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-Datei „manifest.json“ auswählen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
@@ -3531,6 +3612,24 @@
           <Val><![CDATA[%s Lifecycle stage %s was executed successfully.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[%s der Lebenszyklusstufe „%s“ wurde erfolgreich ausgeführt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.teamsAppQuestion.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ihre Teams-App]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.teamsAppQuestion.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4513,6 +4612,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.azureAppServiceDeployDetailSummary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully deployed `%s` to Azure App Service.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[„%s“ wurde erfolgreich für Azure App Service bereitgestellt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.deploy.azureAppServiceDeploySummary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Project deployed to Azure App Service successfully.]]></Val>
@@ -4522,11 +4630,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.azureFunctionsDeployDetailSummary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully deployed `%s` to Azure Functions.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[„%s“ wurde erfolgreich für Azure Functions bereitgestellt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.deploy.azureFunctionsDeploySummary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Project deployed to Azure Functions successfully.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Das Projekt wurde erfolgreich in Azure Functions bereitgestellt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.deploy.azureStorageDeployDetailSummary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully deployed `%s` to Azure Storage.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[„%s“ wurde erfolgreich für Azure Storage bereitgestellt.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4680,10 +4806,13 @@
       </Item>
       <Item ItemId=";driver.deploy.notice.deployDryRunComplete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preparations of deployment are complete. ]]></Val>
+          <Val><![CDATA[Deployment preparations are completed. You can find the package in `%s`]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die Vorbereitungen für die Bereitstellung sind abgeschlossen. ]]></Val>
+            <Val><![CDATA[Die Bereitstellungsvorbereitungen sind abgeschlossen. Sie finden das Paket in „%s“.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preparations of deployment are complete. ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5079,6 +5208,15 @@
           <Val><![CDATA[running npx command.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Der „npx“-Befehl wird ausgeführt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.script.runCommandSummary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successful execution of the `%s` command at `%s`.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Ausführung des Befehls „%s“ für „%s“ war erfolgreich.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6892,12 +7030,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.collaboration.FailedToLoadManifest" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to load manifest file. Reason: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim Laden der Manifestdatei. Grund: %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.collaboration.InvalidManifestError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your manifest is invalid: %s. Please make sure 'id' key exists in your manifest file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ihr Manifest ist ungültig: %s. Stellen Sie sicher, dass der Schlüssel „id“ in Ihrer Manifestdatei vorhanden ist.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.common.FileNotFoundError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[File not found: %s]]></Val>
+          <Val><![CDATA[No such file or directory, open '%s']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Datei nicht gefunden: %s]]></Val>
+            <Val><![CDATA[Datei oder Verzeichnis nicht vorhanden. Öffnen Sie „%s“]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[File not found: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6915,6 +7074,24 @@
           <Val><![CDATA[This command only works for project created by Teams Toolkit.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Dieser Befehl funktioniert nur für Projekte, die vom Teams-Toolkit erstellt wurden.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.JSONSyntaxError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[JSON syntax error: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[JSON-Syntaxfehler: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.common.UnhandledError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unhandled error: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nicht behandelter Fehler: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7404,6 +7581,24 @@
           <Val><![CDATA[Teams app ID %s is invalid]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Die Teams-App-ID %s ist ungültig]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.teamsApp.validate.apiFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app package validation failed due to  %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler bei der Überprüfung des Teams-App-Pakets aufgrund von %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.teamsApp.validate.apiFailed.display" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app pacakge validation failed. Check [output window]5D;(%s) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler bei der Teams-App-Paketüberprüfung. Weitere Informationen finden Sie im [Ausgabefenster]5D;(%s).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -9544,12 +9739,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.spfx.error.devEnvironmentNotSetup" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+      <Item ItemId=";plugins.spfx.error.devEnvironmentNotSetup" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SPFx development environment has not been set up correctly. Visit [Set up your SharePoint Framework development environment | Microsoft Learn]5D;(%s) to learn more.]]></Val>
+          <Val><![CDATA[SPFx development environment has not been set up correctly. You can click "Get Help" to follow the guide to set up right environment.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die SPFx-Entwicklungsumgebung wurde nicht ordnungsgemäß eingerichtet. Besuchen Sie [Einrichten Ihrer SharePoint-Framework-Entwicklungsumgebung | Microsoft Learn]5D;(%s), um weitere Informationen zu erhalten.]]></Val>
+            <Val><![CDATA[Die SPFx-Entwicklungsumgebung wurde nicht ordnungsgemäß eingerichtet. Sie können auf „Hilfe“ klicken, um der Anleitung zum Einrichten der richtigen Umgebung zu folgen.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[SPFx development environment has not been set up correctly. Visit [Set up your SharePoint Framework development environment | Microsoft Learn]5D;(%s) to learn more.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -3,17 +3,17 @@
 version: 1.0.0
 
 provision:
-  - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
+  - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
     with:
-      name: {{appName}}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
+      name: {{appName}}-aad # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
       generateClientSecret: true # If the value is false, the action will not generate client secret for you
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # AAD_APP_CLIENT_ID: the client id of AAD app
-    # AAD_APP_CLIENT_SECRET: the client secret of AAD app
-    # AAD_APP_OBJECT_ID: the object id of AAD app
-    # AAD_APP_TENANT_ID: the tenant id of AAD app
-    # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
-    # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      clientId: AAD_APP_CLIENT_ID
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET # Environment variable that starts with `SECRET_` will be stored to the .env.{envName}.user environment file
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
 
   - uses: teamsApp/create # Creates a Teams app
     with:
@@ -56,9 +56,8 @@ deploy:
     with:
       devCert:
         trust: true
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # SSL_CRT_FILE: certificate file
-    # SSL_KEY_FILE: certificate key
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      funcPath: FUNC_PATH
 
   - uses: cli/runNpmCommand # Run npm command
     with:

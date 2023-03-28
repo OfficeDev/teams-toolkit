@@ -219,6 +219,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+          os.tmpdir(),
+          appName,
+          "aad.manifest.json"
+        ),
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -282,6 +288,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+          os.tmpdir(),
+          appName,
+          "aad.manifest.json"
+        ),
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -301,7 +313,8 @@ describe("Core basic APIs", () => {
     try {
       const core = new FxCore(tools);
       const appName = await mockV3Project();
-      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.template.json");
+      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
+      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -309,6 +322,8 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -333,7 +348,8 @@ describe("Core basic APIs", () => {
     try {
       const core = new FxCore(tools);
       const appName = await mockV3Project();
-      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.template.json");
+      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
+      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([""]));
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -341,6 +357,8 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
+        [CoreQuestionNames.TargetEnvName]: "",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -362,7 +380,7 @@ describe("Core basic APIs", () => {
       if (res.isErr()) {
         assert.strictEqual(
           res.error.message,
-          "Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path has no value. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
+          "Unable to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path has no value. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
         );
       }
     } finally {
@@ -386,6 +404,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
+        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+          os.tmpdir(),
+          appName,
+          "aad.manifest.json"
+        ),
+        [CoreQuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };

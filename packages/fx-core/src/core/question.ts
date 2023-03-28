@@ -18,6 +18,10 @@ import {
   QTreeNode,
   BuildFolderName,
   AppPackageFolderName,
+  DynamicPlatforms,
+  Result,
+  FxError,
+  ok,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -51,8 +55,6 @@ import {
   WorkflowOptionItem,
   DashboardOptionItem,
 } from "../component/constants";
-import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
-import { ResourceManagementClient } from "@azure/arm-resources";
 import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 import {
   answerToRepaceBotId,
@@ -62,7 +64,6 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
-
 export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",
@@ -953,11 +954,13 @@ export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   };
 }
 
-export async function selectEnvNode(inputs: Inputs): Promise<QTreeNode | undefined> {
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(
-    inputs.projectPath!,
-    true
-  );
+export async function selectEnvNode(
+  inputs: Inputs,
+  isRemote = true
+): Promise<QTreeNode | undefined> {
+  const envProfilesResult = isRemote
+    ? await environmentManager.listRemoteEnvConfigs(inputs.projectPath!, true)
+    : await environmentManager.listAllEnvConfigs(inputs.projectPath!);
   if (envProfilesResult.isErr()) {
     // If failed to load env, return undefined
     return undefined;
@@ -1021,4 +1024,53 @@ export function confirmManifestNode(
     notEquals: defaultManifestFilePath,
   };
   return confirmManifestNode;
+}
+
+export async function getQuestionForDeployAadManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  if (isDynamicQuestion) {
+    const root = await getUpdateAadManifestQuestion(inputs);
+    return ok(root);
+  }
+  return ok(undefined);
+}
+
+async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> {
+  // Teams app manifest select node
+  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
+
+  // Env select node
+  const envNode = await selectEnvNode(inputs, false);
+  if (!envNode) {
+    return aadAppSelectNode;
+  }
+  envNode.data.name = "env";
+  aadAppSelectNode.addChild(envNode);
+  envNode.condition = {
+    validFunc: validateAadManifestContainsPlaceholder,
+  };
+  return aadAppSelectNode;
+}
+
+export async function validateAadManifestContainsPlaceholder(
+  input: any,
+  inputs?: Inputs
+): Promise<string | undefined> {
+  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
+  const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
+  const regexObj = new RegExp(placeholderRegex);
+  try {
+    if (!aadManifestPath || !(await fs.pathExists(aadManifestPath))) {
+      return "Skip Current Question";
+    }
+    const manifest = await fs.readFile(aadManifestPath, ConstantString.UTF8Encoding);
+    if (regexObj.test(manifest)) {
+      return undefined;
+    }
+  } catch (e) {
+    return "Skip Current Question";
+  }
+  return "Skip Current Question";
 }

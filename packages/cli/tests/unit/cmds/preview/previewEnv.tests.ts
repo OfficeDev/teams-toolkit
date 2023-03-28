@@ -539,6 +539,7 @@ describe("PreviewEnv Steps", () => {
 
   it("launchBrowser: outlook - m365 app id undefined", async () => {
     CLIUIInstance.interactive = false;
+    sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("test-token"));
     sandbox.stub(PackageService.prototype, "retrieveAppId").resolves(undefined);
     sandbox.stub(launch, "openHubWebClient").resolves();
 

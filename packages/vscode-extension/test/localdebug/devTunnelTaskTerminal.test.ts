@@ -6,11 +6,16 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as sinon from "sinon";
 import * as vscode from "vscode";
+import { UserError } from "@microsoft/teamsfx-api";
+import { BaseTaskTerminal } from "../../src/debug/taskTerminal/baseTaskTerminal";
 import {
   DevTunnelTaskTerminal,
   IDevTunnelArgs,
 } from "../../src/debug/taskTerminal/devTunnelTaskTerminal";
+import { ExtensionErrors, ExtensionSource } from "../../src/error";
+
 chai.use(chaiAsPromised);
 
 class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
@@ -26,6 +31,20 @@ describe("devTunnelTaskTerminal", () => {
   const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
 
   describe("resolveArgs", () => {
+    const sandbox = sinon.createSandbox();
+    beforeEach(async () => {
+      sandbox.stub(BaseTaskTerminal, "taskDefinitionError").callsFake((argName) => {
+        return new UserError(
+          ExtensionSource,
+          ExtensionErrors.TaskDefinitionError,
+          `The value of '${argName}' is invalid for the task of type 'teamsfx'`
+        );
+      });
+    });
+
+    afterEach(async () => {
+      sandbox.restore();
+    });
     const testDataList: { message: string; args: any; errorPropertyName?: string }[] = [
       {
         message: "undefined args",

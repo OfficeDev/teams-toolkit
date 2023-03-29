@@ -111,7 +111,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         const deleteTunnel = this.tunnel;
         this.tunnel = undefined;
         await this.tunnelManagementClientImpl.deleteTunnel(deleteTunnel);
-        await this.devTunnelStateManager.deleteTunnelState(deleteTunnel);
+        await this.devTunnelStateManager.deleteTunnelState({
+          tunnelId: deleteTunnel.tunnelId,
+          clusterId: deleteTunnel.clusterId,
+        });
       }
 
       if (this.cancel) {
@@ -153,9 +156,12 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           tunnelId: devTunnelState.tunnelId,
           clusterId: devTunnelState.clusterId,
         });
+        if (!tunnelInstance) {
+          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
+        }
         if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
           await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
-          await this.devTunnelStateManager.deleteTunnelState(tunnelInstance);
+          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
         }
       } catch {
         // Do nothing if delete existing tunnel failed.
@@ -309,9 +315,8 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   }
 
   protected generateTelemetries(): { [key: string]: string } {
-    return {
-      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+    try {
+      const debugTaskArgs = {
         type: maskValue(this.args.type, Object.values(TunnelType)),
         ports: this.args.ports.map((port) => {
           return {
@@ -332,8 +337,17 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           };
         }),
         env: maskValue(this.args.env, [TaskDefaultValue.env]),
-      }),
-    };
+      };
+
+      return {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.DebugTaskArgs]: JSON.stringify(debugTaskArgs),
+      };
+    } catch {
+      return {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      };
+    }
   }
 
   protected async saveTunnelToEnv(

@@ -22,6 +22,7 @@ import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/update";
 
@@ -60,7 +61,10 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage")),
+  ])
   async update(
     args: ConfigureTeamsAppArgs,
     context: WrapDriverContext,
@@ -137,15 +141,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
     }
 
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppTitle"),
-      1
-    );
-    await progressHandler?.start();
-
     try {
       let message = getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage");
-      await progressHandler?.next(message);
 
       const appDefinition = await AppStudioClient.importApp(
         archivedFile,
@@ -159,9 +156,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
       context.logProvider.info(message);
       context.addSummary(message);
-      if (context.platform === Platform.VSCode) {
-        context.ui?.showMessage("info", message, false);
-      }
       return ok(
         new Map([
           [outputEnvVarNames.get("teamsAppId") as string, appDefinition.teamsAppId!],
@@ -170,7 +164,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         ])
       );
     } catch (e: any) {
-      await progressHandler?.end(false);
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,
@@ -178,8 +171,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
-    } finally {
-      await progressHandler?.end(true);
     }
   }
 

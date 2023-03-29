@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import { AadManager } from "../commonlib";
 import { deleteResourceGroupByName } from "../e2e/commonUtils";
 import {
@@ -15,9 +16,10 @@ import { M365TitleHelper } from "./m365TitleHelper";
 import { ProjectEnvReader } from "./projectEnvReader";
 import { TeamsAppHelper } from "./teamsAppHelper";
 
+/// Clean up the resources created by the test cases for V3 projects.
 export class Cleaner {
   static async clean(projectPath: string, m365TokenProvider?: M365TokenProvider) {
-    if (!projectPath) {
+    if (!isValidProject(projectPath)) {
       return Promise.resolve(true);
     }
     const envs = await ProjectEnvReader.readAllEnvFiles(projectPath);
@@ -42,3 +44,11 @@ export class Cleaner {
     );
   }
 }
+
+(async () => {
+  const projectPath = process.argv[2];
+  if (!projectPath) {
+    return;
+  }
+  await Cleaner.clean(projectPath);
+})();

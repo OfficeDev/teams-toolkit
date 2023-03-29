@@ -139,7 +139,6 @@
   "core.deployArmTemplates.FailedToExpandParameter": "Unable to get expanded parameter from %s",
   "core.deployArmTemplates.InvalidAzureCredential": "Azure Credential is invalid.",
   "core.deployArmTemplates.FailedToGetSubsId": "Unable to get subscription id.",
-  "core.deployArmTemplates.CompileBicepFailed": "Unable to compile Bicep files to JSON ARM templates file: %s",
   "core.deployArmTemplates.FailedToGetDeploymentError": "Unable to get deployment error for %s",
   "core.deployArmTemplates.FailedToGetDeploymentErrorNotification": "Resource deployments (%s module) for your project failed and get the error message failed. Refer to the resource group %s in portal for deployment error.",
   "core.deployArmTemplates.DeploymentFailedNotification": "Resource deployments (%s) for your project failed. Refer to [output channel](command:fx-extension.showOutputChannel) for more error details.",

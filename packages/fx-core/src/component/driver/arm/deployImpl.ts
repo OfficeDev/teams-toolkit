@@ -5,28 +5,19 @@ import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { hasBicepTemplate, convertOutputs, getFileExtension } from "./util/util";
-import {
-  err,
-  FxError,
-  ok,
-  Result,
-  SolutionContext,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
-import { ConstantString, PluginDisplayName } from "../../../common/constants";
+import { err, FxError, ok, Result, SolutionContext } from "@microsoft/teamsfx-api";
+import { ConstantString } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
 import { executeCommand } from "../../../common/cpUtils";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
-import { SolutionError, SolutionSource } from "../../constants";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
 import { InvalidActionInputError } from "../../../error/common";
 import { InvalidAzureCredentialError } from "../../../error/azure";
-import { CompileBicepError } from "../../../error/arm";
+import { CompileBicepError, DeployArmError } from "../../../error/arm";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -129,13 +120,7 @@ export class ArmDeployImpl {
       progressBar?.end(res.isOk() ? true : false);
       return res;
     } catch (error) {
-      return err(
-        new UserError({
-          error,
-          source: SolutionSource,
-          name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        })
-      );
+      return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
     }
   }
 

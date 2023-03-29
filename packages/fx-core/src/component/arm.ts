@@ -37,7 +37,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "./constants";
-import { ConstantString, HelpLinks, PluginDisplayName } from "../common/constants";
+import { ConstantString, PluginDisplayName } from "../common/constants";
 import { executeCommand } from "../common/cpUtils";
 import {
   compileHandlebarsTemplateString,
@@ -51,8 +51,8 @@ import { ProgressHelper } from "./utils/progressHelper";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { convertManifestTemplateToV3, pluginName2ComponentName } from "../component/migrate";
 import { getProjectTemplatesFolderPath } from "../common/utils";
-import { InvalidAzureCredentialError } from "../error/azure";
-import { CompileBicepError } from "../error/arm";
+import { InvalidAzureCredentialError, ResourceGroupNotExistError } from "../error/azure";
+import { CompileBicepError, DeployArmError, GetArmDeploymentError } from "../error/arm";
 
 const bicepOrchestrationFileName = "main.bicep";
 const configsFolder = `.${ConfigFolderName}/configs`;
@@ -342,59 +342,40 @@ export async function handleArmDeploymentError(
     if (error.code === "InvalidTemplateDeployment") {
       error = fetchInnerError(error);
     }
-    return err(
-      new UserError({
-        error,
-        source: SolutionSource,
-        name: ErrorCodes[error.code] ?? SolutionError.FailedToValidateArmTemplates,
-      })
-    );
+    if (error.code === "ResourceGroupNotFound") {
+      return err(
+        new ResourceGroupNotExistError(deployCtx.resourceGroupName, deployCtx.client.subscriptionId)
+      );
+    } else if (error.code === "InvalidTemplate" || error.code === "InvalidTemplateDeployment") {
+      return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
+    }
   }
 
   // try to get deployment error
   const result = await wrapGetDeploymentError(
     deployCtx,
     deployCtx.resourceGroupName,
-    deployCtx.deploymentName
+    deployCtx.deploymentName,
+    error
   );
   if (result.isOk()) {
     const deploymentError = result.value;
 
     // return thrown error if deploymentError is empty
     if (!deploymentError) {
-      return err(
-        new UserError({
-          error,
-          source: SolutionSource,
-          name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        })
-      );
+      return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
     }
     const deploymentErrorObj = formattedDeploymentError(deploymentError);
     const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-    let errorMessage = getLocalizedString(
-      "core.deployArmTemplates.FailNotice",
-      PluginDisplayName.Solution,
-      deployCtx.resourceGroupName,
-      deployCtx.deploymentName
-    );
-    errorMessage += getLocalizedString(
-      "core.deployArmTemplates.DeploymentErrorWithHelplink",
-      error.message,
-      deploymentErrorMessage,
-      HelpLinks.ArmHelpLink
-    );
-    const notificationMessage = getNotificationMessage(deploymentError, deployCtx.deploymentName);
-    const returnError = new UserError({
-      message: errorMessage,
-      source: SolutionSource,
-      name: SolutionError.FailedToDeployArmTemplatesToAzure,
-      helpLink: HelpLinks.ArmHelpLink,
-      displayMessage: notificationMessage,
-    });
-    returnError.innerError = new DeploymentErrorMessage(JSON.stringify(deploymentErrorObj));
-
-    return err(returnError);
+    let failedDeployments: string[] = [];
+    if (deploymentError.subErrors) {
+      failedDeployments = Object.keys(deploymentError.subErrors);
+    } else {
+      failedDeployments.push(deployCtx.deploymentName);
+    }
+    const format = failedDeployments.map((deployment) => deployment + " module");
+    error.message = error.message + "\n" + deploymentErrorMessage;
+    return err(new DeployArmError(format.join(", "), deployCtx.resourceGroupName, error));
   } else {
     deployCtx.ctx.logProvider?.info(
       `origin error message is : \n${JSON.stringify(error, undefined, 2)}`
@@ -736,29 +717,19 @@ export function generateResourceBaseName(appName: string, envName: string): stri
 export async function wrapGetDeploymentError(
   deployCtx: DeployContext,
   resourceGroupName: string,
-  deploymentName: string
+  deploymentName: string,
+  rawError: any
 ): Promise<Result<any, FxError>> {
   try {
     const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
     return ok(deploymentError);
   } catch (error: any) {
-    deployCtx.ctx.logProvider?.error(
-      getLocalizedString("core.deployArmTemplates.FailedToGetDeploymentError", error.message)
-    );
     return err(
-      new UserError(
-        SolutionSource,
-        "GetDeploymentErrorFailed",
-        getDefaultString(
-          "core.deployArmTemplates.FailedToGetDeploymentErrorNotification",
-          deployCtx.deploymentName,
-          deployCtx.resourceGroupName
-        ),
-        getLocalizedString(
-          "core.deployArmTemplates.FailedToGetDeploymentErrorNotification",
-          deployCtx.deploymentName,
-          deployCtx.resourceGroupName
-        )
+      new GetArmDeploymentError(
+        deployCtx.deploymentName,
+        deployCtx.resourceGroupName,
+        rawError,
+        error
       )
     );
   }
@@ -836,20 +807,6 @@ async function getDeploymentError(
     }
   }
   return deploymentError;
-}
-
-function getNotificationMessage(deploymentError: any, deploymentName: string): string {
-  let failedDeployments: string[] = [];
-  if (deploymentError.subErrors) {
-    failedDeployments = Object.keys(deploymentError.subErrors);
-  } else {
-    failedDeployments.push(deploymentName);
-  }
-  const format = failedDeployments.map((deployment) => deployment + " module");
-  return getLocalizedString(
-    "core.deployArmTemplates.DeploymentFailedNotification",
-    format.join(", ")
-  );
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

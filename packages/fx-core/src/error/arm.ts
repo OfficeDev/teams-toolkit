@@ -16,3 +16,66 @@ export class CompileBicepError extends UserError {
     super(errorOptions);
   }
 }
+
+/**
+ * Failed to deploy arm templates for some reason
+ */
+export class DeployArmError extends UserError {
+  constructor(deployName: string, resourceGroup: string, error: Error) {
+    const key = "error.arm.DeployArmError";
+    const errorOptions: UserErrorOptions = {
+      source: "arm/deploy",
+      name: "DeployArmError",
+      message: getDefaultString(key, deployName, resourceGroup, error.message || ""),
+      displayMessage: getLocalizedString(key + ".Notification", deployName, resourceGroup),
+    };
+    super(errorOptions);
+    if (error.stack) super.stack = error.stack;
+  }
+}
+
+/**
+ * Failed to deploy arm templates and get error message failed
+ */
+export class GetArmDeploymentError extends UserError {
+  constructor(deployName: string, resourceGroup: string, deployError: Error, getError: Error) {
+    const key = "error.arm.GetArmDeploymentError";
+    const errorOptions: UserErrorOptions = {
+      source: "arm/deploy",
+      name: "GetArmDeploymentError",
+      message: getDefaultString(
+        key,
+        deployName,
+        resourceGroup,
+        deployError.message || "",
+        getError.message || "",
+        resourceGroup
+      ),
+      displayMessage: getLocalizedString(
+        key,
+        deployName,
+        resourceGroup,
+        deployError.message || "",
+        getError.message || "",
+        resourceGroup
+      ),
+    };
+    super(errorOptions);
+  }
+}
+
+/**
+ * Failed to convert ARM deployment result to action output
+ */
+export class ConvertArmOutputError extends UserError {
+  constructor(outputKey: string) {
+    const key = "error.arm.ConvertArmOutputError";
+    const errorOptions: UserErrorOptions = {
+      source: "arm/deploy",
+      name: "ConvertArmOutputError",
+      message: getDefaultString(key, outputKey),
+      displayMessage: getLocalizedString(key, outputKey),
+    };
+    super(errorOptions);
+  }
+}

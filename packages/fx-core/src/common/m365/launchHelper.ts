@@ -34,8 +34,8 @@ export class LaunchHelper {
     withLoginHint = true
   ): Promise<Result<string, FxError>> {
     const loginHint = withLoginHint
-      ? (await this.getUpnFromToken()) ?? "login_your_m365_account"
-      : undefined; // a workaround that user has the chance to login
+      ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
+      : undefined;
     let url: URL;
     switch (hub) {
       case Hub.teams: {

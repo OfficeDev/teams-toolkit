@@ -8,7 +8,7 @@ import sinon from "sinon";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { Namespaces, NotificationTypes } from "../../src/apis";
 import ServerLogProvider from "../../src/providers/logger";
-import { Colors, LogLevel } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel, NotImplementedError } from "@microsoft/teamsfx-api";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -100,6 +100,14 @@ describe("ServerLogProvider", () => {
         assert.isTrue(data);
         expect(stub).is.called.with(LogLevel.Fatal, "test");
       });
+    });
+
+    it("getLogFilePath", () => {
+      try {
+        logger.getLogFilePath();
+      } catch (e: any) {
+        assert.equal(e.name, NotImplementedError.name);
+      }
     });
   });
 });

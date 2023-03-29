@@ -955,7 +955,7 @@
                       {}
                     ]
                   },
-                  "output": {
+                  "writeToEnvironmentFile": {
                     "type": "object",
                     "description": "%teamstoolkit.taskDefinitions.args.output.title%",
                     "properties": {

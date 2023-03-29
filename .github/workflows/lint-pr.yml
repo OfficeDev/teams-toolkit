@@ -131,7 +131,7 @@ jobs:
       - name: check yaml lint
         run: |
           TRAGET=origin/${{ github.event.pull_request.base.ref }}
-          VAR=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates | grep -E '.yml.tpl$' | xargs)
+          VAR=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios | grep -E '.yml.tpl$|.yml$' | xargs)
           echo $VAR
           if [ ! -z "$VAR" ]
           then

@@ -16,6 +16,7 @@ import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/validateManifest";
 
@@ -44,7 +45,10 @@ export class ValidateManifestDriver implements StepDriver {
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("plugins.appstudio.validateManifest.progressBar.message")),
+  ])
   public async validate(
     args: ValidateManifestArgs,
     context: WrapDriverContext
@@ -108,8 +112,6 @@ export class ValidateManifestDriver implements StepDriver {
     const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
     if (context.platform === Platform.VS) {
       context.logProvider.info(validationSuccess);
-    } else {
-      context.ui?.showMessage("info", validationSuccess, false);
     }
     return ok(new Map());
   }

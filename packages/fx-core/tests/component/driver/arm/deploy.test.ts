@@ -296,7 +296,10 @@ describe("util test", () => {
       },
     };
 
-    let res = await handleArmDeploymentError(mockError, null as any);
+    let res = await handleArmDeploymentError(mockError, {
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+    } as any);
     assert.isTrue(res.isErr());
 
     mockError = {
@@ -314,7 +317,10 @@ describe("util test", () => {
         ],
       },
     } as any;
-    res = await handleArmDeploymentError(mockError, null as any);
+    res = await handleArmDeploymentError(mockError, {
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+    } as any);
     assert.isTrue(res.isErr());
   });
 });

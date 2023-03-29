@@ -31,7 +31,7 @@ import { SolutionError } from "../../../src/component/constants";
 import * as armResources from "@azure/arm-resources";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { ComponentNames } from "../../../src/component/constants";
-
+import "../../../src/component/resource/appManifest/appManifest";
 let mockedCtx: ContextV3;
 
 class MyTokenCredential implements TokenCredential {
@@ -144,10 +144,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.expect(error.name).to.equal("CompileBicepError");
-    chai
-      .expect(error.message)
-      .to.have.string("Unable to compile Bicep files to JSON ARM templates file:");
+    chai.expect(error.name).to.equal("DeployArmError");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {

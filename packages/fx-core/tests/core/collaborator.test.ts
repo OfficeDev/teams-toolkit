@@ -1690,6 +1690,14 @@ describe("Collaborator APIs for V3", () => {
       const res = await CollaborationUtil.parseManifestId("TEST", inputs);
       assert.isUndefined(res);
     });
+
+    it("return undefined when empty env", async () => {
+      inputs.env = "dev";
+      const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: undefined });
+      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
+      assert.isUndefined(res);
+      mockedEnvRestoreForInput();
+    });
   });
 
   describe("getQuestions", () => {

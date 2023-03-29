@@ -52,6 +52,7 @@ import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { convertManifestTemplateToV3, pluginName2ComponentName } from "../component/migrate";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { InvalidAzureCredentialError } from "../error/azure";
+import { CompileBicepError } from "../error/arm";
 
 const bicepOrchestrationFileName = "main.bicep";
 const configsFolder = `.${ConfigFolderName}/configs`;
@@ -664,7 +665,7 @@ async function compileBicepToJson(
     );
     return JSON.parse(result);
   } catch (err) {
-    throw new Error(getLocalizedString("core.deployArmTemplates.CompileBicepFailed", err.message));
+    throw new CompileBicepError(bicepOrchestrationFilePath, err as Error);
   }
 }
 

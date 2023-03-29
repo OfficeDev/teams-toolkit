@@ -18,7 +18,7 @@ import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
 import { executeCommand } from "../../../common/cpUtils";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { SolutionError, SolutionSource } from "../../constants";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
@@ -26,6 +26,7 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
 import { InvalidActionInputError } from "../../../error/common";
 import { InvalidAzureCredentialError } from "../../../error/azure";
+import { CompileBicepError } from "../../../error/arm";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -196,7 +197,7 @@ export class ArmDeployImpl {
       );
       return JSON.parse(result);
     } catch (err) {
-      throw new Error(getDefaultString("driver.arm.error.CompileBicepFailed", err.message));
+      throw new CompileBicepError(filePath, err as Error);
     }
   }
 

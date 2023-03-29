@@ -100,5 +100,20 @@ describe("Global Variables", () => {
 
       sinon.restore();
     });
+
+    it("set log folder", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "mkdir").callsFake(async () => {});
+      await globalVariables.initializeGlobalVariables({
+        globalState: {
+          get: () => undefined,
+        },
+        logUri: {
+          fsPath: "fakePath",
+        },
+      } as unknown as ExtensionContext);
+      chai.expect(globalVariables.defaultExtensionLogPath).equals("fakePath");
+      sinon.restore();
+    });
   });
 });

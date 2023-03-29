@@ -533,7 +533,8 @@ export class ManifestUtils {
   async getManifestV3(
     manifestTemplatePath: string,
     state: any,
-    withEmptyCapabilities?: boolean
+    withEmptyCapabilities?: boolean,
+    generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
     if (manifestRes.isErr()) {
@@ -550,9 +551,12 @@ export class ManifestUtils {
       manifest.validDomains = [];
     }
 
-    // Corner Case: Avoid UnresolvedPlaceholderError for manifest.id
-    const teamsAppId = expandEnvironmentVariable(manifest.id);
-    manifest.id = "";
+    let teamsAppId = "";
+    if (generateIdIfNotResolved) {
+      // Corner Case: Avoid UnresolvedPlaceholderError for manifest.id
+      teamsAppId = expandEnvironmentVariable(manifest.id);
+      manifest.id = "";
+    }
 
     const manifestTemplateString = JSON.stringify(manifest);
 
@@ -572,10 +576,12 @@ export class ManifestUtils {
 
     manifest = JSON.parse(resolvedManifestString);
 
-    if (!isUUID(teamsAppId)) {
-      manifest.id = v4();
-    } else {
-      manifest.id = teamsAppId;
+    if (generateIdIfNotResolved) {
+      if (!isUUID(teamsAppId)) {
+        manifest.id = v4();
+      } else {
+        manifest.id = teamsAppId;
+      }
     }
 
     return ok(manifest);

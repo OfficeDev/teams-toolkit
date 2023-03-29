@@ -78,6 +78,7 @@ import {
   getQuestionsForUpdateTeamsApp,
   getQuestionsForValidateManifest,
   getQuestionsForValidateAppPackage,
+  getQuestionsForPreviewWithManifest,
 } from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
@@ -92,6 +93,8 @@ import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
 import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
+import { Hub } from "../common/m365/constants";
+import { LaunchHelper } from "../common/m365/launchHelper";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -611,5 +614,37 @@ export class FxCoreV3Implement {
         `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
     return await driver.run(args, context);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForPreviewWithManifest),
+    EnvLoaderMW(true),
+  ])
+  async previewWithManifest(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    setCurrentStage(Stage.previewWithManifest);
+    inputs.stage = Stage.previewWithManifest;
+
+    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const manifestFilePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, {});
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    const teamsAppId = manifestRes.value.id;
+    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
+
+    const launchHelper = new LaunchHelper(
+      this.tools.tokenProvider.m365TokenProvider,
+      this.tools.logProvider
+    );
+    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, capabilities);
+    return result;
   }
 }

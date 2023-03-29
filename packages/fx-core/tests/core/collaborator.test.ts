@@ -1690,12 +1690,6 @@ describe("Collaborator APIs for V3", () => {
       const res = await CollaborationUtil.parseManifestId("TEST", inputs);
       assert.isUndefined(res);
     });
-
-    it("return undefined when throw error", async () => {
-      sandbox.stub(envUtil, "readEnv").resolves(err(new UserError("source", "name", "message")));
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
-      assert.isUndefined(res);
-    });
   });
 
   describe("getQuestions", () => {

@@ -53,7 +53,7 @@ describe("Error", () => {
         "test-operation",
         "test-resource"
       );
-      chai.assert.equal(error.message, `Failed to test-operation test-resource. inner error`);
+      chai.assert.equal(error.message, `Unable to test-operation test-resource. inner error`);
     });
   });
 });

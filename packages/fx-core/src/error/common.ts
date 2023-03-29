@@ -32,7 +32,7 @@ export class UnresolvedPlaceholderError extends UserError {
 
 export class InvalidActionInputError extends UserError {
   constructor(actionName: string, parameters: string[], helpLink?: string) {
-    const key = "error.common.InvalidActionInputError";
+    const key = "error.yaml.InvalidActionInputError";
     const errorOptions: UserErrorOptions = {
       source: actionName,
       name: "InvalidActionInputError",
@@ -89,8 +89,8 @@ export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: source || "unknown",
-      message: getDefaultString("error.common.UnhandledError", e.message),
-      displayMessage: getLocalizedString("error.common.UnhandledError", e.message),
+      message: getDefaultString("error.common.UnhandledError", source || "", e.message),
+      displayMessage: getLocalizedString("error.common.UnhandledError", source || "", e.message),
     });
     if (e.stack) super.stack = e.stack;
   }

@@ -34,11 +34,11 @@ import {
 import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
+import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
@@ -70,7 +70,6 @@ import {
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
@@ -90,9 +89,11 @@ import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
-import { CoreQuestionNames } from "./question";
+import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
 import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
+import { pathToFileURL } from "url";
+import { VSCodeExtensionCommand } from "../common/constants";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -236,28 +237,24 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
-    ProjectConsolidateMW,
-    EnvLoaderMW(false),
+    QuestionModelMW,
+    EnvLoaderMW(true, true),
     ContextInjectorMW,
-    EnvWriterMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
-      ? inputs.AAD_MANIFEST_FILE
-      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    const manifestTemplatePath: string = inputs[CoreQuestionNames.AadAppManifestFilePath];
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
-    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-    const manifestOutputPath: string = path.join(
-      inputs.projectPath!,
-      "build",
-      `aad.${inputs.env}.json`
-    );
+    let manifestOutputPath: string = manifestTemplatePath;
+    if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
+      await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+    }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
@@ -378,7 +375,7 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionModelMW,
-    EnvLoaderMW(false),
+    EnvLoaderMW(false, true),
     ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -392,7 +389,7 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionModelMW,
-    EnvLoaderMW(false),
+    EnvLoaderMW(false, true),
     ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -406,7 +403,7 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionModelMW,
-    EnvLoaderMW(false),
+    EnvLoaderMW(false, true),
     ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -574,7 +571,12 @@ export class FxCoreV3Implement {
       manifestPath: teamsAppManifestFilePath,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-    return await driver.run(args, context);
+    const result = await driver.run(args, context);
+    if (result.isOk() && context.platform !== Platform.VS) {
+      const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
+      context.ui?.showMessage("info", validationSuccess, false);
+    }
+    return result;
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
@@ -615,6 +617,26 @@ export class FxCoreV3Implement {
         inputs[CoreQuestionNames.OutputManifestParamName] ??
         `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
-    return await driver.run(args, context);
+    const result = await driver.run(args, context);
+    if (context.platform === Platform.VSCode) {
+      if (result.isOk()) {
+        const isWindows = process.platform === "win32";
+        let zipFileName = args.outputZipPath;
+        if (!path.isAbsolute(zipFileName)) {
+          zipFileName = path.join(context.projectPath, zipFileName);
+        }
+        let builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice.fallback",
+          zipFileName
+        );
+        if (isWindows) {
+          const folderLink = pathToFileURL(path.dirname(zipFileName));
+          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+        }
+        context.ui?.showMessage("info", builtSuccess, false);
+      }
+    }
+    return result;
   }
 }

@@ -6,23 +6,23 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { describe } from "mocha";
-import fs from "fs-extra";
-import path from "path";
-import { AadValidator, FrontendValidator } from "../../commonlib";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
+import { expect } from "chai";
+import fs from "fs-extra";
+import { describe } from "mocha";
+import path from "path";
+import M365Login from "../../../src/commonlib/m365Login";
+import { AadValidator, FrontendValidator } from "../../commonlib";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability } from "../../commonlib/constants";
+import { Cleaner } from "../../utils/cleaner";
 import {
   execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  cleanUp,
 } from "../commonUtils";
-import M365Login from "../../../src/commonlib/m365Login";
-import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
-import { expect } from "chai";
-import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 
 describe("Create single tab", function () {
   const testFolder = getTestFolder();
@@ -33,7 +33,7 @@ describe("Create single tab", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    await Cleaner.clean(projectPath);
   });
   describe("feature flags for API v3", async function () {
     it(`Create react app without Azure Function`, { testPlanCaseId: 9426074 }, async () => {

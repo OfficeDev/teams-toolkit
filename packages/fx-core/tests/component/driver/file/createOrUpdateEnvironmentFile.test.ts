@@ -32,10 +32,10 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "error.common.InvalidActionInputError") {
-        return util.format("error.common.InvalidActionInputError. %s. %s.", ...params);
-      } else if (key === "driver.file.error.unhandledError") {
-        return util.format("driver.file.error.unhandledError. %s. %s", ...params);
+      if (key === "error.yaml.InvalidActionInputError") {
+        return util.format("error.yaml.InvalidActionInputError. %s. %s.", ...params);
+      } else if (key === "error.common.UnhandledError") {
+        return util.format("error.common.UnhandledError. %s. %s", ...params);
       } else if (key === "driver.file.createOrUpdateEnvironmentFile.description") {
         return "driver.file.createOrUpdateEnvironmentFile.description";
       } else if (key === "driver.file.createOrUpdateEnvironmentFile.summary") {
@@ -111,7 +111,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         if (result.isErr()) {
           chai.assert(result.error instanceof UnhandledSystemError);
           const message =
-            "driver.file.error.unhandledError. file/createOrUpdateEnvironmentFile. exception.";
+            "error.common.UnhandledError. file/createOrUpdateEnvironmentFile. exception.";
           chai.assert(result.error.message, message);
         }
       });

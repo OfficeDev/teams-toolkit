@@ -43,7 +43,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
-import { ConfigureTeamsAppDriver, defaultOutputNames } from "../../driver/teamsApp/configure";
+import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
@@ -827,6 +827,7 @@ export async function updateTeamsAppV3ForPublish(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
+  let teamsAppId;
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
 
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
@@ -848,6 +849,7 @@ export async function updateTeamsAppV3ForPublish(
           ])
         );
       } else {
+        teamsAppId = manifest.id;
         const validationResult = await validateManifest(manifest);
         if (validationResult.isErr()) {
           validationError = validationResult.error;
@@ -892,7 +894,7 @@ export async function updateTeamsAppV3ForPublish(
     return err(result.error);
   }
 
-  return ok(result.value.get(defaultOutputNames.teamsAppId));
+  return ok(teamsAppId);
 }
 
 export async function getAppPackage(

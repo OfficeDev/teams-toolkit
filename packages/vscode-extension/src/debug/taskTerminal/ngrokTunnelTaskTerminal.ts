@@ -57,6 +57,10 @@ export interface INgrokTunnelArgs extends IBaseTunnelArgs {
   ngrokArgs: string[];
   ngrokPath?: string;
   tunnelInspection?: string;
+  output?: {
+    endpoint?: string;
+    domain?: string;
+  };
 }
 
 export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
@@ -113,6 +117,14 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
 
     args.ngrokArgs = !Array.isArray(args.ngrokArgs) ? [args.ngrokArgs] : args.ngrokArgs;
+
+    if (typeof args.output?.domain !== "undefined" && typeof args.output?.domain !== "string") {
+      throw BaseTaskTerminal.taskDefinitionError("args.output.domain");
+    }
+
+    if (typeof args.output?.endpoint !== "undefined" && typeof args.output?.endpoint !== "string") {
+      throw BaseTaskTerminal.taskDefinitionError("args.output.endpoint");
+    }
   }
 
   private startNgrokChildProcess(
@@ -213,7 +225,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         this.status.endpoint = ngrokTunnelInfo;
         await this.outputSuccessSummary(
           ngrokTunnelDisplayMessages,
-          ngrokTunnelInfo,
+          [ngrokTunnelInfo],
           saveEnvRes.value
         );
         return ok(true);
@@ -250,7 +262,7 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         }
         this.isOutputSummary = true;
         this.status.endpoint = endpoint;
-        await this.outputSuccessSummary(ngrokTunnelDisplayMessages, endpoint, saveEnvRes.value);
+        await this.outputSuccessSummary(ngrokTunnelDisplayMessages, [endpoint], saveEnvRes.value);
         return ok(true);
       }
     } catch {

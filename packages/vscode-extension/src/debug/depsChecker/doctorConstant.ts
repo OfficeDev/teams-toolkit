@@ -7,6 +7,7 @@ const InstallNodeV3 =
 
 export const doctorConstant = {
   Tick: "(√) Done:",
+  TickWhiteSpace: "         ",
   Cross: "(×) Error:",
   Exclamation: "(!) Warning:",
   WhiteSpace: "   ",

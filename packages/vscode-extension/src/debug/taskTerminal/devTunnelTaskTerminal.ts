@@ -239,6 +239,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           return {
             src: `${port.protocol}://localhost:${port.portNumber}`,
             dest: port.portForwardingUri,
+            keys: [
+              port.writeToEnvironmentFile?.domain,
+              port.writeToEnvironmentFile?.endpoint,
+            ].filter((k): k is string => !!k),
           };
         }),
         saveEnvRes.value

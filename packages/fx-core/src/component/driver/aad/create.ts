@@ -213,7 +213,7 @@ export class CreateAadAppDriver implements StepDriver {
     if (
       args.signInAudience &&
       (typeof args.signInAudience !== "string" ||
-        !(<any>Object).values(SignInAudience).includes(args.signInAudience))
+        !Object.values(SignInAudience).includes(args.signInAudience))
     ) {
       invalidParameters.push("signInAudience");
     }

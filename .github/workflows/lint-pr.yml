@@ -130,11 +130,12 @@ jobs:
       
       - name: check yaml lint
         run: |
-          VAR2=$(git diff --diff-filter=MARC $1...HEAD --name-only --relative -- .| grep -E '.yml.tpl$|.yaml.tpl$' | xargs)
-          echo $VAR2
-          if [ ! -z "$VAR2" ]
+          TRAGET=origin/${{ github.event.pull_request.base.ref }}
+          VAR=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates | grep -E '.yml.tpl$' | xargs)
+          echo $VAR
+          if [ ! -z "$VAR" ]
           then
-              yamllint $VAR2
+              yamllint $VAR
           fi
 
   check-sensitive-content:

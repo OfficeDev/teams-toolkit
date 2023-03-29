@@ -33,7 +33,7 @@ describe("Debug V3 m365-tab template", () => {
     await Cleaner.clean(projectPath);
   });
 
-  it("- happy path: provision and deploy", { testPlanCaseId: 17449535 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 17449535 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }

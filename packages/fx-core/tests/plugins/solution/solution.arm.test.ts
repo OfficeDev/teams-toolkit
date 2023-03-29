@@ -144,7 +144,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.expect(error.name).to.equal("DeployArmError");
+    chai.expect(error.name).to.equal("CompileBicepError");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {

@@ -297,6 +297,7 @@ describe("util test", () => {
     };
 
     let res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
     } as any);
@@ -318,6 +319,7 @@ describe("util test", () => {
       },
     } as any;
     res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
     } as any);

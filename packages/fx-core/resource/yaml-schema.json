@@ -100,7 +100,7 @@
           "type": "object",
           "additionalProperties": false,
           "description": "Parameters for this action",
-          "required": ["name", "generateClientSecret"],
+          "required": ["name", "generateClientSecret", "signInAudience"],
           "properties": {
             "name": {
               "type": "string",
@@ -110,6 +110,11 @@
               "type": "boolean",
               "description": "Whether to generate client secret for the Azure Active Directory application. When the value is true, you need to specify the name of environment variable that stores the value of client secret in writeToEnvironmentVariable. For example: `clientSecret: SECRET_MY_AAD_APP_CLIENT_SECRET`.",
               "const": true
+            },
+            "signInAudience": {
+              "type": "string",
+              "description": "Specifies what Microsoft accounts are supported for the current application.",
+              "enum": ["AzureADMyOrg", "AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount", "PersonalMicrosoftAccount"]
             }
           }
         },
@@ -160,7 +165,7 @@
           "type": "object",
           "additionalProperties": false,
           "description": "Parameters for this action",
-          "required": ["name", "generateClientSecret"],
+          "required": ["name", "generateClientSecret", "signInAudience"],
           "properties": {
             "name": {
               "type": "string",
@@ -170,6 +175,11 @@
               "type": "boolean",
               "description": "Whether to generate client secret for the Azure Active Directory application. When the value is true, you need to specify the name of environment variable that stores the value of client secret in writeToEnvironmentVariable. For example: `clientSecret: SECRET_MY_AAD_APP_CLIENT_SECRET`.",
               "const": false
+            },
+            "signInAudience": {
+              "type": "string",
+              "description": "Specifies what Microsoft accounts are supported for the current application.",
+              "enum": ["AzureADMyOrg", "AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount", "PersonalMicrosoftAccount"]
             }
           }
         },

@@ -33,6 +33,7 @@ provision:
     with:
       name: my-aad
       generateClientSecret: true
+      signInAudience: "AzureADMyOrg"
     writeToEnvironmentFile:
       clientId: XX_1
       objectId: XX_2

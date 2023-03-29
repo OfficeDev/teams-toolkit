@@ -118,6 +118,30 @@ jobs:
             exit 1
           fi
 
+  check-yaml-lint:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+
+      - name: Install Yaml lint
+        run: |
+          pip install yamllint
+      
+      - name: check yaml lint
+        run: |
+          VAR2=$(git diff --diff-filter=MARC $1...HEAD --name-only --relative -- .| grep -E '.yml.tpl$|.yaml.tpl$' | xargs)
+          echo $VAR2
+          if [ ! -z "$VAR2" ]
+          then
+              yamllint $VAR2
+          fi
+
   check-sensitive-content:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest

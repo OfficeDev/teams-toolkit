@@ -279,6 +279,7 @@ export function syncFeatureFlags() {
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
 }
 

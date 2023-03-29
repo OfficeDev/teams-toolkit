@@ -89,7 +89,7 @@ import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
-import { CoreQuestionNames } from "./question";
+import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
 import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 
@@ -249,7 +249,7 @@ export class FxCoreV3Implement {
       return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
     let manifestOutputPath: string = manifestTemplatePath;
-    if (inputs.env) {
+    if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
       await fs.ensureDir(path.join(inputs.projectPath!, "build"));
       manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
     }
@@ -373,7 +373,7 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionModelMW,
-    EnvLoaderMW(false),
+    EnvLoaderMW(false, true),
     ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -387,7 +387,7 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionModelMW,
-    EnvLoaderMW(false),
+    EnvLoaderMW(false, true),
     ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -401,7 +401,7 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionModelMW,
-    EnvLoaderMW(false),
+    EnvLoaderMW(false, true),
     ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,

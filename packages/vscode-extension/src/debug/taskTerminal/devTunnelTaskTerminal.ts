@@ -7,13 +7,8 @@
  */
 
 import * as vscode from "vscode";
-
 import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
-import {
-  Tunnel,
-  TunnelAccessControlEntry,
-  TunnelAccessControlEntryType,
-} from "@microsoft/dev-tunnels-contracts";
+import { Tunnel, TunnelAccessControlEntryType, TunnelPort } from "@microsoft/dev-tunnels-contracts";
 import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
@@ -32,24 +27,35 @@ import {
   OutputInfo,
   TunnelError,
 } from "./baseTunnelTaskTerminal";
+import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
-const TunnelManagementUserAgent = { name: "Teams Toolkit" };
+const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
 const DevTunnelTimeout = 2147483647; // 2^31-1, max timeout ms
 
 const DevTunnelTag = "TeamsToolkitCreatedTag";
 
 export interface IDevTunnelArgs extends IBaseTunnelArgs {
-  port: number;
-  protocol: string;
-  access?: string;
   // TODO: add tunnel name into dev tunnel args
   // name?: string;
-  output?: {
-    endpoint?: string;
-    domain?: string;
-    id?: string;
-  };
+  ports: {
+    portNumber: number;
+    protocol: string;
+    access?: string;
+    writeToEnvironmentFile?: DevTunnelOutput;
+  }[];
+}
+
+export type TunnelPortWithOutput = {
+  protocol: string;
+  portNumber: number;
+  portForwardingUri: string;
+  writeToEnvironmentFile?: DevTunnelOutput;
+};
+
+interface DevTunnelOutput {
+  endpoint?: string;
+  domain?: string;
 }
 
 const Protocol = Object.freeze({
@@ -59,14 +65,15 @@ const Protocol = Object.freeze({
 
 const Access = Object.freeze({
   public: "public",
-  // TODO: add private and org level
-  // private: "private",
+  private: "private",
+  // TODO: add org level
   // org: "org"
 });
 
 export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   protected readonly args: IDevTunnelArgs;
   private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
+  private readonly devTunnelStateManager: DevTunnelStateManager;
   private tunnel: Tunnel | undefined;
   private isOutputSummary: boolean;
   private cancel: (() => void) | undefined;
@@ -90,6 +97,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         return res;
       }
     );
+    this.devTunnelStateManager = DevTunnelStateManager.create();
   }
 
   async stop(error?: any): Promise<void> {
@@ -103,6 +111,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         const deleteTunnel = this.tunnel;
         this.tunnel = undefined;
         await this.tunnelManagementClientImpl.deleteTunnel(deleteTunnel);
+        await this.devTunnelStateManager.deleteTunnelState({
+          tunnelId: deleteTunnel.tunnelId,
+          clusterId: deleteTunnel.clusterId,
+        });
       }
 
       if (this.cancel) {
@@ -117,7 +129,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     await this.outputStartDevTunnelStepMessage();
     await this.resolveArgs(this.args);
     await this.deleteExistingTunnel();
-    const res = await this.start();
+    const res = await this.start(this.args);
     if (res.isOk()) {
       await new Promise<void>((resolve) => {
         const timeout = setTimeout(() => {
@@ -133,51 +145,51 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   }
 
   private async deleteExistingTunnel(): Promise<void> {
-    try {
-      if (!this.args?.output?.id) {
-        return;
-      }
+    const devTunnelStates = await this.devTunnelStateManager.listDevTunnelStates();
+    for (const devTunnelState of devTunnelStates) {
+      try {
+        if (devTunnelState.sessionId === vscode.env.sessionId) {
+          continue;
+        }
 
-      const envsRes = await this.readPropertiesFromEnv(this.args.env);
-      if (envsRes.isErr()) {
-        return;
+        const tunnelInstance = await this.tunnelManagementClientImpl.getTunnel({
+          tunnelId: devTunnelState.tunnelId,
+          clusterId: devTunnelState.clusterId,
+        });
+        if (!tunnelInstance) {
+          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
+        }
+        if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
+          await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
+          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
+        }
+      } catch {
+        // Do nothing if delete existing tunnel failed.
       }
-      const id = envsRes.value[this.args.output.id];
-
-      const idArr = id?.split(".");
-      if (!idArr || idArr.length !== 2) {
-        return;
-      }
-
-      const tunnelInstance = await this.tunnelManagementClientImpl.getTunnel({
-        tunnelId: idArr[0],
-        clusterId: idArr[1],
-      });
-
-      if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
-        await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
-      }
-    } catch {
-      // Do nothing if delete existing tunnel failed.
     }
   }
 
-  private async start(): Promise<Result<Void, FxError>> {
+  private async start(args: IDevTunnelArgs): Promise<Result<Void, FxError>> {
     try {
-      const tunnelAccessControlEntry: TunnelAccessControlEntry = {
-        type:
-          this.args.access === Access.public
-            ? TunnelAccessControlEntryType.Anonymous
-            : TunnelAccessControlEntryType.None,
-        subjects: [],
-        scopes: ["connect"],
-      };
-
       const tunnel: Tunnel = {
-        ports: [{ portNumber: this.args.port, protocol: this.args.protocol }],
-        accessControl: {
-          entries: [tunnelAccessControlEntry],
-        },
+        ports: Object.values(args.ports).map((p) => {
+          return {
+            portNumber: p.portNumber,
+            protocol: p.protocol,
+            accessControl: {
+              entries:
+                p.access === Access.public
+                  ? [
+                      {
+                        type: TunnelAccessControlEntryType.Anonymous,
+                        subjects: [],
+                        scopes: ["connect"],
+                      },
+                    ]
+                  : [],
+            },
+          };
+        }),
         tags: [DevTunnelTag],
       };
       const tunnelRequestOptions: TunnelRequestOptions = {
@@ -188,6 +200,13 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         tunnel,
         tunnelRequestOptions
       );
+
+      this.tunnel = tunnelInstance;
+
+      if (!tunnelInstance.ports) {
+        return err(TunnelError.StartTunnelError());
+      }
+
       const host = new TunnelRelayTunnelHost(this.tunnelManagementClientImpl);
       host.trace = (level, eventId, msg, err) => {
         if (msg) {
@@ -198,13 +217,17 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         }
       };
       await host.start(tunnelInstance);
-      const tunnelDistUri = host.tunnel?.ports?.[0].portForwardingUris?.[0];
-      const tunnelDisplayId = `${host.tunnel?.tunnelId}.${host.tunnel?.clusterId}`;
-      if (!host.tunnel || !tunnelDistUri || !tunnelDisplayId) {
-        return err(TunnelError.StartTunnelError());
-      }
-      this.tunnel = host.tunnel;
-      const saveEnvRes = await this.saveOutputToEnv(tunnelDisplayId, tunnelDistUri);
+
+      const extendedTunnelPorts = this.validateAndExtendTunnelPorts(
+        args,
+        host?.tunnel?.ports ?? []
+      );
+      await this.devTunnelStateManager.setTunnelState({
+        tunnelId: tunnelInstance.tunnelId,
+        clusterId: tunnelInstance.clusterId,
+        sessionId: vscode.env.sessionId,
+      });
+      const saveEnvRes = await this.saveTunnelToEnv(args.env, extendedTunnelPorts);
       if (saveEnvRes.isErr()) {
         return err(saveEnvRes.error);
       }
@@ -212,7 +235,12 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       this.isOutputSummary = true;
       await this.outputSuccessSummary(
         devTunnelDisplayMessages,
-        { src: `${this.args.protocol}://localhost:${this.args.port}`, dest: tunnelDistUri },
+        extendedTunnelPorts.map((port) => {
+          return {
+            src: `${port.protocol}://localhost:${port.portNumber}`,
+            dest: port.portForwardingUri,
+          };
+        }),
         saveEnvRes.value
       );
       return ok(Void);
@@ -223,81 +251,155 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   protected async resolveArgs(args: IDevTunnelArgs): Promise<void> {
     await super.resolveArgs(args);
-    if (!args.type) {
+    if (args.type !== TunnelType.devTunnel) {
       throw BaseTaskTerminal.taskDefinitionError("args.type");
     }
 
-    if (typeof args.port !== "number") {
-      throw BaseTaskTerminal.taskDefinitionError("args.port");
+    if (typeof args.ports !== "object" || !Array.isArray(args.ports)) {
+      throw BaseTaskTerminal.taskDefinitionError("args.ports");
     }
 
-    if (
-      typeof args.protocol !== "string" ||
-      !(Object.values(Protocol) as string[]).includes(args.protocol)
-    ) {
-      throw BaseTaskTerminal.taskDefinitionError("args.protocol");
-    }
+    const portNum = args.ports.length;
+    for (let i = 0; i < portNum; ++i) {
+      const port = args.ports[i];
 
-    if (args.access) {
-      if (
-        typeof args.access !== "string" ||
-        !(Object.values(Access) as string[]).includes(args.access)
-      ) {
-        throw BaseTaskTerminal.taskDefinitionError("args.access");
+      if (typeof port !== "object") {
+        throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}]`);
       }
-    }
 
-    if (typeof args.output?.id !== "undefined" && typeof args.output?.id !== "string") {
-      throw BaseTaskTerminal.taskDefinitionError("args.output.id");
+      if (typeof port.portNumber !== "number") {
+        throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}].portNumber`);
+      }
+
+      if (
+        typeof port.protocol !== "string" ||
+        !(Object.values(Protocol) as string[]).includes(port.protocol)
+      ) {
+        throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}].protocol`);
+      }
+
+      if (port.access) {
+        if (
+          typeof port.access !== "string" ||
+          !(Object.values(Access) as string[]).includes(port.access)
+        ) {
+          throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}].access`);
+        }
+      }
+
+      if (
+        typeof port.writeToEnvironmentFile !== "undefined" &&
+        typeof port.writeToEnvironmentFile !== "object"
+      ) {
+        throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}].writeToEnvironmentFile`);
+      }
+
+      if (
+        typeof port.writeToEnvironmentFile?.endpoint !== "undefined" &&
+        typeof port.writeToEnvironmentFile?.endpoint !== "string"
+      ) {
+        throw BaseTaskTerminal.taskDefinitionError(
+          `args.ports[${i}].writeToEnvironmentFile.endpoint`
+        );
+      }
+
+      if (
+        typeof port.writeToEnvironmentFile?.domain !== "undefined" &&
+        typeof port.writeToEnvironmentFile?.domain !== "string"
+      ) {
+        throw BaseTaskTerminal.taskDefinitionError(
+          `args.ports[${i}].writeToEnvironmentFile.domain`
+        );
+      }
     }
   }
 
   protected generateTelemetries(): { [key: string]: string } {
-    return {
-      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+    try {
+      const debugTaskArgs = {
         type: maskValue(this.args.type, Object.values(TunnelType)),
-        port: maskValue(
-          this.args.port?.toString(),
-          Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
-        ),
-        protocol: maskValue(this.args.protocol, Object.values(Protocol)),
-        access: maskValue(this.args.access, Object.values(Access)),
+        ports: this.args.ports.map((port) => {
+          return {
+            portNumber: maskValue(
+              port.portNumber.toString(),
+              Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
+            ),
+            protocol: maskValue(port.protocol, Object.values(Protocol)),
+            access: maskValue(port.access, Object.values(Access)),
+            writeToEnvironmentFile: {
+              endpoint: maskValue(port.writeToEnvironmentFile?.endpoint, [
+                TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.endpoint,
+              ]),
+              domain: maskValue(port.writeToEnvironmentFile?.domain, [
+                TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.domain,
+              ]),
+            },
+          };
+        }),
         env: maskValue(this.args.env, [TaskDefaultValue.env]),
-        output: {
-          endpoint: maskValue(this.args.output?.endpoint, [
-            TaskDefaultValue.startLocalTunnel.output.endpoint,
-          ]),
-          domain: maskValue(this.args.output?.domain, [
-            TaskDefaultValue.startLocalTunnel.output.domain,
-          ]),
-          id: maskValue(this.args.output?.id, [TaskDefaultValue.startLocalTunnel.output.id]),
-        },
-      }),
-    };
+      };
+
+      return {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.DebugTaskArgs]: JSON.stringify(debugTaskArgs),
+      };
+    } catch {
+      return {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      };
+    }
   }
 
-  private async saveOutputToEnv(
-    id: string,
-    endpoint: string
+  protected async saveTunnelToEnv(
+    env: string | undefined,
+    tunnelPorts: TunnelPortWithOutput[]
   ): Promise<Result<OutputInfo, FxError>> {
     try {
-      const url = new URL(endpoint);
       const envVars: { [key: string]: string } = {};
-      if (this.args?.output?.endpoint) {
-        envVars[this.args.output.endpoint] = url.origin;
-      }
-      if (this.args?.output?.domain) {
-        envVars[this.args.output.domain] = url.hostname;
-      }
-      if (this.args?.output?.id) {
-        envVars[this.args.output.id] = id;
+      for (const tunnelPort of tunnelPorts) {
+        const url = new URL(tunnelPort.portForwardingUri);
+        if (tunnelPort?.writeToEnvironmentFile?.endpoint) {
+          envVars[tunnelPort.writeToEnvironmentFile.endpoint] = url.origin;
+        }
+        if (tunnelPort?.writeToEnvironmentFile?.domain) {
+          envVars[tunnelPort.writeToEnvironmentFile.domain] = url.hostname;
+        }
       }
 
-      return this.savePropertiesToEnv(this.args.env, envVars);
+      return this.savePropertiesToEnv(env, envVars);
     } catch (error: any) {
       return err(TunnelError.TunnelEnvError(error));
     }
+  }
+
+  protected validateAndExtendTunnelPorts(
+    args: IDevTunnelArgs,
+    tunnelPorts: TunnelPort[]
+  ): TunnelPortWithOutput[] {
+    const res: TunnelPortWithOutput[] = [];
+    for (const portInfo of args.ports) {
+      let isSuccess = false;
+      for (const tunnelPort of tunnelPorts) {
+        if (
+          portInfo.portNumber === tunnelPort.portNumber &&
+          portInfo.protocol === tunnelPort.protocol &&
+          tunnelPort.portForwardingUris &&
+          tunnelPort.portForwardingUris.length > 0
+        ) {
+          isSuccess = true;
+          res.push({
+            protocol: tunnelPort.protocol,
+            portNumber: tunnelPort.portNumber,
+            portForwardingUri: tunnelPort.portForwardingUris[0],
+            writeToEnvironmentFile: portInfo.writeToEnvironmentFile,
+          });
+        }
+      }
+      if (!isSuccess) {
+        throw TunnelError.StartTunnelError();
+      }
+    }
+    return res;
   }
 
   private async outputStartDevTunnelStepMessage(): Promise<void> {

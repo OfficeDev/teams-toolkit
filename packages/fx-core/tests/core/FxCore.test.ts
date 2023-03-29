@@ -293,7 +293,7 @@ describe("Core basic APIs", () => {
           appName,
           "aad.manifest.json"
         ),
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -323,7 +323,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -358,7 +358,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
-        [CoreQuestionNames.TargetEnvName]: "",
+        env: undefined,
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -409,7 +409,7 @@ describe("Core basic APIs", () => {
           appName,
           "aad.manifest.json"
         ),
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };

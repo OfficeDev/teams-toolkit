@@ -295,11 +295,7 @@ export class CollaborationUtil {
         .replace(/\$*\{+/g, "")
         .replace(/\}+/g, "")
         .trim();
-      const targetEnv = inputs.env ?? inputs?.[CoreQuestionNames.TargetEnvName];
-      const res = await envUtil.readEnv(inputs.projectPath!, targetEnv!);
-      if (res.isOk() && res.value) {
-        return res.value[envName] ?? undefined;
-      }
+      return process.env[envName] ?? undefined;
     }
 
     return undefined;
@@ -874,6 +870,7 @@ async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> 
   if (!envNode) {
     return root;
   }
+  envNode.data.name = "env";
   envNode.condition = {
     validFunc: validateEnvQuestion,
   };

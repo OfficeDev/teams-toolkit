@@ -33,7 +33,7 @@ import {
   listCollaborator,
   validateEnvQuestion,
 } from "../../src/core/collaborator";
-import { BuiltInFeaturePluginNames } from "../../src/component/constants";
+import { BuiltInFeaturePluginNames, TEAMS_APP_ID } from "../../src/component/constants";
 import {
   MockedM365Provider,
   MockedAzureAccountProvider,
@@ -1680,13 +1680,10 @@ describe("Collaborator APIs for V3", () => {
 
     it("happy path: read from env", async () => {
       inputs.env = "dev";
-      sandbox.stub(envUtil, "readEnv").resolves(
-        ok({
-          TEAMS_APP_ID: "teamsAppId",
-        })
-      );
+      const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: "teamsAppId" });
       const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
       assert.equal(res, "teamsAppId");
+      mockedEnvRestoreForInput();
     });
 
     it("return undefined when invalid", async () => {

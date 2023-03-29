@@ -201,7 +201,7 @@
       "explorer/context": [
         {
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isV3Enabled",
           "group": "deploy@0"
         },
         {
@@ -606,7 +606,7 @@
       {
         "command": "fx-extension.updateAadAppManifest",
         "title": "%teamstoolkit.commands.updateAadAppManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled && isWorkspaceTrusted && !fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {
@@ -681,7 +681,8 @@
       },
       {
         "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%"
+        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%",
+        "enablement": "!fx-extension.isV3Enabled"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",

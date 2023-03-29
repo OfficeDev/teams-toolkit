@@ -39,12 +39,11 @@ export class DeployArmError extends UserError {
  */
 export class GetArmDeploymentError extends UserError {
   constructor(deployName: string, resourceGroup: string, deployError: Error, getError: Error) {
-    const key = "error.arm.GetArmDeploymentError";
     const errorOptions: UserErrorOptions = {
       source: "arm/deploy",
       name: "GetArmDeploymentError",
       message: getDefaultString(
-        key,
+        "error.arm.GetArmDeploymentError",
         deployName,
         resourceGroup,
         deployError.message || "",
@@ -52,11 +51,8 @@ export class GetArmDeploymentError extends UserError {
         resourceGroup
       ),
       displayMessage: getLocalizedString(
-        key,
+        "error.arm.DeployArmError.Notification",
         deployName,
-        resourceGroup,
-        deployError.message || "",
-        getError.message || "",
         resourceGroup
       ),
     };

@@ -31,6 +31,7 @@ export const ProjectVersionCheckerMW: Middleware = async (
   if ((await needToShowUpdateDialog(ctx, versionInfo)) && checkMethod(ctx)) {
     const errRes = await showDialog(ctx);
     ctx.result = err(errRes);
+    return;
   }
 
   await next();

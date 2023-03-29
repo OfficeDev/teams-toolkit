@@ -3,7 +3,7 @@
 
 import { MessageConnection } from "vscode-jsonrpc";
 
-import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel, LogProvider, NotImplementedError } from "@microsoft/teamsfx-api";
 
 import { Namespaces, NotificationTypes } from "../apis";
 
@@ -49,5 +49,9 @@ export default class ServerLogProvider implements LogProvider {
 
   async fatal(message: string): Promise<boolean> {
     return this.log(LogLevel.Fatal, message);
+  }
+
+  getLogFilePath(): string {
+    throw new NotImplementedError("CLILogProvider", "getLogFilePath");
   }
 }

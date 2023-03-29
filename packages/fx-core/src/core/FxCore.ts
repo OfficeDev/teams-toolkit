@@ -870,6 +870,7 @@ export class FxCore implements v3.ICore {
       azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
       m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
       ui: TOOLS.ui,
+      progressBar: undefined,
       logProvider: TOOLS.logProvider,
       telemetryReporter: TOOLS.telemetryReporter!,
       projectPath: projectPath,

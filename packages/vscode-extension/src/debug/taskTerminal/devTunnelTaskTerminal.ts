@@ -328,10 +328,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             access: maskValue(port.access, Object.values(Access)),
             writeToEnvironmentFile: {
               endpoint: maskValue(port.writeToEnvironmentFile?.endpoint, [
-                TaskDefaultValue.startLocalTunnel.output.endpoint,
+                TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.endpoint,
               ]),
               domain: maskValue(port.writeToEnvironmentFile?.domain, [
-                TaskDefaultValue.startLocalTunnel.output.domain,
+                TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.domain,
               ]),
             },
           };

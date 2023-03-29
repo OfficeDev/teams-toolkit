@@ -71,6 +71,7 @@ describe("Global Variables", () => {
       sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return false;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(projectSettingHelper, "isValidProject").returns(true);
       sinon.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
@@ -79,9 +80,12 @@ describe("Global Variables", () => {
         .stub(fs, "readJsonSync")
         .returns({ "@microsoft/generator-sharepoint": { version: " 1.16.0" } });
 
-      globalVariables.initializeGlobalVariables({
+      await globalVariables.initializeGlobalVariables({
         globalState: {
           get: () => undefined,
+        },
+        logUri: {
+          fsPath: "",
         },
       } as unknown as ExtensionContext);
 

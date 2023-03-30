@@ -16,6 +16,8 @@ import * as path from "path";
 import isUUID from "validator/lib/isUUID";
 import { v4 } from "uuid";
 import "reflect-metadata";
+import stripBom from "strip-bom";
+import AdmZip from "adm-zip";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { AppStudioError } from "../errors";
@@ -38,6 +40,7 @@ import {
   STATIC_TABS_TPL_V3,
   WEB_APPLICATION_INFO_V3,
   manifestStateDataRegex,
+  Constants,
 } from "../constants";
 import {
   BotScenario,
@@ -49,8 +52,6 @@ import {
 import { getCustomizedKeys } from "./utils";
 import { TelemetryPropertyKey } from "./telemetry";
 import Mustache from "mustache";
-import { getLocalizedString } from "../../../../common/localizeUtils";
-import { HelpLinks } from "../../../../common/constants";
 import { ComponentNames } from "../../../constants";
 import {
   compileHandlebarsTemplateString,
@@ -59,6 +60,7 @@ import {
 } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../error/common";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -68,14 +70,12 @@ export class ManifestUtils {
 
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(manifestTemplatePath)
-        )
-      );
+      return err(new FileNotFoundError("teamsApp", manifestTemplatePath));
     }
-    const content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    // Be compatible with UTF8-BOM encoding
+    // Avoid Unexpected token error at JSON.parse()
+    let content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);
     const manifest = JSON.parse(contentV3) as TeamsAppManifest;
     return ok(manifest);
@@ -95,7 +95,7 @@ export class ManifestUtils {
   async getTeamsAppManifestPath(projectPath: string): Promise<string> {
     const templateFolder = await getProjectTemplatesFolderPath(projectPath);
     const filePath = isV3Enabled()
-      ? path.join(projectPath, "appPackage", "manifest.template.json")
+      ? path.join(projectPath, "appPackage", "manifest.json")
       : path.join(templateFolder, "appPackage", "manifest.template.json");
     return filePath;
   }
@@ -105,7 +105,12 @@ export class ManifestUtils {
     capabilities: v3.ManifestCapability[],
     isM365 = false
   ): Promise<Result<undefined, FxError>> {
-    const appManifestRes = await this.readAppManifest(inputs.projectPath);
+    let appManifestRes;
+    if (isV3Enabled()) {
+      appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
+    } else {
+      appManifestRes = await this.readAppManifest(inputs.projectPath);
+    }
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
     for (const capability of capabilities) {
@@ -231,8 +236,16 @@ export class ManifestUtils {
     if (inputs.validDomain && !appManifest.validDomains?.includes(inputs.validDomain)) {
       appManifest.validDomains?.push(inputs.validDomain);
     }
-    const writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
-    if (writeRes.isErr()) return err(writeRes.error);
+
+    if (isV3Enabled()) {
+      const content = JSON.stringify(appManifest, undefined, 4);
+      const contentV2 = convertManifestTemplateToV2(content);
+      await fs.writeFile(inputs["addManifestPath"], contentV2);
+    } else {
+      const writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
+      if (writeRes.isErr()) return err(writeRes.error);
+    }
+
     return ok(undefined);
   }
 
@@ -400,7 +413,7 @@ export class ManifestUtils {
         return false;
     }
   }
-  _getCapabilities(template: TeamsAppManifest): Result<string[], FxError> {
+  _getCapabilities(template: TeamsAppManifest): string[] {
     const capabilities: string[] = [];
     if (template.staticTabs && template.staticTabs!.length > 0) {
       capabilities.push("staticTab");
@@ -414,7 +427,7 @@ export class ManifestUtils {
     if (template.composeExtensions) {
       capabilities.push("MessageExtension");
     }
-    return ok(capabilities);
+    return capabilities;
   }
   /**
    * Only works for manifest.template.json
@@ -426,7 +439,7 @@ export class ManifestUtils {
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    return this._getCapabilities(manifestRes.value);
+    return ok(this._getCapabilities(manifestRes.value));
   }
 
   async getManifest(
@@ -444,11 +457,8 @@ export class ManifestUtils {
 
     //adjust template for samples with unnecessary placeholders
     const capabilities = this._getCapabilities(templateJson);
-    if (capabilities.isErr()) {
-      return err(capabilities.error);
-    }
     const hasFrontend =
-      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+      capabilities.includes("staticTab") || capabilities.includes("configurableTab");
     const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint;
     const hasUnresolvedPlaceholders =
       JSON.stringify(templateJson.developer).match(manifestStateDataRegex) !== null;
@@ -480,28 +490,11 @@ export class ManifestUtils {
           .map((x) => x[1])
       ),
     ];
+    const manifestTemplatePath = await this.getTeamsAppManifestPath(projectPath);
     if (tokens.length > 0) {
-      if (isLocalDebug) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetLocalDebugConfigFailedError.name,
-            AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
-            )
-          )
-        );
-      } else {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
-              isProvisionSucceeded
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      }
+      return err(
+        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+      );
     }
     const manifest: TeamsAppManifest = JSON.parse(resolvedManifestString);
     // dynamically set validDomains for manifest, which can be refactored by static manifest templates
@@ -522,14 +515,7 @@ export class ManifestUtils {
       if (botId) {
         if (!botDomain && !ignoreEnvStateValueMissing) {
           return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(
-                getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
-                isProvisionSucceeded
-              ),
-              HelpLinks.WhyNeedProvision
-            )
+            new UnresolvedPlaceholderError("teamsApp", "validDomain", manifestTemplatePath)
           );
         } else if (botDomain) {
           validDomains.push(botDomain);
@@ -547,7 +533,8 @@ export class ManifestUtils {
   async getManifestV3(
     manifestTemplatePath: string,
     state: any,
-    withEmptyCapabilities?: boolean
+    withEmptyCapabilities?: boolean,
+    generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
     if (manifestRes.isErr()) {
@@ -564,6 +551,13 @@ export class ManifestUtils {
       manifest.validDomains = [];
     }
 
+    let teamsAppId = "";
+    if (generateIdIfNotResolved) {
+      // Corner Case: Avoid UnresolvedPlaceholderError for manifest.id
+      teamsAppId = expandEnvironmentVariable(manifest.id);
+      manifest.id = "";
+    }
+
     const manifestTemplateString = JSON.stringify(manifest);
 
     // Add environment variable keys to telemetry
@@ -573,61 +567,23 @@ export class ManifestUtils {
 
     const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
 
-    const isLocalDebug = state.ENV_NAME === "local";
-    const tokens = getEnvironmentVariables(resolvedManifestString).filter(
-      (x) => x != "TEAMS_APP_ID"
-    );
+    const tokens = getEnvironmentVariables(resolvedManifestString);
     if (tokens.length > 0) {
-      if (isLocalDebug) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetLocalDebugConfigFailedError.name,
-            AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
-            )
-          )
-        );
-      } else {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
-              false
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      }
+      return err(
+        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+      );
     }
 
     manifest = JSON.parse(resolvedManifestString);
 
-    if (!isUUID(manifest.id)) {
-      manifest.id = v4();
+    if (generateIdIfNotResolved) {
+      if (!isUUID(teamsAppId)) {
+        manifest.id = v4();
+      } else {
+        manifest.id = teamsAppId;
+      }
     }
 
-    // dynamically set validDomains for manifest, which can be refactored by static manifest templates
-    if (isLocalDebug || manifest.validDomains?.length === 0) {
-      const validDomains: string[] = [];
-      const tabEndpoint = state.TAB_ENDPOINT;
-      const tabDomain = state.TAB_DOMAIN;
-      const botDomain = state.BOT_DOMAIN;
-      if (tabDomain) {
-        validDomains.push(tabDomain);
-      }
-      if (tabEndpoint && isLocalDebug) {
-        validDomains.push(tabEndpoint.slice(8));
-      }
-      if (botDomain) {
-        validDomains.push(botDomain);
-      }
-      for (const domain of validDomains) {
-        if (manifest.validDomains?.indexOf(domain) == -1) {
-          manifest.validDomains.push(domain);
-        }
-      }
-    }
     return ok(manifest);
   }
 
@@ -644,6 +600,22 @@ export class ManifestUtils {
       manifest.staticTabs.filter((tab) => tab.contentUrl && !tab.contentUrl.includes("{{state."))
         .length > 0;
     return ok(hasExistingTabInManifest && !hasTabInProjectSettings);
+  }
+
+  extractManifestFromArchivedFile(archivedFile: Buffer): Result<TeamsAppManifest, FxError> {
+    const zipEntries = new AdmZip(archivedFile).getEntries();
+    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+    if (!manifestFile) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+        )
+      );
+    }
+    const manifestString = manifestFile.getData().toString();
+    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
+    return ok(manifest);
   }
 }
 

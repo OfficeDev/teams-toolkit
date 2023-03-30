@@ -4,7 +4,6 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
@@ -16,6 +15,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -53,7 +53,7 @@ export class UpdateAadAppDriver implements StepDriver {
 
       const manifest = await buildAadManifest(
         context,
-        args.manifestTemplatePath,
+        args.manifestPath,
         args.outputFilePath,
         state
       );
@@ -71,7 +71,7 @@ export class UpdateAadAppDriver implements StepDriver {
       await aadAppClient.updateAadApp(manifest);
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,
-        args.manifestTemplatePath,
+        args.manifestPath,
         manifest.id
       );
       context.logProvider?.info(summary);
@@ -133,8 +133,8 @@ export class UpdateAadAppDriver implements StepDriver {
 
   private validateArgs(args: UpdateAadAppArgs): void {
     const invalidParameters: string[] = [];
-    if (typeof args.manifestTemplatePath !== "string" || !args.manifestTemplatePath) {
-      invalidParameters.push("manifestTemplatePath");
+    if (typeof args.manifestPath !== "string" || !args.manifestPath) {
+      invalidParameters.push("manifestPath");
     }
 
     if (typeof args.outputFilePath !== "string" || !args.outputFilePath) {
@@ -142,7 +142,7 @@ export class UpdateAadAppDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 

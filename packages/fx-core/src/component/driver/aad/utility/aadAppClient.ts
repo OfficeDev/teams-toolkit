@@ -10,6 +10,7 @@ import { AadManifestHelper } from "../../../resource/aadApp/utils/aadManifestHel
 import { GraphScopes } from "../../../../common/tools";
 import { Constants } from "../../../resource/aadApp/constants";
 import axiosRetry from "axios-retry";
+import { SignInAudience } from "../interface/signInAudience";
 
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
@@ -47,10 +48,13 @@ export class AadAppClient {
     });
   }
 
-  public async createAadApp(displayName: string): Promise<AADApplication> {
+  public async createAadApp(
+    displayName: string,
+    signInAudience = SignInAudience.AzureADMyOrg
+  ): Promise<AADApplication> {
     const requestBody: IAADDefinition = {
       displayName: displayName,
-      signInAudience: "AzureADMyOrg", // Create single tenant by default, can be changed using manifest with aadApp/update action
+      signInAudience: signInAudience,
     }; // Create an AAD app without setting anything
 
     const response = await this.axios.post("applications", requestBody);

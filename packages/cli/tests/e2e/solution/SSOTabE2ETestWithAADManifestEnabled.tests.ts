@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Renlong Tu <rentu@microsoft.com>
- * @owner Wenyu Tang <wenyutang@microsoft.com>
+ * @author Wenyu Tang <wenyutang@microsoft.com>
  */
 
 import path from "path";
@@ -78,7 +77,7 @@ describe("SSO Tab with aad manifest enabled", () => {
       expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.parameters.json"))).to.be
         .true;
       expect(fs.pathExistsSync(path.join(projectPath, "teamsapp.yml"))).to.be.true;
-      expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.template.json"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.json"))).to.be.true;
     }
 
     await CliHelper.provisionProject(projectPath, "", env);

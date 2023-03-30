@@ -4,7 +4,7 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 
 ## Prerequisite
 
-- [Node.js](https://nodejs.org/en/)
+- [Node.js](https://nodejs.org/), supported versions: 14, 16, 18 (preview)
 - An Microsoft 365 account. If you do not have an Microsoft 365 account, apply for one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - An Azure account with an active subscription. [Create an account for free](https://azure.microsoft.com/en-us/free/)
   - Ensure the resource provider 'Microsoft.ApiManagement' is registered for the subscription by following [document](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal)

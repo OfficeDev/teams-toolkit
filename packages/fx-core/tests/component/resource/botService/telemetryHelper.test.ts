@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author zhijie <zhihuan@microsoft.com>
+ */
 import {
   InputsWithProjectPath,
   M365TokenProvider,
@@ -19,12 +22,14 @@ import { setTools } from "../../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { ComponentNames } from "../../../../src/component/constants";
-import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { TeamsfxCore } from "../../../../src/component/core";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { provisionUtils } from "../../../../src/component/provisionUtils";
-import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
+import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
+import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
 
 describe("Bot service telemetry helper", () => {
   const tools = new MockTools();
@@ -54,6 +59,8 @@ describe("Bot service telemetry helper", () => {
       botId: "",
       botPassword: "botPassword",
     };
+    sandbox.stub(AppStudio, "sendStartEvent").returns();
+    sandbox.stub(AppStudio, "sendSuccessEvent").returns();
   });
 
   afterEach(() => {
@@ -65,49 +72,39 @@ describe("Bot service telemetry helper", () => {
       .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
       .resolves();
 
-    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
-      toJSON: () => ({
-        config: {
-          url: "https://dev.teams.microsoft.com/api/botframework",
-        },
-      }),
-    });
+    sandbox.stub(RetryHandler, "Retry").resolves(undefined);
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
     const fxComponent = new TeamsfxCore();
     const res = await fxComponent.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, "ProvisionError");
-      assert.exists(error.innerError);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
     }
-    assert.isTrue(telemetryStub.calledTwice);
-    const props = telemetryStub.args[1]?.[1];
-    assert.equal(props?.[TelemetryKeys.Url], "<create-bot-registration>");
   });
   it("increase ut coverage", async () => {
     const telemetryStub = sandbox
       .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
       .resolves();
 
-    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({});
+    sandbox.stub(RetryHandler, "Retry").resolves(undefined);
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
+    sandbox.stub(TelemetryUtils, "sendErrorEvent").returns();
 
     const fxComponent = new TeamsfxCore();
     const res = await fxComponent.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, "ProvisionError");
-      assert.exists(error.innerError);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
     }
-    assert.isTrue(telemetryStub.calledTwice);
   });
 });

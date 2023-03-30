@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  AppPackageFolderName,
+  ProjectSettingsV3,
+  ProjectSettings,
+} from "@microsoft/teamsfx-api";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -9,7 +14,8 @@ import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 import { MetadataV3 } from "../../../common/versionMetadata";
-
+import { hasFunctionBot } from "../../../common/projectSettingsHelperV3";
+import { convertProjectSettingsV2ToV3 } from "../../../component/migrate";
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
   constructor(protected oldProjectSettings: ProjectSettings) {}
@@ -30,9 +36,13 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
-    isWebAppBot: boolean;
+    botResourceId: string | undefined;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
+    environmentFolder: string | undefined;
+    projectId: string | undefined;
+    dotnetPath: string | undefined;
+    isM365: boolean | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -47,9 +57,13 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
-      isWebAppBot: false,
+      botResourceId: undefined,
       isTypescript: false,
       defaultFunctionName: undefined,
+      environmentFolder: undefined,
+      projectId: undefined,
+      dotnetPath: "DOTNET_PATH",
+      isM365: undefined,
     };
   }
 
@@ -100,18 +114,22 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     }
 
     // app names
-    const aadManifestPath = path.join(this.projectPath, "aad.manifest.template.json");
+    const aadManifestPath = path.join(this.projectPath, MetadataV3.aadManifestFileName);
     if (await fs.pathExists(aadManifestPath)) {
       const aadManifest = await fs.readJson(
-        path.join(this.projectPath, "aad.manifest.template.json")
+        path.join(this.projectPath, MetadataV3.aadManifestFileName)
       );
       this.handlebarsContext.aadAppName = aadManifest.name;
     }
 
-    const teamsAppManifestPath = path.join(this.projectPath, "appPackage/manifest.template.json");
+    const teamsAppManifestPath = path.join(
+      this.projectPath,
+      AppPackageFolderName,
+      MetadataV3.teamsManifestFileName
+    );
     if (await fs.pathExists(teamsAppManifestPath)) {
       const teamsAppManifest = await fs.readJson(
-        path.join(this.projectPath, "appPackage/manifest.template.json")
+        path.join(this.projectPath, AppPackageFolderName, MetadataV3.teamsManifestFileName)
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }
@@ -122,28 +140,22 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // default function name
     this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
+
+    // projectId
+    this.handlebarsContext.projectId = this.oldProjectSettings.projectId;
+
+    // env folder
+    this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
+
+    this.handlebarsContext.isM365 = this.oldProjectSettings.isM365;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {
     // isFunctionBot
-    const pluginSettings = this.oldProjectSettings.pluginSettings;
-    if (
-      pluginSettings &&
-      pluginSettings["fx-resource-bot"] &&
-      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
-    ) {
-      this.handlebarsContext.isFunctionBot = true;
-    }
-    // isWebAppBot and the resourceId in bicep should be "botWebAppResourceId", then map state.fx-resource-bot.botWebAppResourceId
-    if (
-      pluginSettings &&
-      pluginSettings["fx-resource-bot"] &&
-      pluginSettings["fx-resource-bot"]["host-type"] === "app-service" &&
-      this.bicepContent.includes("botWebAppResourceId")
-    ) {
-      this.handlebarsContext.isWebAppBot = true;
-    }
-
+    const projectSettings: ProjectSettingsV3 = convertProjectSettingsV2ToV3(
+      this.oldProjectSettings,
+      this.projectPath
+    );
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
@@ -151,12 +163,29 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.indexPath");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-bot.webAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
-    // projectId
-    this.handlebarsContext.placeholderMappings[MetadataV3.projectId] =
-      this.oldProjectSettings.projectId;
+
+    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings); // if not function bot but a resource bot, then a webApp bot
+
+    // Match teams-bot or fx-resource-bot output obj
+    const pluginRegex = new RegExp(
+      "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
+        "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
+        "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+        "[^}]*" + // Mathches anything except '}'
+        "(botWebAppResourceId|webAppResourceId|functionAppResourceId|resourceId) *:" + // Matches resource id and tries not to mismatch key and value
+        "[^}]*}", // Matches until end of obj as '}'
+      "g"
+    );
+    const outputContents = pluginRegex.exec(this.bicepContent);
+    if (outputContents) {
+      const prefix = "state.fx-resource-bot.";
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${prefix}${outputContents[3]}`];
+    }
   }
 
   private setPlaceholderMapping(placeholder: string): void {

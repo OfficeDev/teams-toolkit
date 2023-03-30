@@ -12,7 +12,7 @@
     "packages/metrics-ts",
     "packages/adaptivecards-tools-sdk",
     "packages/manifest",
-    "packages/eslint-config",
+    "packages/eslint-plugin-teamsfx",
     "templates"
   ],
   "command": {

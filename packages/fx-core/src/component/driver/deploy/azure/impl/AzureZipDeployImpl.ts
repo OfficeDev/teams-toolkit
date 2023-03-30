@@ -1,10 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author FanH <Siglud@gmail.com>
+ */
 import { AzureDeployImpl } from "./azureDeployImpl";
 import {
   AxiosZipDeployResult,
   AzureUploadConfig,
+  DeployContext,
   DeployStepArgs,
 } from "../../../interface/buildAndDeployArgs";
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
@@ -16,17 +20,21 @@ import { createHash } from "crypto";
 import { default as axios } from "axios";
 import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { HttpStatusCode } from "../../../../constant/commonConstant";
+import { getLocalizedString } from "../../../../../common/localizeUtils";
+import path from "path";
+import { zipFolderAsync } from "../../../../utils/fileOperation";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
   private readonly serviceName: string;
   protected helpLink;
-  protected summaries: string[];
-  protected summaryPrepare: string[];
+  protected summaries: () => string[];
+  protected summaryPrepare: () => string[];
   protected zipBuffer: Buffer | undefined;
   protected progressHandler?: AsyncIterableIterator<void>;
-  protected progressNames: string[];
+  protected progressNames: (() => string)[];
+  protected zipFilePath?: string;
 
   constructor(
     args: unknown,
@@ -39,8 +47,10 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     super(args, context);
     this.helpLink = helpLink;
     this.serviceName = serviceName;
-    this.summaries = summaries;
-    this.summaryPrepare = summaryPrepare;
+    this.summaries = () =>
+      summaries.map((summary) => getLocalizedString(summary, this.distDirectory));
+    this.summaryPrepare = () =>
+      summaryPrepare.map((summary) => getLocalizedString(summary, this.zipFilePath));
     this.progressNames = ProgressBarConstant.ZIP_DEPLOY_IN_AZURE_PROGRESS;
     this.progressPrepare = ProgressBarConstant.DRY_RUN_ZIP_DEPLOY_IN_AZURE_PROGRESS;
   }
@@ -120,6 +130,27 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
         : "",
     });
     return cost;
+  }
+
+  /**
+   * pack dist folder into zip
+   * @param args dist folder and ignore files
+   * @param context log provider etc..
+   * @protected
+   */
+  protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
+    const ig = await this.handleIgnore(args, context);
+    this.zipFilePath = path.join(
+      this.workingDirectory,
+      DeployConstant.DEPLOYMENT_TMP_FOLDER,
+      DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
+    );
+    await this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
+    const res = await zipFolderAsync(this.distDirectory, this.zipFilePath, ig);
+    await this.context.logProvider?.debug(
+      `zip dist folder ${this.distDirectory} to ${this.zipFilePath} complete`
+    );
+    return res;
   }
 
   /**

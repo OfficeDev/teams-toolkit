@@ -1,0 +1,62 @@
+version: 1.0.0
+
+provision:
+  - uses: teamsApp/create # Creates a Teams app
+    with:
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
+    with:
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+    writeToEnvironmentFile:
+      botId: BOT_ID
+      botPassword: SECRET_BOT_PASSWORD
+
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+    with:
+      botId: ${{BOT_ID}}
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+      messagingEndpoint: ${{PROVISIONOUTPUT__WEBAPPOUTPUT__SITEENDPOINT}}/api/messages
+      description: ""
+      channels:
+        - name: msteams
+        - name: m365extensions
+
+  - uses: teamsApp/validateManifest # Validate using manifest schema
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
+
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
+      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
+
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
+    with:
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+    with:
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
+
+deploy:
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+    with:
+      target: ./bot/.env.teamsfx.local
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+
+  - uses: cli/runNpmCommand # Run npm command
+    with:
+      args: install --no-audit
+      workingDirectory: ./bot
+

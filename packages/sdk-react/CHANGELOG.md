@@ -9,6 +9,16 @@ Initial release of the SDK for React Hook.
 2.0.0 is a major version upgrade for TeamsFx SDK for React hooks with many improvements and supports.
 
 ## Added
+
 - Add `useTeams` hook, referenced [msteams-react-base-component](https://github.com/wictorwilen/msteams-react-base-component).
 - Update to use TeamsFx SDK 2.0, which supports [Teams JS SDK 2.0](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/using-teams-client-sdk?tabs=javascript%2Cmanifest-teams-toolkit).
 - Support both CJS and ESM modules now, so that webpack and other tools can do proper tree-shaking and optimizations.
+
+# 3.0.0
+
+3.0.0 is a major version upgrade for TeamsFx SDK for React hooks migrating to support React 18 and Fluent UI v9.
+
+## Added
+
+- Update to support [React 18](https://reactjs.org/).
+- Migrate to use [Fluent UI v9](https://react.fluentui.dev/?path=/docs/concepts-introduction--page), which includes breaking changes of `useTeams`, `useTeamsUserCredential` and `useTeamsFx`.

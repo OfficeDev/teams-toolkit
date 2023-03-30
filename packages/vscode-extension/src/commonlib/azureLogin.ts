@@ -52,8 +52,11 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as globalVariables from "../globalVariables";
 import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AccessToken, GetTokenOptions } from "@azure/identity";
+import { AccessToken, GetTokenOptions, useIdentityPlugin } from "@azure/identity";
+import { vsCodePlugin } from "@azure/identity-vscode";
 import { Constants } from "@microsoft/teamsfx-core/build/component/resource/azureSql/constants";
+
+useIdentityPlugin(vsCodePlugin);
 
 class TeamsFxTokenCredential implements TokenCredential {
   private tokenCredentialBase: TokenCredentialsBase;
@@ -607,7 +610,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getSubscriptionInfoPath(): Promise<string | undefined> {
-    if (globalVariables.workspaceUri) {
+    if (!isV3Enabled() && globalVariables.workspaceUri) {
       const workspacePath: string = globalVariables.workspaceUri.fsPath;
       if (!globalVariables.isTeamsFxProject) {
         return undefined;

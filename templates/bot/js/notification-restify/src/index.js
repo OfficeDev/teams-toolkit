@@ -1,6 +1,7 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { bot } = require("./internal/initialize");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { TeamsBot } = require("./teamsBot");
 const restify = require("restify");
 
 // Create HTTP server.
@@ -67,11 +68,30 @@ server.post(
     }
     **/
 
+    /** You can also find someone and notify the individual person
+    const member = await bot.notification.findMember(
+      async (m) => m.account.email === "someone@contoso.com"
+    );
+    await member?.sendAdaptiveCard(...);
+    **/
+
+    /** Or find multiple people and notify them
+    const members = await bot.notification.findAllMembers(
+      async (m) => m.account.email?.startsWith("test")
+    );
+    for (const member of members) {
+      await member.sendAdaptiveCard(...);
+    }
+    **/
+
     res.json({});
   }
 );
 
 // Bot Framework message handler.
+const teamsBot = new TeamsBot();
 server.post("/api/messages", async (req, res) => {
-  await bot.requestHandler(req, res);
+  await bot.requestHandler(req, res, async (context) => {
+    await teamsBot.run(context);
+  });
 });

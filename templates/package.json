@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "1.5.1",
+    "version": "2.0.1",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -83,6 +83,7 @@
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",
+        "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
         "eslint": "^7.22.0",
         "eslint-config-react-app": "^7.0.0",
         "eslint-plugin-import": "^2.25.2",

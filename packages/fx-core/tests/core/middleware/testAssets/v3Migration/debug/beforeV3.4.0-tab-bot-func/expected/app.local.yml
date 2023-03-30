@@ -1,21 +1,32 @@
 version: 1.0.0
 
-registerApp:
-  - uses: aadApp/create
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
-      generateClientSecret: true
-
-  - uses: teamsApp/create
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
-
 provision:
-  - uses: botAadApp/create
+  - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
+    with:
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      clientId: AAD_APP_CLIENT_ID
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET # Environment variable that starts with `SECRET_` will be stored to the .env.{envName}.user environment file
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
+
+  - uses: teamsApp/create # Creates a Teams app
+    with:
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+    writeToEnvironmentFile:
+      botId: BOT_ID
+      botPassword: SECRET_BOT_PASSWORD
 
-  - uses: botFramework/create
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -24,40 +35,52 @@ provision:
       channels:
         - name: msteams
 
-configureApp:
-  - uses: file/updateEnv
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN for local launch
     with:
-      envs:
-        PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN: localhost:53000
-        PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT: https://localhost:53000
-        PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH: /index.html#
+      run: echo "::set-output PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN=localhost:53000"
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT for local launch
+    with:
+      run: echo "::set-output PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT=https://localhost:53000"
+  - uses: script # Set env for local launch
+    name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH for local launch
+    with:
+      run: echo "::set-output PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH=/index.html#"
 
-  - uses: aadApp/update
+  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
-      manifestTemplatePath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
-      manifestPath: ./appPackage/manifest.template.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
 
-  - uses: teamsApp/zipAppPackage
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.template.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
 
-  - uses: teamsApp/update
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
 
 deploy:
-  - uses: prerequisite/install 
+  - uses: prerequisite/install # Install dependencies
     with:
       devCert:
         trust: true
       func: true
       dotnet: true
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
+      funcPath: FUNC_PATH
+      dotnetPath: DOTNET_PATH
 
   - uses: cli/runDotnetCommand
     with:
@@ -65,8 +88,61 @@ deploy:
       workingDirectory: ./api
       execPath: ${{DOTNET_PATH}}
 
-  - uses: cli/runNpmCommand
+  - uses: cli/runNpmCommand # Run npm command
     with:
-      args: install -D @microsoft/teamsfx-run-utils@alpha
+      args: install -D env-cmd
       workingDirectory: .
+
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+    with:
+      target: ./tabs/.localSettings
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}/auth-start.html
+        REACT_APP_TEAMSFX_ENDPOINT: http://localhost:55000
+        REACT_APP_FUNC_ENDPOINT: http://localhost:7071
+        REACT_APP_FUNC_NAME: getUserProfile
+
+  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
+    with:
+      target: SIMPLE_AUTH_APPSETTINGS_PATH
+      appsettings:
+        CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+        IDENTIFIER_URI: api://${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN}}/${{AAD_APP_CLIENT_ID}}
+        AAD_METADATA_ADDRESS: ${{AAD_APP_OAUTH_AUTHORITY}}/v2.0/.well-known/openid-configuration
+        OAUTH_AUTHORITY: ${{AAD_APP_OAUTH_AUTHORITY}}
+        TAB_APP_ENDPOINT: ${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}
+        ALLOWED_APP_IDS: 1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3
+        URLS: http://localhost:55000
+
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+    with:
+      target: ./bot/.localSettings
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        M365_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+        M365_TENANT_ID: ${{AAD_APP_TENANT_ID}}
+        M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
+        INITIATE_LOGIN_ENDPOINT: ${{PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT}}/auth-start.html
+        M365_APPLICATION_ID_URI: api://${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN}}/botid-${{BOT_ID}}
+        API_ENDPOINT: http://localhost:7071
+
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+    with:
+      target: ./api/.localSettings
+      envs:
+        FUNCTIONS_WORKER_RUNTIME: node
+        M365_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+        M365_TENANT_ID: ${{AAD_APP_TENANT_ID}}
+        M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
+        ALLOWED_APP_IDS: 1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3
 

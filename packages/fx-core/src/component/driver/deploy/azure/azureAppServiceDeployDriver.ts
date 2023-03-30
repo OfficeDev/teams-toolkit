@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Siglud <siglud@gmail.com>
+ */
 
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { Service } from "typedi";
@@ -19,12 +22,8 @@ export class AzureAppServiceDeployDriver implements StepDriver {
     "driver.deploy.deployToAzureAppServiceDescription"
   );
   private static readonly SERVICE_NAME = "Azure App Service";
-  private static readonly SUMMARY = [
-    getLocalizedString("driver.deploy.azureAppServiceDeploySummary"),
-  ];
-  private static readonly SUMMARY_PREPARE = [
-    getLocalizedString("driver.deploy.notice.deployDryRunComplete"),
-  ];
+  private static readonly SUMMARY = ["driver.deploy.azureAppServiceDeployDetailSummary"];
+  private static readonly SUMMARY_PREPARE = ["driver.deploy.notice.deployDryRunComplete"];
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {

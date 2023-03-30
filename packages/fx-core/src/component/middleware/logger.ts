@@ -51,4 +51,7 @@ export class ActionLogger implements LogProvider {
   fatal(message: string): Promise<boolean> {
     return this.logger.fatal(this.formatter(message));
   }
+  getLogFilePath(): string {
+    return this.logger.getLogFilePath();
+  }
 }

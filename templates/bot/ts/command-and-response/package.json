@@ -18,7 +18,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/teamsfx": "^2.0.0",
+        "@microsoft/teamsfx": "^2.2.0",
         "botbuilder": "^4.18.0",
         "restify": "^10.0.0"
     },

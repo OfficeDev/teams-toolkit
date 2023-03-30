@@ -1,8 +1,8 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "0.1.0",
     "engines": {
-        "node": ">=14 <=16"
+        "node": "14 || 16 || 18"
     },
     "private": true,
     "dependencies": {
@@ -12,7 +12,7 @@
         "@microsoft/mgt-teamsfx-provider": "^2.8.0",
         "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^2.7.1",
-        "@microsoft/teamsfx": "^2.0.0",
+        "@microsoft/teamsfx": "^2.2.0",
         "@microsoft/teamsfx-react": "^2.0.0",
         "axios": "^0.21.1",
         "react": "^16.14.0",
@@ -21,15 +21,15 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha",
         "@types/node": "^12.0.0",
         "@types/react": "^16.14.6",
         "@types/react-dom": "^16.9.12",
         "@types/react-router-dom": "^5.1.7",
+        "env-cmd": "^10.1.0",
         "typescript": "^4.1.2"
     },
     "scripts": {
-        "dev:teamsfx": "node script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

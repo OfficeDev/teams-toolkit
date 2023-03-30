@@ -3,6 +3,7 @@ import * as restify from "restify";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { bot } from "./internal/initialize";
 import { CardData } from "./cardModels";
+import { TeamsBot } from "./teamsBot";
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -85,6 +86,22 @@ server.post(
       **/
     }
 
+    /** You can also find someone and notify the individual person
+    const member = await bot.notification.findMember(
+      async (m) => m.account.email === "someone@contoso.com"
+    );
+    await member?.sendAdaptiveCard(...);
+    **/
+
+    /** Or find multiple people and notify them
+    const members = await bot.notification.findAllMembers(
+      async (m) => m.account.email?.startsWith("test")
+    );
+    for (const member of members) {
+      await member.sendAdaptiveCard(...);
+    }
+    **/
+
     res.json({});
   }
 );
@@ -95,6 +112,9 @@ server.post(
 // The Teams Toolkit bot registration configures the bot with `/api/messages` as the
 // Bot Framework endpoint. If you customize this route, update the Bot registration
 // in `/templates/provision/bot.bicep`.
+const teamsBot = new TeamsBot();
 server.post("/api/messages", async (req, res) => {
-  await bot.requestHandler(req, res);
+  await bot.requestHandler(req, res, async (context) => {
+    await teamsBot.run(context);
+  });
 });

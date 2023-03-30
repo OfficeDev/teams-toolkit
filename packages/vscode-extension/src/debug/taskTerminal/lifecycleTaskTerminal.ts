@@ -2,9 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+/**
+ * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ */
 import * as path from "path";
 import * as vscode from "vscode";
-import { err, ok, FxError, Result, Stage, Void } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import * as globalVariables from "../../globalVariables";
 import { getSystemInputs, runCommand } from "../../handlers";
@@ -34,7 +38,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
       [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
         template: maskValue(this.args.template),
-        env: maskValue(this.args.env),
+        env: maskValue(this.args.env, [TaskDefaultValue.env]),
       }),
       [TelemetryProperty.DebugLifecycle]: this.stage,
     };
@@ -48,21 +52,24 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
     );
   }
 
-  private async _do(): Promise<Result<Void, FxError>> {
-    if (!this.args?.template) {
-      throw BaseTaskTerminal.taskDefinitionError("template");
-    }
+  stop(error?: any): Promise<void> {
+    return super.stop(error, false);
+  }
 
+  private async _do(): Promise<Result<Void, FxError>> {
     if (!this.args?.env) {
       throw BaseTaskTerminal.taskDefinitionError("env");
     }
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs.workflowFilePath = path.resolve(
-      globalVariables.workspaceUri?.fsPath ?? "",
-      BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
-    );
+    inputs.isLocalDebug = true;
+    if (this.args.template) {
+      inputs.workflowFilePath = path.resolve(
+        globalVariables.workspaceUri?.fsPath ?? "",
+        BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
+      );
+    }
 
     const res = await runCommand(this.stage, inputs);
     return res.isErr() ? err(res.error) : ok(Void);

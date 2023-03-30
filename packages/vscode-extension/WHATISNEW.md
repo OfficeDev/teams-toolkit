@@ -1,30 +1,50 @@
-- [4.2.0 - Dec 20 2022](#420---dec-20-2022)
-- [4.1.3 - Nov 17 2022](#413---nov-17-2022)
-- [4.1.1 - Nov 02 2022](#411---nov-02-2022)
-- [4.1.0 - Oct 17 2022](#410---oct-17-2022)
-- [4.0.6 - Sep 23 2022](#406---sep-23-2022)
-- [4.0.5 - Aug 22 2022](#405---aug-22-2022)
-- [4.0.4 - Aug 09 2022](#404---aug-09-2022)
-- [4.0.3 - Jul 26 2022](#403---jul-26-2022)
-- [4.0.2 - Jul 12 2022](#402---jul-12-2022)
-- [4.0.1 - Jun 16 2022](#401---jun-16-2022)
-- [4.0.0 - May 24 2022](#400---may-24-2022)
-- [3.8.0 - Apr 22 2022](#380---apr-22-2022)
-- [3.7.0 - Apr 06 2022](#370---apr-06-2022)
-- [3.6.0 - Mar 21 2022](#360---mar-21-2022)
-- [3.5.0 - Mar 07 2022](#350---mar-07-2022)
-- [3.4.0 - Feb 21 2022](#340---feb-21-2022)
-- [3.3.0 - Feb 07 2022](#330---feb-07-2022)
-- [3.2.0 - Jan 10 2022](#320---jan-10-2022)
-- [3.1.1 - Dec 27 2021](#311---dec-27-2021)
-- [3.1.0 - Dec 13 2021](#310---dec-13-2021)
-- [3.0.0 - Nov 29 2021](#300---nov-29-2021)
-- [2.10.0 - Nov 15 2021](#2100---nov-15-2021)
-- [2.9.0 - Nov 01 2021](#290---nov-01-2021)
-- [2.8.0 - Oct 18 2021](#280---oct-18-2021)
-- [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+- [Changelog](#changelog)
+  - [4.2.4 - Feb 28, 2023](#424---feb-28-2023)
+  - [4.2.2 - Feb 7, 2023](#422---feb-7-2023)
+  - [4.2.0 - Dec 20, 2022](#420---dec-20-2022)
+  - [4.1.3 - Nov 17, 2022](#413---nov-17-2022)
+  - [4.1.1 - Nov 02, 2022](#411---nov-02-2022)
+  - [4.1.0 - Oct 17, 2022](#410---oct-17-2022)
+  - [4.0.6 - Sep 23, 2022](#406---sep-23-2022)
+  - [4.0.5 - Aug 22, 2022](#405---aug-22-2022)
+  - [4.0.4 - Aug 09, 2022](#404---aug-09-2022)
+  - [4.0.3 - Jul 26, 2022](#403---jul-26-2022)
+  - [4.0.2 - Jul 12, 2022](#402---jul-12-2022)
+  - [4.0.1 - Jun 16, 2022](#401---jun-16-2022)
+  - [4.0.0 - May 24, 2022](#400---may-24-2022)
+  - [3.8.0 - Apr 22, 2022](#380---apr-22-2022)
+  - [3.7.0 - Apr 06, 2022](#370---apr-06-2022)
+  - [3.6.0 - Mar 21, 2022](#360---mar-21-2022)
+  - [3.5.0 - Mar 07, 2022](#350---mar-07-2022)
+  - [3.4.0 - Feb 21, 2022](#340---feb-21-2022)
+  - [3.3.0 - Feb 07, 2022](#330---feb-07-2022)
+  - [3.2.0 - Jan 10, 2022](#320---jan-10-2022)
+  - [3.1.1 - Dec 27, 2021](#311---dec-27-2021)
+  - [3.1.0 - Dec 13, 2021](#310---dec-13-2021)
+  - [3.0.0 - Nov 29, 2021](#300---nov-29-2021)
+  - [2.10.0 - Nov 15, 2021](#2100---nov-15-2021)
+  - [2.9.0 - Nov 01, 2021](#290---nov-01-2021)
+  - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
+  - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.2.4 - Feb 28, 2023
+
+Incremental version for Teams Toolkit with an enhancement.
+
+- Updated SharePoint Framework from `1.16.0` to `1.16.1`.
+
+## 4.2.2 - Feb 7, 2023
+
+Enhancements:
+
+- Updated pre-requisite checker, applicable app templates and samples to support Node.js 18.
+- Updated comments on Notification bot template for how to send notifications to an individual person.
+- Updated TeamsFx-React SDK to support React 17.
+- Updated TeamsFx SDK, relevant bot app templates and samples to use [CloudAdapter](https://learn.microsoft.com/javascript/api/botbuilder/cloudadapter).
+- Updated app templates to use TeamsJS SDK v2.7.1.
 
 ## 4.2.0 - Dec 20, 2022
 
@@ -42,6 +62,7 @@ Enhancements:
 ## 4.1.3 - Nov 17, 2022
 
 Enhancements:
+
 - Bump up version of [@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx) used in templates and samples to `2.0.0` that depends on [@microsoft/teams-js](https://www.npmjs.com/package/@microsoft/teams-js) version `2.0.0` and above. Starting from this version, it enables [Teams app to run in Outlook and Office.com](https://learn.microsoft.com/microsoftteams/platform/m365-apps/overview)
 - A/B testing on in-product documentation to display tutorial articles inside Visual Studio Code.
 

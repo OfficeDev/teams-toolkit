@@ -7,6 +7,9 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
+const templatePath = process.env.TEMPLATE_PATH;
+const fallbackPath = path.join(__dirname, "..", "templates", "fallback");
+
 const token = process.env.REQUEST_TOKEN;
 const defaultOptions = {
   headers: token
@@ -75,8 +78,7 @@ async function downloadTemplates(version) {
   const tag = config.tagPrefix + version;
   console.log(`Start to download templates with tag: ${tag}`);
 
-  const folder = path.join(__dirname, "..", "templates", "fallback");
-  await fs.ensureDir(folder);
+  await fs.ensureDir(fallbackPath);
 
   const templates = await getTemplates(tag);
   for (let template of templates) {
@@ -85,12 +87,15 @@ async function downloadTemplates(version) {
       const res = await axiosInstance.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
         responseType: "arraybuffer",
       });
-      await fs.writeFile(path.join(folder, `${filename}`), res.data);
+      await fs.writeFile(path.join(fallbackPath, `${filename}`), res.data);
     });
   }
 }
 
 function selectVersion(tagList) {
+  if (semver.prerelease(config.version)) {
+    return config.version;
+  }
   const versionList = tagList
     .filter((tag) => tag.startsWith(config.tagPrefix))
     .map((tag) => tag.replace(config.tagPrefix, ""));
@@ -111,7 +116,18 @@ async function selectVersionFromRemoteTagList() {
   return selectVersion(tagList);
 }
 
+async function copyTemplateFromLocal(templatePath) {
+  templatePath.split(";").forEach((path) => {
+    console.log(`Start to copy templates from ${path} to ${fallbackPath}`);
+    fs.copySync(path, fallbackPath);
+  });
+}
+
 async function main() {
+  if (templatePath) {
+    await copyTemplateFromLocal(templatePath);
+    return;
+  }
   const selectedVersion =
     selectVersionFromShellArgument() || (await selectVersionFromRemoteTagList());
   if (!selectVersion) {

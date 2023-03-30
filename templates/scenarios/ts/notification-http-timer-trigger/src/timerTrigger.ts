@@ -2,7 +2,7 @@ import { AzureFunction, Context } from "@azure/functions";
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { CardData } from "./cardModels";
-import { bot } from "./internal/initialize";
+import { notificationApp } from "./internal/initialize";
 
 // An Azure Function timer trigger.
 //
@@ -16,13 +16,13 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
 
   // By default this function will iterate all the installation points and send an Adaptive Card
   // to every installation.
-  for (const target of await bot.notification.installations()) {
+  for (const target of await notificationApp.notification.installations()) {
     await target.sendAdaptiveCard(
       AdaptiveCards.declare<CardData>(notificationTemplate).render({
         title: "New Event Occurred!",
         appName: "Contoso App Notification",
         description: `This is a sample time-triggered notification (${timeStamp}).`,
-        notificationUrl: "https://www.adaptivecards.io/",
+        notificationUrl: "https://aka.ms/teamsfx-notification-new",
       })
     );
 
@@ -71,6 +71,22 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
     }
     **/
   }
+
+  /** You can also find someone and notify the individual person
+  const member = await notificationApp.notification.findMember(
+    async (m) => m.account.email === "someone@contoso.com"
+  );
+  await member?.sendAdaptiveCard(...);
+  **/
+
+  /** Or find multiple people and notify them
+  const members = await notificationApp.notification.findAllMembers(
+    async (m) => m.account.email?.startsWith("test")
+  );
+  for (const member of members) {
+    await member.sendAdaptiveCard(...);
+  }
+  **/
 };
 
 export default timerTrigger;

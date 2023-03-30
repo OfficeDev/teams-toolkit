@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Qianhao Dong <qidon@microsoft.com>
+ */
 import {
   assembleError,
   err,
@@ -13,7 +16,7 @@ import {
   UserError,
   UserErrorOptions,
   Void,
-  PathNotExistError,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -36,8 +39,9 @@ import {
   NodeNotFoundError,
   validationSettingsHelpLink,
   NodeNotSupportedError,
-  NodeNotRecommendedError,
   InstallOptions,
+  V3NodeNotSupportedError,
+  NodeNotLtsError,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import {
@@ -46,7 +50,7 @@ import {
   isV3Enabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
-
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -106,6 +110,7 @@ enum Checker {
 const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
+  [DepsType.LtsNode]: "Node.js",
   [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
@@ -160,6 +165,7 @@ const ProgressMessage = Object.freeze({
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.LtsNode]: `Checking ${DepsDisplayName[DepsType.LtsNode]}`,
   [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
@@ -594,6 +600,7 @@ function getCheckPromise(
   switch (checkerInfo.checker) {
     case DepsType.AzureNode:
     case DepsType.SpfxNode:
+    case DepsType.LtsNode:
     case DepsType.ProjectNode:
       return checkNode(
         checkerInfo.checker,
@@ -676,7 +683,8 @@ async function ensureM365Account(
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
-      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      const m365Login: M365TokenProvider = M365TokenInstance;
+      let loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
         return err(loginStatusRes.error);
@@ -694,7 +702,7 @@ async function ensureM365Account(
         if (tokenRes.isErr()) {
           return err(tokenRes.error);
         }
-        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+        loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
         if (loginStatusRes.isErr()) {
           return err(loginStatusRes.error);
         }
@@ -1036,8 +1044,11 @@ function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
     if (error instanceof NodeNotSupportedError) {
       handleNodeNotSupportedError(error, dep);
     }
-    if (error instanceof NodeNotRecommendedError) {
-      handleNodeNotRecommendedError(error, dep);
+    if (error instanceof V3NodeNotSupportedError) {
+      handleNodeNotLtsError(error);
+    }
+    if (error instanceof NodeNotLtsError) {
+      handleV3NodeNotSupportedError(error);
     }
   }
   return error instanceof DepsCheckerError
@@ -1060,7 +1071,9 @@ function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: Dependen
     ? dep.details.supportedVersions.join(", ")
     : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
-  error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
+  error.message = `${doctorConstant
+    .NodeNotSupported(isV3Enabled())
+    .split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
     .join(supportedVersions)}`;
@@ -1068,20 +1081,11 @@ function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: Dependen
   error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
-function handleNodeNotRecommendedError(error: NodeNotSupportedError, dep: DependencyStatus) {
-  const supportedVersions = isV3Enabled()
-    ? dep.details.supportedVersions.join(", ")
-    : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
+function handleV3NodeNotSupportedError(error: V3NodeNotSupportedError) {
+  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+}
 
-  const nodeNotRecommendedMessage = isV3Enabled()
-    ? doctorConstant.V3NodeNotRecommended
-    : doctorConstant.NodeNotRecommended;
-  error.message = `${nodeNotRecommendedMessage
-    .split("@CurrentVersion")
-    .join(dep.details.installVersion)
-    .split("@SupportedVersions")
-    .join(supportedVersions)}`;
-
+function handleNodeNotLtsError(error: V3NodeNotSupportedError) {
   error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
@@ -1112,7 +1116,7 @@ function checkNpmInstall(
           result: ResultStatus.warn,
           successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
           failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
-          error: new PathNotExistError(ExtensionSource, folder),
+          error: new FileNotFoundError(ExtensionSource, folder),
         };
       }
 
@@ -1369,6 +1373,16 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
 }
 
 async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChecker[]> {
+  if (isV3Enabled()) {
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    return [
+      {
+        info: { checker: workspacePath ? DepsType.ProjectNode : DepsType.LtsNode },
+        fastFail: false,
+      },
+    ];
+  }
+
   try {
     const workspacePath = globalVariables.workspaceUri!.fsPath;
     const localEnvManager = new LocalEnvManager(
@@ -1380,11 +1394,11 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
     const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
     const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
 
-    const nodeDeps = getNodeDep(enabledDeps) ?? DepsType.AzureNode;
+    const nodeDeps = getNodeDep(enabledDeps) ?? DepsType.LtsNode;
     return [{ info: { checker: nodeDeps }, fastFail: false }];
   } catch (error) {
     // not a teamsfx project
-    return [{ info: { checker: DepsType.AzureNode }, fastFail: false }];
+    return [{ info: { checker: DepsType.LtsNode }, fastFail: false }];
   }
 }
 

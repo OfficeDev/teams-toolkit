@@ -5,11 +5,11 @@
  * @jest-environment jsdom
  */
 
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import * as useTeams from "../src/useTeams";
 import * as useData from "../src/useData";
 import { useTeamsFx } from "../src/useTeamsFx";
-import { teamsTheme } from "@fluentui/react-northstar";
+import { teamsLightTheme } from "@fluentui/react-components";
 import { TeamsFx } from "@microsoft/teamsfx";
 
 describe("useTeamsFx() hook tests", () => {
@@ -20,7 +20,7 @@ describe("useTeamsFx() hook tests", () => {
     spyUseTeams = jest.spyOn(useTeams, "useTeams");
     spyUseTeams.mockImplementation(() => {
       return [
-        { inTeams: true, theme: teamsTheme, themeString: "default" },
+        { inTeams: true, theme: teamsLightTheme, themeString: "default" },
         { setTheme: (undefined) => {} },
       ];
     });
@@ -33,19 +33,23 @@ describe("useTeamsFx() hook tests", () => {
   });
 
   it("returns default teamsfx instance", async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useTeamsFx({}));
+    const { result } = renderHook(() => useTeamsFx({}));
     expect(result.current.teamsfx).toBeUndefined();
     expect(result.current.error).toBeUndefined();
     expect(result.current.loading).toBe(true);
     expect(result.current.inTeams).toBe(true);
     expect(result.current.themeString).toBe("default");
 
-    await waitForNextUpdate();
-    expect(result.current.teamsfx).toBeInstanceOf(TeamsFx);
-    expect(result.current.error).toBeUndefined();
-    expect(result.current.loading).toBe(false);
-    expect(result.current.inTeams).toBe(true);
-    expect(result.current.themeString).toBe("default");
+    await waitFor(
+      () => {
+        expect(result.current.teamsfx).toBeInstanceOf(TeamsFx);
+        expect(result.current.error).toBeUndefined();
+        expect(result.current.loading).toBe(false);
+        expect(result.current.inTeams).toBe(true);
+        expect(result.current.themeString).toBe("default");
+      },
+      { interval: 1 }
+    );
   });
 
   it("returns useData() error", async () => {

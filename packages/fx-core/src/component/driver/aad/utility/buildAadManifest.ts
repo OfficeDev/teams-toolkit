@@ -8,9 +8,9 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 import { logMessageKeys } from "../utility/constants";
 import { DriverContext } from "../../interface/commonArgs";
 import { AADManifest } from "../../../resource/aadApp/interfaces/AADManifest";
-import { MissingEnvUserError } from "../error/missingEnvError";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { getUuid } from "../../../../common/tools";
+import { UnresolvedPlaceholderError } from "../../../../error/common";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -20,11 +20,11 @@ const driverConstants = {
 
 export async function buildAadManifest(
   context: DriverContext,
-  manifestTemplatePath: string,
+  manifestPath: string,
   outputFilePath: string,
   state?: UpdateAadAppOutput
 ): Promise<AADManifest> {
-  const manifestAbsolutePath = getAbsolutePath(manifestTemplatePath, context.projectPath);
+  const manifestAbsolutePath = getAbsolutePath(manifestPath, context.projectPath);
   const manifest = await loadManifest(manifestAbsolutePath, state);
   const warningMessage = AadManifestHelper.validateManifest(manifest);
   if (warningMessage) {
@@ -54,18 +54,6 @@ function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string) {
     : path.join(projectPath, relativeOrAbsolutePath);
 }
 
-function validateManifestString(manifestString: string) {
-  const unresolvedEnvironmentVariable = getEnvironmentVariables(manifestString);
-  if (unresolvedEnvironmentVariable && unresolvedEnvironmentVariable.length > 0) {
-    throw new MissingEnvUserError(
-      actionName,
-      unresolvedEnvironmentVariable,
-      helpLink,
-      driverConstants.generateManifestFailedMessageKey
-    );
-  }
-}
-
 async function loadManifest(
   manifestPath: string,
   state?: UpdateAadAppOutput
@@ -89,7 +77,16 @@ async function loadManifest(
     }
 
     const manifestString = expandEnvironmentVariable(manifestTemplate);
-    validateManifestString(manifestString);
+    const unresolvedEnvironmentVariable = getEnvironmentVariables(manifestString);
+    if (unresolvedEnvironmentVariable && unresolvedEnvironmentVariable.length > 0) {
+      const error = new UnresolvedPlaceholderError(
+        actionName,
+        unresolvedEnvironmentVariable.join(", "),
+        manifestPath,
+        helpLink
+      );
+      throw error;
+    }
     const manifest: AADManifest = JSON.parse(manifestString);
     AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
     return manifest;

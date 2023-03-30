@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
+import { BotChannelType, IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { err, FxError, Result, ok, M365TokenProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
@@ -48,6 +51,7 @@ export class LocalBotRegistration extends BotRegistration {
       iconUrl: "",
       messagingEndpoint: "",
       callingEndpoint: "",
+      configuredChannels: [BotChannelType.MicrosoftTeams],
     };
     await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg);
     logProvider?.info(Messages.SuccessfullyProvisionedBotRegistration);
@@ -76,7 +80,7 @@ export class LocalBotRegistration extends BotRegistration {
     );
     if (!remoteBotRegistration) {
       // Not Found case.
-      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration);
+      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration, false);
     } else {
       // Update bot registration.
       const mergedBotRegistration = Utils.mergeIBotRegistration(

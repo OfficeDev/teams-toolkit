@@ -112,7 +112,7 @@ export class LocalEnvManager {
 
   public async getNgrokTunnelFromApi(
     webServiceUrl: string
-  ): Promise<{ src: string; dist: string } | undefined> {
+  ): Promise<{ src: string; dest: string } | undefined> {
     return await getNgrokTunnelFromApi(webServiceUrl);
   }
 

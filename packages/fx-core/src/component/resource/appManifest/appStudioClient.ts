@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
+ */
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "./interfaces/appDefinition";
@@ -23,6 +26,8 @@ import {
 } from "../../../common/telemetry";
 import { waitSeconds } from "../../../common/tools";
 import { IValidationResult } from "./interfaces/IValidationResult";
+import { HttpStatusCode } from "../../constant/commonConstant";
+import { manifestUtils } from "./utils/ManifestUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -56,7 +61,19 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  function wrapException(e: any, apiName: string): Error {
+  export function sendStartEvent(apiName: string): void {
+    TelemetryUtils.sendStartEvent(TelemetryEventName.appStudioApi, {
+      url: `<${apiName}-url>`,
+    });
+  }
+
+  export function sendSuccessEvent(apiName: string): void {
+    TelemetryUtils.sendSuccessEvent(TelemetryEventName.appStudioApi, {
+      url: `<${apiName}-url>`,
+    });
+  }
+
+  export function wrapException(e: any, apiName: string): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
@@ -69,7 +86,8 @@ export namespace AppStudioClient {
         requestPath,
         apiName,
         extraData
-      )
+      ),
+      e
     );
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
@@ -94,6 +112,7 @@ export namespace AppStudioClient {
     logProvider?: LogProvider,
     overwrite = false
   ): Promise<AppDefinition> {
+    sendStartEvent(APP_STUDIO_API_NAMES.CREATE_APP);
     try {
       const requester = createRequesterWithToken(appStudioToken, region);
 
@@ -109,6 +128,7 @@ export namespace AppStudioClient {
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         await logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
+        sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP);
         return app;
       } else {
         throw new Error(`Cannot create teams app`);
@@ -134,6 +154,24 @@ export namespace AppStudioClient {
         );
         throw error;
       }
+      // Corner case: App Id must be a GUID
+      if (
+        e.response?.status === HttpStatusCode.BAD_REQUEST &&
+        e.response?.data.includes("App Id must be a GUID")
+      ) {
+        const manifest = manifestUtils.extractManifestFromArchivedFile(file);
+        if (manifest.isErr()) {
+          throw manifest.error;
+        } else {
+          const teamsAppId = manifest.value.id;
+          const error = AppStudioResultFactory.UserError(
+            AppStudioError.InvalidTeamsAppIdError.name,
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)
+          );
+          throw error;
+        }
+      }
+
       const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
       throw error;
     }
@@ -144,6 +182,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<AppDefinition> {
+    sendStartEvent(APP_STUDIO_API_NAMES.GET_APP);
     let requester: AxiosInstance;
     try {
       let response;
@@ -173,6 +212,7 @@ export namespace AppStudioClient {
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+          sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP);
           return app;
         } else {
           await logProvider?.error(
@@ -199,6 +239,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<boolean> {
+    sendStartEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
@@ -206,6 +247,7 @@ export namespace AppStudioClient {
       );
 
       if (response && response.data) {
+        sendSuccessEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
         return <boolean>response.data;
       } else {
         return false;
@@ -228,6 +270,7 @@ export namespace AppStudioClient {
     file: Buffer,
     appStudioToken: string
   ): Promise<string> {
+    sendStartEvent(APP_STUDIO_API_NAMES.PUBLISH_APP);
     try {
       const requester = createRequesterWithToken(appStudioToken, region);
 
@@ -253,6 +296,7 @@ export namespace AppStudioClient {
           const exception = wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
           throw exception;
         } else {
+          sendSuccessEvent(APP_STUDIO_API_NAMES.PUBLISH_APP);
           return response.data.id;
         }
       } else {
@@ -283,6 +327,7 @@ export namespace AppStudioClient {
     file: Buffer,
     appStudioToken: string
   ): Promise<string> {
+    sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
     try {
       // Get App Definition from Teams App Catalog
       const appDefinition = await getAppByTeamsAppId(teamsAppId, appStudioToken);
@@ -315,6 +360,7 @@ export namespace AppStudioClient {
           const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
           throw exception;
         } else {
+          sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
           return response.data.teamsAppId;
         }
       } else {
@@ -337,6 +383,7 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string
   ): Promise<IPublishingAppDenition | undefined> {
+    sendStartEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await requester.get(`/api/publishing/${teamsAppId}`);
@@ -353,6 +400,7 @@ export namespace AppStudioClient {
             };
           }
         );
+        sendSuccessEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
         return appdefinitions[appdefinitions.length - 1];
       } else {
         return undefined;
@@ -406,6 +454,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     newUser: AppUser
   ): Promise<void> {
+    sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_OWNER);
     let app;
     try {
       app = await getApp(teamsAppId, appStudioToken);
@@ -446,6 +495,7 @@ export namespace AppStudioClient {
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);
       }
+      sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_OWNER);
     } catch (err) {
       if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
         requester = createRequesterWithToken(appStudioToken, region);
@@ -462,6 +512,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<any> {
+    sendStartEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
     logProvider?.info("Downloading app package for app " + teamsAppId);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
@@ -471,6 +522,7 @@ export namespace AppStudioClient {
 
       if (response && response.data) {
         logProvider?.info("Download app package successfully");
+        sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
         return response.data;
       } else {
         throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));
@@ -485,6 +537,7 @@ export namespace AppStudioClient {
     file: Buffer,
     appStudioToken: string
   ): Promise<IValidationResult> {
+    sendStartEvent(APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
@@ -492,6 +545,7 @@ export namespace AppStudioClient {
           headers: { "Content-Type": "application/zip" },
         })
       );
+      sendSuccessEvent(APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
       return response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
@@ -509,6 +563,8 @@ export namespace AppStudioClient {
   }
 
   export async function getSideloadingStatus(appStudioToken: string): Promise<boolean | undefined> {
+    const apiName = "<check-sideloading-status>";
+    const apiPath = "/api/usersettings/mtUserAppPolicy";
     const instance = axios.create({
       baseURL: region ?? getAppStudioEndpoint(),
       timeout: 30000,
@@ -520,7 +576,7 @@ export namespace AppStudioClient {
     do {
       let response = undefined;
       try {
-        response = await instance.get("/api/usersettings/mtUserAppPolicy");
+        response = await instance.get(apiPath);
         let result: boolean | undefined;
         if (response.status >= 400) {
           result = undefined;
@@ -544,21 +600,31 @@ export namespace AppStudioClient {
             {
               [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
               [TelemetryProperty.CheckSideloadingMethod]: "get",
-              [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+              [TelemetryProperty.CheckSideloadingUrl]: apiName,
             }
           );
         }
 
         return result;
-      } catch (error) {
+      } catch (error: any) {
         sendTelemetryErrorEvent(
           Component.core,
           TelemetryEvent.CheckSideloading,
-          new SystemError({ error, source: "M365Account" }),
+          new SystemError({
+            error,
+            source: "M365Account",
+            message: AppStudioError.DeveloperPortalAPIFailedError.message(
+              error,
+              error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
+              apiPath,
+              apiName,
+              error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+            )[0],
+          }),
           {
-            [TelemetryProperty.CheckSideloadingStatusCode]: `${response?.status}`,
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
             [TelemetryProperty.CheckSideloadingMethod]: "get",
-            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+            [TelemetryProperty.CheckSideloadingUrl]: apiName,
           }
         );
         await waitSeconds((retry + 1) * retryIntervalSeconds);

@@ -109,8 +109,9 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
 import "../component/driver/index";
+import "../component/driver/script/scriptDriver";
+import "reflect-metadata";
 import { DriverContext } from "../component/driver/interface/commonArgs";
-import { coordinator } from "../component/coordinator";
 import { envUtil } from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -323,6 +324,10 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.deployAadManifest, inputs);
   }
 
+  async addWebpart(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.addWebpart, inputs);
+  }
+
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.publishApplication, inputs);
@@ -473,6 +478,36 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.deployTeamsManifest, inputs);
   }
 
+  async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (inputs.validateMethod === "validateAgainstSchema") {
+      return await this.validateManifest(inputs);
+    } else {
+      return await this.validateAppPackage(inputs);
+    }
+  }
+
+  async validateManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.validateManifest, inputs);
+  }
+
+  async validateAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.validateAppPackage, inputs);
+  }
+
+  async createAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.createAppPackage, inputs);
+  }
+
+  /**
+   * get url to preview the app, may prompt to select env, hub and Teams manifest
+   *
+   * @param {Inputs} inputs
+   * @returns the url to preview the app
+   */
+  async previewWithManifest(inputs: Inputs): Promise<Result<string, FxError>> {
+    return this.v3Implement.dispatch(this.previewWithManifest, inputs);
+  }
+
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
@@ -604,6 +639,39 @@ export class FxCore implements v3.ICore {
     }
     return ok(config);
   }
+
+  async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3Enabled()) {
+      return this.v3Implement.dispatch(this.grantPermission, inputs);
+    } else {
+      return this.grantPermissionOld(inputs);
+    }
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false, true),
+    QuestionModelMW,
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+  ])
+  async grantPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs, ctx);
+  }
+
+  async checkPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3Enabled()) {
+      return this.v3Implement.dispatch(this.checkPermission, inputs);
+    } else {
+      return this.checkPermissionOld(inputs);
+    }
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -616,89 +684,32 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.grantPermission);
-    inputs.stage = Stage.grantPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
+  async checkPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs, ctx);
+  }
+
+  async listCollaborator(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3Enabled()) {
+      return this.v3Implement.dispatch(this.listCollaborator, inputs);
+    } else {
+      return this.listCollaboratorOld(inputs);
     }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await grantPermission(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false, true),
-    ContextInjectorMW,
-  ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.checkPermission);
-    inputs.stage = Stage.checkPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await checkPermission(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
-  }
-
-  @hooks([
-    ErrorHandlerMW,
+    QuestionModelMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
     ContextInjectorMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.listCollaborator);
-    inputs.stage = Stage.listCollaborator;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      context.envInfo = ctx.envInfoV3;
-      const res = await listCollaborator(
-        context,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
-    return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  async listCollaboratorOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return listCollaboratorFunc(inputs, ctx);
   }
 
   @hooks([
@@ -869,6 +880,7 @@ export class FxCore implements v3.ICore {
       azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
       m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
       ui: TOOLS.ui,
+      progressBar: undefined,
       logProvider: TOOLS.logProvider,
       telemetryReporter: TOOLS.telemetryReporter!,
       projectPath: projectPath,
@@ -1129,4 +1141,76 @@ export async function ensureBasicFolderStructure(
     return err(WriteFileError(e));
   }
   return ok(null);
+}
+
+export async function listCollaboratorFunc(
+  inputs: Inputs,
+  ctx?: CoreHookContext
+): Promise<Result<any, FxError>> {
+  setCurrentStage(Stage.listCollaborator);
+  inputs.stage = Stage.listCollaborator;
+  const projectPath = inputs.projectPath;
+  if (!projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    context.envInfo = ctx.envInfoV3;
+    const res = await listCollaborator(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      ctx.envInfoV3,
+      TOOLS.tokenProvider
+    );
+    return res;
+  }
+  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+}
+
+export async function checkPermissionFunc(
+  inputs: Inputs,
+  ctx?: CoreHookContext
+): Promise<Result<any, FxError>> {
+  setCurrentStage(Stage.checkPermission);
+  inputs.stage = Stage.checkPermission;
+  const projectPath = inputs.projectPath;
+  if (!projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    context.envInfo = ctx.envInfoV3;
+    const res = await checkPermission(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      ctx.envInfoV3,
+      TOOLS.tokenProvider
+    );
+    return res;
+  }
+  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+}
+
+export async function grantPermissionFunc(
+  inputs: Inputs,
+  ctx?: CoreHookContext
+): Promise<Result<any, FxError>> {
+  setCurrentStage(Stage.grantPermission);
+  inputs.stage = Stage.grantPermission;
+  const projectPath = inputs.projectPath;
+  if (!projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    context.envInfo = ctx.envInfoV3;
+    const res = await grantPermission(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      ctx.envInfoV3,
+      TOOLS.tokenProvider
+    );
+    return res;
+  }
+  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
 }

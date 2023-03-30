@@ -1,5 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { assert } from "chai";
 import { describe, it } from "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -23,6 +28,7 @@ const mockedDriverContext: DriverContext = {
   m365TokenProvider: new MockedM365Provider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
   ui: new MockedUserInteraction(),
+  progressBar: undefined,
   logProvider: new MockedLogProvider(),
   telemetryReporter: new MockedTelemetryReporter(),
   projectPath: "",
@@ -39,7 +45,7 @@ class DriverAWithSummary extends DriverA {
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     return {
       result: ok(new Map([["OUTPUT_A", "VALUE_A"]])),
-      summaries: ["Environment variable OUTPUT_A set in teamsfx/.env file"],
+      summaries: ["Environment variable OUTPUT_A set in env/.env file"],
     };
   }
 }
@@ -54,7 +60,7 @@ class DriverBWithSummary extends DriverB {
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     return {
       result: ok(new Map([["OUTPUT_B", "VALUE_B"]])),
-      summaries: ["Environment variable OUTPUT_B set in teamsfx/.env file"],
+      summaries: ["Environment variable OUTPUT_B set in env/.env file"],
     };
   }
 }
@@ -72,7 +78,7 @@ class DriverThatCapitalizeWithSummary extends DriverThatCapitalize {
   async execute(args: { INPUT_A: string }, ctx: DriverContext): Promise<ExecutionResult> {
     return {
       result: ok(new Map([["OUTPUT", args.INPUT_A.toUpperCase()]])),
-      summaries: ["Environment variable OUTPUT set in teamsfx/.env file"],
+      summaries: ["Environment variable OUTPUT set in env/.env file"],
     };
   }
 }
@@ -134,6 +140,23 @@ class DriverThatUsesEnvField implements StepDriver {
   }
 }
 
+class DriverThatUsesWriteToEnvironmentFileField implements StepDriver {
+  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
+    throw new Error(`not implemented`);
+  }
+
+  async execute(
+    args: unknown,
+    context: DriverContext,
+    outputVarNames: Map<string, string>
+  ): Promise<ExecutionResult> {
+    const ret = [...outputVarNames.values()].map(
+      (value) => [value, value.toLocaleLowerCase()] as const
+    );
+    return { result: ok(new Map([...ret])), summaries: [] };
+  }
+}
+
 describe("v3 lifecyle", () => {
   describe("when driver name not found", () => {
     const sandbox = sinon.createSandbox();
@@ -154,13 +177,13 @@ describe("v3 lifecyle", () => {
 
       const lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
-      assert(result.isErr() && result.error.name === "DriverNotFoundError");
+      assert(result.isErr() && result.error.name === "InvalidYmlActionNameError");
 
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(
         execResult.isErr() &&
           execResult.error.kind === "Failure" &&
-          execResult.error.error.name === "DriverNotFoundError"
+          execResult.error.error.name === "InvalidYmlActionNameError"
       );
 
       assert(summaries.length === 0, "summary list should be empty");
@@ -737,10 +760,10 @@ describe("Summary", () => {
       summaries.length === 2 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in env/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in teamsfx/.env file`
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in env/.env file`
     );
   });
 
@@ -777,10 +800,10 @@ describe("Summary", () => {
       summaries.length === 3 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in env/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in env/.env file` &&
         summaries[2].length === 1 &&
         summaries[2][0].includes(`${SummaryConstant.Failed} fake message`)
     );
@@ -820,10 +843,58 @@ describe("Summary", () => {
       summaries.length === 2 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in env/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] === `${SummaryConstant.Failed} Unresolved placeholders: AAA,CCC`,
       `Summary should only contain 2 items, because of execution stops at DriverBWithSummary`
+    );
+  });
+});
+
+describe("writeToEnvironmentFile", () => {
+  const sandbox = sinon.createSandbox();
+  const restoreFn = mockedEnv({});
+
+  before(() => {
+    sandbox
+      .stub(Container, "has")
+      .withArgs(sandbox.match("DriverThatUsesWriteToEnvironmentFileField"))
+      .returns(true);
+
+    sandbox
+      .stub(Container, "get")
+      .withArgs(sandbox.match("DriverThatUsesWriteToEnvironmentFileField"))
+      .returns(new DriverThatUsesWriteToEnvironmentFileField());
+  });
+
+  after(() => {
+    sandbox.restore();
+    if (restoreFn) {
+      restoreFn();
+    }
+  });
+
+  it("should work", async () => {
+    const driverDefs: DriverDefinition[] = [];
+    driverDefs.push({
+      uses: "DriverThatUsesWriteToEnvironmentFileField",
+      with: {},
+      writeToEnvironmentFile: {
+        key1: "AAA",
+        key2: "BBB",
+      },
+    });
+
+    const lifecycle = new Lifecycle("configureApp", driverDefs);
+    const { result } = await lifecycle.execute(mockedDriverContext);
+
+    assert(
+      result.isOk() &&
+        result.value.size === 2 &&
+        result.value.has("AAA") &&
+        result.value.get("AAA") === "aaa" &&
+        result.value.has("BBB") &&
+        result.value.get("BBB") === "bbb"
     );
   });
 });

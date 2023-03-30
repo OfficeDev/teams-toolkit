@@ -185,14 +185,12 @@ export class CodeFlowTenantLogin {
 
   async logout(): Promise<boolean> {
     if (this.accountName) {
-      const accountCache = await loadAccountId(this.accountName);
-      if (accountCache) {
-        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-        if (dataCache) {
-          this.msalTokenCache?.removeAccount(dataCache);
-        }
+      const accounts = await this.msalTokenCache.getAllAccounts();
+      if (accounts.length > 0) {
+        accounts.forEach(async (accountInfo) => {
+          await this.msalTokenCache.removeAccount(accountInfo);
+        });
       }
-
       await saveAccountId(this.accountName, undefined);
     }
     return true;
@@ -225,6 +223,7 @@ export class CodeFlowTenantLogin {
               LogLevel.Error,
               "[Login] silent acquire token : " + error.message
             );
+            await this.logout();
             const accessToken = await this.login();
             return accessToken;
           });

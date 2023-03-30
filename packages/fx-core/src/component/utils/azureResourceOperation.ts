@@ -8,6 +8,7 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { StorageAccounts, StorageManagementClient, AccountSasParameters } from "@azure/arm-storage";
 import { DeployConstant } from "../constant/deployConstant";
 import { TokenCredential } from "@azure/identity";
+import { wrapAzureOperation } from "./azureSdkErrorHandler";
 
 /**
  * parse Azure resource id into subscriptionId, resourceGroupName and resourceName
@@ -36,13 +37,11 @@ export function parseAzureResourceId(resourceId: string, pattern: RegExp): Azure
 export async function getAzureAccountCredential(
   tokenProvider: AzureAccountProvider
 ): Promise<TokenCredential> {
-  let credential;
-  try {
-    credential = await tokenProvider.getIdentityCredentialAsync();
-  } catch (e) {
-    throw ExternalApiCallError.getAzureCredentialError(DeployConstant.DEPLOY_ERROR_TYPE, e);
-  }
-
+  const credential = await wrapAzureOperation(
+    () => tokenProvider.getIdentityCredentialAsync(),
+    (e) => ExternalApiCallError.getAzureCredentialRemoteError(DeployConstant.DEPLOY_ERROR_TYPE, e),
+    (e) => ExternalApiCallError.getAzureCredentialError(DeployConstant.DEPLOY_ERROR_TYPE, e)
+  );
   if (!credential) {
     throw PrerequisiteError.somethingIllegal(
       "Deploy",
@@ -89,16 +88,19 @@ export async function generateSasToken(
     sharedAccessStartTime: new Date(Date.now() - DeployConstant.SAS_TOKEN_LIFE_TIME_PADDING),
     sharedAccessExpiryTime: new Date(Date.now() + DeployConstant.SAS_TOKEN_LIFE_TIME),
   };
-  let token;
-  try {
-    token = (await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters))
-      .accountSasToken;
-  } catch (e) {
-    throw ExternalApiCallError.getSasTokenError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      JSON.stringify(e)
-    );
-  }
+  const token = await wrapAzureOperation(
+    async () =>
+      (
+        await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters)
+      ).accountSasToken,
+    (e) =>
+      ExternalApiCallError.getSasTokenRemoteError(
+        DeployConstant.DEPLOY_ERROR_TYPE,
+        JSON.stringify(e)
+      ),
+    (e) =>
+      ExternalApiCallError.getSasTokenError(DeployConstant.DEPLOY_ERROR_TYPE, JSON.stringify(e))
+  );
   if (!token) {
     throw ExternalApiCallError.getSasTokenError(DeployConstant.DEPLOY_ERROR_TYPE);
   }

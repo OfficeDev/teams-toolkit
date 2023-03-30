@@ -9,7 +9,6 @@ import * as sinon from "sinon";
 
 import {
   generateLabel,
-  saveRunScript,
   updateLocalEnv,
 } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { mockMigrationContext } from "./utils";
@@ -80,32 +79,6 @@ describe("debugV3MigrationUtils", () => {
       const expected = "key1=new-value1" + os.EOL + "key2=new-value2" + os.EOL + "key3=value3";
       await updateLocalEnv(migrationContext, envs);
       chai.assert.equal(localEnvContent, expected);
-    });
-  });
-
-  describe("saveRunScript", () => {
-    const projectPath = "projectPath";
-    let script = "";
-
-    beforeEach(() => {
-      sinon.stub(MigrationContext.prototype, "fsEnsureDir").callsFake(async () => {});
-      sinon.stub(MigrationContext.prototype, "fsPathExists").returns(Promise.resolve(false));
-      sinon.stub(MigrationContext.prototype, "fsCreateFile").callsFake(async () => {});
-      sinon.stub(MigrationContext.prototype, "fsWriteFile").callsFake(async (file, data) => {
-        script = data;
-      });
-    });
-
-    afterEach(() => {
-      sinon.restore();
-      script = "";
-    });
-
-    it("happy path", async () => {
-      const migrationContext = await mockMigrationContext(projectPath);
-      const expected = "script";
-      await saveRunScript(migrationContext, "run.tab.js", expected);
-      chai.assert.equal(script, expected);
     });
   });
 });

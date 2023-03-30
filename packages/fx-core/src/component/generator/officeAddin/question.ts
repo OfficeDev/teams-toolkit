@@ -5,7 +5,6 @@ import {
   QTreeNode,
   SingleFileQuestion,
   SingleSelectQuestion,
-  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -17,8 +16,8 @@ const jsonData = new projectsJsonData();
 export const OfficeAddinItems: () => OptionItem[] = () =>
   jsonData.getProjectTemplateNames().map((template) => ({
     id: template,
-    label: jsonData.getProjectDisplayName(template),
-    detail: jsonData.getProjectDetails(template),
+    label: getLocalizedString(jsonData.getProjectDisplayName(template)),
+    detail: getLocalizedString(jsonData.getProjectDetails(template)),
     groupName: getLocalizedString("core.options.separator.addin"),
   }));
 
@@ -26,20 +25,12 @@ export const OfficeAddinItems: () => OptionItem[] = () =>
 export function ImportAddinProjectItem(): OptionItem {
   return {
     id: "import-addin-project",
-    label: "Import Add-in",
+    label: getLocalizedString("core.importAddin.label"),
     cliName: "import",
-    detail: "Import an office independent add-in project",
+    detail: getLocalizedString("core.importAddin.detail"),
     groupName: getLocalizedString("core.options.separator.addin"),
   };
 }
-
-export const OfficeAddinItem: OptionItem = {
-  id: "office-addin",
-  label: "office addin label",
-  cliName: "tab",
-  description: "Office Addin description",
-  detail: "Office Addin detail",
-};
 
 export enum QuestionName {
   AddinLanguageQuestion = "addin-language",
@@ -49,14 +40,6 @@ export enum QuestionName {
   AddinTemplateSelectQuestion = "addin-template-select",
   OfficeHostQuestion = "addin-host",
 }
-
-// TODO: localize the strings
-export const AddinNameQuestion: TextInputQuestion = {
-  type: "text",
-  name: QuestionName.AddinNameQuestion,
-  title: "Add-in name",
-  default: "office addin",
-};
 
 export const AddinLanguageQuestion: SingleSelectQuestion = {
   type: "singleSelect",
@@ -127,8 +110,6 @@ export const getTemplate = (inputs: Inputs): string => {
 };
 
 export const getQuestionsForScaffolding = (): QTreeNode => {
-  const nameNode = new QTreeNode(AddinNameQuestion);
-
   const importNode = new QTreeNode({ type: "group" });
   importNode.condition = {
     validFunc: (input: unknown, inputs?: Inputs) => {
@@ -169,7 +150,6 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
   const root = new QTreeNode({ type: "group" });
   root.addChild(importNode);
   root.addChild(templateNode);
-  root.addChild(nameNode);
 
   return root;
 };

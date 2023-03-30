@@ -14,7 +14,12 @@ import {
   commonTemplateName,
   sampleDefaultTimeoutInMs,
 } from "./constant";
-import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
+import {
+  CancelDownloading,
+  FetchZipFromUrlError,
+  TemplateZipFallbackError,
+  UnzipError,
+} from "./error";
 import {
   SampleActionSeq,
   GeneratorAction,
@@ -70,7 +75,7 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
     });
-    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate());
     await this.generate(generatorContext, TemplateActionSeq);
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
@@ -110,7 +115,7 @@ export class Generator {
       onActionError: sampleDefaultOnActionError,
     };
 
-    await actionContext?.progressBar?.next(ProgressMessages.generateSample);
+    await actionContext?.progressBar?.next(ProgressMessages.generateSample());
     await this.generate(generatorContext, SampleActionSeq);
     return ok(undefined);
   }
@@ -142,8 +147,11 @@ export async function templateDefaultOnActionError(
   switch (action.name) {
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
-      await context.logProvider.info(error.message);
-      await context.logProvider.info(LogMessages.getTemplateFromLocal);
+      context.cancelDownloading = true;
+      if (!(error instanceof CancelDownloading)) {
+        await context.logProvider.info(error.message);
+        await context.logProvider.info(LogMessages.getTemplateFromLocal);
+      }
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
       await context.logProvider.error(error.message);

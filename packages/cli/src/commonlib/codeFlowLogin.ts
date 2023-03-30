@@ -39,6 +39,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import { getColorizedString } from "../utils";
+import os from "os";
 
 export class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
@@ -253,14 +254,12 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = await loadAccountId(this.accountName);
-    if (accountCache) {
-      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.msalTokenCache?.removeAccount(dataCache);
-      }
+    const accounts = await this.msalTokenCache.getAllAccounts();
+    if (accounts.length > 0) {
+      accounts.forEach(async (accountInfo) => {
+        await this.msalTokenCache.removeAccount(accountInfo);
+      });
     }
-
     await saveAccountId(this.accountName, undefined);
     this.account = undefined;
     return true;
@@ -294,13 +293,15 @@ export class CodeFlowLogin {
           .catch(async (error) => {
             CliCodeLogInstance.necessaryLog(
               LogLevel.Error,
-              "[Login] silent acquire token : " + error.message
+              "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
+                path.join(os.homedir(), ".fx", "account") +
+                "` and try again. " +
+                error.message
             );
             if (!(await checkIsOnline())) {
               return undefined;
             }
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login(this.scopes);
               return accessToken;
@@ -344,13 +345,15 @@ export class CodeFlowLogin {
       } catch (error) {
         CliCodeLogInstance.necessaryLog(
           LogLevel.Error,
-          "[Login] silent acquire token : " + error.message
+          "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
+            path.join(os.homedir(), ".fx", "account") +
+            "` and try again. " +
+            error.message
         );
         if (!(await checkIsOnline())) {
           return err(CheckOnlineError());
         }
         await this.logout();
-        (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
           const accessToken = await this.login(scopes);
           return ok(accessToken);
@@ -386,7 +389,10 @@ export class CodeFlowLogin {
         } else {
           CliCodeLogInstance.necessaryLog(
             LogLevel.Error,
-            "[Login] getTenantToken acquireTokenSilent : " + error.message
+            "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can delete `" +
+              path.join(os.homedir(), ".fx", "account") +
+              "` and try again. " +
+              error.message
           );
           if (!(await checkIsOnline())) {
             return err(CheckOnlineError());
@@ -432,7 +438,10 @@ export class CodeFlowLogin {
             } else {
               CliCodeLogInstance.necessaryLog(
                 LogLevel.Error,
-                "[Login] getTenantToken acquireTokenSilent : " + error.message
+                "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can delete `" +
+                  path.join(os.homedir(), ".fx", "account") +
+                  "` and try again. " +
+                  error.message
               );
               if (!(await checkIsOnline())) {
                 return undefined;

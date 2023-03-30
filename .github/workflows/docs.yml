@@ -1,0 +1,123 @@
+name: Docs checker
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  aka-validation:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - TeamsFx
+          - TeamsFx.wiki
+          - TeamsFx-Samples
+    steps:
+      - name: Checkout TeamsFx.wiki
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/${{ matrix.repo }}
+
+      - name: List akas
+        id: list-akas
+        run: |
+          links=`git grep -hEo "https://aka[a-zA-Z0-9./?=_%:-]*[a-zA-Z0-9]"  | sort -nr | uniq`
+
+          white_list="https://aka.ms/teamsfx-debug-prepare-manifest;"
+
+          while IFS= read -r link;
+          do
+            if [[ $white_list == *"$link"* ]]; then
+              echo $link "=>" "white list" >> akas.data
+              continue
+            fi
+            redirect=`curl -LIs -o /dev/null -w %{url_effective} $link`
+            echo $link "=>" $redirect >> akas.data
+          done <<< $links
+
+      - name: Upload akas to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.repo }}
+          path: akas.data
+
+  report:
+    runs-on: ubuntu-latest
+    needs: aka-validation
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: List akas
+        id: list-akas
+        working-directory: artifacts
+        run: |
+          files=(*)
+          lists=""
+          emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;zhshang@microsoft.com;zhididr@microsoft.com;v-liliu2@microsoft.com;"
+          valid=0
+          invalid=0
+
+          for file in "${files[@]}";
+          do
+            echo $file
+            while IFS= read -r line
+            do
+              aka=`echo $line | awk -F '=>' '{print $1}'`
+              redirect=`echo $line | awk -F '=>' '{print $2}'`
+
+              label=""
+              if [[ $redirect == *"bing.com"* ]];
+              then
+                invalid=$((invalid+1))
+                label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
+              elif [[ $redirect == *"white list"* ]];
+              then
+                valid=$((valid+1))
+                label="<span style=\\\"background-color:#b58900;color:white;font-weight:bold;\\\">SKIPPED</span>"
+              else
+                valid=$((valid+1))
+                label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">VALID</span>"
+              fi
+
+              row="<tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: left;\\\">$aka</td> <td style=\\\"text-align: center;\\\">$label</td> </tr>"
+              echo $row
+              
+              if [[ $redirect == *"bing.com"* ]];
+              then
+                lists="$row $lists"
+              else
+                lists="$lists $row"
+              fi
+            done < $file/akas.data
+          done
+
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>REPO</th> <th>AKA</th> <th>STATUS</th> </tr> $lists </table> <br />"
+          total=$((valid+invalid))
+          subject="TeamsFx AKA Link Report ($valid/$total Passed)"
+          if [ $invalid -gt 0 ]; then
+            subject="[FAILED] $subject"
+          else
+            subject="[PASSED] $subject"
+          fi
+
+          echo "body=$body" >> $GITHUB_OUTPUT
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
+
+      - name: Send E-mail to the whole team
+        uses: satak/webrequest-action@master
+        with:
+          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
+          method: POST
+          payload: |
+            {
+              "to": "${{ steps.list-akas.outputs.to }}",
+              "body": "${{ steps.list-akas.outputs.body }}",
+              "subject": "${{ steps.list-akas.outputs.subject }}",
+              "apiKey": "${{ secrets.MAIL_API_KEY }}"
+            }

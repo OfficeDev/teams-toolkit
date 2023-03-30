@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { M365TokenProvider, ok, PathNotExistError, Platform } from "@microsoft/teamsfx-api";
+import { M365TokenProvider, ok, Platform } from "@microsoft/teamsfx-api";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -29,6 +29,7 @@ import { NoSPPackageError } from "../../../../../src/component/driver/deploy/spf
 import { UploadAppPackageFailedError } from "../../../../../src/component/driver/deploy/spfx/error/uploadAppPackageFailedError";
 import { GetGraphTokenFailedError } from "../../../../../src/component/driver/deploy/spfx/error/getGraphTokenFailedError";
 import { GetTenantFailedError } from "../../../../../src/component/driver/deploy/spfx/error/getTenantFailedError";
+import { FileNotFoundError } from "../../../../../src/error/common";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -314,7 +315,7 @@ describe("SPFx Deploy Driver", async () => {
     sinon.stub(fs, "pathExists").resolves(false);
     await expect(
       deployDriver.getPackagePath("C://test/config/package-solution.json")
-    ).to.be.rejectedWith(PathNotExistError);
+    ).to.be.rejectedWith(FileNotFoundError);
   });
 
   it("get app id from solutionConfigPath", async () => {
@@ -328,7 +329,7 @@ describe("SPFx Deploy Driver", async () => {
   it("fail to get app id from solutionConfigPath - PathNotExistsError", async () => {
     sinon.stub(fs, "pathExists").resolves(false);
     await expect(deployDriver.getAppID("C://test/config/package-solution.json")).to.be.rejectedWith(
-      PathNotExistError
+      FileNotFoundError
     );
   });
 });

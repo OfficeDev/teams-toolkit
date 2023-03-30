@@ -39,13 +39,7 @@ describe("Tools Install Driver test", () => {
       const res = await toolsInstallDriver.run({ devCert: { trust: true } }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
-        chai.assert.includeDeepMembers(
-          [
-            ["SSL_CRT_FILE", "testCertPath"],
-            ["SSL_KEY_FILE", "testKeyPath"],
-          ],
-          Array.from(res.value.entries())
-        );
+        chai.assert.isEmpty(res.value);
       }
     });
 
@@ -59,13 +53,7 @@ describe("Tools Install Driver test", () => {
       const res = await toolsInstallDriver.run({ devCert: { trust: true } }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
-        chai.assert.includeDeepMembers(
-          [
-            ["SSL_CRT_FILE", "testCertPath"],
-            ["SSL_KEY_FILE", "testKeyPath"],
-          ],
-          Array.from(res.value.entries())
-        );
+        chai.assert.isEmpty(res.value);
       }
     });
 
@@ -128,10 +116,7 @@ describe("Tools Install Driver test", () => {
       const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
-        chai.assert.includeDeepMembers(
-          [["FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"]],
-          Array.from(res.value.entries())
-        );
+        chai.assert.isEmpty(res.value);
       }
     });
 
@@ -170,10 +155,7 @@ describe("Tools Install Driver test", () => {
       const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
-        chai.assert.includeDeepMembers(
-          [["FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"]],
-          Array.from(res.value.entries())
-        );
+        chai.assert.isEmpty(res.value);
       }
     });
 
@@ -207,10 +189,47 @@ describe("Tools Install Driver test", () => {
       const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
-        chai.assert.includeDeepMembers(
-          [["DOTNET_PATH", "~/.fx/dotnet"]],
-          Array.from(res.value.entries())
-        );
+        chai.assert.isEmpty(res.value);
+      }
+    });
+
+    it("Install dotnet: empty bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: [],
+        },
+      });
+      const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.isEmpty(res.value);
+      }
+    });
+
+    it("Install dotnet: undefined bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: undefined,
+        },
+      });
+      const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.isEmpty(res.value);
       }
     });
 
@@ -253,20 +272,42 @@ describe("Tools Install Driver test", () => {
         isTrusted: true,
         alreadyTrusted: false,
       });
+      const outputEnvVarNames = new Map([
+        ["sslCertFile", "MY_SSL_CRT_FILE"],
+        ["sslKeyFile", "MY_SSL_KEY_FILE"],
+      ]);
       const res = await toolsInstallDriver.execute(
         { devCert: { trust: true } },
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isNotEmpty(res.summaries);
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
-        chai.assert.includeDeepMembers(
-          [
-            ["SSL_CRT_FILE", "testCertPath"],
-            ["SSL_KEY_FILE", "testKeyPath"],
-          ],
-          Array.from(res.result.value.entries())
-        );
+        chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
+          ["MY_SSL_CRT_FILE", "testCertPath"],
+          ["MY_SSL_KEY_FILE", "testKeyPath"],
+        ]);
+      }
+    });
+
+    it("Create and trust new local certificate: empty outputEnvVarNames", async () => {
+      sandbox.stub(LocalCertificateManager.prototype, "setupCertificate").resolves({
+        certPath: "testCertPath",
+        keyPath: "testKeyPath",
+        isTrusted: true,
+        alreadyTrusted: false,
+      });
+      const outputEnvVarNames = new Map();
+      const res = await toolsInstallDriver.execute(
+        { devCert: { trust: true } },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value);
       }
     });
 
@@ -277,20 +318,22 @@ describe("Tools Install Driver test", () => {
         isTrusted: true,
         alreadyTrusted: true,
       });
+      const outputEnvVarNames = new Map([
+        ["sslCertFile", "MY_SSL_CRT_FILE"],
+        ["sslKeyFile", "MY_SSL_KEY_FILE"],
+      ]);
       const res = await toolsInstallDriver.execute(
         { devCert: { trust: true } },
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isNotEmpty(res.summaries);
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
-        chai.assert.includeDeepMembers(
-          [
-            ["SSL_CRT_FILE", "testCertPath"],
-            ["SSL_KEY_FILE", "testKeyPath"],
-          ],
-          Array.from(res.result.value.entries())
-        );
+        chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
+          ["MY_SSL_CRT_FILE", "testCertPath"],
+          ["MY_SSL_KEY_FILE", "testKeyPath"],
+        ]);
       }
     });
 
@@ -301,9 +344,14 @@ describe("Tools Install Driver test", () => {
         isTrusted: undefined,
         alreadyTrusted: undefined,
       });
+      const outputEnvVarNames = new Map([
+        ["sslCertFile", "MY_SSL_CRT_FILE"],
+        ["sslKeyFile", "MY_SSL_KEY_FILE"],
+      ]);
       const res = await toolsInstallDriver.execute(
         { devCert: { trust: false } },
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isNotEmpty(res.summaries);
       chai.assert.isTrue(res.result.isOk());
@@ -323,18 +371,28 @@ describe("Tools Install Driver test", () => {
           name: "SetupCertificateError",
         }),
       });
+      const outputEnvVarNames = new Map([
+        ["sslCertFile", "MY_SSL_CRT_FILE"],
+        ["sslKeyFile", "MY_SSL_KEY_FILE"],
+      ]);
       const res = await toolsInstallDriver.execute(
         { devCert: { trust: true } },
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isEmpty(res.summaries);
       chai.assert.isTrue(res.result.isErr());
     });
 
     it("Invalid parameter", async () => {
+      const outputEnvVarNames = new Map([
+        ["sslCertFile", "MY_SSL_CRT_FILE"],
+        ["sslKeyFile", "MY_SSL_KEY_FILE"],
+      ]);
       const res = await toolsInstallDriver.execute(
         { devCert: { trust: "hello" } } as unknown as InstallToolArgs,
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isEmpty(res.summaries);
       chai.assert.isTrue(res.result.isErr());
@@ -359,14 +417,44 @@ describe("Tools Install Driver test", () => {
           binFolders: ["~/.fx/bin/func/node_modules/.bin"],
         },
       });
-      const res = await toolsInstallDriver.execute({ func: true }, mockedDriverContext);
+      const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { func: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
       chai.assert.isNotEmpty(res.summaries);
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
-        chai.assert.includeDeepMembers(
-          [["FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"]],
-          Array.from(res.result.value.entries())
-        );
+        chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
+          ["MY_FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"],
+        ]);
+      }
+    });
+
+    it("Install func: empty outputEnvVarNames", async () => {
+      sandbox.stub(FuncToolChecker.prototype, "resolve").resolves({
+        name: "Azure Functions Core Tools",
+        type: DepsType.FuncCoreTools,
+        isInstalled: true,
+        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        details: {
+          isLinuxSupported: false,
+          supportedVersions: ["4"],
+          installVersion: "4",
+          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+        },
+      });
+      const outputEnvVarNames = new Map();
+      const res = await toolsInstallDriver.execute(
+        { func: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value);
       }
     });
 
@@ -384,7 +472,12 @@ describe("Tools Install Driver test", () => {
         },
         error: new DepsCheckerError("test message", "test link"),
       });
-      const res = await toolsInstallDriver.execute({ func: true }, mockedDriverContext);
+      const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { func: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
       chai.assert.isEmpty(res.summaries);
       chai.assert.isTrue(res.result.isErr());
     });
@@ -403,21 +496,27 @@ describe("Tools Install Driver test", () => {
         },
         error: new DepsCheckerError("warning message", "test link"),
       });
-      const res = await toolsInstallDriver.execute({ func: true }, mockedDriverContext);
+      const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { func: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
       chai.assert.isNotEmpty(res.summaries);
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
-        chai.assert.includeDeepMembers(
-          [["FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"]],
-          Array.from(res.result.value.entries())
-        );
+        chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
+          ["MY_FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"],
+        ]);
       }
     });
 
     it("Invalid parameter", async () => {
+      const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
       const res = await toolsInstallDriver.execute(
         { func: { version: "hello" } } as unknown as InstallToolArgs,
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isEmpty(res.summaries);
       chai.assert.isTrue(res.result.isErr());
@@ -442,14 +541,98 @@ describe("Tools Install Driver test", () => {
           binFolders: ["~/.fx/dotnet/dotnet.exe"],
         },
       });
-      const res = await toolsInstallDriver.execute({ dotnet: true }, mockedDriverContext);
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
       chai.assert.isNotEmpty(res.summaries);
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
-        chai.assert.includeDeepMembers(
-          [["DOTNET_PATH", "~/.fx/dotnet"]],
-          Array.from(res.result.value.entries())
-        );
+        chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
+          ["MY_DOTNET_PATH", "~/.fx/dotnet"],
+        ]);
+      }
+    });
+
+    it("Install dotnet: empty outputEnvVarNames", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: ["~/.fx/dotnet/dotnet.exe"],
+        },
+      });
+      const outputEnvVarNames = new Map();
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value);
+      }
+    });
+
+    it("Install dotnet: empty bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: [],
+        },
+      });
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
+          ["MY_DOTNET_PATH", ""],
+        ]);
+      }
+    });
+
+    it("Install dotnet: undefined bin folders", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: undefined,
+        },
+      });
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value);
       }
     });
 
@@ -467,15 +650,22 @@ describe("Tools Install Driver test", () => {
         },
         error: new DepsCheckerError("test message", "test link"),
       });
-      const res = await toolsInstallDriver.execute({ dotnet: true }, mockedDriverContext);
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
       chai.assert.isEmpty(res.summaries);
       chai.assert.isTrue(res.result.isErr());
     });
 
     it("Invalid parameter", async () => {
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
       const res = await toolsInstallDriver.execute(
         { dotnet: { version: "hello" } } as unknown as InstallToolArgs,
-        mockedDriverContext
+        mockedDriverContext,
+        outputEnvVarNames
       );
       chai.assert.isTrue(res.result.isErr());
       chai.assert.isEmpty(res.summaries);

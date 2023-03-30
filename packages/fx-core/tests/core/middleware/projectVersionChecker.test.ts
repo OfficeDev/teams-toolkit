@@ -2,30 +2,32 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, Inputs, ok, Platform, ProjectSettings, Result } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { setTools } from "../../../src/core/globalVars";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+import { MockTools, randomAppName } from "../utils";
 import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVersionChecker";
 import { assert } from "chai";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { MetadataV2, MetadataV3, VersionSource } from "../../../src/common/versionMetadata";
 
 describe("Middleware - projectVersionChecker.test", () => {
   const sandbox = sinon.createSandbox();
   let mockTools: MockTools;
+  let mockedEnvRestore: RestoreFn;
   beforeEach(function () {
     mockTools = new MockTools();
     setTools(mockTools);
+    mockedEnvRestore = mockedEnv({});
   });
 
   afterEach(function () {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   // To be removed after TEAMSFX_V3 feature flag is cleaned up
@@ -61,6 +63,7 @@ describe("Middleware - projectVersionChecker.test", () => {
   });
   // To be removed after TEAMSFX_V3 feature flag is cleaned up
   it("Show update dialog or message", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const appName = randomAppName();
     sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
       version: MetadataV3.projectVersion,
@@ -77,7 +80,7 @@ describe("Middleware - projectVersionChecker.test", () => {
       myMethod: [ProjectVersionCheckerMW],
     });
 
-    const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
+    const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage").resolves(ok("Learn more"));
     const showLog = sandbox.stub(mockTools.logProvider, "warning");
 
     const my = new MyClass();

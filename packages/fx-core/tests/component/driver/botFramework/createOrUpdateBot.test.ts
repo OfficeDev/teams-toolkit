@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/botFramework/error/invalidParameterUserError";
 import { UnhandledSystemError } from "../../../../src/component/driver/botFramework/error/unhandledError";
 import { CreateOrUpdateBotFrameworkBotDriver } from "../../../../src/component/driver/botFramework/createOrUpdateBot";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 describe("CreateOrUpdateM365BotDriver", () => {
   const mockedDriverContext: any = {
@@ -24,12 +24,12 @@ describe("CreateOrUpdateM365BotDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.botFramework.error.invalidParameter") {
+      if (key === "error.yaml.InvalidActionInputError") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.botFramework.error.unhandledError") {
+      } else if (key === "error.common.UnhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
       } else if (key === "driver.botFramework.summary.create") {
         return util.format("The bot registration has been created successfully (%s).", ...params);
@@ -56,10 +56,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: botId.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -71,10 +68,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: name.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -86,10 +80,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: messagingEndpoint.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -103,10 +94,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: description.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -120,10 +108,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: iconUrl.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -137,10 +122,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: channels.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -158,10 +140,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: channels.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -180,10 +159,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for botFramework/create action: channels.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -223,7 +199,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
             callingWebhook: "",
           },
           {
-            name: "outlook",
+            name: "m365extensions",
           },
         ],
       };

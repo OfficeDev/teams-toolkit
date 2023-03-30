@@ -34,7 +34,6 @@ import {
   NodeNotSupportedError,
   DepsCheckerError,
   validationSettingsHelpLink,
-  NodeNotRecommendedError,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   ITaskDefinition,
@@ -50,6 +49,7 @@ import {
   AppStudioScopes,
   getSideloadingStatus,
   isM365AppEnabled,
+  isV3Enabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
 import { isExistingTabApp as isExistingTabAppCore } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { YargsCommand } from "../../yargsCommand";
@@ -100,6 +100,7 @@ enum Checker {
 const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
+  [DepsType.LtsNode]: "Node.js",
   [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "Ngrok",
@@ -114,6 +115,7 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.LtsNode]: `Checking ${DepsDisplayName[DepsType.LtsNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
   [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
@@ -132,7 +134,7 @@ export default class Preview extends YargsCommand {
   public builder(yargs: Argv): Argv<any> {
     if (isM365AppEnabled()) {
       yargs.option("m365-host", {
-        description: "Preview the application in Teams, Outlook or Office",
+        description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
         string: true,
         choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
         default: constants.Hub.teams,
@@ -1391,15 +1393,6 @@ export default class Preview extends YargsCommand {
             .split("@SupportedVersions")
             .join(supportedVersions);
           errorMessage = summaryMsg;
-        } else if (nodeStatus.error instanceof NodeNotRecommendedError) {
-          const supportedVersions = nodeStatus?.details.supportedVersions
-            .map((v) => "v" + v)
-            .join(" ,");
-          summaryMsg = doctorResult.NodeNotRecommended.split("@CurrentVersion")
-            .join(nodeStatus?.details.installVersion)
-            .split("@SupportedVersions")
-            .join(supportedVersions);
-          errorMessage = summaryMsg;
         } else {
           errorMessage = nodeStatus.error?.message;
         }
@@ -1414,7 +1407,10 @@ export default class Preview extends YargsCommand {
 
     if (errorMessage) {
       cliLogger.necessaryLog(LogLevel.Warning, errorMessage);
-      cliLogger.necessaryLog(LogLevel.Warning, doctorResult.InstallNode);
+      cliLogger.necessaryLog(
+        LogLevel.Warning,
+        isV3Enabled() ? doctorResult.InstallNodeV3 : doctorResult.InstallNode
+      );
     }
     if (!result) {
       return err(errors.PrerequisitesValidationNodejsError("Node.js checker failed.", helpLink));

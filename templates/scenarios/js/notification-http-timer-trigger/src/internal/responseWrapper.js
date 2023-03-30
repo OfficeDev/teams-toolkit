@@ -2,6 +2,7 @@
 class ResponseWrapper {
   socket;
   originalResponse;
+  headers;
   body;
 
   constructor(functionResponse) {
@@ -13,9 +14,14 @@ class ResponseWrapper {
     // do nothing since res.end() is deprecated in Azure Functions.
   }
 
+  header(name, value) {
+    this.headers[name] = value;
+  }
+
   send(body) {
     // record the body to be returned later.
     this.body = body;
+    this.originalResponse.body = body;
   }
 
   status(status) {

@@ -13,13 +13,11 @@ export interface AdaptiveCardProps<D> {
 // TODO: plain payload without templating
 // TODO: better rendering to JSX instead of DOM manipulation directly
 // TODO: support themes and simulating renderers (Teams, Outlook, themes)
-export function AdaptiveCard<D = any>(props: AdaptiveCardProps<D>) {
+export function AdaptiveCard<D = any>(props: AdaptiveCardProps<D>): any {
   const { template, data } = props;
 
   try {
-    const payload = data
-      ? AdaptiveCards.renderWithData(template, data)
-      : template;
+    const payload = data ? AdaptiveCards.renderWithData(template, data) : template;
     return (
       <div
         className="ac-container"

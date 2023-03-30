@@ -3,7 +3,6 @@ export class TreatmentVariables {
   public static readonly EmbeddedSurvey = "embeddedsurvey";
   public static readonly CustomizeTreeview = "customizetreeview";
   public static readonly WelcomeView = "welcomeview";
-  public static readonly TaskOrientedTemplateNaming = "taskOrientedTemplateNaming";
   public static readonly InProductDoc = "inProductDoc";
 }
 

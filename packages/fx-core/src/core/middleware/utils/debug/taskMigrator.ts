@@ -10,6 +10,7 @@ import {
   TaskCommand,
   TaskDefaultValue,
   TaskLabel,
+  TunnelType,
 } from "../../../../common/local";
 import {
   createResourcesTask,
@@ -17,7 +18,6 @@ import {
   isCommentArray,
   isCommentObject,
   OldProjectSettingsHelper,
-  saveRunScript,
   setUpLocalProjectsTask,
   startAuthTask,
   startBackendTask,
@@ -29,7 +29,8 @@ import {
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { LocalCrypto } from "../../../crypto";
-import * as util from "util";
+import * as os from "os";
+import * as path from "path";
 
 export async function migrateTransparentPrerequisite(
   context: DebugMigrationContext
@@ -93,11 +94,12 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
     if (isCommentObject(task["args"])) {
       const comment = `
         {
-          // Keep consistency with migrated configuration.
+          // Keep consistency with upgraded configuration.
         }
       `;
+      task["args"]["type"] = TunnelType.ngrok;
       task["args"]["env"] = "local";
-      task["args"]["output"] = assign(parse(comment), {
+      task["args"]["writeToEnvironmentFile"] = assign(parse(comment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       });
@@ -166,11 +168,6 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let url = new URL("https://localhost:53000");
     if (isCommentObject(task["args"]) && typeof task["args"]["baseUrl"] === "string") {
       try {
@@ -178,14 +175,14 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       } catch {}
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    if (!context.appYmlConfig.configureApp.tab) {
-      context.appYmlConfig.configureApp.tab = {};
+    if (!context.appYmlConfig.provision.configureApp.tab) {
+      context.appYmlConfig.provision.configureApp.tab = {};
     }
-    context.appYmlConfig.configureApp.tab.domain = url.host;
-    context.appYmlConfig.configureApp.tab.endpoint = url.origin;
+    context.appYmlConfig.provision.configureApp.tab.domain = url.host;
+    context.appYmlConfig.provision.configureApp.tab.endpoint = url.origin;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -195,7 +192,7 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
     }
     context.appYmlConfig.deploy.tab.port = parseInt(url.port);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -213,14 +210,6 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
     context.appYmlConfig.provision.bot = {
       messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
     };
@@ -261,7 +250,7 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -279,20 +268,15 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
+    context.appYmlConfig.provision.registerApp.aad = true;
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    context.appYmlConfig.registerApp.aad = true;
-
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
-    }
-    context.appYmlConfig.configureApp.aad = true;
+    context.appYmlConfig.provision.configureApp.aad = true;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -330,7 +314,7 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -348,33 +332,50 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let appPackagePath: string | undefined = undefined;
     if (isCommentObject(task["args"]) && typeof task["args"]["appPackagePath"] === "string") {
       appPackagePath = task["args"]["appPackagePath"];
     }
 
     if (!appPackagePath) {
-      if (!context.appYmlConfig.registerApp) {
-        context.appYmlConfig.registerApp = {};
+      if (!context.appYmlConfig.provision.registerApp) {
+        context.appYmlConfig.provision.registerApp = {};
       }
-      context.appYmlConfig.registerApp.teamsApp = true;
+      context.appYmlConfig.provision.registerApp.teamsApp = true;
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
-    context.appYmlConfig.configureApp.teamsApp.appPackagePath = appPackagePath;
+    context.appYmlConfig.provision.configureApp.teamsApp.appPackagePath = appPackagePath;
+
+    const label = task["label"] as string;
+    index = handleProvisionAndDeploy(context, index, label);
+  }
+}
+
+export async function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.install-app-in-teams}")
+    ) {
+      ++index;
+      continue;
+    }
 
     const label = task["label"];
-    index = handleProvisionAndDeploy(context, index, label);
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
   }
 }
 
@@ -472,20 +473,22 @@ export async function migrateFrontendStart(context: DebugMigrationContext): Prom
       if (!context.appYmlConfig.deploy) {
         context.appYmlConfig.deploy = {};
       }
+      context.appYmlConfig.deploy.frontendStart = {
+        sso: OldProjectSettingsHelper.includeSSO(context.oldProjectSettings),
+        functionName: OldProjectSettingsHelper.getFunctionName(context.oldProjectSettings),
+      };
       if (!context.appYmlConfig.deploy.npmCommands) {
         context.appYmlConfig.deploy.npmCommands = [];
       }
       const existing = context.appYmlConfig.deploy.npmCommands.find(
-        (value) => value.args === "install -D @microsoft/teamsfx-run-utils@alpha"
+        (value) => value.args === "install -D env-cmd"
       );
       if (!existing) {
         context.appYmlConfig.deploy.npmCommands.push({
-          args: "install -D @microsoft/teamsfx-run-utils@alpha",
+          args: "install -D env-cmd",
           workingDirectory: ".",
         });
       }
-
-      await saveRunScript(context.migrationContext, "run.tab.js", generateRunTabScript(context));
 
       break;
     } else {
@@ -511,20 +514,14 @@ export async function migrateAuthStart(context: DebugMigrationContext): Promise<
       if (!context.appYmlConfig.deploy) {
         context.appYmlConfig.deploy = {};
       }
-      if (!context.appYmlConfig.deploy.npmCommands) {
-        context.appYmlConfig.deploy.npmCommands = [];
-      }
-      const existing = context.appYmlConfig.deploy.npmCommands.find(
-        (value) => value.args === "install -D @microsoft/teamsfx-run-utils@alpha"
-      );
-      if (!existing) {
-        context.appYmlConfig.deploy.npmCommands.push({
-          args: "install -D @microsoft/teamsfx-run-utils@alpha",
-          workingDirectory: ".",
-        });
-      }
-
-      await saveRunScript(context.migrationContext, "run.auth.js", generateRunAuthScript(context));
+      context.appYmlConfig.deploy.authStart = {
+        appsettingsPath: path.join(
+          os.homedir(),
+          ".fx",
+          "localauth",
+          "appsettings.Development.json"
+        ),
+      };
 
       break;
     } else {
@@ -543,27 +540,31 @@ export async function migrateBotStart(context: DebugMigrationContext): Promise<v
         (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: bot start")))
     ) {
       const newLabel = generateLabel("Start bot", getLabels(context.tasks));
-      const newTask = startBotTask(newLabel);
+      const newTask = startBotTask(newLabel, context.oldProjectSettings.programmingLanguage);
       context.tasks.splice(index + 1, 0, newTask);
       replaceInDependsOn("teamsfx: bot start", context.tasks, newLabel);
 
       if (!context.appYmlConfig.deploy) {
         context.appYmlConfig.deploy = {};
       }
+      context.appYmlConfig.deploy.botStart = {
+        tab: OldProjectSettingsHelper.includeTab(context.oldProjectSettings),
+        function: OldProjectSettingsHelper.includeFunction(context.oldProjectSettings),
+        sso: OldProjectSettingsHelper.includeSSO(context.oldProjectSettings),
+      };
+
       if (!context.appYmlConfig.deploy.npmCommands) {
         context.appYmlConfig.deploy.npmCommands = [];
       }
       const existing = context.appYmlConfig.deploy.npmCommands.find(
-        (value) => value.args === "install -D @microsoft/teamsfx-run-utils@alpha"
+        (value) => value.args === "install -D env-cmd"
       );
       if (!existing) {
         context.appYmlConfig.deploy.npmCommands.push({
-          args: "install -D @microsoft/teamsfx-run-utils@alpha",
+          args: "install -D env-cmd",
           workingDirectory: ".",
         });
       }
-
-      await saveRunScript(context.migrationContext, "run.bot.js", generateRunBotScript(context));
 
       break;
     } else {
@@ -603,31 +604,26 @@ export async function migrateBackendStart(context: DebugMigrationContext): Promi
         (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: backend start")))
     ) {
       const newLabel = generateLabel("Start backend", getLabels(context.tasks));
-      const newTask = startBackendTask(newLabel);
+      const newTask = startBackendTask(newLabel, context.oldProjectSettings.programmingLanguage);
       context.tasks.splice(index + 1, 0, newTask);
       replaceInDependsOn("teamsfx: backend start", context.tasks, newLabel);
 
       if (!context.appYmlConfig.deploy) {
         context.appYmlConfig.deploy = {};
       }
+      context.appYmlConfig.deploy.backendStart = true;
       if (!context.appYmlConfig.deploy.npmCommands) {
         context.appYmlConfig.deploy.npmCommands = [];
       }
       const existing = context.appYmlConfig.deploy.npmCommands.find(
-        (value) => value.args === "install -D @microsoft/teamsfx-run-utils@alpha"
+        (value) => value.args === "install -D env-cmd"
       );
       if (!existing) {
         context.appYmlConfig.deploy.npmCommands.push({
-          args: "install -D @microsoft/teamsfx-run-utils@alpha",
+          args: "install -D env-cmd",
           workingDirectory: ".",
         });
       }
-
-      await saveRunScript(
-        context.migrationContext,
-        "run.api.js",
-        generateRunBackendScript(context)
-      );
 
       break;
     } else {
@@ -726,37 +722,34 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
       continue;
     }
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.registerApp.aad = true;
+      context.appYmlConfig.provision.registerApp.aad = true;
     }
-    context.appYmlConfig.registerApp.teamsApp = true;
+    context.appYmlConfig.provision.registerApp.teamsApp = true;
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
-      if (!context.appYmlConfig.provision) {
-        context.appYmlConfig.provision = {};
-      }
       context.appYmlConfig.provision.bot = {
         messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
       };
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
     if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.tab = {
+      context.appYmlConfig.provision.configureApp.tab = {
         domain: "localhost:53000",
         endpoint: "https://localhost:53000",
       };
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.aad = true;
+      context.appYmlConfig.provision.configureApp.aad = true;
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
 
     const validateLocalPrerequisitesTask = context.tasks.find(
@@ -784,11 +777,8 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
     }
 
     const existingLabels = getLabels(context.tasks);
-    const createResourcesLabel = generateLabel("Create resources", existingLabels);
-    const setUpLocalProjectsLabel = generateLabel(
-      "Install tools and Build project",
-      existingLabels
-    );
+    const createResourcesLabel = generateLabel("Provision", existingLabels);
+    const setUpLocalProjectsLabel = generateLabel("Deploy", existingLabels);
     task["dependsOn"] = new CommentArray(createResourcesLabel, setUpLocalProjectsLabel);
     task["dependsOrder"] = "sequence";
     const createResources = createResourcesTask(createResourcesLabel);
@@ -908,16 +898,17 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
     }`;
   const placeholderComment = `
     {
-      // Keep consistency with migrated configuration.
+      // Keep consistency with upgraded configuration.
     }
   `;
   const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
     type: "teamsfx",
     command: TaskCommand.startLocalTunnel,
     args: {
+      type: TunnelType.ngrok,
       ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
       env: "local",
-      output: assign(parse(placeholderComment), {
+      writeToEnvironmentFile: assign(parse(placeholderComment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       }),
@@ -937,14 +928,12 @@ function handleProvisionAndDeploy(
 
   const existingLabels = getLabels(context.tasks);
 
-  const generatedBefore = context.generatedLabels.find((value) =>
-    value.startsWith("Create resources")
-  );
-  const createResourcesLabel = generatedBefore || generateLabel("Create resources", existingLabels);
+  const generatedBefore = context.generatedLabels.find((value) => value.startsWith("Provision"));
+  const createResourcesLabel = generatedBefore || generateLabel("Provision", existingLabels);
 
   const setUpLocalProjectsLabel =
-    context.generatedLabels.find((value) => value.startsWith("Install tools and Build project")) ||
-    generateLabel("Install tools and Build project", existingLabels);
+    context.generatedLabels.find((value) => value.startsWith("Deploy")) ||
+    generateLabel("Deploy", existingLabels);
 
   if (!generatedBefore) {
     context.generatedLabels.push(createResourcesLabel);
@@ -1002,222 +991,3 @@ function getLabels(tasks: CommentArray<CommentJSONValue>): string[] {
 
   return labels;
 }
-
-function generateRunTabScript(context: DebugMigrationContext): string {
-  const ssoSnippet = OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)
-    ? util.format(tabSSOSnippet, context.placeholderMapping.tabEndpoint)
-    : "";
-  const functionSnippet = OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)
-    ? util.format(
-        tabFunctionSnippet,
-        OldProjectSettingsHelper.getFunctionName(context.oldProjectSettings)
-      )
-    : "";
-  return util.format(runTabScriptTemplate, ssoSnippet, functionSnippet);
-}
-
-function generateRunAuthScript(context: DebugMigrationContext): string {
-  return util.format(
-    runAuthScriptTemplate,
-    context.placeholderMapping.tabDomain,
-    context.placeholderMapping.tabEndpoint
-  );
-}
-
-function generateRunBotScript(context: DebugMigrationContext): string {
-  let ssoSnippet = "";
-  if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
-      ssoSnippet = util.format(
-        botSSOSnippet,
-        context.placeholderMapping.botEndpoint,
-        `\`api://\${envs.${context.placeholderMapping.tabDomain}}/botid-\${envs.BOT_ID}\`;`
-      );
-    } else {
-      ssoSnippet = util.format(
-        botSSOSnippet,
-        context.placeholderMapping.botEndpoint,
-        `\`api://botid-\${envs.BOT_ID}\`;`
-      );
-    }
-  }
-  const functionSnippet = OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)
-    ? botFunctionSnippet
-    : "";
-  const startSnippet =
-    context.oldProjectSettings.programmingLanguage === "javascript"
-      ? botStartJSSnippet
-      : botStartTSSnippet;
-  return util.format(runBotScriptTemplate, ssoSnippet, functionSnippet, startSnippet);
-}
-
-function generateRunBackendScript(context: DebugMigrationContext): string {
-  const programmingLanguage = context.oldProjectSettings.programmingLanguage || "javascript";
-  return util.format(runApiScriptTemplate, programmingLanguage);
-}
-
-const tabSSOSnippet = `
-  process.env.REACT_APP_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
-  process.env.REACT_APP_START_LOGIN_PAGE_URL = \`\${envs.%s}/auth-start.html\`;
-  process.env.REACT_APP_TEAMSFX_ENDPOINT = "http://localhost:55000";`;
-const tabFunctionSnippet = `
-  process.env.REACT_APP_FUNC_ENDPOINT = "http://localhost:7071";
-  process.env.REACT_APP_FUNC_NAME = "%s";`;
-const runTabScriptTemplate = `const cp = require("child_process");
-const utils = require("@microsoft/teamsfx-run-utils");
-
-// This script is used by Teams Toolkit to launch your service locally
-
-async function run() {
-  const args = process.argv.slice(2);
-
-  if (args.length !== 2) {
-    console.log(\`Usage: node \${__filename} [project path] [env path].\`);
-    process.exit(1);
-  }
-
-  const envs = await utils.loadEnv(args[0], args[1]);
-
-  // set up environment variables required by teamsfx
-  process.env.BROWSER = "none";
-  process.env.HTTPS = true;
-  process.env.PORT = 53000;
-  process.env.SSL_CRT_FILE = envs.SSL_CRT_FILE;
-  process.env.SSL_KEY_FILE = envs.SSL_KEY_FILE;%s%s
-
-  // launch service locally
-  cp.spawn(/^win/.test(process.platform) ? "npx.cmd" : "npx", ["react-scripts", "start"], {
-    stdio: "inherit",
-  });
-}
-
-run();
-`;
-
-const runAuthScriptTemplate = `const cp = require("child_process");
-const os = require("os");
-const path = require("path");
-const utils = require("@microsoft/teamsfx-run-utils");
-
-// This script is used by Teams Toolkit to launch your service locally
-
-async function run() {
-  const args = process.argv.slice(2);
-
-  if (args.length !== 2) {
-    console.log(\`Usage: node \${__filename} [project path] [env path].\`);
-    process.exit(1);
-  }
-
-  const envs = await utils.loadEnv(args[0], args[1]);
-
-  // set up environment variables required by teamsfx
-  process.env.CLIENT_ID = envs.AAD_APP_CLIENT_ID;
-  process.env.CLIENT_SECRET = envs.SECRET_AAD_APP_CLIENT_SECRET;
-  process.env.IDENTIFIER_URI = \`api://\${envs.%s}/\${envs.AAD_APP_CLIENT_ID}\`;
-  process.env.AAD_METADATA_ADDRESS = \`\${envs.AAD_APP_OAUTH_AUTHORITY}/v2.0/.well-known/openid-configuration\`;
-  process.env.OAUTH_AUTHORITY = envs.AAD_APP_OAUTH_AUTHORITY;
-  process.env.TAB_APP_ENDPOINT = envs.%s;
-  process.env.ALLOWED_APP_IDS =
-    "1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3";
-  process.env.urls = "http://localhost:55000";
-
-  // launch service locally
-  cp.spawn("dotnet", ["Microsoft.TeamsFx.SimpleAuth.dll"], {
-    cwd: path.join(os.homedir(), ".fx", "localauth"),
-    stdio: "inherit",
-  });
-}
-
-run();
-`;
-
-const botSSOSnippet = `
-  process.env.M365_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
-  process.env.M365_CLIENT_SECRET = envs.SECRET_AAD_APP_CLIENT_SECRET;
-  process.env.M365_TENANT_ID = envs.AAD_APP_TENANT_ID;
-  process.env.M365_AUTHORITY_HOST = envs.AAD_APP_OAUTH_AUTHORITY_HOST;
-  process.env.INITIATE_LOGIN_ENDPOINT = \`\${envs.%s}/auth-start.html\`;
-  process.env.M365_APPLICATION_ID_URI = %s`;
-const botFunctionSnippet = `
-  process.env.API_ENDPOINT = "http://localhost:7071";`;
-const botStartJSSnippet = `
-  cp.spawn(
-    /^win/.test(process.platform) ? "npx.cmd" : "npx",
-    ["nodemon", "--inspect=9239", "--signal", "SIGINT", "index.js"],
-    { stdio: "inherit" }
-  );`;
-const botStartTSSnippet = `
-  cp.spawn(
-    /^win/.test(process.platform) ? "npx.cmd" : "npx",
-    [
-      "nodemon",
-      "--exec",
-      "node",
-      "--inspect=9239",
-      "--signal",
-      "SIGINT",
-      "-r",
-      "ts-node/register",
-      "index.ts",
-    ],
-    { stdio: "inherit" }
-  );`;
-const runBotScriptTemplate = `const cp = require("child_process");
-const utils = require("@microsoft/teamsfx-run-utils");
-
-// This script is used by Teams Toolkit to launch your service locally
-
-async function run() {
-  const args = process.argv.slice(2);
-
-  if (args.length !== 2) {
-    console.log(\`Usage: node \${__filename} [project path] [env path].\`);
-    process.exit(1);
-  }
-
-  const envs = await utils.loadEnv(args[0], args[1]);
-
-  // set up environment variables required by teamsfx
-  process.env.BOT_ID = envs.BOT_ID;
-  process.env.BOT_PASSWORD = envs.SECRET_BOT_PASSWORD;%s%s
-
-  // launch service locally%s
-}
-
-run();
-`;
-
-const runApiScriptTemplate = `const cp = require("child_process");
-const utils = require("@microsoft/teamsfx-run-utils");
-
-// This script is used by Teams Toolkit to launch your service locally
-
-async function run() {
-  const args = process.argv.slice(2);
-
-  if (args.length !== 2) {
-    console.log(\`Usage: node \${__filename} [project path] [env path].\`);
-    process.exit(1);
-  }
-
-  const envs = await utils.loadEnv(args[0], args[1]);
-
-  // set up environment variables required by teamsfx
-  process.env.FUNCTIONS_WORKER_RUNTIME = "node";
-  process.env.M365_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
-  process.env.M365_CLIENT_SECRET = envs.SECRET_AAD_APP_CLIENT_SECRET;
-  process.env.M365_TENANT_ID = envs.AAD_APP_TENANT_ID;
-  process.env.M365_AUTHORITY_HOST = envs.AAD_APP_OAUTH_AUTHORITY_HOST;
-  process.env.ALLOWED_APP_IDS =
-    "1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3";
-
-  // launch service locally
-  cp.spawn(\`func start --%s --language-worker="--inspect=9229" --port "7071" --cors "*"\`, {
-    stdio: "inherit",
-    shell: true,
-  });
-}
-
-run();
-`;

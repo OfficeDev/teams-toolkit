@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Kuojian Lu <kuojianlu@gmail.com>
+ */
 "use strict";
 
 import fs from "fs-extra";
@@ -30,8 +33,11 @@ import {
   getProjectSettingsPath,
   loadProjectSettingsByProjectPath,
 } from "../../core/middleware/projectSettingsLoader";
-import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
-import { ErrorNames, MaxLengths } from "../resource/botService/constants";
+import {
+  BotChannelType,
+  IBotRegistration,
+} from "../resource/botService/appStudio/interfaces/IBotRegistration";
+import { ErrorNames, MaxLengths, TeamsFxUrlNames } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
 import { genUUID } from "../resource/botService/common";
 import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
@@ -43,6 +49,7 @@ import { AppStudioClient } from "../resource/botService/appStudio/appStudioClien
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
 import { AlreadyCreatedBotNotExist } from "../resource/botService/errors";
+import { APP_STUDIO_API_NAMES } from "../resource/appManifest/constants";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -264,12 +271,16 @@ export class BotDebugHandler {
         iconUrl: "",
         messagingEndpoint: "",
         callingEndpoint: "",
+        configuredChannels: [BotChannelType.MicrosoftTeams],
       };
 
       try {
-        await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+        await AppStudioClient.createBotRegistration(tokenResult.value, botReg, false);
       } catch (e) {
-        if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && this.hasBotIdInEnvBefore) {
+        if (
+          e.innerError?.teamsfxUrlName == TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT] &&
+          this.hasBotIdInEnvBefore
+        ) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
           return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
         } else {

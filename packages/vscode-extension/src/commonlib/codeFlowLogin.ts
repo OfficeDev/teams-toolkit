@@ -22,7 +22,14 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
-import { loggedIn, loggedOut, loggingIn } from "./common/constant";
+import {
+  codeSpacesAuthComplete,
+  extensionID,
+  loggedIn,
+  loggedOut,
+  loggingIn,
+  vscodeRedirect,
+} from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryErrorType,
@@ -32,7 +39,10 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { ExtensionErrors } from "../error";
-
+import { env, Uri } from "vscode";
+import { randomBytes } from "crypto";
+import { getExchangeCode } from "./exchangeCode";
+import * as os from "os";
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
   reject: (reason: any) => void;
@@ -78,6 +88,9 @@ export class CodeFlowLogin {
   }
 
   async login(scopes: Array<string>, loginHint?: string): Promise<string> {
+    if (process.env.CODESPACES == "true") {
+      return await this.loginInCodeSpace(scopes);
+    }
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
     });
@@ -216,17 +229,68 @@ export class CodeFlowLogin {
     return accessToken;
   }
 
+  async loginInCodeSpace(scopes: Array<string>): Promise<string> {
+    let callbackUri: Uri = await env.asExternalUri(
+      Uri.parse(`${env.uriScheme}://${extensionID}/${codeSpacesAuthComplete}`)
+    );
+    const nonce: string = randomBytes(16).toString("base64");
+    const callbackQuery = new URLSearchParams(callbackUri.query);
+    callbackQuery.set("nonce", nonce);
+    callbackUri = callbackUri.with({
+      query: callbackQuery.toString(),
+    });
+    const state = encodeURIComponent(callbackUri.toString(true));
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
+      await CodeFlowLogin.sha256(codeVerifier)
+    );
+    const authCodeUrlParameters: AuthorizationUrlRequest = {
+      scopes: scopes,
+      codeChallenge: codeChallenge,
+      codeChallengeMethod: "S256",
+      redirectUri: vscodeRedirect,
+      prompt: "select_account",
+      state: state,
+    };
+    const signInUrl: string = await this.pca.getAuthCodeUrl(authCodeUrlParameters);
+    const uri: Uri = Uri.parse(signInUrl);
+    void env.openExternal(uri);
+
+    const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
+      const wait = setTimeout(() => {
+        clearTimeout(wait);
+        reject("Login timed out.");
+      }, 1000 * 60 * 5);
+    });
+
+    const accessCode = await Promise.race([getExchangeCode(), timeoutPromise]);
+
+    const tokenRequest = {
+      code: accessCode,
+      scopes: scopes,
+      redirectUri: vscodeRedirect,
+      codeVerifier: codeVerifier,
+    };
+
+    const res = await this.pca.acquireTokenByCode(tokenRequest);
+    if (res.account) {
+      this.account = res.account;
+      await saveAccountId(this.accountName, this.account.homeAccountId);
+    }
+    return Promise.resolve(res.accessToken);
+  }
+
   async logout(): Promise<boolean> {
     try {
-      const accountCache = await loadAccountId(this.accountName);
-      if (accountCache) {
-        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-        if (dataCache) {
-          this.msalTokenCache?.removeAccount(dataCache);
-        }
-      }
-
       await saveAccountId(this.accountName, undefined);
+      const accounts = await this.msalTokenCache.getAllAccounts();
+      if (accounts.length > 0) {
+        accounts.forEach(async (accountInfo) => {
+          await this.msalTokenCache.removeAccount(accountInfo);
+        });
+      }
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
@@ -275,6 +339,7 @@ export class CodeFlowLogin {
               "[Login] " +
                 stringUtil.format(
                   localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+                  path.join(os.homedir(), ".fx", "account"),
                   error.message
                 )
             );
@@ -282,7 +347,6 @@ export class CodeFlowLogin {
               return undefined;
             }
             await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login(this.scopes);
               return accessToken;
@@ -328,6 +392,7 @@ export class CodeFlowLogin {
           "[Login] " +
             stringUtil.format(
               localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+              path.join(os.homedir(), ".fx", "account"),
               error.message
             )
         );
@@ -335,7 +400,6 @@ export class CodeFlowLogin {
           return error(CheckOnlineError());
         }
         await this.logout();
-        (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
           const accessToken = await this.login(scopes, loginHint);
           return ok(accessToken);

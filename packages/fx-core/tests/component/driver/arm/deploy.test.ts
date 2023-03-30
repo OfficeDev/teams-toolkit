@@ -25,6 +25,7 @@ import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
 import { DeployContext, handleArmDeploymentError } from "../../../../src/component/arm";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
+import mockedEnv from "mocked-env";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -248,8 +249,12 @@ describe("util test", () => {
   });
 
   it("useUserSetEnv", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     const res = await useUserSetEnv("./", "local");
     assert.isTrue(res.isErr());
+    restore();
   });
 
   it("convert output", () => {

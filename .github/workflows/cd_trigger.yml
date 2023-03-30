@@ -3,7 +3,7 @@ name: TeamsFx-CD Triggers
 on:
   workflow_run:
     workflows: ["CD"]
-    branches: ["main", "dev", "ga", "hotfix/**"]
+    branches: ["main", "dev", "hotfix/**", "prerelease"]
     types: ["completed"]
 
 jobs:
@@ -14,20 +14,22 @@ jobs:
       - name: Trigger TeamsFx-CICD-Test
         run: |
           curl \
-              -u :${{ secrets.TEAMSFX_BOT }} \
+              -u :${{ secrets.GHEC_BOT_PAT }} \
               -X POST \
               -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
+              https://api.github.com/repos/devdiv-azure-service-dmitryr/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
               -d "{\"ref\":\"main\"}"
 
   DownloadAndOutput:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
+      zipLink: ${{ steps.downloadUrl.outputs.result }}
       pre_id: ${{ steps.preid.outputs.result }}
       server_version: ${{ steps.version.outputs.result }}
     steps:
       - name: Download artifact
+        id: downloadUrl
         uses: actions/github-script@v6
         with:
           script: |
@@ -47,6 +49,7 @@ jobs:
             });
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/release.zip`, Buffer.from(download.data));
+            return matchArtifact.url
 
       - name: Unzip artifact
         run: unzip release.zip
@@ -90,4 +93,30 @@ jobs:
           azure-devops-project-url: https://devdiv.visualstudio.com/InternalTools
           azure-pipeline-name: TeamsFx-Dev17-CD
           azure-devops-token: ${{ secrets.VS_ADO_PAT }}
-          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}}'
+          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}}'
+
+  CheckSetupSuccess:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - name: Setup project
+        id: setup
+        run: npm run setup
+        continue-on-error: true
+      - name: Info
+        if: steps.setup.outcome != 'success'
+        run: |
+          echo "`npm run setup` failed after current project finish CD,\
+           it may be the inconsistency of package dependencies caused by separate release,\
+           please confirm this problem will not affect the CI of subsequent PRs."
+

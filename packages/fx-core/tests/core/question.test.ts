@@ -7,8 +7,12 @@ import {
   createAppNameQuestion,
   handleSelectionConflict,
   ProgrammingLanguageQuestion,
+  ScratchOptionYesVSC,
+  CoreQuestionNames,
+  getQuestionForDeployAadManifest,
+  validateAadManifestContainsPlaceholder,
 } from "../../src/core/question";
-import { FuncValidation, Inputs, Platform, QTreeNode } from "@microsoft/teamsfx-api";
+import { FuncValidation, Inputs, Platform, QTreeNode, v2, ok, err } from "@microsoft/teamsfx-api";
 import {
   BotNewUIOptionItem,
   BotOptionItem,
@@ -29,7 +33,12 @@ import {
 } from "../../src/component/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel";
-
+import * as featureFlags from "../../src/common/featureFlags";
+import os from "os";
+import { MockTools, randomAppName } from "./utils";
+import { environmentManager } from "../../src/core/environment";
+import path from "path";
+import * as fs from "fs-extra";
 describe("Programming Language Questions", async () => {
   it("should return csharp on VS platform", async () => {
     chai.assert.isTrue(ProgrammingLanguageQuestion.dynamicOptions !== undefined);
@@ -293,11 +302,105 @@ describe("App name question", async () => {
 });
 
 describe("addOfficeAddinQuestions()", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("should add questions", () => {
     const parent = new QTreeNode({
       type: "group",
     });
     addOfficeAddinQuestions(parent);
     chai.assert(parent.children?.length != undefined && parent.children.length > 0);
+  });
+
+  it("should show in scratch option when feature flag is on", () => {
+    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(true);
+
+    const officeAddinOption = ScratchOptionYesVSC();
+    chai.assert.equal(
+      officeAddinOption.label,
+      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")}`
+    );
+  });
+
+  it("should not show in scratch option when feature flag is off", () => {
+    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(false);
+    const originOption = ScratchOptionYesVSC();
+    chai.assert.equal(
+      originOption.label,
+      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`
+    );
+  });
+});
+
+describe("updateAadManifestQeustion()", async () => {
+  const inputs: v2.InputsWithProjectPath = {
+    platform: Platform.VSCode,
+    projectPath: path.join(os.tmpdir(), randomAppName()),
+  };
+
+  afterEach(async () => {
+    sinon.restore();
+  });
+  it("if getQuestionForDeployAadManifest not dynamic", async () => {
+    inputs.platform = Platform.CLI_HELP;
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
+  });
+
+  it("getQuestionForDeployAadManifest happy path", async () => {
+    inputs.platform = Platform.VSCode;
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs.env = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(true);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 2);
+      const aadAppManifestQuestion = node?.children?.[0];
+      const envQuestion = node?.children?.[1];
+      chai.assert.isNotNull(aadAppManifestQuestion);
+      chai.assert.isNotNull(envQuestion);
+    }
+  });
+  it("getQuestionForDeployAadManifest without env", async () => {
+    inputs.platform = Platform.VSCode;
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs.env = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(false);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 1);
+    }
+  });
+  it("validateAadManifestContainsPlaceholder return undefined", async () => {
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = path.join(
+      __dirname,
+      "..",
+      "samples",
+      "sampleV3",
+      "aad.manifest.json"
+    );
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
+    chai.assert.isUndefined(res);
+  });
+  it("validateAadManifestContainsPlaceholder skip", async () => {
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
+    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
+    const expectRes = "Skip Current Question";
+    chai.expect(res).to.equal(expectRes);
   });
 });

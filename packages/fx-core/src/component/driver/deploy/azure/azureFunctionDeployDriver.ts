@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Siglud <siglud@gmail.com>
+ */
 
 import { Service } from "typedi";
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
@@ -19,13 +22,9 @@ export class AzureFunctionDeployDriver implements StepDriver {
     "driver.deploy.deployToAzureFunctionsDescription"
   );
   private static readonly SERVICE_NAME = "Azure Function App";
-  private static readonly SUMMARY = [
-    // eslint-disable-next-line no-secrets/no-secrets
-    getLocalizedString("driver.deploy.azureFunctionsDeploySummary"),
-  ];
-  private static readonly SUMMARY_PREPARE = [
-    getLocalizedString("driver.deploy.notice.deployDryRunComplete"),
-  ];
+  // eslint-disable-next-line no-secrets/no-secrets
+  private static readonly SUMMARY = ["driver.deploy.azureFunctionsDeployDetailSummary"];
+  private static readonly SUMMARY_PREPARE = ["driver.deploy.notice.deployDryRunComplete"];
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {

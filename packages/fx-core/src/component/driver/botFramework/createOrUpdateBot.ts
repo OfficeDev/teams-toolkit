@@ -12,7 +12,6 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import {
   CreateOrUpdateBotFrameworkBotArgs,
@@ -24,6 +23,7 @@ import {
   BotChannelType,
   IBotRegistration,
 } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -89,8 +89,8 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
           if (channel.name === BotChannelType.MicrosoftTeams) {
             callingEndpoint = (channel as MicrosoftTeamsChannelSettings).callingWebhook;
             configuredChannels.push(BotChannelType.MicrosoftTeams);
-          } else if (channel.name === BotChannelType.Outlook) {
-            configuredChannels.push(BotChannelType.Outlook);
+          } else if (channel.name === BotChannelType.M365Extensions) {
+            configuredChannels.push(BotChannelType.M365Extensions);
           }
         }
       }
@@ -174,7 +174,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
             !channel.name ||
             typeof channel.name !== "string" ||
             (channel.name !== BotChannelType.MicrosoftTeams &&
-              channel.name !== BotChannelType.Outlook)
+              channel.name !== BotChannelType.M365Extensions)
           ) {
             invalidParameters.push("channels");
             break;
@@ -191,7 +191,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 }

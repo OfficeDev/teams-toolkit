@@ -1,0 +1,45 @@
+{
+  "name": "@microsoft/eslint-plugin-teamsfx",
+  "version": "0.0.1",
+  "description": "eslint for teamsfx",
+  "private": true,
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "teamsfx"
+  ],
+  "author": "Microsoft Corporation",
+  "main": "lib/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "npx nyc --reporter=lcov mocha tests --recursive"
+  },
+  "dependencies": {
+    "requireindex": "^1.2.0"
+  },
+  "devDependencies": {
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-eslint-plugin": "^4.0.1",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "lint-staged": "^10.5.4",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint": "^7.9.0",
+    "eslint-plugin-no-secrets": "^0.8.9",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1",
+    "mocha": "^9.1.3"
+  },
+  "engines": {
+    "node": "12.x || 14.x || >= 16"
+  },
+  "peerDependencies": {
+    "eslint": ">=6"
+  },
+  "license": "MIT"
+}

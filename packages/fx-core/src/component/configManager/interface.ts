@@ -1,3 +1,7 @@
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
@@ -25,6 +29,7 @@ export type DriverDefinition = {
   uses: string;
   with: unknown;
   env?: Record<string, string>;
+  writeToEnvironmentFile?: Record<string, string>;
 };
 
 export type DriverInstance = DriverDefinition & { instance: StepDriver };

@@ -9,27 +9,29 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
-import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
-import { GenerateAppsettingsDriver } from "../../../../src/component/driver/file/appsettingsGenerate";
+import { UpdateJsonDriver } from "../../../../src/component/driver/file/updateJson";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
-describe("AppsettingsGenerateDriver", () => {
+describe("UpdateJsonDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
   } as DriverContext;
-  const driver = new GenerateAppsettingsDriver();
+  const driver = new UpdateJsonDriver();
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.file.error.invalidParameter") {
+      if (key === "error.yaml.InvalidActionInputError") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.file.error.unhandledError") {
-        return util.format("Unhandled error happened in %s action: %s", ...params);
+      } else if (key === "error.common.UnhandledError") {
+        return util.format(
+          'An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.',
+          ...params
+        );
       }
       return "";
     });
@@ -52,10 +54,7 @@ describe("AppsettingsGenerateDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for file/updateAppSettings action: target.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -67,14 +66,12 @@ describe("AppsettingsGenerateDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for file/updateAppSettings action: appsettings.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
     it("exception", async () => {
+      sinon.stub(fs, "pathExists").rejects(new Error("exception"));
       sinon.stub(fs, "existsSync").throws(new Error("exception"));
       const args: any = {
         target: "path",
@@ -104,6 +101,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -138,6 +136,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -175,6 +174,7 @@ describe("AppsettingsGenerateDriver", () => {
         content = data;
         return;
       });
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "existsSync").callsFake((path) => {
         return true;
       });
@@ -212,6 +212,12 @@ describe("AppsettingsGenerateDriver", () => {
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
         content = data;
         return;
+      });
+      sinon.stub(fs, "pathExists").callsFake(async (path: fs.PathLike) => {
+        if (path.toString().indexOf(target) >= 0) {
+          return false;
+        }
+        return true;
       });
       sinon.stub(fs, "existsSync").callsFake((path) => {
         if (path.toString().indexOf(target) >= 0) {
@@ -254,6 +260,7 @@ describe("AppsettingsGenerateDriver", () => {
       content = data;
       return;
     });
+    sinon.stub(fs, "pathExists").resolves(false);
     sinon.stub(fs, "existsSync").callsFake((path) => {
       return false;
     });

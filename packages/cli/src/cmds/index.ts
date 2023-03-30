@@ -25,11 +25,12 @@ import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 import Update from "./update";
 import Init from "./init";
+import Upgrade from "./upgrade";
 
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
-  ...(isV3Enabled() ? [] : [new Add()]),
+  new Add(),
   new Provision(),
   new Deploy(),
   new Package(),
@@ -50,8 +51,9 @@ export function registerCommands(yargs: Argv): void {
     commands.push(new Permission());
   }
   if (isV3Enabled()) {
-    commands.push(new Init());
+    // commands.push(new Init());
     commands.push(new Update());
+    commands.push(new Upgrade());
   }
 
   commands.forEach((command) => {

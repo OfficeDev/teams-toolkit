@@ -3,9 +3,9 @@
 
 import React from "react";
 
-export function TextBlock(p: { children: any }) {
+export function TextBlock(p: { children: any }): any {
   return <div></div>;
-};
-export function Bold(p: { children: any }) {
+}
+export function Bold(p: { children: any }): any {
   return <div></div>;
-};
+}

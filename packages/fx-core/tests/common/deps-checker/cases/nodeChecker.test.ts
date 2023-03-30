@@ -7,14 +7,7 @@ import {
   NodeChecker,
   ProjectNodeChecker,
 } from "../../../../src/common/deps-checker/internal/nodeChecker";
-import {
-  DepsType,
-  EmptyLogger,
-  EmptyTelemetry,
-  Messages,
-  NodeNotRecommendedError,
-  v3NodeNotSupportedHelpLink,
-} from "../../../../src/common/deps-checker";
+import { DepsType, EmptyLogger, EmptyTelemetry } from "../../../../src/common/deps-checker";
 
 chai.use(chaiAsPromised);
 

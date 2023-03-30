@@ -6,7 +6,7 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Used SharePoint Framework Version
 
-![version](https://img.shields.io/badge/version-1.16.0-green.svg)
+![version](https://img.shields.io/badge/version-1.16.1-green.svg)
 
 ## Applies to
 
@@ -15,7 +15,7 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Prerequisites
 
-> - Node.js v16
+> - [Node.js](https://nodejs.org/en/), supported versions: 16
 > - An Microsoft 365 account. Get your own free Microsoft 365 tenant from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 
 ## Solution
@@ -39,7 +39,7 @@ Version|Date|Comments
 
 ## Minimal Path to Awesome
 
-1. Install the latest version of [Node.js LTS 16.x](https://nodejs.org/en/download/releases/) (Note: SPFx v1.16.0 support Node.js v16).
+1. Install the latest version of [Node.js LTS 16.x](https://nodejs.org/en/download/releases/) (Note: SPFx v1.16.1 supports Node.js v16).
 2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download TeamsFx CLI.
 3. Open the project with VSCode, click `Provision in the cloud` in DEPLOYMENT panel of Teams Toolkit extension.
 

@@ -1,5 +1,36 @@
 # Changelog
 
+## 4.2.4 - Feb 28, 2023
+
+Incremental version for Teams Toolkit with an enhancement.
+
+- Updated SharePoint Framework from `1.16.0` to `1.16.1`.
+
+## 4.2.3 - Feb 17, 2023
+
+Incremental version for Teams Toolkit with multiple bug fixes.
+
+- Fixed an unexpected string change in the `create new app` flow.
+- Fixed an issue where there's no response when clicking on the `Get Started` button.
+- Fixed an issue where you might see `Something went wrong` when adding the bot app on Teams during a debug session.
+
+## 4.2.2 - Feb 7, 2023
+
+Incremental version for Teams Toolkit with multiple bugs fixes and enhancements.
+
+Enhancements:
+
+- Updated pre-requisite checker, applicable app templates and samples to support Node.js 18.
+- Updated comments on Notification bot template for how to send notifications to an individual person.
+- Updated TeamsFx-React SDK to support React 17.
+- Updated TeamsFx SDK, relevant bot app templates and samples to use [CloudAdapter](https://learn.microsoft.com/javascript/api/botbuilder/cloudadapter).
+- Updated app templates to use TeamsJS SDK v2.7.1.
+
+Bug fixes:
+
+- Fxied an issue where login page will pop up even after signed into Microsoft 365 account from Teams Toolkit.
+- Fixed an issue where it may fail to run ngrok because of whitespaces in path.
+
 ## 4.2.0 - Dec 20, 2022
 
 New features:
@@ -16,13 +47,15 @@ Enhancements:
 ## 4.1.3 - Nov 17, 2022
 
 Enhancements:
+
 - Bump up version of [@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx) used in templates and samples to `2.0.0` that depends on [@microsoft/teams-js](https://www.npmjs.com/package/@microsoft/teams-js) version `2.0.0` and above. Starting from this version, it enables [Teams app to run in Outlook and Office.](https://learn.microsoft.com/microsoftteams/platform/m365-apps/overview)
 - A/B testing on in-product documentation to display tutorial articles inside Visual Studio Code.
 
 ## 4.1.2 - Nov 10, 2022
+
 Hotfix version for Teams Toolkit.
 
--Fixed bugs in Sample Gallery.
+- Fixed bugs in Sample Gallery.
 
 ## 4.1.1 - Nov 02, 2022
 

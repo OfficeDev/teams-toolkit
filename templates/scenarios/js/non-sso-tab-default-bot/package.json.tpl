@@ -1,6 +1,9 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "0.0.1",
+    "engines": {
+        "node": "14 || 16 || 18"
+    },
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
@@ -11,9 +14,6 @@
         "dev:bot": "cd bot && npm run dev",
         "start:tab": "cd tab && npm run start",
         "build:tab": "cd tab && npm run build"
-    },
-    "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha"
     },
     "dependencies": {
         "concurrently": "^7.6.0"

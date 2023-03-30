@@ -137,7 +137,7 @@ describe("ngrok", () => {
         };
       });
       const result = await ngrok.getNgrokTunnelFromApi("http://127.0.0.1:4040/api/tunnels");
-      expect(result?.dist).equals("xxx");
+      expect(result?.dest).equals("xxx");
       expect(result?.src).equals("http://localhost:4041");
     });
   });

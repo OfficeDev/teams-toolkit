@@ -11,7 +11,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 >
 > To run the workflow bot template in your local dev machine, you will need:
 >
-> - `Node.js` installed locally (recommended version: 16)
+> - [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
@@ -50,6 +50,7 @@ The following files can be customized and demonstrate an example implementation 
 | File | Contents |
 | - | - |
 | `src/index.ts` | Application entry point and `restify` handlers for the Workflow bot |
+| `src/teamsBot.ts`| An empty teams activity handler for bot customization |
 | `src/commands/helloworldCommandHandler.ts` | Implementation that handles responding to a chat command |
 | `src/adaptiveCards/helloworldCommandResponse.json` | Defines the Adaptive Card (UI) that is displayed in response to a chat command |
 | `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |

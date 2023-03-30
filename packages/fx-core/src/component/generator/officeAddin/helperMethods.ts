@@ -1,3 +1,6 @@
+/**
+ * @author darrmill@microsoft.com, yefuwang@microsoft.com
+ */
 import axios from "axios";
 import fs from "fs";
 import * as fse from "fs-extra";
@@ -29,7 +32,7 @@ export class HelperMethods {
               );
             })
             .on("close", async () => {
-              HelperMethods.unzipProjectTemplate(projectFolder);
+              await HelperMethods.unzipProjectTemplate(projectFolder);
               resolve();
             });
         });
@@ -77,11 +80,7 @@ export class HelperMethods {
 
   static copyAddinFiles(fromFolder: string, toFolder: string): void {
     fse.copySync(fromFolder, toFolder, {
-      filter: (path) => {
-        const module: boolean = path.includes("node_modules");
-        const ignore: boolean = path.includes(".gitignore");
-        return !module && !ignore;
-      },
+      filter: (path) => !path.includes("node_modules"),
     });
   }
 
@@ -101,7 +100,55 @@ export class HelperMethods {
     manifest.extensions = addinManifest.extensions;
     manifest.authorization = addinManifest.authorization;
 
-    // Safe project manifest
+    // Save project manifest
     await ManifestUtil.writeToPath(manifestTemplatePath, manifest);
+  }
+
+  // Move the manifest.json and assets to appPackage folder and update related files.
+  static async moveManifestLocation(
+    projectRoot: string,
+    manifestRelativePath: string
+  ): Promise<void> {
+    const manifestPath = path.join(projectRoot, manifestRelativePath);
+    if (await fse.pathExists(manifestPath)) {
+      if (!(await fse.pathExists(path.join(projectRoot, "appPackage")))) {
+        await fse.mkdir(path.join(projectRoot, "appPackage"));
+      }
+      await fse.rename(manifestPath, path.join(projectRoot, "appPackage", "manifest.json"));
+
+      const packageJsonPath = path.join(projectRoot, "package.json");
+      if (await fse.pathExists(packageJsonPath)) {
+        const content = (await fse.readFile(packageJsonPath)).toString();
+        const reg = /\smanifest\.json\"/g;
+        const data = content.replace(reg, ` appPackage/manifest.json"`);
+        await fse.writeFile(packageJsonPath, data);
+      }
+
+      const assetsPath = path.join(projectRoot, "assets");
+      if (await fse.pathExists(assetsPath)) {
+        await fse.move(assetsPath, path.join(projectRoot, "appPackage", "assets"));
+      }
+
+      const webpackConfigPath = path.join(projectRoot, "webpack.config.js");
+      if (await fse.pathExists(webpackConfigPath)) {
+        const content = (await fse.readFile(webpackConfigPath)).toString();
+        const manifestReg = /\"manifest\*\.json\"/g;
+        const assetsReg = /\"assets\/\*\"/g;
+        const data = content
+          .replace(manifestReg, `"appPackage/manifest*.json"`)
+          .replace(assetsReg, `"appPackage/assets/*"`);
+
+        await fse.writeFile(webpackConfigPath, data);
+      }
+
+      const htmlPath = path.join(projectRoot, "src", "taskpane", "taskpane.html");
+      if (await fse.pathExists(htmlPath)) {
+        const content = (await fse.readFile(htmlPath)).toString();
+        const assetsReg = /\/assets\//g;
+        const data = content.replace(assetsReg, `/appPackage/assets/`);
+
+        await fse.writeFile(htmlPath, data);
+      }
+    }
   }
 }

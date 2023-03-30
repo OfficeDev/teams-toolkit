@@ -9,16 +9,18 @@ import {
   nodeNotSupportedForAzureHelpLink,
   nodeNotSupportedForSPFxHelpLink,
   v3NodeNotFoundHelpLink,
+  v3NodeNotLtsHelpLink,
   v3NodeNotSupportedHelpLink,
 } from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DepsCheckerEvent } from "../constant/telemetry";
-import { DependencyStatus, DepsChecker, DepsType, InstallOptions } from "../depsChecker";
+import { DependencyStatus, DepsChecker, DepsType, BaseInstallOptions } from "../depsChecker";
 import {
   DepsCheckerError,
   NodeNotFoundError,
-  NodeNotRecommendedError,
+  NodeNotLtsError,
   NodeNotSupportedError,
+  V3NodeNotSupportedError,
 } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
@@ -41,8 +43,11 @@ export abstract class NodeChecker implements DepsChecker {
   protected abstract readonly _nodeNotSupportedEvent: DepsCheckerEvent;
   protected abstract readonly _type: DepsType;
   protected abstract getSupportedVersions(projectPath?: string): Promise<string[]>;
-  protected abstract getNodeNotSupportedHelpLink(): Promise<string>;
   protected abstract isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean;
+  protected abstract getVersionNotSupportedError(
+    supportedVersions: string[],
+    version: NodeVersion
+  ): DepsCheckerError;
   protected abstract readonly _minErrorVersion: number;
   protected abstract readonly _maxErrorVersion: number;
 
@@ -54,7 +59,7 @@ export abstract class NodeChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async getInstallationInfo(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     let supportedVersions: string[] = [];
     try {
       supportedVersions = await this.getSupportedVersions(installOptions?.projectPath);
@@ -83,45 +88,16 @@ export abstract class NodeChecker implements DepsChecker {
       });
 
       if (!this.isVersionSupported(supportedVersions, currentVersion)) {
-        const supportedVersionsString =
-          this._type === DepsType.ProjectNode
-            ? supportedVersions.join(" ,")
-            : supportedVersions.map((v) => "v" + v).join(" ,");
         this._telemetry.sendUserErrorEvent(
           this._nodeNotSupportedEvent,
           `Node.js ${currentVersion.version} is not supported.`
         );
-        return NodeChecker.isVersionError(
-          this._minErrorVersion,
-          this._maxErrorVersion,
-          currentVersion
-        )
-          ? await this.getDepsInfo(
-              false,
-              supportedVersions,
-              currentVersion.version,
-              new NodeNotSupportedError(
-                Messages.NodeNotSupported()
-                  .split("@CurrentVersion")
-                  .join(currentVersion.version)
-                  .split("@SupportedVersions")
-                  .join(supportedVersionsString),
-                await this.getNodeNotSupportedHelpLink()
-              )
-            )
-          : await this.getDepsInfo(
-              true,
-              supportedVersions,
-              currentVersion.version,
-              new NodeNotRecommendedError(
-                Messages.NodeNotRecommended()
-                  .split("@CurrentVersion")
-                  .join(currentVersion.version)
-                  .split("@SupportedVersions")
-                  .join(supportedVersionsString),
-                await this.getNodeNotSupportedHelpLink()
-              )
-            );
+        return await this.getDepsInfo(
+          !NodeChecker.isVersionError(this._minErrorVersion, this._maxErrorVersion, currentVersion),
+          supportedVersions,
+          currentVersion.version,
+          this.getVersionNotSupportedError(supportedVersions, currentVersion)
+        );
       }
       return await this.getDepsInfo(true, supportedVersions, currentVersion.version);
     } catch (error) {
@@ -134,7 +110,7 @@ export abstract class NodeChecker implements DepsChecker {
     }
   }
 
-  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
+  public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
       await this._logger.printDetailLog();
@@ -226,16 +202,27 @@ export class SPFxNodeChecker extends NodeChecker {
   protected readonly _minErrorVersion = 15;
   protected readonly _maxErrorVersion = 17;
 
-  protected async getNodeNotSupportedHelpLink(): Promise<string> {
-    return nodeNotSupportedForSPFxHelpLink;
-  }
-
   protected async getSupportedVersions(): Promise<string[]> {
     return ["16"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
     return supportedVersions.includes(version.majorVersion);
+  }
+
+  protected getVersionNotSupportedError(
+    supportedVersions: string[],
+    version: NodeVersion
+  ): DepsCheckerError {
+    const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
+    return new NodeNotSupportedError(
+      Messages.NodeNotSupported()
+        .split("@CurrentVersion")
+        .join(version.version)
+        .split("@SupportedVersions")
+        .join(supportedVersionsString),
+      nodeNotSupportedForSPFxHelpLink
+    );
   }
 }
 
@@ -245,16 +232,54 @@ export class AzureNodeChecker extends NodeChecker {
   protected readonly _type = DepsType.AzureNode;
   protected readonly _minErrorVersion = 11;
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
-  protected async getNodeNotSupportedHelpLink(): Promise<string> {
-    return nodeNotSupportedForAzureHelpLink;
-  }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16"];
+    return ["14", "16", "18"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
     return supportedVersions.includes(version.majorVersion);
+  }
+
+  protected getVersionNotSupportedError(
+    supportedVersions: string[],
+    version: NodeVersion
+  ): DepsCheckerError {
+    const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
+    return new NodeNotSupportedError(
+      Messages.NodeNotSupported()
+        .split("@CurrentVersion")
+        .join(version.version)
+        .split("@SupportedVersions")
+        .join(supportedVersionsString),
+      nodeNotSupportedForAzureHelpLink
+    );
+  }
+}
+
+export class LtsNodeChecker extends NodeChecker {
+  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
+  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotLts;
+  protected readonly _type = DepsType.LtsNode;
+  protected readonly _minErrorVersion = Number.MIN_SAFE_INTEGER;
+  protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
+
+  protected async getSupportedVersions(): Promise<string[]> {
+    return ["14", "16", "18"];
+  }
+
+  protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
+    return supportedVersions.includes(version.majorVersion);
+  }
+  protected getVersionNotSupportedError(
+    supportedVersions: string[],
+    version: NodeVersion
+  ): DepsCheckerError {
+    const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(", ");
+    return new NodeNotLtsError(
+      Messages.NodeNotLts(version.version, supportedVersionsString),
+      v3NodeNotLtsHelpLink
+    );
   }
 }
 
@@ -296,5 +321,16 @@ export class ProjectNodeChecker extends NodeChecker {
     }
     const supportedVersion = supportedVersions[0];
     return semver.satisfies(version.version, supportedVersion);
+  }
+
+  protected getVersionNotSupportedError(
+    supportedVersions: string[],
+    version: NodeVersion
+  ): DepsCheckerError {
+    const supportedVersionsString = supportedVersions.join(", ");
+    return new V3NodeNotSupportedError(
+      Messages.V3NodeNotSupported(version.version, supportedVersionsString),
+      v3NodeNotSupportedHelpLink
+    );
   }
 }

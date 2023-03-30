@@ -43,7 +43,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
-import { ConfigureTeamsAppDriver, outputNames } from "../../driver/teamsApp/configure";
+import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
@@ -54,6 +54,7 @@ import set from "lodash/set";
 import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
 import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
+import { FileNotFoundError } from "../../../error/common";
 
 /**
  * Create Teams app if not exists
@@ -491,6 +492,7 @@ export async function buildTeamsAppPackage(
 export async function validateManifest(
   manifest: TeamsAppManifest
 ): Promise<Result<string[], FxError>> {
+  /*
   // Corner case: SPFx project validate without provision
   if (!isUUID(manifest.id)) {
     manifest.id = v4();
@@ -525,7 +527,8 @@ export async function validateManifest(
         HelpLinks.WhyNeedProvision
       )
     );
-  }
+  }*/
+  return ok([]);
 }
 
 export async function updateManifest(
@@ -536,25 +539,7 @@ export async function updateManifest(
   let manifest: any;
   const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
   if (manifestResult.isErr()) {
-    ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
-    const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
-    if (
-      manifestResult.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
-      !isProvisionSucceeded
-    ) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.GetRemoteConfigFailedError.name,
-          AppStudioError.GetRemoteConfigFailedError.message(
-            getLocalizedString("error.appstudio.updateManifestFailed"),
-            isProvisionSucceeded
-          ),
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    } else {
-      return err(manifestResult.error);
-    }
+    return err(manifestResult.error);
   } else {
     manifest = manifestResult.value;
   }
@@ -714,21 +699,7 @@ export async function updateManifestV3(
   let manifest: any;
   const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath, state, false);
   if (manifestResult.isErr()) {
-    ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
-    if (manifestResult.error.name === AppStudioError.GetRemoteConfigFailedError.name) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.GetRemoteConfigFailedError.name,
-          AppStudioError.GetRemoteConfigFailedError.message(
-            getLocalizedString("error.appstudio.updateManifestFailed"),
-            false
-          ),
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    } else {
-      return err(manifestResult.error);
-    }
+    return err(manifestResult.error);
   } else {
     manifest = manifestResult.value;
   }
@@ -856,6 +827,7 @@ export async function updateTeamsAppV3ForPublish(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
+  let teamsAppId;
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
 
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
@@ -877,6 +849,7 @@ export async function updateTeamsAppV3ForPublish(
           ])
         );
       } else {
+        teamsAppId = manifest.id;
         const validationResult = await validateManifest(manifest);
         if (validationResult.isErr()) {
           validationError = validationResult.error;
@@ -899,12 +872,7 @@ export async function updateTeamsAppV3ForPublish(
     }
   } else {
     // missing manifest file
-    validationError = AppStudioResultFactory.UserError(
-      AppStudioError.ValidationFailedError.name,
-      AppStudioError.ValidationFailedError.message([
-        getLocalizedString("error.appstudio.noManifestError"),
-      ])
-    );
+    validationError = new FileNotFoundError("appManifest", "manifest.json");
   }
 
   if (validationError) {
@@ -926,7 +894,7 @@ export async function updateTeamsAppV3ForPublish(
     return err(result.error);
   }
 
-  return ok(result.value.get(outputNames.TEAMS_APP_ID));
+  return ok(teamsAppId);
 }
 
 export async function getAppPackage(
@@ -991,6 +959,7 @@ function generateDriverContext(
     azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
     m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
     ui: ctx.userInteraction,
+    progressBar: undefined,
     logProvider: ctx.logProvider,
     telemetryReporter: ctx.telemetryReporter,
     projectPath: ctx.projectPath!,

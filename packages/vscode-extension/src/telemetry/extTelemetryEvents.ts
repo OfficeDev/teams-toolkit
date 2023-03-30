@@ -32,6 +32,9 @@ export enum TelemetryEvent {
   AddFeatureStart = "add-feature-start",
   AddFeature = "add-feature",
 
+  AddWebpartStart = "add-web-part-start",
+  AddWebpart = "add-web-part",
+
   OpenManifestEditorStart = "open-manifest-editor-start",
   OpenManifestEditor = "open-manifest-editor",
 
@@ -96,7 +99,7 @@ export enum TelemetryEvent {
 
   NextStep = "next-step",
 
-  ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
+  ClickOpenLifecycleTreeview = "click-open-lifecycle-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
   ViewGuidedTutorials = "view-guided-tutorials",
@@ -139,6 +142,7 @@ export enum TelemetryEvent {
   DebugSetUpSSOTask = "debug-set-up-sso-task",
   DebugPrepareManifestTask = "debug-prepare-manifest-task",
   DebugLifecycleTask = "debug-lifecycle-task",
+  LaunchWebClientTask = "launch-web-client",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -184,6 +188,8 @@ export enum TelemetryEvent {
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
   ShowWhatIsNewContext = "show-what-is-new-context",
+
+  ShowPreivewNotification = "show-preview-notification",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
@@ -329,6 +335,7 @@ export enum TelemetryProperty {
   // Used with InteractWithInProductDoc
   Interaction = "interaction",
   Identifier = "identifier",
+  ValidateMethod = "validate-method",
 }
 
 export enum TelemetryMeasurements {

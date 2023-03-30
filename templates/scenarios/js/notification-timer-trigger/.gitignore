@@ -1,5 +1,6 @@
 # TeamsFx files
-teamsfx/.env.*
+env/.env.*.user
+env/.env.local
 
 # Dependency directories
 node_modules
@@ -21,6 +22,7 @@ appsettings.json
 _storage_emulator
 
 # Local data
+.localSettings
 .notification.localstore.json
 
 # production

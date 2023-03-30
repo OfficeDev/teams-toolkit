@@ -1,6 +1,6 @@
-using {%SafeProjectName%};
-using {%SafeProjectName%}.Commands;
-using {%SafeProjectName%}.CardActions;
+using {{SafeProjectName}};
+using {{SafeProjectName}}.Commands;
+using {{SafeProjectName}}.CardActions;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.TeamsFx.Conversation;

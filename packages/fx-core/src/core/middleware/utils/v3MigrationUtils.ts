@@ -27,11 +27,11 @@ import {
   VersionSource,
   VersionState,
 } from "../../../common/versionMetadata";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
+import * as dotenv from "dotenv";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -95,7 +95,13 @@ export function jsonObjectNamesConvertV3(
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
-    if (res.isOk()) return res.value + "=" + obj + EOL;
+    if (res.isOk()) {
+      let stateValue = obj;
+      if (typeof obj === "string" && obj.includes("#")) {
+        stateValue = `"${obj}"`;
+      }
+      return res.value + "=" + stateValue + EOL;
+    }
   } else return "";
   return returnData;
 }
@@ -107,12 +113,9 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<VersionIn
 
 export function migrationNotificationMessage(versionForMigration: VersionForMigration): string {
   if (versionForMigration.platform === Platform.VS) {
-    return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
+    return getLocalizedString("core.migrationV3.VS.Message");
   }
-  const res = getLocalizedString(
-    "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform]
-  );
+  const res = getLocalizedString("core.migrationV3.Message");
   return res;
 }
 
@@ -127,28 +130,33 @@ export function getDownloadLinkByVersionAndPlatform(version: string, platform: P
 }
 
 export function outputCancelMessage(version: string, platform: Platform): void {
-  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`Upgrade cancelled.`);
   const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
+    );
+    TOOLS?.logProvider.warning(
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else if (platform === Platform.VS) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
+    TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
+    TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}.`
     );
   }
 }
@@ -194,8 +202,12 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.trackingId || "";
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
+    if (readSettingsResult.isOk()) {
+      return readSettingsResult.value.trackingId;
+    } else {
+      return "";
+    }
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {
@@ -287,15 +299,11 @@ export async function readAndConvertUserdata(
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
-  const lines = userdataContent.split(EOL);
-  for (const line of lines) {
-    if (line && line != "") {
-      // in case that there are "="s in secrets
-      const key_value = line.split("=");
-      const res = namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
-      if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
-    }
+  const userdataContent = fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const secretes = dotenv.parse(userdataContent);
+  for (const secreteKey of Object.keys(secretes)) {
+    const res = namingConverterV3("state." + secreteKey, FileType.USERDATA, bicepContent);
+    if (res.isOk()) returnAnswer += `${res.value}=${secretes[secreteKey]}${EOL}`;
   }
 
   return returnAnswer;
@@ -305,8 +313,8 @@ export async function updateAndSaveManifestForSpfx(
   context: MigrationContext,
   manifest: string
 ): Promise<void> {
-  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+  const remoteTemplatePath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.local.json");
 
   const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
   const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;
@@ -341,4 +349,24 @@ export async function updateAndSaveManifestForSpfx(
 
   await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
   await context.fsWriteFile(localTemplatePath, localTemplate);
+}
+
+export function tryExtractEnvFromUserdata(filename: string): string {
+  const userdataRegex = new RegExp(`([a-zA-Z0-9_-]*)\\.${MetadataV2.userdataSuffix}`, "g");
+  const regRes = userdataRegex.exec(filename);
+  if (regRes != null) {
+    return regRes[1];
+  }
+  return "";
+}
+
+export function buildFileName(...parts: string[]): string {
+  return parts.join(".");
+}
+export function buildEnvFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName);
+}
+
+export function buildEnvUserFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName, MetadataV3.secretFileSuffix);
 }

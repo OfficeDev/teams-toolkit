@@ -199,6 +199,17 @@ export async function saveAccountId(accountName: string, accountId?: string) {
   }
 }
 
+export async function clearCache(accountName: string) {
+  await fs.ensureDir(cacheDir);
+  try {
+    await fs.writeFile(cachePath + accountName + cachePathEnd, "");
+  } catch (err) {
+    VsCodeLogInstance.warning(
+      "Cannot write token to cache, clean up account cache. " + err.message
+    );
+  }
+}
+
 export async function loadAccountId(accountName: string) {
   if (await fs.pathExists(accountPath + accountName)) {
     try {

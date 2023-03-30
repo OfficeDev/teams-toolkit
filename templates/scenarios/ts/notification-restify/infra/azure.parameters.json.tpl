@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "commandbot${{RESOURCE_SUFFIX}}"
+        "value": "notification${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"
@@ -15,7 +15,7 @@
         "value": "B1"
       },
       "botDisplayName": {
-        "value": "{%appName%}"
+        "value": "{{appName}}"
       }
     }
   }

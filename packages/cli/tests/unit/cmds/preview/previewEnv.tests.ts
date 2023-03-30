@@ -5,26 +5,17 @@ import fs from "fs-extra";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import {
-  assembleError,
-  err,
-  FxError,
-  IProgressHandler,
-  ok,
-  Result,
-  TeamsAppManifest,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
+import { FxCore } from "@microsoft/teamsfx-core";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
 import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import * as constants from "../../../../src/cmds/preview/constants";
 import * as launch from "../../../../src/cmds/preview/launch";
 import PreviewEnv from "../../../../src/cmds/preview/previewEnv";
-import * as teamsAppInstallation from "../../../../src/cmds/preview/teamsAppInstallation";
 import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
 import { Task } from "../../../../src/cmds/preview/task";
 import cliLogger from "../../../../src/commonlib/log";
@@ -33,8 +24,6 @@ import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
-import { UnresolvedPlaceholderError } from "@microsoft/teamsfx-core/src/error/common";
-import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();
@@ -96,9 +85,9 @@ describe("Preview --env", () => {
 
   it("Preview Command Running - Default", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
-    sandbox.stub(envUtil, "readEnv").resolves(ok({ TEAMS_APP_ID: "test-app-id" }));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
@@ -153,15 +142,13 @@ describe("Preview --env", () => {
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
 
-  it("Preview Command Running - getManifestV3 error", async () => {
+  it("Preview Command Running - previewWithManifest error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox
-      .stub(manifestUtils, "getManifestV3")
-      .resolves(
-        err(new UnresolvedPlaceholderError("teamsApp", "TEAMS_APP_ID", "/path/to/manifest"))
-      );
+      .stub(PreviewEnv.prototype, <any>"previewWithManifest")
+      .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
     cmd.builder(yargs);
@@ -169,14 +156,14 @@ describe("Preview --env", () => {
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
-    expect((result as any).error.name).equals("UnresolvedPlaceholderError");
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
 
   it("Preview Command Running - detect run command error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
     sandbox
       .stub(PreviewEnv.prototype, <any>"detectRunCommand")
       .resolves(err({ foo: "bar" } as any));
@@ -194,7 +181,7 @@ describe("Preview --env", () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
     sandbox
       .stub(PreviewEnv.prototype, <any>"detectRunCommand")
       .resolves(ok({ runCommand: "npm start" }));
@@ -215,7 +202,7 @@ describe("Preview --env", () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
-    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(err({ foo: "bar" } as any));
@@ -261,6 +248,15 @@ describe("PreviewEnv Steps", () => {
       return super.detectRunCommand(projectPath);
     }
 
+    public previewWithManifest(
+      projectPath: string,
+      env: string,
+      hub: Hub,
+      manifestFilePath: string
+    ): Promise<Result<string, FxError>> {
+      return super.previewWithManifest(projectPath, env, hub, manifestFilePath);
+    }
+
     public runCommandAsTask(
       projectPath: string,
       runCommand: string,
@@ -271,13 +267,12 @@ describe("PreviewEnv Steps", () => {
 
     public launchBrowser(
       env: string,
-      teamsAppId: string,
-      capabilities: string[],
-      hub: constants.Hub,
+      hub: Hub,
+      url: string,
       browser: constants.Browser,
       browserArgs: string[]
     ): Promise<Result<null, FxError>> {
-      return super.launchBrowser(env, teamsAppId, capabilities, hub, browser, browserArgs);
+      return super.launchBrowser(env, hub, url, browser, browserArgs);
     }
 
     public getRunningTasks() {
@@ -459,6 +454,33 @@ describe("PreviewEnv Steps", () => {
     expect(runCommand.runCommand).equals("func start");
   });
 
+  it("previewWithManifest - previewWithManifest error", async () => {
+    sandbox.stub(FxCore.prototype, "previewWithManifest").resolves(err({ foo: "bar" } as any));
+
+    const previewEnv = new PreviewEnvTest();
+    const result = await previewEnv.previewWithManifest(
+      "./",
+      "local",
+      Hub.teams,
+      "test-manifest-path"
+    );
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
+  });
+
+  it("previewWithManifest - ok", async () => {
+    sandbox.stub(FxCore.prototype, "previewWithManifest").resolves(ok("test-url"));
+
+    const previewEnv = new PreviewEnvTest();
+    const result = await previewEnv.previewWithManifest(
+      "./",
+      "local",
+      Hub.teams,
+      "test-manifest-path"
+    );
+    expect(result.isOk()).to.be.true;
+  });
+
   it("runCommandAsTask - ok", async () => {
     sandbox
       .stub(commonUtils, "createTaskStartCb")
@@ -479,82 +501,33 @@ describe("PreviewEnv Steps", () => {
   });
 
   it("launchBrowser - teams", async () => {
-    sandbox.stub(launch, "openHubWebClient").resolves();
+    sandbox.stub(launch, "openHubWebClientNew").resolves();
 
     const previewEnv = new PreviewEnvTest();
     const openRes = await previewEnv.launchBrowser(
       "local",
-      "test-app-id",
-      ["staticTab"],
-      constants.Hub.teams,
+      Hub.teams,
+      "test-url",
       constants.Browser.default,
       []
     );
     expect(openRes.isOk()).to.be.true;
+    expect(logs.length).equals(1);
   });
 
   it("launchBrowser: outlook", async () => {
-    CLIUIInstance.interactive = false;
-    sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("test-token"));
-    sandbox.stub(PackageService.prototype, "retrieveAppId").resolves("test-m365-app-id");
-    sandbox.stub(launch, "openHubWebClient").resolves();
+    sandbox.stub(launch, "openHubWebClientNew").resolves();
 
     const previewEnv = new PreviewEnvTest();
     const openRes = await previewEnv.launchBrowser(
       "local",
-      "test-app-id",
-      ["staticTab"],
-      constants.Hub.outlook,
+      Hub.outlook,
+      "test-url",
       constants.Browser.default,
       []
     );
     expect(openRes.isOk()).to.be.true;
     expect(logs.length).equals(2);
-  });
-
-  it("launchBrowser: outlook - retrieveAppId error", async () => {
-    CLIUIInstance.interactive = false;
-    sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("test-token"));
-    sandbox.stub(PackageService.prototype, "retrieveAppId").throws(
-      assembleError({
-        response: {
-          status: 404,
-        },
-      })
-    );
-
-    const previewEnv = new PreviewEnvTest();
-    const openRes = await previewEnv.launchBrowser(
-      "local",
-      "test-app-id",
-      ["staticTab"],
-      constants.Hub.outlook,
-      constants.Browser.default,
-      []
-    );
-    expect(openRes.isErr()).to.be.true;
-    expect((openRes as any).error.name).equals("M365TitleNotAcquiredError");
-    expect(logs.length).equals(0);
-  });
-
-  it("launchBrowser: outlook - m365 app id undefined", async () => {
-    CLIUIInstance.interactive = false;
-    sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("test-token"));
-    sandbox.stub(PackageService.prototype, "retrieveAppId").resolves(undefined);
-    sandbox.stub(launch, "openHubWebClient").resolves();
-
-    const previewEnv = new PreviewEnvTest();
-    const openRes = await previewEnv.launchBrowser(
-      "local",
-      "test-app-id",
-      ["staticTab"],
-      constants.Hub.outlook,
-      constants.Browser.default,
-      []
-    );
-    expect(openRes.isErr()).to.be.true;
-    expect((openRes as any).error.name).equals("M365TitleNotAcquiredError");
-    expect(logs.length).equals(0);
   });
 });
 

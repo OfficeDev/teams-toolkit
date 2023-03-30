@@ -80,21 +80,21 @@ describe("v3 yaml parser", () => {
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_without_uses.yml")
       );
-      assert(result.isErr() && result.error.name === "YamlFieldMissingError");
+      assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
     });
     it("should return YamlFieldTypeError with wrong 'uses' type", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_with_wrong_uses_type.yml")
       );
-      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+      assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
     });
     it("should return YamlFieldTypeError with wrong 'with' type", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_with_wrong_with_type.yml")
       );
-      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+      assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
     });
   });
 
@@ -105,7 +105,7 @@ describe("v3 yaml parser", () => {
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "valid_with_unknown_driver.yml")
       );
-      assert(result.isErr() && result.error.name === "YamlParsingError");
+      assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
     });
   });
 
@@ -192,7 +192,7 @@ describe("v3 yaml parser", () => {
         result.isOk() &&
           result.value.provision &&
           result.value.provision.driverDefs[0].writeToEnvironmentFile &&
-          result.value.provision.driverDefs[0].writeToEnvironmentFile["xxx"] === "YYY_XXX"
+          result.value.provision.driverDefs[0].writeToEnvironmentFile["botId"] === "XXX"
       );
     });
   });
@@ -203,12 +203,12 @@ describe("v3 yaml parser", () => {
       let result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_array.yml")
       );
-      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+      assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
 
       result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml")
       );
-      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+      assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
     });
   });
 });

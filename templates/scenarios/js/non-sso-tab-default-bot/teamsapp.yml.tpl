@@ -9,7 +9,7 @@ provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
 
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
@@ -45,11 +45,12 @@ provision:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
+  - uses: teamsApp/validateAppPackage # Validate app package using validation rules
+    with:
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
-      teamsAppId: TEAMS_APP_ID
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:
@@ -82,13 +83,14 @@ publish:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
+  - uses: teamsApp/validateAppPackage # Validate app package using validation rules
+    with:
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
-      teamsAppId: TEAMS_APP_ID
   - uses: teamsApp/publishAppPackage # Publish the app to Teams Admin Center (https://admin.teams.microsoft.com/policies/manage-apps) for review and approval
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       publishedAppId: TEAMS_APP_PUBLISHED_APP_ID

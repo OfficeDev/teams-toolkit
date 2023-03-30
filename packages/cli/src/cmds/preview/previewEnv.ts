@@ -322,6 +322,7 @@ export default class PreviewEnv extends YargsCommand {
     const inputs = getSystemInputs(projectPath, env);
     inputs[CoreQuestionNames.M365Host] = hub;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
+    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
     return await core.previewWithManifest(inputs);
   }
 

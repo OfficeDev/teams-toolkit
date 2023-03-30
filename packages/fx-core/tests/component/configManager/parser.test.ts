@@ -59,7 +59,7 @@ describe("v3 yaml parser", () => {
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_content.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidLifecycleError");
+      assert(result.isErr() && result.error.name === "YamlParsingError");
     });
   });
 
@@ -69,18 +69,18 @@ describe("v3 yaml parser", () => {
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_lifecycle_without_with.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidLifecycleError");
+      assert(result.isErr() && result.error.name === "YamlParsingError");
     });
   });
 
   describe(`when parsing a file with right schema, but unknown drivers`, () => {
     // because driver resolution happens when the driver actually runs.
-    it("should return ok", async () => {
+    it("should return error", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "valid_with_unknown_driver.yml")
       );
-      assert(result.isOk());
+      assert(result.isErr() && result.error.name === "YamlParsingError");
     });
   });
 
@@ -92,9 +92,11 @@ describe("v3 yaml parser", () => {
       assert(result.isOk());
       if (result.isOk()) {
         const model = result.value;
-        for (const lifecycle of LifecycleNames) {
-          chai.expect(model[lifecycle]).is.not.undefined;
-        }
+        chai.expect(model["provision"]).is.not.undefined;
+        chai.expect(model["deploy"]).is.not.undefined;
+        chai.expect(model["publish"]).is.not.undefined;
+        chai.expect(model["configureApp"]).is.undefined;
+        chai.expect(model["registerApp"]).is.undefined;
       }
     });
   });
@@ -105,15 +107,15 @@ describe("v3 yaml parser", () => {
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_env_field_string.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidEnvFieldError");
+      assert(result.isErr() && result.error.name === "YamlParsingError");
     });
 
-    it("should return error if env field is of type string", async () => {
+    it("should return error if env field is of type array", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_env_field_array.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidEnvFieldError");
+      assert(result.isErr() && result.error.name === "YamlParsingError");
     });
   });
 
@@ -137,13 +139,13 @@ describe("v3 yaml parser", () => {
     });
   });
 
-  describe(`when parsing yml with invalid `, async () => {
+  describe(`when parsing yml with invalid folder path`, async () => {
     it("should return ok", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_env_folder_path.yml")
       );
-      assert(result.isErr() && result.error.name === "InvalidEnvFolderPathError");
+      assert(result.isErr() && result.error.name === "YamlParsingError");
     });
   });
 });

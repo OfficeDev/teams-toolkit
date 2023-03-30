@@ -7,8 +7,16 @@ import {
   InvalidLifecycleError,
   YamlParsingError,
 } from "./error";
+import Ajv, { DefinedError } from "ajv";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
+import path from "path";
+import { getResourceFolder } from "../../folder";
+
+const ajv = new Ajv();
+ajv.addKeyword("deprecationMessage");
+const schema = require(path.join(getResourceFolder(), "yaml-schema.json"));
+const validator = ajv.compile(schema);
 
 const environmentFolderPath = "environmentFolderPath";
 
@@ -86,7 +94,17 @@ export class YamlParser implements IYamlParser {
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
         return err(new YamlParsingError(path, new Error(`Invalid yaml format: ${str}`)));
       }
+
       const value = content as unknown as Record<string, unknown>;
+
+      const valid = validator(value);
+      if (!valid) {
+        const errors: string[] = [];
+        for (const err of validator.errors as DefinedError[]) {
+          errors.push(`${err.instancePath} : ${err.message}`);
+        }
+        return err(new YamlParsingError(path, new Error(errors.join("\n"))));
+      }
       return parseRawProjectModel(value);
     } catch (error) {
       if (error instanceof Error) {

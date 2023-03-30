@@ -18,6 +18,9 @@ appsettings.json
 .deployment
 .env
 
+# build
+/dist
+
 # Azurite emulator
 _storage_emulator
 

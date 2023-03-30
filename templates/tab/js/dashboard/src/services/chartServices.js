@@ -1,21 +1,65 @@
+/**
+ * Get time options for chart
+ * @returns Time options
+ */
+export function getTimeRange() {
+  return ["7 days", "30 days", "60 days"];
+}
+
+/**
+ * Get chart points for line 1
+ * @param range Time interval, 7 days, 30 days, 60 days
+ * @returns Line 1 points
+ */
+export function getChart1Points(range) {
+  switch (range) {
+    case "7 days":
+      return chart1Points_7D;
+    case "30 days":
+      return chart1Points_30D;
+    case "60 days":
+      return chart1Points_60D;
+    default:
+      return [];
+  }
+}
+
+/**
+ * Get chart points for line 2
+ * @param range Time interval, 7 days, 30 days, 60 days
+ * @returns Line 2 points
+ */
+export function getChart2Points(range) {
+  switch (range) {
+    case "7 days":
+      return chart2Points_7D;
+    case "30 days":
+      return chart2Points_30D;
+    case "60 days":
+      return chart2Points_60D;
+    default:
+      return [];
+  }
+}
+
 export const chart1Points_7D = [
-  { x: new Date("2022/01/01"), y: 18000, },
-  { x: new Date("2022/01/06"), y: 14000, },
-  { x: new Date("2022/01/11"), y: 19000, },
-  { x: new Date("2022/01/16"), y: 13000, },
-  { x: new Date("2022/01/21"), y: 21000, },
-  { x: new Date("2022/01/26"), y: 18000, },
-  { x: new Date("2022/01/31"), y: 23000, },
+  { x: new Date("2022/01/01"), y: 18000 },
+  { x: new Date("2022/01/02"), y: 14000 },
+  { x: new Date("2022/01/03"), y: 19000 },
+  { x: new Date("2022/01/04"), y: 13000 },
+  { x: new Date("2022/01/05"), y: 21000 },
+  { x: new Date("2022/01/06"), y: 18000 },
+  { x: new Date("2022/01/07"), y: 23000 },
 ];
 
 export const chart2Points_7D = [
   { x: new Date("2022/01/01"), y: 8000 },
-  { x: new Date("2022/01/06"), y: 10000 },
-  { x: new Date("2022/01/11"), y: 100 },
-  { x: new Date("2022/01/16"), y: 9000 },
-  { x: new Date("2022/01/21"), y: 11000 },
-  { x: new Date("2022/01/26"), y: 7000 },
-  { x: new Date("2022/01/31"), y: 7200 },
+  { x: new Date("2022/01/02"), y: 10000 },
+  { x: new Date("2022/01/03"), y: 100 },
+  { x: new Date("2022/01/04"), y: 9000 },
+  { x: new Date("2022/01/05"), y: 11000 },
+  { x: new Date("2022/01/06"), y: 7000 },
+  { x: new Date("2022/01/07"), y: 7200 },
 ];
 
 export const chart1Points_30D = [

@@ -61,9 +61,6 @@ import {
   UserError,
   Void,
   VsCodeEnv,
-  SettingsFolderName,
-  QTreeNode,
-  SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
@@ -76,7 +73,6 @@ import {
   getAppDirectory,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  isExistingTabAppEnabled,
   isUserCancelError,
   AzureScopes,
 } from "@microsoft/teamsfx-core/build/common/tools";
@@ -176,19 +172,8 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import commandController from "./commandController";
 import { ExtensionSurvey } from "./utils/survey";
-import {
-  CoreQuestionNames,
-  selectTeamsAppManifestQuestion,
-} from "@microsoft/teamsfx-core/build/core/question";
-import { traverse } from "@microsoft/teamsfx-api/build/qm/visitor";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
-import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
-import {
-  serviceEndpoint,
-  serviceScope,
-} from "@microsoft/teamsfx-core/build/common/m365/serviceConstant";
-import { M365TitleNotAcquiredError } from "@microsoft/teamsfx-core/build/common/m365/errors";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -628,120 +613,29 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
 
-  let progressBar: IProgressHandler | undefined = undefined;
   try {
-    const platformSingleSelect: SingleSelectQuestion = {
-      type: "singleSelect",
-      name: "hub",
-      title: localize("teamstoolkit.preview.platform.title"),
-      staticOptions: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
-      placeholder: localize("teamstoolkit.preview.platform.placeholder"),
-    };
-    const node = new QTreeNode(platformSingleSelect);
     const inputs = getSystemInputs();
-    node.addChild(selectTeamsAppManifestQuestion(inputs));
-    const res = await traverse(node, inputs, VS_CODE_UI, ExtTelemetry.reporter);
-    if (res.isErr()) {
-      throw res.error;
+    inputs.env = env;
+
+    const result = await core.previewWithManifest(inputs);
+    if (result.isErr()) {
+      throw result.error;
     }
 
-    const hub = inputs["hub"] as constants.Hub;
-    const manifestPath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const url = result.value as string;
 
-    progressBar = VS_CODE_UI.createProgressBar(
-      localize("teamstoolkit.preview.progressHandler.title"),
-      hub === constants.Hub.teams ? 2 : 3
-    );
-    await progressBar.start();
-    await progressBar.next(localize("teamstoolkit.preview.progressHandler.getTeamsAppId"));
-
-    // load env from .env
-    const envRes = await envUtil.readEnv(inputs.projectPath!, env, true, true);
-    if (envRes.isErr()) {
-      throw envRes.error;
-    }
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath, {});
-    if (manifestRes.isErr()) {
-      throw manifestRes.error;
-    }
-    const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
-    const includeFrontend = capabilities.includes("staticTab");
-
-    if (hub === constants.Hub.teams) {
-      await progressBar.next(
-        util.format(localize("teamstoolkit.preview.progressHandler.openWebClient"), hub)
-      );
-      await openHubWebClient(includeFrontend, teamsAppId, hub);
-    } else {
-      await progressBar.next(localize("teamstoolkit.preview.progressHandler.getM365Title"));
-      // get sideloading service settings
-      const sideloadingServiceEndpoint =
-        process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
-      const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
-      const packageService = new PackageService(sideloadingServiceEndpoint, VsCodeLogInstance);
-
-      const sideloadingTokenRes = await M365TokenInstance.getAccessToken({
-        scopes: [sideloadingServiceScope],
-      });
-      if (sideloadingTokenRes.isErr()) {
-        throw sideloadingTokenRes.error;
-      }
-      const sideloadingToken = sideloadingTokenRes.value;
-
-      let m365AppId: string | undefined;
-      try {
-        m365AppId = await packageService.retrieveAppId(sideloadingToken, teamsAppId);
-      } catch (error) {
-        if ((error as FxError).innerError?.response.status === 404) {
-          throw new M365TitleNotAcquiredError(ExtensionSource);
-        }
-      }
-      if (!m365AppId) {
-        throw new M365TitleNotAcquiredError(ExtensionSource);
-      }
-      await progressBar.next(
-        util.format(localize("teamstoolkit.preview.progressHandler.openWebClient"), hub)
-      );
-      await openHubWebClient(includeFrontend, m365AppId, hub);
-    }
+    await openHubWebClient(hub, url);
   } catch (error) {
     const assembledError = assembleError(error);
     showError(assembledError);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, assembledError);
-    await progressBar?.end(false);
     return err(assembledError);
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
-  await progressBar.end(true);
-  return ok(null);
-}
-
-async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
-  await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
-
-  const result = await runCommand(Stage.debug);
-  if (result.isErr()) {
-    return result;
-  }
-
-  const debugConfig = await commonUtils.getDebugConfig(true);
-  if (!debugConfig?.appId) {
-    const error = new UserError(
-      ExtensionSource,
-      ExtensionErrors.TeamsAppIdNotFoundError,
-      util.format(
-        localize("teamstoolkit.handlers.teamsAppIdNotFound"),
-        environmentManager.getLocalEnvName()
-      )
-    );
-    return err(error);
-  }
-  await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-  await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
   return ok(null);
 }
 

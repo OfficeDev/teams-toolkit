@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import "../../../src/component/resource/appManifest/appManifest";
 import { Err, FxError, ok, UserError, ContextV3, Platform } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -31,7 +32,7 @@ import { SolutionError } from "../../../src/component/constants";
 import * as armResources from "@azure/arm-resources";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { ComponentNames } from "../../../src/component/constants";
-import "../../../src/component/resource/appManifest/appManifest";
+
 let mockedCtx: ContextV3;
 
 class MyTokenCredential implements TokenCredential {

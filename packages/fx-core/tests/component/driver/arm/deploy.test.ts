@@ -26,7 +26,11 @@ import { convertOutputs, getFileExtension } from "../../../../src/component/driv
 import { handleArmDeploymentError } from "../../../../src/component/arm";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 import mockedEnv from "mocked-env";
-import { DeployArmError, GetArmDeploymentError } from "../../../../src/error/arm";
+import {
+  CompileBicepError,
+  DeployArmError,
+  GetArmDeploymentError,
+} from "../../../../src/error/arm";
 import { ResourceGroupNotExistError } from "../../../../src/error/azure";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import arm from "../../../../src/component/arm";
@@ -442,6 +446,68 @@ describe("util test", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       assert.isTrue(res.error instanceof GetArmDeploymentError);
+    }
+  });
+
+  it("deployTemplate throw FxError", async () => {
+    const deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [],
+    } as any;
+    const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
+    sandbox
+      .stub(impl, "getDeployParameters")
+      .throws(new CompileBicepError(".", new Error("compile error")));
+    mockedDriverContext.createProgressBar = () => {};
+    const res = await impl.deployTemplate({
+      path: "",
+      parameters: "",
+      deploymentName: "mkdpn",
+    });
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof CompileBicepError);
+    }
+  });
+
+  it("deployTemplate throw none FxError", async () => {
+    const deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [],
+    } as any;
+    mockedDriverContext.createProgressBar = () => {};
+    const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
+    sandbox.stub(impl, "getDeployParameters").throws(new Error("compile error"));
+    const res = await impl.deployTemplate({
+      path: "",
+      parameters: "",
+      deploymentName: "mkdpn",
+    });
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof DeployArmError);
+    }
+  });
+
+  it("compileBicepToJson throw Error", async () => {
+    const deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [],
+    } as any;
+    mockedDriverContext.createProgressBar = () => {};
+    sandbox.stub(cpUtils, "executeCommand").throws(new Error("compile error"));
+    const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
+    try {
+      await impl.compileBicepToJson("");
+      assert.fail("should not reach here");
+    } catch (e) {
+      assert.isTrue(e instanceof CompileBicepError);
     }
   });
 });

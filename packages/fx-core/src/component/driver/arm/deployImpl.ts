@@ -5,7 +5,15 @@ import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { hasBicepTemplate, convertOutputs, getFileExtension } from "./util/util";
-import { err, FxError, ok, Result, SolutionContext } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  ok,
+  Result,
+  SolutionContext,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { ConstantString } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
@@ -120,6 +128,7 @@ export class ArmDeployImpl {
       progressBar?.end(res.isOk() ? true : false);
       return res;
     } catch (error) {
+      if (error instanceof UserError || error instanceof SystemError) return err(error);
       return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
     }
   }
@@ -149,7 +158,7 @@ export class ArmDeployImpl {
     return ok(result?.properties?.outputs);
   }
 
-  private async getDeployParameters(parameters?: string): Promise<any> {
+  async getDeployParameters(parameters?: string): Promise<any> {
     if (!parameters) {
       return null;
     }

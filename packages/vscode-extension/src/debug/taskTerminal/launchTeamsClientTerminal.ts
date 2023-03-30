@@ -27,7 +27,7 @@ import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/
 import { core, getSystemInputs } from "../../handlers";
 
 export interface LaunchTeamsClientArgs {
-  env: string;
+  env?: string;
   manifestPath: string;
 }
 
@@ -82,7 +82,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("manifestPath");
     }
 
-    const teamsAppId = await this.getTeamsAppId(this.args.env, this.args.manifestPath);
+    const teamsAppId = await this.getTeamsAppId(this.args.env!, this.args.manifestPath);
     const accountHint = await generateAccountHint(false);
     const launchUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${accountHint}`;
 
@@ -123,7 +123,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     return new Promise<Result<Void, FxError>>(async (resolve, reject) => {
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
-        shell: true,
+        shell: false,
         detached: false,
       };
 

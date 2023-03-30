@@ -11,12 +11,13 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
-  - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
+
+  - uses: botAadApp/create # Creates a new or reuses an existing Azure Active Directory application for bot.
     with:
-      name: {{appName}}
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for Bot Registration.
-    # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
+      name: {{appName}}-${{TEAMSFX_ENV}} # The Azure Active Directory application's display name
+    writeToEnvironmentFile:
+      botId: BOT_ID # The Azure Active Directory application's client id created for bot.
+      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot. 
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:

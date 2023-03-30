@@ -16,6 +16,7 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { updateProgress } from "../middleware/updateProgress";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
 import { InvalidActionInputError } from "../../../error/common";
@@ -30,7 +31,10 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-updateEnv";
 export class UpdateEnvDriver implements StepDriver {
   description = getLocalizedString("driver.file.description");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.file.progressBar.env")),
+  ])
   public async run(
     args: GenerateEnvArgs,
     context: DriverContext
@@ -41,6 +45,10 @@ export class UpdateEnvDriver implements StepDriver {
     });
   }
 
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.file.progressBar.env")),
+  ])
   public async execute(args: GenerateEnvArgs, ctx: DriverContext): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
@@ -61,18 +69,8 @@ export class UpdateEnvDriver implements StepDriver {
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.file.progressBar.title"),
-      1
-    );
-
     try {
-      await progressHandler?.start();
-
       this.validateArgs(args);
-
-      await progressHandler?.next(getLocalizedString("driver.file.progressBar.generate"));
-
       if (args.target) {
         const target = this.getAbsolutePath(args.target, context.projectPath);
         await fs.ensureFile(target);
@@ -81,26 +79,18 @@ export class UpdateEnvDriver implements StepDriver {
           .map(([key, value]) => `${key}=${value}`)
           .join(os.EOL);
         await fs.writeFile(target, content);
-
-        await progressHandler?.end(true);
-
         return {
           output: new Map<string, string>(),
           summaries: [getLocalizedString("driver.file.summary.withTarget", path.normalize(target))],
         };
       } else {
         const state = this.loadCurrentState();
-
-        await progressHandler?.end(true);
-
         return {
           output: new Map(Object.entries(args.envs)),
           summaries: [getLocalizedString("driver.file.summary.default", state.TEAMSFX_ENV)],
         };
       }
     } catch (error) {
-      await progressHandler?.end(false);
-
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)

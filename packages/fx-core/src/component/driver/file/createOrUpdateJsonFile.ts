@@ -13,6 +13,7 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { updateProgress } from "../middleware/updateProgress";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
 import { InvalidActionInputError } from "../../../error/common";
@@ -24,7 +25,10 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
 export class CreateOrUpdateJsonFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateJsonFile.description");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
+  ])
   public async run(
     args: GenerateAppsettingsArgs,
     context: DriverContext
@@ -35,6 +39,10 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     });
   }
 
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
+  ])
   public async execute(
     args: GenerateAppsettingsArgs,
     ctx: DriverContext

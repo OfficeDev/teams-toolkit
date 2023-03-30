@@ -15,6 +15,7 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { updateProgress } from "../middleware/updateProgress";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { FileNotFoundUserError } from "./error/FileNotFoundUserError";
 import { InvalidActionInputError } from "../../../error/common";
@@ -40,7 +41,10 @@ const outputKeys = {
 export class M365TitleAcquireDriver implements StepDriver {
   description = getLocalizedString("driver.m365.acquire.description");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.m365.acquire.progress.message")),
+  ])
   public async run(
     args: AcquireArgs,
     context: DriverContext
@@ -51,7 +55,10 @@ export class M365TitleAcquireDriver implements StepDriver {
     });
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.m365.acquire.progress.message")),
+  ])
   public async execute(
     args: AcquireArgs,
     ctx: DriverContext,
@@ -77,14 +84,7 @@ export class M365TitleAcquireDriver implements StepDriver {
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.m365.acquire.progress.title"),
-      1
-    );
-
     try {
-      await progressHandler?.start();
-
       this.validateArgs(args);
       if (!outputEnvVarNames) {
         outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
@@ -93,8 +93,6 @@ export class M365TitleAcquireDriver implements StepDriver {
       if (!(await fs.pathExists(appPackagePath))) {
         throw new FileNotFoundUserError(actionName, appPackagePath, helpLink);
       }
-
-      await progressHandler?.next(getLocalizedString("driver.m365.acquire.progress.message"));
 
       // get sideloading service settings
       const sideloadingServiceEndpoint =
@@ -111,8 +109,6 @@ export class M365TitleAcquireDriver implements StepDriver {
       const sideloadingToken = sideloadingTokenRes.value;
       const sideloadingRes = await packageService.sideLoading(sideloadingToken, appPackagePath);
 
-      await progressHandler?.end(true);
-
       return {
         output: new Map([
           [outputEnvVarNames.get(outputKeys.titleId)!, sideloadingRes[0]],
@@ -121,8 +117,6 @@ export class M365TitleAcquireDriver implements StepDriver {
         summaries: [getLocalizedString("driver.m365.acquire.summary", sideloadingRes[0])],
       };
     } catch (error) {
-      await progressHandler?.end(false);
-
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)

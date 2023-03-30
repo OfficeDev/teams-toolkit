@@ -12,20 +12,24 @@ import {
   MockTools,
   MockUserInteraction,
 } from "../../../core/utils";
-import { MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedM365Provider, MyTokenCredential } from "../../../plugins/solution/util";
 import { ArmDeployDriver } from "../../../../src/component/driver/arm/deploy";
 import fs from "fs-extra";
 import * as cpUtils from "../../../../src/common/cpUtils";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
-import { ok } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
 import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicepChecker";
 import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
-import { DeployContext, handleArmDeploymentError } from "../../../../src/component/arm";
+import { handleArmDeploymentError } from "../../../../src/component/arm";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 import mockedEnv from "mocked-env";
+import { DeployArmError } from "../../../../src/error/arm";
+import { ResourceGroupNotExistError } from "../../../../src/error/azure";
+import { ResourceManagementClient } from "@azure/arm-resources";
+import * as armModule from "../../../../src/component/arm";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -276,7 +280,7 @@ describe("util test", () => {
     assert.isNotEmpty(res);
   });
 
-  it("handle error", async () => {
+  it("handleArmDeploymentError case 1", async () => {
     let mockError = {
       code: "InvalidTemplateDeployment",
       message:
@@ -324,5 +328,54 @@ describe("util test", () => {
       resourceGroupName: "mockRG",
     } as any);
     assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof DeployArmError);
+    }
+
+    mockError = {
+      code: "ResourceGroupNotFound",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+      details: {
+        code: "ValidationForResourceFailed",
+        message: "Validation failed for a resource. Check 'Error.Details[0]' for more information.",
+        details: [
+          {
+            code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+            message: "The maximum number of Free ServerFarms allowed in a Subscription is 10.",
+          },
+        ],
+      },
+    } as any;
+    res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+      client: { subscriptionId: "mockSubId" },
+    } as any);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof ResourceGroupNotExistError);
+    }
+  });
+
+  it("handleArmDeploymentError case 2: no deploymentError", async () => {
+    const client = new ResourceManagementClient(new MyTokenCredential(), "id");
+    sandbox.stub(client.deployments, "get").resolves({});
+    const mockError = {
+      code: "OtherCode",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+    };
+    const res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+      client: client,
+    } as any);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof DeployArmError);
+    }
   });
 });

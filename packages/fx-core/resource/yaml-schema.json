@@ -806,7 +806,7 @@
       "type": "object",
       "additionalProperties": false,
       "description": "Update Teams app in Teams Developer Portal. Refer to https://aka.ms/teamsfx-actions/teamsapp-update for more details.",
-      "required": ["uses", "with", "writeToEnvironmentFile"],
+      "required": ["uses", "with"],
       "properties": {
         "name": {
           "type": "string",
@@ -833,17 +833,6 @@
             "appPackagePath": {
               "type": "string",
               "description": "Path to Teams app package"
-            }
-          }
-        },
-        "writeToEnvironmentFile": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Write environment variables to environment file",
-          "required": ["teamsAppId"],
-          "properties": {
-            "teamsAppId": {
-              "$ref": "#/definitions/envVarName"
             }
           }
         }

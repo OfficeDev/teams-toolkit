@@ -56,6 +56,6 @@ export default class ServerLogProvider implements LogProvider {
   }
 
   getLogFilePath(): string {
-    return path.join(os.tmpdir(), ConfigFolderName, "server-log", this.logFileName);
+    return path.join(os.tmpdir(), `.${ConfigFolderName}`, "server-log", this.logFileName);
   }
 }

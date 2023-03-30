@@ -45,7 +45,7 @@ export class CLILogProvider implements LogProvider {
   }
 
   getLogFilePath(): string {
-    return path.join(os.tmpdir(), ConfigFolderName, "cli-log", this.logFileName);
+    return path.join(os.tmpdir(), `.${ConfigFolderName}`, "cli-log", this.logFileName);
   }
 
   trace(message: string): Promise<boolean> {

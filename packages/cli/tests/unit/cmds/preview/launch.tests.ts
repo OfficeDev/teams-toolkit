@@ -47,25 +47,28 @@ describe("launch", () => {
         .callsFake((eventName, error, properties) => {
           telemetries.push([eventName, error, properties]);
         });
-      sandbox.stub(commonUtils, "openBrowser").callsFake(async (browser, url, browserArguments) => {
-        sideloadingUrl = url;
-      });
       sandbox.stub(cliLogger, "necessaryLog").callsFake(() => {});
       sandbox.stub(CLIUIInstance, "createProgressBar").returns(new MockProgressHandler());
     });
 
     it("happy path", async () => {
+      sandbox.stub(commonUtils, "openBrowser").callsFake(async (browser, url, browserArguments) => {
+        sideloadingUrl = url;
+      });
       await openHubWebClientNew(constants.Hub.teams, "test-url", Browser.default);
       expect(telemetries.length).to.deep.equals(0);
       expect(sideloadingUrl).to.deep.equals("test-url");
     });
 
     it("happy path with telemetries", async () => {
+      sandbox.stub(commonUtils, "openBrowser").callsFake(async (browser, url, browserArguments) => {
+        sideloadingUrl = url;
+      });
       await openHubWebClientNew(
         constants.Hub.teams,
         "test-url",
         Browser.default,
-        undefined,
+        [],
         telemetryProperties
       );
       expect(telemetries.length).to.deep.equals(2);
@@ -81,6 +84,12 @@ describe("launch", () => {
         },
       ]);
       expect(sideloadingUrl).to.deep.equals("test-url");
+    });
+
+    it("openBrowser error", async () => {
+      sandbox.stub(commonUtils, "openBrowser").throws();
+      await openHubWebClientNew(constants.Hub.teams, "test-url", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
     });
   });
 

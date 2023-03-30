@@ -101,6 +101,50 @@ describe("Preview --env", () => {
     expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
   });
 
+  it("Preview Command Running - outlook", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
+    sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
+    sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    await cmd.handler({
+      ["m365-host"]: "outlook",
+      ["browser-arg"]: ["--guest"],
+      ["open-only"]: true,
+    });
+
+    expect(logs.length).greaterThanOrEqual(1);
+    expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
+  });
+
+  it("Preview Command Running - office", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
+    sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
+    sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    await cmd.handler({
+      env: "dev",
+      ["m365-host"]: "office",
+      ["browser-arg"]: ["--guest"],
+    });
+
+    expect(logs.length).greaterThanOrEqual(1);
+    expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
+  });
+
   it("Preview Command Running - workspace not supported error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(false);
 

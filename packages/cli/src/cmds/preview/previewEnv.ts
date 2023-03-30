@@ -32,6 +32,7 @@ import { YargsCommand } from "../../yargsCommand";
 import activate from "../../activate";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
+import { FxCore } from "@microsoft/teamsfx-core";
 
 enum Progress {
   M365Account = "Microsoft 365 Account",
@@ -316,11 +317,8 @@ export default class PreviewEnv extends YargsCommand {
     hub: Hub,
     manifestFilePath: string
   ): Promise<Result<string, FxError>> {
-    const coreRes = await activate(projectPath);
-    if (coreRes.isErr()) {
-      return err(coreRes.error);
-    }
-    const core = coreRes.value;
+    const coreRes = await activate(projectPath, true);
+    const core = (coreRes as any).value as FxCore;
     const inputs = getSystemInputs(projectPath, env);
     inputs[CoreQuestionNames.M365Host] = hub;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;

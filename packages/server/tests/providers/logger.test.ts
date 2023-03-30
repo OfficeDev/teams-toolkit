@@ -103,11 +103,8 @@ describe("ServerLogProvider", () => {
     });
 
     it("getLogFilePath", () => {
-      try {
-        logger.getLogFilePath();
-      } catch (e: any) {
-        assert.equal(e.name, NotImplementedError.name);
-      }
+      const logFolderPath = logger.getLogFilePath();
+      assert.isTrue(logFolderPath !== "");
     });
   });
 });

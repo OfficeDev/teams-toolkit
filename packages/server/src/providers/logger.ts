@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 import { MessageConnection } from "vscode-jsonrpc";
+import * as os from "os";
+import * as path from "path";
 
-import { Colors, LogLevel, LogProvider, NotImplementedError } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel, LogProvider, ConfigFolderName } from "@microsoft/teamsfx-api";
 
 import { Namespaces, NotificationTypes } from "../apis";
 
@@ -52,6 +54,6 @@ export default class ServerLogProvider implements LogProvider {
   }
 
   getLogFilePath(): string {
-    throw new NotImplementedError("CLILogProvider", "getLogFilePath");
+    return path.join(os.tmpdir(), ConfigFolderName, "server-log");
   }
 }

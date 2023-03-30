@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
@@ -25,6 +28,8 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
 import { InvalidActionInputError } from "../../../error/common";
 import { InvalidAzureCredentialError } from "../../../error/azure";
+import { updateProgress } from "../middleware/updateProgress";
+import { hooks } from "@feathersjs/hooks";
 import { CompileBicepError, DeployArmError } from "../../../error/arm";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
@@ -40,6 +45,7 @@ export class ArmDeployImpl {
     this.context = context;
   }
 
+  @hooks([updateProgress(getLocalizedString("driver.arm.deploy.progressBar.message"))])
   public async run(): Promise<Map<string, string>> {
     await this.validateArgs();
     await this.createClient();
@@ -111,10 +117,6 @@ export class ArmDeployImpl {
       deploymentName: templateArg.deploymentName,
     };
     try {
-      const progressBar = await this.context.createProgressBar(
-        `Deploy arm: ${templateArg.deploymentName}`,
-        1
-      );
       const parameters = await this.getDeployParameters(templateArg.parameters);
       const template = await this.getDeployTemplate(templateArg.path);
       const deploymentParameters: Deployment = {
@@ -125,7 +127,6 @@ export class ArmDeployImpl {
         },
       };
       const res = await this.executeDeployment(templateArg, deploymentParameters, deployCtx);
-      progressBar?.end(res.isOk() ? true : false);
       return res;
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) return err(error);

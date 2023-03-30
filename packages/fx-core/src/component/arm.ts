@@ -352,7 +352,7 @@ export async function handleArmDeploymentError(
   }
 
   // try to get deployment error
-  const result = await wrapGetDeploymentError(
+  const result = await arm.wrapGetDeploymentError(
     deployCtx,
     deployCtx.resourceGroupName,
     deployCtx.deploymentName,
@@ -721,7 +721,11 @@ export async function wrapGetDeploymentError(
   rawError: any
 ): Promise<Result<any, FxError>> {
   try {
-    const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    const deploymentError = await arm.getDeploymentError(
+      deployCtx,
+      resourceGroupName,
+      deploymentName
+    );
     return ok(deploymentError);
   } catch (error: any) {
     return err(
@@ -839,6 +843,21 @@ class Arm {
     azureAccountProvider: AzureAccountProvider
   ): Promise<Result<undefined, FxError>> {
     return deployArmTemplatesV3(ctx, inputs, envInfo, azureAccountProvider);
+  }
+  async wrapGetDeploymentError(
+    deployCtx: DeployContext,
+    resourceGroupName: string,
+    deploymentName: string,
+    rawError: any
+  ): Promise<Result<any, FxError>> {
+    return await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName, rawError);
+  }
+  async getDeploymentError(
+    deployCtx: DeployContext,
+    resourceGroupName: string,
+    deploymentName: string
+  ): Promise<any> {
+    return await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
   }
 }
 

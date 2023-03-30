@@ -26,10 +26,10 @@ import { convertOutputs, getFileExtension } from "../../../../src/component/driv
 import { handleArmDeploymentError } from "../../../../src/component/arm";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 import mockedEnv from "mocked-env";
-import { DeployArmError } from "../../../../src/error/arm";
+import { DeployArmError, GetArmDeploymentError } from "../../../../src/error/arm";
 import { ResourceGroupNotExistError } from "../../../../src/error/azure";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import * as armModule from "../../../../src/component/arm";
+import arm from "../../../../src/component/arm";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -376,6 +376,72 @@ describe("util test", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       assert.isTrue(res.error instanceof DeployArmError);
+    }
+  });
+
+  it("handleArmDeploymentError case 3: getDeploymentError without subErrors", async () => {
+    const client = new ResourceManagementClient(new MyTokenCredential(), "id");
+    sandbox.stub(arm, "wrapGetDeploymentError").resolves(
+      ok({
+        error: {
+          code: "MockError",
+          message: "MockErrorMessage",
+        },
+      })
+    );
+    const mockError = {
+      code: "RawMockError",
+      message: "RawMockErrorMessasge",
+    };
+    const res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+      client: client,
+    } as any);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof DeployArmError);
+    }
+  });
+
+  it("handleArmDeploymentError case 4: getDeploymentError with subErrors", async () => {
+    const client = new ResourceManagementClient(new MyTokenCredential(), "id");
+    sandbox.stub(arm, "wrapGetDeploymentError").resolves(ok({ subErrors: { module1: "value1" } }));
+    const mockError = {
+      code: "RawMockError",
+      message: "RawMockErrorMessasge",
+    };
+    const res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+      client: client,
+    } as any);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof DeployArmError);
+    }
+  });
+
+  it("handleArmDeploymentError case 5: getDeploymentError throws error", async () => {
+    const client = new ResourceManagementClient(new MyTokenCredential(), "id");
+    sandbox
+      .stub(arm, "getDeploymentError")
+      .throws({ code: "GetDeploymentError", message: "GetDeploymentErrorMessage" });
+    const mockError = {
+      code: "RawMockError",
+      message: "RawMockErrorMessasge",
+    };
+    const res = await handleArmDeploymentError(mockError, {
+      ctx: { logProvider: new MockLogProvider() },
+      deploymentName: "mockDeployName",
+      resourceGroupName: "mockRG",
+      client: client,
+    } as any);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof GetArmDeploymentError);
     }
   });
 });

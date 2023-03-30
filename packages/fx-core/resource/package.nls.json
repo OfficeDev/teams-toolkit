@@ -617,6 +617,8 @@
   "core.M365SsoLaunchPageOptionItem.detail": "Identity aware webpages embedded in Microsoft Teams, Outlook and the Microsoft 365 app",
   "core.M365SearchAppOptionItem.label": "Search-based message extension",
   "core.M365SearchAppOptionItem.detail": "Insert search result when user composes messages in Microsoft Teams or emails in Outlook",
+  "core.M365HostQuestion.title": "Platform",
+  "core.M365HostQuestion.placeholder": "Select a platform to preview the app",
   "core.options.separator.scenario": "Scenario-based Teams apps",
   "core.options.separator.basic": "Basic Teams apps",
   "core.options.separator.resource": "Cloud resources",

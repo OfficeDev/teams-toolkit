@@ -2,6 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+/**
+ * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ */
 import * as path from "path";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
@@ -47,6 +50,10 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
         () => this._do()
       )
     );
+  }
+
+  stop(error?: any): Promise<void> {
+    return super.stop(error, false);
   }
 
   private async _do(): Promise<Result<Void, FxError>> {

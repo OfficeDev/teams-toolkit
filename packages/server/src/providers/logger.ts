@@ -11,9 +11,11 @@ import { Namespaces, NotificationTypes } from "../apis";
 
 export default class ServerLogProvider implements LogProvider {
   private readonly connection: MessageConnection;
+  private logFileName: string;
 
   constructor(connection: MessageConnection) {
     this.connection = connection;
+    this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -54,6 +56,6 @@ export default class ServerLogProvider implements LogProvider {
   }
 
   getLogFilePath(): string {
-    return path.join(os.tmpdir(), ConfigFolderName, "server-log");
+    return path.join(os.tmpdir(), ConfigFolderName, "server-log", this.logFileName);
   }
 }

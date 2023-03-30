@@ -18,6 +18,12 @@ export class CLILogProvider implements LogProvider {
 
   private static logLevel: CLILogLevel = CLILogLevel.error;
 
+  private logFileName: string;
+
+  constructor() {
+    this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
+  }
+
   public getLogLevel() {
     return CLILogProvider.logLevel;
   }
@@ -39,7 +45,7 @@ export class CLILogProvider implements LogProvider {
   }
 
   getLogFilePath(): string {
-    return path.join(os.tmpdir(), ConfigFolderName, "cli-log");
+    return path.join(os.tmpdir(), ConfigFolderName, "cli-log", this.logFileName);
   }
 
   trace(message: string): Promise<boolean> {

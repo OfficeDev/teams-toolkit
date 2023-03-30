@@ -23,7 +23,6 @@ export enum TelemetryDevCertStatus {
 }
 
 export const ProgressMessages = Object.freeze({
-  title: () => getLocalizedString("driver.prerequisite.progressBar.title"),
   devCert: () => getLocalizedString("driver.prerequisite.progressBar.devCert"),
   dotnet: () => getLocalizedString("driver.prerequisite.progressBar.dotnet"),
   func: () => getLocalizedString("driver.prerequisite.progressBar.func"),

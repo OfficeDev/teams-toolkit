@@ -29,7 +29,7 @@ describe("Tools Install Driver test", () => {
       sandbox.restore();
     });
 
-    it("Create and trust new local certificate", async () => {
+    it("TEST1", async () => {
       sandbox.stub(LocalCertificateManager.prototype, "setupCertificate").resolves({
         certPath: "testCertPath",
         keyPath: "testKeyPath",

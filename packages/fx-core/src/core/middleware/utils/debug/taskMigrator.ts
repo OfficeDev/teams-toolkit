@@ -99,7 +99,7 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
       `;
       task["args"]["type"] = TunnelType.ngrok;
       task["args"]["env"] = "local";
-      task["args"]["output"] = assign(parse(comment), {
+      task["args"]["writeToEnvironmentFile"] = assign(parse(comment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       });
@@ -908,7 +908,7 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
       type: TunnelType.ngrok,
       ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
       env: "local",
-      output: assign(parse(placeholderComment), {
+      writeToEnvironmentFile: assign(parse(placeholderComment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       }),

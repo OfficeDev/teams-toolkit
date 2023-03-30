@@ -499,6 +499,16 @@ export class FxCore implements v3.ICore {
   }
 
   /**
+   * get url to preview the app, may prompt to select env, hub and Teams manifest
+   *
+   * @param {Inputs} inputs
+   * @returns the url to preview the app
+   */
+  async previewWithManifest(inputs: Inputs): Promise<Result<string, FxError>> {
+    return this.v3Implement.dispatch(this.previewWithManifest, inputs);
+  }
+
+  /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
   @hooks([ErrorHandlerMW])
@@ -870,6 +880,7 @@ export class FxCore implements v3.ICore {
       azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
       m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
       ui: TOOLS.ui,
+      progressBar: undefined,
       logProvider: TOOLS.logProvider,
       telemetryReporter: TOOLS.telemetryReporter!,
       projectPath: projectPath,

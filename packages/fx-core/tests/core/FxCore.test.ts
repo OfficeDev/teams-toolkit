@@ -15,6 +15,7 @@ import {
   Void,
   LogProvider,
   Func,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -68,6 +69,9 @@ import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/vali
 import { FileNotFoundError } from "../../src/error/common";
 import * as collaborator from "../../src/core/collaborator";
 import { CollaborationUtil } from "../../src/core/collaborator";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
+import { Hub } from "../../src/common/m365/constants";
+import { LaunchHelper } from "../../src/common/m365/launchHelper";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -293,7 +297,7 @@ describe("Core basic APIs", () => {
           appName,
           "aad.manifest.json"
         ),
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -323,7 +327,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -358,7 +362,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
-        [CoreQuestionNames.TargetEnvName]: "",
+        env: undefined,
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -409,7 +413,7 @@ describe("Core basic APIs", () => {
           appName,
           "aad.manifest.json"
         ),
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -1035,17 +1039,22 @@ describe("Teams app APIs", async () => {
   });
 
   it("create app package", async () => {
+    setTools(tools);
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
+      [CoreQuestionNames.OutputZipPathParamName]: ".\\build\\appPackage\\appPackage.dev.zip",
     };
 
-    const runSpy = sinon.spy(CreateAppPackageDriver.prototype, "run");
+    sinon.stub(process, "platform").value("win32");
+    const runStub = sinon.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
+    const showMessageStub = sinon.stub(tools.ui, "showMessage");
     await core.createAppPackage(inputs);
-    sinon.assert.calledOnce(runSpy);
+    sinon.assert.calledOnce(runStub);
+    sinon.assert.calledOnce(showMessageStub);
   });
 
   it("publish application", async () => {
@@ -1060,5 +1069,76 @@ describe("Teams app APIs", async () => {
       .stub(coordinator, "publish")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage")));
     await core.publishApplication(inputs);
+  });
+});
+
+describe("previewWithManifest", () => {
+  const tools = new MockTools();
+  const core = new FxCore(tools);
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("getManifestV3 error", async () => {
+    sinon.stub(manifestUtils, "getManifestV3").resolves(err({ foo: "bar" } as any));
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      [CoreQuestionNames.M365Host]: Hub.teams,
+      [CoreQuestionNames.TeamsAppManifestFilePath]: path.join(
+        os.tmpdir(),
+        appName,
+        "appPackage",
+        "manifest.template.json"
+      ),
+      env: "dev",
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const result = await core.previewWithManifest(inputs);
+    assert.isTrue(result.isErr());
+    assert.deepEqual((result as any).error, { foo: "bar" });
+  });
+
+  it("getLaunchUrl error", async () => {
+    const appName = await mockV3Project();
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(err({ foo: "bar" } as any));
+    const inputs: Inputs = {
+      [CoreQuestionNames.M365Host]: Hub.teams,
+      [CoreQuestionNames.TeamsAppManifestFilePath]: path.join(
+        os.tmpdir(),
+        appName,
+        "appPackage",
+        "manifest.template.json"
+      ),
+      env: "dev",
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const result = await core.previewWithManifest(inputs);
+    assert.isTrue(result.isErr());
+    assert.deepEqual((result as any).error, { foo: "bar" });
+  });
+
+  it("happy path", async () => {
+    const appName = await mockV3Project();
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
+    sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(ok("test-url"));
+    const inputs: Inputs = {
+      [CoreQuestionNames.M365Host]: Hub.teams,
+      [CoreQuestionNames.TeamsAppManifestFilePath]: path.join(
+        os.tmpdir(),
+        appName,
+        "appPackage",
+        "manifest.template.json"
+      ),
+      env: "dev",
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const result = await core.previewWithManifest(inputs);
+    assert.isTrue(result.isOk());
+    assert.deepEqual((result as any).value, "test-url");
   });
 });

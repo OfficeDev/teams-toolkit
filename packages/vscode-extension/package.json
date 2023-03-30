@@ -201,7 +201,7 @@
       "explorer/context": [
         {
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isV3Enabled",
           "group": "deploy@0"
         },
         {
@@ -681,7 +681,8 @@
       },
       {
         "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%"
+        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%",
+        "enablement": "!fx-extension.isV3Enabled"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",
@@ -955,17 +956,17 @@
                       {}
                     ]
                   },
-                  "output": {
+                  "writeToEnvironmentFile": {
                     "type": "object",
-                    "description": "%teamstoolkit.taskDefinitions.args.output.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.title%",
                     "properties": {
                       "domain": {
                         "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.output.domain.title%"
+                        "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.domain.title%"
                       },
                       "endpoint": {
                         "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
+                        "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.endpoint.title%"
                       }
                     }
                   }
@@ -976,8 +977,7 @@
                 "type": "object",
                 "required": [
                   "type",
-                  "port",
-                  "protocol"
+                  "ports"
                 ],
                 "properties": {
                   "type": {
@@ -985,30 +985,63 @@
                     "description": "%teamstoolkit.taskDefinitions.args.type.title%",
                     "const": "dev-tunnel"
                   },
-                  "port": {
-                    "type": "integer",
-                    "description": "%teamstoolkit.taskDefinitions.args.port.title%"
-                  },
-                  "protocol": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.protocol.title%",                    
-                    "oneOf": [
-                      {
-                        "const": "http"
+                  "ports": {
+                    "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.ports.title%",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "portNumber",
+                        "protocol"
+                      ],
+                      "properties": {
+                        "portNumber": {
+                          "type": "integer",
+                          "description": "%teamstoolkit.taskDefinitions.args.ports.portNumber.title%"
+                        },
+                        "protocol": {
+                          "type": "string",
+                          "description": "%teamstoolkit.taskDefinitions.args.ports.protocol.title%",
+                          "oneOf": [
+                            {
+                              "const": "http"
+                            },
+                            {
+                              "const": "https"
+                            }
+                          ]
+                        },
+                        "access": {
+                          "type": "string",
+                          "description": "%teamstoolkit.taskDefinitions.args.ports.access.title%",
+                          "oneOf": [
+                            {
+                              "const": "public"
+                            },
+                            {
+                              "const": "private"
+                            }
+                          ],
+                          "default": "private"
+                        },
+                        "writeToEnvironmentFile": {
+                          "type": "object",
+                          "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.title%",
+                          "properties": {
+                            "domain": {
+                              "type": "string",
+                              "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.domain.title%"
+                            },
+                            "endpoint": {
+                              "type": "string",
+                              "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.endpoint.title%"
+                            }
+                          },
+                          "additionalProperties": false
+                        }
                       },
-                      {
-                        "const": "https"
-                      }
-                    ]
-                  },
-                  "access": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.access.title%",                    
-                    "oneOf": [
-                      {
-                        "const": "public"
-                      }
-                    ]
+                      "additionalProperties": false
+                    }
                   },
                   "env": {
                     "type": "string",
@@ -1019,24 +1052,6 @@
                       },
                       {}
                     ]
-                  },
-                  "output": {
-                    "type": "object",
-                    "description": "%teamstoolkit.taskDefinitions.args.output.title%",
-                    "properties": {
-                      "domain": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.output.domain.title%"
-                      },
-                      "endpoint": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.output.endpoint.title%"
-                      },
-                      "id": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.output.id.title%"
-                      }
-                    }
                   }
                 },
                 "additionalProperties": false
@@ -1061,7 +1076,8 @@
                     "type": "string",
                     "description": "%teamstoolkit.taskDefinitions.args.template.title%"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             ]
           }

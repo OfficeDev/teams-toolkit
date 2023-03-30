@@ -86,6 +86,7 @@ import {
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
 import {
+  selectM365HostQuestion,
   ProgrammingLanguageQuestion,
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
@@ -907,5 +908,14 @@ export async function getQuestionsForUpdateTeamsApp(
   // Manifest path node
   const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
   group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForPreviewWithManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  group.addChild(selectM365HostQuestion());
+  group.addChild(selectTeamsAppManifestQuestion(inputs));
   return ok(group);
 }

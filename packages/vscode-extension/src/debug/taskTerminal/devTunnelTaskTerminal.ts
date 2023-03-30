@@ -239,6 +239,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           return {
             src: `${port.protocol}://localhost:${port.portNumber}`,
             dest: port.portForwardingUri,
+            keys: [
+              port.writeToEnvironmentFile?.domain,
+              port.writeToEnvironmentFile?.endpoint,
+            ].filter((k): k is string => !!k),
           };
         }),
         saveEnvRes.value
@@ -328,10 +332,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             access: maskValue(port.access, Object.values(Access)),
             writeToEnvironmentFile: {
               endpoint: maskValue(port.writeToEnvironmentFile?.endpoint, [
-                TaskDefaultValue.startLocalTunnel.output.endpoint,
+                TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.endpoint,
               ]),
               domain: maskValue(port.writeToEnvironmentFile?.domain, [
-                TaskDefaultValue.startLocalTunnel.output.domain,
+                TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.domain,
               ]),
             },
           };

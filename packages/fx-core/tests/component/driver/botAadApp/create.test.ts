@@ -102,11 +102,15 @@ describe("botAadAppCreate", async () => {
     const args: any = {
       name: expectedDisplayName,
     };
+    const progressBar = {
+      next: sinon.stub(),
+    };
 
     sinon.stub(GraphClient, "registerAadApp").resolves({
       clientId: expectedClientId,
       clientSecret: expectedSecretText,
     });
+    mockedDriverContext.progressBar = progressBar;
 
     const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
@@ -116,6 +120,7 @@ describe("botAadAppCreate", async () => {
     expect(
       result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
     ).to.be.equal(expectedSecretText);
+    expect(progressBar.next.calledOnce).to.be.true;
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {

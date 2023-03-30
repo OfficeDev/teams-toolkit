@@ -8,39 +8,19 @@ import * as path from "path";
 
 import { VS_CODE_UI } from "../extension";
 import * as constants from "./constants";
-import { generateAccountHint } from "./teamsfxDebugProvider";
 import { TempFolderManager } from "./tempFolderManager";
 import { delay } from "../utils/commonUtils";
 import VsCodeLogInstance from "../commonlib/log";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
-export async function openHubWebClient(
-  includeFrontend: boolean,
-  appId: string,
-  hub: constants.Hub
-): Promise<void> {
-  let sideloadingUrl = "";
-  if (hub === constants.Hub.teams) {
-    sideloadingUrl = constants.LaunchUrl.teams;
-  } else if (hub === constants.Hub.outlook) {
-    sideloadingUrl = includeFrontend
-      ? constants.LaunchUrl.outlookTab
-      : constants.LaunchUrl.outlookBot;
-  } else if (hub === constants.Hub.office) {
-    sideloadingUrl = constants.LaunchUrl.officeTab;
-  }
-
-  sideloadingUrl = sideloadingUrl.replace(constants.teamsAppIdPlaceholder, appId);
-  sideloadingUrl = sideloadingUrl.replace(constants.teamsAppInternalIdPlaceholder, appId);
-  const accountHint = await generateAccountHint(hub === constants.Hub.teams);
-  sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, accountHint);
-
+export async function openHubWebClient(hub: Hub, url: string): Promise<void> {
   VsCodeLogInstance.info(constants.sideloadingDisplayMessages.title(hub));
   VsCodeLogInstance.outputChannel.appendLine("");
   VsCodeLogInstance.outputChannel.appendLine(
-    constants.sideloadingDisplayMessages.sideloadingUrlMessage(hub, sideloadingUrl)
+    constants.sideloadingDisplayMessages.sideloadingUrlMessage(hub, url)
   );
 
-  await VS_CODE_UI.openUrl(sideloadingUrl);
+  await VS_CODE_UI.openUrl(url);
 }
 
 export async function openUrlWithNewProfile(url: string): Promise<boolean> {

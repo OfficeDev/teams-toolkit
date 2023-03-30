@@ -2677,17 +2677,11 @@ export function cmdHdlDisposeTreeView() {
 
 export async function showError(e: UserError | SystemError) {
   const notificationMessage = e.displayMessage ?? e.message;
-
-  if (e.stack && e instanceof SystemError) {
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
-  } else {
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
-  }
-
   const errorCode = `${e.source}.${e.name}`;
   if (isUserCancelError(e)) {
     return;
   } else if ("helpLink" in e && e.helpLink && typeof e.helpLink != "undefined") {
+    const helpLinkUrl = Uri.parse(`${e.helpLink}`);
     const help = {
       title: localize("teamstoolkit.handlers.getHelp"),
       run: async (): Promise<void> => {
@@ -2696,10 +2690,12 @@ export async function showError(e: UserError | SystemError) {
           [TelemetryProperty.ErrorMessage]: notificationMessage,
           [TelemetryProperty.HelpLink]: e.helpLink!,
         });
-        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
+        commands.executeCommand("vscode.open", helpLinkUrl);
       },
     };
-
+    VsCodeLogInstance.error(
+      `code:${e.source}.${e.name}, message: ${e.message}\n Help link: ${e.helpLink}`
+    );
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
@@ -2710,13 +2706,14 @@ export async function showError(e: UserError | SystemError) {
     )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
       sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
     }`;
+    const issueLink = Uri.parse(`${path}${param}`);
     const issue = {
       title: localize("teamstoolkit.handlers.reportIssue"),
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", Uri.parse(`${path}${param}`));
+        commands.executeCommand("vscode.open", issueLink);
       },
     };
-
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
   } else {
@@ -3478,6 +3475,9 @@ export async function openLifecycleTreeview(args?: any[]) {
 export async function updateAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
+  if (isV3Enabled()) {
+    return await runCommand(Stage.deployAad, inputs);
+  }
   inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";
 
   if (args && args.length > 1 && args[1] === "CodeLens") {
@@ -3493,11 +3493,8 @@ export async function updateAadAppManifest(args: any[]): Promise<Result<null, Fx
     const envName = selectedEnv.value;
     inputs.env = envName;
   }
-  if (isV3Enabled()) {
-    return await runCommand(Stage.deployAad, inputs);
-  } else {
-    return await runCommand(Stage.deploy, inputs);
-  }
+
+  return await runCommand(Stage.deploy, inputs);
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {

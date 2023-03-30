@@ -24,6 +24,7 @@ import {
 } from "../constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
+import { core, getSystemInputs } from "../../handlers";
 
 export interface LaunchTeamsClientArgs {
   env: string;
@@ -55,7 +56,26 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
   private async _do(): Promise<Result<Void, FxError>> {
     if (!this.args?.env) {
-      throw BaseTaskTerminal.taskDefinitionError("env");
+      // Prompt to select env
+      const inputs = getSystemInputs();
+      inputs.ignoreEnvInfo = false;
+      inputs.ignoreLocalEnv = true;
+      const envResult = await core.getSelectedEnv(inputs);
+      if (envResult.isErr()) {
+        throw envResult.error;
+      }
+      this.args.env = envResult.value!;
+
+      // reload env
+      const envRes = await envUtil.readEnv(
+        globalVariables.workspaceUri?.fsPath as string,
+        this.args.env,
+        false,
+        true
+      );
+      if (envRes.isErr()) {
+        throw envRes.error;
+      }
     }
 
     if (!this.args?.manifestPath) {
@@ -107,7 +127,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
         detached: false,
       };
 
-      const childProc = cp.spawn("npx", ["open-cli", `"${url}"`], options);
+      const childProc = cp.spawn("npx", ["open-cli", url], options);
 
       childProc.stdout?.setEncoding("utf-8");
       childProc.stdout?.on("data", (data: string | Buffer) => {

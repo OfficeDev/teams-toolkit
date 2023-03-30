@@ -9,14 +9,15 @@ provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
-  - uses: botAadApp/create # Creates a new or reuses an existing AAD app for bot
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: botAadApp/create # Creates a new or reuses an existing Azure Active Directory application for bot.
     with:
-      name: {{appName}}
+      name: {{appName}}-${{TEAMSFX_ENV}} # The Azure Active Directory application's display name
     writeToEnvironmentFile:
-      botId: BOT_ID
-      botPassword: SECRET_BOT_PASSWORD
+      botId: BOT_ID # The Azure Active Directory application's client id created for bot.
+      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot.
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
@@ -40,8 +41,8 @@ provision:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      teamsAppId: TEAMS_APP_ID
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:

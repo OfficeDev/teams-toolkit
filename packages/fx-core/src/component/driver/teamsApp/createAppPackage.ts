@@ -18,6 +18,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../../../common/constants";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -46,7 +47,10 @@ export class CreateAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("plugins.appstudio.createPackage.progressBar.message")),
+  ])
   public async build(
     args: CreateAppPackageArgs,
     context: WrapDriverContext
@@ -171,18 +175,6 @@ export class CreateAppPackageDriver implements StepDriver {
       } else {
         context.ui?.showMessage("info", builtSuccess, false);
       }
-    } else if (context.platform === Platform.VSCode) {
-      const isWindows = process.platform === "win32";
-      let builtSuccess = getLocalizedString(
-        "plugins.appstudio.buildSucceedNotice.fallback",
-        zipFileName
-      );
-      if (isWindows) {
-        const folderLink = pathToFileURL(path.dirname(zipFileName));
-        const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
-        builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
-      }
-      context.ui?.showMessage("info", builtSuccess, false);
     }
 
     return ok(new Map());

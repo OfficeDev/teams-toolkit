@@ -6,8 +6,8 @@ provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      teamsAppId: TEAMS_APP_ID
   - uses: script # Set TAB_DOMAIN for local launch
     name: Set TAB_DOMAIN for local launch
     with:
@@ -27,8 +27,8 @@ provision:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      teamsAppId: TEAMS_APP_ID
 
 deploy:
   - uses: prerequisite/install # Install dependencies

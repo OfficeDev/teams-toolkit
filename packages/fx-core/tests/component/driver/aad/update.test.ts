@@ -360,7 +360,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledUserError)
       .and.property("message")
-      .contain("Unhandled error happened in aadApp/update action");
+      .contain("An unexpected error has occurred while performing the aadApp/update task");
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -392,7 +392,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledSystemError)
       .and.property("message")
-      .contain("Unhandled error happened in aadApp/update action");
+      .contain("An unexpected error has occurred while performing the aadApp/update task");
   });
 
   it("should send telemetries when success", async () => {
@@ -511,7 +511,7 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.properties["error-code"]).to.equal("aadApp/update.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
     expect(endTelemetry.properties["error-message"])
-      .contain("Unhandled error happened in aadApp/update action")
+      .contain("An unexpected error has occurred while performing the aadApp/update task")
       .and.contain("Internal server error");
   });
 

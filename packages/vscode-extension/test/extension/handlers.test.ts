@@ -27,8 +27,6 @@ import {
   VsCodeEnv,
   UserCancelError,
   OptionItem,
-  TeamsAppManifest,
-  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -44,7 +42,6 @@ import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
 import * as teamsAppInstallation from "../../src/debug/teamsAppInstallation";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
-import * as debugProvider from "../../src/debug/teamsfxDebugProvider";
 import * as taskHandler from "../../src/debug/teamsfxTaskHandler";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
@@ -69,13 +66,7 @@ import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
 import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
-import * as question from "@microsoft/teamsfx-core/build/core/question";
-import * as visitor from "@microsoft/teamsfx-api/build/qm/visitor";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
-import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
 import * as launch from "../../src/debug/launch";
 
 describe("handlers", () => {
@@ -401,89 +392,33 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("treeViewPreviewHandler() - Teams", async () => {
+    it("treeViewPreviewHandler() - previewWithManifest error", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
       sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
-      sandbox.stub(question, "selectTeamsAppManifestQuestion").returns({} as any);
-      sandbox.stub(visitor, "traverse").callsFake(async (node, inputs, ui) => {
-        inputs["hub"] = "Teams";
-        inputs["manifest-path"] = "/path/to/manifest";
-        return ok(Void);
-      });
-      const mockProgressHandler = stubInterface<IProgressHandler>();
-      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(VsCodeUI.prototype, "createProgressBar").returns(mockProgressHandler);
-      sandbox.stub(envUtil, "readEnv").returns(Promise.resolve(ok({})));
-      sandbox
-        .stub(manifestUtils, "getManifestV3")
-        .returns(Promise.resolve(ok(new TeamsAppManifest())));
-      sandbox.stub(launch, "openHubWebClient").returns(Promise.resolve());
-
-      const result = await handlers.treeViewPreviewHandler("dev");
-
-      chai.assert.isTrue(result.isOk());
-    });
-
-    it("treeViewPreviewHandler() - Outlook", async () => {
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
-      sandbox.stub(question, "selectTeamsAppManifestQuestion").returns({} as any);
-      sandbox.stub(visitor, "traverse").callsFake(async (node, inputs, ui) => {
-        inputs["hub"] = "Outlook";
-        inputs["manifest-path"] = "/path/to/manifest";
-        return ok(Void);
-      });
-      const mockProgressHandler = stubInterface<IProgressHandler>();
-      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(VsCodeUI.prototype, "createProgressBar").returns(mockProgressHandler);
-      sandbox.stub(envUtil, "readEnv").returns(Promise.resolve(ok({})));
-      sandbox
-        .stub(manifestUtils, "getManifestV3")
-        .returns(Promise.resolve(ok(new TeamsAppManifest())));
-      sandbox.stub(M365TokenInstance, "getAccessToken").returns(Promise.resolve(ok("")));
-      sandbox.stub(launch, "openHubWebClient").returns(Promise.resolve());
-      sandbox
-        .stub(PackageService.prototype, "retrieveAppId")
-        .returns(Promise.resolve("test-app-id"));
-
-      const result = await handlers.treeViewPreviewHandler("dev");
-
-      chai.assert.isTrue(result.isOk());
-    });
-
-    it("treeViewPreviewHandler() - Outlook: title unacquired", async () => {
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
-      sandbox.stub(question, "selectTeamsAppManifestQuestion").returns({} as any);
-      sandbox.stub(visitor, "traverse").callsFake(async (node, inputs, ui) => {
-        inputs["hub"] = "Outlook";
-        inputs["manifest-path"] = "/path/to/manifest";
-        return ok(Void);
-      });
-      const mockProgressHandler = stubInterface<IProgressHandler>();
-      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(VsCodeUI.prototype, "createProgressBar").returns(mockProgressHandler);
-      sandbox.stub(envUtil, "readEnv").returns(Promise.resolve(ok({})));
-      sandbox
-        .stub(manifestUtils, "getManifestV3")
-        .returns(Promise.resolve(ok(new TeamsAppManifest())));
-      sandbox.stub(M365TokenInstance, "getAccessToken").returns(Promise.resolve(ok("")));
-      sandbox.stub(launch, "openHubWebClient").returns(Promise.resolve());
-      sandbox.stub(PackageService.prototype, "retrieveAppId").returns(Promise.resolve(undefined));
-      sinon.stub(handlers, "showError").callsFake(async () => {});
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(handlers.core, "previewWithManifest").resolves(err({ foo: "bar" } as any));
 
       const result = await handlers.treeViewPreviewHandler("dev");
 
       chai.assert.isTrue(result.isErr());
+    });
+
+    it("treeViewPreviewHandler() - happy path", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(handlers.core, "previewWithManifest").resolves(ok("test-url"));
+      sandbox.stub(launch, "openHubWebClient").resolves();
+
+      const result = await handlers.treeViewPreviewHandler("dev");
+
+      chai.assert.isTrue(result.isOk());
     });
 
     it("selectTutorialsHandler() - v2", async () => {

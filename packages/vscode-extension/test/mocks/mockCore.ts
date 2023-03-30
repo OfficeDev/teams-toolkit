@@ -130,4 +130,8 @@ export class MockCore implements Core {
   async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async previewWithManifest(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

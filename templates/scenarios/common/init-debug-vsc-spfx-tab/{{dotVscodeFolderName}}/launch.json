@@ -1,0 +1,117 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Hosted workbench (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
+            "webRoot": "${workspaceRoot}/SPFx",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "-incognito"
+            ],
+            "preLaunchTask": "gulp serve",
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "remote",
+                "order": 1
+            }
+        },
+        {
+            "name": "Hosted workbench (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
+            "webRoot": "${workspaceRoot}/SPFx",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "-incognito"
+            ],
+            "preLaunchTask": "gulp serve",
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "remote",
+                "order": 2
+            }
+        },
+        {
+            "name": "Start Teams workbench (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "webRoot": "${workspaceRoot}/SPFx",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Start Teams workbench (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "webRoot": "${workspaceRoot}/SPFx",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Teams workbench (Edge)",
+            "configurations": [
+                "Start Teams workbench (Edge)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "forteams",
+                "order": 1
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Teams workbench (Chrome)",
+            "configurations": [
+                "Start Teams workbench (Chrome)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "forteams",
+                "order": 2
+            },
+            "stopAll": true
+        }
+    ]
+}

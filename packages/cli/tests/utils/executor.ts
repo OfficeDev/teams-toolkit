@@ -59,6 +59,21 @@ export class Executor {
     return this.execute(command, workspace);
   }
 
+  static async addSPFxWebPart(
+    workspace: string,
+    spfxFolder: string,
+    webpartName: string,
+    manifestPath: string,
+    localManifestPath: string
+  ) {
+    const command =
+      `teamsfx add SPFxWebPart --spfx-webpart-name ${webpartName}` +
+      ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
+      ` --local-manifest-path ${localManifestPath}` +
+      ` --spfx-install-latest-package true`;
+    return this.execute(command, workspace);
+  }
+
   static async provision(workspace: string, env = "dev") {
     const command = `teamsfx provision --env ${env}`;
     return this.execute(command, workspace);
@@ -77,5 +92,15 @@ export class Executor {
   static async publish(workspace: string, env = "dev") {
     const command = `teamsfx publish --env ${env}`;
     return this.execute(command, workspace);
+  }
+
+  static async installCLI(workspace: string, version: string, global: boolean) {
+    if (global) {
+      const command = `npm install -g @microsoft/teamsfx-cli@${version}`;
+      return this.execute(command, workspace);
+    } else {
+      const command = `npm install @microsoft/teamsfx-cli@${version}`;
+      return this.execute(command, workspace);
+    }
   }
 }

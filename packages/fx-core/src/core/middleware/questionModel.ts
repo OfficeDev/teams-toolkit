@@ -23,6 +23,7 @@ import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
+import { getQuestionForDeployAadManifest } from "../question";
 import { TOOLS } from "../globalVars";
 import {
   BotIdsQuestion,
@@ -66,6 +67,8 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     getQuestionRes = await getQuestionsForGrantPermission(inputs);
   } else if (isV3Enabled() && (method === "listCollaborator" || method == "checkPermission")) {
     getQuestionRes = await getQuestionsForListCollaborator(inputs);
+  } else if (isV3Enabled() && method === "deployAadManifest") {
+    getQuestionRes = await getQuestionForDeployAadManifest(inputs);
   }
 
   if (getQuestionRes.isErr()) {
@@ -145,7 +148,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (triggerNodeRes.value) {
     capNode.addChild(triggerNodeRes.value);
   }
-  const spfxNode = await getSPFxScaffoldQuestion();
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     capNode.addChild(spfxNode);
@@ -234,7 +237,7 @@ async function getQuestionsForCreateProjectWithDotNet(
   if (triggerNodeRes.value) {
     dotnetCapNode.addChild(triggerNodeRes.value);
   }
-  const spfxNode = await getSPFxScaffoldQuestion();
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     dotnetCapNode.addChild(spfxNode);

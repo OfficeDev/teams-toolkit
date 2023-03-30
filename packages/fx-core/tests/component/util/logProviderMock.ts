@@ -25,4 +25,7 @@ export class TestLogProvider implements LogProvider {
   async log({}: LogLevel, {}: string): Promise<boolean> {
     return true;
   }
+  getLogFilePath(): string {
+    return "";
+  }
 }

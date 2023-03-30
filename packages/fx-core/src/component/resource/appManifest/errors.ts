@@ -8,8 +8,8 @@ export class AppStudioError {
   public static readonly FileNotFoundError = {
     name: "FileNotFoundError",
     message: (filePath: string): [string, string] => [
-      getDefaultString("error.appstudio.fileNotFoundError", filePath),
-      getLocalizedString("error.appstudio.fileNotFoundError", filePath),
+      getDefaultString("error.common.FileNotFoundError", filePath),
+      getLocalizedString("error.common.FileNotFoundError", filePath),
     ],
   };
 
@@ -30,14 +30,7 @@ export class AppStudioError {
         correlationId,
         extraData
       ),
-      getLocalizedString(
-        "error.appstudio.apiFailed",
-        e.name,
-        e.message,
-        requestPath,
-        correlationId,
-        extraData
-      ),
+      getLocalizedString("error.appstudio.apiFailed"),
     ],
   };
 
@@ -94,24 +87,6 @@ export class AppStudioError {
     message: (errors: string[]): [string, string] => [
       getDefaultString("plugins.appstudio.validationFailedNotice") + " " + errors.join("\n"),
       getLocalizedString("plugins.appstudio.validationFailedNotice") + " " + errors.join("\n"),
-    ],
-  };
-
-  public static readonly GetLocalDebugConfigFailedError = {
-    name: "GetLocalDebugConfigFailed",
-    message: (error: any): [string, string] => [
-      getDefaultString("error.appstudio.getLocalConfigFailed", error.message),
-      getLocalizedString("error.appstudio.getLocalConfigFailed", error.message),
-    ],
-  };
-
-  public static readonly GetRemoteConfigFailedError = {
-    name: "GetRemoteConfigFailed",
-    message: (errorMessage: string, isProvisionSucceeded: boolean): [string, string] => [
-      getDefaultString("error.appstudio.getRemoteConfigFailed", errorMessage) +
-        `${isProvisionSucceeded ? "" : getDefaultString("plugins.appstudio.provisionTip")}`,
-      getLocalizedString("error.appstudio.getRemoteConfigFailed", errorMessage) +
-        `${isProvisionSucceeded ? "" : getLocalizedString("plugins.appstudio.provisionTip")}`,
     ],
   };
 

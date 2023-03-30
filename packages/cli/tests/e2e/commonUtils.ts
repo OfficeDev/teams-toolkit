@@ -323,6 +323,9 @@ export async function cleanUpResourceGroup(appName: string, envName?: string): P
 }
 
 export async function deleteResourceGroupByName(name: string): Promise<boolean> {
+  if (!name) {
+    return true;
+  }
   if (await ResourceGroupManager.hasResourceGroup(name)) {
     const result = await ResourceGroupManager.deleteResourceGroup(name);
     if (result) {

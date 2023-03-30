@@ -22,13 +22,13 @@ import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/update";
 
-export const outputNames = {
-  TEAMS_APP_ID: "TEAMS_APP_ID",
-  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
-  TEAMS_APP_UPDATE_TIME: "TEAMS_APP_UPDATE_TIME",
+export const internalOutputNames = {
+  teamsAppUpdateTime: "TEAMS_APP_UPDATE_TIME",
+  teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
 @Service(actionName)
@@ -46,20 +46,25 @@ export class ConfigureTeamsAppDriver implements StepDriver {
 
   public async execute(
     args: ConfigureTeamsAppArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.update(args, wrapContext);
+    const res = await this.update(args, wrapContext, outputEnvVarNames);
     return {
       result: res,
       summaries: wrapContext.summaries,
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage")),
+  ])
   async update(
     args: ConfigureTeamsAppArgs,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
 
@@ -127,15 +132,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
     }
 
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppTitle"),
-      1
-    );
-    await progressHandler?.start();
-
     try {
       let message = getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage");
-      await progressHandler?.next(message);
 
       const appDefinition = await AppStudioClient.importApp(
         archivedFile,
@@ -149,18 +147,13 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
       context.logProvider.info(message);
       context.addSummary(message);
-      if (context.platform === Platform.VSCode) {
-        context.ui?.showMessage("info", message, false);
-      }
       return ok(
         new Map([
-          [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],
-          [outputNames.TEAMS_APP_TENANT_ID, appDefinition.tenantId!],
-          [outputNames.TEAMS_APP_UPDATE_TIME, appDefinition.updatedAt!],
+          [internalOutputNames.teamsAppTenantId, appDefinition.tenantId!],
+          [internalOutputNames.teamsAppUpdateTime, appDefinition.updatedAt!],
         ])
       );
     } catch (e: any) {
-      await progressHandler?.end(false);
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,
@@ -168,8 +161,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
-    } finally {
-      await progressHandler?.end(true);
     }
   }
 

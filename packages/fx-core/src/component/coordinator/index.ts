@@ -91,7 +91,7 @@ import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
-import { AppStudioScopes } from "../resource/appManifest/constants";
+import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
@@ -103,6 +103,7 @@ import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import { UnresolvedPlaceholderError } from "../../error/common";
+import { SelectSubscriptionError } from "../../error/azure";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -588,13 +589,13 @@ export class Coordinator {
     const projectModel = maybeProjectModel.value;
 
     const cycles = [
-      projectModel.registerApp,
+      // projectModel.registerApp,
       projectModel.provision,
-      projectModel.configureApp,
+      // projectModel.configureApp,
     ].filter((c) => c !== undefined) as Lifecycle[];
 
     if (cycles.length === 0) {
-      return err(new LifeCycleUndefinedError("registerApp, provision, or configureApp"));
+      return err(new LifeCycleUndefinedError("provision"));
     }
 
     // 2. M365 sign in and tenant check if needed.
@@ -736,13 +737,7 @@ export class Coordinator {
       }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
-        return err(
-          new UserError(
-            "coordinator",
-            "SubscriptionNotFound",
-            getLocalizedString("core.provision.subscription.failToSelect")
-          )
-        );
+        return err(new SelectSubscriptionError());
       }
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,
@@ -953,7 +948,8 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<DotenvParseOutput, FxError>> {
+    const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
@@ -961,6 +957,13 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
+      const steps = projectModel.publish.driverDefs.length;
+      ctx.progressBar = ctx.ui?.createProgressBar(
+        getLocalizedString("core.progress.publish"),
+        steps
+      );
+      await ctx.progressBar?.start();
+
       const summaryReporter = new SummaryReporter([projectModel.publish], ctx.logProvider);
       try {
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
@@ -971,8 +974,32 @@ export class Coordinator {
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
+        merge(output, result[0]);
         summaryReporter.updateLifecycleState(0, execRes);
-        if (result[1]) return err(result[1]);
+        if (result[1]) {
+          await ctx.progressBar?.end(false);
+          const msg = getLocalizedString(
+            "core.progress.failureResult",
+            getLocalizedString("core.progress.publish")
+          );
+          ctx.ui?.showMessage("error", msg, false);
+          inputs.envVars = output;
+          return err(result[1]);
+        } else {
+          await ctx.progressBar?.end(true);
+          const msg = getLocalizedString(
+            "core.progress.successResult",
+            steps,
+            steps,
+            getLocalizedString("core.progress.publish")
+          );
+          const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+          ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+            if (value.isOk() && value.value === adminPortal) {
+              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+            }
+          });
+        }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
@@ -980,7 +1007,7 @@ export class Coordinator {
     } else {
       return err(new LifeCycleUndefinedError("publish"));
     }
-    return ok(undefined);
+    return ok(output);
   }
 
   @hooks([

@@ -51,6 +51,7 @@ import { ProgressHelper } from "./utils/progressHelper";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { convertManifestTemplateToV3, pluginName2ComponentName } from "../component/migrate";
 import { getProjectTemplatesFolderPath } from "../common/utils";
+import { InvalidAzureCredentialError } from "../error/azure";
 
 const bicepOrchestrationFileName = "main.bicep";
 const configsFolder = `.${ConfigFolderName}/configs`;
@@ -630,18 +631,13 @@ async function getExpandedParameterV3(ctx: v2.Context, envInfo: v3.EnvInfoV3, fi
     throw err;
   }
 }
-async function getResourceManagementClientForArmDeployment(
+export async function getResourceManagementClientForArmDeployment(
   azureAccountProvider: AzureAccountProvider,
   subscriptionId: string
 ): Promise<ResourceManagementClient> {
   const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
   if (!azureToken) {
-    throw new SystemError(
-      PluginDisplayName.Solution,
-      SolutionError.FailedToGetAzureCredential,
-      getDefaultString("core.deployArmTemplates.InvalidAzureCredential"),
-      getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")
-    );
+    throw new InvalidAzureCredentialError();
   }
   if (!subscriptionId) {
     throw new SystemError(

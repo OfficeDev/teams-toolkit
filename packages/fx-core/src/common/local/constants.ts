@@ -153,10 +153,9 @@ export const TaskDefaultValue = Object.freeze({
   startLocalTunnel: {
     ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
     ngrokPath: "ngrok",
-    output: {
+    writeToEnvironmentFile: {
       endpoint: "BOT_ENDPOINT",
       domain: "BOT_DOMAIN",
-      id: "DEV_TUNNEL_ID",
     },
   },
   setUpTab: {

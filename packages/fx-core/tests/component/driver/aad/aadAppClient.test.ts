@@ -12,6 +12,8 @@ import { MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/resource/aadApp/interfaces/AADManifest";
+import { IAADDefinition } from "../../../../src/component/resource/aadApp/interfaces/IAADDefinition";
+import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -138,6 +140,27 @@ describe("AadAppClient", async () => {
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should use input signInAudience", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .post("/applications")
+        .reply(201, (uri, body) => {
+          return {
+            id: expectedObjectId,
+            displayName: expectedDisplayName,
+            signInAudience: (body as IAADDefinition).signInAudience,
+          };
+        });
+
+      const createAadAppResult = await aadAppClient.createAadApp(
+        expectedDisplayName,
+        SignInAudience.AzureADMultipleOrgs
+      );
+
+      expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
+      expect(createAadAppResult.id).to.equal(expectedObjectId);
+      expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
     });
   });
 

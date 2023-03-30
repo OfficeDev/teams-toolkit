@@ -30,8 +30,8 @@ import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
 import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
-import { PathNotExistError } from "../../src";
 import { MetadataV3 } from "../../src/common/versionMetadata";
+import { FileNotFoundError } from "../../src/error/common";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -319,6 +319,26 @@ describe("env utils", () => {
     // const getDotEnvRes = await core.getDotEnv(inputs);
     // assert.isTrue(getDotEnvRes.isOk());
   });
+
+  it("EnvLoaderMW skip load", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW(true, true)],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isOk());
+  });
+
   it("EnvLoaderMW success for F5 (missing .env file)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").returns(false);
@@ -680,7 +700,7 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr() instanceof PathNotExistError);
+    assert.isTrue(res._unsafeUnwrapErr() instanceof FileNotFoundError);
   });
 });
 

@@ -1,0 +1,59 @@
+{
+    "appName": "transparent-m365-me",
+    "projectId": "6442330d-a9dd-4b53-b0a2-9bb7bca46d07",
+    "version": "2.1.0",
+    "components": [
+        {
+            "name": "teams-bot",
+            "hosting": "azure-web-app",
+            "provision": false,
+            "deploy": true,
+            "capabilities": [
+                "m365-search-app"
+            ],
+            "build": true,
+            "folder": "bot"
+        },
+        {
+            "name": "bot-service",
+            "provision": true
+        },
+        {
+            "name": "azure-web-app",
+            "scenario": "Bot",
+            "connections": [
+                "identity",
+                "teams-bot"
+            ]
+        },
+        {
+            "name": "identity",
+            "provision": true
+        }
+    ],
+    "isM365": true,
+    "programmingLanguage": "javascript",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "Azure",
+        "azureResources": [],
+        "capabilities": [],
+        "activeResourcePlugins": [
+            "fx-resource-local-debug",
+            "fx-resource-appstudio",
+            "fx-resource-cicd",
+            "fx-resource-api-connector",
+            "fx-resource-bot",
+            "fx-resource-identity"
+        ]
+    },
+    "pluginSettings": {
+        "fx-resource-bot": {
+            "host-type": "app-service",
+            "capabilities": [
+                "m365-search-app"
+            ]
+        }
+    }
+}

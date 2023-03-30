@@ -61,7 +61,6 @@ import {
   UserError,
   Void,
   VsCodeEnv,
-  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
@@ -74,7 +73,6 @@ import {
   getAppDirectory,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  isExistingTabAppEnabled,
   isUserCancelError,
   AzureScopes,
 } from "@microsoft/teamsfx-core/build/common/tools";
@@ -93,7 +91,7 @@ import {
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
-import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
+import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -174,6 +172,8 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import commandController from "./commandController";
 import { ExtensionSurvey } from "./utils/survey";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -411,7 +411,7 @@ export function addFileSystemWatcher(workspacePath: string) {
 }
 
 export async function refreshSPFxTreeOnFileChanged() {
-  globalVariables.initializeGlobalVariables(globalVariables.context);
+  await globalVariables.initializeGlobalVariables(globalVariables.context);
 
   await TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
@@ -612,129 +612,30 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
-  const LocalEnvName = environmentManager.getLocalEnvName();
-  const PreviewLocalSteps = 2;
-  const PreviewRemoteSteps = 1;
 
-  const progressBar = VS_CODE_UI.createProgressBar(
-    localize("teamstoolkit.preview.progressTitle"),
-    env === LocalEnvName ? PreviewLocalSteps : PreviewRemoteSteps
-  );
-  await progressBar.start();
+  try {
+    const inputs = getSystemInputs();
+    inputs.env = env;
 
-  let result: Result<null, FxError>;
-  if (env === LocalEnvName) {
-    result = await previewLocal(progressBar);
-  } else {
-    result = await previewRemote(env, progressBar);
-  }
+    const result = await core.previewWithManifest(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
 
-  if (result.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, result.error);
-    await progressBar.end(false);
-    return result;
+    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const url = result.value as string;
+
+    await openHubWebClient(hub, url);
+  } catch (error) {
+    const assembledError = assembleError(error);
+    showError(assembledError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, assembledError);
+    return err(assembledError);
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
-  await progressBar.end(true);
-  return ok(null);
-}
-
-async function previewLocal(progressBar: IProgressHandler): Promise<Result<null, FxError>> {
-  await progressBar.next(localize("teamstoolkit.preview.prepareTeamsApp"));
-
-  const result = await runCommand(Stage.debug);
-  if (result.isErr()) {
-    return result;
-  }
-
-  const debugConfig = await commonUtils.getDebugConfig(true);
-  if (!debugConfig?.appId) {
-    const error = new UserError(
-      ExtensionSource,
-      ExtensionErrors.TeamsAppIdNotFoundError,
-      util.format(
-        localize("teamstoolkit.handlers.teamsAppIdNotFound"),
-        environmentManager.getLocalEnvName()
-      )
-    );
-    return err(error);
-  }
-  await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-  await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
-  return ok(null);
-}
-
-async function previewRemote(
-  env: string,
-  progressBar: IProgressHandler
-): Promise<Result<null, FxError>> {
-  try {
-    const debugConfig = await commonUtils.getDebugConfig(false, env);
-    if (!debugConfig?.appId) {
-      const error = new UserError(
-        ExtensionSource,
-        ExtensionErrors.TeamsAppIdNotFoundError,
-        util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
-      );
-      return err(error);
-    }
-
-    const localEnvManager = new LocalEnvManager(
-      VsCodeLogInstance,
-      ExtTelemetry.reporter,
-      VS_CODE_UI
-    );
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-
-    let hub = constants.Hub.teams;
-    if (projectSettings.isM365) {
-      const platformSingleSelect: SingleSelectConfig = {
-        name: "platform",
-        title: localize("teamstoolkit.preview.platform.title"),
-        options: [constants.Hub.teams, constants.Hub.outlook],
-        placeholder: localize("teamstoolkit.preview.platform.placeholder"),
-      };
-      if (includeFrontend) {
-        (platformSingleSelect.options as string[]).push(constants.Hub.office);
-      }
-      const platformResult = await VS_CODE_UI.selectOption(platformSingleSelect);
-      if (platformResult.isErr()) {
-        return err(platformResult.error);
-      }
-
-      hub = platformResult.value.result as constants.Hub;
-    }
-
-    if (hub === constants.Hub.teams) {
-      await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-      await openHubWebClient(includeFrontend, debugConfig.appId, hub);
-    } else {
-      const shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
-        env,
-        debugConfig.appId
-      );
-      if (!shouldContinue) {
-        return err(UserCancelError);
-      }
-
-      const internalId = await teamsAppInstallation.getTeamsAppInternalId(debugConfig.appId);
-      if (internalId !== undefined) {
-        await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-        await openHubWebClient(includeFrontend, internalId, hub);
-      }
-    }
-  } catch (error) {
-    const assembledError = assembleError(error);
-    showError(assembledError);
-    return err(assembledError);
-  }
-
   return ok(null);
 }
 
@@ -817,11 +718,6 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   );
 
   if (isV3Enabled()) {
-    // Use default manifest template
-    // Throw error if not exists and remind user to use CLI
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
-
     const schemaOption: OptionItem = {
       id: "validateAgainstSchema",
       label: localize("teamstoolkit.handlers.validate.schemaOption"),
@@ -844,67 +740,11 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
       });
       return err(result.error);
     } else {
-      const selectedEnv = await askTargetEnvironment();
-      if (selectedEnv.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-        showError(selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      const env = selectedEnv.value;
-
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "validateManifest",
-        params: {},
-      };
-      if (result.value.result === schemaOption.id) {
-        if (!(await fs.pathExists(manifestTemplatePath))) {
-          const error = new UserError(
-            ExtensionSource,
-            ExtensionErrors.DefaultManifestTemplateNotExistsError,
-            util.format(
-              localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-              manifestTemplatePath
-            )
-          );
-
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-          showError(error);
-          return err(error);
-        }
-        func.params = {
-          manifestPath: manifestTemplatePath,
-        };
-      } else {
-        const appPackagePath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
-        if (!(await fs.pathExists(appPackagePath))) {
-          const error = new UserError(
-            ExtensionSource,
-            ExtensionErrors.DefaultAppPackageNotExistsError,
-            util.format(
-              localize("teamstoolkit.handlers.defaultAppPackageNotExists"),
-              appPackagePath
-            )
-          );
-
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-          showError(error);
-          return err(error);
-        }
-
-        func.params = {
-          appPackagePath: appPackagePath,
-        };
-      }
       const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
       telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
-      return await runUserTask(
-        func,
-        TelemetryEvent.ValidateManifest,
-        false,
-        env,
-        telemetryProperties
-      );
+      const inputs = getSystemInputs();
+      inputs.validateMethod = result.value.result;
+      return await runCommand(Stage.validateApplication, inputs, telemetryProperties);
     }
   } else {
     const func: Func = {
@@ -964,46 +804,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   if (isV3Enabled()) {
-    // Use default manifest template
-    // Throw error if not exists and remind user to use CLI
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.json`;
-
-    if (!(await fs.pathExists(manifestTemplatePath))) {
-      const error = new UserError(
-        ExtensionSource,
-        ExtensionErrors.DefaultManifestTemplateNotExistsError,
-        util.format(
-          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-          manifestTemplatePath
-        )
-      );
-
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-      showError(error);
-      return err(error);
-    }
-
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-      showError(selectedEnv.error);
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "buildPackage",
-      params: {
-        manifestTemplatePath: manifestTemplatePath,
-        outputZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
-        outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
-        env: env,
-      },
-    };
-
-    return await runUserTask(func, TelemetryEvent.Build, false, env);
+    return await runCommand(Stage.createAppPackage);
   } else {
     const func: Func = {
       namespace: "fx-solution-azure",
@@ -1070,6 +871,8 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+let lastAppPackageFile: string | undefined;
+
 export async function publishInDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
@@ -1093,32 +896,77 @@ export async function publishInDeveloperPortalHandler(
         return path.join(zipDefaultFolder, file);
       });
   }
-  const selectFileConfig: SelectFileConfig = {
-    name: "appPackagePath",
-    title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
-    placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
-    filters: {
-      "Zip files": ["zip"],
-    },
-    possibleFiles: files.map((file) => {
-      return {
-        id: file,
-        label: file,
-      };
-    }),
-    default: files.length > 0 ? files[0] : undefined,
-  };
-  const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
-  if (selectFileResult.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.PublishInDeveloperPortal,
-      selectFileResult.error,
-      getTriggerFromProperty(args)
-    );
-    return ok(null);
+  while (true) {
+    const selectFileConfig: SelectFileConfig = {
+      name: "appPackagePath",
+      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+      placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
+      filters: {
+        "Zip files": ["zip"],
+      },
+    };
+    if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
+      selectFileConfig.default = lastAppPackageFile;
+    } else {
+      selectFileConfig.possibleFiles = files.map((file) => {
+        const appPackageFilename = path.basename(file);
+        const appPackageFilepath = path.dirname(file);
+        return {
+          id: file,
+          label: `$(file) ${appPackageFilename}`,
+          description: appPackageFilepath,
+        };
+      });
+    }
+    const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
+    if (selectFileResult.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PublishInDeveloperPortal,
+        selectFileResult.error,
+        getTriggerFromProperty(args)
+      );
+      return ok(null);
+    }
+    if (
+      (lastAppPackageFile && selectFileResult.value.result === lastAppPackageFile) ||
+      (!lastAppPackageFile && files.indexOf(selectFileResult.value.result!) !== -1)
+    ) {
+      // user selected file in options
+      lastAppPackageFile = selectFileResult.value.result;
+      break;
+    }
+    // final confirmation
+    lastAppPackageFile = selectFileResult.value.result!;
+    const appPackageFilename = path.basename(lastAppPackageFile);
+    const appPackageFilepath = path.dirname(lastAppPackageFile);
+    const confirmOption: SingleSelectConfig = {
+      options: [
+        {
+          id: "yes",
+          label: `$(file) ${appPackageFilename}`,
+          description: appPackageFilepath,
+        },
+      ],
+      name: "confirm",
+      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+      placeholder: localize("teamstoolkit.publishInDevPortal.confirmFile.placeholder"),
+      step: 2,
+    };
+    const confirm = await VS_CODE_UI.selectOption(confirmOption);
+    if (confirm.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.PublishInDeveloperPortal,
+        confirm.error,
+        getTriggerFromProperty(args)
+      );
+      return ok(null);
+    }
+    if (confirm.value.type === "success") {
+      break;
+    }
   }
   const inputs = getSystemInputs();
-  inputs["appPackagePath"] = selectFileResult.value.result;
+  inputs["appPackagePath"] = lastAppPackageFile;
   const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -1160,7 +1008,8 @@ export async function addWebpart(args?: any[]) {
 
 export async function runCommand(
   stage: Stage,
-  defaultInputs?: Inputs
+  defaultInputs?: Inputs,
+  telemetryProperties?: { [key: string]: string }
 ): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -1242,6 +1091,14 @@ export async function runCommand(
         result = await core.addWebpart(inputs);
         break;
       }
+      case Stage.validateApplication: {
+        result = await core.validateApplication(inputs);
+        break;
+      }
+      case Stage.createAppPackage: {
+        result = await core.createAppPackage(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -1253,7 +1110,7 @@ export async function runCommand(
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
 }
@@ -2714,17 +2571,11 @@ export function cmdHdlDisposeTreeView() {
 
 export async function showError(e: UserError | SystemError) {
   const notificationMessage = e.displayMessage ?? e.message;
-
-  if (e.stack && e instanceof SystemError) {
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
-  } else {
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
-  }
-
   const errorCode = `${e.source}.${e.name}`;
   if (isUserCancelError(e)) {
     return;
   } else if ("helpLink" in e && e.helpLink && typeof e.helpLink != "undefined") {
+    const helpLinkUrl = Uri.parse(`${e.helpLink}`);
     const help = {
       title: localize("teamstoolkit.handlers.getHelp"),
       run: async (): Promise<void> => {
@@ -2733,10 +2584,12 @@ export async function showError(e: UserError | SystemError) {
           [TelemetryProperty.ErrorMessage]: notificationMessage,
           [TelemetryProperty.HelpLink]: e.helpLink!,
         });
-        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
+        commands.executeCommand("vscode.open", helpLinkUrl);
       },
     };
-
+    VsCodeLogInstance.error(
+      `code:${e.source}.${e.name}, message: ${e.message}\n Help link: ${e.helpLink}`
+    );
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
@@ -2747,13 +2600,14 @@ export async function showError(e: UserError | SystemError) {
     )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
       sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
     }`;
+    const issueLink = Uri.parse(`${path}${param}`);
     const issue = {
       title: localize("teamstoolkit.handlers.reportIssue"),
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", Uri.parse(`${path}${param}`));
+        commands.executeCommand("vscode.open", issueLink);
       },
     };
-
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
   } else {
@@ -3515,6 +3369,9 @@ export async function openLifecycleTreeview(args?: any[]) {
 export async function updateAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
+  if (isV3Enabled()) {
+    return await runCommand(Stage.deployAad, inputs);
+  }
   inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";
 
   if (args && args.length > 1 && args[1] === "CodeLens") {
@@ -3530,11 +3387,8 @@ export async function updateAadAppManifest(args: any[]): Promise<Result<null, Fx
     const envName = selectedEnv.value;
     inputs.env = envName;
   }
-  if (isV3Enabled()) {
-    return await runCommand(Stage.deployAad, inputs);
-  } else {
-    return await runCommand(Stage.deploy, inputs);
-  }
+
+  return await runCommand(Stage.deploy, inputs);
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {

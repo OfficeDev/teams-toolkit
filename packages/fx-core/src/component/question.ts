@@ -85,7 +85,12 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import {
+  selectM365HostQuestion,
+  ProgrammingLanguageQuestion,
+  selectTeamsAppManifestQuestion,
+  selectTeamsAppPackageQuestion,
+} from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -839,38 +844,17 @@ export function spfxFolderQuestion(): FolderQuestion {
   };
 }
 
-export function manifestFileQuestion(): SingleFileQuestion {
-  return {
-    type: "singleFile",
-    name: SPFxQuestionNames.ManifestPath,
-    title: getLocalizedString("core.manifestPath.title"),
-    placeholder: getLocalizedString("core.manifestPath.placeholder"),
-    default: (inputs: Inputs) => {
-      return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.json");
-    },
-  };
-}
-
-export function localManifestFileQuestion(): SingleFileQuestion {
-  return {
-    type: "singleFile",
-    name: SPFxQuestionNames.LocalManifestPath,
-    title: getLocalizedString("core.localManifestPath.title"),
-    placeholder: getLocalizedString("core.localManifestPath.placeholder"),
-    default: (inputs: Inputs) => {
-      return path.join(inputs.projectPath!, AppPackageFolderName, "manifest.local.json");
-    },
-  };
-}
-
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
-
   const loadPackage = new QTreeNode(loadPackageVersions);
-  addWebpart.addChild(loadPackage);
-
   const spfxPackage = new QTreeNode(spfxPackageSelectQuestion);
-  loadPackage.addChild(spfxPackage);
+
+  if (inputs.platform === Platform.CLI_HELP) {
+    addWebpart.addChild(spfxPackage);
+  } else {
+    addWebpart.addChild(loadPackage);
+    loadPackage.addChild(spfxPackage);
+  }
 
   const spfxFolder = new QTreeNode(spfxFolderQuestion());
   spfxPackage.addChild(spfxFolder);
@@ -878,11 +862,60 @@ export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | un
   const webpartName = new QTreeNode(webpartNameQuestion);
   spfxFolder.addChild(webpartName);
 
-  const manifestFile = new QTreeNode(manifestFileQuestion());
+  const manifestFile = selectTeamsAppManifestQuestion(inputs);
   webpartName.addChild(manifestFile);
 
-  const localManifestFile = new QTreeNode(localManifestFileQuestion());
+  const localManifestFile = selectTeamsAppManifestQuestion(inputs, true);
   manifestFile.addChild(localManifestFile);
 
   return ok(addWebpart);
+}
+
+export async function getQuestionsForValidateManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForValidateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // App package path node
+  const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForCreateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForUpdateTeamsApp(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForPreviewWithManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  group.addChild(selectM365HostQuestion());
+  group.addChild(selectTeamsAppManifestQuestion(inputs));
+  return ok(group);
 }

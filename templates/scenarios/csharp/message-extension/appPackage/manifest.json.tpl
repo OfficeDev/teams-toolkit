@@ -15,12 +15,12 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "{%appName%}-${{TEAMSFX_ENV}}",
-        "full": "full name for {%appName%}"
+        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "full": "full name for {{appName}}"
     },
     "description": {
-        "short": "Short description of {%appName%}",
-        "full": "Full description of {%appName%}"
+        "short": "Short description of {{appName}}",
+        "full": "Full description of {{appName}}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

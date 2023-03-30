@@ -77,4 +77,22 @@ describe("m365Title/acquire", async () => {
     chai.assert.equal((result.result as any).value.get("M365_TITLE_ID"), "test-title-id");
     chai.assert.equal((result.result as any).value.get("M365_APP_ID"), "test-app-id");
   });
+
+  it("execute with outputEnvVarNames", async () => {
+    const args = {
+      appPackagePath: "fakePath",
+    };
+    const outputEnvVarNames = new Map([
+      ["titleId", "MY_TITLE_ID"],
+      ["appId", "MY_APP_ID"],
+    ]);
+
+    sinon.stub(PackageService.prototype, "sideLoading").resolves(["test-title-id", "test-app-id"]);
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    chai.assert.isTrue(result.result.isOk());
+    chai.assert.equal((result.result as any).value.get("MY_TITLE_ID"), "test-title-id");
+    chai.assert.equal((result.result as any).value.get("MY_APP_ID"), "test-app-id");
+  });
 });

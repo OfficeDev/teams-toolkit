@@ -14,7 +14,10 @@ import { Generator } from "../../../src/component/generator/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfxGenerator";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
-import { SPFxVersionOptionIds } from "../../../src/component/resource/spfx/utils/question-helper";
+import {
+  PackageSelectOptionsHelper,
+  SPFxVersionOptionIds,
+} from "../../../src/component/resource/spfx/utils/question-helper";
 import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
 import { Utils } from "../../../src/component/resource/spfx/utils/utils";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
@@ -323,6 +326,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.globalPackage,
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(PackageSelectOptionsHelper, "isLowerThanRecommendedVersion").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
 

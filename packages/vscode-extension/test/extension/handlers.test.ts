@@ -21,12 +21,10 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
-  StaticOptions,
   Stage,
   UserError,
   Void,
   VsCodeEnv,
-  PathNotExistError,
   UserCancelError,
   OptionItem,
 } from "@microsoft/teamsfx-api";
@@ -35,7 +33,6 @@ import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
-
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import M365TokenInstance from "../../src/commonlib/m365Login";
@@ -45,7 +42,6 @@ import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
 import * as teamsAppInstallation from "../../src/debug/teamsAppInstallation";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
-import * as debugProvider from "../../src/debug/teamsfxDebugProvider";
 import * as taskHandler from "../../src/debug/teamsfxTaskHandler";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
@@ -64,14 +60,14 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
-import { assert } from "console";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
+import * as launch from "../../src/debug/launch";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -142,7 +138,7 @@ describe("handlers", () => {
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
       .stub(MockCore.prototype, "getProjectConfigV3")
-      .resolves(err(new PathNotExistError("path not exist", "fake path")));
+      .resolves(err(new FileNotFoundError("path not exist", "fake path")));
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.isUndefined(res);
   });
@@ -342,18 +338,6 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("validateManifestHandler()", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-
-      await handlers.validateManifestHandler();
-
-      sinon.assert.calledOnce(sendTelemetryErrorEvent);
-      sinon.restore();
-    });
-
     it("validateManifestHandler() - app package", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
@@ -361,53 +345,18 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+      sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      const validateApplication = sinon.spy(handlers.core, "validateApplication");
 
       sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(ok({ type: "success", result: "dev" }));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
-          }
+        selectOption: () => {
+          return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
         },
       });
 
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, ExtensionErrors.DefaultAppPackageNotExistsError);
-      }
-      sinon.restore();
-    });
-
-    it("validateManifestHandler() - manifest file", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(ok({ type: "success", result: "dev" }));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstSchema" }));
-          }
-        },
-      });
-
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, ExtensionErrors.DefaultManifestTemplateNotExistsError);
-      }
-      sinon.restore();
+      await handlers.validateManifestHandler();
+      sinon.assert.calledOnce(validateApplication);
     });
 
     it("validateManifestHandler() - user cancel", async () => {
@@ -432,59 +381,6 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("validateManifestHandler() - user cancel env", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(err(new Error("User cancel")));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstSchema" }));
-          }
-        },
-      });
-
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.message, "User cancel");
-      }
-      sinon.restore();
-    });
-
-    it("validateManifestHandler() - telemetries", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-      sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(handlers, "runUserTask").resolves(ok(new Map()));
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          if (options.name === "targetEnvName") {
-            return Promise.resolve(ok({ type: "success", result: "dev" }));
-          } else {
-            return Promise.resolve(ok({ type: "success", result: "validateAgainstPackage" }));
-          }
-        },
-      });
-
-      await handlers.validateManifestHandler();
-      sinon.restore();
-    });
-
     it("debugHandler()", async () => {
       const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
@@ -496,35 +392,31 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("treeViewPreviewHandler()", async () => {
+    it("treeViewPreviewHandler() - previewWithManifest error", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(debugCommonUtils, "getDebugConfig").resolves({ appId: "appId" });
+      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(handlers.core, "previewWithManifest").resolves(err({ foo: "bar" } as any));
 
-      let ignoreEnvInfo: boolean | undefined = undefined;
-      let localDebugCalled = 0;
-      sinon
-        .stub(handlers.core, "localDebug")
-        .callsFake(
-          async (
-            inputs: Inputs,
-            ctx?: CoreHookContext | undefined
-          ): Promise<Result<Void, FxError>> => {
-            ignoreEnvInfo = inputs.ignoreEnvInfo;
-            localDebugCalled += 1;
-            return ok({});
-          }
-        );
-      const mockProgressHandler = stubInterface<IProgressHandler>();
-      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(VsCodeUI.prototype, "createProgressBar").returns(mockProgressHandler);
-      sinon.stub(VsCodeUI.prototype, "openUrl");
-      sinon.stub(debugProvider, "generateAccountHint");
+      const result = await handlers.treeViewPreviewHandler("dev");
 
-      const result = await handlers.treeViewPreviewHandler("local");
+      chai.assert.isTrue(result.isErr());
+    });
+
+    it("treeViewPreviewHandler() - happy path", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(handlers.core, "previewWithManifest").resolves(ok("test-url"));
+      sandbox.stub(launch, "openHubWebClient").resolves();
+
+      const result = await handlers.treeViewPreviewHandler("dev");
 
       chai.assert.isTrue(result.isOk());
     });
@@ -1460,17 +1352,29 @@ describe("handlers", () => {
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
   });
 
-  it("deployAadAppManifest v3", async () => {
+  it("deployAadAppmanifest for v3", async () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
     sandbox.assert.calledOnce(deployAadManifest);
-    chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
     deployAadManifest.restore();
+  });
+
+  it("deployAadAppManifest on codelens only for v2", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
+    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    sandbox.assert.calledOnce(deployArtifacts);
+    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
+    deployArtifacts.restore();
   });
 
   it("showError", async () => {
@@ -1766,7 +1670,7 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("publish in developer portal", async () => {
+    it("publish in developer portal - success", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
@@ -1774,6 +1678,9 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon
+        .stub(extension.VS_CODE_UI, "selectOption")
+        .resolves(ok({ type: "success", result: "test.zip" }));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
@@ -1786,6 +1693,30 @@ describe("handlers", () => {
         console.log(res.error);
       }
       chai.assert.isTrue(publish.calledOnce);
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("publish in developer portal - cancelled", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon
+        .stub(extension.VS_CODE_UI, "selectFile")
+        .resolves(ok({ type: "success", result: "test2.zip" }));
+      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(UserCancelError));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
+
+      const res = await handlers.publishInDeveloperPortalHandler();
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      chai.assert.isTrue(publish.notCalled);
       chai.assert.isTrue(res.isOk());
     });
 

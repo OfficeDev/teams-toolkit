@@ -5,7 +5,15 @@
  * @author Ning Liu <nliu@microsoft.com>
  */
 
-import { Result, FxError, ok, err, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  ok,
+  err,
+  TeamsAppManifest,
+  Platform,
+  Colors,
+} from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
@@ -25,6 +33,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import AdmZip from "adm-zip";
 import { Constants } from "../../resource/appManifest/constants";
 import { metadataUtil } from "../../utils/metadataUtil";
+import { SummaryConstant } from "../../configManager/constant";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -100,40 +109,72 @@ export class ValidateAppPackageDriver implements StepDriver {
         appStudioToken
       );
 
-      // logs in output window
-      const errors = validationResult.errors
-        .map((error) => {
-          return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
-            error.helpUrl
-          }`;
-        })
-        .join(EOL);
-      const warnings = validationResult.warnings
-        .map((warning) => {
-          return `(!) Warning: ${warning.content} \n${getLocalizedString(
-            "core.option.learnMore"
-          )}: ${warning.helpUrl}`;
-        })
-        .join(EOL);
-      const outputMessage =
-        EOL +
-        getLocalizedString(
-          "driver.teamsApp.summary.validate",
+      if (context.platform === Platform.CLI) {
+        const outputMessage: Array<{ content: string; color: Colors }> = [
+          {
+            content: "Teams Toolkit has checked against all validation rules:\n\nSummary: \n",
+            color: Colors.BRIGHT_WHITE,
+          },
+          {
+            content: `${
+              validationResult.errors.length + validationResult.warnings.length
+            } failed, `,
+            color: Colors.BRIGHT_RED,
+          },
+          { content: `${validationResult.notes.length} passed.\n`, color: Colors.BRIGHT_GREEN },
+        ];
+        validationResult.errors.map((error) => {
+          outputMessage.push({ content: "(x) Error: ", color: Colors.BRIGHT_RED });
+          outputMessage.push({
+            content: `${error.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            color: Colors.BRIGHT_WHITE,
+          });
+          outputMessage.push({ content: error.helpUrl, color: Colors.BRIGHT_CYAN });
+        });
+        context.ui?.showMessage("info", outputMessage, false);
+      } else {
+        // logs in output window
+        const errors = validationResult.errors
+          .map((error) => {
+            return `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
+              "core.option.learnMore"
+            )}: ${error.helpUrl}`;
+          })
+          .join(EOL);
+        const warnings = validationResult.warnings
+          .map((warning) => {
+            return `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
+              "core.option.learnMore"
+            )}: ${warning.helpUrl}`;
+          })
+          .join(EOL);
+        const notes = validationResult.notes
+          .map((note) => {
+            return `${SummaryConstant.Succeeded} ${note.content}`;
+          })
+          .join(EOL);
+        const outputMessage =
+          EOL +
+          getLocalizedString(
+            "driver.teamsApp.summary.validate",
+            validationResult.errors.length + validationResult.warnings.length,
+            validationResult.notes.length,
+            errors,
+            warnings,
+            path.resolve(context.logProvider?.getLogFilePath())
+          );
+        context.logProvider?.info(outputMessage);
+        // logs in log file
+        context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
+
+        const message = getLocalizedString(
+          "driver.teamsApp.validate.result",
           validationResult.errors.length + validationResult.warnings.length,
           validationResult.notes.length,
-          errors,
-          warnings,
-          undefined
+          "command:fx-extension.showOutputChannel"
         );
-      context.logProvider?.info(outputMessage);
-
-      const message = getLocalizedString(
-        "driver.teamsApp.validate.result",
-        validationResult.errors.length + validationResult.warnings.length,
-        validationResult.notes.length,
-        "command:fx-extension.showOutputChannel"
-      );
-      context.ui?.showMessage("info", message, false);
+        context.ui?.showMessage("info", message, false);
+      }
     } catch (e: any) {
       context.logProvider?.warning(
         getLocalizedString("error.teamsApp.validate.apiFailed", e.message)

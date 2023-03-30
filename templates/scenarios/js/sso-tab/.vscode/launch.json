@@ -5,7 +5,7 @@
             "name": "Launch Remote (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 1
@@ -16,7 +16,7 @@
             "name": "Launch Remote (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 2
@@ -27,7 +27,7 @@
             "name": "Attach to Frontend (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "all",
                 "hidden": true
@@ -38,7 +38,7 @@
             "name": "Attach to Frontend (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "all",
                 "hidden": true

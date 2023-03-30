@@ -126,4 +126,12 @@ export class MockCore implements Core {
   async addWebpart(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async previewWithManifest(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

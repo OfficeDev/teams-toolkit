@@ -1,11 +1,11 @@
-﻿using {%SafeProjectName%}.Models;
+﻿using {{SafeProjectName}}.Models;
 using AdaptiveCards.Templating;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.TeamsFx.Conversation;
 using Newtonsoft.Json;
 
-namespace {%SafeProjectName%}.Commands
+namespace {{SafeProjectName}}.Commands
 {
     /// <summary>
     /// The <see cref="HelloWorldCommandHandler"/> registers a pattern with the <see cref="ITeamsCommandHandler"/> and

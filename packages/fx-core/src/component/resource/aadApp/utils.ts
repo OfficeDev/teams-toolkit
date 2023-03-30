@@ -2,29 +2,29 @@
 // Licensed under the MIT license.
 
 import {
-  ContextV3,
-  InputsWithProjectPath,
-  PluginContext,
-  EnvInfo,
   ConfigMap,
+  ContextV3,
   EnvConfig,
+  EnvInfo,
   err,
   FxError,
   Inputs,
+  InputsWithProjectPath,
   ok,
+  PluginContext,
   Result,
   SystemError,
-  v2,
 } from "@microsoft/teamsfx-api";
-import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../migrate";
+import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
-import { AddSsoParameters, Language, SolutionError, SolutionSource } from "../../constants";
-import AdmZip from "adm-zip";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { unzip } from "../../../common/template-utils/templatesUtils";
-import { getTemplatesFolder } from "../../../folder";
 import { isV3Enabled } from "../../../common/tools";
+import { FileNotFoundError } from "../../../error/common";
+import { getTemplatesFolder } from "../../../folder";
+import { AddSsoParameters, Language, SolutionError, SolutionSource } from "../../constants";
+import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../migrate";
 
 export function convertContext(context: ContextV3, inputs: InputsWithProjectPath): PluginContext {
   const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
@@ -74,11 +74,7 @@ export async function createAuthFiles(
 
   const projectFolderExists = await fs.pathExists(projectPath!);
   if (!projectFolderExists) {
-    const e = new SystemError(
-      SolutionSource,
-      SolutionError.InvalidProjectPath,
-      getLocalizedString("core.addSsoFiles.projectPathNotExists")
-    );
+    const e = new FileNotFoundError("aad", projectPath);
     return err(e);
   }
 

@@ -26,6 +26,7 @@ export class AppLocalYmlConfig {
       teamsApp?: {
         appPackagePath?: string;
       };
+      isM365?: boolean;
     };
   } = {};
   deploy?: {
@@ -93,6 +94,10 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
     if (OldProjectSettingsHelper.includeFunction(this.oldProjectSettings)) {
       functionName =
         OldProjectSettingsHelper.getFunctionName(this.oldProjectSettings) || "getUserProfile";
+    }
+
+    if (this.handlebarsContext.config.provision?.configureApp) {
+      this.handlebarsContext.config.provision.configureApp.isM365 = this.oldProjectSettings.isM365;
     }
 
     if (this.handlebarsContext.config.provision?.bot) {

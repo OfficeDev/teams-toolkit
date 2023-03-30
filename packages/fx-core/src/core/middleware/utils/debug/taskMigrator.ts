@@ -99,7 +99,7 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
       `;
       task["args"]["type"] = TunnelType.ngrok;
       task["args"]["env"] = "local";
-      task["args"]["output"] = assign(parse(comment), {
+      task["args"]["writeToEnvironmentFile"] = assign(parse(comment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       });
@@ -354,6 +354,28 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
 
     const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
+  }
+}
+
+export async function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.install-app-in-teams}")
+    ) {
+      ++index;
+      continue;
+    }
+
+    const label = task["label"];
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
   }
 }
 
@@ -886,7 +908,7 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
       type: TunnelType.ngrok,
       ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
       env: "local",
-      output: assign(parse(placeholderComment), {
+      writeToEnvironmentFile: assign(parse(placeholderComment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       }),

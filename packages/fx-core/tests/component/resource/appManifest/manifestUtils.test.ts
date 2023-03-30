@@ -556,4 +556,12 @@ describe("getManifest V3", () => {
     const res = await manifestUtils.getManifestV3("", envInfo, false);
     chai.assert.isTrue(res.isErr() && res.error instanceof UnresolvedPlaceholderError);
   });
+
+  it("getManifestV3 teams app id resolved", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.id = uuid.v4();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    const res = await manifestUtils.getManifestV3("", undefined, false);
+    chai.assert.isTrue(res.isOk());
+  });
 });

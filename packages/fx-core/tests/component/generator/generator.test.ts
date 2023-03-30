@@ -33,6 +33,8 @@ import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
+import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import Mustache from "mustache";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -167,7 +169,7 @@ describe("Generator utils", () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -187,7 +189,7 @@ describe("Generator utils", () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, "test.txt"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -201,7 +203,7 @@ describe("Generator utils", () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -313,6 +315,63 @@ describe("Generator error", async () => {
   });
 });
 
+describe("render template", () => {
+  it("escape undefined or variable", () => {
+    [{ variable: "test" }, { variable: "test", app: null }].forEach((variables) => {
+      // arrange
+      const filename = "test.tpl";
+      const fileData = Buffer.from("{{variable}}{{app}}");
+      const expectedResult = "test{{app}}";
+
+      // execute
+      const result = renderTemplateFileData(filename, fileData, variables as any);
+
+      assert.equal(result, expectedResult);
+    });
+  });
+
+  it("do not escape empty string variable", () => {
+    // arrange
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{variable}}{{app}}");
+    const variables = { variable: "test", app: "" };
+
+    // execute
+    const result = renderTemplateFileData(filename, fileData, variables);
+    const expectedResult = Mustache.render(
+      fileData.toString(),
+      variables,
+      {},
+      placeholderDelimiters
+    );
+
+    assert.equal(result, expectedResult);
+  });
+
+  it("skip non template file", () => {
+    // arrange
+    const filename = "test.txt";
+    const fileData = Buffer.from("{{variable}}{{app}}");
+    const variables = { variable: "test", app: "" };
+    const expectedResult = fileData;
+    // execute
+    const result = renderTemplateFileData(filename, fileData, variables);
+
+    assert.deepEqual(result, expectedResult);
+  });
+
+  it("no variables", () => {
+    // arrange
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{variable}}{{app}}");
+    const expectedResult = fileData.toString();
+    // execute
+    const result = renderTemplateFileData(filename, fileData);
+
+    assert.deepEqual(result, expectedResult);
+  });
+});
+
 describe("Generator happy path", async () => {
   const tools = new MockTools();
   setTools(tools);
@@ -349,7 +408,7 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(path.join(inputDir, templateName));
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);

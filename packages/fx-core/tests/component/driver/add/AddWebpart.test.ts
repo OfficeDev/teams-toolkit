@@ -2,11 +2,8 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { err, M365TokenProvider, ok, PathNotExistError, Platform } from "@microsoft/teamsfx-api";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { err, ok, Platform } from "@microsoft/teamsfx-api";
 import chai from "chai";
-import chaiAsPromised from "chai-as-promised";
-import faker from "faker";
 import fs from "fs-extra";
 import sinon from "sinon";
 import * as path from "path";

@@ -6,7 +6,7 @@ import { SystemError, SystemErrorOptions, UserErrorOptions } from "@microsoft/te
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "UnhandledError";
-const messageKey = "driver.m365.error.unhandledError";
+const messageKey = "error.common.UnhandledError";
 
 export class UnhandledSystemError extends SystemError {
   constructor(actionName: string, detail: string) {

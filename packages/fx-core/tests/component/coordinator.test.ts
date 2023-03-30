@@ -469,6 +469,12 @@ describe("component coordinator test", () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     sandbox.stub(fs, "writeFile").resolves();
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -487,6 +493,8 @@ describe("component coordinator test", () => {
     if (selectEnvRes.isOk()) {
       assert.equal(selectEnvRes.value, "dev");
     }
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(true));
   });
   it("provision success with subscriptionId in yml", async () => {
     const mockProjectModel: ProjectModel = {
@@ -1944,6 +1952,12 @@ describe("component coordinator test", () => {
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1957,6 +1971,8 @@ describe("component coordinator test", () => {
       console.log(res?.error);
     }
     assert.isTrue(res.isOk());
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(true));
   });
   it("deploy failed partial success", async () => {
     const mockProjectModel: ProjectModel = {
@@ -2104,7 +2120,6 @@ describe("component coordinator test", () => {
       start: progressStartStub,
       end: progressEndStub,
     } as any as IProgressHandler);
-    const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(undefined);
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
@@ -2120,7 +2135,6 @@ describe("component coordinator test", () => {
     }
     assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
     assert.isTrue(progressStartStub.calledOnce);
-    assert.isTrue(showMessageStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(false));
   });
   it("publish without progress bar", async () => {

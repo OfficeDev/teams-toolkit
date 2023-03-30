@@ -768,9 +768,17 @@ export class Coordinator {
 
     // execute
     const summaryReporter = new SummaryReporter(cycles, ctx.logProvider);
+    let hasError = false;
     try {
+      const steps = cycles.reduce((acc, cur) => acc + cur.driverDefs.length, 0);
+      ctx.progressBar = ctx.ui?.createProgressBar(
+        getLocalizedString("core.progress.provision"),
+        steps
+      );
+      await ctx.progressBar?.start();
       const maybeDescription = summaryReporter.getLifecycleDescriptions();
       if (maybeDescription.isErr()) {
+        hasError = true;
         return err(maybeDescription.error);
       }
       ctx.logProvider.info(
@@ -782,6 +790,7 @@ export class Coordinator {
         const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
+          hasError = true;
           inputs.envVars = output;
           return err(result[1]);
         }
@@ -789,6 +798,7 @@ export class Coordinator {
     } finally {
       const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
       ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      await ctx.progressBar?.end(!hasError);
     }
 
     // show provisioned resources
@@ -906,7 +916,14 @@ export class Coordinator {
       }
 
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
+      let hasError = false;
       try {
+        const steps = projectModel.deploy.driverDefs.length;
+        ctx.progressBar = ctx.ui?.createProgressBar(
+          getLocalizedString("core.progress.deploy"),
+          steps
+        );
+        await ctx.progressBar?.start();
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
@@ -917,6 +934,7 @@ export class Coordinator {
         const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
+          hasError = true;
           inputs.envVars = output;
           return err(result[1]);
         }
@@ -924,12 +942,13 @@ export class Coordinator {
         // show message box after deploy
         const botTroubleShootMsg = getBotTroubleShootMessage(false);
         const msg =
-          getLocalizedString("core.common.LifecycleComplete", "deploy") +
+          getLocalizedString("core.common.LifecycleComplete.deploy", steps, steps) +
           botTroubleShootMsg.textForLogging;
         ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.progressBar?.end(!hasError);
       }
     } else {
       return err(new LifeCycleUndefinedError("deploy"));
@@ -956,18 +975,19 @@ export class Coordinator {
       return err(maybeProjectModel.error);
     }
     const projectModel = maybeProjectModel.value;
+    let hasError = false;
     if (projectModel.publish) {
-      const steps = projectModel.publish.driverDefs.length;
-      ctx.progressBar = ctx.ui?.createProgressBar(
-        getLocalizedString("core.progress.publish"),
-        steps
-      );
-      await ctx.progressBar?.start();
-
       const summaryReporter = new SummaryReporter([projectModel.publish], ctx.logProvider);
       try {
+        const steps = projectModel.publish.driverDefs.length;
+        ctx.progressBar = ctx.ui?.createProgressBar(
+          getLocalizedString("core.progress.publish"),
+          steps
+        );
+        await ctx.progressBar?.start();
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
         if (maybeDescription.isErr()) {
+          hasError = true;
           return err(maybeDescription.error);
         }
         ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
@@ -977,22 +997,11 @@ export class Coordinator {
         merge(output, result[0]);
         summaryReporter.updateLifecycleState(0, execRes);
         if (result[1]) {
-          await ctx.progressBar?.end(false);
-          const msg = getLocalizedString(
-            "core.progress.failureResult",
-            getLocalizedString("core.progress.publish")
-          );
-          ctx.ui?.showMessage("error", msg, false);
+          hasError = true;
           inputs.envVars = output;
           return err(result[1]);
         } else {
-          await ctx.progressBar?.end(true);
-          const msg = getLocalizedString(
-            "core.progress.successResult",
-            steps,
-            steps,
-            getLocalizedString("core.progress.publish")
-          );
+          const msg = getLocalizedString("core.common.LifecycleComplete.publish", steps, steps);
           const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
           ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
             if (value.isOk() && value.value === adminPortal) {
@@ -1003,6 +1012,7 @@ export class Coordinator {
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.progressBar?.end(!hasError);
       }
     } else {
       return err(new LifeCycleUndefinedError("publish"));

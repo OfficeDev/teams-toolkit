@@ -17,7 +17,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}} # The Azure Active Directory application's display name
     writeToEnvironmentFile:
       botId: BOT_ID # The Azure Active Directory application's client id created for bot.
-      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot.
+      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot. 
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:

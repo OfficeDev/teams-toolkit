@@ -9,12 +9,12 @@ provision:
     writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
 
-  - uses: botAadApp/create # Creates a new or reuses an existing AAD app for bot
+  - uses: botAadApp/create # Creates a new or reuses an existing Azure Active Directory application for bot.
     with:
-      name: bot
+      name: ${{APP_NAME}}-${{TEAMSFX_ENV}} # The Azure Active Directory application's display name
     writeToEnvironmentFile:
-      botId: BOT_ID
-      botPassword: SECRET_BOT_PASSWORD      
+      botId: BOT_ID # The Azure Active Directory application's client id created for bot.
+      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot.      
 
   - uses: file/createOrUpdateJsonFile # Generate runtime appsettings to JSON file
     with:

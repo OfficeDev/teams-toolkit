@@ -1029,6 +1029,6 @@
   "error.arm.CompileBicepError": "Unable to compile Bicep files located in path '%s' to JSON ARM templates. The error message returned was: %s. Check the Bicep files for any syntax or configuration errors and try again.",
   "error.arm.DeployArmError.Notification": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s'. Refer to the [output channel](command:fx-extension.showOutputChannel) for more detailed error information and try again.",
   "error.arm.DeployArmError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s",
-  "error.arm.GetArmDeploymentError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s. \nUnable to get detailed error message duo to: %s. \nRefer to the resource group %s in portal for deployment error.",
+  "error.arm.GetArmDeploymentError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s. \nUnable to get detailed error message due to: %s. \nRefer to the resource group %s in portal for deployment error.",
   "error.arm.ConvertArmOutputError": "Unable to convert ARM deployment result to action output, there is a duplicated key '%s' in ARM deployment result."
 }

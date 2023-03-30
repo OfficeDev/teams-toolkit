@@ -888,7 +888,7 @@
   "driver.aadApp.log.skipGenerateClientSecret": "Environment variable %s already exist, skipping Azure Active Directory app client secret generation step.",
   "driver.aadApp.log.outputAadAppManifest": "Build Azure Active Directory app manifest completed, and app manifest content is written to %s",
   "driver.aadApp.log.successUpdateAadAppManifest": "Applied manifest %s to Azure Active Directory application with object id %s",
-  "botRegistration.ProgressBar.creatingBotAadApp": "Creating bot aad app.",
+  "botRegistration.ProgressBar.creatingBotAadApp": "Creating bot aad app...",
   "botRegistration.log.startCreateBotAadApp": "Creating bot aad app.",
   "botRegistration.log.successCreateBotAadApp": "Bot aad app created successfully.",
   "botRegistration.log.skipCreateBotAadApp": "Bot aad app creation skipped.",

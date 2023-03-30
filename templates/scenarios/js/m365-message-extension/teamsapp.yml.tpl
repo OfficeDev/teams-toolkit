@@ -41,8 +41,6 @@ provision:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
-      teamsAppId: TEAMS_APP_ID
   - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
@@ -74,8 +72,6 @@ publish:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
-      teamsAppId: TEAMS_APP_ID
   - uses: teamsApp/publishAppPackage # Publish the app to Teams Admin Center (https://admin.teams.microsoft.com/policies/manage-apps) for review and approval
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

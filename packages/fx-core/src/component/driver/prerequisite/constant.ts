@@ -22,12 +22,6 @@ export enum TelemetryDevCertStatus {
   NotTrusted = "not-trusted",
 }
 
-export const ProgressMessages = Object.freeze({
-  devCert: () => getLocalizedString("driver.prerequisite.progressBar.devCert"),
-  dotnet: () => getLocalizedString("driver.prerequisite.progressBar.dotnet"),
-  func: () => getLocalizedString("driver.prerequisite.progressBar.func"),
-});
-
 export const toolsInstallDescription = (): string =>
   getLocalizedString("driver.prerequisite.description");
 

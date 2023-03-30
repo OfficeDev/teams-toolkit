@@ -20,10 +20,11 @@ import { DotnetChecker } from "../../../../src/common/deps-checker/internal/dotn
 describe("Tools Install Driver test", () => {
   const sandbox = sinon.createSandbox();
   const toolsInstallDriver = new ToolsInstallDriver();
-  const mockedDriverContext = {
+  const mockedDriverContext: any = {
     logProvider: new MockedLogProvider(),
     ui: new MockedUserInteraction(),
-  } as DriverContext;
+  };
+
   describe("Trust Cert test (run)", () => {
     afterEach(() => {
       sandbox.restore();

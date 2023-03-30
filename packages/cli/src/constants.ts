@@ -84,7 +84,7 @@ export const ValidateApplicationOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the input Teams app manifest file path, defaults to '${folder}/appPackage/manifest.json'. Ihis manifest will be validated using manifest schema.",
+      "Select the input Teams app manifest file path, defaults to '${folder}/appPackage/manifest.json'. This manifest will be validated using manifest schema.",
   },
   [AppPackageFilePathParamName]: {
     type: "string",

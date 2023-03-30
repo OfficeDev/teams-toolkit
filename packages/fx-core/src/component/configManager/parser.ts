@@ -82,8 +82,8 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
 }
 
 export class YamlParser implements IYamlParser {
-  async parse(path: string): Promise<Result<ProjectModel, FxError>> {
-    const raw = await this.parseRaw(path);
+  async parse(path: string, validateSchema?: boolean): Promise<Result<ProjectModel, FxError>> {
+    const raw = await this.parseRaw(path, validateSchema);
     if (raw.isErr()) {
       return err(raw.error);
     }
@@ -104,7 +104,10 @@ export class YamlParser implements IYamlParser {
     return ok(result);
   }
 
-  private async parseRaw(path: string): Promise<Result<RawProjectModel, FxError>> {
+  private async parseRaw(
+    path: string,
+    validateSchema?: boolean
+  ): Promise<Result<RawProjectModel, FxError>> {
     try {
       const str = await fs.readFile(path, "utf8");
       const content = load(str);
@@ -115,14 +118,17 @@ export class YamlParser implements IYamlParser {
 
       const value = content as unknown as Record<string, unknown>;
 
-      const valid = validator(value);
-      if (!valid) {
-        const errors: string[] = [];
-        for (const err of validator.errors as DefinedError[]) {
-          errors.push(`${err.instancePath} : ${err.message}`);
+      if (validateSchema) {
+        const valid = validator(value);
+        if (!valid) {
+          const errors: string[] = [];
+          for (const err of validator.errors as DefinedError[]) {
+            errors.push(`${err.instancePath} : ${err.message}`);
+          }
+          return err(new InvalidYamlSchemaError(errors.join(";")));
         }
-        return err(new InvalidYamlSchemaError(errors.join(";")));
       }
+
       globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {

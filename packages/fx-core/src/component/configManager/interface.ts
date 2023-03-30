@@ -107,5 +107,5 @@ export interface ILifecycle {
 }
 
 export interface IYamlParser {
-  parse(path: string): Promise<Result<ProjectModel, FxError>>;
+  parse(path: string, validateSchema?: boolean): Promise<Result<ProjectModel, FxError>>;
 }

@@ -1,35 +1,28 @@
 import React from "react";
-import { Avatar, Card, Flex, Skeleton, Text } from "@fluentui/react-northstar";
+import { Avatar, Text, Card, CardHeader } from "@fluentui/react-components";
 
-export const ProfileCard = (loading: boolean, data?: any) => (
-  <Card
-    aria-roledescription="card avatar"
-    elevated
-    inverted
-    styles={{ height: "max-content", margin: "0.5em 0", width: "340px", background: "#faf9f8" }}
-  >
-    <Card.Header styles={{ "margin-bottom": "0" }}>
-      {loading && (
-        <Skeleton animation="wave">
-          <Flex gap="gap.medium">
-            <Skeleton.Avatar size="larger" />
-            <div>
-              <Skeleton.Line width="100px" />
-              <Skeleton.Line width="150px" />
-            </div>
-          </Flex>
-        </Skeleton>
-      )}
+export const ProfileCard = (loading: boolean, data?: any) => {
+  return (
+    <Card
+      aria-roledescription="card avatar"
+      appearance="filled-alternative"
+      orientation="horizontal"
+      className="profile-card"
+    >
       {!loading && data && (
-        <Flex gap="gap.medium">
-          <Avatar size="larger" image={data.photoUrl} name={data.profile.displayName} />{" "}
-          <Flex column>
-            <Text content={data.profile.displayName} weight="bold" />
-            <Text content={data.profile.mail} size="small" />
-            <Text content={data.profile.mobilePhone} size="small" />
-          </Flex>
-        </Flex>
+        <>
+          <CardHeader
+            image={
+              <Avatar size={64} image={{ src: data.photoUrl }} name={data.profile.displayName} />
+            }
+          />
+          <div className="flex column">
+            <Text weight="bold">{data.profile.displayName}</Text>
+            <Text size={200}>{data.profile.mail}</Text>
+            <Text size={200}>{data.profile.mobilePhone}</Text>
+          </div>
+        </>
       )}
-    </Card.Header>
-  </Card>
-);
+    </Card>
+  );
+};

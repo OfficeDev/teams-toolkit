@@ -1,8 +1,8 @@
+version: 1.0.0
 provision:
-  - name: test
-    uses: some_unknown_driver
+  - uses: cli/runNpmCommand # Run npm command
     with:
-      name: mybot
+      args: install --production
     env: 
       ENV_VAR1: value1
       ENV_VAR2: value2

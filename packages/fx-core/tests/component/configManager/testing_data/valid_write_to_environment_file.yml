@@ -1,7 +1,12 @@
+version: 1.0.0
+
 provision:
-  - name: test
-    uses: some_unknown_driver
+  - uses: botAadApp/create
     with:
-      name: mybot
+      name: "botaad-display-name"
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for bot
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
     writeToEnvironmentFile:
-      xxx: YYY_XXX
+      botId: XXX
+      botPassword: SECRET_XXXX

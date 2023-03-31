@@ -1019,6 +1019,7 @@
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
   "driver.generateAppsettings.description": "Add or update environment variables to appsettings file.",
   "error.yaml.InvalidYamlSchemaError": "Unable to parse yaml file: %s",
+  "error.yaml.InvalidYamlSchemaErrorWithReason": "Unable to parse yaml file: %s. Reason: %s",
   "error.yaml.YamlFieldTypeError": "Field '%s' should have %s type, yaml file: %s",
   "error.yaml.YamlFieldMissingError": "Field '%s' is missing, yaml file: %s",
   "error.yaml.InvalidYmlActionNameError": "Action '%s' not found, yaml file: %s",

@@ -20,16 +20,17 @@ import { DotnetChecker } from "../../../../src/common/deps-checker/internal/dotn
 describe("Tools Install Driver test", () => {
   const sandbox = sinon.createSandbox();
   const toolsInstallDriver = new ToolsInstallDriver();
-  const mockedDriverContext = {
+  const mockedDriverContext: any = {
     logProvider: new MockedLogProvider(),
     ui: new MockedUserInteraction(),
-  } as DriverContext;
+  };
+
   describe("Trust Cert test (run)", () => {
     afterEach(() => {
       sandbox.restore();
     });
 
-    it("Create and trust new local certificate", async () => {
+    it("TEST1", async () => {
       sandbox.stub(LocalCertificateManager.prototype, "setupCertificate").resolves({
         certPath: "testCertPath",
         keyPath: "testKeyPath",

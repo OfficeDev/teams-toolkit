@@ -1107,6 +1107,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
@@ -1147,6 +1148,12 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     // sandbox
     //   .stub(SummaryReporter.prototype, "getLifecycleDescriptions")
     //   .resolves(err(new UserError({})));
@@ -1158,6 +1165,8 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
   });
   it("provision failed with getM365TenantId Error", async () => {
     const mockProjectModel: ProjectModel = {

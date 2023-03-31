@@ -137,12 +137,6 @@ export class SPFxDeployDriver implements StepDriver {
       context.addSummary(DeployProgressMessage.Upload());
     } catch (e: any) {
       if (e.response?.status === 403) {
-        context.ui?.showMessage(
-          "error",
-          getLocalizedString("plugins.spfx.deployFailedNotice", appCatalogSite!),
-          false,
-          "OK"
-        );
         throw new InsufficientPermissionError(appCatalogSite!);
       } else {
         throw new UploadAppPackageFailedError(e);

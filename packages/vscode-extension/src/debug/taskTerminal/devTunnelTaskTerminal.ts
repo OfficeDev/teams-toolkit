@@ -28,6 +28,7 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
+import { VS_CODE_UI } from "../../extension";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
@@ -156,16 +157,64 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           tunnelId: devTunnelState.tunnelId,
           clusterId: devTunnelState.clusterId,
         });
-        if (!tunnelInstance) {
-          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
-        }
         if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
           await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
-          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
         }
       } catch {
         // Do nothing if delete existing tunnel failed.
       }
+      await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
+    }
+  }
+
+  private async deleteAllTunnels(): Promise<void> {
+    try {
+      const tunnels = await this.tunnelManagementClientImpl.listTunnels();
+      for (const tunnel of tunnels) {
+        if (tunnel?.tags?.includes(DevTunnelTag) && tunnel.tunnelId) {
+          this.writeEmitter.fire(
+            `${devTunnelDisplayMessages.deleteDevTunnelTerminalMessage(tunnel.tunnelId)}\r\n`
+          );
+          await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
+        }
+      }
+    } catch {
+      // Do nothing if delete existing tunnel failed.
+    }
+  }
+
+  private async createTunnelWithCleanMessage(
+    tunnel: Tunnel,
+    options?: TunnelRequestOptions
+  ): Promise<Tunnel> {
+    try {
+      return await this.tunnelManagementClientImpl.createTunnel(tunnel, options);
+    } catch (error: any) {
+      let res: Tunnel | undefined = undefined;
+      if (error?.response?.data?.title === "Resource limit exceeded.") {
+        res = await VS_CODE_UI.showMessage(
+          "warn",
+          devTunnelDisplayMessages.devTunnelLimitExceededMessage(),
+          true,
+          devTunnelDisplayMessages.devTunnelLimitExceededAnswerYes(),
+          devTunnelDisplayMessages.devTunnelLimitExceededAnswerNo()
+        ).then(async (result) => {
+          if (
+            result.isOk() &&
+            result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerYes()
+          ) {
+            await this.deleteAllTunnels();
+            return await this.tunnelManagementClientImpl.createTunnel(tunnel, options);
+          } else {
+            return undefined;
+          }
+        });
+      }
+
+      if (!res) {
+        throw error;
+      }
+      return res;
     }
   }
 
@@ -196,11 +245,8 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         tokenScopes: ["host"],
         includePorts: true,
       };
-      const tunnelInstance = await this.tunnelManagementClientImpl.createTunnel(
-        tunnel,
-        tunnelRequestOptions
-      );
 
+      const tunnelInstance = await this.createTunnelWithCleanMessage(tunnel, tunnelRequestOptions);
       this.tunnel = tunnelInstance;
 
       if (!tunnelInstance.ports) {

@@ -768,9 +768,9 @@ export class Coordinator {
 
     // execute
     const summaryReporter = new SummaryReporter(cycles, ctx.logProvider);
+    const steps = cycles.reduce((acc, cur) => acc + cur.driverDefs.length, 0);
     let hasError = false;
     try {
-      const steps = cycles.reduce((acc, cur) => acc + cur.driverDefs.length, 0);
       ctx.progressBar = ctx.ui?.createProgressBar(
         getLocalizedString("core.progress.provision"),
         steps
@@ -802,7 +802,7 @@ export class Coordinator {
     }
 
     // show provisioned resources
-    const msg = getLocalizedString("core.provision.successNotice", folderName);
+    const msg = getLocalizedString("core.common.LifecycleComplete.provision", steps, steps);
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,

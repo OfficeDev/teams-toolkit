@@ -1,3 +1,6 @@
+/**
+ * @author huajiezhang@microsoft.com
+ */
 import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
@@ -9,8 +12,12 @@ export class InvalidYamlSchemaError extends UserError {
   constructor(reason?: string) {
     const key = "error.yaml.InvalidYamlSchemaError";
     const keyWithReason = "error.yaml.InvalidYamlSchemaErrorWithReason";
-    const defaultMessage = reason ? getDefaultString(keyWithReason, globalVars.ymlFilePath, reason) : getDefaultString(key, globalVars.ymlFilePath);
-    const localizedMessage = reason ? getLocalizedString(keyWithReason, globalVars.ymlFilePath, reason) : getLocalizedString(key, globalVars.ymlFilePath);
+    const defaultMessage = reason
+      ? getDefaultString(keyWithReason, globalVars.ymlFilePath, reason)
+      : getDefaultString(key, globalVars.ymlFilePath);
+    const localizedMessage = reason
+      ? getLocalizedString(keyWithReason, globalVars.ymlFilePath, reason)
+      : getLocalizedString(key, globalVars.ymlFilePath);
     const errorOptions: UserErrorOptions = {
       source: "ConfigManager",
       name: "InvalidYamlSchemaError",

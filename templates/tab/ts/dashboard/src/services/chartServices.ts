@@ -49,23 +49,23 @@ export function getChart2Points(range: DayRange): any[] {
 }
 
 const chart1Points_7D = [
-  { x: new Date("01/01"), y: 18000 },
-  { x: new Date("01/06"), y: 14000 },
-  { x: new Date("01/11"), y: 19000 },
-  { x: new Date("01/16"), y: 13000 },
-  { x: new Date("01/21"), y: 21000 },
-  { x: new Date("01/26"), y: 18000 },
-  { x: new Date("01/31"), y: 23000 },
+  { x: new Date("2022/01/01"), y: 18000, },
+  { x: new Date("2022/01/06"), y: 14000, },
+  { x: new Date("2022/01/11"), y: 19000, },
+  { x: new Date("2022/01/16"), y: 13000, },
+  { x: new Date("2022/01/21"), y: 21000, },
+  { x: new Date("2022/01/26"), y: 18000, },
+  { x: new Date("2022/01/31"), y: 23000, },
 ];
 
 const chart2Points_7D = [
-  { x: new Date("01/01"), y: 8000 },
-  { x: new Date("01/06"), y: 10000 },
-  { x: new Date("01/11"), y: 100 },
-  { x: new Date("01/16"), y: 9000 },
-  { x: new Date("01/21"), y: 11000 },
-  { x: new Date("01/26"), y: 7000 },
-  { x: new Date("01/31"), y: 7200 },
+  { x: new Date("2022/01/01"), y: 8000 },
+  { x: new Date("2022/01/06"), y: 10000 },
+  { x: new Date("2022/01/11"), y: 100 },
+  { x: new Date("2022/01/16"), y: 9000 },
+  { x: new Date("2022/01/21"), y: 11000 },
+  { x: new Date("2022/01/26"), y: 7000 },
+  { x: new Date("2022/01/31"), y: 7200 },
 ];
 
 const chart1Points_30D = [

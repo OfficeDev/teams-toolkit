@@ -20,10 +20,10 @@ import { AddWebPartArgs } from "../../../../src/component/driver/add/interface/A
 import { Constants } from "../../../../src/component/driver/add/utility/constants";
 import { NoConfigurationError } from "../../../../src/component/driver/add/error/noConfigurationError";
 import { SPFxGenerator } from "../../../../src/component/generator/spfxGenerator";
-import { DependencyInstallError } from "../../../../src/component/resource/spfx/error";
 import { ManifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
 import { setTools } from "../../../../src/core/globalVars";
+import { InstallSoftwareError } from "../../../../src/error/common";
 
 describe("Add web part driver", async () => {
   const args: AddWebPartArgs = {
@@ -65,7 +65,9 @@ describe("Add web part driver", async () => {
         return true;
       }
     });
-    sinon.stub(SPFxGenerator, "doYeomanScaffold").resolves(err(DependencyInstallError("yo")));
+    sinon
+      .stub(SPFxGenerator, "doYeomanScaffold")
+      .resolves(err(new InstallSoftwareError("spfx", "yo")));
 
     const res = await driver.run(args, mockedDriverContext);
 

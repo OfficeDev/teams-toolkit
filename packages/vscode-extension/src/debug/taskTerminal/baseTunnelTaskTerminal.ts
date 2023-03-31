@@ -266,7 +266,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
       return ok({});
     }
-    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env);
+    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env, false, false);
   }
 }
 

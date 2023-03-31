@@ -7,7 +7,7 @@
     "private": true,
     "dependencies": {
         "@fluentui/react-charting": "^5.14.10",
-        "@fluentui/react-components": "^9.7.1",
+        "@fluentui/react-components": "^9.18.0",
         "@fluentui/react-icons": "^2.0.186",
         "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^2.7.1",

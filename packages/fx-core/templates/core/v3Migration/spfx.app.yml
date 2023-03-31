@@ -2,6 +2,26 @@ version: 1.0.0
 
 environmentFolderPath: ./ {{~environmentFolder}}
 
+provision:
+  - uses: teamsApp/create # Creates a Teams app
+    with:
+      name: {{teamsAppName}} # Teams app name
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+  - uses: teamsApp/validateManifest # Validate using manifest schema
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
+      outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
+    with:
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
 deploy:
   - uses: cli/runNpmCommand
     with:
@@ -20,30 +40,8 @@ deploy:
       createAppCatalogIfNotExist: false
       packageSolutionPath: ./SPFx/config/package-solution.json
 
-registerApp:
-  - uses: teamsApp/create # Creates a Teams app
-    with:
-      name: {{teamsAppName}} # Teams app name
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
-
-configureApp:
-  - uses: teamsApp/validate
-    with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
-    with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
-  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
-    with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
-
 publish:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage
@@ -51,17 +49,17 @@ publish:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
-  - uses: teamsApp/copyAppPackageForSPFx
+  - uses: teamsApp/copyAppPackageToSPFx
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
       spfxFolder: ./SPFx
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
   - uses: teamsApp/publishAppPackage # Publish the app to Teams Admin Center (https://admin.teams.microsoft.com/policies/manage-apps) for review and approval
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # TEAMS_APP_PUBLISHED_APP_ID: app id in Teams tenant app catalog.
+    writeToEnvironmentFile:
+      publishedAppId: TEAMS_APP_PUBLISHED_APP_ID

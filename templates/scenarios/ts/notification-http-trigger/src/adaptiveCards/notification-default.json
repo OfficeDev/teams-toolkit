@@ -29,7 +29,7 @@
   "actions": [
     {
       "type": "Action.OpenUrl",
-      "title": "View Details",
+      "title": "View Documentation",
       "url": "${notificationUrl}"
     }
   ]

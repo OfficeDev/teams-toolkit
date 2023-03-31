@@ -10,7 +10,7 @@ export class LaunchBrowser {
 export class HubName {
   public static readonly teams: string = "Teams";
   public static readonly outlook: string = "Outlook";
-  public static readonly office: string = "Office";
+  public static readonly office: string = "the Microsoft 365 app";
 }
 
 export class LaunchUrl {

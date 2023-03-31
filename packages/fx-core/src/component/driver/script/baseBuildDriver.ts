@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @owner fanhu <fanhu@microsoft.com>
+ */
 
 import { BuildArgs } from "../interface/buildAndDeployArgs";
 import { asFactory, asOptional, asString, checkMissingArgs } from "../../utils/common";
-import { execute } from "../../code/utils";
-import { ExecuteCommandError } from "../../error/componentError";
-import { DeployConstant } from "../../constant/deployConstant";
-import { IProgressHandler, LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { executeCommand } from "../../code/utils";
+import { err, ok, IProgressHandler, LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../interface/commonArgs";
 import * as path from "path";
+import { ExecutionResult } from "../interface/stepDriver";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export abstract class BaseBuildDriver {
   args: BuildArgs;
@@ -47,7 +50,7 @@ export abstract class BaseBuildDriver {
     return BaseBuildDriver.asBuildArgs(args, helpLink);
   }
 
-  async run(): Promise<Map<string, string>> {
+  async run(): Promise<ExecutionResult> {
     this.progressBar = this.context.ui?.createProgressBar(
       this.progressBarName,
       this.progressBarSteps
@@ -60,18 +63,28 @@ export abstract class BaseBuildDriver {
       env = { PATH: `${this.execPath}${path.delimiter}${process.env.PATH}` };
     }
     await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
-    try {
-      const output = await execute(command, this.workingDirectory, this.logProvider, env);
-      await this.logProvider.debug(`execute ${command} output is ${output}`);
-      await this.progressBar?.end(true);
-    } catch (e) {
-      throw ExecuteCommandError.fromErrorOutput(
-        DeployConstant.DEPLOY_ERROR_TYPE,
-        [command, this.workingDirectory ?? ""],
-        e
-      );
+    const res = await executeCommand(
+      command,
+      this.context.projectPath,
+      this.logProvider,
+      this.context.ui,
+      this.workingDirectory,
+      env
+    );
+    if (res.isErr()) {
+      await this.cleanup();
+      return {
+        result: err(res.error),
+        summaries: [],
+      };
     }
-    return BaseBuildDriver.emptyMap;
+    await this.progressBar?.end(true);
+    return {
+      result: ok(BaseBuildDriver.emptyMap),
+      summaries: [
+        getLocalizedString("driver.script.runCommandSummary", command, this.workingDirectory),
+      ],
+    };
   }
 
   getCommand(): string {

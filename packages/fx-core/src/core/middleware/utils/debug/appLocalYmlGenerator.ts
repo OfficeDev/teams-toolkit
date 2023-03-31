@@ -8,26 +8,27 @@ import { BaseAppYmlGenerator } from "../appYmlGenerator";
 import { DebugPlaceholderMapping, OldProjectSettingsHelper } from "./debugV3MigrationUtils";
 
 export class AppLocalYmlConfig {
-  registerApp?: {
-    aad?: boolean;
-    teamsApp?: boolean;
-  };
-  provision?: {
+  provision: {
+    registerApp?: {
+      aad?: boolean;
+      teamsApp?: boolean;
+    };
     bot?: {
       messagingEndpoint: string;
       isM365?: boolean;
     };
-  };
-  configureApp?: {
-    tab?: {
-      domain?: string;
-      endpoint?: string;
+    configureApp?: {
+      tab?: {
+        domain?: string;
+        endpoint?: string;
+      };
+      aad?: boolean;
+      teamsApp?: {
+        appPackagePath?: string;
+      };
+      isM365?: boolean;
     };
-    aad?: boolean;
-    teamsApp?: {
-      appPackagePath?: string;
-    };
-  };
+  } = {};
   deploy?: {
     tools?: InstallToolArgs;
     npmCommands?: BuildArgs[];
@@ -93,6 +94,10 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
     if (OldProjectSettingsHelper.includeFunction(this.oldProjectSettings)) {
       functionName =
         OldProjectSettingsHelper.getFunctionName(this.oldProjectSettings) || "getUserProfile";
+    }
+
+    if (this.handlebarsContext.config.provision?.configureApp) {
+      this.handlebarsContext.config.provision.configureApp.isM365 = this.oldProjectSettings.isM365;
     }
 
     if (this.handlebarsContext.config.provision?.bot) {

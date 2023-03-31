@@ -11,16 +11,16 @@
         "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
     },
     "icons": {
-        "color": "./color.png",
-        "outline": "./outline.png"
+        "color": "color.png",
+        "outline": "outline.png"
     },
     "name": {
-        "short": "{%appName%}-${{TEAMSFX_ENV}}",
-        "full": "Full name for {%appName%}"
+        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "full": "Full name for {{appName}}"
     },
     "description": {
-        "short": "Short description of {%appName%}",
-        "full": "Full description of {%appName%}"
+        "short": "Short description of {{appName}}",
+        "full": "Full description of {{appName}}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

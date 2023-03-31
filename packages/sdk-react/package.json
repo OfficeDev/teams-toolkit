@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-react",
-  "version": "3.0.1-alpha.ru6q1vrv1.0",
+  "version": "3.0.0-alpha",
   "description": "React helper functions for Microsoft TeamsFx",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
@@ -71,7 +71,6 @@
     "typescript": "latest"
   },
   "peerDependencies": {
-    "@fluentui/react": "^8.106.1",   
     "@fluentui/react-components": "^9.15.0",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",

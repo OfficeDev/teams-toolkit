@@ -9,10 +9,10 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
 import { UpdateJsonDriver } from "../../../../src/component/driver/file/updateJson";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 describe("UpdateJsonDriver", () => {
   const mockedDriverContext = {
@@ -22,13 +22,16 @@ describe("UpdateJsonDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.file.error.invalidParameter") {
+      if (key === "error.yaml.InvalidActionInputError") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.file.error.unhandledError") {
-        return util.format("Unhandled error happened in %s action: %s", ...params);
+      } else if (key === "error.common.UnhandledError") {
+        return util.format(
+          'An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.',
+          ...params
+        );
       }
       return "";
     });
@@ -51,10 +54,7 @@ describe("UpdateJsonDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for file/updateJson action: target.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 
@@ -66,10 +66,7 @@ describe("UpdateJsonDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof InvalidParameterUserError);
-        const message =
-          "Following parameter is missing or invalid for file/updateJson action: appsettings.";
-        chai.assert.equal(result.error.message, message);
+        chai.assert(result.error instanceof InvalidActionInputError);
       }
     });
 

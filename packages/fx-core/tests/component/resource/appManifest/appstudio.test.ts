@@ -4,7 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
-import { MockLogProvider, MockM365TokenProvider } from "../../../core/utils";
+import { MockLogProvider, MockM365TokenProvider, MockTools } from "../../../core/utils";
 import {
   err,
   InputsWithProjectPath,
@@ -13,25 +13,29 @@ import {
   ResourceContextV3,
   UserError,
   ManifestUtil,
-  Ok,
 } from "@microsoft/teamsfx-api";
 import {
   checkIfAppInDifferentAcountSameTenant,
   getAppPackage,
+  updateManifestV3,
   updateTeamsAppV3ForPublish,
 } from "../../../../src/component/resource/appManifest/appStudio";
 import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
 import AdmZip from "adm-zip";
 import { RetryHandler } from "../../../../src/component/resource/appManifest/utils/utils";
 import { createContextV3 } from "../../../../src/component/utils";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import { CoreQuestionNames } from "../../../../src/core/question";
 import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
-import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { envUtil } from "../../../../src/component/utils/envUtil";
+import { setTools } from "../../../../src/core/globalVars";
 
 describe("appStudio", () => {
+  const tools = new MockTools();
+  setTools(tools);
   const sandbox = sinon.createSandbox();
   describe("checkIfAppInDifferentAcountSameTenant", () => {
     const logger = new MockLogProvider();
@@ -40,6 +44,19 @@ describe("appStudio", () => {
 
     afterEach(() => {
       sandbox.restore();
+    });
+
+    it("updateManifestV3 getManifestV3 Error", async () => {
+      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+      sandbox.stub(manifestUtils, "getManifestV3").resolves(err(new UserError({})));
+      const ctx = createContextV3() as ResourceContextV3;
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+      const res = await updateManifestV3(ctx, inputs);
+      chai.assert.isTrue(res.isErr());
     });
 
     it("get app successfully: returns false", async () => {
@@ -237,7 +254,7 @@ describe("appStudio", () => {
       const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+        chai.assert.equal(res.error.name, "FileNotFoundError");
       }
     });
 

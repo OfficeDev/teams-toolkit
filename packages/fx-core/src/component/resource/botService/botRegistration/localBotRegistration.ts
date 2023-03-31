@@ -80,7 +80,7 @@ export class LocalBotRegistration extends BotRegistration {
     );
     if (!remoteBotRegistration) {
       // Not Found case.
-      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration);
+      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration, false);
     } else {
       // Update bot registration.
       const mergedBotRegistration = Utils.mergeIBotRegistration(

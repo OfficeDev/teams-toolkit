@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 //interfaces/**/*/ Licensed under the MIT license.
+/**
+ * @author Long Hao <71317774+LongOddCode@users.noreply.github.com>
+ */
 "use strict";
 
 /**
@@ -88,7 +91,7 @@ async function publishLocally(
 
     await writeFile(join(folder, "package.json"), JSON.stringify(json, null, 2));
 
-    await execAsync(`npm install`, {
+    await execAsync(`npm install --production`, {
       cwd: folder,
       maxBuffer: 1024 * 1024 * 50,
     });

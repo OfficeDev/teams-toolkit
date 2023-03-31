@@ -60,7 +60,7 @@ describe("teamsApp/publishAppPackage", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+      chai.assert.equal("InvalidActionInputError", result.error.name);
     }
   });
 
@@ -82,9 +82,9 @@ describe("teamsApp/publishAppPackage", async () => {
     sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
     sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = await teamsAppDriver.execute(args, mockedDriverContext);
     console.log(JSON.stringify(result));
-    chai.assert.isTrue(result.isOk());
+    chai.assert.isTrue(result.result.isOk());
   });
 
   it("happy path - user cancel", async () => {

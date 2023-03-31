@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { remove } from "lodash";
+import { remove, find } from "lodash";
+import * as path from "path";
 import {
   commands,
   Disposable,
@@ -15,6 +16,7 @@ import {
   QuickPick,
   QuickPickItem,
   QuickPickItemKind,
+  Terminal,
   ThemeIcon,
   Uri,
   window,
@@ -60,6 +62,8 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
+import { TerminalName } from "../constants";
+import { showOutputChannel } from "../handlers";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -216,9 +220,19 @@ export class VsCodeUI implements UserInteraction {
                 typeof option.options[0] === "string" ||
                 option.returnObject === undefined ||
                 option.returnObject === false
-              )
+              ) {
                 result = item.id;
-              else result = getOptionItem(item);
+                if (option.validation) {
+                  try {
+                    const validateRes = await option.validation(result);
+                    if (validateRes) {
+                      return;
+                    }
+                  } catch (e) {
+                    resolve(err(assembleError(e)));
+                  }
+                }
+              } else result = getOptionItem(item);
               resolve(ok({ type: "success", result: result }));
             }
           };
@@ -603,8 +617,8 @@ export class VsCodeUI implements UserInteraction {
             ? [
                 {
                   id: "default",
-                  label: localize("teamstoolkit.qm.defaultFile"),
-                  description: defaultValue,
+                  label: `$(file) ${path.basename(defaultValue)}`,
+                  description: path.dirname(defaultValue),
                 },
               ]
             : []),
@@ -837,12 +851,58 @@ export class VsCodeUI implements UserInteraction {
     const quickPick = window.createQuickPick<FxQuickPickItem>();
     quickPick.title = config.title;
     quickPick.busy = true;
+    quickPick.enabled = false;
     quickPick.show();
     try {
       return await config.func(config.inputs);
     } finally {
       quickPick.hide();
       quickPick.dispose();
+    }
+  }
+
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string | undefined;
+    shell?: string | undefined;
+    timeout?: number | undefined;
+    env?: { [k: string]: string } | undefined;
+  }): Promise<Result<string, FxError>> {
+    const cmd = args.cmd;
+    const workingDirectory = args.workingDirectory;
+    const shell = args.shell;
+    const timeout = args.timeout;
+    const env = args.env;
+    const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
+      const wait = setTimeout(() => {
+        clearTimeout(wait);
+        reject(new SystemError("Terminal", "Timeout", "runCommand timed out."));
+      }, timeout ?? 1000 * 60 * 5);
+    });
+
+    try {
+      let terminal: Terminal | undefined;
+      const name = shell ? `${TerminalName}-${shell}` : TerminalName;
+      if (
+        window.terminals.length === 0 ||
+        (terminal = find(window.terminals, (value) => value.name === name)) === undefined
+      ) {
+        terminal = window.createTerminal({
+          name,
+          shellPath: shell,
+          cwd: workingDirectory,
+          env,
+        });
+      }
+      terminal.show();
+      terminal.sendText(cmd);
+
+      const processId = await Promise.race([terminal.processId, timeoutPromise]);
+      await sleep(500);
+      await showOutputChannel();
+      return ok(processId?.toString() ?? "");
+    } catch (error) {
+      return err(assembleError(error));
     }
   }
 

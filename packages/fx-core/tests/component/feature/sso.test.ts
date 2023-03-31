@@ -165,7 +165,9 @@ describe("SSO feature", () => {
   };
   context.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(telemetry, "sendErrorTelemetryThenReturnError").returns(
       new UserError({
         name: "mock error",
@@ -178,6 +180,7 @@ describe("SSO feature", () => {
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("happy path", async () => {
@@ -351,7 +354,7 @@ describe("SSO can add in VS V3 project", () => {
 
     sandbox.stub(fs, "pathExists").resolves(false);
     const ssoRes = await component.add(context, inputs);
-    assert.isTrue(ssoRes.isErr() && ssoRes.error.name === "InvalidProjectPath");
+    assert.isTrue(ssoRes.isErr() && ssoRes.error.name === "FileNotFoundError");
   });
 
   it("add sso failed for VS v3 project due to unexpected error", async () => {

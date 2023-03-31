@@ -147,7 +147,7 @@ describe("Deploy ARM Template to Azure", () => {
     chai.expect(error.name).to.equal(ErrorName.FailedToDeployArmTemplatesToAzureError);
     chai
       .expect(error.message)
-      .to.have.string("Failed to compile Bicep files to JSON ARM templates file:");
+      .to.have.string("Unable to compile Bicep files to JSON ARM templates file:");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {
@@ -229,7 +229,7 @@ describe("Deploy ARM Template to Azure", () => {
     chai.assert.strictEqual(error.name, "NoResourceGroupFound");
     chai.assert.strictEqual(
       error.message,
-      "Failed to get resource group from project solution settings."
+      "Unable to get resource group from project solution settings."
     );
   });
 
@@ -251,7 +251,7 @@ describe("Deploy ARM Template to Azure", () => {
     const error = (result as Err<void, FxError>).error;
     chai.assert.strictEqual(
       error.message,
-      "Failed to get target environment name from solution context."
+      "Unable to get target environment name from solution context."
     );
   });
 

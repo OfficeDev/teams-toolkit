@@ -22,7 +22,7 @@ import { setUpBotDisplayMessages } from "../constants";
 import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
-import { LocalTunnelTaskTerminal } from "./localTunnelTaskTerminal";
+import { NgrokTunnelTaskTerminal } from "./ngrokTunnelTaskTerminal";
 import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 
 export class SetUpBotTaskTerminal extends BaseTaskTerminal {
@@ -61,7 +61,7 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
         if (!this.args.botMessagingEndpoint.startsWith("/")) {
           this.args.botMessagingEndpoint = `/${this.args.botMessagingEndpoint}`;
         }
-        const botTunnelEndpoint = await LocalTunnelTaskTerminal.getNgrokEndpoint();
+        const botTunnelEndpoint = await NgrokTunnelTaskTerminal.getNgrokEndpoint();
         this.args.botMessagingEndpoint = `${botTunnelEndpoint}${this.args.botMessagingEndpoint}`;
       }
     } catch (error: unknown) {

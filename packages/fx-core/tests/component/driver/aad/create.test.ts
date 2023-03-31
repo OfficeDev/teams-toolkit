@@ -18,8 +18,9 @@ import {
   UnhandledSystemError,
   UnhandledUserError,
 } from "../../../../src/component/driver/aad/error/unhandledError";
-import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
+import { InvalidActionInputError } from "../../../../src/error/common";
+import { UserError } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -60,34 +61,19 @@ describe("aadAppCreate", async () => {
     };
     let result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/create action: generateClientSecret."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       generateClientSecret: true,
     };
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/create action: name."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {};
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/create action: name, generateClientSecret."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
   it("should throw error if argument property is invalid", async () => {
@@ -97,12 +83,7 @@ describe("aadAppCreate", async () => {
     };
     let result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/create action: generateClientSecret."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       name: "",
@@ -110,12 +91,7 @@ describe("aadAppCreate", async () => {
     };
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/create action: name."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       name: "",
@@ -123,12 +99,7 @@ describe("aadAppCreate", async () => {
     };
     result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/create action: name, generateClientSecret."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
   it("should create new AAD app and client secret with empty .env", async () => {
@@ -174,7 +145,54 @@ describe("aadAppCreate", async () => {
     );
   });
 
-  it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists", async () => {
+  it("should output to specific environment variable based on writeToEnvironmentFile declaration", async () => {
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const outputEnvVarNames = new Map<string, string>(
+      Object.entries({
+        clientId: "MY_CLIENT_ID",
+        objectId: "MY_OBJECT_ID",
+        tenantId: "MY_TENANT_ID",
+        authorityHost: "MY_AUTHORITY_HOST",
+        authority: "MY_AUTHORITY",
+        clientSecret: "MY_CLIENT_SECRET",
+      })
+    );
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
+    expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
+    expect(result.result._unsafeUnwrap().get("MY_TENANT_ID")).to.equal("tenantId");
+    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY")).to.equal(
+      "https://login.microsoftonline.com/tenantId"
+    );
+    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+    expect(result.summaries).includes(
+      `Created Azure Active Directory application with object id ${expectedObjectId}`
+    );
+    expect(result.summaries).includes(
+      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+    );
+  });
+
+  it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists and only output generated client secret", async () => {
     sinon.stub(AadAppClient.prototype, "createAadApp").rejects("createAadApp should not be called");
     sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
 
@@ -190,16 +208,10 @@ describe("aadAppCreate", async () => {
 
     const result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
-      "existing value"
-    );
     expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
       expectedSecretText
     );
-    expect(result.result._unsafeUnwrap().size).to.equal(3); // 1 new env and 2 existing env
+    expect(result.result._unsafeUnwrap().size).to.equal(1); // 1 new env and 2 existing env
     expect(result.summaries.length).to.equal(1);
     expect(result.summaries).includes(
       `Generated client secret for Azure Active Directory application with object id existing value`
@@ -225,20 +237,11 @@ describe("aadAppCreate", async () => {
 
     const result = await createAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
-      "existing value"
-    );
-    expect(result.result._unsafeUnwrap().size).to.equal(3);
+    expect(result.result._unsafeUnwrap().size).to.equal(0);
     expect(result.summaries.length).to.equal(0); // no summary when action does nothing
   });
 
-  it("should not generate client secret when generateClientSecret is false", async () => {
+  it("should not generate client secret when generateClientSecret is false and output nothing", async () => {
     sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
       id: expectedObjectId,
       displayName: expectedDisplayName,
@@ -323,7 +326,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledUserError)
       .and.has.property("message")
-      .and.contains("Unhandled error happened in aadApp/create action");
+      .and.contains("An unexpected error has occurred while performing the aadApp/create task");
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -350,7 +353,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledSystemError)
       .and.has.property("message")
-      .and.contains("Unhandled error happened in aadApp/create action");
+      .and.contains("An unexpected error has occurred while performing the aadApp/create task");
   });
 
   it("should send telemetries when success", async () => {
@@ -463,7 +466,72 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.properties["error-code"]).to.equal("aadApp/create.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
     expect(endTelemetry.properties["error-message"])
-      .contain("Unhandled error happened in aadApp/create action")
+      .contain("An unexpected error has occurred while performing the aadApp/create task")
       .and.contain("Invalid value specified for property");
+  });
+
+  it("should use input signInAudience when provided", async () => {
+    sinon
+      .stub(AadAppClient.prototype, "createAadApp")
+      .callsFake(async (displayName, signInAudience) => {
+        expect(signInAudience).to.equal("AzureADMultipleOrgs");
+        return {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+          appId: expectedClientId,
+        } as AADApplication;
+      });
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+      signInAudience: "AzureADMultipleOrgs",
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
+      expectedClientId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
+      expectedObjectId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_TENANT_ID)).to.equal("tenantId");
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY)).to.equal(
+      "https://login.microsoftonline.com/tenantId"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY_HOST)).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
+      expectedSecretText
+    );
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+    expect(result.summaries).includes(
+      `Created Azure Active Directory application with object id ${expectedObjectId}`
+    );
+    expect(result.summaries).includes(
+      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+    );
+  });
+
+  it("should throw user error when invaliad signInAudience", async () => {
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+      signInAudience: "WrongAudience",
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(UserError)
+      .and.has.property("message")
+      .and.contains("action cannot be completed as the following parameter(s):");
   });
 });

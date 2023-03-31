@@ -86,6 +86,9 @@ const mockLogProvider: LogProvider = {
     console.log(message);
     return true;
   },
+  getLogFilePath(): string {
+    return "";
+  },
 };
 
 const mockUI: UserInteraction = new MockUserInteraction();

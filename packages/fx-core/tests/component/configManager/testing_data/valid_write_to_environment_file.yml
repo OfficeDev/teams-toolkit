@@ -1,0 +1,12 @@
+version: 1.0.0
+
+provision:
+  - uses: botAadApp/create
+    with:
+      name: "botaad-display-name"
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for bot
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
+    writeToEnvironmentFile:
+      botId: XXX
+      botPassword: SECRET_XXXX

@@ -34,10 +34,19 @@ npm install @microsoft/teamsfx-react
 
 Please also install the peer dependencies if you are using npm 6. 
 ```bash
-npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^16.8.6 react-dom@^16.8.6 @fluentui/react-northstar@^0.62.0 msteams-react-base-component@^3.1.1
+npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^18.2.0 react-dom@^18.2.0 @fluentui/react-components@^9.16.0 @microsoft/microsoft-graph-client@^3.0.1
 ```
 
-Note that for `@microsoft/teamsfx-react@^2.0.0`, it depends on `@microsoft/teamsfx@^2.0.0` and `@microsoft/teams-js@^2.0.0`. If you wish to use lower versions, please install the peer dependencies as follows:
+#### Note
+
+For `@microsoft/teamsfx-react@^3.0.0`, it migrated to use `@fluentui/react-components` and did not support `@fluentui/react-northstar` any longer. If you still wish to use `@fluentui/react-northstar`, please use `@microsoft/teamsfx-react@<3.0.0`. To install the peer dependencies, you could use the following line:
+
+```bash
+npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^16.8.6 react-dom@^16.8.6 @fluentui/react-northstar@^0.62.0 @microsoft/microsoft-graph-client@^3.0.1
+```
+
+For `@microsoft/teamsfx-react@^2.0.0` and `@microsoft/teamsfx-react@^3.0.0`, they depend on `@microsoft/teamsfx@^2.0.0` and `@microsoft/teams-js@^2.0.0`. If you wish to use lower versions, please install the peer dependencies as follows:
+
 ```bash
 npm install @microsoft/teamsfx@^0.6.0 react@^16.8.6 @fluentui/react-northstar@^0.60.1 msteams-react-base-component@^3.1.1
 ```

@@ -16,9 +16,7 @@ import {
   UserError,
   UserErrorOptions,
   Void,
-  PathNotExistError,
   M365TokenProvider,
-  VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -52,7 +50,7 @@ import {
   isV3Enabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
-
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -63,7 +61,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools, openAccountHelpHandler, detectVsCodeEnv } from "../handlers";
+import { tools, openAccountHelpHandler } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -100,7 +98,6 @@ import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
 import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
-import M365CodeSpaceTokenInstance from "../commonlib/m365CodeSpaceLogin";
 
 enum Checker {
   NpmInstall = "npm package installation",
@@ -686,11 +683,7 @@ async function ensureM365Account(
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
-      let m365Login: M365TokenProvider = M365TokenInstance;
-      const vscodeEnv = detectVsCodeEnv();
-      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-        m365Login = M365CodeSpaceTokenInstance;
-      }
+      const m365Login: M365TokenProvider = M365TokenInstance;
       let loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
@@ -1123,7 +1116,7 @@ function checkNpmInstall(
           result: ResultStatus.warn,
           successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
           failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
-          error: new PathNotExistError(ExtensionSource, folder),
+          error: new FileNotFoundError(ExtensionSource, folder),
         };
       }
 

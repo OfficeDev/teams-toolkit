@@ -102,6 +102,9 @@ export enum TelemetryEvent {
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
 
+  AddWebpartStart = "add-webpart-start",
+  AddWebpart = "add-webpart",
+
   UpgradeStart = "upgrade-start",
   Upgrade = "upgrade",
 }

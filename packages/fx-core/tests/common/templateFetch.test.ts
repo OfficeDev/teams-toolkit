@@ -36,6 +36,15 @@ const tryLimits = 1;
 const timeout = 1000;
 
 describe("template-helper", () => {
+  describe("Select Tag Test", () => {
+    it("fallback for alpha", () => {
+      sinon.stub(templates, "templatesVersion").value("0.0.0-alpha");
+      sinon.stub(templates, "tagPrefix").value("templates-");
+      const tag = templates.selectTag([templates.alphaVersion]);
+      chai.assert.notExists(tag);
+    });
+  });
+
   describe("Template Fetch Test", () => {
     beforeEach(() => {
       sinon.stub(templates, "preRelease").value("");

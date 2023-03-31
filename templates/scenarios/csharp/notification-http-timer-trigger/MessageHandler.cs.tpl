@@ -7,7 +7,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamsFx.Conversation;
 
-namespace {%SafeProjectName%}
+namespace {{SafeProjectName}}
 {
     public sealed class MessageHandler
     {

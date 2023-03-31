@@ -3,7 +3,7 @@ using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Logging;
 
-namespace {%SafeProjectName%}
+namespace {{SafeProjectName}}
 {
     public class AdapterWithErrorHandler : CloudAdapter
     {

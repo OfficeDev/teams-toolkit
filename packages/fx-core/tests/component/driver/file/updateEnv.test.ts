@@ -11,11 +11,11 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
 import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
 import { UpdateEnvDriver } from "../../../../src/component/driver/file/updateEnv";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 describe("UpdateEnvDriver", () => {
   const mockedDriverContexts = [
@@ -32,12 +32,12 @@ describe("UpdateEnvDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.file.error.invalidParameter") {
+      if (key === "error.yaml.InvalidActionInputError") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.file.error.unhandledError") {
+      } else if (key === "error.common.UnhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
       } else if (key === "driver.file.summary.default") {
         return util.format(
@@ -73,10 +73,7 @@ describe("UpdateEnvDriver", () => {
         const result = await driver.run(args, mockedDriverContext);
         chai.assert(result.isErr());
         if (result.isErr()) {
-          chai.assert(result.error instanceof InvalidParameterUserError);
-          const message =
-            "Following parameter is missing or invalid for file/updateEnv action: target.";
-          chai.assert.equal(result.error.message, message);
+          chai.assert(result.error instanceof InvalidActionInputError);
         }
       });
 
@@ -87,10 +84,7 @@ describe("UpdateEnvDriver", () => {
         const result = await driver.run(args, mockedDriverContext);
         chai.assert(result.isErr());
         if (result.isErr()) {
-          chai.assert(result.error instanceof InvalidParameterUserError);
-          const message =
-            "Following parameter is missing or invalid for file/updateEnv action: envs.";
-          chai.assert.equal(result.error.message, message);
+          chai.assert(result.error instanceof InvalidActionInputError);
         }
       });
 
@@ -106,10 +100,7 @@ describe("UpdateEnvDriver", () => {
         const result = await driver.run(args, mockedDriverContext);
         chai.assert(result.isErr());
         if (result.isErr()) {
-          chai.assert(result.error instanceof InvalidParameterUserError);
-          const message =
-            "Following parameter is missing or invalid for file/updateEnv action: envs.";
-          chai.assert.equal(result.error.message, message);
+          chai.assert(result.error instanceof InvalidActionInputError);
         }
       });
 

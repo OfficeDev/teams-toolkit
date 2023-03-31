@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import Mustache from "mustache";
+import Mustache, { Context, Writer } from "mustache";
 import path from "path";
 import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
+  oldPlaceholderDelimiters,
   placeholderDelimiters,
   templateAlphaVersion,
   templateFileExt,
-  templatePrereleasePrefix,
   templatePrereleaseVersion,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -19,6 +19,8 @@ import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
+import { CancelDownloading } from "./error";
+import { deepCopy } from "../../common/tools";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -26,16 +28,11 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
-
-  // Prerelease feature flag has the highest priority.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(preRelease)) {
-    return templatePrereleasePrefix + preRelease;
-  }
   const versionPattern = preRelease || templateVersion;
 
   // To avoid incompatible, alpha release does not download latest template.
   if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
-    return undefined;
+    throw new CancelDownloading();
   }
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
@@ -126,16 +123,12 @@ export async function fetchZipFromUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
-  const res: AxiosResponse<any> = await sendRequestWithTimeout(
-    async (cancelToken) => {
-      return await axios.get(url, {
-        responseType: "arraybuffer",
-        cancelToken: cancelToken,
-      });
-    },
-    timeoutInMs,
-    tryLimits
-  );
+  const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+    return await axios.get(url, {
+      responseType: "arraybuffer",
+      timeout: timeoutInMs,
+    });
+  }, tryLimits);
 
   const zip = new AdmZip(res.data);
   return zip;
@@ -179,10 +172,37 @@ export function renderTemplateFileData(
 ): string | Buffer {
   //only mustache files with name ending with .tpl
   if (path.extname(fileName) === templateFileExt) {
-    return Mustache.render(fileData.toString(), variables, {}, placeholderDelimiters);
+    const token = escapeEmptyVariable(fileData.toString(), variables ?? {});
+    const writer = new Writer();
+    const result = writer.renderTokens(token, new Context(variables));
+    // Be compatible with current stable templates, can be removed after new template released.
+    return Mustache.render(result, variables, {}, oldPlaceholderDelimiters);
   }
   // Return Buffer instead of string if the file is not a template. Because `toString()` may break binary resources, like png files.
   return fileData;
+}
+
+export function escapeEmptyVariable(
+  template: string,
+  view: Record<string, string | undefined>,
+  tags: [string, string] = placeholderDelimiters
+): string[][] {
+  const parsed = Mustache.parse(template, tags) as string[][];
+  const tokens = deepCopy(parsed); // Mustache cache the parsed result. Modify the result in place may cause unexpected issue.
+  let accShift = 0;
+  const shift = tags[0].length + tags[1].length;
+  // token: [Type, Value, Start, End]
+  for (const token of tokens) {
+    token[2] += accShift;
+    const value = token[1];
+    if (token[0] === "name" && (view[value] === undefined || view[value] === null)) {
+      token[0] = "text";
+      token[1] = tags[0] + value + tags[1];
+      accShift += shift;
+    }
+    token[3] += accShift;
+  }
+  return tokens;
 }
 
 export function renderTemplateFileName(

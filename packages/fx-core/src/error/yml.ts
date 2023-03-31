@@ -1,18 +1,28 @@
+/**
+ * @author huajiezhang@microsoft.com
+ */
 import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
 
 /**
- * invalid yml schema, failed to parse yml file content into object
+ * invalid yml schema, failed to parse yml file content into object or schema validation failed
  */
 export class InvalidYamlSchemaError extends UserError {
-  constructor() {
+  constructor(reason?: string) {
     const key = "error.yaml.InvalidYamlSchemaError";
+    const keyWithReason = "error.yaml.InvalidYamlSchemaErrorWithReason";
+    const defaultMessage = reason
+      ? getDefaultString(keyWithReason, globalVars.ymlFilePath, reason)
+      : getDefaultString(key, globalVars.ymlFilePath);
+    const localizedMessage = reason
+      ? getLocalizedString(keyWithReason, globalVars.ymlFilePath, reason)
+      : getLocalizedString(key, globalVars.ymlFilePath);
     const errorOptions: UserErrorOptions = {
       source: "ConfigManager",
       name: "InvalidYamlSchemaError",
-      message: getDefaultString(key, globalVars.ymlFilePath),
-      displayMessage: getLocalizedString(key, globalVars.ymlFilePath),
+      message: defaultMessage,
+      displayMessage: localizedMessage,
     };
     errorOptions.helpLink = "https://aka.ms/teamsfx-actions/invalid-lifecycle-error";
     super(errorOptions);

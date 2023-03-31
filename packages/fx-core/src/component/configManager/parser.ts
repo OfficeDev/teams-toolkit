@@ -5,10 +5,18 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
+import Ajv, { DefinedError } from "ajv";
 import { globalVars } from "../../core/globalVars";
 import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
+import path from "path";
+import { getResourceFolder } from "../../folder";
+
+const ajv = new Ajv();
+ajv.addKeyword("deprecationMessage");
+const schema = require(path.join(getResourceFolder(), "yaml.schema.json"));
+const validator = ajv.compile(schema);
 
 const environmentFolderPath = "environmentFolderPath";
 const writeToEnvironmentFile = "writeToEnvironmentFile";
@@ -74,8 +82,8 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
 }
 
 export class YamlParser implements IYamlParser {
-  async parse(path: string): Promise<Result<ProjectModel, FxError>> {
-    const raw = await this.parseRaw(path);
+  async parse(path: string, validateSchema?: boolean): Promise<Result<ProjectModel, FxError>> {
+    const raw = await this.parseRaw(path, validateSchema);
     if (raw.isErr()) {
       return err(raw.error);
     }
@@ -96,7 +104,10 @@ export class YamlParser implements IYamlParser {
     return ok(result);
   }
 
-  private async parseRaw(path: string): Promise<Result<RawProjectModel, FxError>> {
+  private async parseRaw(
+    path: string,
+    validateSchema?: boolean
+  ): Promise<Result<RawProjectModel, FxError>> {
     try {
       const str = await fs.readFile(path, "utf8");
       const content = load(str);
@@ -104,7 +115,20 @@ export class YamlParser implements IYamlParser {
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
         return err(new InvalidYamlSchemaError());
       }
+
       const value = content as unknown as Record<string, unknown>;
+
+      if (validateSchema) {
+        const valid = validator(value);
+        if (!valid) {
+          const errors: string[] = [];
+          for (const err of validator.errors as DefinedError[]) {
+            errors.push(`${err.instancePath} : ${err.message}`);
+          }
+          return err(new InvalidYamlSchemaError(errors.join(";")));
+        }
+      }
+
       globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {

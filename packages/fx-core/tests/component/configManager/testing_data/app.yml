@@ -72,7 +72,7 @@ registerApp:
     with:
       name: myTeamsApp-aad # note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
       generateClientSecret: true # if the value is false or the property is not defined, the driver will not generate client secret for you
-      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in my organization's Azure AD tenant (for example, single tenant).
+      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in your organization's Azure AD tenant (for example, single tenant).
     # Output: following environment variable will be persisted in current environment's .env file.
     # AAD_APP_CLIENT_ID: the client id of AAD app
     # AAD_APP_CLIENT_SECRET: the client secret of AAD app

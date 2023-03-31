@@ -13,3 +13,7 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+span p {
+  display: inline;
+}

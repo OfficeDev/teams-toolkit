@@ -21,6 +21,7 @@ provision:
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
+
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template

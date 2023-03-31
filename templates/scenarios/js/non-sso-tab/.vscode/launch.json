@@ -28,6 +28,9 @@
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
             "presentation": {
                 "group": "all",
                 "hidden": true
@@ -39,6 +42,21 @@
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Local Service",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9239,
+            "restart": true,
             "presentation": {
                 "group": "all",
                 "hidden": true
@@ -50,7 +68,8 @@
         {
             "name": "Debug (Edge)",
             "configurations": [
-                "Attach to Frontend (Edge)"
+                "Attach to Frontend (Edge)",
+                "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
@@ -62,7 +81,8 @@
         {
             "name": "Debug (Chrome)",
             "configurations": [
-                "Attach to Frontend (Chrome)"
+                "Attach to Frontend (Chrome)",
+                "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {

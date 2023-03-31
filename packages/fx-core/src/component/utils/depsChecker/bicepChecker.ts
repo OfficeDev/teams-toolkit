@@ -35,6 +35,8 @@ import { performance } from "perf_hooks";
 import { sendErrorTelemetryThenReturnError } from "../../utils";
 import { isBicepEnvCheckerEnabled } from "../../../common/tools";
 import { DriverContext } from "../../driver/interface/commonArgs";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { InstallSoftwareError } from "../../../error/common";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
@@ -59,9 +61,10 @@ export async function ensureBicep(
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     if (!(await bicepChecker.isGlobalBicepInstalled())) {
       await displayLearnMore(
-        Messages.failToInstallBicepDialog()
-          .split("@NameVersion")
-          .join(bicepChecker.getBicepDisplayBicepName()),
+        getLocalizedString(
+          "error.common.InstallSoftwareError",
+          bicepChecker.getBicepDisplayBicepName()
+        ),
         bicepHelpLink,
         (ctx as SolutionContext).ui || (ctx as v2.Context).userInteraction,
         ctx.telemetryReporter
@@ -92,9 +95,10 @@ export async function ensureBicepForDriver(
   } catch (err) {
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     await displayLearnMore(
-      Messages.failToInstallBicepDialog()
-        .split("@NameVersion")
-        .join(bicepChecker.getBicepDisplayBicepName()),
+      getLocalizedString(
+        "error.common.InstallSoftwareError",
+        bicepChecker.getBicepDisplayBicepName()
+      ),
       bicepHelpLink,
       ctx.ui,
       ctx.telemetryReporter
@@ -110,16 +114,20 @@ function outputErrorMessage(
   bicepChecker: BicepChecker,
   inputs?: Inputs
 ) {
-  const message =
-    inputs?.platform === Platform.VSCode
-      ? Messages.failToInstallBicepOutputVSC()
-      : Messages.failToInstallBicepOutputCLI();
+  const message = getLocalizedString(
+    "error.common.InstallSoftwareError",
+    bicepChecker.getBicepDisplayBicepName()
+  );
+  // const message =
+  //   inputs?.platform === Platform.VSCode
+  //     ? Messages.failToInstallBicepOutputVSC()
+  //     : Messages.failToInstallBicepOutputCLI();
   ctx.logProvider?.warning(
     message
-      .split("@NameVersion")
-      .join(bicepChecker.getBicepDisplayBicepName())
-      .split("@HelpLink")
-      .join(bicepHelpLink)
+    // .split("@NameVersion")
+    // .join(bicepChecker.getBicepDisplayBicepName())
+    // .split("@HelpLink")
+    // .join(bicepHelpLink)
   );
 }
 
@@ -216,9 +224,10 @@ class BicepChecker {
         this._telemetry
       );
       await this._logger?.error(
-        `${Messages.failToInstallBicep()
-          .split("@NameVersion")
-          .join(this.getBicepDisplayBicepName())}, error = '${err}'`
+        `${getLocalizedString(
+          "error.common.InstallSoftwareError",
+          this.getBicepDisplayBicepName()
+        )}, error = '${err}'`
       );
     }
   }
@@ -333,11 +342,7 @@ class BicepChecker {
   private async handleInstallFailed(): Promise<void> {
     await this.cleanup();
     this._telemetry?.sendTelemetryErrorEvent(DepsCheckerEvent.bicepInstallError);
-    throw new SystemError(
-      source,
-      DepsCheckerEvent.bicepInstallError,
-      Messages.failToInstallBicep().split("@NameVersion").join(this.getBicepDisplayBicepName())
-    );
+    throw new InstallSoftwareError(source, this.getBicepDisplayBicepName());
   }
 
   private isVersionSupported(version: string): boolean {

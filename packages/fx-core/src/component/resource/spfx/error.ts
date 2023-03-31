@@ -164,15 +164,6 @@ export function DependencyValidateError(dependency: string): SystemError {
   );
 }
 
-export function DependencyInstallError(dependency: string): SystemError {
-  return new SystemError(
-    Constants.PLUGIN_NAME,
-    "DependencyInstallFailed",
-    getDefaultString("plugins.spfx.error.installDependency", dependency),
-    getLocalizedString("plugins.spfx.error.installDependency", dependency)
-  );
-}
-
 export function NoConfigurationError(): SystemError {
   return new UserError({
     source: Constants.PLUGIN_NAME,

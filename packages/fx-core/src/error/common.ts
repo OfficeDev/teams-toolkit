@@ -1,6 +1,7 @@
 import { SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
+import { camelCase } from "lodash";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {
@@ -93,5 +94,16 @@ export class UnhandledError extends SystemError {
       displayMessage: getLocalizedString("error.common.UnhandledError", source || "", e.message),
     });
     if (e.stack) super.stack = e.stack;
+  }
+}
+
+export class InstallSoftwareError extends UserError {
+  constructor(source: string, nameAndVersion: string, helpLink?: string) {
+    super({
+      source: camelCase(source || "common"),
+      message: getDefaultString("error.common.InstallSoftwareError", nameAndVersion),
+      displayMessage: getLocalizedString("error.common.InstallSoftwareError", nameAndVersion),
+    });
+    if (helpLink) this.helpLink = helpLink;
   }
 }

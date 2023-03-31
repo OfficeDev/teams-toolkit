@@ -1,3 +1,7 @@
 #fluent-provider {
-    background: var(--colorNeutralBackground3);
+  background: var(--colorNeutralBackground3);
+}
+
+#spinner {
+  margin: 100;
 }

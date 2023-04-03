@@ -189,6 +189,11 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Add Pull Request Reviewer
+        uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
+        with: 
+          reviewers: "MuyangAmigo"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: check feature history
         id: description
         shell: "/bin/bash {0}"

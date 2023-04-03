@@ -275,17 +275,14 @@ export const TunnelError = Object.freeze({
     new UserError(
       ExtensionSource,
       ExtensionErrors.TunnelEnvError,
-      util.format(getDefaultString("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? ""),
-      util.format(localize("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? "")
+      `${getDefaultString("teamstoolkit.localDebug.tunnelEnvError")} ${error?.message ?? ""}`,
+      `${localize("teamstoolkit.localDebug.tunnelEnvError")} ${error?.message ?? ""}`
     ),
   StartTunnelError: (error?: any) =>
     new UserError(
       ExtensionSource,
       ExtensionErrors.StartTunnelError,
-      util.format(
-        getDefaultString("teamstoolkit.localDebug.startTunnelError"),
-        error?.message ?? ""
-      ),
-      util.format(localize("teamstoolkit.localDebug.startTunnelError"), error?.message ?? "")
+      `${getDefaultString("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`,
+      `${localize("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`
     ),
 });

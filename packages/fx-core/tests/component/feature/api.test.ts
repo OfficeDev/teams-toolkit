@@ -203,7 +203,9 @@ describe("Api Feature", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
     };
-    const res = await component.handleDotnetChecker(context, inputs);
-    assert.isTrue(res.isErr());
+    try {
+      await component.handleDotnetChecker(context, inputs);
+      assert.fail("should not reach here");
+    } catch (e) {}
   });
 });

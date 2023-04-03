@@ -106,7 +106,7 @@
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>(https?:\/\/[a-zA-Z0-9_\-\/\.]*)</string>
+                <string>(https?:\/\/[^\s]*)</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.hyperlink</string>
             </dict>
@@ -179,34 +179,6 @@
                 <string>(\(!\) Warning:)</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.validate.warning</string>
-            </dict>
-            <dict>
-                <key>captures</key>
-                <dict>
-                    <key>1</key>
-                    <dict>
-                        <key>name</key>
-                        <string>token.info-token</string>
-                    </dict>
-                </dict>
-                <key>match</key>
-                <string>Learn more: (https://.*)</string>
-                <key>name</key>
-                <string>teamsfx-toolkit.validate.helplink</string>
-            </dict>
-            <dict>
-                <key>captures</key>
-                <dict>
-                    <key>1</key>
-                    <dict>
-                        <key>name</key>
-                        <string>token.info-token</string>
-                    </dict>
-                </dict>
-                <key>match</key>
-                <string>Teams web client is being launched for you to debug the Teams app: (https://.*)</string>
-                <key>name</key>
-                <string>teamsfx-toolkit.validate.launchLink</string>
             </dict>
             <dict>
                 <key>captures</key>

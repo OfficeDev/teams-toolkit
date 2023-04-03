@@ -35,8 +35,13 @@
   text-align: center;
 }
 
-.sections > * {
-  margin: 4rem auto;
+.tabList {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 30px 20px;
+  row-gap: 30px;
 }
 
 pre,

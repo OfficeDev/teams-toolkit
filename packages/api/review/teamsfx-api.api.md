@@ -1133,16 +1133,17 @@ export enum LogLevel {
 // @public (undocumented)
 export interface LogProvider {
     debug(message: string): Promise<boolean>;
-    error(message: string): Promise<boolean>;
+    error(message: string, logToFile?: boolean): Promise<boolean>;
     fatal(message: string): Promise<boolean>;
-    info(message: string): Promise<boolean>;
+    getLogFilePath(): string;
+    info(message: string, logToFile?: boolean): Promise<boolean>;
     info(message: Array<{
         content: string;
         color: Colors;
-    }>): Promise<boolean>;
+    }>, logToFile?: boolean): Promise<boolean>;
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
-    warning(message: string): Promise<boolean>;
+    warning(message: string, logToFile?: boolean): Promise<boolean>;
 }
 
 // @public
@@ -1808,6 +1809,8 @@ export enum Stage {
     listEnv = "listEnv",
     // (undocumented)
     package = "package",
+    // (undocumented)
+    previewWithManifest = "previewWithManifest",
     // (undocumented)
     provision = "provision",
     // (undocumented)

@@ -5,7 +5,8 @@ Now you have the ability to create a single unit of distribution for all your Mi
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/): version 16 or 18.
-- Outlook Desktop on Windows and Edge installed for debugging Outlook add-in.
+- Outlook for Windows: Beta Channel, Build 16320 or higher. 
+- Edge installed for debugging Outlook add-in.
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) Pre-release version
 

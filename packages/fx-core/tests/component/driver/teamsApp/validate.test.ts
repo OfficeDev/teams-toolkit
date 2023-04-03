@@ -197,7 +197,13 @@ describe("teamsApp/validateAppPackage", async () => {
           title: "valid domain",
         },
       ],
-      notes: [],
+      notes: [
+        {
+          id: "fakeId",
+          content: "Schema URL is present.",
+          title: "schema",
+        },
+      ],
       addInDetails: {
         displayName: "fake name",
         developerName: "fake name",
@@ -250,7 +256,13 @@ describe("teamsApp/validateAppPackage", async () => {
           title: "valid domain",
         },
       ],
-      notes: [],
+      notes: [
+        {
+          id: "fakeId",
+          content: "Schema URL is present.",
+          title: "schema",
+        },
+      ],
       addInDetails: {
         displayName: "fake name",
         developerName: "fake name",

@@ -46,6 +46,10 @@ class StubLogger implements LogProvider {
   async fatal(message: string): Promise<boolean> {
     return true;
   }
+
+  getLogFilePath(): string {
+    return "";
+  }
 }
 
 describe("generator checker", () => {

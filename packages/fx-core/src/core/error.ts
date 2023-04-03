@@ -322,6 +322,15 @@ export function ToolkitNotSupportError(): UserError {
   );
 }
 
+export function IncompatibleProjectError(messageKey: string): UserError {
+  return new UserError(
+    CoreSource,
+    "IncompatibleProject",
+    getDefaultString(messageKey),
+    getLocalizedString(messageKey)
+  );
+}
+
 export function AbandonedProjectError(): UserError {
   return new UserError(
     CoreSource,

@@ -47,6 +47,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "./resource/appManifest/utils/utils";
+import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -94,6 +95,7 @@ async function updateManifest(
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {
+  TelemetryUtils.init(ctx);
   const res = await appStudio.getAppPackage(
     appDefinition.teamsAppId!,
     ctx.tokenProvider!.m365TokenProvider,

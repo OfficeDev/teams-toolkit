@@ -18,11 +18,7 @@ class VSCodeHelper {
   }
 
   public isDotnetCheckerEnabled(): boolean {
-    const isDotnetCheckerEnabled = this.checkerEnabled("prerequisiteCheck.dotnetSdk");
-    if (!isDotnetCheckerEnabled) {
-      vscodeTelemetry.sendEvent(DepsCheckerEvent.dotnetCheckSkipped);
-    }
-    return isDotnetCheckerEnabled;
+    return true;
   }
 
   public isFuncCoreToolsEnabled(): boolean {

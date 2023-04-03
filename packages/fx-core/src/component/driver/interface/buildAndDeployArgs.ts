@@ -15,10 +15,11 @@ export type Step = {
 
 export type DeployArgs = {
   workingDirectory?: string;
-  distributionPath: string;
+  artifactFolder: string;
   ignoreFile?: string;
   resourceId: string;
   dryRun?: boolean;
+  outputZipFile?: string;
 };
 
 export type DeployStepArgs = {

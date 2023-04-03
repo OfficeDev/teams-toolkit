@@ -33,6 +33,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import AdmZip from "adm-zip";
 import { Constants } from "../../resource/appManifest/constants";
 import { metadataUtil } from "../../utils/metadataUtil";
+import { SummaryConstant } from "../../configManager/constant";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -123,28 +124,54 @@ export class ValidateAppPackageDriver implements StepDriver {
           { content: `${validationResult.notes.length} passed.\n`, color: Colors.BRIGHT_GREEN },
         ];
         validationResult.errors.map((error) => {
-          outputMessage.push({ content: "(x) Error: ", color: Colors.BRIGHT_RED });
+          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
             content: `${error.content} \n${getLocalizedString("core.option.learnMore")}: `,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: error.helpUrl, color: Colors.BRIGHT_CYAN });
+          outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+        });
+        validationResult.warnings.map((warning) => {
+          outputMessage.push({
+            content: `${SummaryConstant.NotExecuted} `,
+            color: Colors.BRIGHT_YELLOW,
+          });
+          outputMessage.push({
+            content: `${warning.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            color: Colors.BRIGHT_WHITE,
+          });
+          outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+        });
+        validationResult.notes.map((note) => {
+          outputMessage.push({
+            content: `${SummaryConstant.Succeeded} `,
+            color: Colors.BRIGHT_GREEN,
+          });
+          outputMessage.push({
+            content: `${note.content}\n`,
+            color: Colors.BRIGHT_WHITE,
+          });
         });
         context.ui?.showMessage("info", outputMessage, false);
       } else {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            return `(x) Error: ${error.content} \n${getLocalizedString("core.option.learnMore")}: ${
-              error.helpUrl
-            }`;
+            return `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
+              "core.option.learnMore"
+            )}: ${error.helpUrl}`;
           })
           .join(EOL);
         const warnings = validationResult.warnings
           .map((warning) => {
-            return `(!) Warning: ${warning.content} \n${getLocalizedString(
+            return `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
               "core.option.learnMore"
             )}: ${warning.helpUrl}`;
+          })
+          .join(EOL);
+        const notes = validationResult.notes
+          .map((note) => {
+            return `${SummaryConstant.Succeeded} ${note.content}`;
           })
           .join(EOL);
         const outputMessage =
@@ -155,9 +182,12 @@ export class ValidateAppPackageDriver implements StepDriver {
             validationResult.notes.length,
             errors,
             warnings,
-            undefined
+            path.resolve(context.logProvider?.getLogFilePath())
           );
         context.logProvider?.info(outputMessage);
+        // logs in log file
+        context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
+
         const message = getLocalizedString(
           "driver.teamsApp.validate.result",
           validationResult.errors.length + validationResult.warnings.length,

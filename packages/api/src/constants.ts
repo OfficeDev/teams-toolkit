@@ -75,6 +75,7 @@ export enum Stage {
   publishInDeveloperPortal = "publishInDeveloperPortal",
   validateApplication = "validateApplication",
   createAppPackage = "createAppPackage",
+  previewWithManifest = "previewWithManifest",
 }
 
 export enum TelemetryEvent {

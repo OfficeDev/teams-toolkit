@@ -10,6 +10,7 @@ provision:
     with:
       name: {{aadAppName}} # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
       generateClientSecret: true # If the value is false, the action will not generate client secret for you
+      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in your organization's Azure AD tenant (for example, single tenant).
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       clientId: AAD_APP_CLIENT_ID
       clientSecret: SECRET_AAD_APP_CLIENT_SECRET # Environment variable that starts with `SECRET_` will be stored to the .env.{envName}.user environment file
@@ -40,7 +41,6 @@ provision:
          parameters: ./templates/azure/azure.parameters.$\{{TEAMSFX_ENV}}.json # Relative path to this file. Placeholders will be replaced with corresponding environment variable before ARM deployment.
          deploymentName: teams_toolkit_deployment # Required when deploy ARM template
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
-    # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: azureStorage/enableStaticWebsite
     with:
@@ -54,8 +54,6 @@ provision:
     with:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 {{/if}}
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:

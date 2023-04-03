@@ -26,10 +26,6 @@ import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/update";
 
-export const defaultOutputNames = {
-  teamsAppId: "TEAMS_APP_ID",
-};
-
 export const internalOutputNames = {
   teamsAppUpdateTime: "TEAMS_APP_UPDATE_TIME",
   teamsAppTenantId: "TEAMS_APP_TENANT_ID",
@@ -76,11 +72,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
-
-    if (!outputEnvVarNames) {
-      outputEnvVarNames = new Map(Object.entries(defaultOutputNames));
-    }
-    outputEnvVarNames = new Map([...outputEnvVarNames, ...Object.entries(internalOutputNames)]);
 
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
@@ -158,9 +149,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       context.addSummary(message);
       return ok(
         new Map([
-          [outputEnvVarNames.get("teamsAppId") as string, appDefinition.teamsAppId!],
-          [outputEnvVarNames.get("teamsAppTenantId") as string, appDefinition.tenantId!],
-          [outputEnvVarNames.get("teamsAppUpdateTime") as string, appDefinition.updatedAt!],
+          [internalOutputNames.teamsAppTenantId, appDefinition.tenantId!],
+          [internalOutputNames.teamsAppUpdateTime, appDefinition.updatedAt!],
         ])
       );
     } catch (e: any) {

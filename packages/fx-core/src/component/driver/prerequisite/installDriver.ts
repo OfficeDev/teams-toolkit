@@ -3,7 +3,7 @@
 
 import * as path from "path";
 import { Service } from "typedi";
-import { FxError, IProgressHandler, Result } from "@microsoft/teamsfx-api";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 import {
   DependencyStatus,
   DepsManager,
@@ -15,11 +15,11 @@ import {
   LocalCertificate,
   LocalCertificateManager,
 } from "../../../common/local/localCertificateManager";
+import { wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
+import { WrapDriverContext } from "../util/wrapUtil";
 import {
-  ProgressMessages,
   Summaries,
   TelemetryDepsCheckStatus,
   TelemetryDevCertStatus,
@@ -31,7 +31,9 @@ import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 import { InvalidActionInputError } from "../../../error/common";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const ACTION_NAME = "prerequisite/install";
 const helpLink = "https://aka.ms/teamsfx-actions/prerequisite-install";
@@ -46,33 +48,40 @@ const outputKeys = {
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
   description = toolsInstallDescription();
+
+  @hooks([
+    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
+    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
+  ])
   async run(
     args: InstallToolArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
-
-    const impl = new ToolsInstallDriverImpl(wrapContext);
-    return (await wrapRun(wrapContext, () => impl.run(args))) as Result<
-      Map<string, string>,
-      FxError
-    >;
+    return wrapRun(async () => {
+      const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
+      const impl = new ToolsInstallDriverImpl(wrapContext);
+      return await impl.run(args);
+    });
   }
 
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME)])
+  @hooks([
+    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
+    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
+  ])
   async execute(
     args: InstallToolArgs,
     context: DriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
-
-    const impl = new ToolsInstallDriverImpl(wrapContext);
-    return (await wrapRun(
-      wrapContext,
-      () => impl.run(args, outputEnvVarNames),
-      true
-    )) as ExecutionResult;
+    const result = await wrapRun(async () => {
+      const impl = new ToolsInstallDriverImpl(wrapContext);
+      return await impl.run(args, outputEnvVarNames);
+    });
+    return {
+      result: result,
+      summaries: wrapContext.summaries,
+    };
   }
 }
 
@@ -87,10 +96,8 @@ export class ToolsInstallDriverImpl {
     this.validateArgs(args);
 
     this.setArgTelemetry(args);
-    const progressBar = await this.createProgressBar(this.getSteps(args));
 
     if (args.devCert) {
-      await progressBar?.next(ProgressMessages.devCert());
       const localCertRes = await this.resolveLocalCertificate(
         args.devCert.trust,
         outputEnvVarNames
@@ -99,13 +106,11 @@ export class ToolsInstallDriverImpl {
     }
 
     if (args.func) {
-      await progressBar?.next(ProgressMessages.func());
       const funcRes = await this.resolveFuncCoreTools(outputEnvVarNames);
       funcRes.forEach((v, k) => res.set(k, v));
     }
 
     if (args.dotnet) {
-      await progressBar?.next(ProgressMessages.dotnet());
       const dotnetRes = await this.resolveDotnet(outputEnvVarNames);
       dotnetRes.forEach((v, k) => res.set(k, v));
     }
@@ -131,7 +136,6 @@ export class ToolsInstallDriverImpl {
         res.set(name, localCertResult.keyPath);
       }
     }
-
     this.setDevCertTelemetry(trustDevCert, localCertResult);
 
     if (typeof localCertResult.isTrusted === "undefined") {
@@ -213,10 +217,6 @@ export class ToolsInstallDriverImpl {
     }
   }
 
-  private getSteps(args: InstallToolArgs): number {
-    return (args.devCert ? 1 : 0) + (args.dotnet ? 1 : 0) + (args.func ? 1 : 0);
-  }
-
   private setArgTelemetry(args: InstallToolArgs): void {
     this.context.addTelemetryProperties({
       [TelemetryProperties.driverArgs]: JSON.stringify({
@@ -250,14 +250,5 @@ export class ToolsInstallDriverImpl {
           : TelemetryDepsCheckStatus.success
         : TelemetryDepsCheckStatus.failed,
     });
-  }
-
-  private async createProgressBar(steps: number): Promise<IProgressHandler | undefined> {
-    const progressBar = this.context.ui?.createProgressBar(ProgressMessages.title(), steps);
-    if (progressBar) {
-      this.context.progressBars.push(progressBar);
-    }
-    await progressBar?.start();
-    return progressBar;
   }
 }

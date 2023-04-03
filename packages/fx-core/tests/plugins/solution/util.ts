@@ -138,6 +138,9 @@ export class MockedLogProvider implements LogProvider {
   async fatal(message: string): Promise<boolean> {
     return true;
   }
+  getLogFilePath(): string {
+    return "";
+  }
 }
 
 export class MockedTelemetryReporter implements TelemetryReporter {

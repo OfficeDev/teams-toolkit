@@ -28,8 +28,6 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
 import { InvalidActionInputError } from "../../../error/common";
 import { InvalidAzureCredentialError } from "../../../error/azure";
-import { updateProgress } from "../middleware/updateProgress";
-import { hooks } from "@feathersjs/hooks";
 import { CompileBicepError, DeployArmError } from "../../../error/arm";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
@@ -45,7 +43,6 @@ export class ArmDeployImpl {
     this.context = context;
   }
 
-  @hooks([updateProgress(getLocalizedString("driver.arm.deploy.progressBar.message"))])
   public async run(): Promise<Map<string, string>> {
     await this.validateArgs();
     await this.createClient();

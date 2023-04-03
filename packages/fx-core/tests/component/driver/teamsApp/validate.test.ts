@@ -155,6 +155,11 @@ describe("teamsApp/validateAppPackage", async () => {
     ui: new MockedUserInteraction(),
     projectPath: "./",
   };
+  const contextWithoutUI: any = {
+    m365TokenProvider: new MockedM365Provider(),
+    logProvider: new MockedLogProvider(),
+    projectPath: "./",
+  };
 
   afterEach(() => {
     sinon.restore();
@@ -228,7 +233,10 @@ describe("teamsApp/validateAppPackage", async () => {
       appPackagePath: "fakePath",
       showMessage: true,
     };
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    let result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isOk());
+
+    result = await teamsAppDriver.run(args, contextWithoutUI);
     chai.assert(result.isOk());
   });
 

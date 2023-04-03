@@ -28,6 +28,7 @@ import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, FuncInstallOptions } from "../depsChecker";
 import { Messages } from "../constant/message";
 import { NodeChecker } from "./nodeChecker";
+import { getLocalizedString } from "../../localizeUtils";
 
 export enum FuncMajorVersion {
   v1 = "1",
@@ -316,7 +317,7 @@ export class FuncToolChecker implements DepsChecker {
       Messages.failToValidateFuncCoreTool().replace("@NameVersion", displayFuncName)
     );
     throw new DepsCheckerError(
-      Messages.failToInstallFuncCoreTool().split("@NameVersion").join(displayFuncName),
+      getLocalizedString("error.common.InstallSoftwareError", displayFuncName),
       defaultHelpLink
     );
   }

@@ -64,6 +64,21 @@ describe("m365Title/acquire", async () => {
     chai.assert.equal((result as any).value.get("M365_APP_ID"), "test-app-id");
   });
 
+  it("run with unhandled error", async () => {
+    const args = {
+      appPackagePath: "fakePath",
+    };
+
+    sinon.stub(PackageService.prototype, "sideLoading").throws(new Error("test error"));
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const result = await acquireDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, "UnhandledError");
+    }
+  });
+
   it("execute happy path", async () => {
     const args = {
       appPackagePath: "fakePath",

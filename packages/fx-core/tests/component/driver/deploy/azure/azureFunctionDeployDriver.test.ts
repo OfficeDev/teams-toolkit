@@ -51,10 +51,11 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      zipFilePath: path.join(testFolder, "test.zip"),
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -101,7 +102,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -148,7 +149,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -195,7 +196,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -242,7 +243,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -289,7 +290,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -338,7 +339,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -386,7 +387,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",

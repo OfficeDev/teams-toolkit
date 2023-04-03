@@ -106,7 +106,7 @@
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>(https?:\/\/[^\s]*)</string>
+                <string>(https?:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?)</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.hyperlink</string>
             </dict>

@@ -1365,7 +1365,13 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await commonUtils.triggerV3Migration();
+    try {
+      await commonUtils.triggerV3Migration();
+      return undefined;
+    } catch (error: any) {
+      showError(error);
+      return "1";
+    }
   }
 
   if (commonUtils.checkAndSkipDebugging()) {
@@ -1456,7 +1462,15 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await commonUtils.triggerV3Migration();
+    if (isV3Enabled()) {
+      try {
+        await commonUtils.triggerV3Migration();
+        return undefined;
+      } catch (error: any) {
+        showError(error);
+        return "1";
+      }
+    }
   }
 
   const additionalProperties: { [key: string]: string } = {
@@ -1559,7 +1573,15 @@ export async function validateGetStartedPrerequisitesHandler(
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await commonUtils.triggerV3Migration();
+    if (isV3Enabled()) {
+      try {
+        await commonUtils.triggerV3Migration();
+        return undefined;
+      } catch (error: any) {
+        showError(error);
+        return "1";
+      }
+    }
   }
 
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -1626,7 +1648,15 @@ export async function getDotnetPathHandler(): Promise<string> {
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await commonUtils.triggerV3Migration();
+    if (isV3Enabled()) {
+      try {
+        await commonUtils.triggerV3Migration();
+        return undefined;
+      } catch (error: any) {
+        showError(error);
+        return "1";
+      }
+    }
   }
 
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;

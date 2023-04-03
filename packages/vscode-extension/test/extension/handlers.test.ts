@@ -1872,9 +1872,17 @@ describe("handlers", () => {
 
     it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, undefined);
+    });
+
+    it("v3: migration error", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
+      sinon.stub(handlers, "showError").resolves();
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
     });
 
     it("skip debugging", async () => {
@@ -1914,9 +1922,17 @@ describe("handlers", () => {
 
     it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.validateLocalPrerequisitesHandler();
       chai.assert.equal(result, undefined);
+    });
+
+    it("v3: migration error", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
+      sinon.stub(handlers, "showError").resolves();
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, "1");
     });
 
     it("skip debugging", async () => {
@@ -1931,9 +1947,18 @@ describe("handlers", () => {
   describe("backendExtensionsInstallHandler", () => {
     it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.backendExtensionsInstallHandler();
       chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+
+    it("v3: migration error", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
+      sinon.stub(handlers, "showError").resolves();
+      const result = await handlers.backendExtensionsInstallHandler();
+      chai.assert.equal(result, "1");
       sinon.restore();
     });
   });
@@ -1941,9 +1966,18 @@ describe("handlers", () => {
   describe("preDebugCheckHandler", () => {
     it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.preDebugCheckHandler();
       chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
+      sinon.stub(handlers, "showError").resolves();
+      const result = await handlers.preDebugCheckHandler();
+      chai.assert.equal(result, "1");
       sinon.restore();
     });
   });

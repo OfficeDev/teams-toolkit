@@ -121,7 +121,7 @@ export class ApiCodeProvider {
     return ok(undefined);
   }
 
-  private async handleDotnetChecker(ctx: ContextV3, inputs: InputsWithProjectPath): Promise<void> {
+  public async handleDotnetChecker(ctx: ContextV3, inputs: InputsWithProjectPath): Promise<void> {
     const funcDepsLogger = new FuncPluginLogger(ctx.logProvider);
     const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
       DepsType.Dotnet,

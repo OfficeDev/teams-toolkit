@@ -388,3 +388,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Temp Test Data
+test-local/

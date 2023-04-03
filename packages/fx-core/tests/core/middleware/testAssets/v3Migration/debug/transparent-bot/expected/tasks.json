@@ -41,8 +41,9 @@
             "command": "debug-start-local-tunnel",
             "args": {
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "type": "ngrok",
                 "env": "local",
-                "output": {
+                "writeToEnvironmentFile": {
                     // Keep consistency with upgraded configuration.
                     "endpoint": "PROVISIONOUTPUT__WEBAPPOUTPUT__SITEENDPOINT",
                     "domain": "PROVISIONOUTPUT__WEBAPPOUTPUT__DOMAIN"

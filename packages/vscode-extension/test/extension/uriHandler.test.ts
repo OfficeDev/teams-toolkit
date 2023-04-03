@@ -6,7 +6,9 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();
-
+  beforeEach(() => {
+    sandbox.restore();
+  });
   afterEach(() => {
     sandbox.restore();
   });

@@ -1,3 +1,5 @@
+# This file includes environment variables that will be committed to git by default.
+
 # Built-in environment variables
 TEAMSFX_ENV=dev
 
@@ -10,5 +12,3 @@ RESOURCE_SUFFIX=
 TEAMS_APP_ID=
 TAB_AZURE_STORAGE_RESOURCE_ID=
 TAB_ENDPOINT=
-
-# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.

@@ -8,9 +8,10 @@
 import * as util from "util";
 import * as vscode from "vscode";
 import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
+import { envUtil, isV3Enabled, TunnelType } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
+import { DotenvOutput } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -23,34 +24,24 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession, Step } from "../commonUtils";
-import { ngrokTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
+import { baseTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { DotenvOutput } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 
 export interface IBaseTunnelArgs {
   type?: string;
   env?: string;
-  output?: {
-    endpoint?: string;
-    domain?: string;
-  };
 }
-
-export const TunnelType = Object.freeze({
-  devTunnel: "dev-tunnel",
-  ngrok: "ngrok",
-});
 
 export type OutputInfo = {
   file: string | undefined;
-  keys: string[];
 };
 
 export type EndpointInfo = {
   src: string;
   dest: string;
+  keys: string[];
 };
 
 export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
@@ -74,7 +65,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     BaseTunnelTaskTerminal.tunnelTaskTerminals.set(this.taskTerminalId, this);
 
     this.progressHandler = new ProgressHandler(
-      ngrokTunnelDisplayMessages.taskName,
+      baseTunnelDisplayMessages.taskName,
       stepNumber,
       "terminal"
     );
@@ -111,7 +102,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
         typeof args.type !== "string" ||
         !(Object.values(TunnelType) as string[]).includes(args.type)
       ) {
-        throw BaseTaskTerminal.taskDefinitionError("type");
+        throw BaseTaskTerminal.taskDefinitionError("args.type");
       }
     }
 
@@ -119,54 +110,49 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       if (typeof args.env !== "undefined" && typeof args.env !== "string") {
         throw BaseTaskTerminal.taskDefinitionError("args.env");
       }
-
-      if (typeof args.output?.domain !== "undefined" && typeof args.output?.domain !== "string") {
-        throw BaseTaskTerminal.taskDefinitionError("args.output.domain");
-      }
-
-      if (
-        typeof args.output?.endpoint !== "undefined" &&
-        typeof args.output?.endpoint !== "string"
-      ) {
-        throw BaseTaskTerminal.taskDefinitionError("args.output.endpoint");
-      }
     }
   }
 
   protected async outputStartMessage(tunnelDisplayMessages: TunnelDisplayMessages): Promise<void> {
-    VsCodeLogInstance.info(tunnelDisplayMessages.title);
+    VsCodeLogInstance.info(tunnelDisplayMessages.title());
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       tunnelDisplayMessages.checkNumber(this.step.totalSteps)
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
-    this.writeEmitter.fire(`${tunnelDisplayMessages.startMessage}\r\n\r\n`);
+    this.writeEmitter.fire(`${tunnelDisplayMessages.startTerminalMessage}\r\n\r\n`);
 
     await this.progressHandler.start();
   }
 
   protected async outputSuccessSummary(
     tunnelDisplayMessages: TunnelDisplayMessages,
-    ngrokTunnel: EndpointInfo,
+    tunnelInfoArr: EndpointInfo[],
     envs: OutputInfo
   ): Promise<void> {
     const duration = this.getDurationInSeconds();
-    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary);
+    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary());
     VsCodeLogInstance.outputChannel.appendLine("");
 
     for (const outputMessage of this.outputMessageList) {
       VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Tick} ${outputMessage}`);
     }
 
-    VsCodeLogInstance.outputChannel.appendLine(
-      `${doctorConstant.Tick} ${tunnelDisplayMessages.successSummary(
-        ngrokTunnel.src,
-        ngrokTunnel.dest,
-        envs.file,
-        envs.keys
-      )}`
-    );
+    let isFirstTunnel = true;
+    for (const tunnelInfo of tunnelInfoArr) {
+      VsCodeLogInstance.outputChannel.appendLine(
+        `${
+          isFirstTunnel ? doctorConstant.Tick : doctorConstant.TickWhiteSpace
+        } ${tunnelDisplayMessages.successSummary(
+          tunnelInfo.src,
+          tunnelInfo.dest,
+          envs.file,
+          tunnelInfo.keys
+        )}`
+      );
+      isFirstTunnel = false;
+    }
 
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
@@ -177,13 +163,17 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       VsCodeLogInstance.info(tunnelDisplayMessages.durationMessage(duration));
     }
 
-    this.writeEmitter.fire(
-      `\r\n${tunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dest)}\r\n`
-    );
-    if (envs.file !== undefined) {
-      this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.saveEnvs(envs.file, envs.keys)}\r\n`);
+    for (const tunnelInfo of tunnelInfoArr) {
+      this.writeEmitter.fire(
+        `\r\n${tunnelDisplayMessages.terminalSuccessSummary(
+          tunnelInfo.src,
+          tunnelInfo.dest,
+          envs.file,
+          tunnelInfo.keys
+        )}\r\n`
+      );
     }
-    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.successMessage}\r\n\r\n`);
+    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.successTerminalMessage}\r\n\r\n`);
 
     await this.progressHandler.end(true);
 
@@ -203,8 +193,8 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     tunnelDisplayMessages: TunnelDisplayMessages,
     error?: any
   ): Promise<void> {
-    const fxError = assembleError(error ?? new Error(tunnelDisplayMessages.errorMessage));
-    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary);
+    const fxError = error ? assembleError(error) : TunnelError.StartTunnelError();
+    VsCodeLogInstance.outputChannel.appendLine(tunnelDisplayMessages.summary());
 
     VsCodeLogInstance.outputChannel.appendLine("");
     for (const outputMessage of this.outputMessageList) {
@@ -219,7 +209,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
-    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.errorMessage}\r\n`);
+    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.errorTerminalMessage}\r\n`);
 
     await this.progressHandler.end(false);
 
@@ -247,7 +237,6 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     try {
       const result: OutputInfo = {
         file: undefined,
-        keys: [],
       };
       if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
         return ok(result);
@@ -257,7 +246,6 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
         return ok(result);
       }
 
-      result.keys = Object.keys(envVars);
       const res = await envUtil.writeEnv(globalVariables.workspaceUri.fsPath, env, envVars);
       const envFilePathResult = await pathUtils.getEnvFilePath(
         globalVariables.workspaceUri.fsPath,
@@ -278,7 +266,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
       return ok({});
     }
-    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env);
+    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env, false, false);
   }
 }
 
@@ -289,5 +277,15 @@ export const TunnelError = Object.freeze({
       ExtensionErrors.TunnelEnvError,
       util.format(getDefaultString("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? ""),
       util.format(localize("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? "")
+    ),
+  StartTunnelError: (error?: any) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.StartTunnelError,
+      util.format(
+        getDefaultString("teamstoolkit.localDebug.startTunnelError"),
+        error?.message ?? ""
+      ),
+      util.format(localize("teamstoolkit.localDebug.startTunnelError"), error?.message ?? "")
     ),
 });

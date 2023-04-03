@@ -8,10 +8,10 @@ on:
       - ga
       - release/**
     paths:
-      - '.github/workflows/env-checker-ci-pr.yml'
-      - '.github/env-checker'
-      - 'packages/fx-core/src/common/deps-checker/**'
-      - 'packages/fx-core/tests/common/deps-checker/**'
+      - ".github/workflows/env-checker-ci-pr.yml"
+      - ".github/env-checker"
+      - "packages/fx-core/src/common/deps-checker/**"
+      - "packages/fx-core/tests/common/deps-checker/**"
   push:
     branches:
       - dev
@@ -19,10 +19,10 @@ on:
       - ga
       - release/**
     paths:
-      - '.github/workflows/env-checker-ci-pr.yml'
-      - '.github/env-checker'
-      - 'packages/fx-core/src/common/deps-checker/**'
-      - 'packages/fx-core/tests/common/deps-checker/**'
+      - ".github/workflows/env-checker-ci-pr.yml"
+      - ".github/env-checker"
+      - "packages/fx-core/src/common/deps-checker/**"
+      - "packages/fx-core/tests/common/deps-checker/**"
   workflow_dispatch: # Manual trigger
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -61,7 +61,7 @@ jobs:
           ./.github/env-checker/uninstall-dotnet.sh
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 

@@ -413,15 +413,11 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : false;
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
 }
 
 export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
-}
-
-export function isValidationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.Validate, false);
 }
 
 // This method is for deciding whether AAD should be activated.
@@ -613,14 +609,6 @@ export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Prom
   }
 
   return false;
-}
-
-export function isYoCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.YoCheckerEnable, true);
-}
-
-export function isGeneratorCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {

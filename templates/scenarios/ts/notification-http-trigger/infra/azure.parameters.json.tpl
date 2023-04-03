@@ -18,7 +18,7 @@
       "value": "Standard_LRS"
     },
     "botDisplayName": {
-      "value": "{%appName%}"
+      "value": "{{appName}}"
     }
   }
 }

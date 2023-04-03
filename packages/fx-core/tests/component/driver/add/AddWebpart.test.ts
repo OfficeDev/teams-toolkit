@@ -1,0 +1,120 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import "mocha";
+import { err, ok, Platform } from "@microsoft/teamsfx-api";
+import chai from "chai";
+import fs from "fs-extra";
+import sinon from "sinon";
+import * as path from "path";
+import * as uuid from "uuid";
+
+import {
+  MockedAzureAccountProvider,
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedUserInteraction,
+} from "../../../plugins/solution/util";
+import { AddWebPartDriver } from "../../../../src/component/driver/add/addWebPart";
+import { AddWebPartArgs } from "../../../../src/component/driver/add/interface/AddWebPartArgs";
+import { Constants } from "../../../../src/component/driver/add/utility/constants";
+import { NoConfigurationError } from "../../../../src/component/driver/add/error/noConfigurationError";
+import { SPFxGenerator } from "../../../../src/component/generator/spfxGenerator";
+import { DependencyInstallError } from "../../../../src/component/resource/spfx/error";
+import { ManifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
+import { setTools } from "../../../../src/core/globalVars";
+
+describe("Add web part driver", async () => {
+  const args: AddWebPartArgs = {
+    spfxFolder: "C://TeamsApp//src",
+    webpartName: "HelloWorld",
+    manifestPath: "C://TeamsApp//appPackage//manifest.json",
+    localManifestPath: "C://TeamsApp//appPackage//manifest.local.json",
+    spfxPackage: "installLocally",
+  };
+  const driver = new AddWebPartDriver();
+  const mockedDriverContext: any = {
+    logProvider: new MockedLogProvider(),
+    ui: new MockedUserInteraction(),
+    m365TokenProvider: new MockedM365Provider(),
+    platform: Platform.VSCode,
+    projectPath: "C://TeamsApp",
+  };
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("Returns error when no .yo-rc.json file exist", async () => {
+    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
+      if (directory === path.join(args.spfxFolder, Constants.YO_RC_FILE)) {
+        return false;
+      }
+    });
+
+    const res = await driver.run(args, mockedDriverContext);
+
+    chai.expect(res.isErr()).to.be.true;
+    chai.expect((res as any).error).instanceOf(NoConfigurationError);
+  });
+
+  it("Returns error when Yeoman scaffold fails", async () => {
+    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
+      if (directory === path.join(args.spfxFolder, Constants.YO_RC_FILE)) {
+        return true;
+      }
+    });
+    sinon.stub(SPFxGenerator, "doYeomanScaffold").resolves(err(DependencyInstallError("yo")));
+
+    const res = await driver.run(args, mockedDriverContext);
+
+    chai.expect(res.isErr()).to.be.true;
+  });
+
+  it("Returns error when updating manifest fails", async () => {
+    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
+      if (directory === path.join(args.spfxFolder, Constants.YO_RC_FILE)) {
+        return true;
+      }
+    });
+    const componentId = uuid.v4();
+    sinon.stub(SPFxGenerator, "doYeomanScaffold").resolves(ok(componentId));
+    sinon
+      .stub(ManifestUtils.prototype, "addCapabilities")
+      .resolves(err(AppStudioResultFactory.UserError("test", ["test msg", "test msg"])));
+
+    const res = await driver.run(args, mockedDriverContext);
+
+    chai.expect(res.isErr()).to.be.true;
+  });
+
+  it("Returns success when add web part OK", async () => {
+    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
+      if (directory === path.join(args.spfxFolder, Constants.YO_RC_FILE)) {
+        return true;
+      }
+    });
+    const componentId = uuid.v4();
+    setTools({
+      logProvider: new MockedLogProvider(),
+      ui: new MockedUserInteraction(),
+      tokenProvider: {
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
+      },
+    });
+    const doYeomanScaffoldStub = sinon
+      .stub(SPFxGenerator, "doYeomanScaffold")
+      .resolves(ok(componentId));
+    const addCapabilitiesStub = sinon
+      .stub(ManifestUtils.prototype, "addCapabilities")
+      .resolves(ok(undefined));
+
+    const res = await driver.run(args, mockedDriverContext);
+
+    chai.expect(res.isOk()).to.be.true;
+    chai.expect(doYeomanScaffoldStub.calledOnce).to.be.true;
+    chai.expect(addCapabilitiesStub.calledTwice).to.be.true;
+  });
+});

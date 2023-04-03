@@ -20,7 +20,7 @@ import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { MockUserInteraction } from "../../../../core/utils";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -53,16 +53,17 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
     await fs.close(fh);
-    await fs.writeFile(path.join(sysTmp, folder, "ignore"), "ignore", {
+    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
       encoding: "utf8",
       flag: "a",
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      outputZipFile: ".deployment/deployment.zip",
     } as DeployArgs;
     const progressHandler: IProgressHandler = {
       start: async (detail?: string): Promise<void> => {},
@@ -78,6 +79,7 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -108,6 +110,18 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
+      data: {
+        status: 4,
+        message: "success",
+        received_time: 123,
+        start_time: 111,
+        end_time: 123,
+        last_success_end_time: 100,
+        complete: true,
+        active: 1,
+        is_readonly: true,
+        site_name: "new_name",
+      },
     });
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
@@ -123,7 +137,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/",
-      distributionPath: "/",
+      artifactFolder: "/",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
@@ -141,7 +155,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
     } as DeployArgs;
     const context = {
@@ -156,7 +170,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -202,7 +216,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -244,7 +258,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -291,7 +305,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -338,7 +352,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/aaaa",
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -361,7 +375,7 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -416,7 +430,11 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.execute(args, context);
     assert.equal(res.result.isOk(), true);
-    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+    const tmpFile = path.join(sysTmp, "./.deployment/deployment.zip");
+    assert.equal(
+      res.summaries[0],
+      `Deployment preparations are completed. You can find the package in \`${tmpFile}\``
+    );
     // dry run will have only one progress step
     assert.equal(progressNextCaller.callCount, 1);
     expect(progressEndCaller.callCount).to.equal(1);
@@ -432,7 +450,7 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",

@@ -31,6 +31,7 @@ import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
+import * as dotenv from "dotenv";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -298,15 +299,11 @@ export async function readAndConvertUserdata(
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
-  const lines = userdataContent.split(EOL);
-  for (const line of lines) {
-    if (line && line != "") {
-      // in case that there are "="s in secrets
-      const key_value = line.split("=");
-      const res = namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
-      if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
-    }
+  const userdataContent = fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const secretes = dotenv.parse(userdataContent);
+  for (const secreteKey of Object.keys(secretes)) {
+    const res = namingConverterV3("state." + secreteKey, FileType.USERDATA, bicepContent);
+    if (res.isOk()) returnAnswer += `${res.value}=${secretes[secreteKey]}${EOL}`;
   }
 
   return returnAnswer;
@@ -352,4 +349,24 @@ export async function updateAndSaveManifestForSpfx(
 
   await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
   await context.fsWriteFile(localTemplatePath, localTemplate);
+}
+
+export function tryExtractEnvFromUserdata(filename: string): string {
+  const userdataRegex = new RegExp(`([a-zA-Z0-9_-]*)\\.${MetadataV2.userdataSuffix}`, "g");
+  const regRes = userdataRegex.exec(filename);
+  if (regRes != null) {
+    return regRes[1];
+  }
+  return "";
+}
+
+export function buildFileName(...parts: string[]): string {
+  return parts.join(".");
+}
+export function buildEnvFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName);
+}
+
+export function buildEnvUserFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName, MetadataV3.secretFileSuffix);
 }

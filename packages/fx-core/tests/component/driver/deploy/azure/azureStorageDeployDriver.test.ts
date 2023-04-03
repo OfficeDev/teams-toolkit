@@ -70,7 +70,7 @@ describe("Azure Storage Deploy Driver test", () => {
     await fs.open(path.join(testFolder, "test.txt"), "a");
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -117,7 +117,7 @@ describe("Azure Storage Deploy Driver test", () => {
     const deploy = new AzureStorageDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
@@ -150,7 +150,7 @@ describe("Azure Storage Deploy Driver test", () => {
     mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -189,7 +189,7 @@ describe("Azure Storage Deploy Driver test", () => {
     mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -217,7 +217,7 @@ describe("Azure Storage Deploy Driver test", () => {
     await fs.open(path.join(testFolder, "test.txt"), "a");
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -266,7 +266,7 @@ describe("Azure Storage Deploy Driver test", () => {
     await fs.open(path.join(testFolder, "test.txt"), "a");
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -313,7 +313,7 @@ describe("Azure Storage Deploy Driver test", () => {
     await fs.open(path.join(testFolder, "test.txt"), "a");
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -346,7 +346,7 @@ describe("Azure Storage Deploy Driver test", () => {
     await fs.open(path.join(testFolder, "test.txt"), "a");
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as path from "path";
 import * as vscode from "vscode";
 
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
@@ -9,18 +10,19 @@ import {
   isValidProjectV3,
 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { UnresolvedPlaceholderError } from "@microsoft/teamsfx-core/build/error/common";
 
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
-import { getSystemInputs, showError } from "../handlers";
+import { ExtensionSource } from "../error";
+import { core, getSystemInputs, showError } from "../handlers";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";
-import { Host, Hub, sideloadingDisplayMessages } from "./constants";
+import { accountHintPlaceholder, Host, Hub, sideloadingDisplayMessages } from "./constants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
-import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./teamsAppInstallation";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
-import { core } from "../handlers";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
@@ -28,17 +30,6 @@ export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxAppId?: string;
   teamsfxCorrelationId?: string;
   teamsfxHub?: Hub;
-}
-
-enum SideloadingType {
-  unknown,
-  local,
-  remote,
-  m365Local,
-  v3Local,
-  v3Remote,
-  v3M365Local,
-  v3M365Remote,
 }
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
@@ -67,84 +58,59 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         return debugConfiguration;
       }
 
+      if (typeof debugConfiguration.url !== "string") {
+        return debugConfiguration;
+      }
+
+      if (!isV3Enabled()) {
+        return debugConfiguration;
+      }
+
       if (!isValidProject(folder.uri.fsPath)) {
         return debugConfiguration;
       }
 
       // migrate to v3
-      if (isV3Enabled() && !isValidProjectV3(folder.uri.fsPath)) {
+      if (!isValidProjectV3(folder.uri.fsPath)) {
         await commonUtils.triggerV3Migration();
         return debugConfiguration;
       }
 
-      // Attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
-      // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
-      debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
-
-      if (debugConfiguration.url === undefined || debugConfiguration.url === null) {
-        return debugConfiguration;
-      }
-      let url: string = debugConfiguration.url as string;
-
-      let sideloadingType = SideloadingType.unknown;
-
-      const localAppIdPlaceholder = "${localTeamsAppId}";
-      if (!isV3Enabled() && url.includes(localAppIdPlaceholder)) {
-        sideloadingType = SideloadingType.local;
-      }
-
-      const appIdPlaceholder = "${teamsAppId}";
-      if (!isV3Enabled() && url.includes(appIdPlaceholder)) {
-        sideloadingType = SideloadingType.remote;
-      }
-
-      // NOTE: 1. there is no app id in M365 messaging extension launch url
-      //       2. there are no launch remote configurations for M365 app
-      const localInternalIdPlaceholder = "${localTeamsAppInternalId}";
+      // resolve env
+      let url: string = debugConfiguration.url;
       const host = new URL(url).host;
-      if (
-        !isV3Enabled() &&
-        (url.includes(localInternalIdPlaceholder) || host === Host.outlook || host === Host.office)
-      ) {
-        sideloadingType = SideloadingType.m365Local;
+      let env: string | undefined = undefined;
+
+      // match ${{xxx:yyy}}
+      let matchResult = url.match(/\${{(.+):([A-Za-z0-9_]+)}}/);
+      if (matchResult) {
+        env = matchResult[1];
       }
 
-      const v3MatchPattern = /\$\{(.+):teamsAppId\}/;
-      const v3MatchResult = url.match(v3MatchPattern);
-      if (isV3Enabled() && v3MatchResult) {
-        sideloadingType =
-          v3MatchResult[1] === environmentManager.getLocalEnvName()
-            ? SideloadingType.v3Local
-            : SideloadingType.v3Remote;
-      }
-
-      const v3M365MatchPattern = /\$\{(.+):teamsAppInternalId\}/;
-      const v3M365MatchResult = url.match(v3M365MatchPattern);
-      if (isV3Enabled() && v3M365MatchResult) {
-        sideloadingType = SideloadingType.v3M365Local;
-      }
-
-      if (
-        sideloadingType === SideloadingType.unknown &&
-        (host === Host.outlook || host === Host.office)
-      ) {
-        sideloadingType =
-          typeof debugConfiguration.name === "string" &&
-          debugConfiguration.name.startsWith("Launch Remote")
-            ? SideloadingType.v3M365Remote
-            : SideloadingType.v3M365Local;
-      }
-
-      if (sideloadingType === SideloadingType.unknown) {
-        return debugConfiguration;
+      if (!env) {
+        // match ${{yyy}}
+        matchResult = url.match(/\${{([A-Za-z0-9_]+)}}/);
+        if (matchResult) {
+          // prompt to select env
+          const inputs = getSystemInputs();
+          inputs.ignoreEnvInfo = false;
+          inputs.ignoreLocalEnv = true;
+          const envResult = await core.getSelectedEnv(inputs);
+          if (envResult.isErr()) {
+            throw envResult.error;
+          }
+          env = envResult.value;
+        }
       }
 
       const isLocal =
-        sideloadingType === SideloadingType.local ||
-        sideloadingType === SideloadingType.m365Local ||
-        sideloadingType === SideloadingType.v3Local ||
-        sideloadingType === SideloadingType.v3M365Local;
+        env === environmentManager.getLocalEnvName() ||
+        !debugConfiguration.name.startsWith("Launch Remote");
       telemetryIsRemote = !isLocal;
+
+      // Attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
+      // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
+      debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
 
       const result = await localTelemetryReporter.runWithTelemetryExceptionProperties(
         TelemetryEvent.DebugProviderResolveDebugConfiguration,
@@ -154,55 +120,35 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
             debugConfiguration.timeout = 20000;
           }
 
-          let env: string | undefined = undefined;
-          let appId: string | undefined = undefined;
-          if (
-            sideloadingType === SideloadingType.local ||
-            sideloadingType === SideloadingType.m365Local ||
-            sideloadingType === SideloadingType.remote
-          ) {
-            let debugConfig = undefined;
-            if (isLocal) {
-              debugConfig = await commonUtils.getDebugConfig(
-                false,
-                environmentManager.getLocalEnvName()
+          if (env && matchResult) {
+            // replace environment variable
+            const envRes = await envUtil.readEnv(folder.uri.fsPath, env, false, true);
+            if (envRes.isErr()) {
+              throw envRes.error;
+            }
+            const key = matchResult[matchResult.length - 1];
+            if (!envRes.value[key]) {
+              throw new UnresolvedPlaceholderError(
+                ExtensionSource,
+                key,
+                path.normalize(path.join(folder.uri.fsPath, ".vscode", "launch.json")),
+                "https://aka.ms/teamsfx-tasks"
               );
-            } else {
-              debugConfig = await commonUtils.getDebugConfig(isLocal);
             }
-            if (!debugConfig) {
-              // The user cancels env selection.
-              // Returning the value 'undefined' prevents the debug session from starting.
-              return undefined;
-            }
-            env = debugConfig.env!;
-            appId = debugConfig.appId;
-          } else {
-            if (v3MatchResult) {
-              env = v3MatchResult[1];
-            } else if (v3M365MatchResult) {
-              env = v3M365MatchResult[1];
-            } else if (host === Host.outlook || host === Host.office) {
-              if (sideloadingType === SideloadingType.v3M365Local) {
-                env = environmentManager.getLocalEnvName();
-              } else if (sideloadingType === SideloadingType.v3M365Remote) {
-                const inputs = getSystemInputs();
-                inputs.ignoreEnvInfo = false;
-                inputs.ignoreLocalEnv = true;
-                const envResult = await core.getSelectedEnv(inputs);
-                if (envResult.isErr()) {
-                  return undefined;
-                }
-                env = envResult.value;
-              }
-            }
-            appId = await commonUtils.getV3TeamsAppId(folder.uri.fsPath, env!);
+            url = url.replace(matchResult[0], envRes.value[key]);
+          }
+
+          // replace ${account-hint}
+          if (url.includes(accountHintPlaceholder)) {
+            url = url.replace(
+              accountHintPlaceholder,
+              await generateAccountHint(host === Host.teams)
+            );
           }
 
           // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
           debugConfiguration.teamsfxIsRemote = !isLocal;
           debugConfiguration.teamsfxEnv = env;
-          debugConfiguration.teamsfxAppId = appId;
           if (host === Host.teams) {
             debugConfiguration.teamsfxHub = Hub.teams;
           } else if (host === Host.outlook) {
@@ -211,61 +157,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
             debugConfiguration.teamsfxHub = Hub.office;
           }
 
-          switch (sideloadingType) {
-            case SideloadingType.local:
-              url = url.replace(localAppIdPlaceholder, appId);
-              break;
-            case SideloadingType.remote:
-              url = url.replace(appIdPlaceholder, appId);
-              break;
-            case SideloadingType.m365Local:
-              {
-                const internalId = await getTeamsAppInternalId(appId);
-                if (internalId !== undefined) {
-                  url = url.replace(localInternalIdPlaceholder, internalId);
-                }
-              }
-              break;
-            case SideloadingType.v3Local:
-            case SideloadingType.v3Remote:
-              url = url.replace(v3MatchPattern, appId);
-              break;
-            case SideloadingType.v3M365Local:
-              {
-                let internalId = await commonUtils.getV3M365AppId(folder.uri.fsPath, env!);
-                internalId = internalId ?? (await getTeamsAppInternalId(appId));
-                if (internalId !== undefined) {
-                  url = url.replace(v3M365MatchPattern, internalId);
-                }
-              }
-              break;
-            case SideloadingType.v3M365Remote:
-              {
-                let internalId = await commonUtils.getV3M365AppId(folder.uri.fsPath, env!);
-                if (internalId === undefined) {
-                  const shouldContinue = await showInstallAppInTeamsMessage(env!, appId);
-                  if (!shouldContinue) {
-                    return undefined;
-                  }
-                  internalId = await getTeamsAppInternalId(appId);
-                }
-                if (internalId !== undefined) {
-                  url = url.replace(v3M365MatchPattern, internalId);
-                }
-              }
-              break;
-          }
-
-          const accountHintPlaceholder = "${account-hint}";
-          const isaccountHintConfiguration: boolean = url.includes(accountHintPlaceholder);
-          if (isaccountHintConfiguration) {
-            const accountHint = await generateAccountHint(host === Host.teams);
-            url = url.replace(accountHintPlaceholder, accountHint);
-          }
-
           return url;
         }
       );
+
       if (result === undefined) {
         return undefined;
       }
@@ -314,15 +209,14 @@ export async function generateAccountHint(includeTenantId = true): Promise<strin
         loginHint = tokenObject.upn;
       } else {
         // no signed user
-        tenantId = await commonUtils.getTeamsAppTenantId();
         loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
       }
     } catch {
       // ignore error
     }
   }
-  if (includeTenantId) {
-    return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+  if (includeTenantId && tenantId) {
+    return loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
   } else {
     return loginHint ? `login_hint=${loginHint}` : "";
   }

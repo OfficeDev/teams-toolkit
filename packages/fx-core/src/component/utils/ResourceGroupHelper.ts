@@ -27,6 +27,7 @@ import {
   QuestionNewResourceGroupLocation,
   QuestionSelectResourceGroup,
 } from "../../core/question";
+import { InvalidAzureCredentialError, ResourceGroupConflictError } from "../../error/azure";
 import { CoordinatorSource, SolutionError, SolutionSource } from "../constants";
 
 const MsResources = "Microsoft.Resources";
@@ -97,27 +98,14 @@ export class ResourceGroupHelper {
     location: string
   ): Promise<Result<string, FxError>> {
     const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
-    if (!azureToken)
-      return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.FailedToGetAzureCredential,
-          getLocalizedString("error.FailedToGetAzureCredential")
-        )
-      );
+    if (!azureToken) return err(new InvalidAzureCredentialError());
     const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
     const maybeExist = await this.checkResourceGroupExistence(resourceGroupName, rmClient);
     if (maybeExist.isErr()) {
       return err(maybeExist.error);
     }
     if (maybeExist.value) {
-      return err(
-        new UserError(
-          CoordinatorSource,
-          "ResourceGroupExists",
-          getLocalizedString("core.error.FailedToCreateResourceGroup.exist", resourceGroupName)
-        )
-      );
+      return err(new ResourceGroupConflictError(resourceGroupName, subscriptionId));
     }
     const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
       location: location,
@@ -174,15 +162,7 @@ export class ResourceGroupHelper {
     rmClient: ResourceManagementClient
   ): Promise<Result<string[], FxError>> {
     const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
-    if (!azureToken)
-      return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.FailedToGetAzureCredential,
-          getDefaultString("error.FailedToGetAzureCredential"),
-          getLocalizedString("error.FailedToGetAzureCredential")
-        )
-      );
+    if (!azureToken) return err(new InvalidAzureCredentialError());
     const subscriptionClient = new SubscriptionClient(azureToken);
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     const locations: string[] = [];

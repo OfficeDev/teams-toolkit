@@ -7,7 +7,6 @@ import {
   AssertNotEmpty,
   BuildError,
   InvalidAadObjectId,
-  UnhandledError,
 } from "../../../../src/component/resource/apim/error";
 
 describe("Error", () => {
@@ -47,16 +46,6 @@ describe("Error", () => {
       );
     });
 
-    it("UnhandledError(error)", () => {
-      const error = BuildError(UnhandledError, new Error("inner error"));
-      chai.assert.equal(error.message, `Unhandled error. inner error`);
-    });
-
-    it("UnhandledError()", () => {
-      const error = BuildError(UnhandledError);
-      chai.assert.equal(error.message, `Unhandled error.`);
-    });
-
     it("AadOperationError(error)", () => {
       const error = BuildError(
         AadOperationError,
@@ -64,7 +53,7 @@ describe("Error", () => {
         "test-operation",
         "test-resource"
       );
-      chai.assert.equal(error.message, `Failed to test-operation test-resource. inner error`);
+      chai.assert.equal(error.message, `Unable to test-operation test-resource. inner error`);
     });
   });
 });

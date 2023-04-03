@@ -122,4 +122,16 @@ export class MockCore implements Core {
   async phantomMigrationV3(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async addWebpart(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async previewWithManifest(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

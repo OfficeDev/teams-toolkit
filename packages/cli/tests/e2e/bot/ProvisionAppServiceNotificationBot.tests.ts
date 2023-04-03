@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Xiaofu Huang <xiaofhua@microsoft.com>
- * @owner Siglud <fanhu@microsoft.com>
+ * @author Siglud <fanhu@microsoft.com>
  */
 
 import { Runtime } from "../../commonlib/constants";

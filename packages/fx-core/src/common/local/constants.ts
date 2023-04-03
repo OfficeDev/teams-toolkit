@@ -113,6 +113,7 @@ export const TaskOverallLabel = Object.freeze({
 
 export const TaskLabel = Object.freeze({
   PrerequisiteCheck: "Validate & install prerequisites",
+  PrerequisiteCheckV3: "Validate prerequisites",
   InstallNpmPackages: "Install npm packages",
   StartLocalTunnel: "Start local tunnel",
   SetUpTab: "Set up tab",
@@ -121,6 +122,7 @@ export const TaskLabel = Object.freeze({
   PrepareManifest: "Build & upload Teams manifest",
   InstallAzureFuncBindingExt: "Install Azure Functions binding extensions",
   StartServices: "Start services",
+  StartApplication: "Start application", // V3
   StartFrontend: "Start frontend",
   StartBackend: "Start backend",
   WatchBackend: "Watch backend",
@@ -130,6 +132,8 @@ export const TaskLabel = Object.freeze({
   InstallAppInTeams: "Install app in Teams",
   GulpTrustDevCert: "gulp trust-dev-cert",
   GulpServe: "gulp serve",
+  Provision: "Provision", // V3
+  Deploy: "Deploy", // V3
 });
 
 export const TaskDefaultValue = Object.freeze({
@@ -149,10 +153,9 @@ export const TaskDefaultValue = Object.freeze({
   startLocalTunnel: {
     ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
     ngrokPath: "ngrok",
-    output: {
+    writeToEnvironmentFile: {
       endpoint: "BOT_ENDPOINT",
       domain: "BOT_DOMAIN",
-      id: "DEV_TUNNEL_ID",
     },
   },
   setUpTab: {
@@ -173,4 +176,9 @@ export const Prerequisite = Object.freeze({
   dotnet: "dotnet",
   portOccupancy: "portOccupancy",
   vxTestApp: "vxTestApp", // TODO(aochengwang): maybe change app name
+});
+
+export const TunnelType = Object.freeze({
+  devTunnel: "dev-tunnel",
+  ngrok: "ngrok",
 });

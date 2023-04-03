@@ -14,17 +14,18 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ConstantString } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
 import { executeCommand } from "../../../common/cpUtils";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
-import { SolutionError, SolutionSource } from "../../constants";
-import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
+import { InvalidActionInputError } from "../../../error/common";
+import { InvalidAzureCredentialError } from "../../../error/azure";
+import { CompileBicepError, DeployArmError } from "../../../error/arm";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -59,7 +60,7 @@ export class ArmDeployImpl {
     const invalidParameters = await validateArgs(this.args);
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(Constants.actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(Constants.actionName, invalidParameters, helpLink);
     }
   }
 
@@ -70,12 +71,7 @@ export class ArmDeployImpl {
   private async createClient(): Promise<void> {
     const azureToken = await this.context.azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken) {
-      throw new SystemError(
-        PluginDisplayName.Solution,
-        SolutionError.FailedToGetAzureCredential,
-        getDefaultString("core.deployArmTemplates.InvalidAzureCredential"),
-        getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")
-      );
+      throw new InvalidAzureCredentialError();
     }
     this.client = new ResourceManagementClient(azureToken, this.args.subscriptionId);
   }
@@ -132,13 +128,8 @@ export class ArmDeployImpl {
       progressBar?.end(res.isOk() ? true : false);
       return res;
     } catch (error) {
-      return err(
-        new UserError({
-          error,
-          source: SolutionSource,
-          name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        })
-      );
+      if (error instanceof UserError || error instanceof SystemError) return err(error);
+      return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
     }
   }
 
@@ -167,7 +158,7 @@ export class ArmDeployImpl {
     return ok(result?.properties?.outputs);
   }
 
-  private async getDeployParameters(parameters?: string): Promise<any> {
+  async getDeployParameters(parameters?: string): Promise<any> {
     if (!parameters) {
       return null;
     }
@@ -200,7 +191,7 @@ export class ArmDeployImpl {
       );
       return JSON.parse(result);
     } catch (err) {
-      throw new Error(getDefaultString("driver.arm.error.CompileBicepFailed", err.message));
+      throw new CompileBicepError(filePath, err as Error);
     }
   }
 

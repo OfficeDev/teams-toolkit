@@ -157,6 +157,7 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-bot.appServicePlanName",
   "state.fx-resource-bot.resourceId",
   "state.fx-resource-bot.functionAppResourceId",
+  "state.fx-resource-bot.webAppResourceId",
   "state.fx-resource-bot.botWebAppResourceId",
   "state.fx-resource-bot.siteEndpoint",
   "state.fx-resource-identity.identityName",

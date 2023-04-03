@@ -46,7 +46,7 @@ export class ListWidget extends Widget<ListModel[]> {
   bodyContent(): JSX.Element | undefined {
     return (
       <div style={bodyContentStyle()}>
-        {this.state.data &&
+        {this.state.data! &&
           this.state.data.map((t: ListModel) => {
             return (
               <div key={`${t.id}-div`} style={itemLayoutStyle()}>

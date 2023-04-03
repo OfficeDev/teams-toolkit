@@ -124,12 +124,33 @@ export class ValidateAppPackageDriver implements StepDriver {
           { content: `${validationResult.notes.length} passed.\n`, color: Colors.BRIGHT_GREEN },
         ];
         validationResult.errors.map((error) => {
-          outputMessage.push({ content: "(x) Error: ", color: Colors.BRIGHT_RED });
+          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
             content: `${error.content} \n${getLocalizedString("core.option.learnMore")}: `,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: error.helpUrl, color: Colors.BRIGHT_CYAN });
+          outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+        });
+        validationResult.warnings.map((warning) => {
+          outputMessage.push({
+            content: `${SummaryConstant.NotExecuted} `,
+            color: Colors.BRIGHT_YELLOW,
+          });
+          outputMessage.push({
+            content: `${warning.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            color: Colors.BRIGHT_WHITE,
+          });
+          outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+        });
+        validationResult.notes.map((note) => {
+          outputMessage.push({
+            content: `${SummaryConstant.Succeeded} `,
+            color: Colors.BRIGHT_GREEN,
+          });
+          outputMessage.push({
+            content: `${note.content}\n`,
+            color: Colors.BRIGHT_WHITE,
+          });
         });
         context.ui?.showMessage("info", outputMessage, false);
       } else {

@@ -8,7 +8,7 @@ import { createHash } from "crypto";
 
 export class MetadataUtil {
   async parse(path: string, env: string | undefined): Promise<Result<ProjectModel, FxError>> {
-    const res = await yamlParser.parse(path);
+    const res = await yamlParser.parse(path, true);
     const props: { [key: string]: string } = {};
     props[TelemetryProperty.YmlName] = (
       env === "local" ? MetadataV3.localConfigFile : MetadataV3.configFile

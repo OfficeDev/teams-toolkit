@@ -15,7 +15,7 @@ import { getResourceFolder } from "../../folder";
 
 const ajv = new Ajv();
 ajv.addKeyword("deprecationMessage");
-const schema = require(path.join(getResourceFolder(), "yaml.schema.json"));
+const schema = fs.readJSONSync(path.join(getResourceFolder(), "yaml.schema.json"));
 const validator = ajv.compile(schema);
 
 const environmentFolderPath = "environmentFolderPath";

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 
-namespace {%SafeProjectName%}
+namespace {{SafeProjectName}}
 {
     /// <summary>
     /// An empty bot handler.

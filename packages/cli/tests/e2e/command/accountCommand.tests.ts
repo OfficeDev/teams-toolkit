@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- * @owner Zhiyu You <zhiyou@microsoft.com>
+ * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
 import { expect } from "chai";

@@ -36,8 +36,6 @@ import { Generator } from "../generator";
 import { CoreQuestionNames } from "../../../core/question";
 import { convertProject } from "office-addin-project";
 
-const childProcessExec = promisify(childProcess.exec);
-
 const componentName = "office-addin";
 const telemetryEvent = "generate";
 const templateName = "office-addin";
@@ -75,6 +73,10 @@ export class OfficeAddinGenerator {
     return ok(undefined);
   }
 
+  public static async childProcessExec(cmdLine: string) {
+    return promisify(childProcess.exec)(cmdLine);
+  }
+
   public static async doScaffolding(
     context: ContextV3,
     inputs: Inputs,
@@ -105,7 +107,7 @@ export class OfficeAddinGenerator {
 
           // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-          await childProcessExec(cmdLine);
+          await OfficeAddinGenerator.childProcessExec(cmdLine);
 
           const manifestPath = jsonData.getManifestPath(template) as string;
           // modify manifest guid and DisplayName

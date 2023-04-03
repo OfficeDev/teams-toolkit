@@ -22,10 +22,6 @@ Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0
 
 The SharePoint Framework (SPFx) is a page and web part model that provides full support for client-side SharePoint development, easy integration with SharePoint data, and extending Microsoft Teams. This project applies SPFx to Teams personal tab and group tab support.
 
-## Used SharePoint Framework Version
-
-![version](https://img.shields.io/badge/version-1.16.1-green.svg)
-
 ## Applies to
 
 - [SharePoint Framework](https://aka.ms/spfx)
@@ -33,8 +29,10 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 
 ## Prerequisites
 
-> - [Node.js](https://nodejs.org/en/), supported versions: 16
+> - [Set up SharePoint Framework development environment](https://aka.ms/teamsfx-spfx-dev-environment-setup)
 > - An Microsoft 365 account. Get your own free Microsoft 365 tenant from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+> - Download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download [TeamsFx CLI](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-cli)
+
 
 ## Solution
 
@@ -57,32 +55,30 @@ Version|Date|Comments
 
 ## Minimal Path to Awesome
 
-1. Install the latest version of [Node.js LTS 16.x](https://nodejs.org/en/download/releases/) (Note: SPFx v1.16.1 supports Node.js v16).
-2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download TeamsFx CLI.
-3. Open the project with VSCode, click `Provision in the cloud` in DEPLOYMENT panel of Teams Toolkit extension.
+1. Open the project with VSCode, click `Provision in the cloud` in DEPLOYMENT panel of Teams Toolkit extension.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
     `teamsfx provision`
 
     It will provision an app in Teams App Studio. You may need to login with your Microsoft 365 tenant admin account.
 
-4. Build and Deploy your SharePoint Package.
+2. Build and Deploy your SharePoint Package.
     - Click `Deploy to the cloud` in DEPLOYMENT panel of Teams Toolkit extension, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package (*.sppkg) under sharepoint/solution folder.
   
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx deploy`
 
     - After building the *.sppkg, the Teams Toolkit extension will upload and deploy it to your tenant App Catalog. Only tenant App Catalog site admin has permission to do it. You can create your test tenant following [Setup your Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant).
-5. Go back to Teams Toolkit extension, click `Teams: Publish to Teams` in DEPLOYMENT panel.
+3. Go back to Teams Toolkit extension, click `Teams: Publish to Teams` in DEPLOYMENT panel.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx publish`
 
     You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box. Click the item and select `Publish` in the Publishing status.
 
-6. You may need to wait for a few minutes after publishing your teams app. And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
+4. You may need to wait for a few minutes after publishing your teams app. And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
 
-7. Click "Add" to use the app as a personal tab. Click "Add to a team" to use the app as a group tab.
+5. Click "Add" to use the app as a personal tab. Click "Add to a team" to use the app as a group tab.
 
 ## Debug
 

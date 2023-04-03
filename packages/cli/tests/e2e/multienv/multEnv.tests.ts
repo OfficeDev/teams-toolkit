@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Aocheng Wang <aochengwang@microsoft.com>
- * @owner Yuan Tian <tianyuan@microsoft.com>
+ * @author Yuan Tian <tianyuan@microsoft.com>
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";

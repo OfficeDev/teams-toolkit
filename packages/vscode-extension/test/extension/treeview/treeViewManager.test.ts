@@ -23,22 +23,23 @@ describe("TreeViewManager", () => {
     } as unknown as vscode.ExtensionContext);
     chai.assert.isDefined(treeViewManager.getTreeView("teamsfx-accounts"));
 
-    const deploymentTreeView = treeViewManager.getTreeView("teamsfx-deployment");
-    chai.assert.isDefined(deploymentTreeView);
-    chai.assert.equal(deploymentTreeView.commands.length, 5);
-    chai.assert.equal(deploymentTreeView.commands[3].commandId, "fx-extension.build");
+    const lifecycleTreeView = treeViewManager.getTreeView("teamsfx-lifecycle");
+    chai.assert.isDefined(lifecycleTreeView);
+    chai.assert.equal(lifecycleTreeView.commands.length, 3);
+    chai.assert.equal(lifecycleTreeView.commands[0].commandId, "fx-extension.provision");
   });
 
   it("registerTreeViews in v3", async () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
 
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
-    chai.assert.equal(developmentTreeview.commands.length, 6);
+    chai.assert.equal(developmentTreeview.commands.length, 4);
   });
 
   it("setRunningCommand", async () => {
@@ -56,6 +57,7 @@ describe("TreeViewManager", () => {
   });
 
   it("updateTreeViewsByContent has adaptive cards", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
@@ -63,22 +65,24 @@ describe("TreeViewManager", () => {
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
-    const developmentTreeviewProvider = treeViewManager.getTreeView(
-      "teamsfx-development"
+    const utilityTreeviewProvider = treeViewManager.getTreeView(
+      "teamsfx-utility"
     ) as CommandsTreeViewProvider;
 
-    const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 6);
+    const commands = utilityTreeviewProvider.getCommands();
+    chai.assert.equal(commands.length, 3);
 
     await treeViewManager.updateTreeViewsByContent();
 
-    chai.assert.equal(commands.length, 7);
+    chai.assert.equal(commands.length, 4);
   });
 
   it("updateTreeViewsByContent that removes project related commands", async () => {
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
 
     treeViewManager.registerTreeViews({
       subscriptions: [],
@@ -88,10 +92,29 @@ describe("TreeViewManager", () => {
     ) as CommandsTreeViewProvider;
 
     const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 6);
+    chai.assert.equal(commands.length, 4);
 
     await treeViewManager.updateTreeViewsByContent(true);
 
     chai.assert.equal(commands.length, 3);
+  });
+
+  it("updateTreeViewsOnSPFxChanged", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
+    treeViewManager.registerTreeViews({
+      subscriptions: [],
+    } as unknown as vscode.ExtensionContext);
+    const developmentTreeviewProvider = treeViewManager.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+
+    const commands = developmentTreeviewProvider.getCommands();
+    chai.assert.equal(commands.length, 4);
+
+    sandbox.stub(globalVariables, "isSPFxProject").value(true);
+    await treeViewManager.updateTreeViewsOnSPFxChanged();
+
+    chai.assert.equal(commands.length, 5);
   });
 });

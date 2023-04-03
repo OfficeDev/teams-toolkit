@@ -14,9 +14,8 @@ import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 import { MetadataV3 } from "../../../common/versionMetadata";
-import { hasFunctionBot, hasWebAppBot } from "../../../common/projectSettingsHelperV3";
+import { hasFunctionBot } from "../../../common/projectSettingsHelperV3";
 import { convertProjectSettingsV2ToV3 } from "../../../component/migrate";
-
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
   constructor(protected oldProjectSettings: ProjectSettings) {}
@@ -37,13 +36,13 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
-    isWebAppBot: boolean;
-    useBotWebAppResourceId: boolean;
+    botResourceId: string | undefined;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
     environmentFolder: string | undefined;
     projectId: string | undefined;
     dotnetPath: string | undefined;
+    isM365: boolean | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -58,13 +57,13 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
-      isWebAppBot: false,
-      useBotWebAppResourceId: false,
+      botResourceId: undefined,
       isTypescript: false,
       defaultFunctionName: undefined,
       environmentFolder: undefined,
       projectId: undefined,
       dotnetPath: "DOTNET_PATH",
+      isM365: undefined,
     };
   }
 
@@ -147,6 +146,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
     // env folder
     this.handlebarsContext.environmentFolder = MetadataV3.defaultEnvironmentFolder;
+
+    this.handlebarsContext.isM365 = this.oldProjectSettings.isM365;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {
@@ -155,11 +156,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.oldProjectSettings,
       this.projectPath
     );
-    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings);
-    this.handlebarsContext.isWebAppBot = hasWebAppBot(projectSettings); // maybe use ResourceId
-    this.handlebarsContext.useBotWebAppResourceId =
-      this.bicepContent.includes("botWebAppResourceId"); // use botWebAppResourceId
-
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
@@ -167,9 +163,29 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.indexPath");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-bot.webAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
+
+    this.handlebarsContext.isFunctionBot = hasFunctionBot(projectSettings); // if not function bot but a resource bot, then a webApp bot
+
+    // Match teams-bot or fx-resource-bot output obj
+    const pluginRegex = new RegExp(
+      "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
+        "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
+        "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+        "[^}]*" + // Mathches anything except '}'
+        "(botWebAppResourceId|webAppResourceId|functionAppResourceId|resourceId) *:" + // Matches resource id and tries not to mismatch key and value
+        "[^}]*}", // Matches until end of obj as '}'
+      "g"
+    );
+    const outputContents = pluginRegex.exec(this.bicepContent);
+    if (outputContents) {
+      const prefix = "state.fx-resource-bot.";
+      this.handlebarsContext.botResourceId =
+        this.handlebarsContext.placeholderMappings[`${prefix}${outputContents[3]}`];
+    }
   }
 
   private setPlaceholderMapping(placeholder: string): void {

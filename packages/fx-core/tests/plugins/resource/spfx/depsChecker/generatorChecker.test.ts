@@ -9,9 +9,10 @@ import chai from "chai";
 import { stub, restore } from "sinon";
 import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { telemetryHelper } from "../../../../../src/component/resource/spfx/utils/telemetry-helper";
-import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
+import { createContextV3 } from "../../../../../src/component/utils";
 
 const rGeneratorChecker = rewire(
   "../../../../../src/component/resource/spfx/depsChecker/generatorChecker"
@@ -45,6 +46,10 @@ class StubLogger implements LogProvider {
   async fatal(message: string): Promise<boolean> {
     return true;
   }
+
+  getLogFilePath(): string {
+    return "";
+  }
 }
 
 describe("generator checker", () => {
@@ -69,7 +74,7 @@ describe("generator checker", () => {
 
       chai.expect(info).to.be.deep.equal({
         supportedVersion: "1.16.1",
-        displayName: "@microsoft/generator-sharepoint@1.16.1",
+        displayName: "@microsoft/generator-sharepoint@latest",
       });
     });
 
@@ -131,23 +136,15 @@ describe("generator checker", () => {
         console.log("stub cleanup");
         return;
       });
-      const installStub = stub(GeneratorChecker.prototype, <any>"installGenerator").callsFake(
-        async () => {
-          console.log("stub installyo");
-          return;
-        }
-      );
-      const validateStub = stub(GeneratorChecker.prototype, <any>"validate").callsFake(async () => {
-        console.log("stub validate");
-        return false;
+      stub(cpUtils, "executeCommand").resolves();
+      stub(fs, "pathExists").callsFake(async () => {
+        return true;
       });
 
       try {
         await generatorChecker.install();
       } catch {
-        chai.expect(installStub.callCount).equal(1);
         chai.expect(cleanStub.callCount).equal(2);
-        chai.expect(validateStub.callCount).equal(1);
       }
     });
 
@@ -206,6 +203,112 @@ describe("generator checker", () => {
 
       const res = await generatorChecker.findLatestVersion();
       chai.expect(res).to.be.undefined;
+    });
+  });
+
+  describe("isLatestInstalled", () => {
+    it("is latest installed", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+      stub(fs, "pathExists").callsFake(async () => {
+        console.log("stub pathExists");
+        return true;
+      });
+
+      stub(GeneratorChecker.prototype, <any>"queryVersion").callsFake(async () => {
+        console.log("stub queryversion");
+        return "latest";
+      });
+
+      stub(GeneratorChecker.prototype, <any>"findLatestVersion").callsFake(async () => {
+        console.log("stub findLatestVersion");
+        return "latest";
+      });
+
+      const result = await checker.isLatestInstalled();
+      chai.expect(result).is.true;
+    });
+
+    it("latest not installed", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+      stub(fs, "pathExists").callsFake(async () => {
+        console.log("stub pathExists");
+        return true;
+      });
+
+      stub(GeneratorChecker.prototype, <any>"queryVersion").callsFake(async () => {
+        console.log("stub queryversion");
+        return "lower version";
+      });
+
+      stub(GeneratorChecker.prototype, <any>"findLatestVersion").callsFake(async () => {
+        console.log("stub findLatestVersion");
+        return "latest";
+      });
+
+      const result = await checker.isLatestInstalled();
+      chai.expect(result).is.false;
+    });
+
+    it("latest not installed", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+      stub(fs, "pathExists").callsFake(async () => {
+        console.log("stub pathExists");
+        return false;
+      });
+
+      stub(GeneratorChecker.prototype, <any>"queryVersion").callsFake(async () => {
+        console.log("stub queryversion");
+        return "lower version";
+      });
+
+      stub(GeneratorChecker.prototype, <any>"findLatestVersion").callsFake(async () => {
+        console.log("stub findLatestVersion");
+        return "latest";
+      });
+
+      const result = await checker.isLatestInstalled();
+      chai.expect(result).is.false;
+    });
+
+    it("throw error", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+      stub(fs, "pathExists").callsFake(async () => {
+        console.log("stub pathExists");
+        return true;
+      });
+
+      stub(GeneratorChecker.prototype, <any>"queryVersion").throws("error");
+
+      const result = await checker.isLatestInstalled();
+      chai.expect(result).is.false;
+    });
+  });
+
+  describe("ensureLatestDependency", () => {
+    it("install successfully", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+
+      stub(GeneratorChecker.prototype, <any>"install").callsFake(async () => {
+        console.log("installing");
+      });
+
+      const context = createContextV3();
+
+      const result = await checker.ensureLatestDependency(context);
+      chai.expect(result.isOk()).to.be.true;
+    });
+
+    it("install error", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+
+      stub(GeneratorChecker.prototype, <any>"install").callsFake(async () => {
+        throw new UserError("source", "name", "msg", "msg");
+      });
+
+      const context = createContextV3();
+
+      const result = await checker.ensureLatestDependency(context);
+      chai.expect(result.isErr()).to.be.true;
     });
   });
 });

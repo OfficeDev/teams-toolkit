@@ -201,7 +201,7 @@ class M365LaunchInfo extends YargsCommand {
     if (titleId === undefined) {
       titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
     }
-    await packageService.getLaunchInfo(tokenAndUpn[0], titleId);
+    await packageService.getLaunchInfoByTitleId(tokenAndUpn[0], titleId);
     return ok(Void);
   }
 }

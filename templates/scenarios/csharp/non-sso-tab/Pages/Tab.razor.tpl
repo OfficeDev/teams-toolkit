@@ -1,6 +1,6 @@
 ﻿@page "/"
 @page "/tab"
-@using {%SafeProjectName%}.Components;
+@using {{SafeProjectName}}.Components;
 
 <div>
     <Welcome />

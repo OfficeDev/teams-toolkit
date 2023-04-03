@@ -2,13 +2,9 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { M365TokenProvider, ok, PathNotExistError, Platform } from "@microsoft/teamsfx-api";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import faker from "faker";
-import fs from "fs-extra";
-import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { SPOClient } from "../../../../../src/component/driver/deploy/spfx/utility/spoClient";
 

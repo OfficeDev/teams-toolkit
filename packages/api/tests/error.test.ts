@@ -17,7 +17,6 @@ import {
   ObjectAlreadyExistsError,
   ObjectNotExistError,
   PathAlreadyExistsError,
-  PathNotExistError,
   ReadFileError,
   SystemError,
   UndefinedError,
@@ -250,12 +249,6 @@ describe("error", function () {
         chai.assert.equal(error.name, "PathAlreadyExistsError");
         chai.assert.equal(error.source, mySource);
         chai.assert.isTrue(error instanceof PathAlreadyExistsError);
-      }
-      {
-        const error = new PathNotExistError(mySource, "123");
-        chai.assert.equal(error.name, "PathNotExistError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof PathNotExistError);
       }
       {
         const error = new ObjectAlreadyExistsError(mySource, "123");

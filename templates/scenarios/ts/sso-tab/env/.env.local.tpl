@@ -1,3 +1,5 @@
+# This file includes environment variables that can be committed to git. It's gitignored by default because it represents your local development environment.
+
 # Built-in environment variables
 TEAMSFX_ENV=local
 
@@ -17,5 +19,3 @@ TEAMS_APP_PACKAGE_PATH=
 SSL_CRT_FILE=
 SSL_KEY_FILE=
 
-# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
-SECRET_AAD_APP_CLIENT_SECRET=

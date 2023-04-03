@@ -66,6 +66,7 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
     });
     return IncompatibleProjectError(messageKey);
   } else if (inputs.platform === Platform.CLI) {
+<<<<<<< HEAD
     const messageKey = "core.projectVersionChecker.cliUseNewVersion";
     TOOLS.logProvider.warning(getLocalizedString(messageKey));
     return IncompatibleProjectError(messageKey);
@@ -78,6 +79,19 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
       }
     });
     return IncompatibleProjectError(messageKey);
+=======
+    TOOLS?.logProvider.warning(getLocalizedString("core.projectVersionChecker.cliUseNewVersion"));
+  } else if (inputs.platform === Platform.VS) {
+    const res = await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.projectVersionChecker.vs.incompatibleProject"),
+      false,
+      learnMoreText
+    );
+    if (res.isOk() && res.value === learnMoreText) {
+      TOOLS?.ui!.openUrl(learnMoreLink);
+    }
+>>>>>>> 598a7e18e74a2811cdd5bce418d8bb37baaae213
   }
 }
 

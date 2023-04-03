@@ -2,7 +2,7 @@ import { AADApplication } from "./interfaces/AADApplication";
 import { AADManifest } from "./interfaces/AADManifest";
 import { AadManifestHelper } from "./utils/aadManifestHelper";
 import axios, { AxiosInstance } from "axios";
-import { AadManifestLoadError, AadManifestNotFoundError, GraphClientErrorMessage } from "./errors";
+import { AadManifestLoadError, GraphClientErrorMessage } from "./errors";
 import { ResultFactory } from "./results";
 import { Constants } from "./constants";
 import { PluginContext } from "@microsoft/teamsfx-api/build/context";
@@ -12,6 +12,7 @@ import Mustache from "mustache";
 import { getAppDirectory } from "../../../common/tools";
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import * as path from "path";
+import { FileNotFoundError } from "../../../error/common";
 
 const baseUrl = `https://graph.microsoft.com/v1.0`;
 
@@ -81,10 +82,7 @@ export namespace AadAppManifestManager {
     const appDir = await getAppDirectory(ctx.root);
     const manifestFilePath = `${appDir}/${Constants.aadManifestTemplateName}`;
     if (!(await fs.pathExists(manifestFilePath))) {
-      throw ResultFactory.UserError(
-        AadManifestNotFoundError.name,
-        AadManifestNotFoundError.message()
-      );
+      throw new FileNotFoundError("loadAadManifest", manifestFilePath);
     }
 
     try {

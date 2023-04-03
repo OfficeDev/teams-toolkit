@@ -24,6 +24,7 @@ describe("Add api-connector Command Tests", () => {
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_API_CONNECT_ENABLE: "true",
+      TEAMSFX_V3: "false",
     });
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};

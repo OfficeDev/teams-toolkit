@@ -151,17 +151,23 @@ describe("spfx", () => {
       }
     });
 
-    it("questions: SPFx decouple enabled", () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_SPFX_DECOUPLE: "true",
-      });
-
-      const node: QTreeNode = getSPFxScaffoldQuestion();
+    it("questions: SPFx Scaffolding questions", () => {
+      const node: QTreeNode = getSPFxScaffoldQuestion(Platform.CLI);
 
       chai.expect(node.children![0].data.name).equal(SPFXQuestionNames.load_package_version);
       chai
         .expect(node.children![0].children![0].data.name)
         .equal(SPFXQuestionNames.use_global_package_or_install_local);
+    });
+
+    it("questions: new SPFx cli help", () => {
+      const node: QTreeNode = getSPFxScaffoldQuestion(Platform.CLI_HELP);
+
+      chai
+        .expect(node.children![0].data.name)
+        .equal(SPFXQuestionNames.use_global_package_or_install_local);
+      chai.expect(node.children![1].data.name).equal(SPFXQuestionNames.framework_type);
+      chai.expect(node.children![2].data.name).equal(SPFXQuestionNames.webpart_name);
     });
   });
 });

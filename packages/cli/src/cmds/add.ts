@@ -25,6 +25,7 @@ import {
   ResourceAddSql,
 } from "./resource";
 import {
+  AddWebpart,
   CapabilityAddBot,
   CapabilityAddCommandAndResponse,
   CapabilityAddMessageExtension,
@@ -39,6 +40,7 @@ import {
   isAadManifestEnabled,
   isApiConnectEnabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
   public readonly command = this.commandHead;
@@ -221,28 +223,30 @@ export default class Add extends YargsCommand {
   public readonly command = `${this.commandHead} <feature>`;
   public readonly description = "Adds features to your Teams application.";
 
-  public readonly subCommands: YargsCommand[] = [
-    // Category 1: Add Teams Capability
-    new CapabilityAddNotification(),
-    new CapabilityAddCommandAndResponse(),
-    new CapabilityAddWorkflow(),
-    new CapabilityAddSSOTab(),
-    new CapabilityAddTab(),
-    ...(isSPFxMultiTabEnabled() ? [new CapabilityAddSPFxTab()] : []),
-    new CapabilityAddBot(),
-    new CapabilityAddMessageExtension(),
+  public readonly subCommands: YargsCommand[] = isV3Enabled()
+    ? [new AddWebpart()]
+    : [
+        // Category 1: Add Teams Capability
+        new CapabilityAddNotification(),
+        new CapabilityAddCommandAndResponse(),
+        new CapabilityAddWorkflow(),
+        new CapabilityAddSSOTab(),
+        new CapabilityAddTab(),
+        ...(isSPFxMultiTabEnabled() ? [new CapabilityAddSPFxTab()] : []),
+        new CapabilityAddBot(),
+        new CapabilityAddMessageExtension(),
 
-    // Category 2: Add Cloud Resources
-    new ResourceAddFunction(),
-    new ResourceAddApim(),
-    new ResourceAddSql(),
-    new ResourceAddKeyVault(),
+        // Category 2: Add Cloud Resources
+        new ResourceAddFunction(),
+        new ResourceAddApim(),
+        new ResourceAddSql(),
+        new ResourceAddKeyVault(),
 
-    // Category 3: Standalone features
-    ...(isAadManifestEnabled() ? [new AddSso()] : []),
-    ...(isApiConnectEnabled() ? [new AddExistingApiMainCommand()] : []),
-    new AddCICD(),
-  ];
+        // Category 3: Standalone features
+        ...(isAadManifestEnabled() ? [new AddSso()] : []),
+        ...(isApiConnectEnabled() ? [new AddExistingApiMainCommand()] : []),
+        new AddCICD(),
+      ];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

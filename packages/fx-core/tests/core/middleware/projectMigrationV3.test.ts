@@ -48,6 +48,7 @@ import {
   VersionState,
 } from "../../../src/common/versionMetadata";
 import {
+  buildEnvUserFileName,
   getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
@@ -407,7 +408,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for js webapp bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsWebappBotId", projectPath);
+    await copyTestProject("jsWebappBot_botWebAppId", projectPath);
 
     await generateAppYml(migrationContext);
 
@@ -415,7 +416,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsWebappBotId", projectPath);
+    await copyTestProject("jsWebappBot_botWebAppId", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
     projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
@@ -429,7 +430,7 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for js function bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsFuncBotWebAppId", projectPath);
+    await copyTestProject("jsFuncBot_botWebAppId", projectPath);
 
     await generateAppYml(migrationContext);
 
@@ -437,7 +438,51 @@ describe("generateAppYml-js/ts", () => {
   });
 
   it("should success for ts function bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsFuncBotWebAppId", projectPath);
+    await copyTestProject("jsFuncBot_botWebAppId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
+  });
+
+  it("should success for js webApp bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsWebappBot_webAppId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
+  });
+
+  it("should success for ts webApp bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsWebappBot_webAppId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
+  });
+
+  it("should success for js function bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsFuncBot_webAppId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
+  });
+
+  it("should success for ts function bot as resourceId eq webAppResourceId", async () => {
+    await copyTestProject("jsFuncBot_webAppId", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
     projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
@@ -885,28 +930,53 @@ describe("updateLaunchJson", () => {
     const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
     assert.equal(
       updatedLaunchJson.configurations[0].url,
-      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[1].url,
-      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[2].url,
-      "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}"
     );
     assert.equal(
       updatedLaunchJson.configurations[3].url,
-      "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+      "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}"
     );
-    assert.equal(
-      updatedLaunchJson.configurations[4].url,
-      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
-    );
-    assert.equal(
-      updatedLaunchJson.configurations[5].url,
-      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
-    );
+  });
+
+  ["transparent-m365-tab", "transparent-m365-me"].forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await updateLaunchJson(migrationContext);
+
+      assert.equal(
+        await fs.readFile(path.join(projectPath, ".vscode", "launch.json"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "launch.json"), "utf-8")
+      );
+    });
+  });
+});
+
+describe("generateAppYml-m365", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  ["transparent-m365-tab", "transparent-m365-me"].forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await generateAppYml(migrationContext);
+
+      assert.equal(
+        await fs.readFile(path.join(projectPath, "teamsapp.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "app.yml"), "utf-8")
+      );
+    });
   });
 });
 
@@ -1009,6 +1079,7 @@ describe("configMigration", () => {
 describe("userdataMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -1016,6 +1087,7 @@ describe("userdataMigration", () => {
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sandbox.restore();
   });
 
   it("happy path for userdata migration", async () => {
@@ -1031,9 +1103,11 @@ describe("userdataMigration", () => {
       "userdata.dev"
     );
     assert.isTrue(
-      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.dev"))
+      await fs.pathExists(
+        path.join(projectPath, Constants.environmentFolder, buildEnvUserFileName("dev"))
+      )
     );
-    const testEnvContent_dev = await readEnvFile(
+    const testEnvContent_dev = await readEnvUserFile(
       path.join(projectPath, Constants.environmentFolder),
       "dev"
     );
@@ -1044,13 +1118,34 @@ describe("userdataMigration", () => {
       "userdata.local"
     );
     assert.isTrue(
-      await fs.pathExists(path.join(projectPath, Constants.environmentFolder, ".env.local"))
+      await fs.pathExists(
+        path.join(projectPath, Constants.environmentFolder, buildEnvUserFileName("local"))
+      )
     );
-    const testEnvContent_local = await readEnvFile(
+    const testEnvContent_local = await readEnvUserFile(
       path.join(projectPath, Constants.environmentFolder),
       "local"
     );
     assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+
+  it("Should successfully resolve different EOLs of userdata", async () => {
+    sandbox
+      .stub(fs, "readFileSync")
+      .returns(
+        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n"
+      );
+
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await userdataMigration(migrationContext);
+    sandbox.restore(); // in case that assertFileContent uses readFileSync
+
+    await assertFileContent(
+      projectPath,
+      path.join(Constants.environmentFolder, buildEnvUserFileName("dev")),
+      "userdataenv"
+    );
   });
 });
 
@@ -1440,6 +1535,8 @@ describe("debugMigration", () => {
     "transparent-sso-bot",
     "transparent-notification",
     "transparent-tab-bot-func",
+    "transparent-m365-tab",
+    "transparent-m365-me",
     "beforeV3.4.0-tab",
     "beforeV3.4.0-bot",
     "beforeV3.4.0-tab-bot-func",
@@ -1559,6 +1656,10 @@ async function readSettingJson(projectPath: string): Promise<any> {
 
 async function readEnvFile(projectPath: string, env: string): Promise<any> {
   return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
+}
+
+async function readEnvUserFile(projectPath: string, env: string): Promise<any> {
+  return await fs.readFileSync(path.join(projectPath, buildEnvUserFileName(env))).toString();
 }
 
 function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {

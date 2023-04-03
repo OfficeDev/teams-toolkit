@@ -16,7 +16,7 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import { merge } from "lodash";
+import { camelCase, merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
@@ -91,7 +91,7 @@ import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
-import { AppStudioScopes } from "../resource/appManifest/constants";
+import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
@@ -101,6 +101,9 @@ import { deployUtils } from "../deployUtils";
 import { pathUtils } from "../utils/pathUtils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
+import { LifeCycleUndefinedError } from "../../error/yml";
+import { UnresolvedPlaceholderError } from "../../error/common";
+import { SelectSubscriptionError } from "../../error/azure";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -586,10 +589,14 @@ export class Coordinator {
     const projectModel = maybeProjectModel.value;
 
     const cycles = [
-      projectModel.registerApp,
+      // projectModel.registerApp,
       projectModel.provision,
-      projectModel.configureApp,
+      // projectModel.configureApp,
     ].filter((c) => c !== undefined) as Lifecycle[];
+
+    if (cycles.length === 0) {
+      return err(new LifeCycleUndefinedError("provision"));
+    }
 
     // 2. M365 sign in and tenant check if needed.
     let containsM365 = false;
@@ -689,26 +696,10 @@ export class Coordinator {
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
 
-      // for azure action, subscription is necessary
-      if (!resolvedSubscriptionId) {
-        return err(
-          new UserError({
-            source: "coordinator",
-            name: "UnresolvedPlaceholders",
-            message: getDefaultString(
-              "core.error.unresolvedPlaceholders",
-              "AZURE_SUBSCRIPTION_ID",
-              templatePath
-            ),
-            displayMessage: getLocalizedString(
-              "core.error.unresolvedPlaceholders",
-              "AZURE_SUBSCRIPTION_ID",
-              templatePath
-            ),
-            helpLink: "https://aka.ms/teamsfx-actions",
-          })
-        );
-      }
+      // will not happen
+      // if (!resolvedSubscriptionId) {
+      //   return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
+      // }
 
       // ensure resource group
       if (resourceGroupUnresolved) {
@@ -723,7 +714,7 @@ export class Coordinator {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
-            resolvedSubscriptionId,
+            resolvedSubscriptionId!,
             undefined,
             defaultRg
           );
@@ -740,19 +731,13 @@ export class Coordinator {
       // consent user
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
       try {
-        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId); //make sure sub is correctly set if ensureSubscription() is not called.
+        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId!); //make sure sub is correctly set if ensureSubscription() is not called.
       } catch (e) {
         return err(assembleError(e));
       }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
-        return err(
-          new UserError(
-            "coordinator",
-            "SubscriptionNotFound",
-            getLocalizedString("core.provision.subscription.failToSelect")
-          )
-        );
+        return err(new SelectSubscriptionError());
       }
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,
@@ -767,7 +752,7 @@ export class Coordinator {
         const createRgRes = await resourceGroupHelper.createNewResourceGroup(
           targetResourceGroupInfo.name,
           ctx.azureAccountProvider,
-          resolvedSubscriptionId,
+          resolvedSubscriptionId!,
           targetResourceGroupInfo.location
         );
         if (createRgRes.isErr()) {
@@ -783,9 +768,17 @@ export class Coordinator {
 
     // execute
     const summaryReporter = new SummaryReporter(cycles, ctx.logProvider);
+    const steps = cycles.reduce((acc, cur) => acc + cur.driverDefs.length, 0);
+    let hasError = false;
     try {
+      ctx.progressBar = ctx.ui?.createProgressBar(
+        getLocalizedString("core.progress.provision"),
+        steps
+      );
+      await ctx.progressBar?.start();
       const maybeDescription = summaryReporter.getLifecycleDescriptions();
       if (maybeDescription.isErr()) {
+        hasError = true;
         return err(maybeDescription.error);
       }
       ctx.logProvider.info(
@@ -797,6 +790,7 @@ export class Coordinator {
         const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
+          hasError = true;
           inputs.envVars = output;
           return err(result[1]);
         }
@@ -804,10 +798,11 @@ export class Coordinator {
     } finally {
       const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
       ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      await ctx.progressBar?.end(!hasError);
     }
 
     // show provisioned resources
-    const msg = getLocalizedString("core.provision.successNotice", folderName);
+    const msg = getLocalizedString("core.common.LifecycleComplete.provision", steps, steps);
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,
@@ -869,21 +864,11 @@ export class Coordinator {
           error = reason.error;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
-          error = new UserError({
-            source: reason.failedDriver.uses,
-            name: "UnresolvedPlaceholders",
-            message: getDefaultString(
-              "core.error.unresolvedPlaceholders",
-              placeholders,
-              templatePath
-            ),
-            displayMessage: getLocalizedString(
-              "core.error.unresolvedPlaceholders",
-              placeholders,
-              templatePath
-            ),
-            helpLink: "https://aka.ms/teamsfx-actions",
-          });
+          error = new UnresolvedPlaceholderError(
+            camelCase(reason.failedDriver.uses),
+            placeholders,
+            templatePath
+          );
         }
       }
     } else {
@@ -931,7 +916,14 @@ export class Coordinator {
       }
 
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
+      let hasError = false;
       try {
+        const steps = projectModel.deploy.driverDefs.length;
+        ctx.progressBar = ctx.ui?.createProgressBar(
+          getLocalizedString("core.progress.deploy"),
+          steps
+        );
+        await ctx.progressBar?.start();
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
@@ -942,6 +934,7 @@ export class Coordinator {
         const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
+          hasError = true;
           inputs.envVars = output;
           return err(result[1]);
         }
@@ -949,7 +942,7 @@ export class Coordinator {
         // show message box after deploy
         const botTroubleShootMsg = getBotTroubleShootMessage(false);
         const msg =
-          getLocalizedString("core.common.LifecycleComplete", "deploy") +
+          getLocalizedString("core.common.LifecycleComplete.deploy", steps, steps) +
           botTroubleShootMsg.textForLogging;
         if (ctx.platform !== Platform.VS) {
           ctx.ui?.showMessage("info", msg, false);
@@ -957,7 +950,10 @@ export class Coordinator {
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.progressBar?.end(!hasError);
       }
+    } else {
+      return err(new LifeCycleUndefinedError("deploy"));
     }
     return ok(output);
   }
@@ -973,32 +969,57 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<DotenvParseOutput, FxError>> {
+    const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
     const projectModel = maybeProjectModel.value;
+    let hasError = false;
     if (projectModel.publish) {
       const summaryReporter = new SummaryReporter([projectModel.publish], ctx.logProvider);
       try {
+        const steps = projectModel.publish.driverDefs.length;
+        ctx.progressBar = ctx.ui?.createProgressBar(
+          getLocalizedString("core.progress.publish"),
+          steps
+        );
+        await ctx.progressBar?.start();
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
         if (maybeDescription.isErr()) {
+          hasError = true;
           return err(maybeDescription.error);
         }
         ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
+        merge(output, result[0]);
         summaryReporter.updateLifecycleState(0, execRes);
-        if (result[1]) return err(result[1]);
+        if (result[1]) {
+          hasError = true;
+          inputs.envVars = output;
+          return err(result[1]);
+        } else {
+          const msg = getLocalizedString("core.common.LifecycleComplete.publish", steps, steps);
+          const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+          ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+            if (value.isOk() && value.value === adminPortal) {
+              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+            }
+          });
+        }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.progressBar?.end(!hasError);
       }
+    } else {
+      return err(new LifeCycleUndefinedError("publish"));
     }
-    return ok(undefined);
+    return ok(output);
   }
 
   @hooks([

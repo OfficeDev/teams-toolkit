@@ -38,13 +38,16 @@ import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";
 import { EnvInfoWriterMW } from "../../../src/core/middleware/envInfoWriter";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn;
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("successfully write EnvInfo and load it with encrypting and decrypting userdata", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const appName = randomAppName();
     const inputs: Inputs = { platform: Platform.VSCode };
     const projectPath = path.join(os.tmpdir(), appName);
@@ -186,6 +189,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   });
 
   it("EnvInfoLoaderMW_V3()", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const tools = new MockTools();
     setTools(tools);
     const projectSettings = newProjectSettingsV3();

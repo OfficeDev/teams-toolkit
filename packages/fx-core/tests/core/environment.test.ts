@@ -24,7 +24,7 @@ import {
 import { environmentManager, envPrefix } from "../../src/core/environment";
 import { ManifestVariables } from "../../src/common/constants";
 import * as tools from "../../src/common/tools";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 
 class MockCrypto implements CryptoProvider {
@@ -224,7 +224,7 @@ describe("APIs of Environment Manager", () => {
         "this does not exist"
       );
       if (actualEnvDataResult.isErr()) {
-        assert.equal(actualEnvDataResult.error.name, "ProjectEnvNotExistError");
+        assert.equal(actualEnvDataResult.error.name, "FileNotFoundError");
       } else {
         assert.fail("Failed to get expected error.");
       }
@@ -504,16 +504,18 @@ describe("APIs of Environment Manager", () => {
 
   describe("List Environment Configs", () => {
     const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
-
+    let mockedEnvRestore: RestoreFn;
     beforeEach(async () => {
       await fs.ensureDir(configFolder);
     });
 
     afterEach(async () => {
       deleteFolder(projectPath);
+      mockedEnvRestore();
     });
 
     it("list all the env configs with correct naming convention", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       const envFileNames = [
         // correct env file names
         "config.default.json",
@@ -550,6 +552,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     it("no env state found", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
       if (envNamesResult.isErr()) {
         assert.fail("Fail to get the list of env configs.");

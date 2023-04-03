@@ -2,8 +2,6 @@ export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   AutomaticNpmInstall = "automaticNpmInstall",
-  YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
-  generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -53,3 +51,5 @@ export const PublishAppLearnMoreLink =
 export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
 
 export const YmlEnvNamePlaceholder = "-${{TEAMSFX_ENV}}";
+
+export const TerminalName = "Teams Toolkit";

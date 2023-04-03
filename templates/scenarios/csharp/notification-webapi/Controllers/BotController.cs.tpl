@@ -3,7 +3,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.TeamsFx.Conversation;
 
-namespace {%SafeProjectName%}.Controllers
+namespace {{SafeProjectName}}.Controllers
 {
     [Route("api/messages")]
     [ApiController]

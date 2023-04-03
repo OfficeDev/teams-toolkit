@@ -189,6 +189,23 @@ describe("botAadAppCreate", async () => {
     );
   });
 
+  it("should throw UnexpectedEmptyBotPasswordError when bot password is empty", async () => {
+    envRestore = mockedEnv({
+      [outputKeys.BOT_ID]: expectedClientId,
+      [outputKeys.SECRET_BOT_PASSWORD]: "",
+    });
+
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
+      .to.be.eventually.rejectedWith(
+        "Bot password is empty. Add it in env file or clear bot id to have bot id/password pair regenerated. action: botAadApp/create."
+      )
+      .and.is.instanceOf(UserError);
+  });
+
   it("should be good when reusing existing bot in env", async () => {
     envRestore = mockedEnv({
       [outputKeys.BOT_ID]: expectedClientId,

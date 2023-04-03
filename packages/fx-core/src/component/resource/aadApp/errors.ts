@@ -169,8 +169,8 @@ export const ParsePermissionError: AadError = {
 export const UnhandledError: AadError = {
   name: "UnhandledError",
   message: () => [
-    getDefaultString("error.aad.UnhandledError"),
-    getLocalizedString("error.aad.UnhandledError"),
+    getDefaultString("error.common.UnhandledError"),
+    getLocalizedString("error.common.UnhandledError"),
   ],
 };
 
@@ -251,14 +251,6 @@ export const ListCollaboratorError: AadError = {
   message: () => [
     getDefaultString("error.aad.ListCollaboratorError"),
     getLocalizedString("error.aad.ListCollaboratorError"),
-  ],
-};
-
-export const AadManifestNotFoundError: AadError = {
-  name: "AadManifestNotFoundError",
-  message: () => [
-    getDefaultString("error.aad.AadManifestNotFoundError"),
-    getLocalizedString("error.aad.AadManifestNotFoundError"),
   ],
 };
 

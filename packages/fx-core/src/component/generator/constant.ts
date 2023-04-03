@@ -15,4 +15,5 @@ export const templatePrereleasePrefix = "templates-";
 export const errorSource = "GEN";
 export const componentName = "generator";
 export const commonTemplateName = "common";
-export const placeholderDelimiters: [string, string] = ["{%", "%}"];
+export const placeholderDelimiters: [string, string] = ["{{", "}}"];
+export const oldPlaceholderDelimiters: [string, string] = ["{%", "%}"];

@@ -2,6 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+/**
+ * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ */
 import * as util from "util";
 import * as vscode from "vscode";
 import { v4 as uuidv4 } from "uuid";
@@ -59,12 +62,14 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     }
   }
 
-  protected async stop(error?: any): Promise<void> {
+  protected async stop(error?: any, outputError = true): Promise<void> {
     if (error) {
       // TODO: add color
       this.writeEmitter.fire(`${error?.message}\r\n`);
       const fxError = assembleError(error);
-      showError(fxError);
+      if (outputError) {
+        showError(fxError);
+      }
       this.closeEmitter.fire(1);
 
       await Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>

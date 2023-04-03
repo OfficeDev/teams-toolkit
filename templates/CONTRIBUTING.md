@@ -4,7 +4,8 @@ Teams Toolkit downloads latest stable templates by default from [GitHub releases
 
 To scaffold your project from rc templates, set the environment varaible `TEAMSFX_TEMPLATE_PRERELEASE=rc`. Then Teams Toolkit download templates from [rc release](https://github.com/OfficeDev/TeamsFx/releases/tag/templates%400.0.0-rc)
 
-To scaffold from alpha release templates, set `TEAMSFX_TEMPLATE_PRERELEASE=alpha`. Then Teams Toolkit download templates from [rc release](https://github.com/OfficeDev/TeamsFx/releases/tag/templates%400.0.0-alpha)
+We do not release alpha template since alpha fx-core use local template to avoid incompatibility. `TEAMSFX_TEMPLATE_PRERELEASE=alpha`does nothing.
+To test latest template in dev branch, please refer to [How to debug templates](#how-to-debug-templates).
 
 ## How to release a new template?
 

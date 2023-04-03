@@ -490,6 +490,8 @@ export enum SolutionError {
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
+  InvalidManifestError = "InvalidManifestError",
+  FailedToLoadManifestFile = "FailedToLoadManifestFile",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -959,6 +961,13 @@ export enum AzureSolutionQuestionNames {
   Solution = "solution",
   Scenarios = "scenarios",
   Features = "features",
+}
+
+export enum SPFxQuestionNames {
+  SPFxFolder = "spfx-folder",
+  WebPartName = "spfx-webpart-name",
+  ManifestPath = "manifest-path",
+  LocalManifestPath = "local-manifest-path",
 }
 
 export function HostTypeOptionAzure(): OptionItem {

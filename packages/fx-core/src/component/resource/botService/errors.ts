@@ -76,6 +76,12 @@ function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>
       const helpLink = helpLinkMap.get(errorCode);
       if (helpLink) target.helpLink = helpLink;
     }
+    // Try to concat error messages in response payload to expose specific reasons.
+    // Based on https://learn.microsoft.com/en-us/graph/errors
+    const errorMessage = target.innerError.response.data?.error?.message;
+    if (errorMessage) {
+      target.details[0] += errorMessage;
+    }
   }
 }
 
@@ -171,18 +177,6 @@ export class BotRegistrationNotFoundError extends PluginError {
   }
 }
 
-export class MessageEndpointUpdatingError extends PluginError {
-  constructor(endpoint: string, innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.MSG_ENDPOINT_UPDATING_ERROR,
-      Messages.FailToUpdateMessageEndpoint(endpoint),
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
 //! context and name are only for telemetry, they may be empty if sendTelemetry is false
 export function wrapError(e: InnerError): FxResult {
   let errorMsg = isErrorWithMessage(e) ? e.message : "";
@@ -234,18 +228,6 @@ export function wrapError(e: InnerError): FxResult {
     // Unrecognized Exception.
     const UnhandledErrorCode = "UnhandledError";
     return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
-  }
-}
-
-export class FailedToCreateBotRegistrationError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.SYSTEM,
-      ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR,
-      Messages.FailToProvisionSomeResource(CommonStrings.APP_STUDIO_BOT_REGISTRATION),
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
   }
 }
 

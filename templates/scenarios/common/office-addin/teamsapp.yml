@@ -2,6 +2,8 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
+environmentFolderPath: ./env
+
 # Triggered when 'teamsfx provision' is executed
 provision:
   - uses: arm/deploy # Deploy given ARM templates parallelly.
@@ -25,9 +27,11 @@ provision:
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand # Run npm command
+    name: install dependencies
     with:
       args: install
   - uses: cli/runNpmCommand # Run npm command
+    name: build app
     with:
       args: run build --if-present
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website

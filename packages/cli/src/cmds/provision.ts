@@ -7,19 +7,20 @@ import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
 import {
-  sqlPasswordQustionName,
-  sqlPasswordConfirmQuestionName,
   EnvOptions,
   RootFolderOptions,
+  sqlPasswordQustionName,
+  sqlPasswordConfirmQuestionName,
 } from "../constants";
 import HelpParamGenerator from "../helpParamGenerator";
+import { strings } from "../resource";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, setSubscriptionId, askTargetEnvironment } from "../utils";
+import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export class ProvisionManifest extends YargsCommand {
@@ -74,10 +75,12 @@ export class ProvisionManifest extends YargsCommand {
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Provision the cloud resources in the current application.";
+  public readonly description = isV3Enabled()
+    ? strings.command.provision.description
+    : "Provision the cloud resources in the current application.";
   public readonly resourceGroupParam = "resource-group";
   public readonly subscriptionParam = "subscription";
-  public readonly subCommands = [new ProvisionManifest()];
+  public readonly subCommands = isV3Enabled() ? [] : [new ProvisionManifest()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

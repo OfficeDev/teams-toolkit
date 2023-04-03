@@ -21,10 +21,12 @@ import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
+import { getExecCommand, Utils } from "../utils/utils";
+import { Constants } from "../utils/constants";
 
-const name = "yo";
+const name = Constants.YeomanPackageName;
 const supportedVersion = "4.3.1";
-const displayName = `${name}@${supportedVersion}`;
+const displayName = `${name}@${Constants.LatestVersion}`;
 const timeout = 6 * 60 * 1000;
 
 export class YoChecker implements DependencyChecker {
@@ -61,6 +63,43 @@ export class YoChecker implements DependencyChecker {
     return ok(true);
   }
 
+  public async ensureLatestDependency(
+    ctx: PluginContext | ContextV3
+  ): Promise<Result<boolean, FxError>> {
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
+    try {
+      this._logger.info(`${displayName} not found, installing...`);
+      await this.install();
+      this._logger.info(`Successfully installed ${displayName}`);
+
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo);
+    } catch (error) {
+      telemetryHelper.sendErrorEvent(
+        ctx,
+        TelemetryEvents.EnsureLatestYo,
+        error as UserError | SystemError,
+        {
+          [TelemetryProperty.EnsureLatestYoReason]: (error as UserError | SystemError).name,
+        }
+      );
+      await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
+      return err(error as UserError | SystemError);
+    }
+
+    return ok(true);
+  }
+
+  public async isLatestInstalled(): Promise<boolean> {
+    try {
+      const yoVersion = await this.queryVersion();
+      const latestYeomanVersion = await this.findLatestVersion(5);
+      const hasSentinel = await fs.pathExists(this.getSentinelPath());
+      return !!latestYeomanVersion && yoVersion === latestYeomanVersion && hasSentinel;
+    } catch (error) {
+      return false;
+    }
+  }
+
   public async isInstalled(): Promise<boolean> {
     let isVersionSupported = false,
       hasSentinel = false;
@@ -92,8 +131,18 @@ export class YoChecker implements DependencyChecker {
     return [defaultPath, path.join(defaultPath, "node_modules", ".bin")];
   }
 
+  public async findGloballyInstalledVersion(
+    timeoutInSeconds?: number
+  ): Promise<string | undefined> {
+    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
+  }
+
+  public async findLatestVersion(timeoutInSeconds: number): Promise<string | undefined> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInSeconds);
+  }
+
   private async validate(): Promise<boolean> {
-    return await this.isInstalled();
+    return await fs.pathExists(this.getSentinelPath());
   }
 
   private getDefaultInstallPath(): string {
@@ -154,14 +203,15 @@ export class YoChecker implements DependencyChecker {
 
   private async installYo(): Promise<void> {
     try {
+      const version = Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
         this._logger,
         { timeout: timeout, shell: false },
-        this.getExecCommand("npm"),
+        getExecCommand("npm"),
         "install",
-        `${name}@${supportedVersion}`,
+        `${name}@${version}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
         "--no-audit",
@@ -173,13 +223,5 @@ export class YoChecker implements DependencyChecker {
       this._logger.error("Failed to execute npm install yo");
       throw NpmInstallError(error as Error);
     }
-  }
-
-  private getExecCommand(command: string): string {
-    return this.isWindows() ? `${command}.cmd` : command;
-  }
-
-  private isWindows(): boolean {
-    return os.type() === "Windows_NT";
   }
 }

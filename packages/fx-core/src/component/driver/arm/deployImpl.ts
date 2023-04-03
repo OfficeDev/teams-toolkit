@@ -21,10 +21,11 @@ import { executeCommand } from "../../../common/cpUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { SolutionError, SolutionSource } from "../../constants";
-import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { DeployContext, handleArmDeploymentError } from "../../arm";
+import { InvalidActionInputError } from "../../../error/common";
+import { InvalidAzureCredentialError } from "../../../error/azure";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -59,7 +60,7 @@ export class ArmDeployImpl {
     const invalidParameters = await validateArgs(this.args);
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(Constants.actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(Constants.actionName, invalidParameters, helpLink);
     }
   }
 
@@ -70,12 +71,7 @@ export class ArmDeployImpl {
   private async createClient(): Promise<void> {
     const azureToken = await this.context.azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken) {
-      throw new SystemError(
-        PluginDisplayName.Solution,
-        SolutionError.FailedToGetAzureCredential,
-        getDefaultString("core.deployArmTemplates.InvalidAzureCredential"),
-        getLocalizedString("core.deployArmTemplates.InvalidAzureCredential")
-      );
+      throw new InvalidAzureCredentialError();
     }
     this.client = new ResourceManagementClient(azureToken, this.args.subscriptionId);
   }

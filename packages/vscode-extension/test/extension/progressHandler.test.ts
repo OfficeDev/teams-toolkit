@@ -46,12 +46,12 @@ describe("ProgressHandler", () => {
   it("terminal", async () => {
     const progressHandler = new ProgressHandler("test title", 1, "terminal");
     let expected =
-      "test title: [0/1] Check [terminal window](command:workbench.action.terminal.focus) for details. Prepare task. (Notice: You can reload the window and retry if task spends too long time.)";
+      "test title: [0/1] Prepare task. Check [terminal window](command:workbench.action.terminal.focus) for details. (Notice: You can reload the window and retry if task spends too long time.)";
     await progressHandler.start();
     chai.assert.equal(message, expected);
     await progressHandler.next("test message.");
     expected =
-      "test title: [1/1] Check [terminal window](command:workbench.action.terminal.focus) for details. test message. (Notice: You can reload the window and retry if task spends too long time.)";
+      "test title: [1/1] test message. Check [terminal window](command:workbench.action.terminal.focus) for details. (Notice: You can reload the window and retry if task spends too long time.)";
     chai.assert.equal(message, expected);
     sinon.restore();
   });
@@ -59,12 +59,12 @@ describe("ProgressHandler", () => {
   it("output", async () => {
     const progressHandler = new ProgressHandler("test title", 1, "output");
     let expected =
-      "test title: [0/1] Check [output window](command:fx-extension.showOutputChannel) for details. Prepare task. (Notice: You can reload the window and retry if task spends too long time.)";
+      "test title: [0/1] Prepare task. Check [output window](command:fx-extension.showOutputChannel) for details. (Notice: You can reload the window and retry if task spends too long time.)";
     await progressHandler.start();
     chai.assert.equal(message, expected);
     await progressHandler.next("test message.");
     expected =
-      "test title: [1/1] Check [output window](command:fx-extension.showOutputChannel) for details. test message. (Notice: You can reload the window and retry if task spends too long time.)";
+      "test title: [1/1] test message. Check [output window](command:fx-extension.showOutputChannel) for details. (Notice: You can reload the window and retry if task spends too long time.)";
     chai.assert.equal(message, expected);
     sinon.restore();
   });

@@ -45,6 +45,7 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  setUriEventHandler,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -78,10 +79,11 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   VS_CODE_UI = new VsCodeUI(context);
-  initializeGlobalVariables(context);
+  await initializeGlobalVariables(context);
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
+  setUriEventHandler(uriHandler);
   context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
   registerActivateCommands(context);
@@ -118,7 +120,7 @@ export async function deactivate() {
 
 function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   registerTreeViewCommandsInDevelopment(context);
-  registerTreeViewCommandsInDeployment(context);
+  registerTreeViewCommandsInLifecycle(context);
   registerTreeViewCommandsInHelper(context);
   registerTeamsFxCommands(context);
   registerMenuCommands(context);
@@ -202,12 +204,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     })
   );
 
-  // Show deployment view
-  const openDeploymentTreeview = vscode.commands.registerCommand(
-    "fx-extension.openDeploymentTreeview",
-    (...args) => Correlator.run(handlers.openDeploymentTreeview, args)
+  // Show lifecycle view
+  const openLifecycleTreeview = vscode.commands.registerCommand(
+    "fx-extension.openLifecycleTreeview",
+    (...args) => Correlator.run(handlers.openLifecycleTreeview, args)
   );
-  context.subscriptions.push(openDeploymentTreeview);
+  context.subscriptions.push(openLifecycleTreeview);
 
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
@@ -377,9 +379,16 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "fx-extension.OpenAdaptiveCardExt",
     handlers.openAdaptiveCardExt
   );
+
+  registerInCommandController(
+    context,
+    "fx-extension.addWebpart",
+    handlers.addWebpart,
+    "addWebpart"
+  );
 }
 
-function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) {
+function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   // Provision in the cloud
   registerInCommandController(
     context,
@@ -533,12 +542,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(deployManifestFromCtxMenuCmd);
 
   if (isV3Enabled()) {
-    registerInCommandController(
-      context,
+    const manageCollaborator = vscode.commands.registerCommand(
       "fx-extension.manageCollaborator",
-      handlers.manageCollaboratorHandler,
-      "manageCollaborator"
+      (node) => {
+        const envName = node.identifier;
+        Correlator.run(handlers.manageCollaboratorHandler, envName);
+      }
     );
+    context.subscriptions.push(manageCollaborator);
   } else {
     const grantPermission = vscode.commands.registerCommand(
       "fx-extension.grantPermission",
@@ -585,12 +596,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openAccountLinkCmd);
 
-  const openDeploymentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openDeploymentLink",
+  const openLifecycleLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openLifecycleLink",
     (...args) =>
-      Correlator.run(handlers.openDeploymentLinkHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
+      Correlator.run(handlers.openLifecycleLinkHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
-  context.subscriptions.push(openDeploymentLinkCmd);
+  context.subscriptions.push(openLifecycleLinkCmd);
 
   const openDevelopmentLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openDevelopmentLink",
@@ -1052,7 +1063,7 @@ async function checkProjectUpgradable(): Promise<boolean> {
 
 async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   const wasTeamsFxProject = isTeamsFxProject;
-  initializeGlobalVariables(context);
+  await initializeGlobalVariables(context);
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 

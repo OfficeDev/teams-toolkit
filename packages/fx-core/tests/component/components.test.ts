@@ -150,6 +150,9 @@ describe("Core component test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("sql.add", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -162,8 +165,12 @@ describe("Core component test for v3", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+    restore();
   });
   it("fx.addFeature(sql)", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -177,6 +184,7 @@ describe("Core component test for v3", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+    restore();
   });
   it("sso.add", async () => {
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore()));
@@ -226,6 +234,9 @@ describe("Core component test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("cicd.add", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -239,6 +250,7 @@ describe("Core component test for v3", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+    restore();
   });
   it("api-connector.add", async () => {
     const inputs: InputsWithProjectPath = {
@@ -290,6 +302,9 @@ describe("Core component test for v3", () => {
 
   describe("provision", async () => {
     it("fx.provision", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
         .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
@@ -369,9 +384,13 @@ describe("Core component test for v3", () => {
         console.log(provisionRes.error);
       }
       assert.isTrue(provisionRes.isOk());
+      restore();
     });
 
     it("fx.provision after switching subscription", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -448,9 +467,13 @@ describe("Core component test for v3", () => {
         console.log(provisionRes.error);
       }
       assert.isTrue(provisionRes.isOk());
+      restore();
     });
 
     it("fx.provision local debug after switching m365 tenant", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -521,9 +544,13 @@ describe("Core component test for v3", () => {
       assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
       assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
       assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
+      restore();
     });
 
     it("fx.provision local debug after switching m365 tenant: backup error", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -595,9 +622,13 @@ describe("Core component test for v3", () => {
       if (provisionRes.isErr()) {
         assert.isTrue(provisionRes.error.name === "backupError");
       }
+      restore();
     });
 
     it("fx.provision after switching M365", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -681,9 +712,13 @@ describe("Core component test for v3", () => {
       assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
       assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
       assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
+      restore();
     });
 
     it("fx.provision cancel when confirming", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -750,6 +785,7 @@ describe("Core component test for v3", () => {
       if (provisionRes.isErr()) {
         assert.isTrue(provisionRes.error.name === "CancelProvision");
       }
+      restore();
     });
 
     it("fx.provision could not get m365 token", async () => {
@@ -797,6 +833,9 @@ describe("Core component test for v3", () => {
     });
 
     it("fx.provision error when update Azure parameters", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -865,9 +904,13 @@ describe("Core component test for v3", () => {
       if (provisionRes.isErr()) {
         assert.isTrue(provisionRes.error.name === "error1");
       }
+      restore();
     });
 
     it("fx.provision project without Azure resources after switch M365 account", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
       sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
       sandbox
@@ -925,6 +968,7 @@ describe("Core component test for v3", () => {
       const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
 
       assert.isTrue(provisionRes.isOk());
+      restore();
     });
 
     it("fx.provision project without Azure resources after switch M365 account: backupFiles error ", async () => {
@@ -994,6 +1038,9 @@ describe("Core component test for v3", () => {
   });
 
   it("azure-storage.deploy", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(AzureStorageResource.prototype, <any>"doDeployment").resolves();
@@ -1043,6 +1090,7 @@ describe("Core component test for v3", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+    restore();
   });
 
   it("fx.deploy.cli.withAAD", async () => {
@@ -1050,6 +1098,7 @@ describe("Core component test for v3", () => {
     const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_V3: "false",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
@@ -1174,6 +1223,7 @@ describe("Core component test for v3", () => {
     const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_V3: "false",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));

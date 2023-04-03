@@ -10,18 +10,6 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="306" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
-      <Item ItemId=";teamstoolkit.PrerequisitesValidationError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Prerequisites Check Failed, please fix all issues above then debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha na Verificação de Pré-requisitos. Corrija todos os problemas acima e depure novamente o local. Se você quiser ignorar a verificação e instalar qualquer pré-requisito, você pode desabilitá-los nas configurações do Visual Studio Code.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.accountTree.azureAccountTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AZURE ACCOUNT  ]A;The Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.]]></Val>
@@ -45,10 +33,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.noSubscriptions" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[No subscriptions discovered]]></Val>
+          <Val><![CDATA[No Subscriptions Discovered]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nenhuma assinatura descoberta]]></Val>
+            <Val><![CDATA[Nenhuma Assinatura Descoberta]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No subscriptions discovered]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -58,18 +49,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Você não tem assinaturas. Você não pode provisionar ou implantar seus recursos para o Azure!]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.accountTree.sideloadingJoinM365" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar um locatário de teste do Microsoft 365]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Create a M365 testing tenant]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -96,10 +75,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingPass" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sideloading enabled]]></Val>
+          <Val><![CDATA[Sideloading Enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sideload habilitado]]></Val>
+            <Val><![CDATA[Sideload Habilitado]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sideloading enabled]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -112,21 +94,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.accountTree.sideloadingRefresh" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Refresh]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingStatusUnknown" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sideloading check failed]]></Val>
+          <Val><![CDATA[Sideloading Check Failed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha na verificação de sideload]]></Val>
+            <Val><![CDATA[Falha na Verificação de Sideload]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sideloading check failed]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -141,10 +117,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sideloading disabled]]></Val>
+          <Val><![CDATA[Sideloading Disabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sideload desabilitado]]></Val>
+            <Val><![CDATA[Sideload Desabilitado]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sideloading disabled]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -181,15 +160,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.accountTree.specifySubscription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Specify subscription]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Especificar assinatura]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.accountTree.switchingM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft 365: Switching...]]></Val>
@@ -210,22 +180,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.createM365TestingTenant" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 Testing Tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar um locatário de teste do Microsoft 365]]></Val>
+            <Val><![CDATA[Criar um Locatário de Teste do Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Create a M365 testing tenant]]></Val>
+            <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.appStudioLogin.learnMore" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Learn More]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba Mais]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -282,10 +243,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.azureLogin.selectSubscription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select a subscription]]></Val>
+          <Val><![CDATA[Select a Subscription]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selecione uma assinatura]]></Val>
+            <Val><![CDATA[Selecionar uma Assinatura]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select a subscription]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -486,10 +450,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.codeFlowLogin.silentAcquireToken" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to retrieve token silently: %s]]></Val>
+          <Val><![CDATA[Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `%s`, close all Visual Studio Code instances and try again. %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha em recuperar o token silenciosamente: %s]]></Val>
+            <Val><![CDATA[Falha ao recuperar o token silenciosamente. Se você encontrar esse problema várias vezes, poderá excluir ''%s'', fechar todas as instâncias do Visual Studio Code e tentar novamente. %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to retrieve token silently: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -516,10 +483,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.accountsLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Learn more about accounts]]></Val>
+          <Val><![CDATA[Learn More About Accounts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba mais sobre contas]]></Val>
+            <Val><![CDATA[Saiba Mais Sobre Contas]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Learn more about accounts]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -537,22 +507,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.addFeature.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add features]]></Val>
+          <Val><![CDATA[Add Features]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar recursos]]></Val>
+            <Val><![CDATA[Adicionar Recursos]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Add features]]></Val>
+            <Val><![CDATA[Add features]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.azureAccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Azure portal]]></Val>
+          <Val><![CDATA[Azure Portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Portal do Azure]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Azure portal]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -588,33 +561,36 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.createAccount.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create an account]]></Val>
+          <Val><![CDATA[Create an Account]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar uma conta]]></Val>
+            <Val><![CDATA[Criar uma Conta]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create an account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.createEnvironment.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create new environment]]></Val>
+          <Val><![CDATA[Create New Environment]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar novo ambiente]]></Val>
+            <Val><![CDATA[Criar Novo Ambiente]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Create new environment]]></Val>
+            <Val><![CDATA[Create new environment]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.createProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a new app]]></Val>
+          <Val><![CDATA[Create a New App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar um novo aplicativo]]></Val>
+            <Val><![CDATA[Criar um Novo Aplicativo]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Create a new Teams app]]></Val>
+            <Val><![CDATA[Create a new app]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -633,34 +609,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.deploy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Deploy to the cloud]]></Val>
+          <Val><![CDATA[Deploy to the Cloud]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Implantar na nuvem]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Deploy to the cloud]]></Val>
+            <Val><![CDATA[Deploy to the cloud]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.deployManifest.ctxMenu.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update Teams app]]></Val>
+          <Val><![CDATA[Update Teams App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o aplicativo Teams]]></Val>
+            <Val><![CDATA[Atualizar o Aplicativo Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Deploy Teams app manifest]]></Val>
+            <Val><![CDATA[Update Teams app]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.deploymentLink.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Learn more about deployment]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba mais sobre implantação]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -678,10 +645,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.developmentLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Learn more about development]]></Val>
+          <Val><![CDATA[Learn More About Development]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba mais sobre desenvolvimento]]></Val>
+            <Val><![CDATA[Saiba Mais Sobre Desenvolvimento]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Learn more about development]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -699,34 +669,37 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.editManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Edit manifest file]]></Val>
+          <Val><![CDATA[Edit Manifest File]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editar arquivo de manifesto]]></Val>
+            <Val><![CDATA[Editar Arquivo de Manifesto]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Edit manifest file]]></Val>
+            <Val><![CDATA[Edit manifest file]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.environmentsLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Learn more about environments]]></Val>
+          <Val><![CDATA[Learn More About Environments]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba mais sobre ambientes]]></Val>
+            <Val><![CDATA[Saiba Mais Sobre Ambientes]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Learn more about enviornments]]></Val>
+            <Val><![CDATA[Learn more about environments]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.feedbackLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Learn more about help and feedback]]></Val>
+          <Val><![CDATA[Learn More About Help and Feedback]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba mais sobre ajuda e comentários]]></Val>
+            <Val><![CDATA[Saiba Mais Sobre Ajuda e Comentários]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Learn more about help and feedback]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -739,6 +712,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Teams: Get Started]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.lifecycleLink.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn More About Lifecycle]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Saber mais sobre Ciclo de Vida]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -768,12 +750,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.m365AccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Microsoft 365 portal]]></Val>
+          <Val><![CDATA[Microsoft 365 Portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Portal do Microsoft 365]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[M365 portal]]></Val>
+            <Val><![CDATA[Microsoft 365 portal]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -789,34 +771,37 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.migrateApp.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Upgrade Teams JS SDK and code references]]></Val>
+          <Val><![CDATA[Upgrade Teams JS SDK and Code References]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o SDK JS do Teams e as referências de código]]></Val>
+            <Val><![CDATA[Atualizar o SDK JS do Teams e as Referências de Código]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Upgrade Teams JS SDK and code references]]></Val>
+            <Val><![CDATA[Upgrade Teams JS SDK and code references]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.migrateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Upgrade Teams manifest]]></Val>
+          <Val><![CDATA[Upgrade Teams Manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o manifesto do Teams]]></Val>
+            <Val><![CDATA[Atualizar o Manifesto do Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Upgrade Teams manifest]]></Val>
+            <Val><![CDATA[Upgrade Teams manifest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.openDocumentLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Learn more]]></Val>
+          <Val><![CDATA[Learn More]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Saiba mais]]></Val>
+            <Val><![CDATA[Saiba Mais]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Learn more]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -831,19 +816,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.openManifestSchema.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open manifest schema]]></Val>
+          <Val><![CDATA[Open Manifest Schema]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abrir esquema de manifesto]]></Val>
+            <Val><![CDATA[Abrir Esquema de Manifesto]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open manifest schema]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.previewAadManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview AAD manifest file]]></Val>
+          <Val><![CDATA[Preview AAD Manifest File]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visualizar arquivo de manifesto do AAD]]></Val>
+            <Val><![CDATA[Versão Prévia do Arquivo de Manifesto do AAD]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview AAD manifest file]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -858,21 +849,24 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.previewManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview manifest file]]></Val>
+          <Val><![CDATA[Preview Manifest File]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pré-visualização de arquivo de manifesto]]></Val>
+            <Val><![CDATA[Visualizar Arquivo de Manifesto]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview manifest file]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.provision.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Provision in the cloud]]></Val>
+          <Val><![CDATA[Provision in the Cloud]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Provisionamento na Nuvem]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Provision in the cloud]]></Val>
+            <Val><![CDATA[Provision in the cloud]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -900,12 +894,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.reportIssue.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Report issues on GitHub]]></Val>
+          <Val><![CDATA[Report Issues on GitHub]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Relatar problemas no GitHub]]></Val>
+            <Val><![CDATA[Relatar Problemas no GitHub]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Report issues on GitHub]]></Val>
+            <Val><![CDATA[Report issues on GitHub]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -933,196 +927,97 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.specifySubscription.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Specify subscription]]></Val>
+          <Val><![CDATA[Specify Subscription]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Especificar assinatura]]></Val>
+            <Val><![CDATA[Especificar Assinatura]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Specify subscription]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.updateAadAppManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update Azure Active Directory app]]></Val>
+          <Val><![CDATA[Update Azure Active Directory App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o aplicativo Azure Active Directory]]></Val>
+            <Val><![CDATA[Atualizar aplicativo do Azure Active Directory]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update Azure Active Directory app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update Azure Active Directory app]]></Val>
+          <Val><![CDATA[Update Azure Active Directory App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o aplicativo Azure Active Directory]]></Val>
+            <Val><![CDATA[Atualizar aplicativo do Azure Active Directory]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update Azure Active Directory app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.updateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update Teams app]]></Val>
+          <Val><![CDATA[Update Teams App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o aplicativo Teams]]></Val>
+            <Val><![CDATA[Atualizar o Aplicativo Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Deploy Teams app manifest]]></Val>
+            <Val><![CDATA[Update Teams app]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.upgradeProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Upgrade project]]></Val>
+          <Val><![CDATA[Upgrade Project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar projeto]]></Val>
+            <Val><![CDATA[Atualizar Projeto]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Upgrade project]]></Val>
+            <Val><![CDATA[Upgrade project]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.validateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate manifest file]]></Val>
+          <Val><![CDATA[Validate Application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Validar arquivo de manifesto]]></Val>
+            <Val><![CDATA[Validar o Aplicativo]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Validate manifest file]]></Val>
+            <Val><![CDATA[Validate Manifest File]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.viewSamples.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[View samples]]></Val>
+          <Val><![CDATA[View Samples]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Exibir exemplos]]></Val>
+            <Val><![CDATA[Exibir Exemplos]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: View samples]]></Val>
+            <Val><![CDATA[View samples]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.zipPackage.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Zip Teams app package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Pacote de metadados do Teams em arquivo Zip]]></Val>
+          <Val><![CDATA[Zip Teams App Package]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zipar Pacote de Aplicativo do Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Zip Teams metadata package]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.accountsDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your account list]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Lista da sua conta]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.accountsTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[ACCOUNTS]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[CONTAS]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.active" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[(Active)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(Ativo)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflows.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot run command when adding CI/CD workflows. Try again when adding operation is finished.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não é possível executar o comando ao adicionar fluxos de trabalho de CI/CD. Tente novamente quando a operação de adição estiver concluída.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflows.running" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Adding CI/CD workflows...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionando fluxos de trabalho de CI/CD...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Create workflow automation templates for Github, Azure DevOps and Jenkins]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar modelos de automação de fluxo de trabalho para Github, Azure DevOps e Jenkins]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add CI/CD Workflows]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar Fluxos de trabalho de CI/CD]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilities.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot run command when adding capabilities. Try again when adding operation is finished.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não é possível executar o comando ao adicionar as funcionalidades. Tente novamente quando a operação de adição estiver concluída.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilities.running" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Adding capabilities...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionando funcionalidades...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add additional capabilities to your Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar funcionalidades adicionais ao seu aplicativo Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add Capabilities]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar Funcionalidades]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add capabilities]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar funcionalidades]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1137,12 +1032,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addEnvironmentTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add environment]]></Val>
+          <Val><![CDATA[Add Environment]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar ambiente]]></Val>
+            <Val><![CDATA[Adicionar Ambiente]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Add Environment]]></Val>
+            <Val><![CDATA[Add environment]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1176,72 +1071,21 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeatureTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add features]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar recursos]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResources.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot run command when adding resources. Try again when adding operation is finished.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não é possível executar o comando ao adicionar recursos. Tente novamente quando a operação de adição estiver concluída.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResources.running" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Adding resources...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar recursos...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResourcesDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add additional Azure Resources to your Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar Recursos adicionais do Azure ao aplicativo Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResourcesTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add Resources]]></Val>
+          <Val><![CDATA[Add Features]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Adicionar Recursos]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Add features]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addWebpartTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add cloud resources]]></Val>
+          <Val><![CDATA[Add SPFx Web Part]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar recursos em nuvem]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.appManagementDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Manage Teams App]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gerenciar Aplicativo do Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.appManagementTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Manage Teams App]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gerenciar Aplicativo do Teams]]></Val>
+            <Val><![CDATA[Adicionar a Web Part do SPFx]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1260,24 +1104,6 @@
           <Val><![CDATA[No Azure account signed in. Please sign in to Azure.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nenhuma conta do Azure conectada. Entre no Azure.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.botManagementDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Manage Teams Bot]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gerenciar Bot do Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.botManagementTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Manage Teams Bot]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gerenciar Bot do Teams]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1311,21 +1137,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.buildPackageTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Build Teams Package]]></Val>
+          <Val><![CDATA[Zip Teams App Package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Compilar Pacote do Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Zip Teams app package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Pacote de metadados do Teams em arquivo Zip]]></Val>
+            <Val><![CDATA[Zipar Pacote de Aplicativo do Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Zip Teams metadata package]]></Val>
+            <Val><![CDATA[Build Teams Package]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1342,8 +1159,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProject.running" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating a new app...]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Criando um novo aplicativo Teams...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Criando um novo site...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Creating a new Teams app...]]></Val>
@@ -1354,8 +1171,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new app from scratch or start from a sample app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Criar um novo aplicativo Teams do zero ou começar a partir de uma amostra de aplicativo]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Criar um novo aplicativo do zero ou começar a partir de um aplicativo de exemplo]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app from scratch or start from a sample app]]></Val>
@@ -1365,21 +1182,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create New Project]]></Val>
+          <Val><![CDATA[Create a New App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar Novo Projeto]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Create a new app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar um novo aplicativo]]></Val>
+            <Val><![CDATA[Criar um Novo Aplicativo]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Create a new Teams app]]></Val>
+            <Val><![CDATA[Create New Project]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1413,19 +1221,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.deployTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Deploy to the cloud]]></Val>
+          <Val><![CDATA[Deploy]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Implantar na nuvem]]></Val>
+            <Val><![CDATA[Implantar]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.deployTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Deploy to the cloud]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Implantar na nuvem]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Deploy to the Cloud]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1456,48 +1258,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.feedbackDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Send feedback]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Enviar comentários]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.feedbackTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[FEEDBACK]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[COMENTÁRIOS]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Get started with Teamsfx]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Introdução com o Teamsfx]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartedDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Quick tips to start building a Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Dicas rápidas para iniciar a compilar um aplicativo Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartedTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Get started]]></Val>
+          <Val><![CDATA[Get Started]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Introdução]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Get started]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1512,10 +1281,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.guideTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[View how-to guides]]></Val>
+          <Val><![CDATA[View How-to Guides]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Exibir as guias de instruções]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[View how-to guides]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1602,12 +1374,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Manage collaborator]]></Val>
+          <Val><![CDATA[Manage Collaborator]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gerenciar colaborador]]></Val>
+            <Val><![CDATA[Gerenciar Colaborador]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Manage Collaborator]]></Val>
+            <Val><![CDATA[Manage collaborator]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1641,19 +1413,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditorTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Manifest Editor]]></Val>
+          <Val><![CDATA[Edit Manifest File]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editor de Manifesto]]></Val>
+            <Val><![CDATA[Editar Arquivo de Manifesto]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Edit manifest file]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Editar arquivo de manifesto]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Manifest Editor]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1668,10 +1434,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.openSurveyTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[We would love your feedback]]></Val>
+          <Val><![CDATA[We Would Love Your Feedback]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adoraríamos receber seus comentários]]></Val>
+            <Val><![CDATA[Adoraríamos seu comentário]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[We would love your feedback]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1686,12 +1455,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview and debug Adaptive Cards]]></Val>
+          <Val><![CDATA[Preview and Debug Adaptive Cards]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visualizar e depurar Cartões Adaptáveis]]></Val>
+            <Val><![CDATA[Pré-visualizar e Depurar Cartões Adaptáveis]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Preview and Debug Adaptive Cards]]></Val>
+            <Val><![CDATA[Preview and debug Adaptive Cards]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1710,31 +1479,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewTitle" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview your Teams app (F5)]]></Val>
+          <Val><![CDATA[Preview Your Teams App (F5)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visualizar seu aplicativo Teams (F5)]]></Val>
+            <Val><![CDATA[Versão Prévia do Seu Aplicativo Teams (F5)]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Preview your Teams app]]></Val>
+            <Val><![CDATA[Preview your Teams app (F5)]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.projectDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Manage your project]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Gerenciar seu projeto]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.projectTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[PROJECT]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[PROJECT]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1767,19 +1518,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.provisionTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Provision in the Cloud]]></Val>
+          <Val><![CDATA[Provision]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Provisionamento na Nuvem]]></Val>
+            <Val><![CDATA[Provisionar]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.provisionTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Provision in the cloud]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Provisionamento na Nuvem]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Provision in the Cloud]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1813,8 +1558,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Publish to your org in Developer Portal]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Publicar no Portal do Desenvolvedor]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publique em sua organização no Portal do Desenvolvedor]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Publish in Developer Portal]]></Val>
@@ -1824,9 +1569,9 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open Developer Portal to publish]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Publicar no Portal do Desenvolvedor]]></Val>
+          <Val><![CDATA[Open Developer Portal to Publish]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abra o Portal do Desenvolvedor para publicar]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Publish in Developer Portal]]></Val>
@@ -1836,10 +1581,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Publish to Teams]]></Val>
+          <Val><![CDATA[Publish]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Publicar no Teams]]></Val>
+            <Val><![CDATA[Publicar]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Publish to Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1854,19 +1602,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.reportIssuesTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Report issues]]></Val>
+          <Val><![CDATA[Report Issues on GitHub]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Relatar problemas]]></Val>
+            <Val><![CDATA[Relatar Problemas no GitHub]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Report issues on GitHub]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Relatar problemas no GitHub]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Report issues]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1881,37 +1623,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.samplesTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Samples]]></Val>
+          <Val><![CDATA[View Samples]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Amostras]]></Val>
+            <Val><![CDATA[Exibir Exemplos]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.samplesTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[View samples]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Exibir amostras]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.teamsDevCenterDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Get started with Teamsfx]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Introdução com o Teamsfx]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.teamsDevCenterTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[TEAMS DEV CENTER]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[CENTRO DE DESENVOLVIMENTO DO TEAMS]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Samples]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1926,81 +1644,48 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Go To Developer Portal]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ir para o Portal do Desenvolvedor]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
           <Val><![CDATA[Developer Portal for Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Portal do Desenvolvedor do Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Go To Developer Portal]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.teamstoolkit.commandsTreeViewProvider.getStartTitle" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.validateApplicationDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[GETTING STARTED]]></Val>
+          <Val><![CDATA[Validate against manifest schema and app package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[INTRODUÇÃO]]></Val>
+            <Val><![CDATA[Valide com relação ao esquema do manifesto e ao pacote do aplicativo]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.validateManifestDescription" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.validateApplicationTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate the Teams app manifest file]]></Val>
+          <Val><![CDATA[Validate Application]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Validar o arquivo de manifesto do aplicativo Teams]]></Val>
+            <Val><![CDATA[Validar o Aplicativo]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.validateManifestTitle" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commmands.addWebpart.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate App Manifest File]]></Val>
+          <Val><![CDATA[Add SPFx web part]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Validar Arquivo de Manifesto do Aplicativo]]></Val>
+            <Val><![CDATA[Adicione a web part do SPFx]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.validateManifestTitleNew" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commmands.addWebpart.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate manifest file]]></Val>
+          <Val><![CDATA[Add SPFx web part]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Validar arquivo de manifesto]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.common.cancel" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cancel]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Cancelar]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.common.commingSoon" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Tutorials are in active development and will come soon in future release, please stay tuned.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Os tutoriais estão em desenvolvimento ativo e virão em breve em um lançamento futuro, fique atento.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.common.confirm" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Confirm]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Confirmar]]></Val>
+            <Val><![CDATA[Adicione a web part do SPFx]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2055,15 +1740,6 @@
           <Val><![CDATA[User Cancel]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Cancelamento do Usuário]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.devPortalIntegration.appStudioLogin.loginCancel" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Sign in canceled. You need to sign in with the correct Microsoft 365 account to proceed. Please try again from Developer Portal.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Entrada cancelada. Você precisa entrar com a conta do Microsoft 365 correta para continuar. Tente novamente a partir do Portal do Desenvolvedor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2151,10 +1827,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.switchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Switch account]]></Val>
+          <Val><![CDATA[Switch Account]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Alternar conta]]></Val>
+            <Val><![CDATA[Alternar Conta]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Switch account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2218,20 +1897,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.graphLogin.warningMsg" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O Kit de Ferramentas do Teams requer uma conta Microsoft 365. Esta é a conta que você usa para entrar no Microsoft Teams. O Kit de Ferramentas do Teams usará esta conta para gerenciar aplicativos e entidades de serviço.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.guide.capability" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Guias de capacidade do aplicativo Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Funcionalidade]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app capability guides]]></Val>
@@ -2242,8 +1912,8 @@
       <Item ItemId=";teamstoolkit.guide.cloudServiceIntegration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cloud service integration]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Guias de integração do serviço de nuvem]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Integração de serviços em nuvem]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cloud service integration guides]]></Val>
@@ -2254,8 +1924,8 @@
       <Item ItemId=";teamstoolkit.guide.development" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Development]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Guias de desenvolvimento de aplicativos do Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Desenvolvimento]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app development guides]]></Val>
@@ -2266,8 +1936,8 @@
       <Item ItemId=";teamstoolkit.guide.scenario" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scenario]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Guias de cenário do aplicativo do Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cenário]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams app scenario guides]]></Val>
@@ -2376,10 +2046,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.addBot.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Configure bot capability]]></Val>
+          <Val><![CDATA[Configure Bot Capability]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Configurar capacidade de bot]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Configure bot capability]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2394,10 +2067,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.addME.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Configure messaging extension capability]]></Val>
+          <Val><![CDATA[Configure Messaging Extension Capability]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configurar recurso de extensão de mensagens]]></Val>
+            <Val><![CDATA[Configurar capacidade de extensão de mensagens]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Configure messaging extension capability]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2412,28 +2088,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.addOutlookAddin.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Configure Outlook add-in capability]]></Val>
+          <Val><![CDATA[Configure Outlook add-in Capability]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configurar o recurso de suplemento do Outlook]]></Val>
+            <Val><![CDATA[Configurar recurso de suplemento do Outlook]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.guides.addSpfxTab.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams-aware web pages with SharePoint Framework embedded in Microsoft Teams.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Páginas da Web com reconhecimento do Teams com a Estrutura do SharePoint inserida no Microsoft Teams.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.guides.addSpfxTab.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Configure SPFx-based tab capability]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configurar a capacidade de guia baseada em SPFx]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Configure Outlook Add-in Capability]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2448,10 +2109,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.addSso.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Develop single sign-on experience in Teams]]></Val>
+          <Val><![CDATA[Develop Single Sign-on Experience in Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Desenvolva uma experiência de logon único no Teams]]></Val>
+            <Val><![CDATA[Desenvolver Experiência de Logon Único no Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Develop single sign-on experience in Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2466,10 +2130,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.addTab.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Configure tab capability]]></Val>
+          <Val><![CDATA[Configure Tab Capability]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configurar capacidade de guia]]></Val>
+            <Val><![CDATA[Configurar capacidade da guia]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Configure tab capability]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2484,10 +2151,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.cardActionResponse.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Initiate sequential workflows in Teams]]></Val>
+          <Val><![CDATA[Initiate Sequential Workflows in Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inicie fluxos de trabalho sequenciais no Teams]]></Val>
+            <Val><![CDATA[Iniciar fluxos de trabalho sequenciais em equipes]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Initiate sequential workflows in Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2502,10 +2172,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.cicdPipeline.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Automate ci/cd pipelines]]></Val>
+          <Val><![CDATA[Automate CI/CD Pipelines]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Automatizar pipelines ci/cd]]></Val>
+            <Val><![CDATA[Automatize pipelines de CI/CD]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Automate ci/cd pipelines]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2520,10 +2193,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.commandAndResponse.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Respond to chat commands in Teams]]></Val>
+          <Val><![CDATA[Respond to Chat Commands in Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Responder aos comandos de chat no Teams]]></Val>
+            <Val><![CDATA[Responder aos Comandos de Chat no Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Respond to chat commands in Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2556,10 +2232,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.dashboardApp.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Embed a dashboard canvas in Teams]]></Val>
+          <Val><![CDATA[Embed a Dashboard Canvas in Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inserir uma tela de painel no Teams]]></Val>
+            <Val><![CDATA[Incorporar uma tela de painel no Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Embed a dashboard canvas in Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2574,118 +2253,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.guides.sendNotification.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Send notifications to Teams]]></Val>
+          <Val><![CDATA[Send Notifications to Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Enviar notificações para o Teams]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.additional.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add additional features to your Teams application]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar recursos adicionais ao seu aplicativo Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.additional.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Additional features]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Recursos adicionais]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.api.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Conecte-se a uma API com suporte para autenticação usando o SDK do TeamsFX]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.api.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[API Connection]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Conexão de API]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.capability.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add Teams app core capabilities]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar os principais recursos do aplicativo Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.capability.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Capabilities]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Funcionalidades]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.cicd.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add CI/CD Workflows for GitHub, Azure DevOps or Jenkins]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Adicionar fluxos de trabalho de CI/CD para o GitHub, Azure DevOps ou Jenkins]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.cicd.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[CI/CD Workflows]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fluxos de Trabalho de CI/CD]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.resource.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Include a cloud resource to serve your development needs]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inclua um recurso de nuvem para atender às suas necessidades de desenvolvimento]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.resource.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cloud resources]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Recursos da nuvem]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.sso.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Develop a Single Sign-On feature for the Teams Launch pages and Bot capability]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Desenvolva um recurso de logon único para as páginas de Inicialização do Teams e a funcionalidade de Bot]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.addFeature.sso.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Single Sign-On]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Logon Único]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Send notifications to Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2716,15 +2290,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.handlers.concurrentTriggerTask" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Task '%s' is still running. Wait for it to complete before starting another task.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A tarefa '%s' ainda está em execução. Aguarde a conclusão antes de iniciar outra tarefa.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.handlers.coreNotReady" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Core module is loading]]></Val>
@@ -2736,19 +2301,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.createProjectNotification" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You should create a new Teams app or open an existing one to open the README file.]]></Val>
+          <Val><![CDATA[You should create a new app or open an existing one to open the README file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Você deve criar um novo aplicativo Teams ou abrir um já existente para abrir o arquivo README.]]></Val>
+            <Val><![CDATA[Você deve criar um novo aplicativo ou abrir um já existente para abrir o arquivo README.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You should create a new Teams app or open an existing one to open the README file.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.handlers.createProjectTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a new Teams app]]></Val>
+          <Val><![CDATA[Create a New App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Criar um novo aplicativo do Teams]]></Val>
+            <Val><![CDATA[Criar um Novo Aplicativo]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a new Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2757,6 +2328,15 @@
           <Val><![CDATA[Failed to decrypt secret.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Falha ao descriptografar o segredo.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.defaultAppPackageNotExists" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[App package file not found in %s. You can use CLI with your own app package file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Arquivo de pacote do aplicativo não encontrado em %s. Você pode usar a CLI com seu próprio arquivo de pacote do aplicativo.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2931,10 +2511,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.localPreviewTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Local preview]]></Val>
+          <Val><![CDATA[Local Preview]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Visualização local]]></Val>
+            <Val><![CDATA[Visualização Local]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Local preview]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2947,15 +2530,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[State file not found in environment %s. You must run `Local debug` first to generate related state file.]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.logErrorFormat" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[código:${e.source}.${e.name}, mensagem: ${e.message}, pilha: ${e.stack}]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3012,10 +2586,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.openFolderTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open folder]]></Val>
+          <Val><![CDATA[Open Folder]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abrir pasta]]></Val>
+            <Val><![CDATA[Abrir Pasta]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open folder]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3133,15 +2710,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.handlers.signInAzureNew" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Sign in to Azure (optional)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Entrar no Azure (opcional)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.handlers.signOutOfAzure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sign out of Azure: ]]></Val>
@@ -3181,20 +2749,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.handlers.teamsToolkit" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.handlers.validate.appPackageOption" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit]]></Val>
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kit de Ferramentas do Teams]]></Val>
+            <Val><![CDATA[Valide o pacote do aplicativo usando as regras de validação]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.handlers.vsCodeEnvironment" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.handlers.validate.appPackageOptionDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[VS Code Environment: %s]]></Val>
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ambiente do VS Code: %s]]></Val>
+            <Val><![CDATA[Valide o pacote do aplicativo usando as regras de validação]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.validate.schemaOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Valide usando o esquema do manifesto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.validate.schemaOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Valide usando o esquema do manifesto]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.validate.selectTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a validation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Selecionar um método de validação]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3204,15 +2799,6 @@
           <Val><![CDATA[Failed to check: [%s]5D;. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Falha ao verificar: [%s]5D;. ]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.howToFixIssues" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[How to fix the issues]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Como corrigir os problemas]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3228,37 +2814,49 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.bot.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To continue to debug your application in Outlook, you need to follow two steps:]]></Val>
+          <Val><![CDATA[To continue debugging your application in Outlook:]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para continuar a depurar seu aplicativo no Outlook, você precisa seguir duas etapas:]]></Val>
+            <Val><![CDATA[Para continuar depurando seu aplicativo no Outlook:]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[To continue to debug your application in Outlook, you need to follow two steps:]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.bot.finish" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Once you have finished the above two steps, please come back and click 'Continue']]></Val>
+          <Val><![CDATA[Once you have finished the above two steps, come back and click 'Continue']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Após concluir as duas etapas acima, volte e clique em "Continuar"]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Once you have finished the above two steps, please come back and click 'Continue']]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.bot.guide1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[First, please click 'Install in Teams' to install the app in Teams.]]></Val>
+          <Val><![CDATA[First, click 'Install in Teams' to install the app in Teams.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Primeiro, clique em "Instalar no Teams" para instalar o aplicativo no Teams.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[First, please click 'Install in Teams' to install the app in Teams.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.bot.guide2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.]]></Val>
+          <Val><![CDATA[Second, click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Em segundo lugar, clique em "Configurar o Outlook", entre no portal com a mesma conta do Microsoft 365 que você usou no Kit de Ferramentas do Microsoft Teams. Clique no botão 'Salvar' no portal para conectar seu bot ao canal do Outlook.]]></Val>
+            <Val><![CDATA[Em segundo lugar, clique em "Configurar o Outlook". Entre no portal com a mesma conta do Microsoft 365 que você usou no Kit de Ferramentas do Teams. Clique no botão "Salvar" no portal para conectar seu bot ao canal do Outlook.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3282,12 +2880,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To continue to debug your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
+          <Val><![CDATA[To continue debugging your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para continuar a depurar seu aplicativo no Outlook ou no Office.com, você precisa instalar o aplicativo por meio do Teams manualmente.]]></Val>
+            <Val><![CDATA[Para continuar a depurar seu aplicativo no Outlook ou no aplicativo Microsoft 365, você precisa instalar o aplicativo por meio do Teams manualmente.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[To continue debug your application in Outlook, you need to install the app via Teams first.]A;]A;]]></Val>
+            <Val><![CDATA[To continue to debug your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3334,6 +2932,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.launchTeamsWebClientError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to launch Teams web client.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Falha ao iniciar o cliente Web do Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.launchTeamsWebClientStoppedError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Task to launch Teams web client stopped with exit code '%s'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tarefa para iniciar o cliente Web do Teams interrompida com o código de saída '%s'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More]]></Val>
@@ -3354,10 +2970,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.multipleTunnelServiceError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[There are multiple running local tunnel tasks. Please close the redundant tasks.]]></Val>
+          <Val><![CDATA[There are multiple running local tunneling services. Close any redundant tasks to prevent conflicts.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Existem várias tarefas de túnel local em execução. Feche as tarefas redundantes.]]></Val>
+            <Val><![CDATA[Há vários serviços de tunelamento local em execução. Feche todas as tarefas redundantes para evitar conflitos.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[There are multiple running local tunnel tasks. Please close the redundant tasks.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3403,21 +3022,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.localDebug.ngrokTimeoutError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Timeout waiting for starting ngrok.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tempo limite de espera para iniciar o ngrok.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.localDebug.noTunnelServiceError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[There is no running local tunnel tasks. Please start the local tunnel task first.]]></Val>
+          <Val><![CDATA[There is no running local tunneling service. Ensure that the local tunneling service has been started.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nenhuma tarefa de túnel local em execução. Inicie a tarefa do túnel local primeiro.]]></Val>
+            <Val><![CDATA[Não há nenhum serviço de tunelamento local em execução. Verifique se o serviço de tunelamento local foi iniciado.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[There is no running local tunnel tasks. Please start the local tunnel task first.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3444,9 +3057,129 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.openSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Open settings]]></Val>
+          <Val><![CDATA[Open Settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abrir as configurações]]></Val>
+            <Val><![CDATA[Abrir Configurações]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Open settings]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.summary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Summary:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Resumo:]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.checkNgrokMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking and installing ngrok]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verificando e instalando o ngrok]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.checkNumber" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit is starting the local tunneling service to forward public URL to local port and inspect traffic. Open terminal window to see the details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[O Kit de Ferramentas do Teams está iniciando o serviço de tunelamento local para encaminhar o URL público para a porta local e inspecionar o tráfego. Abra a janela do terminal para ver os detalhes.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.createDevTunnelMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Dev tunnel tag: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tag do túnel de desenvolvimento: %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.duration" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Started local tunneling service in %s seconds.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Serviço de tunelamento local iniciado em %s segundos.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.installSuccessMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ngrok is installed at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[o ngrok está instalado em %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.learnMore" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Visit %s to learn more about 'Start local tunnel' task.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Visite %s para saber mais sobre a tarefa "Iniciar tunelamento local".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.skipInstallMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip checking and installing ngrok as user has specified ngrok path (%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ignore a verificação e a instalação do ngrok, já que o usuário especificou o caminho do ngrok (%s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.startDevTunnel" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Starting dev tunnel service]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Iniciando o serviço de túnel de desenvolvimento]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.startNgrokMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Starting ngrok service]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Iniciando o serviço do ngrok]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.successSummary" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Forwarding URL %s to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Encaminhando o URL %s para %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.successSummaryWithEnv" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Forwarding URL %s to %s. Saved [%s]5D; to %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Encaminhando o URL %s para %s. [%s]5D; salvo no %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Running Visual Studio Code task: 'Start local tunnel']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Executando a tarefa do Visual Studio Code tarefa: "Iniciar túnel local"]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3571,6 +3304,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.startTunnelError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Task to start local tunneling service failed. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A tarefa de iniciar o serviço de tunelamento local falhou. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.switchM365AccountWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
@@ -3609,12 +3351,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.tunnelEndpointNotFoundError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.]]></Val>
+          <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit tried to get the first HTTPS URL from %s and failed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha ao localizar o ponto de extremidade do túnel. O kit de ferramentas do Teams tentou obter a primeira URL HTTPS de %s e falhou.]]></Val>
+            <Val><![CDATA[Falha ao localizar o ponto de extremidade do túnel. O kit de ferramentas do Teams tentou obter o primeiro URL HTTPS no %s e falhou.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to find the tunnel url.]]></Val>
+            <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3630,10 +3372,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.tunnelServiceNotStartedError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The tunnel service hasn't been started. Please wait for a moment or restart the local tunnel task.]]></Val>
+          <Val><![CDATA[The tunneling service hasn't been started. Wait for a moment or restart the local tunneling task.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O serviço de túneis não foi iniciado. Aguarde um momento ou reinicie a tarefa do túnel local.]]></Val>
+            <Val><![CDATA[O serviço de tunelamento não foi iniciado. Aguarde um momento ou reinicie a tarefa de tunelamento local.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The tunnel service hasn't been started. Please wait for a moment or restart the local tunnel task.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3660,12 +3405,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.manageCollaborator.grantPermission.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add app owners]]></Val>
+          <Val><![CDATA[Add App Owners]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Adicionar proprietários de aplicativos]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Grant Permission]]></Val>
+            <Val><![CDATA[Add app owners]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3684,22 +3429,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.manageCollaborator.listCollaborator.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[List app owners]]></Val>
+          <Val><![CDATA[List App Owners]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Listar proprietários de aplicativos]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[List Collaborator]]></Val>
+            <Val><![CDATA[List app owners]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Upgrade Teams Manifest to Extend in Outlook and Office]]></Val>
+          <Val><![CDATA[Upgrade Teams Manifest to extend in Outlook and the Microsoft 365 app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o Manifesto do Teams para Estender no Outlook e Office]]></Val>
+            <Val><![CDATA[Faça o upgrade do Manifesto do Teams para que seja executado no Outlook e no aplicativo Microsoft 365]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Upgrade Teams Manifest to Extend in Outlook and the Microsoft 365 app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3732,10 +3480,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.updateManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update Teams manifest.]]></Val>
+          <Val><![CDATA[Update Teams Manifest.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o manifesto do Teams.]]></Val>
+            <Val><![CDATA[Atualize o Manifesto do Teams.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update Teams manifest.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3750,19 +3501,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.warningMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and Office. We recommend to use git for better tracking file changes before upgrading.]]></Val>
+          <Val><![CDATA[Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and the Microsoft 365 app. We recommend to use git for better tracking file changes before upgrading.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O Kit de Ferramentas do Teams será atualizado no lugar do arquivo de manifesto do Teams que você selecionou para trabalhar no Outlook e Office. Recomendamos usar o git para melhor acompanhamento de alterações de arquivo antes da atualização.]]></Val>
+            <Val><![CDATA[O Kit de Ferramentas do Teams será atualizado no lugar do arquivo de manifesto do Teams que você selecionou para trabalhar no Outlook e no aplicativo do Microsoft 365. Recomendamos usar o git para melhor acompanhamento de alterações de arquivo antes da atualização.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and Office. We recommend to use git for better tracking file changes before upgrading.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsTabApp.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Upgrade Teams Tab App to Extend in Outlook and Office]]></Val>
+          <Val><![CDATA[Upgrade Teams Tab App to Extend in Outlook and the Microsoft 365 app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Atualizar o Aplicativo de Guia do Teams para Estender no Outlook e Office]]></Val>
+            <Val><![CDATA[Atualizar o Aplicativo de Guia do Teams para Estender no Outlook e no aplicativo do Microsoft 365]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Upgrade Teams Tab App to Extend in Outlook and Office]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3804,10 +3561,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsTabApp.updateCodesErrorMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to output channel for more details.]]></Val>
+          <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha ao atualizar %d arquivos: %s, etc. Consulte o canal de saída para obter mais detalhes.]]></Val>
+            <Val><![CDATA[Falha ao atualizar %d arquivos: %s, etc. Consulte [canal de saída]5D;(comando:fx-extension.showOutputChannel) para obter mais detalhes.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to output channel for more details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3894,10 +3654,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.preview.installApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
+          <Val><![CDATA[To continue to preview your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Para continuar visualizando seu aplicativo no Outlook ou no Office.com, você precisa instalar o aplicativo pelo Teams manualmente.]]></Val>
+            <Val><![CDATA[Para continuar visualizando seu aplicativo no Outlook ou no aplicativo do Microsoft 365, você precisa instalar o aplicativo pelo Teams manualmente.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3939,10 +3702,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.preview.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview Teams app]]></Val>
+          <Val><![CDATA[Preview Teams App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pré-visualizar o aplicativo Teams]]></Val>
+            <Val><![CDATA[Versão Prévia do Aplicativo Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3996,10 +3762,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.publishInDevPortal.selectFile.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams app package]]></Val>
+          <Val><![CDATA[Teams App Package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pacote de aplicativos do Teams]]></Val>
+            <Val><![CDATA[Pacote de Aplicativos do Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams app package]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4048,33 +3817,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.qm.ok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[ok (Enter)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ok (Inserir)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.qm.selectFile" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Select file]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selecionar arquivo]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.qm.selectFolder" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Select folder]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selecionar pasta]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.survey.banner.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[userAsked]]></Val>
@@ -4086,10 +3828,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.survey.banner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Do you have any feedback on the Teams Toolkit extension?]]></Val>
+          <Val><![CDATA[Tell us what you think about Teams Toolkit.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Você tem algum comentário sobre a extensão do Kit de Ferramentas do Teams?]]></Val>
+            <Val><![CDATA[Diga-nos o que achou do Kit de Ferramentas do Teams.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Do you have any feedback on the Teams Toolkit extension?]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4149,72 +3894,30 @@
       </Item>
       <Item ItemId=";teamstoolkit.survey.takeSurvey.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Take Survey]]></Val>
+          <Val><![CDATA[Take the Survey]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Responder Pesquisa]]></Val>
+            <Val><![CDATA[Fazer a Pesquisa]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Take Survey]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.access.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Access control for the tunnel.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Controle de acesso para o túnel.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botIdTitle" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.env.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The AAD app client id for bot]]></Val>
+          <Val><![CDATA[The environment name.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A ID do cliente do aplicativo AAD para bot]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The bot messaging endpoint]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O ponto de extremidade de mensagens do bot]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botPasswordTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The AAD app client secret for bot]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O segredo do cliente do aplicativo AAD para bot]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.forceUpdate.false.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[false: only install when dependency changes.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[false: instala somente quando a dependência for alterada.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.forceUpdate.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Always run npm install script or not.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sempre execute o script npm install ou não.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.forceUpdate.true.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[true: always run npm install script.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[true: sempre executa o script npm install.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams app package path]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Caminho do pacote do aplicativo Teams]]></Val>
+            <Val><![CDATA[O nome do ambiente.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4237,7 +3940,58 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.ports.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.domain.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The key of the environment variable for tunnel domain.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A chave da variável de ambiente do domínio de túnel.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The key of the environment variable of tunnel domain.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.endpoint.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The key of the environment variable for tunnel endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A chave da variável de ambiente do ponto de extremidade do túnel.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The key of the environment variable of tunnel endpoint.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.id.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The key of the environment variable for dev tunnel id.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A chave da variável de ambiente para a ID do túnel de desenvolvimento.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The keys of the environment variables of tunnel domain and tunnel endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[As chaves das variáveis de ambiente do domínio de túnel e do ponto de extremidade de túnel.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.port.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Local server port number.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Número da porta do servidor local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.portOccupancy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The port numbers to validate]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -4246,62 +4000,14 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Instale o certificado SSL do host local. É usado para servir os sites de desenvolvimento por HTTPS para depurar o aplicativo Tab no Teams.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Install localhost SSL certificate]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Certifique-se de que o SDK do .NET Core esteja instalado. O projeto TeamsFx Azure Functions depende de extensões de ligação .NET extras para autorização de gatilho HTTP.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Install .NET]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.funcTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Instale o Azure Functions Core Tools. Ele é usado para servir o projeto hospedado do Azure Functions localmente.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Install Azure Functions Core Tools]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.]]></Val>
+          <Val><![CDATA[Prompt to sign-in for Microsoft 365 account and validate if the account has side-loading permission enabled.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Prompt de entrada para a conta do Microsoft 365 e valide se a conta habilita a permissão de sideload.]]></Val>
+            <Val><![CDATA[Seguir o prompt para entrar na conta do Microsoft 365 e validar se a permissão da conta para fazer o sideload está habilitada.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Validate M365 account]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Instale o Ngrok. O projeto de bot requer um ponto de extremidade de mensagem pública e o ngrok pode ajudar a criar um túnel público para seu serviço local.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Install Ngrok]]></Val>
+            <Val><![CDATA[Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -4320,12 +4026,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.portsTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate available ports to ensure those debug ones are not occupied.]]></Val>
+          <Val><![CDATA[Check ports availability for debug use.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Valide as portas disponíveis para garantir que as de depuração locais não estejam ocupadas.]]></Val>
+            <Val><![CDATA[Verificar a disponibilidade de portas para uso na depuração.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Validate available ports to ensure those local debug ones are not occupied.]]></Val>
+            <Val><![CDATA[Validate available ports to ensure those debug ones are not occupied.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -4339,74 +4045,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.projects.cwd.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.protocol.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The current working directory of the npm install script.]]></Val>
+          <Val><![CDATA[Protocol for the port.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O diretório de trabalho atual do script npm install.]]></Val>
+            <Val><![CDATA[Protocolo para a porta.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.projects.npmInstallArgs.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.template.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The arguments passed to the npm install command.]]></Val>
+          <Val><![CDATA[The path to yml template.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Os argumentos passados para o comando npm install.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.projects.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The npm installation projects.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Os projetos de instalação do npm.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The AAD app access_as_user scope id for SSO]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A id de escopo access_as_user do aplicativo AAD para SSO]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.clientIdTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The AAD app client id for SSO]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A ID do cliente do aplicativo AAD para SSO]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.clientSecretTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The AAD app client secret for SSO]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O segredo do cliente do aplicativo AAD para SSO]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.objectIdTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The AAD app object id for SSO]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A id do objeto do aplicativo AAD para SSO]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.tab.baseUrlTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The base url that the Tab app will be hosted on]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A URL base na qual o aplicativo Guia será hospedado]]></Val>
+            <Val><![CDATA[O caminho para o modelo yml.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4420,86 +4072,62 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.command.bot.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.type.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up bot.]A; See https://aka.ms/teamsfx-debug-set-up-bot-task for how to customize following args.]]></Val>
+          <Val><![CDATA[The type of the local tunneling service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configure o bot.]A; Confira https://aka.ms/teamsfx-debug-set-up-bot-task para saber como personalizar os seguintes argumentos.]]></Val>
+            <Val><![CDATA[O tipo do serviço de tunelamento local.]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Set up bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.command.manifest.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.deploy.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Build and upload Teams manifest.]A; See https://aka.ms/teamsfx-debug-prepare-manifest-task for how to customize following args.]]></Val>
+          <Val><![CDATA[Execute deploy lifecycle.]A; See https://aka.ms/teamsfx-tasks/deploy for details and how to customize the arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Crie e carregue o manifesto do Teams.]A; Confira https://aka.ms/teamsfx-debug-prepare-manifest-task para saber como personalizar os seguintes argumentos.]]></Val>
+            <Val><![CDATA[Executar o ciclo de vida de implantação.]A; Consulte https://aka.ms/teamsfx-tasks/deploy para obter detalhes e como personalizar os argumentos.]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Build and upload Teams manifest.]A; See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest for how to customize following args.]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.command.npmInstall.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.launchWebClient.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install npm packages.]A; See https://aka.ms/teamsfx-npm-package-task for how to customize following args.]]></Val>
+          <Val><![CDATA[Launch Teams web client. ]A; See https://aka.ms/teamsfx-tasks/launch-web-client for details and how to customize the arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Instale os pacotes npm.]A; Confira https://aka.ms/teamsfx-npm-package-task para saber como personalizar os seguintes argumentos.]]></Val>
+            <Val><![CDATA[Iniciar o cliente Web do Teams. ]A; Consulte https://aka.ms/teamsfx-tasks/launch-web-client para obter detalhes e saber como personalizar os argumentos.]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Install npm packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.prerequisites.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-check-prerequisites-task for how to customize following args.]]></Val>
+          <Val><![CDATA[Validate prerequisites.]A; See https://aka.ms/teamsfx-tasks/check-prerequisites for details and how to customize the arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Validar e instalar pré-requisitos.]A; Confira https://aka.ms/teamsfx-check-prerequisites-task para saber como personalizar os seguintes argumentos.]]></Val>
+            <Val><![CDATA[Valide os pré-requisitos.]A; Consulte https://aka.ms/teamsfx-tasks/check-prerequisites para obter detalhes e saber como personalizar os argumentos.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites for how to customize following args.]]></Val>
+            <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-check-prerequisites-task for how to customize following args.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.command.sso.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.provision.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up SSO.]A; See https://aka.ms/teamsfx-debug-set-up-sso-task for how to customize following args.]]></Val>
+          <Val><![CDATA[Execute provision lifecycle.]A; See https://aka.ms/teamsfx-tasks/provision for details and how to customize the arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configure o SSO.]A; Confira https://aka.ms/teamsfx-debug-set-up-sso-task para saber como personalizar os seguintes argumentos.]]></Val>
+            <Val><![CDATA[Executar o ciclo de vida de provisionamento.]A; Consulte https://aka.ms/teamsfx-tasks/provision para obter detalhes e como personalizar os argumentos.]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Set up SSO.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso for how to customize following args.]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.startLocalTunnel.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Start the local tunnel service.]A; See https://aka.ms/teamsfx-local-tunnel-task for how to customize following args.]]></Val>
+          <Val><![CDATA[Start the local tunneling service.]A; See https://aka.ms/teamsfx-tasks/local-tunnel for details and how to customize the arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inicie o serviço de túnel local.]A; Confira https://aka.ms/teamsfx-local-tunnel-task para saber como personalizar os seguintes argumentos.]]></Val>
+            <Val><![CDATA[Inicie o serviço de túnel local.]A; Consulte https://aka.ms/teamsfx-tasks/local-tunnel para obter detalhes e saber como personalizar os argumentos.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Start the local tunnel service.]A; See https://aka.ms/teamsfx-debug-tasks#debug-start-local-tunnel for how to customize following args.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.command.tab.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Set up tab.]A; See https://aka.ms/teamsfx-debug-set-up-tab-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Guia de configuração.]A; Confira https://aka.ms/teamsfx-debug-set-up-tab-task para saber como personalizar os seguintes argumentos.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Set up tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
+            <Val><![CDATA[Start the local tunnel service.]A; See https://aka.ms/teamsfx-local-tunnel-task for how to customize following args.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -4558,38 +4186,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.userInterface.noQuestionDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[No question description]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Descrição sem perguntas]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.userInterface.notImplementQuestion" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Not implement this type to asking questions.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não implementar este tipo para fazer perguntas.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.userInterface.showSuccessfully" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Show Successfully]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Exibição bem sucedida]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Vá diretamente para o Kit de Ferramentas do Teams e obtenha uma visão geral dos conceitos básicos.]A;•[Introdução]5D; (command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Crie um projeto ou explore nossos exemplos.]A;[Criar um novo aplicativo]5D; (command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Exibir exemplos]5D; (command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Percorra as etapas para criar um aplicativo do Teams no mundo real.]A;[Documentação]5D; (command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guias de instruções]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Você precisa atualizar o projeto para os novos arquivos de configuração para usar os recursos mais recentes. O processo de atualização não alterará seu código personalizado e criará os arquivos de backup caso a reversão seja necessária.]A;Observe que essa atualização deve continuar a usar a versão atual do Kit de Ferramentas do Teams. Se você não estiver pronto para atualizar e quiser continuar a usar a versão antiga do Kit de Ferramentas do Teams, localize o Kit de Ferramentas do Teams na Extensão e instale a versão <=2.10.0.]A;•[Atualizar projeto]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back.]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version <=2.10.0.]A;[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vá direto para o Teams Toolkit e obtenha uma visão geral dos fundamentos. Para obter mais informações, visite [Começar]5D;(comando:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Percorra as etapas para criar um aplicativo do Teams do mundo real.]A;[Documentação]5D;(comando:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guias de instruções]5D;(comando:fx-extension.selectTutoriais?%5B%22SideBar%22%5D)]A;Crie um projeto ou explore nossas amostras.]A;[Criar um novo aplicativo]5D;(comando:fx-extension.create?%5B%22SideBar%22%5D)]A;[Exibir amostras]5D;(comando:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Você precisa atualizar o projeto para os novos arquivos de configuração para usar os recursos mais recentes. O processo de atualização não alterará seu código personalizado. Ele criará os arquivos de backup caso você queira reverter.]A;Esta atualização é obrigatória para continuar usando a versão atual do Teams Toolkit. Se você não deseja atualizar agora, continue usando o Teams Toolkit versão <=2.10.0.]A;[Atualizar projeto]5D;(comando:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
@@ -4599,37 +4200,49 @@
       </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
+          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vá diretamente para o Kit de Ferramentas do Teams e obtenha uma visão geral dos conceitos básicos.]A;[Introdução]5D; (command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Crie um projeto ou explore nossos exemplos.]A;[Criar um novo aplicativo]5D; (command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Exibir exemplos]5D; (command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Percorra as etapas para criar um aplicativo do Teams do mundo real.]A;[Documentação]5D; (command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guias de instruções]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
+            <Val><![CDATA[Vá direto para o Teams Toolkit e obtenha uma visão geral dos fundamentos.]A;[Começar]5D;(comando:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Crie um projeto ou explore nossas amostras.]A;[Criar um novo aplicativo]5D;(comando:fx-extension.create?%5B%22SideBar%22%5D)]A;[Exibir amostras]5D;(comando:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Percorra as etapas para criar um aplicativo do Teams do mundo real.]A;[Documentação]5D;(comando:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guias de instruções]5D;(comando:fx-extension.selectTutoriais?%5B%22SideBar%22%5D)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
+          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vá diretamente para o Kit de Ferramentas do Teams e obtenha uma visão geral dos conceitos básicos. Para obter mais informações, visite [Introdução]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Percorra as etapas para criar um aplicativo do Teams no mundo real.]A;[Documentação]5D; (command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guias de instruções]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Crie um projeto ou explore nossos exemplos.]A;[Criar um novo aplicativo]5D; (command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Visualizar exemplos]5D; (command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-feedback.content" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We would love your feedback]5D;(command:fx-extension.openSurvey)]]></Val>
+          <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We Would Love Your Feedback]5D;(command:fx-extension.openSurvey)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Reserve 2 minutos para nos ajudar a melhorar, seus comentários são importantes!]A;[Gostaríamos muito do seus comentários]5D;(command:fx-extension.openSurvey)]]></Val>
+            <Val><![CDATA[Dedique 2 minutos para nos ajudar a melhorar, seu comentário é importante!]A;[Adoraríamos seu feedback]5D;(comando:fx-extension.openSurvey)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We would love your feedback]5D;(command:fx-extension.openSurvey)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version 4.x.x.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+          <Val><![CDATA[[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary. [More Info]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;If you don't want to upgrade now, please keep using Teams Toolkit version 4.x.x.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vá direto para o Kit de Ferramentas do Teams e obtenha uma visão geral dos fundamentos. Para obter mais informações, visite [Introdução]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Percorra as etapas para criar um aplicativo Teams do mundo real.]A;[Documentação]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guias de instruções]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Crie um projeto ou explore nossas amostras.]A;[Criar um novo aplicativo]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Exibir amostras]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Você precisa atualizar o projeto para os novos arquivos de configuração para usar os recursos mais recentes. O processo de atualização não alterará seu código personalizado e criará os arquivos de backup caso seja necessário reverter.]A;Observe que esta atualização é obrigatória para continuar a usar o Kit de Ferramentas do Teams da versão atual. Se você não estiver pronto para atualizar e quiser continuar usando a versão antiga do Kit de Ferramentas do Teams, localize o Kit de Ferramentas do Teams na Extensão e instale a versão 4.x.x.]A;[Projeto de atualização]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+            <Val><![CDATA[[Atualizar Projeto]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Atualize seu projeto do Kit de Ferramentas do Teams para manter compatível com a última versão. Um diretório de backup será criado junto com um Resumo de Atualização. [Mais informações]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;Se você não deseja atualizar agora, continue usando o Kit de Ferramentas do Teams versão 4.x.x.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You need to upgrade the project to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back. [Learn more]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version 4.x.x.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4644,28 +4257,37 @@
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Choose [Teams app capabilities]5D;(https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a new Teams app]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
+          <Val><![CDATA[Start with [Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) or [Outlook add-in]5D;(https://aka.ms/teamsfx-outlook-add-in-capabilities) capability to build your first app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a New App]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Escolha [Recursos do aplicativo Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) e crie seu primeiro aplicativo do Teams.]A;Você pode criá-lo do zero ou explorar nossas amostras para ver exemplos e estruturas de código do mundo real e começar a trabalhar rapidamente.]A; [Criar um novo aplicativo teams]5D; (command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A; [Exibir exemplos]5D; (command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
+            <Val><![CDATA[Comece com a funcionalidade do [Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) ou [suplemento do Outlook]5D;(https://aka.ms/teamsfx-outlook-add-in-capabilities) para criar seu primeiro aplicativo.]A; Você pode criar do zero ou explorar nossos exemplos para ajudá-lo a começar rapidamente com os exemplos do mundo real e estruturas de código.]A; [Criar um Novo Aplicativo]5D; (command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A; [Exibir Exemplos]5D; (command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Choose [Teams app capabilities]5D;(https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a new Teams app]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Build your first Teams app]]></Val>
+          <Val><![CDATA[Build your first app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Crie seu primeiro aplicativo do Teams]]></Val>
+            <Val><![CDATA[Criar seu primeiro aplicativo]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Build your first Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.]A; If you already have a Microsoft 365 organizational account, [sign in to Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.]A;[Create a Microsoft 365 testing tenant]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
+          <Val><![CDATA[Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.]A; If you already have a Microsoft 365 organizational account, [Sign in to Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.]A;[Create a Microsoft 365 Testing Tenant]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Crie um locatário de teste gratuito do Microsoft 365 para instalar e visualizar seus aplicativos do Teams no Teams.]A; Se você já tem uma conta organizacional do Microsoft 365, [Entrar no Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22Through%22%5D) e valide [sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) está habilitado.]A;[Criar um locatário de teste do Microsoft 365]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.]A; If you already have a Microsoft 365 organizational account, [sign in to Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.]A;[Create a Microsoft 365 testing tenant]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4680,10 +4302,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Deployment commands]5D;(command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Deployment']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
+          <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Lifecycle Commands]5D;(command:fx-extension.openLifecycleTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Lifecycle']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Você pode provisionar recursos na nuvem e implantar o código do aplicativo nos recursos provisionados. Por fim, distribua seu primeiro aplicativo para o Teams.]A;[Abrir comandos de implantação]5D; (command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)]A;__Dica: Saiba mais sobre ['Deployment']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
+            <Val><![CDATA[Você pode provisionar recursos na nuvem e implantar o código do seu aplicativo nos recursos provisionados. Para terminar, distribua seu primeiro aplicativo para o Teams.]A;[Abrir comandos de ciclo de vida]5D;(command:fx-extension.openLifecycleTreeview?%5B%22WalkThrough%22%5D)]A;__Dica: Saiba mais sobre ["Ciclo de vida"]5D;(https://aka.ms/teamsfx-provision).__]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Deployment Commands]5D;(command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Deployment']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4698,12 +4323,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Developing Teams application with JavaScript or TypeScript requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run prerequisite checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[O Kit de Ferramentas do Teams requer principalmente NPM e Node.js. Verifique seu ambiente e prepare-se para seu primeiro desenvolvimento de aplicativos do Teams.]A;[Executar verificador de pré-requisitos]5D; (command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
+          <Val><![CDATA[Developing Teams application with JavaScript or TypeScript requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run Prerequisite Checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[O desenvolvimento do aplicativo Teams com JavaScript ou TypeScript requer NPM e Node.js. Verifique seu ambiente e prepare-se para o desenvolvimento do seu primeiro aplicativo Teams.]A;[Executar o verificador de pré-requisitos]5D;(comando:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams Toolkit primarily requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run prerequisite checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
+            <Val><![CDATA[Developing Teams application with JavaScript or TypeScript requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run prerequisite checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -4728,10 +4353,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
+          <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aqui estão algumas recomendações para continuar sua jornada com o Kit de Ferramentas do Teams.]A; • Explore [Guias de instruções]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) e obtenha diretrizes mais práticas]A; • Abra [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) para entender como desenvolver este aplicativo]A; • Leia nossa [Documentação]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
+            <Val><![CDATA[Aqui estão algumas recomendações para continuar sua jornada com o Teams Toolkit.]A; • Explore [How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) e obtenha orientações mais práticas]A; • Abra [Readme.md]5D;(comando:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) para entender como desenvolver este aplicativo]A; • Leia nossa [Documentação]5D;(comando:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4746,10 +4374,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run local preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>
+          <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run Local Preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Pressione [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) ou descubra o painel '[Executar e Depurar]5D;(command:workbench.view.debug)' na barra de atividades e clique no ícone reproduzir para visualizar localmente seu aplicativo no contexto do Teams.]A; [Executar visualização local (F5)]5D; (command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A; __Dica: para executar a visualização local, entre no Microsoft 365 (conta organizacional) com a opção de sideload.__]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run local preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4764,10 +4395,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Get started with Teams Toolkit]]></Val>
+          <Val><![CDATA[Get Started with Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Introdução ao Kit de Ferramentas do Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Get started with Teams Toolkit]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4776,78 +4410,6 @@
           <Val><![CDATA[Account Help]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ajuda da Conta]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.downloadFrom" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Downloading from %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Baixando de %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.downloadSampleFail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to download sample app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha ao carregar a amostra de aplicativo]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.downloadSampleTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Select folder to download the sample app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Selecione a pasta para baixar a amostra de aplicativo]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.emptyData" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Empty zip file]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Arquivo zip vazio]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.fetchData" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Fetch sample app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Buscar amostra de aplicativo]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.folderExist" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Folder already exists]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pasta já existe.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.folderExistDialogTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Path %s already exists. Select a different folder.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[O caminho %s já existe. Selecione uma pasta diferente.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.invalidFolder" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Invalid folder]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pasta inválida]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4866,15 +4428,6 @@
           <Val><![CDATA[Teams Toolkit Survey]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Pesquisa do Kit de Ferramentas do Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.unzipPackage" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unzipping the sample package]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Descompactando o pacote amostra]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -1,9 +1,9 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample",
     "engines": {
-        "node": ">=14 <=16"
+        "node": "14 || 16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -28,7 +28,7 @@
         "botbuilder": "^4.18.0"
     },
     "devDependencies": {
-        "@azure/functions": "^1.2.3",
+        "@azure/functions": "^3.5.0",
         "azurite": "^3.16.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",

@@ -1,0 +1,8 @@
+version: 1.0.0
+provision:
+  - name: test
+    uses: some_unknown_driver
+    with:
+      name: mybot
+    writeToEnvironmentFile:
+      xxx: 1

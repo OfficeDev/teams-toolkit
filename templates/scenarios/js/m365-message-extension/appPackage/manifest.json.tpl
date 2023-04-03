@@ -15,12 +15,12 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "{%appName%}-${{TEAMSFX_ENV}}",
-        "full": "full name for {%appName%}"
+        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "full": "full name for {{appName}}"
     },
     "description": {
-        "short": "short description of {%appName%}",
-        "full": "full description of {%appName%}"
+        "short": "short description of {{appName}}",
+        "full": "full description of {{appName}}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],
@@ -55,7 +55,5 @@
         "identity",
         "messageTeamMembers"
     ],
-    "validDomains": [
-        "${{BOT_DOMAIN}}"
-    ]
+    "validDomains": []
 }

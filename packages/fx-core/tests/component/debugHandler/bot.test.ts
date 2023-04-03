@@ -41,7 +41,6 @@ import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandl
 import { AadAppCredentials } from "../../../src/component/resource/botService/AadAppCredentials";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
-import { FailedToCreateBotRegistrationError } from "../../../src/component/resource/botService/errors";
 import { AppStudioResultFactory } from "../../../src/component/resource/appManifest/results";
 import { AppStudioError } from "../../../src/component/resource/appManifest/errors";
 import { APP_STUDIO_API_NAMES } from "../../../src/component/resource/appManifest/constants";

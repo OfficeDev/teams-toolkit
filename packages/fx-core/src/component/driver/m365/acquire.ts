@@ -15,9 +15,9 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { FileNotFoundUserError } from "./error/FileNotFoundUserError";
+import { InvalidActionInputError } from "../../../error/common";
 
 interface AcquireArgs {
   appPackagePath?: string; // The path of the app package
@@ -25,6 +25,16 @@ interface AcquireArgs {
 
 const actionName = "m365Title/acquire";
 const helpLink = "https://aka.ms/teamsfx-actions/m365-title-acquire";
+
+const defaultOutputEnvVarNames = {
+  titleId: "M365_TITLE_ID",
+  appId: "M365_APP_ID",
+};
+
+const outputKeys = {
+  titleId: "titleId",
+  appId: "appId",
+};
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class M365TitleAcquireDriver implements StepDriver {
@@ -41,10 +51,15 @@ export class M365TitleAcquireDriver implements StepDriver {
     });
   }
 
-  public async execute(args: AcquireArgs, ctx: DriverContext): Promise<ExecutionResult> {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async execute(
+    args: AcquireArgs,
+    ctx: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
-      const result = await this.handler(args, ctx);
+      const result = await this.handler(args, ctx, outputEnvVarNames);
       summaries = result.summaries;
       return result.output;
     });
@@ -56,7 +71,8 @@ export class M365TitleAcquireDriver implements StepDriver {
 
   private async handler(
     args: AcquireArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<{
     output: Map<string, string>;
     summaries: string[];
@@ -70,6 +86,9 @@ export class M365TitleAcquireDriver implements StepDriver {
       await progressHandler?.start();
 
       this.validateArgs(args);
+      if (!outputEnvVarNames) {
+        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+      }
       const appPackagePath = getAbsolutePath(args.appPackagePath!, context.projectPath);
       if (!(await fs.pathExists(appPackagePath))) {
         throw new FileNotFoundUserError(actionName, appPackagePath, helpLink);
@@ -90,13 +109,16 @@ export class M365TitleAcquireDriver implements StepDriver {
         throw sideloadingTokenRes.error;
       }
       const sideloadingToken = sideloadingTokenRes.value;
-      const titleId = await packageService.sideLoading(sideloadingToken, appPackagePath);
+      const sideloadingRes = await packageService.sideLoading(sideloadingToken, appPackagePath);
 
       await progressHandler?.end(true);
 
       return {
-        output: new Map([["M365_TITLE_ID", titleId]]),
-        summaries: [getLocalizedString("driver.m365.acquire.summary", titleId)],
+        output: new Map([
+          [outputEnvVarNames.get(outputKeys.titleId)!, sideloadingRes[0]],
+          [outputEnvVarNames.get(outputKeys.appId)!, sideloadingRes[1]],
+        ]),
+        summaries: [getLocalizedString("driver.m365.acquire.summary", sideloadingRes[0])],
       };
     } catch (error) {
       await progressHandler?.end(false);
@@ -124,7 +146,7 @@ export class M365TitleAcquireDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 }

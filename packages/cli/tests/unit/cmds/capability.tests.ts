@@ -7,7 +7,16 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, Func, FxError, Inputs, ok, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  Func,
+  FxError,
+  Inputs,
+  ok,
+  SystemError,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
 import { FxCore } from "@microsoft/teamsfx-core";
 import {
@@ -18,6 +27,7 @@ import {
   CapabilityAddCommandAndResponse,
   CapabilityAddWorkflow,
   CapabilityAddSPFxTab,
+  AddWebpart,
   CapabilityAddSSOTab,
 } from "../../../src/cmds/capability";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -152,6 +162,71 @@ describe("Capability Command Tests", function () {
       throw new Error("Should throw an error.");
     } catch (e) {
       expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+
+  it("Capability Add SPFx Web Part Command Builder", async () => {
+    const cmd = new AddWebpart();
+
+    await cmd.builder(yargs);
+
+    expect(options).deep.equals(
+      [
+        "spfx-install-latest-package",
+        "spfx-folder",
+        "spfx-webpart-name",
+        "manifest-path",
+        "local-manifest-path",
+        "folder",
+      ],
+      JSON.stringify(options)
+    );
+  });
+
+  it("Capability Add SPFx Web Part Command Running Check", async () => {
+    const addWebpartStub = sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(Void));
+    const cmd = new AddWebpart();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      ["spfx-folder"]: "/src",
+      ["spfx-webpart-name"]: "hiworld",
+      ["manifest-path"]: "/appPackage/manifest.json",
+      ["local-manifest-path"]: "/appPackage/manifest.local.json",
+      ["spfx-install-latest-package"]: "true",
+    };
+    await cmd.handler(args);
+    expect(addWebpartStub.calledOnce).to.be.true;
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.AddWebpartStart,
+      TelemetryEvent.AddWebpart,
+    ]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Capability Add SPFx Web Part Command Running Check with Error", async () => {
+    const addWebpartStub = sandbox
+      .stub(FxCore.prototype, "addWebpart")
+      .resolves(err(NotSupportedProjectType()));
+    const cmd = new AddWebpart();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fake",
+      ["spfx-folder"]: "/src",
+      ["spfx-webpart-name"]: "hiworld",
+      ["manifest-path"]: "/appPackage/manifest.json",
+      ["local-manifest-path"]: "/appPackage/manifest.local.json",
+    };
+    try {
+      await cmd.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(addWebpartStub.calledOnce).to.be.true;
+      expect(telemetryEvents).deep.equals([
+        TelemetryEvent.AddWebpartStart,
+        TelemetryEvent.AddWebpart,
+      ]);
       expect(telemetryEventStatus).equals(TelemetrySuccess.No);
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");

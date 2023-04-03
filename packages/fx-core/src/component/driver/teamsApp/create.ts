@@ -9,7 +9,6 @@ import {
   Result,
   err,
   ok,
-  Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -39,6 +38,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { getTemplatesFolder } from "../../../folder";
 import { InvalidActionInputError } from "../../../error/common";
 import { loadStateFromEnv } from "../util/utils";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/create";
 
@@ -75,7 +75,10 @@ export class CreateTeamsAppDriver implements StepDriver {
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage")),
+  ])
   async create(
     args: CreateTeamsAppArgs,
     context: WrapDriverContext,
@@ -103,12 +106,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.teamsApp.progressBar.createTeamsAppTitle"),
-      1
-    );
-    progressHandler?.start();
-
     let createdAppDefinition: AppDefinition;
     const teamsAppId = state.teamsAppId;
     if (teamsAppId) {
@@ -123,8 +120,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
 
     if (create) {
-      const message = getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage");
-      progressHandler?.next(message);
       const manifest = new TeamsAppManifest();
       manifest.name.short = args.name;
       if (teamsAppId) {
@@ -160,10 +155,6 @@ export class CreateTeamsAppDriver implements StepDriver {
         );
         context.logProvider.info(message);
         context.addSummary(message);
-        if (context.platform === Platform.VSCode) {
-          context.ui?.showMessage("info", message, false);
-        }
-        progressHandler?.end(true);
         return ok(
           new Map([
             [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition.teamsAppId!],
@@ -171,7 +162,6 @@ export class CreateTeamsAppDriver implements StepDriver {
           ])
         );
       } catch (e: any) {
-        progressHandler?.end(false);
         if (e instanceof UserError || e instanceof SystemError) {
           if (e instanceof UserError && !e.helpLink) {
             e.helpLink = "https://aka.ms/teamsfx-actions/teamsapp-create";
@@ -190,7 +180,6 @@ export class CreateTeamsAppDriver implements StepDriver {
       context.addSummary(
         getLocalizedString("driver.teamsApp.summary.createTeamsAppAlreadyExists", teamsAppId)
       );
-      progressHandler?.end(true);
       return ok(
         new Map([
           [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition!.teamsAppId!],

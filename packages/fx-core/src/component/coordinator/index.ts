@@ -171,8 +171,8 @@ const M365Actions = [
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [
-  "azureAppService/deploy",
-  "azureFunctions/deploy",
+  "azureAppService/zipDeploy",
+  "azureFunctions/zipDeploy",
   "azureStorage/deploy",
 ];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];

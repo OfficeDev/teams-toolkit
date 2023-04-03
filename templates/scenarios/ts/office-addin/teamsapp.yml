@@ -34,8 +34,11 @@ deploy:
     name: build app
     with:
       args: run build --if-present
-  - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
+  # Deploy bits to Azure Storage Static Website
+  - uses: azureStorage/deploy
     with:
       workingDirectory: .
-      distributionPath: ./dist # Deploy base folder
-      resourceId: ${{ADDIN_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
+      # Deploy base folder
+      artifactFolder: dist
+      # The resource id of the cloud resource to be deployed to
+      resourceId: ${{ADDIN_AZURE_STORAGE_RESOURCE_ID}}

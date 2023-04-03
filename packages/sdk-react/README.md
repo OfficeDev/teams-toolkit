@@ -137,19 +137,19 @@ interface SampleWidgetState {
 }
 
 export class SampleWidget extends BaseWidget<any, SampleWidgetState> {
-  async getData(): Promise<SampleWidgetState> {
+  override async getData(): Promise<SampleWidgetState> {
     return { data: getSampleData() };
   }
 
-  header(): JSX.Element | undefined {
+  override header(): JSX.Element | undefined {
     return <Text>Sample Widget</Text>;
   }
 
-  body(): JSX.Element | undefined {
+  override body(): JSX.Element | undefined {
     return <div>{this.state.data?.content}</div>;
   }
 
-  footer(): JSX.Element | undefined {
+  override footer(): JSX.Element | undefined {
     return <Button>View Details</Button>;
   }
 }
@@ -165,11 +165,11 @@ import ListWidget from "../widgets/ListWidget";
 import ChartWidget from "../widgets/ChartWidget";
 
 export default class YourDashboard extends BaseDashboard<any, any> {
-  protected styling(): string {
+  override styling(): string {
     return "styling-class-name";
   }
 
-  protected layout(): JSX.Element | undefined {
+  override layout(): JSX.Element | undefined {
     return (
       <>
         <ListWidget />

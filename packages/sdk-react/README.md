@@ -111,6 +111,66 @@ return (
 );
 ```
 
+### Building a Dashboard Tab
+
+#### 1. Create a new widget
+
+Here is an example of creating a new widget:
+
+```tsx
+import { Button, Text } from "@fluentui/react-components";
+import { BaseWidget } from "@microsoft/teamsfx-react";
+import { SampleModel } from "../models/sampleModel";
+import { getSampleData } from "../services/sampleService";
+
+interface SampleWidgetState {
+  data?: SampleModel;
+}
+
+export class SampleWidget extends BaseWidget<any, SampleWidgetState> {
+  async getData(): Promise<SampleWidgetState> {
+    return { data: getSampleData() };
+  }
+
+  header(): JSX.Element | undefined {
+    return <Text>Sample Widget</Text>;
+  }
+
+  body(): JSX.Element | undefined {
+    return <div>{this.state.data?.content}</div>;
+  }
+
+  footer(): JSX.Element | undefined {
+    return <Button>View Details</Button>;
+  }
+}
+```
+
+#### 2. Create a new dashboard
+
+Here is an example of creating a new dashboard:
+
+```tsx
+import { BaseDashboard } from "@microsoft/teamsfx-react";
+import ListWidget from "../widgets/ListWidget";
+import ChartWidget from "../widgets/ChartWidget";
+
+export default class YourDashboard extends BaseDashboard<any, any> {
+  protected styling(): string {
+    return "styling-class-name";
+  }
+
+  protected layout(): JSX.Element | undefined {
+    return (
+      <>
+        <ListWidget />
+        <ChartWidget />
+      </>
+    );
+  }
+}
+```
+
 ## React Hook list
 
 ### useData
@@ -140,6 +200,8 @@ const { loading, theme, themeString, teamsUserCredential } = useTeamsUserCredent
 ### useGraph
 This hook function leverage `useData` to call Graph API. It will execute the fetchGraphDataAsync function that the developer passes in first.
 If user has not consented to the scopes of AAD resources, `useGraph()`, `useGraphWithCredential` will automatically call login function to pop up the consent dialog. So, developers can focus on the business logic of how to fetch Microsoft Graph data.
+
+## Dashboard Related Classes
 
 ### BaseDashboard
 The BaseDashboard is a React component that provides a basic dashboard layout implementation for developers to quickly build a dashboard tab for Microsoft Teams. You can inherit this class and override some methods to customize your own dashboard. For example, define the layout of the widget in your dashboard by overriding the `layout()` method, and customize the dashboard style by overriding the `styling()` method.

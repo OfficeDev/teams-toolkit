@@ -261,10 +261,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         tokenScopes: ["host"],
         includePorts: true,
       };
-      const tunnelInstance = await this.tunnelManagementClientImpl.createTunnel(
-        tunnel,
-        tunnelRequestOptions
-      );
+      const tunnelInstance = await this.createTunnelWithCleanMessage(tunnel, tunnelRequestOptions);
 
       this.tunnel = tunnelInstance;
 

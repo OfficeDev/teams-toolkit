@@ -436,16 +436,14 @@ export async function getV3M365AppId(
   return result.value.M365_APP_ID;
 }
 
-export async function triggerV3Migration(): Promise<string | undefined> {
+export async function triggerV3Migration(): Promise<void> {
   const inputs = getSystemInputs();
   inputs.stage = Stage.debug;
   const result = await core.phantomMigrationV3(inputs);
   if (result.isErr()) {
-    showError(result.error);
     await vscode.debug.stopDebugging();
     throw result.error;
   }
   // reload window to terminate debugging
   await VS_CODE_UI.reload();
-  return undefined;
 }

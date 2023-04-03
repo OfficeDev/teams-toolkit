@@ -270,7 +270,7 @@ export async function scaffoldSPFx(
     await progressHandler?.end(true);
     return ok(undefined);
   } catch (error) {
-    if ((error as any).name === "DependencyInstallFailed") {
+    if (error instanceof InstallSoftwareError) {
       const globalYoVersion = Utils.getPackageVersion("yo");
       const globalGenVersion = Utils.getPackageVersion("@microsoft/generator-sharepoint");
       const yoInfo = YoChecker.getDependencyInfo();

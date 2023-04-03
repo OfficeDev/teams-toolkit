@@ -1462,14 +1462,12 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    if (isV3Enabled()) {
-      try {
-        await commonUtils.triggerV3Migration();
-        return undefined;
-      } catch (error: any) {
-        showError(error);
-        return "1";
-      }
+    try {
+      await commonUtils.triggerV3Migration();
+      return undefined;
+    } catch (error: any) {
+      showError(error);
+      return "1";
     }
   }
 
@@ -1573,14 +1571,12 @@ export async function validateGetStartedPrerequisitesHandler(
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    if (isV3Enabled()) {
-      try {
-        await commonUtils.triggerV3Migration();
-        return undefined;
-      } catch (error: any) {
-        showError(error);
-        return "1";
-      }
+    try {
+      await commonUtils.triggerV3Migration();
+      return undefined;
+    } catch (error: any) {
+      showError(error);
+      return "1";
     }
   }
 
@@ -1648,14 +1644,12 @@ export async function getDotnetPathHandler(): Promise<string> {
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    if (isV3Enabled()) {
-      try {
-        await commonUtils.triggerV3Migration();
-        return undefined;
-      } catch (error: any) {
-        showError(error);
-        return "1";
-      }
+    try {
+      await commonUtils.triggerV3Migration();
+      return undefined;
+    } catch (error: any) {
+      showError(error);
+      return "1";
     }
   }
 

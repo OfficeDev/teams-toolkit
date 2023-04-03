@@ -27,11 +27,6 @@ interface AcquireArgs {
 const actionName = "m365Title/acquire";
 const helpLink = "https://aka.ms/teamsfx-actions/m365-title-acquire";
 
-const defaultOutputEnvVarNames = {
-  titleId: "M365_TITLE_ID",
-  appId: "M365_APP_ID",
-};
-
 const outputKeys = {
   titleId: "titleId",
   appId: "appId",
@@ -87,7 +82,7 @@ export class M365TitleAcquireDriver implements StepDriver {
     try {
       this.validateArgs(args);
       if (!outputEnvVarNames) {
-        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+        throw new InvalidActionInputError(actionName, ["writeToEnvironmentFile"], helpLink);
       }
       const appPackagePath = getAbsolutePath(args.appPackagePath!, context.projectPath);
       if (!(await fs.pathExists(appPackagePath))) {

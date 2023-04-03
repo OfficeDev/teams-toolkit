@@ -12,11 +12,6 @@ console.log(
   `================== template version: ${templateVersion} ==================`
 );
 
-const currentBranch = process.argv[2];
-console.log(
-  `================== current branch: ${currentBranch} ==================`
-);
-
 const fxCorePath = path.join(__dirname, "../../packages/fx-core");
 const templateConfig = path.join(
   fxCorePath,
@@ -47,21 +42,19 @@ if (!semver.prerelease(templateVersion)) {
     JSON.stringify(templateConfigFile, null, 4)
   );
 } else if (templateVersion.includes("alpha")) {
-  if (currentBranch === "dev") {
-    console.log("sync up template in fx-core as 0.0.0-alpha");
-    templateConfigFile.version = "0.0.0-alpha";
-    templateConfigFile.tagPrefix = "templates-";
-    fse.writeFileSync(
-      templateConfig,
-      JSON.stringify(templateConfigFile, null, 4)
-    );
-  } else if (currentBranch === "prerelease") {
-    console.log("sync up template in fx-core as 0.0.0-prerelease");
-    templateConfigFile.version = "0.0.0-prerelease";
-    templateConfigFile.tagPrefix = "templates-";
-    fse.writeFileSync(
-      templateConfig,
-      JSON.stringify(templateConfigFile, null, 4)
-    );
-  }
+  console.log("sync up template in fx-core as 0.0.0-alpha");
+  templateConfigFile.version = "0.0.0-alpha";
+  templateConfigFile.tagPrefix = "templates-";
+  fse.writeFileSync(
+    templateConfig,
+    JSON.stringify(templateConfigFile, null, 4)
+  );
+} else if (templateVersion.includes("beta")) {
+  console.log("sync up template in fx-core as 0.0.0-prerelease");
+  templateConfigFile.version = "0.0.0-prerelease";
+  templateConfigFile.tagPrefix = "templates-";
+  fse.writeFileSync(
+    templateConfig,
+    JSON.stringify(templateConfigFile, null, 4)
+  );
 }

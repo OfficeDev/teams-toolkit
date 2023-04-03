@@ -96,3 +96,14 @@ export class UnhandledError extends SystemError {
     if (e.stack) super.stack = e.stack;
   }
 }
+
+export class InstallSoftwareError extends UserError {
+  constructor(source: string, nameAndVersion: string, helpLink?: string) {
+    super({
+      source: camelCase(source || "common"),
+      message: getDefaultString("error.common.InstallSoftwareError", nameAndVersion),
+      displayMessage: getLocalizedString("error.common.InstallSoftwareError", nameAndVersion),
+    });
+    if (helpLink) this.helpLink = helpLink;
+  }
+}

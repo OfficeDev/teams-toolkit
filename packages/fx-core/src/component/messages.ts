@@ -81,8 +81,7 @@ export class LogMessages {
   );
   public static readonly projectScaffoldAt = (basePath: string): string =>
     getLocalizedString("plugins.function.projectScaffoldAt", basePath);
-  public static readonly failedToInstallDotnet = (error: Error): string =>
-    getLocalizedString("plugins.function.failedToInstallDotnet", error);
+
   public static readonly askFunctionName: string = getLocalizedString(
     "plugins.function.askFunctionName"
   );

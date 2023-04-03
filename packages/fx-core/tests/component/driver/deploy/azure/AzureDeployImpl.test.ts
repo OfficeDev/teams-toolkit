@@ -28,7 +28,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
   it("zip deploy need acceleration", async () => {
     const args = {
       workingDirectory: "./",
-      distributionPath: `./tmp`,
+      artifactFolder: `./tmp`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",

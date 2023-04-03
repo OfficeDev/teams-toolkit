@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### Mar 23, 2023
+
+Enhancement:
+
+- Updated instruction for minimum required version of Outlook in Outlook add-in project template.
+
 ### Mar 14, 2023
 
 New features:

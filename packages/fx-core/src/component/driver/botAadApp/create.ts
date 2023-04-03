@@ -23,6 +23,7 @@ import { logMessageKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { progressBarKeys } from "../../resource/botService/botRegistration/constants";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -93,6 +94,12 @@ export class CreateBotAadAppDriver implements StepDriver {
         outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
       }
       const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
+
+      // If it's the case of a valid bot id with an empty bot password, then throw an error
+      if (botAadAppState.botId && !botAadAppState.botPassword) {
+        throw new UnexpectedEmptyBotPasswordError(actionName, helpLink);
+      }
+
       const botConfig: BotAadCredentials = {
         botId: botAadAppState.botId ?? "",
         botPassword: botAadAppState.botPassword ?? "",

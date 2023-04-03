@@ -25,11 +25,11 @@ provision:
   - uses: script # Set TAB_DOMAIN for local launch
     name: Set TAB_DOMAIN for local launch
     with:
-      run: echo "::set-output TAB_DOMAIN=localhost:53000"
+      run: echo "set-teamsfx-env TAB_DOMAIN=localhost:53000"
   - uses: script # Set TAB_ENDPOINT for local launch
     name: Set TAB_ENDPOINT for local launch
     with:
-      run: echo "::set-output TAB_ENDPOINT=https://localhost:53000"
+      run: echo "set-teamsfx-env TAB_ENDPOINT=https://localhost:53000"
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:

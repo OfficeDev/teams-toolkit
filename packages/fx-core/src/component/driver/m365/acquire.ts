@@ -81,9 +81,7 @@ export class M365TitleAcquireDriver implements StepDriver {
   }> {
     try {
       this.validateArgs(args);
-      if (!outputEnvVarNames) {
-        throw new InvalidActionInputError(actionName, ["writeToEnvironmentFile"], helpLink);
-      }
+      this.validateOutputEnvVarNames(outputEnvVarNames);
       const appPackagePath = getAbsolutePath(args.appPackagePath!, context.projectPath);
       if (!(await fs.pathExists(appPackagePath))) {
         throw new FileNotFoundUserError(actionName, appPackagePath, helpLink);
@@ -106,8 +104,8 @@ export class M365TitleAcquireDriver implements StepDriver {
 
       return {
         output: new Map([
-          [outputEnvVarNames.get(outputKeys.titleId)!, sideloadingRes[0]],
-          [outputEnvVarNames.get(outputKeys.appId)!, sideloadingRes[1]],
+          [outputEnvVarNames!.get(outputKeys.titleId)!, sideloadingRes[0]],
+          [outputEnvVarNames!.get(outputKeys.appId)!, sideloadingRes[1]],
         ]),
         summaries: [getLocalizedString("driver.m365.acquire.summary", sideloadingRes[0])],
       };
@@ -136,6 +134,12 @@ export class M365TitleAcquireDriver implements StepDriver {
 
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
+    }
+  }
+
+  private validateOutputEnvVarNames(outputEnvVarNames?: Map<string, string>): void {
+    if (!outputEnvVarNames?.get(outputKeys.titleId) || !outputEnvVarNames?.get(outputKeys.appId)) {
+      throw new InvalidActionInputError(actionName, ["writeToEnvironmentFile"], helpLink);
     }
   }
 }

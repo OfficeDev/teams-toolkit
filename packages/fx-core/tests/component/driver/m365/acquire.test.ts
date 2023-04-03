@@ -69,6 +69,20 @@ describe("m365Title/acquire", async () => {
     }
   });
 
+  it("execute: missing appId", async () => {
+    const args = {
+      appPackagePath: "fakePath",
+    };
+    const outputEnvVarNames = new Map([["titleId", "MY_TITLE_ID"]]);
+
+    const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    chai.assert(result.result.isErr());
+    if (result.result.isErr()) {
+      chai.assert.equal(result.result.error.name, "InvalidActionInputError");
+      chai.assert.isTrue(result.result.error.message.includes("writeToEnvironmentFile"));
+    }
+  });
+
   it("execute: should throw error if file not exists", async () => {
     const args = {
       appPackagePath: "fakePath",

@@ -2,7 +2,6 @@ import { SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
-import { camelCase } from "lodash";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {

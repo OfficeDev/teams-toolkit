@@ -16,7 +16,7 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import { merge } from "lodash";
+import { camelCase, merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
@@ -865,7 +865,7 @@ export class Coordinator {
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UnresolvedPlaceholderError(
-            reason.failedDriver.uses,
+            camelCase(reason.failedDriver.uses),
             placeholders,
             templatePath
           );

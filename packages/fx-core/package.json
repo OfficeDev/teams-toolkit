@@ -46,6 +46,7 @@
     "test:manifestUtil": "nyc mocha \"tests/component/resource/appManifest/manifestUtils.test.ts\"",
     "test:jsonUtils": "nyc mocha \"tests/component/jsonUtils.test.ts\"",
     "test:appstudio": "nyc mocha \"tests/component/resource/appManifest/appstudio.test.ts\"",
+    "test:arm": "nyc mocha \"tests/plugins/solution/solution.arm.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

@@ -901,7 +901,7 @@
   "driver.botAadApp.log.failExecuteDriver": "Unable to execute action %s. Error message: %s",
   "driver.botAadApp.log.successCreateBotAad": "Created Azure Active Directory application with client id %s.",
   "driver.botAadApp.log.useExistingBotAad": "Used existing Azure Active Directory application with client id %s.",
-  "driver.botAadApp.error.unexpectedEmptyBotPassword": "Unexpected empty bot password. You can choose to add your own generated bot password in env file or clear bot id as well so that a new pair would be generated. action: %s.",
+  "driver.botAadApp.error.unexpectedEmptyBotPassword": "Bot password is empty. Add it in env file or clear bot id to have bot id/password pair regenerated. action: %s.",
   "driver.arm.error.outputConversionFailed": "There is a duplicated key %s in ARM deployment output",
   "driver.arm.error.CompileBicepFailed": "Unable to compile Bicep files to JSON ARM templates file: %s",
   "driver.arm.description.deploy": "Deploy the given ARM templates to Azure",

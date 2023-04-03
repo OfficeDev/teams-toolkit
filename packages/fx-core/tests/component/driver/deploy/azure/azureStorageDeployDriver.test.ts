@@ -32,6 +32,7 @@ import * as uuid from "uuid";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as chai from "chai";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 function getMockStorageAccount1() {
   return {
@@ -78,6 +79,11 @@ describe("Azure Storage Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")

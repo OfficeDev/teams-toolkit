@@ -191,6 +191,14 @@ jobs:
           tag: "template-tag-list"
           allowUpdates: true
 
+      - name: sync up fx-core fallback templates
+        run: |
+          rm -r ./templates/fallback
+          node ./scripts/download-templates-zip.js $(git tag -l templates*)
+        working-directory: ./packages/fx-core
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
+
       - name: download simpleauth to fx-core
         uses: nick-invision/retry@v2
         with:

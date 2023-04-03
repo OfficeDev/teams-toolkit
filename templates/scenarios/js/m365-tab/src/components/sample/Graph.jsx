@@ -2,7 +2,7 @@ import "./Graph.css";
 import { useGraphWithCredential } from "@microsoft/teamsfx-react";
 import { Providers, ProviderState } from "@microsoft/mgt-element";
 import { TeamsFxProvider } from "@microsoft/mgt-teamsfx-provider";
-import { Button } from "@fluentui/react-northstar";
+import { Button } from "@fluentui/react-components";
 import { Design } from "./Design";
 import { PersonCardFluentUI } from "./PersonCardFluentUI";
 import { PersonCardGraphToolkit } from "./PersonCardGraphToolkit";
@@ -40,7 +40,9 @@ export function Graph() {
       <div className="section-margin">
         <p>Click below to authorize button to grant permission to using Microsoft Graph.</p>
         <pre>{`credential.login(scope);`}</pre>
-        <Button primary content="Authorize" disabled={loading} onClick={reload} />
+        <Button appearance="primary" disabled={loading} onClick={reload}>
+          Authorize
+        </Button>
 
         <p>
           Below are two different implementations of retrieving profile photo for currently

@@ -80,7 +80,7 @@ async function loadManifest(
     const unresolvedEnvironmentVariable = getEnvironmentVariables(manifestString);
     if (unresolvedEnvironmentVariable && unresolvedEnvironmentVariable.length > 0) {
       const error = new UnresolvedPlaceholderError(
-        actionName,
+        "aadAppUpdate",
         unresolvedEnvironmentVariable.join(", "),
         manifestPath,
         helpLink

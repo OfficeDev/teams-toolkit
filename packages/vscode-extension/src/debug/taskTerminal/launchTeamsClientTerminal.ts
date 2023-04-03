@@ -12,7 +12,6 @@ import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { getLocalDebugSession } from "../commonUtils";
 import VsCodeLogInstance from "../../commonlib/log";
-import { generateAccountHint } from "../teamsfxDebugProvider";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { SolutionSource } from "@microsoft/teamsfx-core/build/component/constants";
 import { ExtensionErrors } from "../../error";
@@ -22,12 +21,12 @@ import {
   openTerminalDisplayMessage,
   openTerminalMessage,
 } from "../constants";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { manifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/ManifestUtils";
 import { core, getSystemInputs } from "../../handlers";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
 export interface LaunchTeamsClientArgs {
-  env: string;
+  env?: string;
   manifestPath: string;
 }
 
@@ -55,36 +54,20 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   }
 
   private async _do(): Promise<Result<Void, FxError>> {
-    if (!this.args?.env) {
-      // Prompt to select env
-      const inputs = getSystemInputs();
-      inputs.ignoreEnvInfo = false;
-      inputs.ignoreLocalEnv = true;
-      const envResult = await core.getSelectedEnv(inputs);
-      if (envResult.isErr()) {
-        throw envResult.error;
-      }
-      this.args.env = envResult.value!;
-
-      // reload env
-      const envRes = await envUtil.readEnv(
-        globalVariables.workspaceUri?.fsPath as string,
-        this.args.env,
-        false,
-        true
-      );
-      if (envRes.isErr()) {
-        throw envRes.error;
-      }
-    }
-
     if (!this.args?.manifestPath) {
       throw BaseTaskTerminal.taskDefinitionError("manifestPath");
     }
 
-    const teamsAppId = await this.getTeamsAppId(this.args.env, this.args.manifestPath);
-    const accountHint = await generateAccountHint(false);
-    const launchUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${accountHint}`;
+    const inputs = getSystemInputs();
+    inputs.env = this.args.env;
+    inputs[CoreQuestionNames.M365Host] = Hub.teams;
+    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
+    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
+    const result = await core.previewWithManifest(inputs);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+    const launchUrl = result.value;
 
     VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
@@ -102,28 +85,11 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     return await this.openUrl(launchUrl);
   }
 
-  private async getTeamsAppId(env: string, manifestPath: string): Promise<string> {
-    // load env from .env
-    const projectPath = globalVariables.workspaceUri?.fsPath as string;
-    const envRes = await envUtil.readEnv(projectPath, env, true, true);
-    if (envRes.isErr()) {
-      throw envRes.error;
-    }
-
-    // read manifest
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath, {});
-    if (manifestRes.isErr()) {
-      throw manifestRes.error;
-    }
-
-    return manifestRes.value.id;
-  }
-
   private openUrl(url: string): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>(async (resolve, reject) => {
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
-        shell: true,
+        shell: false,
         detached: false,
       };
 

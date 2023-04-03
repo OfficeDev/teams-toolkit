@@ -36,12 +36,12 @@ export interface IBaseTunnelArgs {
 
 export type OutputInfo = {
   file: string | undefined;
-  keys: string[];
 };
 
 export type EndpointInfo = {
   src: string;
   dest: string;
+  keys: string[];
 };
 
 export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
@@ -148,7 +148,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
           tunnelInfo.src,
           tunnelInfo.dest,
           envs.file,
-          envs.keys
+          tunnelInfo.keys
         )}`
       );
       isFirstTunnel = false;
@@ -169,7 +169,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
           tunnelInfo.src,
           tunnelInfo.dest,
           envs.file,
-          envs.keys
+          tunnelInfo.keys
         )}\r\n`
       );
     }
@@ -237,7 +237,6 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     try {
       const result: OutputInfo = {
         file: undefined,
-        keys: [],
       };
       if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
         return ok(result);
@@ -247,7 +246,6 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
         return ok(result);
       }
 
-      result.keys = Object.keys(envVars);
       const res = await envUtil.writeEnv(globalVariables.workspaceUri.fsPath, env, envVars);
       const envFilePathResult = await pathUtils.getEnvFilePath(
         globalVariables.workspaceUri.fsPath,
@@ -268,7 +266,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
       return ok({});
     }
-    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env);
+    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env, false, false);
   }
 }
 

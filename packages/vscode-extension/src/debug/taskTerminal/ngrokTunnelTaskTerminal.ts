@@ -222,7 +222,14 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     try {
       const matches = data.match(ngrokEndpointRegex);
       if (matches && matches?.length > 3) {
-        const ngrokTunnelInfo = { src: matches[2], dest: matches[3] };
+        const ngrokTunnelInfo = {
+          src: matches[2],
+          dest: matches[3],
+          keys: [
+            this.args.writeToEnvironmentFile?.domain,
+            this.args.writeToEnvironmentFile?.endpoint,
+          ].filter((k): k is string => !!k),
+        };
         const saveEnvRes = await this.saveNgrokEndpointToEnv(ngrokTunnelInfo.dest);
         if (saveEnvRes.isErr()) {
           return err(saveEnvRes.error);
@@ -267,8 +274,18 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           return err(saveEnvRes.error);
         }
         this.isOutputSummary = true;
-        this.status.endpoint = endpoint;
-        await this.outputSuccessSummary(ngrokTunnelDisplayMessages, [endpoint], saveEnvRes.value);
+        const endpointInfo = Object.assign(endpoint, {
+          keys: [
+            this.args.writeToEnvironmentFile?.domain,
+            this.args.writeToEnvironmentFile?.endpoint,
+          ].filter((k): k is string => !!k),
+        });
+        this.status.endpoint = endpointInfo;
+        await this.outputSuccessSummary(
+          ngrokTunnelDisplayMessages,
+          [endpointInfo],
+          saveEnvRes.value
+        );
         return ok(true);
       }
     } catch {

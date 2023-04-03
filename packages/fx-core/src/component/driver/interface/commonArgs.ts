@@ -3,6 +3,7 @@
 
 import {
   AzureAccountProvider,
+  IProgressHandler,
   LogProvider,
   M365TokenProvider,
   Platform,
@@ -14,6 +15,7 @@ export interface DriverContext {
   azureAccountProvider: AzureAccountProvider;
   m365TokenProvider: M365TokenProvider;
   ui: UserInteraction | undefined;
+  progressBar: IProgressHandler | undefined;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
   projectPath: string;

@@ -20,7 +20,7 @@ import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { MockUserInteraction } from "../../../../core/utils";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -59,10 +59,11 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      outputZipFile: ".deployment/deployment.zip",
     } as DeployArgs;
     const progressHandler: IProgressHandler = {
       start: async (detail?: string): Promise<void> => {},
@@ -78,6 +79,7 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -135,7 +137,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/",
-      distributionPath: "/",
+      artifactFolder: "/",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
@@ -153,7 +155,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
     } as DeployArgs;
     const context = {
@@ -168,7 +170,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -214,7 +216,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -256,7 +258,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -303,7 +305,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -350,7 +352,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/aaaa",
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -373,7 +375,7 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -448,7 +450,7 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",

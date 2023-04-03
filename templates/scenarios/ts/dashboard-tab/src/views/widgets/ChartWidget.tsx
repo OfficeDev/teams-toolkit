@@ -119,7 +119,7 @@ export default class ChartWidget extends Widget<IChartWidgetState> {
         </div>
 
         <div style={areaChartStyle()}>
-          {this.state.data && (
+          {this.state.data! && (
             <AreaChart
               data={this.state.data.chartProps}
               legendsOverflowText={"Overflow Items"}

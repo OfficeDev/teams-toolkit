@@ -64,6 +64,8 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
+import { Hub } from "../common/m365/constants";
+
 export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",
@@ -98,6 +100,7 @@ export enum CoreQuestionNames {
   ConfirmLocalManifest = "confirmLocalManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
+  M365Host = "m365-host",
 }
 
 export const ProjectNamePattern =
@@ -1073,4 +1076,14 @@ export async function validateAadManifestContainsPlaceholder(
     return "Skip Current Question";
   }
   return "Skip Current Question";
+}
+
+export function selectM365HostQuestion(): QTreeNode {
+  return new QTreeNode({
+    name: CoreQuestionNames.M365Host,
+    title: getLocalizedString("core.M365HostQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [Hub.teams, Hub.outlook, Hub.office],
+    placeholder: getLocalizedString("core.M365HostQuestion.placeholder"),
+  });
 }

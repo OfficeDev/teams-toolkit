@@ -487,6 +487,10 @@ export class MockLogProvider implements LogProvider {
   async log({}: LogLevel, {}: string): Promise<boolean> {
     return true;
   }
+
+  getLogFilePath(): string {
+    return "";
+  }
 }
 
 export function MockProjectSettings(appName: string): ProjectSettings {

@@ -5,6 +5,7 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "InvalidParameter";
+// Reuse the messageKey from aadApp so a duplicated one won't be created.
 const messageKey = "driver.aadApp.error.invalidParameter";
 
 export class InvalidParameterUserError extends UserError {

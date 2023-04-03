@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import "../../../src/component/resource/appManifest/appManifest";
 import { Err, FxError, ok, UserError, ContextV3, Platform } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -144,10 +145,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.expect(error.name).to.equal(ErrorName.FailedToDeployArmTemplatesToAzureError);
-    chai
-      .expect(error.message)
-      .to.have.string("Unable to compile Bicep files to JSON ARM templates file:");
+    chai.expect(error.name).to.equal("CompileBicepError");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {

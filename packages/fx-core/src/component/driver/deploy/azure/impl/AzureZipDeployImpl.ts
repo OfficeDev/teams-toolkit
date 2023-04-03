@@ -31,10 +31,8 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   protected helpLink;
   protected summaries: () => string[];
   protected summaryPrepare: () => string[];
-  protected zipBuffer: Buffer | undefined;
   protected progressHandler?: AsyncIterableIterator<void>;
   protected progressNames: (() => string)[];
-  protected zipFilePath?: string;
 
   constructor(
     args: unknown,
@@ -140,11 +138,15 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    */
   protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
     const ig = await this.handleIgnore(args, context);
-    this.zipFilePath = path.join(
-      this.workingDirectory,
-      DeployConstant.DEPLOYMENT_TMP_FOLDER,
-      DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
-    );
+    this.zipFilePath = this.zipFilePath
+      ? path.isAbsolute(this.zipFilePath)
+        ? this.zipFilePath
+        : path.join(this.workingDirectory, this.zipFilePath)
+      : path.join(
+          this.workingDirectory,
+          DeployConstant.DEPLOYMENT_TMP_FOLDER,
+          DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
+        );
     await this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
     const res = await zipFolderAsync(this.distDirectory, this.zipFilePath, ig);
     await this.context.logProvider?.debug(

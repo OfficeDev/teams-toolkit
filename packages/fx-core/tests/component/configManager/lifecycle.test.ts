@@ -28,6 +28,7 @@ const mockedDriverContext: DriverContext = {
   m365TokenProvider: new MockedM365Provider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
   ui: new MockedUserInteraction(),
+  progressBar: undefined,
   logProvider: new MockedLogProvider(),
   telemetryReporter: new MockedTelemetryReporter(),
   projectPath: "",

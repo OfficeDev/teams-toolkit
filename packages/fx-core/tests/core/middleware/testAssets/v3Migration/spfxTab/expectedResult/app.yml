@@ -26,14 +26,14 @@ deploy:
   - uses: cli/runNpmCommand
     with:
       args: install
-      workingDirectory: ./SPFx
+      workingDirectory: SPFx
   - uses: cli/runNpxCommand
     with:
-      workingDirectory: ./SPFx
+      workingDirectory: SPFx
       args: gulp bundle --ship --no-color
   - uses: cli/runNpxCommand
     with:
-      workingDirectory: ./SPFx
+      workingDirectory: SPFx
       args: gulp package-solution --ship --no-color
   - uses: spfx/deploy
     with:

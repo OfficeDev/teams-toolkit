@@ -193,8 +193,8 @@ jobs:
 
       - name: sync up fx-core fallback templates
         run: |
-          rm -r ./templates/fallback
-          node ./scripts/download-templates-zip.js $(git tag -l templates*)
+          rm -rf ./templates/fallback
+          node ./scripts/download-templates-zip.js
         working-directory: ./packages/fx-core
         env:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3

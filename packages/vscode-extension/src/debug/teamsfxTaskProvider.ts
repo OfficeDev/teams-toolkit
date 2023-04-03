@@ -167,8 +167,13 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       // migrate to v3
       if (isV3Enabled()) {
-        await commonUtils.triggerV3Migration();
-        return ok(undefined);
+        try {
+          await commonUtils.triggerV3Migration();
+          return ok(undefined);
+        } catch (error: any) {
+          showError(error);
+          throw error;
+        }
       }
 
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);

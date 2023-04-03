@@ -1050,7 +1050,9 @@ export function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
     (!!envInfo.state[BuiltInFeaturePluginNames.bot] &&
       !!envInfo.state[BuiltInFeaturePluginNames.bot]["resourceId"]) ||
     (!!envInfo.state[ComponentNames.TeamsBot] &&
-      !!envInfo.state[ComponentNames.TeamsBot]["resourceId"])
+      !!envInfo.state[ComponentNames.TeamsBot]["resourceId"]) ||
+    (!!envInfo.state[ComponentNames.TeamsBot] &&
+      !!envInfo.state[ComponentNames.TeamsBot]["functionAppResourceId"])
   );
 }
 

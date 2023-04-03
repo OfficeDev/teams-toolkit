@@ -118,17 +118,7 @@ function outputErrorMessage(
     "error.common.InstallSoftwareError",
     bicepChecker.getBicepDisplayBicepName()
   );
-  // const message =
-  //   inputs?.platform === Platform.VSCode
-  //     ? Messages.failToInstallBicepOutputVSC()
-  //     : Messages.failToInstallBicepOutputCLI();
-  ctx.logProvider?.warning(
-    message
-    // .split("@NameVersion")
-    // .join(bicepChecker.getBicepDisplayBicepName())
-    // .split("@HelpLink")
-    // .join(bicepHelpLink)
-  );
+  ctx.logProvider?.warning(message);
 }
 
 class BicepChecker {

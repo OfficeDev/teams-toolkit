@@ -138,7 +138,7 @@ export class M365TitleAcquireDriver implements StepDriver {
   }
 
   private validateOutputEnvVarNames(outputEnvVarNames?: Map<string, string>): void {
-    if (!outputEnvVarNames?.get(outputKeys.titleId) || !outputEnvVarNames?.get(outputKeys.appId)) {
+    if (!outputEnvVarNames?.get(outputKeys.titleId) || !outputEnvVarNames.get(outputKeys.appId)) {
       throw new InvalidActionInputError(actionName, ["writeToEnvironmentFile"], helpLink);
     }
   }

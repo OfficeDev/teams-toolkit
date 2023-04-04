@@ -23,6 +23,7 @@ import { logMessageKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { progressBarKeys } from "../../resource/botService/botRegistration/constants";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { updateProgress } from "../middleware/updateProgress";
 import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
@@ -55,7 +56,10 @@ export class CreateBotAadAppDriver implements StepDriver {
     });
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString(progressBarKeys.creatingBotAadApp)),
+  ])
   public async execute(
     args: CreateBotAadAppArgs,
     ctx: DriverContext,
@@ -81,11 +85,6 @@ export class CreateBotAadAppDriver implements StepDriver {
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString(progressBarKeys.creatingBotAadApp),
-      1
-    );
-    await progressHandler?.start();
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       this.validateArgs(args);
@@ -106,7 +105,6 @@ export class CreateBotAadAppDriver implements StepDriver {
       };
       const botRegistration: BotRegistration = new RemoteBotRegistration();
 
-      await progressHandler?.next(getLocalizedString(progressBarKeys.creatingBotAadApp));
       const startTime = performance.now();
       const createRes = await botRegistration.createBotRegistration(
         context.m365TokenProvider,
@@ -133,7 +131,6 @@ export class CreateBotAadAppDriver implements StepDriver {
       );
       const summary = isReusingExisting ? useExistingBotAadLog : successCreateBotAadLog;
       context.logProvider?.info(summary);
-      await progressHandler?.end(true);
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
@@ -146,7 +143,6 @@ export class CreateBotAadAppDriver implements StepDriver {
         summaries: [summary],
       };
     } catch (error) {
-      await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)

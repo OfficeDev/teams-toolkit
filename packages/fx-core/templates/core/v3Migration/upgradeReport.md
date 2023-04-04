@@ -37,7 +37,7 @@ For more detailed changes, please refer to this [wiki](https://aka.ms/teams-tool
 
 2. If your project is created with Viusal Studio version < 17.4, you may see error `InvalidParameter: Following parameter is missing or invalid for aadApp/create action: name` when executing commands. Please follow [the steps](#how-to-roll-back) to roll back, install VS 17.4 and run upgrade first.
 
-3. If your tab app is created with Teams Toolkit 3.2.0 or earlier version, you may see error `simpleAuthEndpoint in configuration is invalid` when local debugging your app. Please follow this [wiki]( `https://aka.ms/teams-toolkit-5.0-upgrade#simpleauthendpoint-in-configuration-is-invalid`) to learn how to mitigate this error.
+3. If your tab app is created with Teams Toolkit 3.2.0 or earlier version, you may see error `simpleAuthEndpoint in configuration is invalid` when remote debugging your app. Please follow this [wiki]( `https://aka.ms/teams-toolkit-5.0-upgrade#simpleauthendpoint-in-configuration-is-invalid`) to learn how to mitigate this error.
 
 ## How to roll back
 

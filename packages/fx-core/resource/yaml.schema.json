@@ -1071,7 +1071,19 @@
             "envs": {
               "type": "object",
               "description": "the environment variable(s) to be generated",
-              "additionalProperties": { "type": [ "boolean", "number", "string" ] }
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
             },
             "target": {
               "type": "string",

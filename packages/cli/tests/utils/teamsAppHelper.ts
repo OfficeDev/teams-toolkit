@@ -49,14 +49,11 @@ export class TeamsAppHelper {
     return new Promise<boolean>(async (resolve) => {
       for (let i = 0; i < retryTimes; ++i) {
         try {
-          await this.axios!.delete(`appdefinitions/${id}`);
+          await this.axios.delete(`appdefinitions/${id}`);
           console.info(`[Success] delete the Teams app with id: ${id}`);
           return resolve(true);
         } catch {
           await delay(2000);
-          if (i < retryTimes - 1) {
-            console.warn(`[Retry] failed to delete the Teams app with id: ${id}`);
-          }
         }
       }
       console.error(`[Failed] delete the Teams app with id: ${id}`);
@@ -85,12 +82,7 @@ export class TeamsAppHelper {
             }
           }
         } catch (e) {
-          console.error(e);
-          resolve(false);
           await delay(2000);
-          if (i < retryTimes - 1) {
-            console.warn(`[Retry] cancel the stagged Teams app with id: ${id}`);
-          }
         }
         console.error(`[Failed] cancel the stagged Teams app with id: ${id}`);
         return resolve(false);
@@ -105,14 +97,11 @@ export class TeamsAppHelper {
     return new Promise<boolean>(async (resolve) => {
       for (let i = 0; i < retryTimes; ++i) {
         try {
-          await this.axios!.delete(`botframework/${id}`);
+          await this.axios.delete(`botframework/${id}`);
           console.info(`[Success] delete the Bot on bot framework with id: ${id}`);
           return resolve(true);
         } catch {
           await delay(2000);
-          if (i < retryTimes - 1) {
-            console.warn(`[Retry] failed to delete the Bot on bot framework with id: ${id}`);
-          }
         }
       }
       console.error(`[Failed] delete the Bot on bot framework with id: ${id}`);

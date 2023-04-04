@@ -591,6 +591,7 @@ export class FxCoreV3Implement {
     const teamsAppPackageFilePath = inputs?.[CoreQuestionNames.TeamsAppPackageFilePath] as string;
     const args: ValidateAppPackageArgs = {
       appPackagePath: teamsAppPackageFilePath,
+      showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
     return await driver.run(args, context);

@@ -54,8 +54,6 @@
           { "$ref": "#/definitions/botframeworkCreate" },
           { "$ref": "#/definitions/fileCreateOrUpdateEnvironmentFile" },
           { "$ref": "#/definitions/fileCreateOrUpdateJsonFile" },
-          { "$ref": "#/definitions/fileUpdateEnv" },
-          { "$ref": "#/definitions/fileUpdateJson" },
           { "$ref": "#/definitions/prerequisiteInstall" },
           { "$ref": "#/definitions/m365TitleAcquire" },
           { "$ref": "#/definitions/spfxDeploy" },
@@ -1057,7 +1055,7 @@
             "envs": {
               "type": "object",
               "description": "the environment variable(s) to be generated",
-              "additionalProperties": { "type": "string" }
+              "additionalProperties": { "type": [ "boolean", "number", "string" ] }
             },
             "target": {
               "type": "string",
@@ -1102,89 +1100,6 @@
             "target": {
               "type": "string",
               "description": "the target file"
-            }
-          }
-        }
-      }
-    },
-    "fileUpdateJson": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Generate app settings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-updatejson for more details.",
-      "required": ["uses", "with"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "An optional name of this action."
-        },
-        "env": {
-          "type": "object",
-          "description": "Define environment variables for this action.",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "uses": {
-          "type": "string",
-          "description": "Generate app settings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-updatejson for more details.",
-          "const": "file/updateJson",
-          "deprecationMessage": "Deprecated. Use 'file/createOrUpdateJsonFile' instead"
-        },
-        "with": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "parameters for this action",
-          "required": ["appsettings", "target"],
-          "properties": {
-            "appsettings": {
-              "type": "object",
-              "description": "the app settings to be generated"
-            },
-            "target": {
-              "type": "string",
-              "description": "the target file"
-            }
-          }
-        }
-      }
-    },
-    "fileUpdateEnv": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Generate env to .env file. Refer to https://aka.ms/teamsfx-actions/file-updateenv for more details.",
-      "required": ["uses", "with"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "An optional name of this action."
-        },
-        "env": {
-          "type": "object",
-          "description": "Define environment variables for this action.",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "uses": {
-          "type": "string",
-          "description": "Generate env to .env file. Refer to https://aka.ms/teamsfx-actions/file-updateenv for more details.",
-          "const": "file/updateEnv",
-          "deprecationMessage": "Deprecated. Use 'script' or 'file/createOrUpdateEnvironmentFile' instead"
-        },
-        "with": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "parameters for this action",
-          "required": ["envs"],
-          "properties": {
-            "envs": {
-              "type": "object",
-              "description": "the environment variable(s) to be generated",
-              "additionalProperties": { "type": "string" }
-            },
-            "target": {
-              "type": "string",
-              "description": "if defined, generate to this target file instead of the default .env file"
             }
           }
         }

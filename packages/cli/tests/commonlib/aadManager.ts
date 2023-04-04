@@ -123,20 +123,21 @@ export class AadManager {
     }
     const aadApps = await this.searchAadAppsByClientId(clientId);
     const promises = aadApps.map((app) => this.deleteAadAppById(app.id, retryTimes));
-    const results = await Promise.all(promises);
-    return results.map((result, index) => {
-      if (result) {
-        console.log(
-          `[Success] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
-        );
-        return true;
-      } else {
-        console.log(
-          `[Failed] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
-        );
-        return false;
-      }
-    });
+    return Promise.all(promises).then((results) =>
+      results.map((result, index) => {
+        if (result) {
+          console.log(
+            `[Success] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
+          );
+          return true;
+        } else {
+          console.log(
+            `[Failed] delete the Aad app with id: ${aadApps[index].id}, appId: ${aadApps[index].appId}`
+          );
+          return false;
+        }
+      })
+    );
   }
 
   public async deleteAadApps(contain: string, offsetHour = 0, retryTimes = 5) {

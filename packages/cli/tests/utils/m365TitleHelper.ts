@@ -70,9 +70,6 @@ export class M365TitleHelper {
           return resolve(true);
         } catch {
           await delay(2000);
-          if (i < retryTimes - 1) {
-            console.warn(`[Retry] failed to delete the M365 Title with id: ${id}`);
-          }
         }
       }
       console.error(`[Failed] delete the M365 Title with id: ${id}`);

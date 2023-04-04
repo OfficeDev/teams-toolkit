@@ -34,6 +34,7 @@ import AdmZip from "adm-zip";
 import { Constants } from "../../resource/appManifest/constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { SummaryConstant } from "../../configManager/constant";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -62,7 +63,10 @@ export class ValidateAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("plugins.appstudio.validateAppPackage.progressBar.message")),
+  ])
   public async validate(
     args: ValidateAppPackageArgs,
     context: WrapDriverContext
@@ -188,13 +192,15 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in log file
         context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
 
-        const message = getLocalizedString(
-          "driver.teamsApp.validate.result",
-          validationResult.errors.length + validationResult.warnings.length,
-          validationResult.notes.length,
-          "command:fx-extension.showOutputChannel"
-        );
-        context.ui?.showMessage("info", message, false);
+        if (args.showMessage) {
+          const message = getLocalizedString(
+            "driver.teamsApp.validate.result",
+            validationResult.errors.length + validationResult.warnings.length,
+            validationResult.notes.length,
+            "command:fx-extension.showOutputChannel"
+          );
+          context.ui?.showMessage("info", message, false);
+        }
       }
     } catch (e: any) {
       context.logProvider?.warning(

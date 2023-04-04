@@ -196,12 +196,12 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         "info",
         devTunnelDisplayMessages.devTunnelLimitExceededMessage(),
         false,
-        devTunnelDisplayMessages.devTunnelLimitExceededAnswerYes(),
-        devTunnelDisplayMessages.devTunnelLimitExceededAnswerNo()
+        devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete(),
+        devTunnelDisplayMessages.devTunnelLimitExceededAnswerCancel()
       ).then(async (result) => {
         if (
           result.isOk() &&
-          result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerYes()
+          result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete()
         ) {
           for (const tunnel of teamsToolkitTunnels) {
             await this.tunnelManagementClientImpl.deleteTunnel(tunnel);

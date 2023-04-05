@@ -4,13 +4,14 @@ import { render, screen } from "@testing-library/react";
 
 import { BaseDashboard } from "../src";
 
+ResizeObserver = jest.fn().mockImplementation(() => ({
+  disconnect: jest.fn(),
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+}));
+
 describe("BaseDashboard", () => {
   it("render", () => {
-    ResizeObserver = jest.fn().mockImplementation(() => ({
-      observe: jest.fn(),
-      unobserve: jest.fn(),
-      disconnect: jest.fn(),
-    }));
     render(<BaseDashboard />);
     expect(screen.findAllByRole("div")).toBeDefined();
   });

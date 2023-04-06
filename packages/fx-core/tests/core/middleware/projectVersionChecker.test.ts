@@ -190,11 +190,11 @@ describe("Middleware - projectVersionChecker.test", () => {
       });
 
       const my = new MyClass();
-      const inputs1: Inputs = {
-        platform: Platform.VSCode,
+      const inputs: Inputs = {
+        platform: Platform.CLI,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      const res = await my.myMethod(inputs1);
+      const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr());
     } finally {
       restore();

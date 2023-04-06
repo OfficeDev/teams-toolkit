@@ -14,6 +14,8 @@ import {
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import Update, { UpdateAadApp, UpdateTeamsApp } from "../../../src/cmds/update";
 import { expect } from "chai";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 import CLIUIInstance from "../../../src/userInteraction";
 import * as activate from "../../../src/activate";
 describe("Update Aad Manifest Command Tests", function () {
@@ -64,6 +66,14 @@ describe("Update Aad Manifest Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
   it("should pass builder check -- aad", () => {
     const cmd = new UpdateAadApp();
@@ -181,6 +191,14 @@ describe("Update Teams app manifest Command Tests", function () {
       });
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
   it("should pass builder check", () => {
     const cmd = new UpdateTeamsApp();

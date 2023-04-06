@@ -16,6 +16,8 @@ import Manifest from "../../../src/cmds/manifest";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Manifest Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -65,6 +67,14 @@ describe("Manifest Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   it("Builder Check", () => {

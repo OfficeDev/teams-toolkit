@@ -43,6 +43,8 @@ import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
 import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 import AzureAccountManager from "../../../src/commonlib/azureLogin";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 
 describe("Capability Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -105,6 +107,14 @@ describe("Capability Command Tests", function () {
     sandbox.stub(ProjectSettingsHelper, "includeBot").returns(false);
     sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").callsFake(async () => {});
     sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
 
     registeredCommands = [];
     options = [];

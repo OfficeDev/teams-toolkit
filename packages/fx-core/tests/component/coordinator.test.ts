@@ -3,6 +3,7 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  IProgressHandler,
   LogProvider,
   ok,
   Platform,
@@ -34,7 +35,6 @@ import {
 import { assert } from "chai";
 import {
   M365SsoLaunchPageOptionItem,
-  SolutionError,
   SolutionSource,
   TabOptionItem,
 } from "../../src/component/constants";
@@ -48,18 +48,18 @@ import {
   ProjectModel,
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
-import { envUtil } from "../../src/component/utils/envUtil";
+import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import fs from "fs-extra";
+import fs, { PathLike } from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
-import { createContextV3 } from "../../src/component/utils";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { ValidateTeamsAppDriver } from "../../src/component/driver/teamsApp/validate";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import Container from "typedi";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
@@ -69,6 +69,11 @@ import { deployUtils } from "../../src/component/deployUtils";
 import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { InvalidAzureCredentialError, SelectSubscriptionError } from "../../src/error/azure";
+import { DotenvParseOutput } from "dotenv";
+import * as os from "os";
+import * as path from "path";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -395,7 +400,7 @@ describe("component coordinator test", () => {
 
   it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -466,6 +471,12 @@ describe("component coordinator test", () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     sandbox.stub(fs, "writeFile").resolves();
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -484,10 +495,12 @@ describe("component coordinator test", () => {
     if (selectEnvRes.isOk()) {
       assert.equal(selectEnvRes.value, "dev");
     }
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(true));
   });
   it("provision success with subscriptionId in yml", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -555,7 +568,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -633,9 +646,103 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
   });
+  it("provision happy path: validate multi-env", async () => {
+    const mockProjectModel: ProjectModel = {
+      provision: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          const map = new Map();
+          map.set("KEY1", "VALUE1");
+          map.set("SECRET_KEY2", "VALUE2");
+          return { result: ok(map), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "ensureFile").resolves();
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ version: "1.0", trackingId: "mockTrackingId" }));
+    const fileDataMap = new Map();
+    sandbox.stub(fs, "writeFile").callsFake(async (file: PathLike | number, data: any) => {
+      fileDataMap.set(file, data);
+    });
+    const appName = randomAppName();
+    const projectPath = path.resolve(os.tmpdir(), appName);
+    const envFilePath = path.resolve(projectPath, "env", ".env.dev");
+    const userDataFilePath = envFilePath + ".user";
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(envFilePath));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      ignoreLockByUT: true,
+      env: "dev",
+      workflowFilePath: path.resolve(projectPath, "teamsapp.yml"),
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
+    const envData = fileDataMap.get(envFilePath);
+    const pRes1 = dotenvUtil.deserialize(envData);
+    const secretData = fileDataMap.get(userDataFilePath);
+    const pRes2 = dotenvUtil.deserialize(secretData);
+    assert.equal(pRes1.obj["KEY1"], "VALUE1");
+    assert.isUndefined(pRes1.obj["SECRET_KEY2"]);
+    assert.isTrue(pRes2.obj["SECRET_KEY2"].startsWith("crypto_"));
+  });
   it("provision happy path with existing resource groups in VS Code", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -712,9 +819,83 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
   });
-  it("provision spfx project shows sucess notification", async () => {
+  it("provision failed to get selected subscription", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
+      .resolves(undefined);
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof SelectSubscriptionError);
+    }
+  });
+  it("provision SPFx project shows success notification", async () => {
+    const mockProjectModel: ProjectModel = {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -772,7 +953,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when user directly update yml with empty subscriptionId", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -824,7 +1005,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get subInfo", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -894,7 +1075,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed getLifecycleDescriptions Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -922,6 +1103,7 @@ describe("component coordinator test", () => {
       },
     };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -963,7 +1145,13 @@ describe("component coordinator test", () => {
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox
       .stub(SummaryReporter.prototype, "getLifecycleDescriptions")
-      .resolves(err(new UserError({})));
+      .returns(err(new UserError({})));
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -972,10 +1160,12 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
   });
   it("provision failed with partial success", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1013,6 +1203,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
@@ -1053,6 +1244,12 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     // sandbox
     //   .stub(SummaryReporter.prototype, "getLifecycleDescriptions")
     //   .resolves(err(new UserError({})));
@@ -1064,10 +1261,12 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
   });
   it("provision failed with getM365TenantId Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1134,7 +1333,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getSelectedSubscription Error", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1208,7 +1407,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1271,7 +1470,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs for existing resource group", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1336,7 +1535,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with CLI inputs: create resource group failed", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1398,7 +1597,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when getting azure credentials", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1478,12 +1677,12 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
-      assert.equal(res.error.name, SolutionError.FailedToGetAzureCredential);
+      assert.isTrue(res.error instanceof InvalidAzureCredentialError);
     }
   });
   it("provision failed when checking resource group existence", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1573,7 +1772,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [],
         run: async (ctx: DriverContext) => {
@@ -1612,9 +1811,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("provsision failed with check whether m365 tenant matched fail", async () => {
+  it("provision failed with check whether m365 tenant matched fail", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1698,7 +1897,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with no subscription permission", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      provision: {
         name: "configureApp",
         driverDefs: [
           {
@@ -1755,6 +1954,100 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
   });
+  it("provision with no progress bar", async () => {
+    const mockProjectModel: ProjectModel = {
+      provision: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+      environmentFolderPath: "./envs",
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(tools.ui, "createProgressBar").returns(undefined as any as IProgressHandler);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+      isLocalDebug: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
+    // getSelectedEnv
+    const selectEnvRes = await fxCore.getSelectedEnv(inputs);
+    if (selectEnvRes.isErr()) {
+      console.log(selectEnvRes.error);
+    }
+    assert.isTrue(selectEnvRes.isOk());
+    if (selectEnvRes.isOk()) {
+      assert.equal(selectEnvRes.value, "dev");
+    }
+  });
+
   it("deploy happy path", async () => {
     const mockProjectModel: ProjectModel = {
       deploy: {
@@ -1887,7 +2180,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
-      registerApp: {
+      deploy: {
         name: "configureApp",
         driverDefs: [],
         run: async (ctx: DriverContext) => {
@@ -1911,6 +2204,12 @@ describe("component coordinator test", () => {
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1924,6 +2223,8 @@ describe("component coordinator test", () => {
       console.log(res?.error);
     }
     assert.isTrue(res.isOk());
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(true));
   });
   it("deploy failed partial success", async () => {
     const mockProjectModel: ProjectModel = {
@@ -1956,6 +2257,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
@@ -1967,6 +2269,12 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1975,6 +2283,52 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
     assert.isTrue(res.isErr());
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
+  });
+  it("deploy without progress bar", async () => {
+    const mockProjectModel: ProjectModel = {
+      deploy: {
+        name: "deploy",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    sandbox.stub(tools.ui, "createProgressBar").returns(undefined as any as IProgressHandler);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.deployArtifacts(inputs);
+    assert.isTrue(res.isOk());
   });
   it("publish happy path", async () => {
     const mockProjectModel: ProjectModel = {
@@ -2007,6 +2361,13 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
+    const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(ok(""));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
@@ -2017,8 +2378,161 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
+    assert.isTrue(showMessageStub.calledOnce);
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(true));
   });
-
+  it("publish failed", async () => {
+    const mockProjectModel: ProjectModel = {
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return {
+            result: err({
+              kind: "Failure",
+              error: { source: "test", timestamp: new Date() },
+            } as ExecutionError),
+            summaries: [],
+          };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.publishApplication(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error.message.indexOf("test") !== -1);
+    }
+    assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
+  });
+  it("publish without progress bar", async () => {
+    const mockProjectModel: ProjectModel = {
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns(undefined as any as IProgressHandler);
+    const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(ok(""));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.publishApplication(inputs);
+    assert.isTrue(res.isOk());
+    assert.isTrue(showMessageStub.called);
+    assert.isTrue(progressStartStub.notCalled);
+    assert.isTrue(progressEndStub.notCalled);
+  });
+  it("provision lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.provision(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
+  it("deploy lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.deploy(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
+  it("publish lifecycle undefined", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+      ignoreLockByUT: true,
+    };
+    const context = createDriverContext(inputs);
+    const res = await coordinator.publish(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
+  });
   it("convertExecuteResult ok", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = ok(value);
@@ -2052,7 +2566,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholders", async () => {
+  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2065,7 +2579,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
+    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
   });
 
   it("init infra happy path vsc", async () => {
@@ -2522,10 +3036,12 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
-    const driver1: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+    const driver1: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const driver3: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
     sandbox.stub(driver1, "run").resolves(ok(new Map()));
     sandbox.stub(driver2, "run").resolves(ok(new Map()));
+    sandbox.stub(driver3, "run").resolves(ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -2539,7 +3055,7 @@ describe("component coordinator test", () => {
     if (res1.isErr()) console.log(res1.error);
     assert.isTrue(res1.isOk());
     const res2 = await fxCore.executeUserTask(
-      { namespace: "", method: "validateManifest", params: { manifestTemplatePath: "." } },
+      { namespace: "", method: "validateManifest", params: { manifestPath: "." } },
       inputs
     );
     if (res2.isErr()) console.log(res2.error);
@@ -2554,6 +3070,11 @@ describe("component coordinator test", () => {
     );
     if (res3.isErr()) console.log(res3.error);
     assert.isTrue(res3.isOk());
+    const res4 = await fxCore.executeUserTask(
+      { namespace: "", method: "validateManifest", params: { appPackagePath: "." } },
+      inputs
+    );
+    assert.isTrue(res4.isOk());
   });
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {

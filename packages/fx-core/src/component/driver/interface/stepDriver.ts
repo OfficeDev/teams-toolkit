@@ -26,6 +26,11 @@ export interface StepDriver {
    * The summary is expected to contain human readable information that will be presented to users.
    * @param args Arguments from the `with` section in the yaml file.
    * @param ctx logger, telemetry, progress bar, etc.
+   * @param outputEnvVarNames the environment variable names for each output
    */
-  execute?(args: unknown, ctx: DriverContext): Promise<ExecutionResult>;
+  execute?(
+    args: unknown,
+    ctx: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult>;
 }

@@ -58,6 +58,6 @@ export interface TeamsAppAdmin {
 }
 
 export interface AppIds {
-  teamsAppId: string;
+  teamsAppId?: string;
   aadObjectId?: string;
 }

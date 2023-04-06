@@ -18,7 +18,7 @@
       "value": "B1"
     },
     "botDisplayName": {
-      "value": "{%appName%}"
+      "value": "{{appName}}"
     }
   }
 }

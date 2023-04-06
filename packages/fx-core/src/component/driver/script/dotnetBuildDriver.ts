@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @owner fanhu <fanhu@microsoft.com>
+ */
 
 import { BaseBuildDriver } from "./baseBuildDriver";
 import { Service } from "typedi";
@@ -32,7 +35,5 @@ export class DotnetBuildDriver extends BaseBuildStepDriver {
 }
 
 export class DotnetBuildDriverImpl extends BaseBuildDriver {
-  progressBarName = `Building Dotnet project at ${this.workingDirectory}`;
-  progressBarSteps = 1;
   buildPrefix = "dotnet";
 }

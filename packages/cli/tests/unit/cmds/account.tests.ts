@@ -16,7 +16,7 @@ import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 class MockTokenCredentials implements TokenCredential {
   public async getToken(
     scopes: string | string[],
@@ -35,7 +35,7 @@ describe("Account Command Tests", function () {
   let options: string[] = [];
   let positionals: string[] = [];
   let loglevels: LogLevel[] = [];
-
+  let mockedEnvRestore: RestoreFn;
   before(() => {
     sandbox
       .stub<any, any>(yargs, "command")
@@ -167,6 +167,10 @@ describe("Account Command Tests", function () {
     options = [];
     positionals = [];
     loglevels = [];
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
+  });
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   it("Builder Check", () => {

@@ -75,6 +75,13 @@ namespace Microsoft.TeamsFx.Conversation
 
         private async Task<Dictionary<string, ConversationReference>> ReadFromFile(CancellationToken cancellationToken = default)
         {
+            var fileInfo = new FileInfo(_filePath);
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+            {
+                // return empty map
+                return new Dictionary<string, ConversationReference>();
+            }
+
             using var file = File.OpenRead(_filePath);
             return await JsonSerializer.DeserializeAsync<Dictionary<string, ConversationReference>>(file, cancellationToken: cancellationToken).ConfigureAwait(false);
         }

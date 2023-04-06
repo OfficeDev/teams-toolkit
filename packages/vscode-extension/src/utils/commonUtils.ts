@@ -32,6 +32,7 @@ import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as yaml from "yaml";
+import { getV3TeamsAppId } from "../debug/commonUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -272,21 +273,13 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.YoEnvCheckerEnable
-  ).toString();
-  process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.generatorEnvCheckerEnable
-  ).toString();
-
   initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
-  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
-  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
 }
 
@@ -382,6 +375,15 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  if (isV3Enabled()) {
+    // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
+    try {
+      const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+      return teamsAppId !== "";
+    } catch (error) {
+      return false;
+    }
+  }
   let provisionResult: Json | undefined;
 
   try {

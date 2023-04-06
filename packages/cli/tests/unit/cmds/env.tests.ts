@@ -25,7 +25,8 @@ import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { YargsCommand } from "../../../src/yargsCommand";
-import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
+import { CoreHookContext, VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 enum CommandName {
   Add = "add",
@@ -128,6 +129,14 @@ describe("Env Add Command Tests", function () {
         newTargetEnvName = inputs.newTargetEnvName;
         return ok(Void);
       });
+    sandbox.stub(core.FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {
@@ -299,6 +308,14 @@ describe("Env List Command Tests", function () {
     sandbox.stub(core.environmentManager, "listAllEnvConfigs").callsFake(async (projectPath) => {
       return ok(allEnvList);
     });
+    sandbox.stub(core.FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

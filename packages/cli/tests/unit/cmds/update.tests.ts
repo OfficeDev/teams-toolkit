@@ -3,7 +3,7 @@
 
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import { err, FxError, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, UserError, Tools } from "@microsoft/teamsfx-api";
 import { FxCore, envUtil } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import {
@@ -14,7 +14,10 @@ import {
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import Update, { UpdateAadApp, UpdateTeamsApp } from "../../../src/cmds/update";
 import { expect } from "chai";
-
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import CLIUIInstance from "../../../src/userInteraction";
+import * as activate from "../../../src/activate";
 describe("Update Aad Manifest Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
@@ -63,11 +66,36 @@ describe("Update Aad Manifest Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
   it("should pass builder check -- aad", () => {
     const cmd = new UpdateAadApp();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals(["aad-app"]);
+  });
+  it("Run command failed without env", async () => {
+    sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(""));
+    const cmd = new Update();
+    const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-app");
+    const args = {
+      folder: "fake_test_aaa",
+      "manifest-file-path": "./aad.manifest.template.json",
+      interactive: "false",
+    };
+    sandbox.stub(activate, "default").resolves(ok(new FxCore({} as Tools)));
+    CLIUIInstance.interactive = false;
+    const res = await updateAadManifest!.runCommand(args);
+    expect(res.isErr()).to.be.true;
+    if (res.isErr()) {
+      expect(res.error.message).equal("The --env argument is not specified");
+    }
   });
 
   it("Run command success -- aad", async () => {
@@ -163,6 +191,14 @@ describe("Update Teams app manifest Command Tests", function () {
       });
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
   it("should pass builder check", () => {
     const cmd = new UpdateTeamsApp();

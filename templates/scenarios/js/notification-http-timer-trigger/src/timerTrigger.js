@@ -1,11 +1,11 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { bot } = require("./internal/initialize");
+const { notificationApp } = require("./internal/initialize");
 
 // Time trigger to send notification. You can change the schedule in ../timerNotifyTrigger/function.json
 module.exports = async function (context, myTimer) {
   const timeStamp = new Date().toISOString();
-  for (const target of await bot.notification.installations()) {
+  for (const target of await notificationApp.notification.installations()) {
     await target.sendAdaptiveCard(
       AdaptiveCards.declare(notificationTemplate).render({
         title: "New Event Occurred!",
@@ -54,14 +54,14 @@ module.exports = async function (context, myTimer) {
   **/
 
   /** You can also find someone and notify the individual person
-  const member = await bot.notification.findMember(
+  const member = await notificationApp.notification.findMember(
     async (m) => m.account.email === "someone@contoso.com"
   );
   await member?.sendAdaptiveCard(...);
   **/
 
   /** Or find multiple people and notify them
-  const members = await bot.notification.findAllMembers(
+  const members = await notificationApp.notification.findAllMembers(
     async (m) => m.account.email?.startsWith("test")
   );
   for (const member of members) {

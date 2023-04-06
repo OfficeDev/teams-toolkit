@@ -15,6 +15,7 @@ import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { NpxBuildDriver } from "../../../../src/component/driver/script/npxBuildDriver";
 import { MockUserInteraction } from "../../../core/utils";
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
 
 describe("NPX Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -39,7 +40,7 @@ describe("NPX Build Driver test", () => {
       ui: new MockUserInteraction(),
       projectPath: "./",
     } as DriverContext;
-    sandbox.stub(utils, "execute").resolves();
+    sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.run(args, context);
     assert.equal(res.isOk(), true);
   });
@@ -56,7 +57,7 @@ describe("NPX Build Driver test", () => {
       logProvider: new TestLogProvider(),
       projectPath: "./",
     } as DriverContext;
-    sandbox.stub(utils, "execute").throws(new Error("error"));
+    sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
     const res = await driver.run(args, context);
     assert.equal(res.isErr(), true);
   });

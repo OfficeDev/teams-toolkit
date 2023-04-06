@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Renlong Tu <rentu@microsoft.com>
- * @owner Wenyu Tang <wenyutang@microsoft.com>
+ * @author Wenyu Tang <wenyutang@microsoft.com>
  */
 
 import path from "path";

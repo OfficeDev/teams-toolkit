@@ -17,6 +17,8 @@ import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
@@ -68,6 +70,14 @@ describe("teamsfx validate", () => {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   it("should pass builder check", () => {
@@ -84,7 +94,44 @@ describe("teamsfx validate", () => {
     cmd.builder(yargs);
   });
 
+  it("Validate Command Running Check - app package", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.AppPackageFilePathParamName]: "./app.zip",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ValidateManifestStart,
+      TelemetryEvent.ValidateManifest,
+    ]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Validate Command Running Check - manifest", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.ManifestFilePathParamName]: "./manifest.json",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ValidateManifestStart,
+      TelemetryEvent.ValidateManifest,
+    ]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
   it("Validate Command Running Check", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
@@ -112,6 +159,9 @@ describe("teamsfx validate", () => {
   });
 
   it("Validate Command Running Check with Error", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {

@@ -21,7 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
-import { PathNotExistError } from "@microsoft/teamsfx-core/build/core/error";
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import { EnvStateFiles } from "@microsoft/teamsfx-core/build/core/environment";
 import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -39,6 +39,8 @@ import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/er
 import UI from "../../../src/userInteraction";
 import * as path from "path";
 import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Resource Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -125,7 +127,7 @@ describe("Resource Command Tests", function () {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(envs);
         } else {
-          return err(new PathNotExistError(projectPath));
+          return err(new FileNotFoundError("test", projectPath));
         }
       });
     sandbox
@@ -134,7 +136,7 @@ describe("Resource Command Tests", function () {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(allEnvs);
         } else {
-          return err(new PathNotExistError(projectPath));
+          return err(new FileNotFoundError("test", projectPath));
         }
       });
     sandbox
@@ -183,6 +185,14 @@ describe("Resource Command Tests", function () {
     });
     sandbox.stub(ProjectSettingsHelper, "includeFrontend").returns(false);
     sandbox.stub(ProjectSettingsHelper, "includeBot").returns(false);
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

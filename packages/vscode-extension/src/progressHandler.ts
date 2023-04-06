@@ -34,22 +34,29 @@ export class ProgressHandler implements IProgressHandler {
 
   private generateWholeMessage(): string {
     const head = this.title;
-    let body = `: [${this.currentStep}/${this.totalSteps}]`;
+    const step = `[${this.currentStep}/${this.totalSteps}]`;
+    let tail = "";
     if (this.view === "output") {
-      body = `${body} ${util.format(
+      tail = ` ${util.format(
         localize("teamstoolkit.progressHandler.showOutputLink"),
         "command:fx-extension.showOutputChannel"
       )}`;
     } else if (this.view === "terminal") {
-      body = `${body} ${util.format(
+      tail = ` ${util.format(
         localize("teamstoolkit.progressHandler.showTerminalLink"),
         "command:workbench.action.terminal.focus"
       )}`;
     }
-    const tail = this.detail
+    const detail = this.detail
       ? ` ${this.detail}`
       : localize("teamstoolkit.progressHandler.prepareTask");
-    return util.format(localize("teamstoolkit.progressHandler.reloadNotice"), head, body, tail);
+
+    return util.format(
+      localize("teamstoolkit.progressHandler.reloadNotice"),
+      `${head}: ${step}`,
+      detail,
+      tail
+    );
   }
 
   public async start(detail?: string) {

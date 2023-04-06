@@ -22,6 +22,7 @@ import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { CollaborationConstants } from "@microsoft/teamsfx-core/build/core/collaborator";
 import { EnvNotSpecified } from "../error";
 import CLIUIInstance from "../userInteraction";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -37,6 +38,8 @@ const spfxMessage =
 const teamsAppId = "teams-app-id";
 const aadObjectId = "aad-app-id";
 const env = "env";
+const teamsAppManifest = "teams-app-manifest";
+const aadAppManifest = "aad-app-manifest";
 
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
@@ -58,14 +61,14 @@ export class PermissionStatus extends YargsCommand {
           type: "string",
           name: env,
         })
-        .option(teamsAppId, {
-          description: "Id of Your Teams app",
-          name: teamsAppId,
+        .option(teamsAppManifest, {
+          description: "Manifest of Your Teams app",
+          name: teamsAppManifest,
           type: "string",
         })
-        .option(aadObjectId, {
-          description: "Object Id of your Azure AD app",
-          name: aadObjectId,
+        .option(aadAppManifest, {
+          description: "Manifest of your Azure AD app",
+          name: aadAppManifest,
           type: "string",
         });
     }
@@ -112,8 +115,8 @@ export class PermissionStatus extends YargsCommand {
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
 
       // add user input to Inputs
-      inputs[CollaborationConstants.AadObjectId] = args[aadObjectId];
-      inputs[CollaborationConstants.TeamsAppId] = args[teamsAppId];
+      inputs[CoreQuestionNames.AadAppManifestFilePath] = args[aadAppManifest];
+      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[teamsAppManifest];
       inputs[env] = args[env];
     }
 
@@ -154,14 +157,14 @@ export class PermissionGrant extends YargsCommand {
           type: "string",
           name: env,
         })
-        .option(teamsAppId, {
-          description: "Id of Your Teams app",
-          name: teamsAppId,
+        .option(teamsAppManifest, {
+          description: "Manifest of Your Teams app",
+          name: teamsAppManifest,
           type: "string",
         })
-        .option(aadObjectId, {
-          description: "Object Id of your Azure AD app",
-          name: aadObjectId,
+        .option(aadAppManifest, {
+          description: "Manifest of your Azure AD app",
+          name: aadAppManifest,
           type: "string",
         });
     }
@@ -207,8 +210,8 @@ export class PermissionGrant extends YargsCommand {
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
 
       // add user input to Inputs
-      answers[CollaborationConstants.AadObjectId] = args[aadObjectId];
-      answers[CollaborationConstants.TeamsAppId] = args[teamsAppId];
+      answers[CoreQuestionNames.AadAppManifestFilePath] = args[aadAppManifest];
+      answers[CoreQuestionNames.TeamsAppManifestFilePath] = args[teamsAppManifest];
       answers[env] = args[env];
     }
 

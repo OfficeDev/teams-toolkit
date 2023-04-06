@@ -23,16 +23,12 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
 import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
-import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
+import { getAppDirectory } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
-import {
-  DependencyInstallError,
-  NoConfigurationError,
-  ScaffoldError,
-} from "../resource/spfx/error";
+import { NoConfigurationError, ScaffoldError } from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
@@ -46,6 +42,7 @@ import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { getComponent } from "../workflow";
+import { InstallSoftwareError } from "../../error/common";
 /**
  * SPFx tab scaffold
  */
@@ -114,18 +111,14 @@ export async function scaffoldSPFx(
     if (!yoInstalled || !generatorInstalled) {
       await progressHandler?.next(ScaffoldProgressMessage.DependencyInstall);
 
-      if (isYoCheckerEnabled()) {
-        const yoRes = await yoChecker.ensureDependency(context);
-        if (yoRes.isErr()) {
-          throw DependencyInstallError("yo");
-        }
+      const yoRes = await yoChecker.ensureDependency(context);
+      if (yoRes.isErr()) {
+        throw new InstallSoftwareError("spfx", "yo");
       }
 
-      if (isGeneratorCheckerEnabled()) {
-        const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
-        if (spGeneratorRes.isErr()) {
-          throw DependencyInstallError("sharepoint generator");
-        }
+      const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
+      if (spGeneratorRes.isErr()) {
+        throw new InstallSoftwareError("spfx", "sharepoint generator");
       }
     }
 
@@ -135,16 +128,13 @@ export async function scaffoldSPFx(
     }
 
     const yoEnv: NodeJS.ProcessEnv = process.env;
-    yoEnv.PATH = isYoCheckerEnabled()
-      ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-          process.env.PATH ?? ""
-        }`
-      : process.env.PATH;
+    yoEnv.PATH = `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+      process.env.PATH ?? ""
+    }`;
 
     const args = [
-      isGeneratorCheckerEnabled()
-        ? spGeneratorChecker.getSpGeneratorPath()
-        : "@microsoft/sharepoint",
+      spGeneratorChecker.getSpGeneratorPath(),
+
       "--skip-install",
       "true",
       "--component-type",
@@ -280,7 +270,7 @@ export async function scaffoldSPFx(
     await progressHandler?.end(true);
     return ok(undefined);
   } catch (error) {
-    if ((error as any).name === "DependencyInstallFailed") {
+    if (error instanceof InstallSoftwareError) {
       const globalYoVersion = Utils.getPackageVersion("yo");
       const globalGenVersion = Utils.getPackageVersion("@microsoft/generator-sharepoint");
       const yoInfo = YoChecker.getDependencyInfo();

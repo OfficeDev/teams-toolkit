@@ -232,12 +232,6 @@ export class PathAlreadyExistsError extends UserError {
   }
 }
 
-export class PathNotExistError extends UserError {
-  constructor(source: string, path: string) {
-    super({ source: source, message: `Path ${path} does not exist.` });
-  }
-}
-
 export class ObjectAlreadyExistsError extends UserError {
   constructor(source: string, name: string) {
     super({ source: source, message: `${name} already exists.` });

@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Xiaofu Huang <xiaofhua@microsoft.com>
- * @owner Siglud <fanhu@microsoft.com>
+ * @author Siglud <fanhu@microsoft.com>
  */
 
 import * as path from "path";
@@ -128,16 +127,18 @@ export function happyPathTest(runtime: Runtime): void {
         timeout: 0,
       });
 
-      // publish
-      await execAsyncWithRetry(`teamsfx publish`, {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0,
-      });
+      // publish only run on node
+      if (runtime !== Runtime.Dotnet) {
+        await execAsyncWithRetry(`teamsfx publish`, {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        });
 
-      {
-        // Validate publish result
-        await AppStudioValidator.validatePublish(teamsAppId!);
+        {
+          // Validate publish result
+          await AppStudioValidator.validatePublish(teamsAppId!);
+        }
       }
     });
 

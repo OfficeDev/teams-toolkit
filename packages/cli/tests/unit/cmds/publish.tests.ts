@@ -22,6 +22,8 @@ import { NotSupportedProjectType } from "../../../src/error";
 import CLIUIInstance from "../../../src/userInteraction";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as utils from "../../../src/utils";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Publish Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -88,6 +90,14 @@ describe("Publish Command Tests", function () {
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
     CLIUIInstance.interactive = false;
   });
 

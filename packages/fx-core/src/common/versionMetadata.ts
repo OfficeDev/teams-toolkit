@@ -12,6 +12,8 @@ export const MetadataV3 = {
   configFile: "teamsapp.yml",
   localConfigFile: "teamsapp.local.yml",
   defaultEnvironmentFolder: "env",
+  envFilePrefix: ".env",
+  secretFileSuffix: "user",
   projectId: "projectId",
   teamsManifestFileName: "manifest.json",
   aadManifestFileName: "aad.manifest.json",
@@ -28,6 +30,8 @@ export const MetadataV2 = {
     cli_help: "1.x.x",
   },
   configFolder: ".fx",
+  stateFolder: "states",
+  userdataSuffix: "userdata",
   configFile: "projectSettings.json",
   updateToolkitLink: "https://aka.ms/update-teams-toolkit",
 };

@@ -102,11 +102,15 @@ describe("botAadAppCreate", async () => {
     const args: any = {
       name: expectedDisplayName,
     };
+    const progressBar = {
+      next: sinon.stub(),
+    };
 
     sinon.stub(GraphClient, "registerAadApp").resolves({
       clientId: expectedClientId,
       clientSecret: expectedSecretText,
     });
+    mockedDriverContext.progressBar = progressBar;
 
     const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
@@ -116,6 +120,7 @@ describe("botAadAppCreate", async () => {
     expect(
       result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
     ).to.be.equal(expectedSecretText);
+    expect(progressBar.next.calledOnce).to.be.true;
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {
@@ -141,7 +146,9 @@ describe("botAadAppCreate", async () => {
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
         expect(error instanceof UnhandledUserError).to.be.true;
-        expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+        expect(error.message).contains(
+          "An unexpected error has occurred while performing the botAadApp/create task"
+        );
       }
     );
   });
@@ -168,7 +175,9 @@ describe("botAadAppCreate", async () => {
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
         expect(error instanceof UnhandledSystemError).to.be.true;
-        expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+        expect(error.message).contains(
+          "An unexpected error has occurred while performing the botAadApp/create task"
+        );
       }
     );
   });
@@ -183,6 +192,23 @@ describe("botAadAppCreate", async () => {
         expect(error instanceof UnhandledSystemError).to.be.true;
       }
     );
+  });
+
+  it("should throw UnexpectedEmptyBotPasswordError when bot password is empty", async () => {
+    envRestore = mockedEnv({
+      [outputKeys.BOT_ID]: expectedClientId,
+      [outputKeys.SECRET_BOT_PASSWORD]: "",
+    });
+
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
+      .to.be.eventually.rejectedWith(
+        "Bot password is empty. Add it in env file or clear bot id to have bot id/password pair regenerated. action: botAadApp/create."
+      )
+      .and.is.instanceOf(UserError);
   });
 
   it("should be good when reusing existing bot in env", async () => {

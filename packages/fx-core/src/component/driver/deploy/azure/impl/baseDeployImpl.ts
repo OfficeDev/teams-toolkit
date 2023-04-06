@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author FanH <Siglud@gmail.com>
+ */
 import { DeployArgs, DeployContext, DeployStepArgs } from "../../../interface/buildAndDeployArgs";
 import { BaseComponentInnerError } from "../../../../error/componentError";
 import ignore, { Ignore } from "ignore";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { asBoolean, asFactory, asOptional, asString } from "../../../../utils/common";
 import { ExecutionResult } from "../../../interface/stepDriver";
 import { ok, err, IProgressHandler, UserInteraction, LogProvider } from "@microsoft/teamsfx-api";
@@ -19,16 +21,15 @@ export abstract class BaseDeployImpl {
   workingDirectory: string;
   distDirectory: string;
   dryRun = false;
+  zipFilePath?: string;
   protected logger?: LogProvider;
   protected ui?: UserInteraction;
   protected progressBar?: IProgressHandler;
   protected static readonly emptyMap = new Map<string, string>();
   protected helpLink: string | undefined = undefined;
-  protected abstract summaries: string[];
-  protected abstract summaryPrepare: string[];
-  protected abstract progressNames: (() => string)[];
+  protected abstract summaries: () => string[];
+  protected abstract summaryPrepare: () => string[];
   protected progressPrepare: (() => string)[] = [];
-  protected abstract progressHandler?: AsyncIterableIterator<void>;
 
   constructor(args: unknown, context: DriverContext) {
     this.args = args;
@@ -38,25 +39,27 @@ export abstract class BaseDeployImpl {
     this.logger = context.logProvider;
     this.context = {
       azureAccountProvider: context.azureAccountProvider,
-      progressBar: this.progressBar,
+      progressBar: context.progressBar,
       logProvider: context.logProvider,
       telemetryReporter: context.telemetryReporter,
     };
+    this.progressBar = context.progressBar;
   }
 
-  abstract createProgressBar(ui?: UserInteraction): IProgressHandler | undefined;
+  abstract updateProgressbar(): void;
 
   protected static asDeployArgs = asFactory<DeployArgs>({
     workingDirectory: asOptional(asString),
-    distributionPath: asString,
+    artifactFolder: asString,
     ignoreFile: asOptional(asString),
     resourceId: asString,
     dryRun: asOptional(asBoolean),
+    outputZipFile: asOptional(asString),
   });
 
   async run(): Promise<ExecutionResult> {
     await this.context.logProvider.debug("start deploy process");
-
+    this.updateProgressbar();
     return await this.wrapErrorHandler(async () => {
       const deployArgs = BaseDeployImpl.asDeployArgs(this.args, this.helpLink);
       // if working directory not set, use current working directory
@@ -64,8 +67,9 @@ export abstract class BaseDeployImpl {
       // if working dir is not absolute path, then join the path with project path
       this.workingDirectory = this.handlePath(deployArgs.workingDirectory, this.workingDirectory);
       // if distribution path is not absolute path, then join the path with project path
-      this.distDirectory = this.handlePath(deployArgs.distributionPath, this.workingDirectory);
+      this.distDirectory = this.handlePath(deployArgs.artifactFolder, this.workingDirectory);
       this.dryRun = deployArgs.dryRun ?? false;
+      this.zipFilePath = deployArgs.outputZipFile;
       // call real deploy
       return await this.deploy(deployArgs);
     });
@@ -73,27 +77,6 @@ export abstract class BaseDeployImpl {
 
   private handlePath(inputPath: string, baseFolder: string): string {
     return path.isAbsolute(inputPath) ? inputPath : path.join(baseFolder, inputPath);
-  }
-
-  /**
-   * pack dist folder into zip
-   * @param args dist folder and ignore files
-   * @param context log provider etc..
-   * @protected
-   */
-  protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
-    const ig = await this.handleIgnore(args, context);
-    const zipFilePath = path.join(
-      this.workingDirectory,
-      DeployConstant.DEPLOYMENT_TMP_FOLDER,
-      DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
-    );
-    await this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
-    const res = await zipFolderAsync(this.distDirectory, zipFilePath, ig);
-    await this.context.logProvider?.debug(
-      `zip dist folder ${this.distDirectory} to ${zipFilePath} complete`
-    );
-    return res;
   }
 
   protected async handleIgnore(args: DeployStepArgs, context: DeployContext): Promise<Ignore> {
@@ -122,10 +105,9 @@ export abstract class BaseDeployImpl {
   protected async wrapErrorHandler(fn: () => boolean | Promise<boolean>): Promise<ExecutionResult> {
     try {
       return (await fn())
-        ? { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaries }
-        : { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaryPrepare };
+        ? { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaries() }
+        : { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaryPrepare() };
     } catch (e) {
-      await this.context.progressBar?.end(false);
       if (e instanceof BaseComponentInnerError) {
         const errorDetail = e.detail ? `Detail: ${e.detail}` : "";
         await this.context.logProvider.error(`${e.message} ${errorDetail}`);

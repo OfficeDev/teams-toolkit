@@ -201,7 +201,6 @@ export class Utils {
         return undefined;
       }
     } catch (error) {
-      logger?.error(`Failed to execute "npm view ${packageName} version"`);
       return undefined;
     }
   }

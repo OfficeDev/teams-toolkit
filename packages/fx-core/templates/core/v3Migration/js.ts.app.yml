@@ -5,13 +5,32 @@ projectId: {{projectId}}
 environmentFolderPath: ./ {{~environmentFolder}}
 
 provision:
+{{#if activePlugins.fx-resource-aad-app-for-teams}}
+  - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
+    with:
+      name: {{aadAppName}} # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
+      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in your organization's Azure AD tenant (for example, single tenant).
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      clientId: AAD_APP_CLIENT_ID
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET # Environment variable that starts with `SECRET_` will be stored to the .env.{envName}.user environment file
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
+{{/if}}
+  - uses: teamsApp/create # Creates a Teams app
+    with:
+      name: {{teamsAppName}} # Teams app name
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
 {{#if activePlugins.fx-resource-bot}}
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
       name: {{appName}}bt$\{{RESOURCE_SUFFIX}}
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for Bot Registration.
-    # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
+    writeToEnvironmentFile:
+      botId: BOT_ID
+      botPassword: SECRET_BOT_PASSWORD
 {{/if}}
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
@@ -22,7 +41,6 @@ provision:
          parameters: ./templates/azure/azure.parameters.$\{{TEAMSFX_ENV}}.json # Relative path to this file. Placeholders will be replaced with corresponding environment variable before ARM deployment.
          deploymentName: teams_toolkit_deployment # Required when deploy ARM template
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
-    # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: azureStorage/enableStaticWebsite
     with:
@@ -31,14 +49,43 @@ provision:
       errorPage: error.html
     # Output: N/A
 {{/if}}
+{{#if activePlugins.fx-resource-aad-app-for-teams}}
+  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
+    with:
+      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
+      outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
+{{/if}}
+  - uses: teamsApp/validateManifest # Validate using manifest schema
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
+    with:
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
+      outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
+    with:
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+{{#if isM365}}
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+    with:
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
+{{/if}}
 
 deploy:
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: cli/runNpmCommand # Run npm command
+    name: install tab dependencies
     with:
       workingDirectory: tabs
       args: install
   - uses: cli/runNpmCommand # Run npm command
+    name: build tab app
     {{#if activePlugins.fx-resource-aad-app-for-teams}}
     env:
       REACT_APP_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
@@ -51,79 +98,72 @@ deploy:
     with:
       workingDirectory: tabs
       args: run build --if-present
-  - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
+  # Deploy bits to Azure Storage Static Website
+  - uses: azureStorage/deploy
     with:
       workingDirectory: tabs
-      distributionPath: build # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
-      ignoreFile:  # Can be changed to any ignore file location, leave blank will ignore nothing
-      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-frontend-hosting.storageResourceId]~}} }} # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
+      # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
+      artifactFolder: build
+      # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
+      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-frontend-hosting.storageResourceId]~}} }}
 {{/if}}
 {{#if activePlugins.fx-resource-bot}}
   {{#if isFunctionBot}}
   - uses: cli/runNpmCommand
+    name: install bot dependencies
     with:
       workingDirectory: bot
       args: install
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
+    name: build bot app
     with:
       workingDirectory: bot
       args: run build --if-present
     {{/if}}
-  - uses: azureFunctions/deploy
+  # Deploy your application to Azure Functions using the zip deploy feature.
+  # For additional details, please refer to https://aka.ms/zip-deploy-to-azure-functions
+  - uses: azureFunctions/zipDeploy
     with:
       workingDirectory: bot
-      distributionPath: . # Deploy base folder
-      ignoreFile: .funcignore # Can be changed to any ignore file location, leave blank will ignore nothing
-      # the resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
-      {{#if useBotWebAppResourceId}}
-      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.botWebAppResourceId]~}} }}
-      {{else}}
-      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.functionAppResourceId]~}} }}
-      {{/if}}
+      # Deploy base folder
+      artifactFolder: .
+      # Can be changed to any ignore file location, leave blank will ignore nothing
+      ignoreFile: .funcignore
+      # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
+      resourceId: $\{{ {{~botResourceId~}} }}
   {{else}}
-  {{#if useBotWebAppResourceId}}
   - uses: cli/runNpmCommand # Run npm command
+    name: install bot dependencies
     with:
       workingDirectory: bot
       args: install
     {{#if isTypescript}}
   - uses: cli/runNpmCommand # Run npm command
+    name: build bot app
     with:
       workingDirectory: bot
       args: run build --if-present
     {{/if}}
-  - uses: azureAppService/deploy # Deploy bits to Azure App Service
+  # Deploy your application to Azure App Service using the zip deploy feature.
+  # For additional details, please refer to https://aka.ms/zip-deploy-to-app-services.
+  - uses: azureAppService/zipDeploy
     with:
       workingDirectory: bot
-      distributionPath: . # Deploy base folder. 
-      ignoreFile: # Can be changed to any ignore file location, leave blank will ignore nothing
-      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.botWebAppResourceId]~}} }} # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
-  {{else}}
-  - uses: cli/runNpmCommand # Run npm command
-    with:
-      workingDirectory: bot
-      args: install
-    {{#if isTypescript}}
-  - uses: cli/runNpmCommand # Run npm command
-    with:
-      workingDirectory: bot
-      args: run build --if-present
-    {{/if}}
-  - uses: azureAppService/deploy # Deploy bits to Azure App Service
-    with:
-      workingDirectory: bot
-      distributionPath: . # Deploy base folder. 
-      ignoreFile: # Can be changed to any ignore file location, leave blank will ignore nothing
-      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.resourceId]~}} }} # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
-  {{/if}}
+      # Deploy base folder.
+      artifactFolder: .
+      # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
+      resourceId: $\{{ {{~botResourceId~}} }}
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
   - uses: prerequisite/install # Install dependencies
     with:      
       dotnet: true
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      dotnetPath: DOTNET_PATH
   - uses: cli/runNpmCommand
+    name: install api dependencies
     with:
       workingDirectory: api
       args: install
@@ -134,63 +174,26 @@ deploy:
       execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by prerequisite/install action
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
+    name: build api app
     with:
       workingDirectory: api
       args: run build --if-present
     {{/if}}
-  - uses: azureFunctions/deploy
+  # Deploy your application to Azure Functions using the zip deploy feature.
+  # For additional details, please refer to https://aka.ms/zip-deploy-to-azure-functions
+  - uses: azureFunctions/zipDeploy
     with:
       workingDirectory: api
-      distributionPath: . # Deploy base folder
-      ignoreFile: .funcignore # Can be changed to any ignore file location, leave blank will ignore nothing
-      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-function.functionAppResourceId]~}} }} # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
+      # Deploy base folder
+      artifactFolder: .
+      # Can be changed to any ignore file location, leave blank will ignore nothing
+      ignoreFile: .funcignore
+      # The resource id of the cloud resource to be deployed to. This key will be generated by arm/deploy action automatically. You can replace it with your existing Azure Resource id or add it to your environment variable file.
+      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-function.functionAppResourceId]~}} }}
 {{/if}}
-
-registerApp:
-{{#if activePlugins.fx-resource-aad-app-for-teams}}
-  - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
-    with:
-      name: {{aadAppName}} # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
-      generateClientSecret: true # If the value is false, the action will not generate client secret for you
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # AAD_APP_CLIENT_ID: the client id of AAD app
-    # SECRET_AAD_APP_CLIENT_SECRET: the client secret of AAD app
-    # AAD_APP_OBJECT_ID: the object id of AAD app
-    # AAD_APP_TENANT_ID: the tenant id of AAD app
-    # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
-    # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
-{{/if}}
-  - uses: teamsApp/create # Creates a Teams app
-    with:
-      name: {{teamsAppName}} # Teams app name
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
-
-configureApp:
-{{#if activePlugins.fx-resource-aad-app-for-teams}}
-  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
-    with:
-      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
-      outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
-{{/if}}
-  - uses: teamsApp/validate
-    with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
-    with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
-  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
-    with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
 
 publish:
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
   - uses: teamsApp/zipAppPackage
@@ -201,10 +204,10 @@ publish:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
   - uses: teamsApp/publishAppPackage # Publish the app to Teams Admin Center (https://admin.teams.microsoft.com/policies/manage-apps) for review and approval
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # TEAMS_APP_PUBLISHED_APP_ID: app id in Teams tenant app catalog.
+    writeToEnvironmentFile:
+      publishedAppId: TEAMS_APP_PUBLISHED_APP_ID

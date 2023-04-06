@@ -32,6 +32,8 @@ import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import path from "path";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Package Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -80,6 +82,14 @@ describe("Package Command Tests", function () {
         telemetryEventStatus = TelemetrySuccess.No;
       });
     sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
     registeredCommands = [];
     options = [];
     telemetryEvents = [];
@@ -101,6 +111,9 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
@@ -128,23 +141,7 @@ describe("Package Command Tests", function () {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
-    sandbox
-      .stub(FxCore.prototype, "executeUserTask")
-      .callsFake(async (func: Func, inputs: Inputs) => {
-        const root = path.resolve("real");
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "buildPackage",
-          params: {
-            manifestTemplatePath: `${root}/${AppPackageFolderName}/manifest.json`,
-            outputZipPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
-            outputJsonPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
-            env: inputs.env,
-          },
-        });
-        if (inputs.projectPath?.includes("real")) return ok("");
-        else return err(NotSupportedProjectType());
-      });
+    sandbox.stub(FxCore.prototype, "createAppPackage").resolves(ok(new Map()));
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
@@ -156,6 +153,9 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check with Error", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
@@ -186,6 +186,9 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command with interactive question", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {

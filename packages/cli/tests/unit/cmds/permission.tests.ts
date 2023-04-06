@@ -15,12 +15,15 @@ import LogProvider from "../../../src/commonlib/log";
 import Permission, { PermissionGrant, PermissionStatus } from "../../../src/cmds/permission";
 import { expect } from "chai";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Permission Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let telemetryEvents: string[] = [];
   let registeredCommands: string[] = [];
-
+  let mockedEnvRestore: RestoreFn = () => {};
   beforeEach(() => {
     telemetryEvents = [];
     registeredCommands = [];
@@ -55,10 +58,19 @@ describe("Permission Command Tests", function () {
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(Utils, "isRemoteCollaborationEnabled").returns(true);
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("Permission - Configs", () => {
@@ -68,6 +80,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Status - Happy Path", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
@@ -82,6 +95,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Grant - Happy Path", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionGrant();
     sandbox.stub(Utils, "isSpfxProject").resolves(ok(false));
     const args = {
@@ -96,6 +110,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Status SPFX - Happy Path", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
@@ -109,6 +124,7 @@ describe("Permission Command Tests", function () {
   });
 
   it("Permission Grant SPFX - Happy Path", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new PermissionGrant();
     sandbox.stub(Utils, "isSpfxProject").resolves(ok(true));
     const args = {
@@ -165,6 +181,14 @@ describe("Permission Command Tests V3", function () {
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {
@@ -181,8 +205,8 @@ describe("Permission Command Tests V3", function () {
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["aad-app-id"]: "aadAppId",
-      ["teams-app-id"]: "teamsAppId",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
       ["env"]: "env",
     };
 
@@ -197,8 +221,8 @@ describe("Permission Command Tests V3", function () {
     const cmd = new PermissionStatus();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["aad-app-id"]: "aadAppId",
-      ["teams-app-id"]: "teamsAppId",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
       ["env"]: "env",
       ["list-all-collaborators"]: true,
     };
@@ -214,8 +238,8 @@ describe("Permission Command Tests V3", function () {
     const cmd = new PermissionGrant();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
-      ["aad-app-id"]: "aadAppId",
-      ["teams-app-id"]: "teamsAppId",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
       ["env"]: "env",
       ["email"]: "email",
     };

@@ -7,16 +7,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import { Argv } from "yargs";
-import {
-  assembleError,
-  Colors,
-  err,
-  FxError,
-  LogLevel,
-  ok,
-  Result,
-  UserCancelError,
-} from "@microsoft/teamsfx-api";
+import { assembleError, Colors, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
 import { TelemetryContext } from "@microsoft/teamsfx-core/build/common/local/localTelemetryReporter";
 import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
@@ -25,11 +16,10 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
-import { openHubWebClient } from "./launch";
+import { openHubWebClientNew } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
-import { showInstallAppInTeamsMessage, getTeamsAppInternalId } from "./teamsAppInstallation";
 import { signedOut } from "../../commonlib/common/constant";
 import cliLogger from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
@@ -37,8 +27,12 @@ import { cliSource, RootFolderOptions } from "../../constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
-import { getColorizedString, isWorkspaceSupported } from "../../utils";
+import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../../utils";
 import { YargsCommand } from "../../yargsCommand";
+import activate from "../../activate";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
+import { FxCore } from "@microsoft/teamsfx-core";
 
 enum Progress {
   M365Account = "Microsoft 365 Account",
@@ -66,6 +60,11 @@ export default class PreviewEnv extends YargsCommand {
         description: "Select an existing env for the project",
         string: true,
         default: environmentManager.getLocalEnvName(),
+      })
+      .options("manifest-file-path", {
+        description:
+          "Select the Teams app manifest file path, defaults to '${folder}/appPackage/manifest.json'",
+        string: true,
       })
       .options("run-command", {
         description:
@@ -109,11 +108,20 @@ export default class PreviewEnv extends YargsCommand {
       return err(errors.WorkspaceNotSupported(args.folder as string));
     }
     const workspaceFolder = path.resolve(args.folder as string);
-    const env = (args.env as string) ?? "";
+    const env = args.env as string;
+    const manifestFilePath =
+      (args["manifest-file-path"] as string) ??
+      path.join(workspaceFolder, "appPackage", "manifest.json");
     const runCommand: string | undefined = args["run-command"] as string;
     const runningPattern = args["running-pattern"] as string;
     const openOnly = args["open-only"] as boolean;
-    const hub = args["m365-host"] as constants.Hub;
+    const m365Host = args["m365-host"] as constants.Hub;
+    let hub = Hub.teams;
+    if (m365Host === constants.Hub.outlook) {
+      hub = Hub.outlook;
+    } else if (m365Host === constants.Hub.office) {
+      hub = Hub.office;
+    }
     const browser = args.browser as constants.Browser;
     const browserArguments = (args["browser-arg"] as string[]) ?? [];
 
@@ -129,6 +137,7 @@ export default class PreviewEnv extends YargsCommand {
         this.doPreview(
           workspaceFolder,
           env,
+          manifestFilePath,
           runCommand,
           runningPattern,
           openOnly,
@@ -149,10 +158,11 @@ export default class PreviewEnv extends YargsCommand {
   protected async doPreview(
     workspaceFolder: string,
     env: string,
+    manifestFilePath: string,
     runCommand: string | undefined,
     runningPattern: string,
     openOnly: boolean,
-    hub: constants.Hub,
+    hub: Hub,
     browser: constants.Browser,
     browserArguments: string[]
   ): Promise<Result<null, FxError>> {
@@ -161,22 +171,23 @@ export default class PreviewEnv extends YargsCommand {
     if (envRes.isErr()) {
       return err(envRes.error);
     }
-    const envs = envRes.value;
-    if (envs.TEAMS_APP_ID === undefined) {
-      return err(errors.TeamsAppIdNotExistsV3());
-    }
-    this.telemetryProperties[TelemetryProperty.PreviewAppId] = envs.TEAMS_APP_ID as string;
 
     // 2. check m365 account
     const accountInfoRes = await localTelemetryReporter.runWithTelemetry(
       TelemetryEvent.PreviewPrereqsCheckM365Account,
-      () => this.checkM365Account(envs.TEAMS_APP_TENANT_ID)
+      () => this.checkM365Account(process.env.TEAMS_APP_TENANT_ID)
     );
     if (accountInfoRes.isErr()) {
       return err(accountInfoRes.error);
     }
 
-    // 3. detect project type and set run-command, running-pattern
+    // 3. previewWithManifest
+    const urlRes = await this.previewWithManifest(workspaceFolder, env, hub, manifestFilePath);
+    if (urlRes.isErr()) {
+      return err(urlRes.error);
+    }
+
+    // 4. detect project type and set run-command, running-pattern
     if (
       !openOnly &&
       runCommand === undefined &&
@@ -204,7 +215,7 @@ export default class PreviewEnv extends YargsCommand {
         : constants.defaultRunningPattern;
 
     try {
-      // 4. run command as background task
+      // 5. run command as background task
       this.runningTasks = [];
       if (runCommand !== undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
         const runTaskRes = await localTelemetryReporter.runWithTelemetry(
@@ -216,12 +227,14 @@ export default class PreviewEnv extends YargsCommand {
         }
       }
 
-      // 5: open web client
-      const launchRes = await this.launchBrowser(env, envs, hub, browser, browserArguments);
+      // 6. open hub web client
+      const launchRes = await this.launchBrowser(env, hub, urlRes.value, browser, browserArguments);
       if (launchRes.isErr()) {
         throw launchRes.error;
       }
-      cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      if (runCommand !== undefined && env === environmentManager.getLocalEnvName()) {
+        cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
+      }
     } catch (error: any) {
       await this.shutDown();
       return err(error);
@@ -296,6 +309,21 @@ export default class PreviewEnv extends YargsCommand {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365SwitchedMessage);
     }
     return ok({ tenantId: tenantId, loginHint: loginHint });
+  }
+
+  protected async previewWithManifest(
+    projectPath: string,
+    env: string,
+    hub: Hub,
+    manifestFilePath: string
+  ): Promise<Result<string, FxError>> {
+    const coreRes = await activate(projectPath, true);
+    const core = (coreRes as any).value as FxCore;
+    const inputs = getSystemInputs(projectPath, env);
+    inputs[CoreQuestionNames.M365Host] = hub;
+    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
+    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
+    return await core.previewWithManifest(inputs);
   }
 
   protected async detectRunCommand(projectPath: string): Promise<
@@ -378,68 +406,19 @@ export default class PreviewEnv extends YargsCommand {
 
   protected async launchBrowser(
     env: string,
-    envs: { [k: string]: string },
-    hub: constants.Hub,
+    hub: Hub,
+    url: string,
     browser: constants.Browser,
     browserArgs: string[]
   ): Promise<Result<null, FxError>> {
-    const teamsAppId = envs.TEAMS_APP_ID as string;
-    const teamsAppTenantId = envs.TEAMS_APP_TENANT_ID as string;
-    const botId = envs.BOT_ID as string;
+    await openHubWebClientNew(hub, url, browser, browserArgs, this.telemetryProperties);
 
-    // launch Teams
-    if (hub === constants.Hub.teams) {
-      await openHubWebClient(
-        botId === undefined,
-        teamsAppTenantId,
-        teamsAppId,
-        hub,
-        browser,
-        browserArgs,
-        this.telemetryProperties
-      );
-      return ok(null);
-    }
-
-    // launch Outlook or Office
-    let internalId: string | undefined = envs["M365_APP_ID"];
-    if (!internalId) {
-      if (CLIUIInstance.interactive) {
-        const shouldContinue = await showInstallAppInTeamsMessage(
-          env.toLowerCase() === environmentManager.getLocalEnvName(),
-          teamsAppTenantId,
-          teamsAppId,
-          undefined,
-          browser,
-          browserArgs
-        );
-        if (!shouldContinue) {
-          return err(UserCancelError);
-        }
-      }
-
-      internalId = await getTeamsAppInternalId(teamsAppId);
-    }
-    if (internalId) {
-      await openHubWebClient(
-        botId === undefined,
-        teamsAppTenantId,
-        internalId,
-        hub,
-        browser,
-        browserArgs,
-        this.telemetryProperties
-      );
-      cliLogger.necessaryLog(
-        LogLevel.Warning,
-        util.format(constants.installApp.nonInteractive.manifestChangesV3, `--env ${env}`)
-      );
+    cliLogger.necessaryLog(
+      LogLevel.Warning,
+      util.format(constants.installApp.nonInteractive.manifestChangesV3, `--env ${env}`)
+    );
+    if (hub !== Hub.teams) {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
-    } else {
-      cliLogger.necessaryLog(
-        LogLevel.Warning,
-        util.format(constants.installApp.nonInteractive.notInstalled, `--env ${env}`)
-      );
     }
 
     return ok(null);

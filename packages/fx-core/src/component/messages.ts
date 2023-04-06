@@ -38,35 +38,11 @@ export class ProgressMessages {
   );
   static readonly clearStorageAccount = getLocalizedString("core.progress.clearStorageAccount");
   static readonly uploadTabToStorage = getLocalizedString("core.progress.uploadTabToStorage");
-  static readonly getAzureAccountInfoForDeploy = () =>
-    getLocalizedString("core.progress.getAzureAccountInfoForDeploy");
-  static readonly getAzureUploadEndpoint = () =>
-    getLocalizedString("core.progress.getAzureUploadEndpoint");
-  static readonly uploadZipFileToAzure = () =>
-    getLocalizedString("core.progress.uploadZipFileToAzure");
-  static readonly checkAzureDeployStatus = () =>
-    getLocalizedString("core.progress.checkAzureDeployStatus");
-  static readonly restartAzureFunctionApp = () =>
-    getLocalizedString("core.progress.restartAzureFunctionApp");
-  static readonly restartAzureService = getLocalizedString("core.progress.restartAzureFunctionApp");
   static readonly configureAzureStorageEnableStaticWebsite = getLocalizedString(
     "core.progress.configureAzureStorage"
   );
-  static readonly checkAzureStorageEnableStaticWebsite = getLocalizedString(
-    "core.progress.checkAzureStorageStaticWebsite"
-  );
-  static readonly azureStorageStaticWebsiteAlreadyEnabled = getLocalizedString(
-    "core.progress.azureStorageStaticWebsiteEnabled"
-  );
-  static readonly enableAzureStorageStaticWebsite = getLocalizedString(
-    "core.progress.enableAzureStorageStaticWebsite"
-  );
-  static readonly getAzureStorageAccountInfo = () =>
-    getLocalizedString("core.progress.getAzureStorageDeployCredential");
-  static readonly clearStorageExistsBlobs = () =>
-    getLocalizedString("core.progress.clearStorageExistsBlobs");
-  static readonly uploadFilesToStorage = () =>
-    getLocalizedString("core.progress.uploadFilesToStorage");
+  static readonly runCommand = (command: string, directory: string) =>
+    getLocalizedString("core.progress.runCommand", command, directory);
 }
 
 export class LogMessages {
@@ -81,8 +57,7 @@ export class LogMessages {
   );
   public static readonly projectScaffoldAt = (basePath: string): string =>
     getLocalizedString("plugins.function.projectScaffoldAt", basePath);
-  public static readonly failedToInstallDotnet = (error: Error): string =>
-    getLocalizedString("plugins.function.failedToInstallDotnet", error);
+
   public static readonly askFunctionName: string = getLocalizedString(
     "plugins.function.askFunctionName"
   );

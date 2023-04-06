@@ -34,10 +34,19 @@ npm install @microsoft/teamsfx-react
 
 Please also install the peer dependencies if you are using npm 6. 
 ```bash
-npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^16.8.6 react-dom@^16.8.6 @fluentui/react-northstar@^0.62.0 msteams-react-base-component@^3.1.1
+npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^18.2.0 react-dom@^18.2.0 @fluentui/react-components@^9.16.0 @microsoft/microsoft-graph-client@^3.0.1
 ```
 
-Note that for `@microsoft/teamsfx-react@^2.0.0`, it depends on `@microsoft/teamsfx@^2.0.0` and `@microsoft/teams-js@^2.0.0`. If you wish to use lower versions, please install the peer dependencies as follows:
+#### Note
+
+For `@microsoft/teamsfx-react@^3.0.0`, it migrated to use `@fluentui/react-components` and did not support `@fluentui/react-northstar` any longer. If you still wish to use `@fluentui/react-northstar`, please use `@microsoft/teamsfx-react@<3.0.0`. To install the peer dependencies, you could use the following line:
+
+```bash
+npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^16.8.6 react-dom@^16.8.6 @fluentui/react-northstar@^0.62.0 @microsoft/microsoft-graph-client@^3.0.1
+```
+
+For `@microsoft/teamsfx-react@^2.0.0` and `@microsoft/teamsfx-react@^3.0.0`, they depend on `@microsoft/teamsfx@^2.0.0` and `@microsoft/teams-js@^2.0.0`. If you wish to use lower versions, please install the peer dependencies as follows:
+
 ```bash
 npm install @microsoft/teamsfx@^0.6.0 react@^16.8.6 @fluentui/react-northstar@^0.60.1 msteams-react-base-component@^3.1.1
 ```
@@ -111,6 +120,66 @@ return (
 );
 ```
 
+### Building a Dashboard Tab
+
+#### 1. Create a new widget
+
+Here is an example of creating a new widget:
+
+```tsx
+import { Button, Text } from "@fluentui/react-components";
+import { BaseWidget } from "@microsoft/teamsfx-react";
+import { SampleModel } from "../models/sampleModel";
+import { getSampleData } from "../services/sampleService";
+
+interface SampleWidgetState {
+  data?: SampleModel;
+}
+
+export class SampleWidget extends BaseWidget<any, SampleWidgetState> {
+  override async getData(): Promise<SampleWidgetState> {
+    return { data: getSampleData() };
+  }
+
+  override header(): JSX.Element | undefined {
+    return <Text>Sample Widget</Text>;
+  }
+
+  override body(): JSX.Element | undefined {
+    return <div>{this.state.data?.content}</div>;
+  }
+
+  override footer(): JSX.Element | undefined {
+    return <Button>View Details</Button>;
+  }
+}
+```
+
+#### 2. Create a new dashboard
+
+Here is an example of creating a new dashboard:
+
+```tsx
+import { BaseDashboard } from "@microsoft/teamsfx-react";
+import ListWidget from "../widgets/ListWidget";
+import ChartWidget from "../widgets/ChartWidget";
+
+export default class YourDashboard extends BaseDashboard<any, any> {
+  override styling(): string {
+    return "styling-class-name";
+  }
+
+  override layout(): JSX.Element | undefined {
+    return (
+      <>
+        <ListWidget />
+        <ChartWidget />
+      </>
+    );
+  }
+}
+```
+
 ## React Hook list
 
 ### useData
@@ -140,6 +209,14 @@ const { loading, theme, themeString, teamsUserCredential } = useTeamsUserCredent
 ### useGraph
 This hook function leverage `useData` to call Graph API. It will execute the fetchGraphDataAsync function that the developer passes in first.
 If user has not consented to the scopes of AAD resources, `useGraph()`, `useGraphWithCredential` will automatically call login function to pop up the consent dialog. So, developers can focus on the business logic of how to fetch Microsoft Graph data.
+
+## Dashboard Related Classes
+
+### BaseDashboard
+The BaseDashboard is a React component that provides a basic dashboard layout implementation for developers to quickly build a dashboard tab for Microsoft Teams. You can inherit this class and override some methods to customize your own dashboard. For example, define the layout of the widget in your dashboard by overriding the `layout()` method, and customize the dashboard style by overriding the `styling()` method.
+
+### BaseWidget
+The BaseWidget is a React component that provides a basic widget layout implementation for developers to quickly build a widget. You can inherit this class and override some methods to customize your own widget. For example, define the header of the widget by overriding the `header()` method, and get data needed for the widget by overriding the `getData()` method, etc.
 
 ## Next steps
 

@@ -23,6 +23,9 @@ import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();
@@ -61,6 +64,14 @@ describe("Preview --env", () => {
       .callsFake((eventName, error, properties) => {
         telemetries.push([eventName, error, properties]);
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {

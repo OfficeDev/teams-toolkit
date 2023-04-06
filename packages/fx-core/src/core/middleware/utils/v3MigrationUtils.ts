@@ -193,8 +193,12 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.trackingId || "";
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
+    if (readSettingsResult.isOk()) {
+      return readSettingsResult.value.trackingId;
+    } else {
+      return "";
+    }
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {

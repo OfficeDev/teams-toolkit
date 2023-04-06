@@ -15,6 +15,8 @@ import LogProvider from "../../../src/commonlib/log";
 import Permission, { PermissionGrant, PermissionStatus } from "../../../src/cmds/permission";
 import { expect } from "chai";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Permission Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -55,6 +57,14 @@ describe("Permission Command Tests", function () {
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(Utils, "isRemoteCollaborationEnabled").returns(true);
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {
@@ -165,6 +175,14 @@ describe("Permission Command Tests V3", function () {
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {

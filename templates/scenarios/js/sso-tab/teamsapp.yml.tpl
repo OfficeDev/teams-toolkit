@@ -35,21 +35,17 @@ provision:
          parameters: ./infra/azure.parameters.json # Relative path to this file. Placeholders will be replaced with corresponding environment variable before ARM deployment.
          deploymentName: Create-resources-for-tab # Required when deploy ARM template
       bicepCliVersion: v0.9.1 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
-    # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 
   - uses: azureStorage/enableStaticWebsite
     with:
       storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
       indexPage: index.html
       errorPage: error.html
-    # Output: N/A
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:

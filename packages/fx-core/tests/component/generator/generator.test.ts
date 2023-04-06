@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import _, { sample } from "lodash";
+import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";

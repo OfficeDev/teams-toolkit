@@ -265,19 +265,19 @@ export async function downloadDirectory(
   ).data as any;
 
   const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
-  let fileInfoTree = fileInfo.tree as any[];
-  fileInfoTree = fileInfoTree.filter(
-    (node) => node.path.startsWith(sampleName) && node.type !== "tree"
-  );
+  const fileInfoTree = fileInfo.tree as any[];
+  const samplePaths = fileInfoTree
+    .filter((node) => node.path.startsWith(sampleName) && node.type !== "tree")
+    .map((node) => node.path);
 
   //step 2: download files with limited concurrency
   const downloadCallbacks = [];
-  for (const node of fileInfoTree) {
+  for (const samplePath of samplePaths) {
     const downloadCallback = async () => {
       const file = await sendRequestWithRetry(async () => {
-        return await axios.get(filePrefixUrl + node.path, { responseType: "arraybuffer" });
+        return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
       }, retryLimits);
-      const filePath = path.join(dstPath, node.path.replace(sampleName, ""));
+      const filePath = path.join(dstPath, samplePath.replace(sampleName, ""));
       await fs.ensureFile(filePath);
       await fs.writeFile(filePath, Buffer.from(file.data as any));
     };

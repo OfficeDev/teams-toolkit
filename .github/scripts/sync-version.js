@@ -7,10 +7,13 @@ const repoRoot = path.join(__dirname, "../..");
 function updateTemplatesDeps(templateDir, templateList) {
     let depPkgs = [];
     for (let subTempDir of templateList) {
-        const subTempPath = path.join(templateDir, subTempDir, "package.json")
-        if (fse.existsSync(subTempPath)) {
-            depPkgs.push(subTempPath)
-        }
+        packageFileCandidates = ["package.json", "package.json.tpl"];
+        packageFileCandidates.forEach((file) => {
+            const subTempPath = path.join(templateDir, subTempDir, file)
+            if (fse.existsSync(subTempPath)) {
+                depPkgs.push(subTempPath)
+            }
+        });
     }
     const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
     let templatesDeps = {};

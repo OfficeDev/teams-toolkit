@@ -6,32 +6,220 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as fs from "fs-extra";
+import * as path from "path";
 import * as sinon from "sinon";
+import * as uuid from "uuid";
 import * as vscode from "vscode";
-import { UserError } from "@microsoft/teamsfx-api";
+
+import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
+import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+import { FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { envUtil } from "@microsoft/teamsfx-core";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
+
+import VsCodeLogInstance from "../../src/commonlib/log";
+import { localTelemetryReporter } from "../../src/debug/localTelemetryReporter";
 import { BaseTaskTerminal } from "../../src/debug/taskTerminal/baseTaskTerminal";
+import { OutputInfo } from "../../src/debug/taskTerminal/baseTunnelTaskTerminal";
 import {
   DevTunnelTaskTerminal,
   IDevTunnelArgs,
+  TunnelPortWithOutput,
 } from "../../src/debug/taskTerminal/devTunnelTaskTerminal";
+import { DevTunnelStateManager } from "../../src/debug/taskTerminal/utils/devTunnelStateManager";
 import { ExtensionErrors, ExtensionSource } from "../../src/error";
+import * as globalVariables from "../../src/globalVariables";
+import { tools } from "../../src/handlers";
 
 chai.use(chaiAsPromised);
 
 class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
+  public started(): boolean {
+    return !!this.cancel;
+  }
+
   public resolveArgs(args: IDevTunnelArgs): Promise<void> {
     return super.resolveArgs(args);
+  }
+
+  public async saveTunnelToEnv(
+    env: string | undefined,
+    tunnelPorts: TunnelPortWithOutput[]
+  ): Promise<Result<OutputInfo, FxError>> {
+    return super.saveTunnelToEnv(env, tunnelPorts);
   }
 }
 
 describe("devTunnelTaskTerminal", () => {
-  const taskDefinition: vscode.TaskDefinition = {
-    type: "teamsfx",
-  };
-  const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
+  const baseDir = path.resolve(__dirname, "data", "devTunnelTaskTerminal");
+
+  describe("do", () => {
+    const sandbox = sinon.createSandbox();
+    let filePath: string | undefined = undefined;
+    beforeEach(async () => {
+      filePath = path.resolve(baseDir, uuid.v4().substring(0, 6));
+      await fs.ensureDir(filePath);
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse(filePath));
+      sandbox.stub(process, "env").value({ TEAMSFX_DEV_TUNNEL_TEST: "true" });
+    });
+
+    afterEach(async () => {
+      sandbox.restore();
+      if (filePath) {
+        await fs.remove(filePath);
+      }
+    });
+
+    const taskDefinition: vscode.TaskDefinition = {
+      type: "teamsfx",
+      command: "debug-start-local-tunnel",
+      args: {
+        type: "dev-tunnel",
+        ports: [
+          {
+            portNumber: 3978,
+            protocol: "http",
+            access: "public",
+            writeToEnvironmentFile: {
+              endpoint: "BOT_ENDPOINT",
+              domain: "BOT_DOMAIN",
+            },
+          },
+        ],
+        env: "local",
+      },
+    };
+
+    const mock = (initTunnel: Tunnel[] = []): { mockTunnelArray: Tunnel[] } => {
+      const mockTunnelArray: Tunnel[] = initTunnel;
+      sandbox.stub(process, "env").value({ TEAMSFX_DEV_TUNNEL_TEST: "true" });
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("test-token"));
+      sandbox.stub(TunnelManagementHttpClient.prototype, "getTunnel").callsFake(async (t) => {
+        return (
+          mockTunnelArray.find(
+            (mt) => t.tunnelId === mt.tunnelId && t.clusterId === mt.clusterId
+          ) ?? null
+        );
+      });
+      sandbox.stub(TunnelManagementHttpClient.prototype, "createTunnel").callsFake(async (t) => {
+        const id = uuid.v4().substring(0, 8);
+        t.tunnelId = id;
+        t.clusterId = "test";
+        mockTunnelArray.push(t);
+        return t;
+      });
+      sandbox.stub(TunnelManagementHttpClient.prototype, "listTunnels").callsFake(async (t) => {
+        return mockTunnelArray;
+      });
+      sandbox.stub(TunnelManagementHttpClient.prototype, "deleteTunnel").callsFake(async (t) => {
+        let isDeleted = false;
+        let index = 0;
+        while (index < mockTunnelArray.length) {
+          if (
+            mockTunnelArray[index].clusterId === t.clusterId &&
+            mockTunnelArray[index].tunnelId === t.tunnelId
+          ) {
+            mockTunnelArray.splice(index, 1);
+            isDeleted = true;
+          } else {
+            ++index;
+          }
+        }
+        return isDeleted;
+      });
+
+      let hostTunnel: Tunnel | undefined = undefined;
+      sandbox.stub(TunnelRelayTunnelHost.prototype, "start").callsFake(async (t) => {
+        t.ports?.forEach((p) => {
+          p.portForwardingUris = [
+            `https://${p.tunnelId}-${p.portNumber}.${p.clusterId}.devtunnel.test`,
+          ];
+        });
+        hostTunnel = t;
+      });
+      sandbox.stub(TunnelRelayTunnelHost.prototype, "tunnel").get(() => {
+        return hostTunnel;
+      });
+
+      sandbox.stub(localTelemetryReporter, "sendTelemetryEvent").callsFake(() => {});
+      sandbox.stub(localTelemetryReporter, "sendTelemetryErrorEvent").callsFake(() => {});
+      VsCodeLogInstance.outputChannel = {
+        appendLine: () => {},
+      } as unknown as vscode.OutputChannel;
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("test-path"));
+      return { mockTunnelArray: mockTunnelArray };
+    };
+
+    const waitDevTunnelEnabled = async (tunnelTaskTerminal: TestDevTunnelTaskTerminal) => {
+      const sleep = (ms: number) =>
+        new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve();
+          }, ms);
+        });
+      for (let i = 0; i < 50; ++i) {
+        if (tunnelTaskTerminal.started()) {
+          return;
+        }
+        await sleep(10);
+      }
+      return;
+    };
+
+    it("happy path", async () => {
+      mock();
+      const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
+      const resArr = await Promise.all([
+        tunnelTaskTerminal.do(),
+        waitDevTunnelEnabled(tunnelTaskTerminal).then(() => tunnelTaskTerminal.stop()),
+      ]);
+      chai.assert.isTrue(
+        resArr[0].isOk(),
+        `Failed with error message - ${resArr[0].isErr() ? resArr[0].error : ""}`
+      );
+      const devTunnelStateManager = DevTunnelStateManager.create();
+      const devTunnelState = await devTunnelStateManager.listDevTunnelStates();
+      chai.assert.isEmpty(devTunnelState);
+    });
+
+    it("delete existing tunnel", async () => {
+      const existingTunnel = { tunnelId: uuid.v4().substring(0, 8), clusterId: "test" };
+      const existingTTKTunnel = {
+        tunnelId: uuid.v4().substring(0, 8),
+        clusterId: "test",
+        tags: ["TeamsToolkitCreatedTag"],
+      };
+      const devTunnelStateManager = DevTunnelStateManager.create();
+      const mockResource = mock([existingTunnel, existingTTKTunnel]);
+      devTunnelStateManager.setTunnelState(
+        Object.assign(existingTTKTunnel, { sessionId: "lastSessionId" })
+      );
+      const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
+      const resArr = await Promise.all([
+        tunnelTaskTerminal.do(),
+        waitDevTunnelEnabled(tunnelTaskTerminal).then(() => tunnelTaskTerminal.stop()),
+      ]);
+      chai.assert.isTrue(
+        resArr[0].isOk(),
+        `Failed with error message - ${resArr[0].isErr() ? resArr[0].error : ""}`
+      );
+      const devTunnelState = await devTunnelStateManager.listDevTunnelStates();
+      chai.assert.isEmpty(devTunnelState);
+      chai.assert.equal(mockResource.mockTunnelArray.length, 1);
+    });
+  });
 
   describe("resolveArgs", () => {
+    const taskDefinition: vscode.TaskDefinition = {
+      type: "teamsfx",
+    };
     const sandbox = sinon.createSandbox();
+    const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
     beforeEach(async () => {
       sandbox.stub(BaseTaskTerminal, "taskDefinitionError").callsFake((argName) => {
         return new UserError(
@@ -296,6 +484,119 @@ describe("devTunnelTaskTerminal", () => {
           await chai.expect(tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
             .fulfilled;
         }
+      });
+    });
+  });
+
+  describe("saveTunnelToEnv", () => {
+    const taskDefinition: vscode.TaskDefinition = {
+      type: "teamsfx",
+    };
+    const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
+
+    const sandbox = sinon.createSandbox();
+    let filePath: string | undefined = undefined;
+
+    beforeEach(async () => {
+      filePath = path.resolve(baseDir, uuid.v4().substring(0, 6));
+      await fs.ensureDir(filePath);
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse(filePath));
+    });
+
+    afterEach(async () => {
+      sandbox.restore();
+      if (filePath) {
+        await fs.remove(filePath);
+      }
+    });
+
+    it("empty tunnel", async () => {
+      const writeEnvStub = sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      await tunnelTaskTerminal.saveTunnelToEnv("local", []);
+      sandbox.assert.notCalled(writeEnvStub);
+    });
+
+    it("empty env", async () => {
+      const writeEnvStub = sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      await tunnelTaskTerminal.saveTunnelToEnv(undefined, [
+        {
+          protocol: "http",
+          portNumber: 3978,
+          portForwardingUri: "https://id-port.cluster.devtunnels.ms",
+          writeToEnvironmentFile: {
+            endpoint: "BOT_ENDPOINT",
+            domain: "BOT_DOMAIN",
+          },
+        },
+      ]);
+      sandbox.assert.notCalled(writeEnvStub);
+    });
+
+    it("error uri", async () => {
+      const res = await tunnelTaskTerminal.saveTunnelToEnv("local", [
+        {
+          protocol: "http",
+          portNumber: 3978,
+          portForwardingUri: "id-port.cluster.devtunnels.ms",
+          writeToEnvironmentFile: {
+            endpoint: "BOT_ENDPOINT",
+            domain: "BOT_DOMAIN",
+          },
+        },
+      ]);
+
+      chai.assert.isTrue(res.isErr());
+      chai.assert.equal(res.isErr() ? res.error.name : undefined, "TunnelEnvError");
+    });
+
+    it("one port", async () => {
+      const writeEnvStub = sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      await tunnelTaskTerminal.saveTunnelToEnv("local", [
+        {
+          protocol: "http",
+          portNumber: 3978,
+          portForwardingUri: "https://id-port.cluster.devtunnels.ms",
+          writeToEnvironmentFile: {
+            endpoint: "BOT_ENDPOINT",
+            domain: "BOT_DOMAIN",
+          },
+        },
+      ]);
+      sandbox.assert.calledWith(writeEnvStub, sinon.match.any, "local", {
+        BOT_ENDPOINT: "https://id-port.cluster.devtunnels.ms",
+        BOT_DOMAIN: "id-port.cluster.devtunnels.ms",
+      });
+    });
+
+    it("multiple ports", async () => {
+      const writeEnvStub = sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      await tunnelTaskTerminal.saveTunnelToEnv("local", [
+        {
+          protocol: "http",
+          portNumber: 3978,
+          portForwardingUri: "https://id-3978.cluster.devtunnels.ms",
+          writeToEnvironmentFile: {
+            domain: "BOT_DOMAIN",
+          },
+        },
+        {
+          protocol: "https",
+          portNumber: 53000,
+          portForwardingUri: "https://id-53000.cluster.devtunnels.ms",
+          writeToEnvironmentFile: {
+            endpoint: "TAB_ENDPOINT",
+          },
+        },
+        {
+          protocol: "https",
+          portNumber: 3333,
+          portForwardingUri: "https://id-3333.cluster.devtunnels.ms",
+          writeToEnvironmentFile: {},
+        },
+      ]);
+      sandbox.assert.calledWith(writeEnvStub, sinon.match.any, "local", {
+        BOT_DOMAIN: "id-3978.cluster.devtunnels.ms",
+        TAB_ENDPOINT: "https://id-53000.cluster.devtunnels.ms",
       });
     });
   });

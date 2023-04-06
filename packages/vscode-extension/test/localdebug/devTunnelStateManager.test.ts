@@ -82,4 +82,13 @@ describe("devTunnelStateManager", () => {
     const promises = [randomOperation(), randomOperation(), randomOperation()];
     await Promise.all(promises);
   });
+
+  it("delete a non-existent item", async () => {
+    const devTunnelStateManager = DevTunnelStateManager.create();
+    let states = await devTunnelStateManager.listDevTunnelStates();
+    chai.assert.isEmpty(states);
+    await devTunnelStateManager.deleteTunnelState({ tunnelId: "id1", clusterId: "cluster1" });
+    states = await devTunnelStateManager.listDevTunnelStates();
+    chai.assert.isEmpty(states);
+  });
 });

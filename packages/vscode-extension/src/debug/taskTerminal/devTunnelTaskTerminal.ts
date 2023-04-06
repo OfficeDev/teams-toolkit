@@ -72,11 +72,11 @@ const Access = Object.freeze({
 
 export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   protected readonly args: IDevTunnelArgs;
+  protected cancel: (() => void) | undefined;
   private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
   private readonly devTunnelStateManager: DevTunnelStateManager;
   private tunnel: Tunnel | undefined;
   private isOutputSummary: boolean;
-  private cancel: (() => void) | undefined;
 
   constructor(taskDefinition: vscode.TaskDefinition) {
     super(taskDefinition, 1);

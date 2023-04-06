@@ -1484,7 +1484,8 @@
     "yaml": "^2.2.1"
   },
   "extensionDependencies": [
-    "ms-vscode.azure-account"
+    "ms-vscode.azure-account",
+    "redhat.vscode-yaml"
   ],
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

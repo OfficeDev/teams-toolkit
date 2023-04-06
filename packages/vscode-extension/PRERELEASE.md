@@ -7,7 +7,11 @@
 New features:
 
 - Run and debug Teams bot and message extension applications with Dev Tunnel.
+  ![devtunnel](https://user-images.githubusercontent.com/11220663/230364699-ed108641-4196-4318-949b-17ff56a6593f.png)
+
 - `Validate Application` command can now catch publish errors and provide mitigation suggestions for the application package.
+  ![validate](https://user-images.githubusercontent.com/11220663/230363745-50bb8b6b-06a1-40df-b6ae-5601a71b193e.png)
+
 - Auto complete when editing the yml files.
 
   > Note: Teams Toolkit for Visual Studio Code takes a new dependency on [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) which will be installed together with Teams Toolkit.
@@ -25,6 +29,7 @@ SharePoint Framework developer experience update:
 - Streamlined full stack debugging for SPFx based tab apps on Teams, Outlook and the Microsoft 365 app.
 - Automated the process to add multiple SPFx web parts as Teams Tab pages and configure the new web parts with Teams app.
 - Provided flexibility to let user decide which SharePoint Framework (SPFx) package version to use when creating a SPFx-based Teams tab app, either to choose from a globally installed version or let Teams Toolkit install the latest version for you.
+  ![SPFx](https://user-images.githubusercontent.com/11220663/230363218-98e16312-17b0-49cf-8617-333ca961c4b0.png)
 
 Teams Toolkit generated project file change:
 
@@ -32,6 +37,7 @@ Teams Toolkit generated project file change:
 - Some actions now support a `writeToEnvironmentFile` parameter to define generated environment variable names.
 - `.env.{envName}` files now only contain non-sensitive information and are removed from `.gitignore`.
 - Added `.env.{envName}.user` files to store sensitive information like password and are added to `.gitignore`.
+  ![project](https://user-images.githubusercontent.com/11220663/230363542-c0e8db66-8b6f-4c0e-92d0-b184c34e4824.png)
 
 Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.0@beta`:
 
@@ -52,14 +58,15 @@ Enhancemens:
   - Renamed the `DEPLOYMENT` section to `LIFECYCLE`.
   - Renamed `Provision in the cloud` to `Provision`, `Deploy to the cloud` to `Deploy` and `Publish to Teams` to `Publish`. Now `Provision`, `Deploy` and `Publish` command will trigger the corresponding actions defined in the `teamsapp.yml` file.
   - Moved `Zip Teams App Package`, `Validate Application`, and `Open Developer Portal to Publish` commands to `UTILITY` section.
+    ![treeview](https://user-images.githubusercontent.com/11220663/230364045-510c7bd6-5c5a-4b32-ae61-bb069b31c016.png)
 
 - `Zip Teams App Package`, `Validate Application`, `Update Azure Active Directory App`, `Update Teams App` commands will now ask for additional inputs like `manifest.json` file path and environment name so that you have the flexibility to arrange hose files.
 
-- Simplified multiple rogress notifications into a single one for Provision, Deploy and publish.
+- Simplified multiple progress notifications into a single one for provision, deploy and publish.
 
 - Sample: enabled [app caching](https://learn.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/build-tabs-for-meeting?tabs=desktop%2Cmeeting-chat-view-desktop%2Cmeeting-stage-view-desktop%2Cchannel-meeting-desktop#app-caching) in "My First Meeting App" sample that improves subsequent launch time of the apps that are loaded in the meeting side panel.
 
-- Template: updated tab templates to use Fluent UI V9 and React 18
+- Template: updated tab templates to use Fluent UI V9 and React 18.
 
 ### Mar 23, 2023
 

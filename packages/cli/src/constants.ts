@@ -69,13 +69,13 @@ export const BuildPackageOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the output path of the zipped app package, defaults to '${folder}/build/appPackage/appPackage.${env}.zip'",
+      "Select the output path of the zipped app package, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
   },
   [CoreQuestionNames.OutputManifestParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the generated manifest path, defaults to '${folder}/build/appPackage/manifest.${env}.json'",
+      "Select the output path of the generated manifest path, defaults to '${folder}/appPackage/build/manifest.${env}.json'",
   },
 };
 
@@ -90,7 +90,7 @@ export const ValidateApplicationOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the zipped Teams app package path, defaults to '${folder}/build/appPackage/appPackage.${env}.zip'. This package will be validated with validation rules.",
+      "Select the zipped Teams app package path, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'. This package will be validated with validation rules.",
   },
 };
 

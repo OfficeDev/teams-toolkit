@@ -60,10 +60,10 @@ export default class Package extends YargsCommand {
           args[ManifestFilePathParamName] ?? `${rootFolder}/${AppPackageFolderName}/manifest.json`;
         inputs[CoreQuestionNames.OutputZipPathParamName] =
           args[CoreQuestionNames.OutputZipPathParamName] ??
-          `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`;
+          `${rootFolder}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${inputs.env}.zip`;
         inputs[CoreQuestionNames.OutputManifestParamName] =
           args[CoreQuestionNames.OutputManifestParamName] ??
-          `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`;
+          `${rootFolder}/${AppPackageFolderName}/${BuildFolderName}/manifest.${inputs.env}.json`;
         result = await core.createAppPackage(inputs);
       } else {
         const func: Func = {

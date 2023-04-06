@@ -983,8 +983,8 @@ function generateCreateAppPackageArgs(
     manifestPath: manifestTemplatePath,
     outputZipPath: path.join(
       projectPath,
-      BuildFolderName,
       AppPackageFolderName,
+      BuildFolderName,
       `appPackage.${envName}.zip`
     ),
     outputJsonPath: manifestFileName,

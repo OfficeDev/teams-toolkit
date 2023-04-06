@@ -616,10 +616,10 @@ export class FxCoreV3Implement {
       manifestPath: teamsAppManifestFilePath,
       outputZipPath:
         inputs[CoreQuestionNames.OutputZipPathParamName] ??
-        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
       outputJsonPath:
         inputs[CoreQuestionNames.OutputManifestParamName] ??
-        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
     const result = await driver.run(args, context);
     if (context.platform === Platform.VSCode) {

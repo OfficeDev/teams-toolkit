@@ -9,6 +9,7 @@ import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { executeCommand, maskSecretValues } from "../../code/utils";
+import { ProgressMessages } from "../../messages";
 
 const ACTION_NAME = "script";
 
@@ -25,6 +26,9 @@ export class ScriptDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const typedArgs = args as ScriptDriverArgs;
+    await context.progressBar?.next(
+      ProgressMessages.runCommand(typedArgs.run, typedArgs.workingDirectory ?? "./")
+    );
     const res = await executeCommand(
       typedArgs.run,
       context.projectPath,

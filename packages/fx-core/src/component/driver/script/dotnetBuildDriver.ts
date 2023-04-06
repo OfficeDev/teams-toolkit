@@ -35,7 +35,5 @@ export class DotnetBuildDriver extends BaseBuildStepDriver {
 }
 
 export class DotnetBuildDriverImpl extends BaseBuildDriver {
-  progressBarName = `Building Dotnet project at ${this.workingDirectory}`;
-  progressBarSteps = 1;
   buildPrefix = "dotnet";
 }

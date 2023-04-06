@@ -26,7 +26,6 @@ import { AzureResourceInfo } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
-import { progressBarHelper } from "./progressBarHelper";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 
@@ -65,19 +64,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     const inputs = { ignoreFile: args.ignoreFile };
 
     if (args.dryRun && this.prepare) {
-      this.progressNames = this.progressPrepare;
-    }
-    this.progressBar = this.createProgressBar(this.ui);
-    this.progressHandler = progressBarHelper(this.progressNames, this.progressBar);
-    await this.progressBar?.start();
-
-    if (args.dryRun && this.prepare) {
       await this.prepare(inputs);
-      await this.progressBar?.end(true);
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
-    await this.progressBar?.end(true);
     return true;
   }
 

@@ -14,11 +14,17 @@ import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/a
 import * as tools from "../../../../../src/common/tools";
 import * as sinon from "sinon";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
-import { CheckDeploymentStatusTimeoutError } from "../../../../../src/error/deploy";
+import {
+  CheckDeploymentStatusTimeoutError,
+  GetPublishingCredentialsError,
+} from "../../../../../src/error/deploy";
 import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
 chai.use(chaiAsPromised);
+import * as appService from "@azure/arm-appservice";
+import { RestError } from "@azure/storage-blob";
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
@@ -87,5 +93,47 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     await chai
       .expect(impl.checkDeployStatus("", config))
       .to.be.rejectedWith(CheckDeploymentStatusTimeoutError);
+  });
+
+  it("createAzureDeployConfig GetPublishingCredentialsError", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    impl.managementClient = new appService.WebSiteManagementClient(
+      new MyTokenCredential(),
+      "e24d88be-bbbb-1234-ba25-11111111111"
+    );
+    sandbox
+      .stub(impl.managementClient.webApps, "beginListPublishingCredentialsAndWait")
+      .rejects(new RestError("test messasge", "111", 500));
+    await chai
+      .expect(
+        impl.createAzureDeployConfig(
+          {
+            subscriptionId: "e24d88be-bbbb-1234-ba25-11111111111",
+            resourceGroupName: "mockGroupName",
+            instanceId: "mockAppName",
+          },
+          new MyTokenCredential()
+        )
+      )
+      .to.be.rejectedWith(GetPublishingCredentialsError);
   });
 });

@@ -34,7 +34,7 @@ import {
 } from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
-  protected managementClient: appService.WebSiteManagementClient | undefined;
+  managementClient: appService.WebSiteManagementClient | undefined;
 
   public static readonly AXIOS_INSTANCE = axios.create();
 
@@ -151,16 +151,17 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * create azure deploy config for Azure Function and Azure App service
    * @param azureResource azure resource info
    * @param azureCredential user azure credential
-   * @protected
    */
-  protected async createAzureDeployConfig(
+  async createAzureDeployConfig(
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
-    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
-      azureCredential,
-      azureResource.subscriptionId
-    ));
+    const managementClient =
+      this.managementClient ||
+      (this.managementClient = new appService.WebSiteManagementClient(
+        azureCredential,
+        azureResource.subscriptionId
+      ));
     const listResponse = await wrapAzureOperation(
       () =>
         managementClient.webApps.beginListPublishingCredentialsAndWait(

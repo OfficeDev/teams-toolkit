@@ -19,7 +19,8 @@ import Progress from "./console/progress";
 import { getColorizedString, getSystemInputs } from "./utils";
 import UI from "./userInteraction";
 import activate from "./activate";
-import { isUserCancelError } from "@microsoft/teamsfx-core";
+import { IncompatibleProjectError, isUserCancelError } from "@microsoft/teamsfx-core";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 export abstract class YargsCommand {
   /**
@@ -110,19 +111,43 @@ export abstract class YargsCommand {
     );
     CliTelemetry.setReporter(reporter);
 
-    {
-      const result = await activate();
-      if (result.isOk()) {
-        const inputs = getSystemInputs(args.folder as string);
-        inputs.ignoreEnvInfo = true;
-        const configResult = await result.value.getProjectConfigV3(inputs);
-        if (configResult.isOk()) {
-          CliTelemetry.setIsFromSample(configResult.value?.projectSettings?.isFromSample);
+    try {
+      {
+        const result = await activate();
+        if (result.isOk()) {
+          const inputs = getSystemInputs(args.folder as string);
+          inputs.ignoreEnvInfo = true;
+          if (
+            this.commandHead !== "new" &&
+            this.commandHead !== "template" &&
+            this.commandHead !== "infra" &&
+            this.commandHead !== "debug" &&
+            args.folder &&
+            !args.global
+          ) {
+            const res = await result.value.projectVersionCheck(inputs);
+            if (res.isErr()) {
+              throw res.error;
+            } else {
+              if (res.value.isSupport === VersionState.unsupported) {
+                throw IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion");
+              } else if (res.value.isSupport === VersionState.upgradeable) {
+                const upgrade = await result.value.phantomMigrationV3(inputs);
+                if (upgrade.isErr()) {
+                  throw upgrade.error;
+                } else {
+                  return;
+                }
+              }
+            }
+          }
+          const configResult = await result.value.getProjectConfigV3(inputs);
+          if (configResult.isOk()) {
+            CliTelemetry.setIsFromSample(configResult.value?.projectSettings?.isFromSample);
+          }
         }
       }
-    }
 
-    try {
       const result = await Correlator.run(
         this.runCommand.bind(this),
         args as { [argName: string]: string | string[] }
@@ -173,7 +198,7 @@ export abstract class YargsCommand {
       exit(-1, FxError);
     } finally {
       await CliTelemetryInstance.flush();
+      Progress.end(true);
     }
-    Progress.end(true);
   }
 }

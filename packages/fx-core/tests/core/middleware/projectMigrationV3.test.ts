@@ -56,8 +56,10 @@ import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug
 import { VersionForMigration } from "../../../src/core/middleware/types";
 import { isMigrationV3Enabled } from "../../../src/common/tools";
 import * as loader from "../../../src/core/middleware/projectSettingsLoader";
+import { SettingsUtils } from "../../../src/component/utils/settingsUtil";
 
 let mockedEnvRestore: () => void;
+const mockedId = "00000000-0000-0000-0000-000000000000";
 
 describe("ProjectMigratorMW", () => {
   const sandbox = sinon.createSandbox();
@@ -1157,16 +1159,30 @@ describe("Migration utils", () => {
       }
       return true;
     });
-    sandbox.stub(fs, "readJson").resolves({ projectId: MetadataV2.projectMaxVersion });
+    sandbox.stub(fs, "readJson").resolves({ projectId: mockedId });
     const trackingId = await getTrackingIdFromPath(projectPath);
-    assert.equal(trackingId, MetadataV2.projectMaxVersion);
+    assert.equal(trackingId, mockedId);
   });
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves({ trackingId: MetadataV3.projectVersion });
+    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+      ok({
+        version: MetadataV3.projectVersion,
+        trackingId: mockedId,
+      })
+    );
     const trackingId = await getTrackingIdFromPath(projectPath);
-    assert.equal(trackingId, MetadataV3.projectVersion);
+    assert.equal(trackingId, mockedId);
+  });
+
+  it("getTrackingIdFromPath: V3 failed", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox
+      .stub(SettingsUtils.prototype, "readSettings")
+      .resolves(err(new Error("mocked error") as FxError));
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
   });
 
   it("getTrackingIdFromPath: empty", async () => {

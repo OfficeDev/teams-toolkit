@@ -22,6 +22,8 @@ import {
   expect,
   TestFolder,
 } from "../utils";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("New Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -70,6 +72,14 @@ describe("New Command Tests", function () {
     sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
     });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

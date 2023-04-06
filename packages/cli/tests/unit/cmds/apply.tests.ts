@@ -3,7 +3,7 @@
 
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import { err, FxError, ok, SystemError, UserError, Void } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, SystemError, Void } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { TelemetryProperty, TelemetrySuccess } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -11,6 +11,8 @@ import { ApplyCommand } from "../../../src/cmds/apply";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import * as activate from "../../../src/activate";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 
 describe("teamsfx apply", function () {
   const sandbox = sinon.createSandbox();
@@ -59,6 +61,14 @@ describe("teamsfx apply", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   it("should contain correct options", () => {

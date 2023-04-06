@@ -29,6 +29,8 @@ import LogProvider from "../../../src/commonlib/log";
 import { AzureAccountManager } from "../../../src/commonlib/azureLoginCI";
 import CLIUIInstance from "../../../src/userInteraction";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Provision Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -71,6 +73,14 @@ describe("Provision Command Tests", function () {
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
     CLIUIInstance.interactive = false;
   });
 
@@ -271,6 +281,14 @@ describe("teamsfx provision manifest", async () => {
       allArguments.set(key, value);
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

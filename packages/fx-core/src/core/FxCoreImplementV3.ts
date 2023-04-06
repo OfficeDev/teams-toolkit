@@ -74,9 +74,10 @@ import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils"
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { VersionSource } from "../common/versionMetadata";
+import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 import { InvalidEnvFolderPath } from "../component/configManager/error";
+import { isV3Enabled } from "../common/tools";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -364,7 +365,16 @@ export class FxCoreV3Implement {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = getVersionState(versionInfo);
+      let isSupport: VersionState;
+      if (!isV3Enabled()) {
+        if (versionInfo.source === VersionSource.projectSettings) {
+          isSupport = VersionState.compatible;
+        } else {
+          isSupport = VersionState.unsupported;
+        }
+      } else {
+        isSupport = getVersionState(versionInfo);
+      }
       return ok({
         currentVersion: versionInfo.version,
         trackingId,

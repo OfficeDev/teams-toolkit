@@ -54,7 +54,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
   });
 
   it("checkDeployStatus empty response", async () => {
-    sinon.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
     const config = {
       headers: {
         "Content-Type": "text",
@@ -65,13 +65,12 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       maxBodyLength: 200,
       timeout: 200,
     };
-    const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/",
       artifactFolder: "/",
       ignoreFile: "./ignore",
       resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
     } as DeployArgs;
     const context = {
       logProvider: new TestLogProvider(),

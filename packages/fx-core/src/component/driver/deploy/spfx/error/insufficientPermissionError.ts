@@ -13,8 +13,8 @@ export class InsufficientPermissionError extends UserError {
     super({
       source: Constants.DeployDriverName,
       name: errorCode,
-      message: getDefaultString(messageKey, appCatalog),
-      displayMessage: getLocalizedString(messageKey, appCatalog),
+      message: getDefaultString(messageKey, appCatalog, Constants.DevProgramLink),
+      displayMessage: getLocalizedString(messageKey, appCatalog, Constants.DevProgramLink),
     });
   }
 }

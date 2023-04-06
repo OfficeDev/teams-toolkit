@@ -30,10 +30,11 @@ export class GetPublishingCredentialsError extends UserError {
         "error.deploy.GetPublishingCredentialsError",
         appName,
         resourceGroup,
-        JSON.stringify(error) || ""
+        JSON.stringify(error) || "",
+        "https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/list-publishing-credentials#code-try-0"
       ),
       displayMessage: getLocalizedString(
-        "error.deploy.GetPublishingCredentialsError",
+        "error.deploy.GetPublishingCredentialsError.Notification",
         appName,
         resourceGroup,
         error.message || ""

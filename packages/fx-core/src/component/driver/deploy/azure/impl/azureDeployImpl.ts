@@ -28,7 +28,10 @@ import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
-import { CheckDeploymentStatusTimeoutError } from "../../../../../error/deploy";
+import {
+  CheckDeploymentStatusTimeoutError,
+  GetPublishingCredentialsError,
+} from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -164,8 +167,20 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           azureResource.resourceGroupName,
           azureResource.instanceId
         ),
-      (e) => DeployExternalApiCallError.listPublishingCredentialsRemoteError(e, this.helpLink),
-      (e) => DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink)
+      (e) =>
+        new GetPublishingCredentialsError(
+          azureResource.instanceId,
+          azureResource.resourceGroupName,
+          e as Error,
+          this.helpLink
+        ),
+      (e) =>
+        new GetPublishingCredentialsError(
+          azureResource.instanceId,
+          azureResource.resourceGroupName,
+          e as Error,
+          this.helpLink
+        )
     );
     const publishingUserName = listResponse.publishingUserName ?? "";
     const publishingPassword = listResponse.publishingPassword ?? "";

@@ -21,3 +21,24 @@ export class CheckDeploymentStatusTimeoutError extends UserError {
     });
   }
 }
+
+export class GetPublishingCredentialsError extends UserError {
+  constructor(appName: string, resourceGroup: string, error: Error, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.GetPublishingCredentialsError",
+        appName,
+        resourceGroup,
+        JSON.stringify(error) || ""
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.GetPublishingCredentialsError",
+        appName,
+        resourceGroup,
+        error.message || ""
+      ),
+      helpLink: helpLink,
+    });
+  }
+}

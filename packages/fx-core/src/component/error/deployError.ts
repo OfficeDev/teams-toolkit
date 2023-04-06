@@ -1,50 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { BaseComponentInnerError, ExternalApiCallError } from "./componentError";
-import { DeployConstant } from "../constant/deployConstant";
-import { RestError } from "@azure/storage-blob";
 import { HttpStatusCode } from "../constant/commonConstant";
+import { DeployConstant } from "../constant/deployConstant";
+import { ExternalApiCallError } from "./componentError";
 
 /**
  * call external api error when deploy
  */
 export class DeployExternalApiCallError extends ExternalApiCallError {
-  static listPublishingCredentialsError(e?: unknown, helpLink?: string): DeployExternalApiCallError;
-  static listPublishingCredentialsError(
-    statusCode = -1,
-    error?: unknown,
-    helpLink?: string
-  ): DeployExternalApiCallError {
-    error = error ?? "";
-    return new DeployExternalApiCallError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      "ListPublishingCredentialsError",
-      "plugins.bot.FailedListPublishingCredentials",
-      statusCode ?? -1,
-      undefined,
-      undefined,
-      typeof error === "string" ? error : JSON.stringify(error),
-      helpLink
-    );
-  }
-
-  static listPublishingCredentialsRemoteError(
-    error: RestError,
-    helpLink?: string
-  ): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      "ListPublishingCredentialsError",
-      "driver.deploy.FailedListPublishingCredentialsRemoteError",
-      error.statusCode ?? -1,
-      undefined,
-      ["driver.common.suggestion.retryLater"],
-      JSON.stringify(error),
-      helpLink
-    );
-  }
-
   static zipDeployError(
     e?: unknown,
     statusCode?: number,

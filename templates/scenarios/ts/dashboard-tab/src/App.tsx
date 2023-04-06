@@ -12,10 +12,10 @@ import {
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
 import { TeamsFxContext } from "./internal/context";
-import SampleDashboard from "./views/dashboards/SampleDashboard";
-import Privacy from "./views/Privacy";
-import TabConfig from "./views/TabConfig";
-import TermsOfUse from "./views/TermsOfUse";
+import SampleDashboard from "./dashboards/SampleDashboard";
+import Privacy from "./Privacy";
+import TabConfig from "./TabConfig";
+import TermsOfUse from "./TermsOfUse";
 
 /**
  * The main app which handles the initialization and routing

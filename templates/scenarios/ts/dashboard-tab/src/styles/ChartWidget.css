@@ -1,0 +1,32 @@
+.chart-selector {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 1rem;
+}
+
+.chart-selector button {
+  font-size: var(--fontSizeBase100);
+  line-height: var(--lineHeightBase100);
+}
+
+.chart {
+  position: relative;
+  height: 200px;
+  width: 100%;
+}
+
+.chart .tick text {
+  fill: var(--colorNeutralForeground1);
+}
+
+.chart div {
+  color: var(--colorNeutralForeground1);
+}
+
+.chart line {
+  stroke: var(--colorNeutralStroke2);
+}
+
+.chart-footer button {
+  color: var(--colorBrandForeground1);
+}

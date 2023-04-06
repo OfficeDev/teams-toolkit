@@ -1,5 +1,5 @@
-import { ListModel } from "../models/listModel";
 import ListData from "../data/ListData.json";
+import { ListModel } from "../models/listModel";
 
 /**
  * Retrive sample data

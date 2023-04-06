@@ -19,6 +19,8 @@ import * as Utils from "../../../src/utils";
 import { CliConfigOptions, UserSettings } from "../../../src/userSetttings";
 import { NonTeamsFxProjectFolder } from "../../../src/error";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Config Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -74,6 +76,14 @@ describe("Config Command Tests", function () {
     sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
     });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {
@@ -181,6 +191,14 @@ describe("Config Get Command Check", () => {
     sandbox
       .stub(envUtil, "readEnv")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {
@@ -465,6 +483,14 @@ describe("Config Set Command Check", () => {
           return Promise.resolve(ok(undefined));
         }
       );
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

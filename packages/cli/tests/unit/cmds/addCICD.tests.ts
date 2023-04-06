@@ -13,6 +13,8 @@ import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 import mockedEnv from "mocked-env";
 
 describe("Add CICD Command Tests", function () {
@@ -64,6 +66,14 @@ describe("Add CICD Command Tests", function () {
     sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
     });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {

@@ -15,6 +15,8 @@ import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import Init, { InitDebug, InitInfra } from "../../../src/cmds/init";
 import { expect, TestFolder } from "../utils";
 import { NonTeamsFxProjectFolder } from "../../../src/error";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Init Command Tests", () => {
   const sandbox = sinon.createSandbox();
@@ -62,6 +64,14 @@ describe("Init Command Tests", () => {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

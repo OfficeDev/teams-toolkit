@@ -443,8 +443,7 @@ export class FxCoreV3Implement {
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
       let isSupport: VersionState;
-      // As projectVersionCheck is a v3 interface, v3 not enabled case is an exception and only called by vs platform
-      if (!isV3Enabled() && inputs.platform === Platform.VS) {
+      if (!isV3Enabled()) {
         if (versionInfo.source === VersionSource.projectSettings) {
           isSupport = VersionState.compatible;
         } else {

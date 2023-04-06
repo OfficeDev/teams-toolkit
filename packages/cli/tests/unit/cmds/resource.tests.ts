@@ -39,6 +39,8 @@ import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/er
 import UI from "../../../src/userInteraction";
 import * as path from "path";
 import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Resource Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -183,6 +185,14 @@ describe("Resource Command Tests", function () {
     });
     sandbox.stub(ProjectSettingsHelper, "includeFrontend").returns(false);
     sandbox.stub(ProjectSettingsHelper, "includeBot").returns(false);
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   after(() => {

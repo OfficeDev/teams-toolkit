@@ -795,7 +795,6 @@
   "plugins.bot.FailedListPublishingCredentials": "Unable to list publishing credentials.",
   "plugins.bot.FailedDeployZipFile": "Unable to deploy zip file.",
   "plugins.bot.FailedCheckDeployStatus": "Unable to check deployment status.",
-  "plugins.bot.CheckDeployStatusTimeout": "The deployment status is timeout.",
   "plugins.bot.BotRegistrationNotFoundWith": "Bot registration was not found with botId %s. Click 'Get Help' button to learn more about how to check bot registrations.",
   "plugins.bot.FailedUpdateMessageEndpoint": "Unable to update message endpoint with %s.",
   "plugins.bot.FailToRun": "Unable to run %s.",
@@ -935,7 +934,6 @@
   "driver.deploy.ClearStorageRemoteError": "Unable to clear Azure Storage Account due to remote service error.",
   "driver.deploy.error.deployToAzureRemoteFailed": "Remote service error, upload failed.",
   "driver.deploy.notice.deployAcceleration": "Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:",
-  "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.",
   "driver.deploy.notice.deployDryRunComplete": "Deployment preparations are completed. You can find the package in `%s`",
   "driver.deploy.azureAppServiceDeploySummary": "Project deployed to Azure App Service successfully.",
   "driver.deploy.azureFunctionsDeploySummary": "Project deployed to Azure Functions successfully.",
@@ -1027,5 +1025,7 @@
   "error.arm.DeployArmError.Notification": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s'. Refer to the [output channel](command:fx-extension.showOutputChannel) for more detailed error information and try again.",
   "error.arm.DeployArmError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s",
   "error.arm.GetArmDeploymentError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s. \nUnable to get detailed error message due to: %s. \nRefer to the resource group %s in portal for deployment error.",
-  "error.arm.ConvertArmOutputError": "Unable to convert ARM deployment result to action output, there is a duplicated key '%s' in ARM deployment result."
+  "error.arm.ConvertArmOutputError": "Unable to convert ARM deployment result to action output, there is a duplicated key '%s' in ARM deployment result.",
+  "error.deploy.DeployEmptyFolderError": "Unable to locate any files in the distribution folder: '%s'. Please ensure that the folder is not empty and that all necessary files have been included.",
+  "error.deploy.CheckDeploymentStatusTimeoutError": "Unable to check deployment status because the process timed out. Check your internet connection, and try again by checking deployment logs (Deployment -> Deployment center -> Logs) in Azure portal."
 }

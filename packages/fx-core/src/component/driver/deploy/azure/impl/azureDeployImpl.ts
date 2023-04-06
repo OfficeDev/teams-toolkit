@@ -9,7 +9,7 @@ import {
   DeployResult,
 } from "../../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../../utils/common";
-import { DeployExternalApiCallError, DeployTimeoutError } from "../../../../error/deployError";
+import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployImpl } from "./baseDeployImpl";
 import { Base64 } from "js-base64";
@@ -29,6 +29,7 @@ import { PrerequisiteError } from "../../../../error/componentError";
 import { progressBarHelper } from "./progressBarHelper";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
+import { CheckDeploymentStatusTimeoutError } from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -150,7 +151,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       }
     }
 
-    throw DeployTimeoutError.checkDeployStatusTimeout(this.helpLink);
+    throw new CheckDeploymentStatusTimeoutError(this.helpLink);
   }
 
   /**

@@ -8,7 +8,7 @@ import ignore, { Ignore } from "ignore";
 import path from "path";
 import glob from "glob";
 import { DeployConstant } from "../constant/deployConstant";
-import { DeployUserInputError } from "../error/deployError";
+import { DeployEmptyFolderError } from "../../error/deploy";
 
 /**
  * Asynchronously zip a folder and return buffer
@@ -79,8 +79,8 @@ export async function zipFolderAsync(
     }
   );
 
-  if (!tasks && !cacheFile) {
-    throw DeployUserInputError.noFilesFindInDistFolder();
+  if (tasks.length === 0 && !cacheFile) {
+    throw new DeployEmptyFolderError(sourceDir);
   }
 
   await Promise.all(tasks);

@@ -13,6 +13,12 @@ import { DriverContext } from "../../../../../src/component/driver/interface/com
 import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 import * as tools from "../../../../../src/common/tools";
 import * as sinon from "sinon";
+import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
+import { CheckDeploymentStatusTimeoutError } from "../../../../../src/error/deploy";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
+import * as chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
@@ -45,5 +51,41 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const deploy = new AzureZipDeployImpl(args, context, "", "", [], []);
     sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
     await deploy.run();
+  });
+
+  it("checkDeployStatus empty response", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    await chai
+      .expect(impl.checkDeployStatus("", config))
+      .to.be.rejectedWith(CheckDeploymentStatusTimeoutError);
   });
 });

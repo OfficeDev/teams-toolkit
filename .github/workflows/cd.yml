@@ -126,7 +126,7 @@ jobs:
 
       - name: generate templates v3
         run: |
-          .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3
+          .github/scripts/template-zip-autogen-v3.sh $TEMPLATE_PATH
           cd ./packages/fx-core
           rm -rf ./templates/fallback
           node ./scripts/download-templates-zip.js

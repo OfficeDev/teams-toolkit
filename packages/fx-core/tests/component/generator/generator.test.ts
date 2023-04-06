@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import _ from "lodash";
+import _, { sample } from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
@@ -36,6 +36,7 @@ import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
+import { tmpdir } from "os";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -247,6 +248,38 @@ describe("Generator utils", () => {
       assert.equal(entry.getData().toString(), "test");
       assert.equal(zip.getEntries().length, 1);
     });
+  });
+
+  it("download directory get file info error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 403 });
+    try {
+      await downloadDirectory(
+        "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/bot-sso",
+        tmpDir
+      );
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("download directory happy path", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "bot-sso";
+    const mockFileName = "test.txt";
+    const mockFileData = "bot sso data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
+    await fs.ensureDir(tmpDir);
+    await downloadDirectory(
+      "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/bot-sso",
+      tmpDir
+    );
+    const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
+    assert.equal(data, mockFileData);
   });
 });
 
@@ -467,7 +500,35 @@ describe("Generate sample using download directory", () => {
   });
 
   it("generate sample using download directory", async () => {
-    const result = await Generator.generateSample(ctx, path.join(tmpDir, "test1"), "bot-sso");
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "bot-sso";
+    const mockFileName = "test.txt";
+    const mockFileData = "bot sso data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
     assert.isTrue(result.isOk());
+  });
+
+  it("download directory throw api limit error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 403 });
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleApiLimitError");
+    }
+  });
+
+  it("download directory throw network error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 502 });
+    axiosStub.onSecondCall().resolves({ status: 502 });
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+    }
   });
 });

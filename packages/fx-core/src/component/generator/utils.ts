@@ -267,7 +267,7 @@ export async function downloadDirectory(
   const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
   let fileInfoTree = fileInfo.tree as any[];
   fileInfoTree = fileInfoTree.filter(
-    (node) => node.path.startsWith(sampleName) && node.type != "tree"
+    (node) => node.path.startsWith(sampleName) && node.type !== "tree"
   );
 
   //step 2: download files with limited concurrency

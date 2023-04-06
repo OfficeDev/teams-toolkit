@@ -260,6 +260,7 @@ describe("Generator utils", () => {
       );
     } catch (e) {
       assert.exists(e);
+      assert.isTrue(e.message.includes("HTTP Request reaches api limit"));
       return;
     }
     assert.fail("Should not reach here.");

@@ -36,8 +36,6 @@ provision:
     with:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:

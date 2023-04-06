@@ -1027,5 +1027,5 @@
   "error.arm.GetArmDeploymentError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s. \nUnable to get detailed error message due to: %s. \nRefer to the resource group %s in portal for deployment error.",
   "error.arm.ConvertArmOutputError": "Unable to convert ARM deployment result to action output, there is a duplicated key '%s' in ARM deployment result.",
   "error.deploy.DeployEmptyFolderError": "Unable to locate any files in the distribution folder: '%s'. Please ensure that the folder is not empty and that all necessary files have been included.",
-  "error.deploy.CheckDeploymentStatusTimeoutError": "Unable to check deployment status because the process timed out. Check your internet connection, and try again by checking deployment logs (Deployment -> Deployment center -> Logs) in Azure portal."
+  "error.deploy.CheckDeploymentStatusTimeoutError": "Unable to check deployment status because the process timed out. Check your internet connection and try again. If the issue persists, please review the deployment logs (Deployment -> Deployment center -> Logs) in Azure portal to identify any issues that may have occurred."
 }

@@ -6,7 +6,6 @@ import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";

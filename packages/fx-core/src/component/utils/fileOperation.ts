@@ -79,7 +79,7 @@ export async function zipFolderAsync(
     }
   );
 
-  if (!tasks && !cacheFile) {
+  if (tasks.length === 0 && !cacheFile) {
     throw new DeployEmptyFolderError(sourceDir);
   }
 

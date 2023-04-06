@@ -127,6 +127,11 @@ jobs:
       - name: generate templates v3
         run: |
           .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3
+          cd ./packages/fx-core
+          rm -rf ./templates/fallback
+          node ./scripts/download-templates-zip.js
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: update templates prerelease tag
         uses: richardsimko/update-tag@v1
@@ -190,14 +195,6 @@ jobs:
           token: ${{ secrets.github_token }}
           tag: "template-tag-list"
           allowUpdates: true
-
-      - name: sync up fx-core fallback templates
-        run: |
-          rm -rf ./templates/fallback
-          node ./scripts/download-templates-zip.js
-        working-directory: ./packages/fx-core
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: download simpleauth to fx-core
         uses: nick-invision/retry@v2

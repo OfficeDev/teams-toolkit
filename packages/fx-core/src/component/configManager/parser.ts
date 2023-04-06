@@ -121,11 +121,7 @@ export class YamlParser implements IYamlParser {
       if (validateSchema) {
         const valid = validator(value);
         if (!valid) {
-          const errors: string[] = [];
-          for (const err of validator.errors as DefinedError[]) {
-            errors.push(`${err.instancePath} : ${err.message}`);
-          }
-          return err(new InvalidYamlSchemaError(errors.join(";")));
+          return err(new InvalidYamlSchemaError());
         }
       }
 

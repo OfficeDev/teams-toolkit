@@ -49,7 +49,7 @@
     "test:apiFeature": "nyc mocha \"tests/component/feature/api.test.ts\"",
     "test:spfxFeature": "nyc mocha \"tests/component/feature/spfx.test.ts\"",
     "test:arm": "nyc mocha \"tests/plugins/solution/solution.arm.test.ts\"",
-    "test:rccommon": "nyc mocha \"tests/component/resource/azureFunction/common.test.ts\"",
+    "test:azureDeployImpl": "nyc mocha \"tests/component/driver/deploy/azure/AzureDeployImpl.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

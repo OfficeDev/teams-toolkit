@@ -111,7 +111,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async checkDeployStatus(
+  public async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
     logger?: LogProvider

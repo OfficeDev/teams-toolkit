@@ -71,15 +71,14 @@ describe("Azure App Service Deploy Driver test", () => {
       end: async (): Promise<void> => {},
     };
     const ui = new MockUserInteraction();
-    sandbox.stub(ui, "createProgressBar").returns(progressHandler);
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
-    const progressEndCaller = sandbox.stub(progressHandler, "end").resolves();
 
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
+      progressBar: progressHandler,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -127,8 +126,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
     // progress bar have 6 steps
-    expect(progressNextCaller.callCount).to.equal(6);
-    expect(progressEndCaller.callCount).to.equal(1);
+    expect(progressNextCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
@@ -388,14 +386,13 @@ describe("Azure App Service Deploy Driver test", () => {
       end: async (): Promise<void> => {},
     };
     const ui = new MockUserInteraction();
-    sandbox.stub(ui, "createProgressBar").returns(progressHandler);
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
-    const progressEndCaller = sandbox.stub(progressHandler, "end").resolves();
 
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
+      progressBar: progressHandler,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -437,7 +434,6 @@ describe("Azure App Service Deploy Driver test", () => {
     );
     // dry run will have only one progress step
     assert.equal(progressNextCaller.callCount, 1);
-    expect(progressEndCaller.callCount).to.equal(1);
   });
 
   it("list credential error", async () => {
@@ -492,47 +488,5 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.execute(args, context);
     assert.equal(res.result.isOk(), false);
-  });
-
-  it("test process language", async () => {
-    const resource = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "../../../../../resource/package.nls.json"), "utf-8")
-    );
-    assert.equal(
-      ProgressMessages.restartAzureFunctionApp(),
-      resource["core.progress.restartAzureFunctionApp"]
-    );
-    assert.equal(
-      ProgressMessages.getAzureAccountInfoForDeploy(),
-      resource["core.progress.getAzureAccountInfoForDeploy"]
-    );
-    assert.equal(
-      ProgressMessages.getAzureUploadEndpoint(),
-      resource["core.progress.getAzureUploadEndpoint"]
-    );
-    assert.equal(
-      ProgressMessages.uploadZipFileToAzure(),
-      resource["core.progress.uploadZipFileToAzure"]
-    );
-    assert.equal(
-      ProgressMessages.checkAzureDeployStatus(),
-      resource["core.progress.checkAzureDeployStatus"]
-    );
-    assert.equal(
-      ProgressMessages.restartAzureFunctionApp(),
-      resource["core.progress.restartAzureFunctionApp"]
-    );
-    assert.equal(
-      ProgressMessages.getAzureStorageAccountInfo(),
-      resource["core.progress.getAzureStorageDeployCredential"]
-    );
-    assert.equal(
-      ProgressMessages.clearStorageExistsBlobs(),
-      resource["core.progress.clearStorageExistsBlobs"]
-    );
-    assert.equal(
-      ProgressMessages.uploadFilesToStorage(),
-      resource["core.progress.uploadFilesToStorage"]
-    );
   });
 });

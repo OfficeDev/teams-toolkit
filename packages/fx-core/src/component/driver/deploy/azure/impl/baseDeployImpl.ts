@@ -29,9 +29,7 @@ export abstract class BaseDeployImpl {
   protected helpLink: string | undefined = undefined;
   protected abstract summaries: () => string[];
   protected abstract summaryPrepare: () => string[];
-  protected abstract progressNames: (() => string)[];
   protected progressPrepare: (() => string)[] = [];
-  protected abstract progressHandler?: AsyncIterableIterator<void>;
 
   constructor(args: unknown, context: DriverContext) {
     this.args = args;
@@ -41,13 +39,14 @@ export abstract class BaseDeployImpl {
     this.logger = context.logProvider;
     this.context = {
       azureAccountProvider: context.azureAccountProvider,
-      progressBar: this.progressBar,
+      progressBar: context.progressBar,
       logProvider: context.logProvider,
       telemetryReporter: context.telemetryReporter,
     };
+    this.progressBar = context.progressBar;
   }
 
-  abstract createProgressBar(ui?: UserInteraction): IProgressHandler | undefined;
+  abstract updateProgressbar(): void;
 
   protected static asDeployArgs = asFactory<DeployArgs>({
     workingDirectory: asOptional(asString),
@@ -60,7 +59,7 @@ export abstract class BaseDeployImpl {
 
   async run(): Promise<ExecutionResult> {
     await this.context.logProvider.debug("start deploy process");
-
+    this.updateProgressbar();
     return await this.wrapErrorHandler(async () => {
       const deployArgs = BaseDeployImpl.asDeployArgs(this.args, this.helpLink);
       // if working directory not set, use current working directory
@@ -109,7 +108,6 @@ export abstract class BaseDeployImpl {
         ? { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaries() }
         : { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaryPrepare() };
     } catch (e) {
-      await this.context.progressBar?.end(false);
       if (e instanceof BaseComponentInnerError) {
         const errorDetail = e.detail ? `Detail: ${e.detail}` : "";
         await this.context.logProvider.error(`${e.message} ${errorDetail}`);

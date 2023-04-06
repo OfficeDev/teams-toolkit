@@ -10,12 +10,11 @@ import { DriverContext } from "../../../../src/component/driver/interface/common
 import { scriptDriver } from "../../../../src/component/driver/script/scriptDriver";
 import { assert } from "chai";
 import { MockUserInteraction } from "../../../core/utils";
-import { err, ok, UserError } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
+import { err, IProgressHandler, ok, UserError } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as child_process from "child_process";
 import * as utils from "../../../../src/component/code/utils";
-import * as os from "os";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -41,6 +40,11 @@ describe("Script Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
       projectPath: "./",
     } as DriverContext;
     context.ui!.runCommand = undefined;

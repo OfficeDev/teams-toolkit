@@ -333,9 +333,8 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   }
 
   protected generateTelemetries(): { [key: string]: string } {
-    return {
-      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+    try {
+      const debugTaskArgs = {
         type: maskValue(this.args.type, Object.values(TunnelType)),
         ngrokArgs: maskValue(
           Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
@@ -357,8 +356,16 @@ export class NgrokTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             TaskDefaultValue.startLocalTunnel.writeToEnvironmentFile.domain,
           ]),
         },
-      }),
-    };
+      };
+      return {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.DebugTaskArgs]: JSON.stringify(debugTaskArgs),
+      };
+    } catch {
+      return {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      };
+    }
   }
 
   // TODO: remove getNgrokEndpoint after v3 enabled
@@ -451,15 +458,12 @@ const NgrokTunnelError = Object.freeze({
     new UserError(
       ExtensionSource,
       ExtensionErrors.NgrokProcessError,
-      util.format(
-        getDefaultString("teamstoolkit.localDebug.ngrokProcessError"),
+      `${getDefaultString("teamstoolkit.localDebug.ngrokProcessError")} ${
         error?.message ?? ""
-      ) +
-        " " +
-        openTerminalMessage(),
-      util.format(localize("teamstoolkit.localDebug.ngrokProcessError"), error?.message ?? "") +
-        " " +
-        openTerminalDisplayMessage()
+      } ${openTerminalMessage()}`,
+      `${localize("teamstoolkit.localDebug.ngrokProcessError")} ${
+        error?.message ?? ""
+      } ${openTerminalDisplayMessage()}`
     ),
 
   NgrokStoppedError: (code: number) =>
@@ -495,11 +499,10 @@ const NgrokTunnelError = Object.freeze({
     new UserError(
       ExtensionSource,
       ExtensionErrors.NgrokInstallationError,
-      util.format(
-        getDefaultString("teamstoolkit.localDebug.ngrokInstallationError"),
+      `${getDefaultString("teamstoolkit.localDebug.ngrokInstallationError")} ${
         error?.message ?? ""
-      ),
-      util.format(localize("teamstoolkit.localDebug.ngrokInstallationError"), error?.message ?? "")
+      }`,
+      `${localize("teamstoolkit.localDebug.ngrokInstallationError")} ${error?.message ?? ""}`
     ),
   MultipleTunnelServiceError: () =>
     new UserError(

@@ -5,6 +5,7 @@ provision:
     with:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
       generateClientSecret: true # If the value is false, the action will not generate client secret for you
+      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in your organization's Azure AD tenant (for example, single tenant).
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       clientId: AAD_APP_CLIENT_ID
       clientSecret: SECRET_AAD_APP_CLIENT_SECRET # Environment variable that starts with `SECRET_` will be stored to the .env.{envName}.user environment file
@@ -38,15 +39,15 @@ provision:
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN for local launch
     with:
-      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000"
+      run: echo "set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000"
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT for local launch
     with:
-      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000"
+      run: echo "set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000"
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH for local launch
     with:
-      run: echo "::set-output PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#"
+      run: echo "set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#"
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
@@ -85,7 +86,7 @@ deploy:
   - uses: cli/runDotnetCommand
     with:
       args: build extensions.csproj -o ./bin --ignore-failed-sources
-      workingDirectory: ./api
+      workingDirectory: api
       execPath: ${{DOTNET_PATH}}
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
@@ -139,15 +140,15 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-      workingDirectory: ./tabs
+      workingDirectory: tabs
 
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-      workingDirectory: ./api
+      workingDirectory: api
 
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-      workingDirectory: ./bot
+      workingDirectory: bot
 

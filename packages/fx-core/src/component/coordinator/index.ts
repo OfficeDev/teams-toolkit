@@ -16,7 +16,7 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import { merge } from "lodash";
+import { camelCase, merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
@@ -171,8 +171,8 @@ const M365Actions = [
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [
-  "azureAppService/deploy",
-  "azureFunctions/deploy",
+  "azureAppService/zipDeploy",
+  "azureFunctions/zipDeploy",
   "azureStorage/deploy",
 ];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
@@ -865,7 +865,7 @@ export class Coordinator {
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UnresolvedPlaceholderError(
-            reason.failedDriver.uses,
+            camelCase(reason.failedDriver.uses),
             placeholders,
             templatePath
           );
@@ -944,7 +944,9 @@ export class Coordinator {
         const msg =
           getLocalizedString("core.common.LifecycleComplete.deploy", steps, steps) +
           botTroubleShootMsg.textForLogging;
-        ctx.ui?.showMessage("info", msg, false);
+        if (ctx.platform !== Platform.VS) {
+          ctx.ui?.showMessage("info", msg, false);
+        }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);

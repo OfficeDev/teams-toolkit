@@ -28,11 +28,7 @@ import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
-import {
-  DependencyInstallError,
-  NoConfigurationError,
-  ScaffoldError,
-} from "../resource/spfx/error";
+import { NoConfigurationError, ScaffoldError } from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
@@ -46,6 +42,7 @@ import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { getComponent } from "../workflow";
+import { InstallSoftwareError } from "../../error/common";
 /**
  * SPFx tab scaffold
  */
@@ -116,12 +113,12 @@ export async function scaffoldSPFx(
 
       const yoRes = await yoChecker.ensureDependency(context);
       if (yoRes.isErr()) {
-        throw DependencyInstallError("yo");
+        throw new InstallSoftwareError("spfx", "yo");
       }
 
       const spGeneratorRes = await spGeneratorChecker.ensureDependency(context);
       if (spGeneratorRes.isErr()) {
-        throw DependencyInstallError("sharepoint generator");
+        throw new InstallSoftwareError("spfx", "sharepoint generator");
       }
     }
 
@@ -273,7 +270,7 @@ export async function scaffoldSPFx(
     await progressHandler?.end(true);
     return ok(undefined);
   } catch (error) {
-    if ((error as any).name === "DependencyInstallFailed") {
+    if (error instanceof InstallSoftwareError) {
       const globalYoVersion = Utils.getPackageVersion("yo");
       const globalGenVersion = Utils.getPackageVersion("@microsoft/generator-sharepoint");
       const yoInfo = YoChecker.getDependencyInfo();

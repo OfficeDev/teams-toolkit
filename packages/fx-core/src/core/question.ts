@@ -944,8 +944,8 @@ export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
     default: (inputs: Inputs): string | undefined => {
       const appPackagePath: string = path.join(
         inputs.projectPath!,
-        BuildFolderName,
         AppPackageFolderName,
+        BuildFolderName,
         "appPackage.dev.zip"
       );
       if (fs.pathExistsSync(appPackagePath)) {

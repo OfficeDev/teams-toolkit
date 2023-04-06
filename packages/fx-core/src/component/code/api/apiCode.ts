@@ -33,6 +33,7 @@ import { DepsManager } from "../../../common/deps-checker";
 import { funcDepsTelemetry } from "./depsChecker/funcPluginTelemetry";
 import { QuestionKey } from "./enums";
 import { FuncPluginLogger } from "./depsChecker/funcPluginLogger";
+import { getLocalizedString } from "../../../common/localizeUtils";
 /**
  * api scaffold
  */
@@ -120,7 +121,7 @@ export class ApiCodeProvider {
     return ok(undefined);
   }
 
-  private async handleDotnetChecker(ctx: ContextV3, inputs: InputsWithProjectPath): Promise<void> {
+  public async handleDotnetChecker(ctx: ContextV3, inputs: InputsWithProjectPath): Promise<void> {
     const funcDepsLogger = new FuncPluginLogger(ctx.logProvider);
     const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
       DepsType.Dotnet,
@@ -137,7 +138,7 @@ export class ApiCodeProvider {
         return;
       }
       if (error instanceof Error) {
-        funcDepsLogger.error(LogMessages.failedToInstallDotnet(error));
+        funcDepsLogger.error(getLocalizedString("error.common.InstallSoftwareError", ".NET SDK"));
         await funcDepsLogger.printDetailLog();
         throw funcDepsHelper.transferError(error);
       } else {

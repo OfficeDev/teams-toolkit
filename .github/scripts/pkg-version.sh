@@ -11,7 +11,7 @@ echo "------ fx-core api-connector dir: " $FX_CORE_API_CONNECTOR_CONFIG_DIR
 
 if [ $1 == 'core-template' ]; then
     echo "sync up templates version in fx-core config"
-    node $SCRIPT_DIR/fxcore-sync-up-version.js $(git rev-parse --abbrev-ref HEAD)
+    node $SCRIPT_DIR/fxcore-sync-up-version.js
     git add $REPO_ROOT_DIR/packages/fx-core
 elif [ $1 == 'template-sync' ]; then
     echo "sync up templates deps' version with all the lerna pkgs"

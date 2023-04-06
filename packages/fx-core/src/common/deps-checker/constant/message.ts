@@ -14,7 +14,6 @@ export const Messages = {
     getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
   // needReplaceWithFuncCoreToolV3: () => getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
   needInstallFuncCoreTool: () => getLocalizedString("depChecker.needInstallFuncCoreTool"),
-  failToInstallFuncCoreTool: () => getLocalizedString("depChecker.failToInstallFuncCoreTool"),
   failToValidateFuncCoreTool: () => getLocalizedString("depChecker.failToValidateFuncCoreTool"),
   globalFuncNodeNotMatched: () => getLocalizedString("depChecker.globalFuncNodeNotMatched"),
   portableFuncNodeNotMatched: () => getLocalizedString("depChecker.portableFuncNodeNotMatched"),
@@ -22,7 +21,6 @@ export const Messages = {
   startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),
   finishInstallNgrok: () => getLocalizedString("depChecker.finishInstallNgrok"),
   needInstallNgrok: () => getLocalizedString("depChecker.needInstallNgrok"),
-  failToInstallNgrok: () => getLocalizedString("depChecker.failToInstallNgrok"),
   failToValidateNgrok: () => getLocalizedString("depChecker.failToValidateNgrok"),
 
   downloadDotnet: () => getLocalizedString("depChecker.downloadDotnet"),
@@ -30,7 +28,6 @@ export const Messages = {
   useGlobalDotnet: () => getLocalizedString("depChecker.useGlobalDotnet"),
   dotnetInstallStderr: () => getLocalizedString("depChecker.dotnetInstallStderr"),
   dotnetInstallErrorCode: () => getLocalizedString("depChecker.dotnetInstallErrorCode"),
-  failToInstallDotnet: () => getLocalizedString("depChecker.failToInstallDotnet"),
 
   NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound"),
   NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),

@@ -16,7 +16,6 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { VSCodeExtensionCommand } from "../../../common/constants";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
 

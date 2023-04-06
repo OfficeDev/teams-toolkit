@@ -443,7 +443,7 @@ export async function migrateBackendExtensionsInstall(
     }
     context.appYmlConfig.deploy.dotnetCommand = {
       args: "build extensions.csproj -o ./bin --ignore-failed-sources",
-      workingDirectory: `./${FolderName.Function}`,
+      workingDirectory: `${FolderName.Function}`,
       execPath: "${{DOTNET_PATH}}",
     };
 
@@ -663,7 +663,7 @@ export async function migrateValidateLocalPrerequisites(
       };
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Frontend}`,
+        workingDirectory: `${FolderName.Frontend}`,
       });
     }
 
@@ -672,11 +672,11 @@ export async function migrateValidateLocalPrerequisites(
       toolsArgs.dotnet = true;
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Function}`,
+        workingDirectory: `${FolderName.Function}`,
       });
       dotnetCommand = {
         args: "build extensions.csproj -o ./bin --ignore-failed-sources",
-        workingDirectory: `./${FolderName.Function}`,
+        workingDirectory: `${FolderName.Function}`,
         execPath: "${{DOTNET_PATH}}",
       };
     }
@@ -687,7 +687,7 @@ export async function migrateValidateLocalPrerequisites(
       }
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Bot}`,
+        workingDirectory: `${FolderName.Bot}`,
       });
     }
 

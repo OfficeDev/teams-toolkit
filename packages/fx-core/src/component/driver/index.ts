@@ -26,8 +26,6 @@ import "./script/scriptDriver";
 import "./prerequisite/installDriver";
 import "./file/createOrUpdateEnvironmentFile";
 import "./file/createOrUpdateJsonFile";
-import "./file/updateEnv";
-import "./file/updateJson";
 import "./botFramework/createOrUpdateBot";
 import "./m365/acquire";
 import "./add/addWebPart";

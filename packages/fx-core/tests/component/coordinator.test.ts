@@ -48,11 +48,11 @@ import {
   ProjectModel,
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
-import { envUtil } from "../../src/component/utils/envUtil";
+import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import fs from "fs-extra";
+import fs, { PathLike } from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import { createContextV3, createDriverContext } from "../../src/component/utils";
@@ -72,6 +72,8 @@ import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { InvalidAzureCredentialError, SelectSubscriptionError } from "../../src/error/azure";
 import { DotenvParseOutput } from "dotenv";
+import * as os from "os";
+import * as path from "path";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -643,6 +645,100 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
+  });
+  it("provision happy path: validate multi-env", async () => {
+    const mockProjectModel: ProjectModel = {
+      provision: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          const map = new Map();
+          map.set("KEY1", "VALUE1");
+          map.set("SECRET_KEY2", "VALUE2");
+          return { result: ok(map), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "ensureFile").resolves();
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ version: "1.0", trackingId: "mockTrackingId" }));
+    const fileDataMap = new Map();
+    sandbox.stub(fs, "writeFile").callsFake(async (file: PathLike | number, data: any) => {
+      fileDataMap.set(file, data);
+    });
+    const appName = randomAppName();
+    const projectPath = path.resolve(os.tmpdir(), appName);
+    const envFilePath = path.resolve(projectPath, "env", ".env.dev");
+    const userDataFilePath = envFilePath + ".user";
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(envFilePath));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      ignoreLockByUT: true,
+      env: "dev",
+      workflowFilePath: path.resolve(projectPath, "teamsapp.yml"),
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
+    const envData = fileDataMap.get(envFilePath);
+    const pRes1 = dotenvUtil.deserialize(envData);
+    const secretData = fileDataMap.get(userDataFilePath);
+    const pRes2 = dotenvUtil.deserialize(secretData);
+    assert.equal(pRes1.obj["KEY1"], "VALUE1");
+    assert.isUndefined(pRes1.obj["SECRET_KEY2"]);
+    assert.isTrue(pRes2.obj["SECRET_KEY2"].startsWith("crypto_"));
   });
   it("provision happy path with existing resource groups in VS Code", async () => {
     const mockProjectModel: ProjectModel = {
@@ -1988,6 +2084,50 @@ describe("component coordinator test", () => {
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.deployArtifacts(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("deploy happy path - VS", async () => {
+    const mockProjectModel: ProjectModel = {
+      deploy: {
+        name: "deploy",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    sandbox.stub(tools.ui, "showMessage").resolves(ok(undefined));
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VS,
       projectPath: ".",
       ignoreLockByUT: true,
     };

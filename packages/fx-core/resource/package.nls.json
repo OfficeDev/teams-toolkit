@@ -420,7 +420,7 @@
   "error.generator.FetchZipFromUrlError": "Unable to download zip package from %s.",
   "error.generator.UnzipError": "Unable to unzip templates and write to disk.",
   "error.generator.MissKeyError": "Unable to find key %s",
-  "error.generator.DownloadSampleApiLimitError": "Unable to download sample due to api limit. Please wait for the api reset and try again (This may take up to 1 hour). Alternatively, you can got to %s to git clone the repo manually",
+  "error.generator.DownloadSampleApiLimitError": "Unable to download sample due to rate limit exceeded. Please wait for the rate limit reset and try again (This may take up to 1 hour). Alternatively, you can got to %s to git clone the repo manually",
   "error.generator.DownloadSampleNeworkError": "Unable to download sample due to network error. Please check your network connection and try again. Alternatively, you can got to %s to git clone the repo manually",
   "error.sql.GetDetail": "Get the detailed error message in [output](command:fx-extension.showOutputChannel).",
   "error.sql.LinkHelpMessage": "You can follow %s to handle it.",

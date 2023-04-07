@@ -58,7 +58,7 @@ export async function sendRequestWithRetry<T>(
       if (res.status === 200 || res.status === 201) {
         return res;
       } else if (res.status === 403) {
-        error = new Error(`HTTP Request reaches api limit: ${JSON.stringify(res)}`);
+        error = new Error(`HTTP Request reaches rate limit: ${JSON.stringify(res)}`);
       } else {
         error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       }

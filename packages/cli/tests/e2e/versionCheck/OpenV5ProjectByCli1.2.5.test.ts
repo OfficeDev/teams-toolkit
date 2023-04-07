@@ -1,0 +1,93 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+/**
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
+ */
+
+import { it } from "@microsoft/extra-shot-mocha";
+import { environmentManager, ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { getLocalizedString } from "@microsoft/teamsfx-core/src/common/localizeUtils";
+import * as chai from "chai";
+import { expect } from "chai";
+import * as fs from "fs-extra";
+import { describe } from "mocha";
+import * as path from "path";
+import { AadValidator } from "../../commonlib/aadValidate";
+import { Cleaner } from "../../utils/cleaner";
+import { Capability } from "../../utils/constants";
+import { Executor } from "../../utils/executor";
+import { ProjectEnvReader } from "../../utils/projectEnvReader";
+import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import { getTeamsApp } from "../debug/utility";
+
+describe("version check", () => {
+  const testFolder = getTestFolder();
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+
+  afterEach(async function () {
+    if (!isV3Enabled()) {
+      this.skip();
+    }
+    await Cleaner.clean(projectPath);
+  });
+
+  it("open v5 project by cli 1.2.5", { testPlanCaseId: 17603383 }, async function () {
+    if (!isV3Enabled()) {
+      this.skip();
+    }
+
+    {
+      const result = await Executor.createProject(
+        testFolder,
+        appName,
+        Capability.Tab,
+        ProgrammingLanguage.TS
+      );
+      chai.assert.isTrue(result.success);
+    }
+
+    const env = Object.assign({}, process.env);
+    env["TEAMSFX_V3"] = "false";
+    Executor.installCLI(testFolder, "1.2.5", true);
+    const errorMessage =
+      "The current project is incompatible with the installed version of Teams Toolkit.";
+
+    {
+      // provision
+      const result = await Executor.provisionWithCustomizedProcessEnv(projectPath, env);
+      chai.assert.isFalse(result.success);
+      chai.assert.include(result.stderr, errorMessage);
+    }
+
+    {
+      // deploy
+      const result = await Executor.deployWithCustomizedProcessEnv(projectPath, env);
+      chai.assert.isFalse(result.success);
+      chai.assert.include(result.stderr, errorMessage);
+    }
+
+    {
+      // publish
+      const result = await Executor.publishWithCustomizedProcessEnv(projectPath, env);
+      chai.assert.isFalse(result.success);
+      chai.assert.include(result.stderr, errorMessage);
+    }
+
+    {
+      // preview
+      const result = await Executor.previewWithCustomizedProcessEnv(projectPath, env);
+      chai.assert.isFalse(result.success);
+      chai.assert.include(result.stderr, errorMessage);
+    }
+
+    {
+      // validate
+      const result = await Executor.validateWithCustomizedProcessEnv(projectPath, env);
+      chai.assert.isFalse(result.success);
+      chai.assert.include(result.stderr, errorMessage);
+    }
+  });
+});

@@ -43,17 +43,20 @@ export class GetPublishingCredentialsError extends UserError {
   }
 }
 
-export class DeployZipFileError extends UserError {
+export class DeployZipPackageError extends UserError {
   constructor(endpoint: string, error: Error, helpLink?: string) {
     super({
       source: "azureDeploy",
       message: getDefaultString(
-        "error.deploy.DeployZipFileError",
+        "error.deploy.DeployZipPackageError",
         endpoint,
         JSON.stringify(error) || "",
         "https://learn.microsoft.com/en-us/azure/app-service/deploy-zip?tabs=cli"
       ),
-      displayMessage: getLocalizedString("error.deploy.DeployZipFileError.Notification", endpoint),
+      displayMessage: getLocalizedString(
+        "error.deploy.DeployZipPackageError.Notification",
+        endpoint
+      ),
       helpLink: helpLink,
     });
   }

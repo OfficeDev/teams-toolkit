@@ -22,7 +22,7 @@ import { HttpStatusCode } from "../../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
-import { DeployZipFileError } from "../../../../../error/deploy";
+import { DeployZipPackageError } from "../../../../../error/deploy";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -152,7 +152,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async zipDeployPackage(
+  async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
@@ -182,7 +182,15 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                   e.response?.data
                 )}`
               );
-              throw new DeployZipFileError(zipDeployEndpoint, e, this.helpLink);
+              throw new DeployZipPackageError(
+                zipDeployEndpoint,
+                new Error(
+                  `remote server error with status code: ${
+                    e.response?.status ?? "NA"
+                  }, message: ${JSON.stringify(e.response?.data)}`
+                ),
+                this.helpLink
+              );
             }
           } else {
             // None server error, throw
@@ -191,12 +199,20 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw new DeployZipFileError(zipDeployEndpoint, e, this.helpLink);
+            throw new DeployZipPackageError(
+              zipDeployEndpoint,
+              new Error(
+                `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+                  e.response?.data
+                )}`
+              ),
+              this.helpLink
+            );
           }
         } else {
           // if the error is not axios error, throw
           await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-          throw new DeployZipFileError(zipDeployEndpoint, e as Error, this.helpLink);
+          throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
     }
@@ -205,9 +221,9 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }
-      throw new DeployZipFileError(
+      throw new DeployZipPackageError(
         zipDeployEndpoint,
-        new Error(`Retry times exceeded ${res?.status ? ", status code: " + res.status : ""}`),
+        new Error(`status code: ${res?.status ?? "NA"}`),
         this.helpLink
       );
     }

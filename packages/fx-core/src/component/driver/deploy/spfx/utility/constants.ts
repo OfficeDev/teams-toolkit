@@ -12,6 +12,8 @@ export class Constants {
   public static readonly TelemetryDeployEventName = "deploy";
   public static readonly DeployProgressTitle = () =>
     getLocalizedString("plugins.spfx.deploy.title");
+  public static readonly DevProgramLink =
+    "https://developer.microsoft.com/en-us/microsoft-365/dev-program";
 }
 
 export class DeployProgressMessage {

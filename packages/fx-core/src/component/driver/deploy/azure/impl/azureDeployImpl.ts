@@ -156,12 +156,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
-    const managementClient =
-      this.managementClient ||
-      (this.managementClient = new appService.WebSiteManagementClient(
-        azureCredential,
-        azureResource.subscriptionId
-      ));
+    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
+      azureCredential,
+      azureResource.subscriptionId
+    ));
     const listResponse = await wrapAzureOperation(
       () =>
         managementClient.webApps.beginListPublishingCredentialsAndWait(

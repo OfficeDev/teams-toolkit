@@ -25,6 +25,10 @@ import { MyTokenCredential } from "../../../../plugins/solution/util";
 chai.use(chaiAsPromised);
 import * as appService from "@azure/arm-appservice";
 import { RestError } from "@azure/storage-blob";
+import {
+  WebAppsListPublishingCredentialsResponse,
+  WebSiteManagementClient,
+} from "@azure/arm-appservice";
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
@@ -116,13 +120,17 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.azureAppServiceDeployDetailSummary"],
       ["driver.deploy.notice.deployDryRunComplete"]
     );
-    impl.managementClient = new appService.WebSiteManagementClient(
-      new MyTokenCredential(),
-      "e24d88be-bbbb-1234-ba25-11111111111"
-    );
-    sandbox
-      .stub(impl.managementClient.webApps, "beginListPublishingCredentialsAndWait")
-      .rejects(new RestError("test messasge", "111", 500));
+    const webApps = {
+      beginListPublishingCredentialsAndWait: async function (
+        resourceGroupName: string,
+        name: string
+      ): Promise<WebAppsListPublishingCredentialsResponse> {
+        throw new RestError("test message", "111", 500);
+      },
+    };
+    const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");
+    mockWebSiteManagementClient.webApps = webApps as any;
+    sandbox.stub(appService, "WebSiteManagementClient").returns(mockWebSiteManagementClient);
     await chai
       .expect(
         impl.createAzureDeployConfig(

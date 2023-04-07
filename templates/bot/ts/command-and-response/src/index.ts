@@ -1,5 +1,6 @@
 import * as restify from "restify";
 import { commandBot } from "./internal/initialize";
+import { TeamsBot } from "./teamsBot";
 
 // This template uses `restify` to serve HTTP responses.
 // Create a restify server.
@@ -15,6 +16,9 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 // The Teams Toolkit bot registration configures the bot with `/api/messages` as the
 // Bot Framework endpoint. If you customize this route, update the Bot registration
 // in `templates/azure/provision/botservice.bicep`.
+const teamsBot = new TeamsBot();
 server.post("/api/messages", async (req, res) => {
-  await commandBot.requestHandler(req, res);
+  await commandBot.requestHandler(req, res, async (context) => {
+    await teamsBot.run(context);
+  });
 });

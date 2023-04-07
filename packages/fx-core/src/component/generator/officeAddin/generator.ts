@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import {
   FxError,
   Inputs,
@@ -30,8 +34,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { CoreQuestionNames } from "../../../core/question";
-
-const childProcessExec = promisify(childProcess.exec);
+import { convertProject } from "office-addin-project";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -70,6 +73,10 @@ export class OfficeAddinGenerator {
     return ok(undefined);
   }
 
+  public static async childProcessExec(cmdLine: string) {
+    return promisify(childProcess.exec)(cmdLine);
+  }
+
   public static async doScaffolding(
     context: ContextV3,
     inputs: Inputs,
@@ -86,6 +93,7 @@ export class OfficeAddinGenerator {
     process.chdir(addinRoot);
     try {
       if (!fromFolder) {
+        // from template
         const jsonData = new projectsJsonData();
         const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
 
@@ -99,22 +107,29 @@ export class OfficeAddinGenerator {
 
           // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-          await childProcessExec(cmdLine);
+          await OfficeAddinGenerator.childProcessExec(cmdLine);
 
+          const manifestPath = jsonData.getManifestPath(template) as string;
           // modify manifest guid and DisplayName
           await OfficeAddinManifest.modifyManifestFile(
-            `${join(addinRoot, jsonData.getManifestPath(template) as string)}`,
+            `${join(addinRoot, manifestPath)}`,
             "random",
             `${name}`
           );
+          await HelperMethods.moveManifestLocation(addinRoot, manifestPath);
         }
       } else {
+        // from existing project
         HelperMethods.copyAddinFiles(fromFolder, addinRoot);
-        const manifestFile: string = inputs[AddinProjectManifestQuestion.name];
+        const sourceManifestFile: string = inputs[AddinProjectManifestQuestion.name];
+        let manifestFile: string = sourceManifestFile.replace(fromFolder, addinRoot);
+        if (manifestFile.endsWith(".xml")) {
+          // Need to convert to json project first
+          await convertProject(manifestFile);
+          manifestFile = manifestFile.replace(/\.xml$/, ".json");
+        }
         inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
         HelperMethods.updateManifest(destinationPath, manifestFile);
-        // TODO: After able to sideload using shared manifest we can then delete manifest file in subfolder
-        // => join(addinRoot, "manifest.json"); but figure out the actual path in the new location
       }
       process.chdir(workingDir);
       return ok(undefined);

@@ -7,15 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
-          
+
       - name: Install npm packages
         run: |
           npm install node-fetch-commonjs
           npm install markdown-it
-          
+
       - name: Get Release Detail
         id: detail
         uses: actions/github-script@v6
@@ -36,15 +36,14 @@ jobs:
             }
             return md_to_html();
 
-      - name: Setup Email and Recipient 
+      - name: Setup Email and Recipient
         id: email
         run: |
           emails="vsciotadt@microsoft.com;zhididr@microsoft.com;johmil@microsoft.com"
           subject="Teams JS SDK v${{ github.event.client_payload.version }} Released"
 
-          echo "::set-output name=to::$emails"
-          echo "::set-output name=subject::$subject"
-
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail Notifications
         uses: satak/webrequest-action@master
@@ -58,4 +57,3 @@ jobs:
               "subject": "${{ steps.email.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }
-

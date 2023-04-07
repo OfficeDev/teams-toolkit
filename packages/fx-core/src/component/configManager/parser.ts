@@ -1,22 +1,31 @@
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
-import {
-  InvalidEnvFieldError,
-  InvalidEnvFolderPath,
-  InvalidLifecycleError,
-  YamlParsingError,
-} from "./error";
+import Ajv, { DefinedError } from "ajv";
+import { globalVars } from "../../core/globalVars";
+import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
+import path from "path";
+import { getResourceFolder } from "../../folder";
+
+const ajv = new Ajv();
+ajv.addKeyword("deprecationMessage");
+const schema = fs.readJSONSync(path.join(getResourceFolder(), "yaml.schema.json"));
+const validator = ajv.compile(schema);
 
 const environmentFolderPath = "environmentFolderPath";
+const writeToEnvironmentFile = "writeToEnvironmentFile";
 
 function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
   const result: RawProjectModel = {};
   if (environmentFolderPath in obj) {
-    if (typeof obj[environmentFolderPath] !== "string") {
-      return err(new InvalidEnvFolderPath());
+    if (typeof obj["environmentFolderPath"] !== "string") {
+      return err(new YamlFieldTypeError("environmentFolderPath", "string"));
     }
     result.environmentFolderPath = obj[environmentFolderPath] as string;
   }
@@ -24,26 +33,43 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     if (name in obj) {
       const value = obj[name];
       if (!Array.isArray(value)) {
-        return err(new InvalidLifecycleError(name));
+        return err(new YamlFieldTypeError(name, "array"));
       }
       for (const elem of value) {
-        if (
-          !(
-            "uses" in elem &&
-            "with" in elem &&
-            typeof elem["uses"] === "string" &&
-            typeof elem["with"] === "object"
-          )
-        ) {
-          return err(new InvalidLifecycleError(name));
+        if (!("uses" in elem)) {
+          return err(new YamlFieldMissingError(`${name}.uses`));
+        }
+        if (!(typeof elem["uses"] === "string")) {
+          return err(new YamlFieldTypeError(`${name}.uses`, "string"));
+        }
+        if (!("with" in elem)) {
+          return err(new YamlFieldMissingError(`${name}.with`));
+        }
+        if (!(typeof elem["with"] === "object")) {
+          return err(new YamlFieldTypeError(`${name}.with`, "object"));
         }
         if (elem["env"]) {
           if (typeof elem["env"] !== "object" || Array.isArray(elem["env"])) {
-            return err(new InvalidEnvFieldError(elem["uses"], name));
+            return err(new YamlFieldTypeError(`${name}.env`, "object"));
           }
           for (const envVar in elem["env"]) {
             if (typeof elem["env"][envVar] !== "string") {
-              return err(new InvalidEnvFieldError(elem["uses"], name));
+              return err(new YamlFieldTypeError(`${name}.env.${envVar}`, "string"));
+            }
+          }
+        }
+        if (elem[writeToEnvironmentFile]) {
+          if (
+            typeof elem[writeToEnvironmentFile] !== "object" ||
+            Array.isArray(elem[writeToEnvironmentFile])
+          ) {
+            return err(new YamlFieldTypeError(`${name}.writeToEnvironmentFile`, "object"));
+          }
+          for (const envVar in elem[writeToEnvironmentFile]) {
+            if (typeof elem[writeToEnvironmentFile][envVar] !== "string") {
+              return err(
+                new YamlFieldTypeError(`${name}.writeToEnvironmentFile.${envVar}`, "string")
+              );
             }
           }
         }
@@ -56,8 +82,8 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
 }
 
 export class YamlParser implements IYamlParser {
-  async parse(path: string): Promise<Result<ProjectModel, FxError>> {
-    const raw = await this.parseRaw(path);
+  async parse(path: string, validateSchema?: boolean): Promise<Result<ProjectModel, FxError>> {
+    const raw = await this.parseRaw(path, validateSchema);
     if (raw.isErr()) {
       return err(raw.error);
     }
@@ -78,24 +104,31 @@ export class YamlParser implements IYamlParser {
     return ok(result);
   }
 
-  private async parseRaw(path: string): Promise<Result<RawProjectModel, FxError>> {
+  private async parseRaw(
+    path: string,
+    validateSchema?: boolean
+  ): Promise<Result<RawProjectModel, FxError>> {
     try {
       const str = await fs.readFile(path, "utf8");
       const content = load(str);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
-        return err(new YamlParsingError(path, new Error(`Invalid yaml format: ${str}`)));
+        return err(new InvalidYamlSchemaError());
       }
+
       const value = content as unknown as Record<string, unknown>;
+
+      if (validateSchema) {
+        const valid = validator(value);
+        if (!valid) {
+          return err(new InvalidYamlSchemaError());
+        }
+      }
+
+      globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {
-      if (error instanceof Error) {
-        return err(new YamlParsingError(path, error));
-      } else {
-        return err(
-          new YamlParsingError(path, new Error(`Unknown error: ${JSON.stringify(error)}`))
-        );
-      }
+      return err(new InvalidYamlSchemaError());
     }
   }
 }

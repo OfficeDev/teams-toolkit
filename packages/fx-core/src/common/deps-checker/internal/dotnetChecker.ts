@@ -19,6 +19,7 @@ import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
 import { getResourceFolder } from "../../../folder";
+import { getLocalizedString } from "../../localizeUtils";
 
 const execFile = util.promisify(child_process.execFile);
 
@@ -155,7 +156,7 @@ export class DotnetChecker implements DepsChecker {
     if (!(await this.validate())) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(
-        Messages.failToInstallDotnet().split("@NameVersion").join(installedNameWithVersion),
+        getLocalizedString("error.common.InstallSoftwareError", installedNameWithVersion),
         dotnetFailToInstallHelpLink
       );
     }
@@ -218,9 +219,10 @@ export class DotnetChecker implements DepsChecker {
       );
     } catch (error) {
       await this._logger.error(
-        `${Messages.failToInstallDotnet()
-          .split("@NameVersion")
-          .join(installedNameWithVersion)}, error = '${error}'`
+        `${getLocalizedString(
+          "error.common.InstallSoftwareError",
+          installedNameWithVersion
+        )}, error = '${error}'`
       );
     }
   }
@@ -274,11 +276,10 @@ export class DotnetChecker implements DepsChecker {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
 
       if (stderr && stderr.length > 0) {
-        const errorMessage = `${Messages.failToInstallDotnet()
-          .split("@NameVersion")
-          .join(
-            installedNameWithVersion
-          )} ${Messages.dotnetInstallStderr()} stdout = '${stdout}', stderr = '${stderr}', timecost = '${timecost}s'`;
+        const errorMessage = `${getLocalizedString(
+          "error.common.InstallSoftwareError",
+          installedNameWithVersion
+        )} ${Messages.dotnetInstallStderr()} stdout = '${stdout}', stderr = '${stderr}', timecost = '${timecost}s'`;
 
         this._telemetry.sendSystemErrorEvent(
           DepsCheckerEvent.dotnetInstallScriptError,
@@ -292,9 +293,10 @@ export class DotnetChecker implements DepsChecker {
     } catch (error) {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
       const errorMessage =
-        `${Messages.failToInstallDotnet()
-          .split("@NameVersion")
-          .join(installedNameWithVersion)} ${Messages.dotnetInstallErrorCode()}, ` +
+        `${getLocalizedString(
+          "error.common.InstallSoftwareError",
+          installedNameWithVersion
+        )} ${Messages.dotnetInstallErrorCode()}, ` +
         `command = '${command.join(" ")}', options = '${JSON.stringify(
           options
         )}', error = '${error}', stdout = '${error.stdout}', stderr = '${

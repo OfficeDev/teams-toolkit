@@ -18,7 +18,7 @@
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>(\[Info\].*)</string>
+                <string>(?:\[[\d\-TZ:.]*\]) (\[Info\]).*</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.infoMessage</string>
             </dict>
@@ -32,7 +32,7 @@
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>(\[Warning\].*)</string>
+                <string>(?:\[[\d\-TZ:.]*\]) (\[Warning\]).*</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.warningMessage</string>
             </dict>
@@ -60,18 +60,13 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
-                        <string>token.warn-token</string>
-                    </dict>
-                    <key>2</key>
-                    <dict>
-                        <key>name</key>
-                        <string>token.warn-token</string>
+                        <string>comment</string>
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>M365 Teams App \(ID: (.*)\), SSO AAD App \(ID: (.*)\)</string>
+                <string>(\(√\) Done\:)</string>
                 <key>name</key>
-                <string>teamsfx-toolkit.listCollaborator.appId</string>
+                <string>teamsfx-toolkit.success</string>
             </dict>
             <dict>
                 <key>captures</key>
@@ -83,28 +78,23 @@
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>M365 Teams App \(ID: (.*)\)</string>
+                <string>(\(!\) Warning\:)</string>
                 <key>name</key>
-                <string>teamsfx-toolkit.listCollaborator.appId</string>
+                <string>teamsfx-toolkit.warning</string>
             </dict>
             <dict>
                 <key>captures</key>
                 <dict>
                     <key>1</key>
-                    <dict>
-                        <key>name</key>
-                        <string>token.warn-token</string>
-                    </dict>
-                    <key>2</key>
                     <dict>
                         <key>name</key>
                         <string>token.error-token</string>
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>Teams App Owner: ([a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+[\.[a-zA-Z0-9_-]+]+). ((\(Not owner of SSO AAD app\))?)</string>
+                <string>(\(×\) Error\: .*)</string>
                 <key>name</key>
-                <string>teamsfx-toolkit.listCollaborator.account</string>
+                <string>teamsfx-toolkit.error</string>
             </dict>
             <dict>
                 <key>captures</key>
@@ -112,13 +102,13 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
-                        <string>token.warn-token</string>
+                        <string>entity.name.tag</string>
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>Account used to check: ([a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+[\.[a-zA-Z0-9_-]+]+)</string>
+                <string>(https?:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?)</string>
                 <key>name</key>
-                <string>teamsfx-toolkit.listCollaborator.accountUsedToCheck</string>
+                <string>teamsfx-toolkit.hyperlink</string>
             </dict>
             <dict>
                 <key>captures</key>
@@ -126,7 +116,35 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
-                        <string>token.warn-token</string>
+                        <string>token.debug-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.uuid</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.debug-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>([a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.email</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.debug-token</string>
                     </dict>
                 </dict>
                 <key>match</key>
@@ -140,13 +158,46 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>(\(x\) Error:)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.error</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
                         <string>token.warn-token</string>
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>Tenant ID: (.*)</string>
+                <string>(\(!\) Warning:)</string>
                 <key>name</key>
-                <string>teamsfx-toolkit.listCollaborator.tenant</string>
+                <string>teamsfx-toolkit.validate.warning</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                    <key>2</key>
+                    <dict>
+                        <key>name</key>
+                        <string>comment.line</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>([0-9]+ failed,) ([0-9]+ passed.)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.summary</string>
             </dict>
         </array>
     </dict>

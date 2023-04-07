@@ -586,7 +586,7 @@ export enum CoreCallbackEvent {
 }
 
 // @public (undocumented)
-export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
 // @public
 export interface CryptoProvider {
@@ -983,8 +983,6 @@ export interface Inputs extends Json {
     // (undocumented)
     targetSubscriptionId?: string;
     // (undocumented)
-    taskOrientedTemplateNaming?: boolean;
-    // (undocumented)
     teamsAppFromTdp?: any;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;
@@ -1135,16 +1133,17 @@ export enum LogLevel {
 // @public (undocumented)
 export interface LogProvider {
     debug(message: string): Promise<boolean>;
-    error(message: string): Promise<boolean>;
+    error(message: string, logToFile?: boolean): Promise<boolean>;
     fatal(message: string): Promise<boolean>;
-    info(message: string): Promise<boolean>;
+    getLogFilePath(): string;
+    info(message: string, logToFile?: boolean): Promise<boolean>;
     info(message: Array<{
         content: string;
         color: Colors;
-    }>): Promise<boolean>;
+    }>, logToFile?: boolean): Promise<boolean>;
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
-    warning(message: string): Promise<boolean>;
+    warning(message: string, logToFile?: boolean): Promise<boolean>;
 }
 
 // @public
@@ -1259,11 +1258,6 @@ export interface OptionItem {
 
 // @public (undocumented)
 export class PathAlreadyExistsError extends UserError {
-    constructor(source: string, path: string);
-}
-
-// @public (undocumented)
-export class PathNotExistError extends UserError {
     constructor(source: string, path: string);
 }
 
@@ -1778,11 +1772,15 @@ export enum Stage {
     // (undocumented)
     addResource = "addResource",
     // (undocumented)
+    addWebpart = "addWebpart",
+    // (undocumented)
     build = "build",
     // (undocumented)
     checkPermission = "checkPermission",
     // (undocumented)
     create = "create",
+    // (undocumented)
+    createAppPackage = "createAppPackage",
     // (undocumented)
     createEnv = "createEnv",
     // (undocumented)
@@ -1812,6 +1810,8 @@ export enum Stage {
     // (undocumented)
     package = "package",
     // (undocumented)
+    previewWithManifest = "previewWithManifest",
+    // (undocumented)
     provision = "provision",
     // (undocumented)
     publish = "publish",
@@ -1824,7 +1824,9 @@ export enum Stage {
     // (undocumented)
     update = "update",
     // (undocumented)
-    userTask = "userTask"
+    userTask = "userTask",
+    // (undocumented)
+    validateApplication = "validateApplication"
 }
 
 // @public (undocumented)
@@ -2132,6 +2134,15 @@ export interface UserInteraction {
     openFile?(filePath: string): Promise<Result<boolean, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
     reload?(): Promise<Result<boolean, FxError>>;
+    runCommand?(args: {
+        cmd: string;
+        workingDirectory?: string;
+        shell?: string;
+        timeout?: number;
+        env?: {
+            [k: string]: string;
+        };
+    }): Promise<Result<string, FxError>>;
     runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;

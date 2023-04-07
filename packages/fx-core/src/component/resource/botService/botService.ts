@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
 import {
   FxError,
   ok,
@@ -27,10 +30,11 @@ import { CheckThrowSomethingMissing } from "../../error";
 import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
-import { ErrorNames, MaxLengths } from "./constants";
+import { ErrorNames, MaxLengths, TeamsFxUrlNames } from "./constants";
 import { CommonStrings, PluginLocalDebug } from "./strings";
 import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
 import { normalizeName } from "../../utils";
+import { APP_STUDIO_API_NAMES } from "../appManifest/constants";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {
@@ -124,7 +128,10 @@ export class BotService extends AzureResource {
       teamsBotState.botPassword = regRes.value.botPassword;
       return ok(undefined);
     } catch (e) {
-      if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && hasBotIdInEnvBefore) {
+      if (
+        e.innerError?.teamsfxUrlName == TeamsFxUrlNames[APP_STUDIO_API_NAMES.CREATE_BOT] &&
+        hasBotIdInEnvBefore
+      ) {
         throw AlreadyCreatedBotNotExist(botConfig.botId, (e as any).innerError);
       } else {
         throw e;

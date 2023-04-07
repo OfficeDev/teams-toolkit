@@ -47,6 +47,7 @@ export enum TelemetryProperty {
   CustomizeSubscriptionType = "customize-subscription-type",
   IsFromTdp = "is-from-developer-portal",
   ToolkitVersion = "toolkit-version",
+  YmlName = "yml-name",
 }
 
 export enum TelemetryEvent {
@@ -77,8 +78,6 @@ export enum TelemetryEvent {
   ProjectMigratorNotification = "project-migrator-notification",
   ProjectMigratorMigrateStart = "project-migrator-migrate-start",
   ProjectMigratorMigrate = "project-migrator-migrate",
-  ProjectMigratorMigrateStartV3 = "project-migrator-migrateV3-start",
-  ProjectMigratorMigrateV3 = "project-migrator-migrateV3",
   ProjectMigratorMigrateArmStart = "project-migrator-migrate-arm-start",
   ProjectMigratorMigrateArm = "project-migrator-migrate-arm",
   ProjectMigratorMigrateMultiEnvStart = "project-migrator-migrate-multi-env-start",
@@ -87,7 +86,6 @@ export enum TelemetryEvent {
   ProjectMigratorGuide = "project-migrator-guide",
   ProjectMigratorPrecheckFailed = "project-migrator-pre-check-failed",
   ProjectMigratorError = "project-migrator-error",
-  ProjectMigratorV3Error = "project-migrator-error",
   ProjectAadManifestMigrationError = "project-aad-manifest-migration-error",
   ProjectAadManifestMigrationStart = "project-aad-manifest-migration-start",
   ProjectAadManifestMigration = "project-aad-manifest-migration",
@@ -127,6 +125,7 @@ export enum TelemetryEvent {
   InstallScriptNotFound = "install-script-not-found",
   SkipDeploy = "skip-deploy",
   PublishInDeveloperPortal = "publish-in-developer-portal",
+  MetaData = "metadata",
 }
 
 export enum TelemetrySuccess {

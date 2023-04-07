@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
 import { BotChannelType, IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { err, FxError, Result, ok, M365TokenProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "../../../../common/tools";
@@ -77,7 +80,7 @@ export class LocalBotRegistration extends BotRegistration {
     );
     if (!remoteBotRegistration) {
       // Not Found case.
-      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration);
+      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration, false);
     } else {
       // Update bot registration.
       const mergedBotRegistration = Utils.mergeIBotRegistration(

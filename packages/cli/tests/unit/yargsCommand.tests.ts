@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Alive-Fish <547850391@qq.com>
+ */
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";

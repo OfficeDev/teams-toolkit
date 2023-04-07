@@ -10,6 +10,7 @@ import {
   TaskCommand,
   TaskDefaultValue,
   TaskLabel,
+  TunnelType,
 } from "../../../../common/local";
 import {
   createResourcesTask,
@@ -96,8 +97,9 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
           // Keep consistency with upgraded configuration.
         }
       `;
+      task["args"]["type"] = TunnelType.ngrok;
       task["args"]["env"] = "local";
-      task["args"]["output"] = assign(parse(comment), {
+      task["args"]["writeToEnvironmentFile"] = assign(parse(comment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       });
@@ -166,11 +168,6 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let url = new URL("https://localhost:53000");
     if (isCommentObject(task["args"]) && typeof task["args"]["baseUrl"] === "string") {
       try {
@@ -178,14 +175,14 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       } catch {}
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    if (!context.appYmlConfig.configureApp.tab) {
-      context.appYmlConfig.configureApp.tab = {};
+    if (!context.appYmlConfig.provision.configureApp.tab) {
+      context.appYmlConfig.provision.configureApp.tab = {};
     }
-    context.appYmlConfig.configureApp.tab.domain = url.host;
-    context.appYmlConfig.configureApp.tab.endpoint = url.origin;
+    context.appYmlConfig.provision.configureApp.tab.domain = url.host;
+    context.appYmlConfig.provision.configureApp.tab.endpoint = url.origin;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -195,7 +192,7 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
     }
     context.appYmlConfig.deploy.tab.port = parseInt(url.port);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -213,14 +210,6 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
     context.appYmlConfig.provision.bot = {
       messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
     };
@@ -261,7 +250,7 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -279,20 +268,15 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
+    context.appYmlConfig.provision.registerApp.aad = true;
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    context.appYmlConfig.registerApp.aad = true;
-
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
-    }
-    context.appYmlConfig.configureApp.aad = true;
+    context.appYmlConfig.provision.configureApp.aad = true;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -330,7 +314,7 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -348,33 +332,50 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let appPackagePath: string | undefined = undefined;
     if (isCommentObject(task["args"]) && typeof task["args"]["appPackagePath"] === "string") {
       appPackagePath = task["args"]["appPackagePath"];
     }
 
     if (!appPackagePath) {
-      if (!context.appYmlConfig.registerApp) {
-        context.appYmlConfig.registerApp = {};
+      if (!context.appYmlConfig.provision.registerApp) {
+        context.appYmlConfig.provision.registerApp = {};
       }
-      context.appYmlConfig.registerApp.teamsApp = true;
+      context.appYmlConfig.provision.registerApp.teamsApp = true;
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
-    context.appYmlConfig.configureApp.teamsApp.appPackagePath = appPackagePath;
+    context.appYmlConfig.provision.configureApp.teamsApp.appPackagePath = appPackagePath;
+
+    const label = task["label"] as string;
+    index = handleProvisionAndDeploy(context, index, label);
+  }
+}
+
+export async function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.install-app-in-teams}")
+    ) {
+      ++index;
+      continue;
+    }
 
     const label = task["label"];
-    index = handleProvisionAndDeploy(context, index, label);
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
   }
 }
 
@@ -442,7 +443,7 @@ export async function migrateBackendExtensionsInstall(
     }
     context.appYmlConfig.deploy.dotnetCommand = {
       args: "build extensions.csproj -o ./bin --ignore-failed-sources",
-      workingDirectory: `./${FolderName.Function}`,
+      workingDirectory: `${FolderName.Function}`,
       execPath: "${{DOTNET_PATH}}",
     };
 
@@ -662,7 +663,7 @@ export async function migrateValidateLocalPrerequisites(
       };
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Frontend}`,
+        workingDirectory: `${FolderName.Frontend}`,
       });
     }
 
@@ -671,11 +672,11 @@ export async function migrateValidateLocalPrerequisites(
       toolsArgs.dotnet = true;
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Function}`,
+        workingDirectory: `${FolderName.Function}`,
       });
       dotnetCommand = {
         args: "build extensions.csproj -o ./bin --ignore-failed-sources",
-        workingDirectory: `./${FolderName.Function}`,
+        workingDirectory: `${FolderName.Function}`,
         execPath: "${{DOTNET_PATH}}",
       };
     }
@@ -686,7 +687,7 @@ export async function migrateValidateLocalPrerequisites(
       }
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Bot}`,
+        workingDirectory: `${FolderName.Bot}`,
       });
     }
 
@@ -721,37 +722,34 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
       continue;
     }
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.registerApp.aad = true;
+      context.appYmlConfig.provision.registerApp.aad = true;
     }
-    context.appYmlConfig.registerApp.teamsApp = true;
+    context.appYmlConfig.provision.registerApp.teamsApp = true;
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
-      if (!context.appYmlConfig.provision) {
-        context.appYmlConfig.provision = {};
-      }
       context.appYmlConfig.provision.bot = {
         messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
       };
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
     if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.tab = {
+      context.appYmlConfig.provision.configureApp.tab = {
         domain: "localhost:53000",
         endpoint: "https://localhost:53000",
       };
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.aad = true;
+      context.appYmlConfig.provision.configureApp.aad = true;
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
 
     const validateLocalPrerequisitesTask = context.tasks.find(
@@ -779,8 +777,8 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
     }
 
     const existingLabels = getLabels(context.tasks);
-    const createResourcesLabel = generateLabel("Create resources", existingLabels);
-    const setUpLocalProjectsLabel = generateLabel("Build project", existingLabels);
+    const createResourcesLabel = generateLabel("Provision", existingLabels);
+    const setUpLocalProjectsLabel = generateLabel("Deploy", existingLabels);
     task["dependsOn"] = new CommentArray(createResourcesLabel, setUpLocalProjectsLabel);
     task["dependsOrder"] = "sequence";
     const createResources = createResourcesTask(createResourcesLabel);
@@ -907,9 +905,10 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
     type: "teamsfx",
     command: TaskCommand.startLocalTunnel,
     args: {
+      type: TunnelType.ngrok,
       ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
       env: "local",
-      output: assign(parse(placeholderComment), {
+      writeToEnvironmentFile: assign(parse(placeholderComment), {
         endpoint: context.placeholderMapping.botEndpoint,
         domain: context.placeholderMapping.botDomain,
       }),
@@ -929,14 +928,12 @@ function handleProvisionAndDeploy(
 
   const existingLabels = getLabels(context.tasks);
 
-  const generatedBefore = context.generatedLabels.find((value) =>
-    value.startsWith("Create resources")
-  );
-  const createResourcesLabel = generatedBefore || generateLabel("Create resources", existingLabels);
+  const generatedBefore = context.generatedLabels.find((value) => value.startsWith("Provision"));
+  const createResourcesLabel = generatedBefore || generateLabel("Provision", existingLabels);
 
   const setUpLocalProjectsLabel =
-    context.generatedLabels.find((value) => value.startsWith("Build project")) ||
-    generateLabel("Build project", existingLabels);
+    context.generatedLabels.find((value) => value.startsWith("Deploy")) ||
+    generateLabel("Deploy", existingLabels);
 
   if (!generatedBefore) {
     context.generatedLabels.push(createResourcesLabel);

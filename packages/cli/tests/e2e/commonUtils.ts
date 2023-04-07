@@ -235,7 +235,7 @@ export async function setFrontendDomainToConfig(projectPath: string, envName: st
 }
 
 export async function setAadManifestIdentifierUrisV3(projectPath: string, identifierUri: string) {
-  const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+  const aadManifestPath = path.join(projectPath, "aad.manifest.json");
   const aadTemplate = await fs.readJson(aadManifestPath);
   aadTemplate.identifierUris = [identifierUri];
   await fs.writeJson(aadManifestPath, aadTemplate, { spaces: 4 });
@@ -323,6 +323,9 @@ export async function cleanUpResourceGroup(appName: string, envName?: string): P
 }
 
 export async function deleteResourceGroupByName(name: string): Promise<boolean> {
+  if (!name) {
+    return true;
+  }
   if (await ResourceGroupManager.hasResourceGroup(name)) {
     const result = await ResourceGroupManager.deleteResourceGroup(name);
     if (result) {

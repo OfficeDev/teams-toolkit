@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ["../packages/eslint-config"],
+  extends: ["../packages/eslint-plugin-teamsfx/config/shared.js"],
 };

@@ -1,11 +1,10 @@
 import React from "react";
 // https://fluentsite.z22.web.core.windows.net/quick-start
-import { Provider, teamsTheme } from "@fluentui/react-northstar";
-import { HashRouter as Router, Redirect, Route } from "react-router-dom";
+import { FluentProvider, teamsLightTheme, tokens } from "@fluentui/react-components";
+import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import Privacy from "./Privacy";
 import TermsOfUse from "./TermsOfUse";
 import Tab from "./Tab";
-import "./App.css";
 import TabConfig from "./TabConfig";
 import { useTeams } from "@microsoft/teamsfx-react";
 
@@ -16,18 +15,24 @@ import { useTeams } from "@microsoft/teamsfx-react";
 export default function App() {
   const { theme } = useTeams({})[0];
   return (
-    <Provider theme={theme || teamsTheme} styles={{ backgroundColor: "#eeeeee" }}>
+    <FluentProvider
+      theme={
+        theme || {
+          ...teamsLightTheme,
+          colorNeutralBackground3: "#eeeeee",
+        }
+      }
+      style={{ background: tokens.colorNeutralBackground3 }}
+    >
       <Router>
-        <Route exact path="/">
-          <Redirect to="/tab" />
-        </Route>
-        <>
-          <Route exact path="/privacy" component={Privacy} />
-          <Route exact path="/termsofuse" component={TermsOfUse} />
-          <Route exact path="/tab" component={Tab} />
-          <Route exact path="/config" component={TabConfig} />
-        </>
+        <Routes>
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/termsofuse" element={<TermsOfUse />} />
+          <Route path="/tab" element={<Tab />} />
+          <Route path="/config" element={<TabConfig />} />
+          <Route path="*" element={<Navigate to={"/tab"} />}></Route>
+        </Routes>
       </Router>
-    </Provider>
+    </FluentProvider>
   );
 }

@@ -58,7 +58,7 @@ export abstract class AzureAppService extends AzureResource {
       const state = context.envInfo.state[inputs.componentId];
       const resourceIdKey = givenResourceIdKey || this.outputs.resourceId.key;
       const resourceId = CheckThrowSomethingMissing(this.name, resourceIdKey, state[resourceIdKey]);
-      await progressBar.next(ProgressMessages.packingCode);
+      await progressBar.next(ProgressMessages.packingCode());
       const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
       const client = await azureWebSiteDeploy(

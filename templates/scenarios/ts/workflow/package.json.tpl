@@ -1,9 +1,9 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Workflow Bot Sample",
     "engines": {
-        "node": ">=14 <=16"
+        "node": "14 || 16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -22,11 +22,13 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^1.2.0",
+        "@microsoft/teamsfx": "^2.2.0",
+        "botbuilder": "^4.18.0",
         "restify": "^10.0.0"
     },
     "devDependencies": {
-        "@types/restify": "8.5.5",
+        "@types/restify": "^8.5.5",
+        "@types/node": "^14.0.0",
         "env-cmd": "^10.1.0",
         "nodemon": "^2.0.7",
         "shx": "^0.3.4",

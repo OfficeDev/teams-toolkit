@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../constants";
 
@@ -279,6 +282,9 @@ export class APP_STUDIO_API_NAMES {
   public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
   public static readonly GET_APP_PACKAGE = "get-app-package";
   public static readonly VALIDATE_APP_PACKAGE = "validate-app-package";
+  public static readonly CREATE_BOT = "create-bot";
+  public static readonly GET_BOT = "get-bot";
+  public static readonly UPDATE_BOT = "update-bot";
 }
 
 /**

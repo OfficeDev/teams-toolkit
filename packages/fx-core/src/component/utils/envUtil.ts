@@ -1,16 +1,31 @@
-import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { pathUtils } from "./pathUtils";
-import { TOOLS } from "../../core/globalVars";
+import { globalVars, TOOLS } from "../../core/globalVars";
 import * as path from "path";
 import { EOL } from "os";
+import { TelemetryEvent } from "../../common/telemetry";
+import { createHash } from "crypto";
+import { FileNotFoundError } from "../../error/common";
 
 export type DotenvOutput = {
   [k: string]: string;
+};
+
+interface EligibleKeySettings {
+  [key: string]: boolean;
+}
+
+const EligibleKeys: EligibleKeySettings = {
+  TEAMSFX_ENV: true,
+  AZURE_SUBSCRIPTION_ID: false,
+  BOT_ID: false,
+  TEAMS_APP_ID: false,
+  TAB_ENDPOINT: true,
+  TEAMS_APP_TENANT_ID: false,
 };
 
 export class EnvUtil {
@@ -40,43 +55,83 @@ export class EnvUtil {
         process.env.TEAMSFX_ENV = env;
         return ok({ TEAMSFX_ENV: env });
       } else {
-        return err(
-          new UserError({
-            source: "core",
-            name: "DotEnvFileNotExistError",
-            displayMessage: getLocalizedString("error.DotEnvFileNotExistError", env, env),
-            message: getDefaultString("error.DotEnvFileNotExistError", env, env),
-          })
-        );
+        return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
       }
     }
+
+    //global var
+    globalVars.envFilePath = dotEnvFilePath;
+
     // deserialize
     const parseResult = dotenvUtil.deserialize(
       await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
     );
 
-    // decrypt
-    const settingsRes = await settingsUtil.readSettings(projectPath);
-    if (settingsRes.isErr()) {
-      return err(settingsRes.error);
-    }
-    const projectId = settingsRes.value.trackingId;
-    const cryptoProvider = new LocalCrypto(projectId);
-    for (const key of Object.keys(parseResult.obj)) {
-      if (key.startsWith("SECRET_")) {
-        const raw = parseResult.obj[key];
-        if (raw.startsWith("crypto_")) {
-          const decryptRes = await cryptoProvider.decrypt(raw);
-          if (decryptRes.isErr()) return err(decryptRes.error);
-          parseResult.obj[key] = decryptRes.value;
+    // get .env.xxx.user path
+    const dotEnvSecretFilePath = dotEnvFilePath + ".user";
+    let parseResultSecret;
+    if (await fs.pathExists(dotEnvSecretFilePath)) {
+      // only need to decrypt the .env.xxx.user file
+      parseResultSecret = dotenvUtil.deserialize(
+        await fs.readFile(dotEnvSecretFilePath, { encoding: "utf8" })
+      );
+      // decrypt
+      const settingsRes = await settingsUtil.readSettings(projectPath);
+      if (settingsRes.isErr()) {
+        return err(settingsRes.error);
+      }
+      const projectId = settingsRes.value.trackingId;
+      const cryptoProvider = new LocalCrypto(projectId);
+      for (const key of Object.keys(parseResultSecret.obj)) {
+        if (key.startsWith("SECRET_")) {
+          const raw = parseResultSecret.obj[key];
+          if (raw.startsWith("crypto_")) {
+            const decryptRes = await cryptoProvider.decrypt(raw);
+            if (decryptRes.isErr()) return err(decryptRes.error);
+            parseResultSecret.obj[key] = decryptRes.value;
+          }
         }
       }
     }
+
+    // set process.env
     parseResult.obj.TEAMSFX_ENV = env;
     if (loadToProcessEnv) {
-      merge(process.env, parseResult.obj);
+      // '.env.xxx' has higher priority than '.env.xxx.user'
+      if (parseResultSecret) this.mergeEnv(parseResult.obj, parseResultSecret.obj);
+      // 'process.env' has higher priority than '.env.xxx'
+      this.mergeEnv(process.env, parseResult.obj);
     }
+
+    const props: { [key: string]: string } = {};
+    const prefix = "env.";
+    for (const key of Object.keys(parseResult.obj)) {
+      if (Object.keys(EligibleKeys).includes(key)) {
+        const value = parseResult.obj[key];
+        if (key === "TEAMSFX_ENV" && (value === "dev" || value === "local")) {
+          props[prefix + key] = value;
+        } else {
+          props[prefix + key] = EligibleKeys[key]
+            ? createHash("sha256").update(value).digest("hex")
+            : value;
+        }
+      }
+    }
+
+    TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
+
     return ok(parseResult.obj);
+  }
+
+  mergeEnv(
+    envWithHigherPriority: NodeJS.ProcessEnv | DotenvOutput,
+    envWithLowerPriority: DotenvOutput
+  ) {
+    for (const key of Object.keys(envWithLowerPriority)) {
+      if (!envWithHigherPriority[key]) {
+        envWithHigherPriority[key] = envWithLowerPriority[key];
+      }
+    }
   }
 
   /**
@@ -101,13 +156,18 @@ export class EnvUtil {
     }
     const projectId = settingsRes.value.trackingId;
     const cryptoProvider = new LocalCrypto(projectId);
+    const noneSecretEnv: DotenvOutput = {};
+    const secretEnv: DotenvOutput = {};
     for (const key of Object.keys(envs)) {
       let value = envs[key];
       if (value && key.startsWith("SECRET_")) {
         const res = await cryptoProvider.encrypt(value);
         if (res.isErr()) return err(res.error);
         value = res.value;
-        envs[key] = value;
+        // envs[key] = value;
+        secretEnv[key] = value;
+      } else {
+        noneSecretEnv[key] = value;
       }
     }
 
@@ -117,20 +177,33 @@ export class EnvUtil {
     const dotEnvFilePath =
       dotEnvFilePathRes.value || path.resolve(projectPath, "env", `.env.${env ? env : "dev"}`);
     const envFileExists = await fs.pathExists(dotEnvFilePath);
+    const dotEnvSecretFilePath = dotEnvFilePath + ".user";
+    const envSecretFileExists = await fs.pathExists(dotEnvSecretFilePath);
     const parsedDotenv = envFileExists
       ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
       : { obj: {} };
-    merge(parsedDotenv.obj, envs);
+    const parsedDotenvSecret = envSecretFileExists
+      ? dotenvUtil.deserialize(await fs.readFile(dotEnvSecretFilePath))
+      : { obj: {} };
+    merge(parsedDotenv.obj, noneSecretEnv);
+    merge(parsedDotenvSecret.obj, secretEnv);
 
     //serialize
     const content = dotenvUtil.serialize(parsedDotenv);
+    const contentSecret = dotenvUtil.serialize(parsedDotenvSecret);
 
     //persist
-    TOOLS.logProvider.info(`  Env output:\n${content}\n`);
     if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
+    if (!envSecretFileExists) await fs.ensureFile(dotEnvSecretFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
+    await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
     if (!envFileExists) {
       TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
+    }
+    if (!envSecretFileExists) {
+      TOOLS.logProvider.info(
+        "  Created environment file (secret) at " + dotEnvSecretFilePath + EOL + EOL
+      );
     }
     return ok(undefined);
   }
@@ -141,7 +214,7 @@ export class EnvUtil {
     if (!envFolderPath) return ok([]);
     const list = await fs.readdir(envFolderPath);
     const envs = list
-      .filter((fileName) => fileName.startsWith(".env."))
+      .filter((fileName) => fileName.startsWith(".env.") && !fileName.endsWith(".user"))
       .map((fileName) => fileName.substring(5));
     return ok(envs);
   }
@@ -163,10 +236,7 @@ export class EnvUtil {
 
 export const envUtil = new EnvUtil();
 
-const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
-const NEW_LINE_RE = /\\n/g;
 const NEW_LINE_SPLITTER = /\r?\n/;
-const NEW_LINE = "\n";
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
@@ -179,36 +249,41 @@ export class DotenvUtil {
   deserialize(src: string | Buffer): DotenvParseResult {
     const lines: DotenvParsedLine[] = [];
     const obj: DotenvOutput = {};
-    const stringLines = src.toString().split(NEW_LINE_SPLITTER);
+    const stringLines = src.toString().replace(/\r\n?/gm, "\n").split(NEW_LINE_SPLITTER);
     for (const line of stringLines) {
-      const kvMatchArray = line.match(KEY_VALUE_PAIR_RE);
-      if (kvMatchArray !== null) {
-        // match key-value pair
-        const key = kvMatchArray[1];
-        let value = kvMatchArray[2] || "";
+      const match =
+        /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm.exec(
+          line
+        );
+      if (match) {
         let inlineComment;
-        const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
-        const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
-        let quote: '"' | "'" | undefined = undefined;
-        if (sQuoted || dQuoted) {
-          quote = dQuoted ? '"' : "'";
-          value = value.substring(1, value.length - 1);
-          if (dQuoted) {
-            value = value.replace(NEW_LINE_RE, NEW_LINE);
-          }
-        } else {
-          value = value.trim();
-          //try to match comment starter
-          const index = value.indexOf("#");
-          if (index >= 0) {
-            inlineComment = value.substring(index);
-            value = value.substring(0, index).trim();
+        //key
+        const key = match[1];
+        //value
+        let value = match[2] || "";
+        //comment
+        const valueIndex = match[0].indexOf(value);
+        if (valueIndex >= 0) {
+          const remaining = match[0].substring(valueIndex + value.length).trim();
+          if (remaining.startsWith("#")) {
+            inlineComment = remaining;
           }
         }
-        if (value) obj[key] = value;
+        //trim
+        value = value.trim();
+        //quote
+        const firstChar = value[0];
+        value = value.replace(/^(['"`])([\s\S]*)\1$/gm, "$2");
+        //de-escape
+        if (firstChar === '"') {
+          value = value.replace(/\\n/g, "\n");
+          value = value.replace(/\\r/g, "\r");
+        }
+        //output
+        obj[key] = value;
         const parsedLine: DotenvParsedLine = { key: key, value: value };
         if (inlineComment) parsedLine.comment = inlineComment;
-        if (quote) parsedLine.quote = quote;
+        if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar as '"' | "'";
         lines.push(parsedLine);
       } else {
         lines.push(line);
@@ -231,15 +306,15 @@ export class DotenvUtil {
             line.value = obj[line.key];
             delete obj[line.key];
           }
-          if (line.value.includes("#")) {
+          if (line.value.includes("#") && !line.quote) {
             // if value contains '#', need add quote
             line.quote = '"';
           }
-          array.push(
-            `${line.key}=${line.quote ? line.quote + line.value + line.quote : line.value}${
-              line.comment ? " " + line.comment : ""
-            }`
-          );
+          let value = line.value;
+          if (line.quote) {
+            value = `${line.quote}${value}${line.quote}`;
+          }
+          array.push(`${line.key}=${value}${line.comment ? line.comment : ""}`);
         }
       });
     }
@@ -254,21 +329,3 @@ export class DotenvUtil {
 }
 
 export const dotenvUtil = new DotenvUtil();
-// const original = `# Built-in environment variables
-// TEAMSFX_ENV=dev2
-// AZURE_SUBSCRIPTION_ID=
-// AZURE_RESOURCE_GROUP_NAME=
-// RESOURCE_SUFFIX=
-
-// # Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
-// BOT_ID=
-// SECRET_BOT_PASSWORD=
-// TEAMS_APP_ID=
-// BOT_AZURE_FUNCTION_APP_RESOURCE_ID=
-// BOT_DOMAIN=
-// BOT_FUNCTION_ENDPOINT=
-// TEAMS_APP_TENANT_ID=
-// `;
-
-// const parsed = dotenvUtil.deserialize(original);
-// console.log(parsed)

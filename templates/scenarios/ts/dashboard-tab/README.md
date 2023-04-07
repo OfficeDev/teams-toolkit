@@ -32,7 +32,7 @@ This app also supported teams different themes, including dark theme and high co
 
 ## Prerequisites
 
-- [NodeJS](https://nodejs.org/en/), fully tested on NodeJS 14, 16
+- [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
 - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
@@ -294,7 +294,10 @@ Open the [`appPackage/manifest.json`](appPackage/manifest.json) file, and add a 
 
 ## How to add a new Graph API call
 
-Please refer to `How-to guides` in `Teams Toolkit` by clicking `Teams Toolkit` in the side bar > `View how-to guides` > `Integrate with Azure Functions`.
+Please follow these two steps:
+1.	Add SSO: Refer to How-to guides in Teams Toolkit by clicking Teams Toolkit in the side bar > `View how-to guides` > `Develop single sign-on experience in Teams`.
+2.	Refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-sdk#microsoft-graph-scenarios:~:text=caught%20and%20transformed.-,Microsoft%20Graph%20Scenarios,-This%20section%20provides) to call a Graph API via TeamsFx SDK.
+
 
 ## Additional resources
 

@@ -13,9 +13,6 @@ export class HelpLinks {
   static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
   static readonly SwitchAccountOrSub = "https://aka.ms/teamsfx-switch-account-or-subscription-help";
   static readonly SwitchTenant = "https://aka.ms/teamsfx-switch-tenant";
-
-  // TODO: short link to the docs
-  static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
 }
 
 export class VSCodeExtensionCommand {
@@ -79,8 +76,6 @@ export class FeatureFlagName {
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
   static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
-  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
   static readonly SPFxMultiTab = "TEAMSFX_SPFX_MULTI_TAB";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";

@@ -539,7 +539,7 @@ export class AppManifest implements CloudResource {
           return ok([]);
         }
       } catch (error: any) {
-        if (error.name === 404) {
+        if (error.message.includes(404)) {
           error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
         }
         throw error;

@@ -190,4 +190,22 @@ describe("Api Feature", () => {
       assert.equal(res.error.name, "report-issues");
     }
   });
+
+  it("handleDotnetChecker Error", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.JS;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsApi,
+      folder: "api",
+    });
+    const component = Container.get(ComponentNames.ApiCode) as any;
+    sandbox.stub(funcDepsHelper, "dotnetCheckerEnabled").rejects(new Error("test error"));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    try {
+      await component.handleDotnetChecker(context, inputs);
+      assert.fail("should not reach here");
+    } catch (e) {}
+  });
 });

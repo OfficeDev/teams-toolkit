@@ -4,13 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       preid:
-        description: "preid name(alpha, beta, rc, stable)"
+        description: "preid name(alpha, prerelease, rc, stable)"
         required: true
         default: "rc"
-      isPreview:
-        description: "ensure release ttk for preview(yes or no)"
-        required: false
-        default: 'no'
       skip-version-rc:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
@@ -28,13 +24,13 @@ jobs:
 
     steps:
       - name: Validate CD branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/ga' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/prerelease' }}
         run: |
-          echo It's not allowed to run CD on other branch except main, dev and ga.
+          echo It's not allowed to run CD on other branch except main, dev and prerelease.
           exit 1
 
       - name: Validate inputs for main or hotfix
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
         run: |
           echo It's only allowed to release RC and stable on main branch.
           exit 1
@@ -45,33 +41,21 @@ jobs:
           echo It's only allowed to alpha on dev branch.
           exit 1
 
-      - name: Validate inputs for ga
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid != 'beta' }}
-        run: |
-          echo It's only allowed to release beta on ga branch.
-          exit 1
-        
-      - name: Validate preview on dev branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/dev' && github.event.inputs.isPreview != 'no' }}
-        run: |
-          echo It's only allowed to release preview on dev branch
-          exit 1
-
       - name: Validate schedule
-        if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/ga' }}
+        if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' }}
         run: |
-          echo It's not allowed to run schedule release except dev or ga branch.
+          echo It's not allowed to run schedule release except dev branch.
           exit 1
 
       - name: Checkout branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
 
@@ -79,11 +63,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install wine64 -y
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
 
       - name: Setup npm registry
         run: |
@@ -96,7 +75,7 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
-        env: 
+        env:
           REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: Setup git
@@ -109,10 +88,10 @@ jobs:
         run: |
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
 
-      - name: release beta npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/ga' }}
+      - name: release beta packages to npmjs.org
+        if: ${{ (github.ref == 'refs/heads/prerelease' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'prerelease' }}
         run: |
-          npx lerna version prerelease --preid=beta.$(git rev-parse --short HEAD) --exact --no-push --allow-branch ga --yes
+          npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
@@ -145,49 +124,26 @@ jobs:
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
 
-      - name: generate templates
-        run: |
-          .github/scripts/template-zip-autogen.sh ${{ runner.temp }}/teamsfx_templates
-
       - name: generate templates v3
         run: |
           .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3
 
-      - name: update templates alpha tag
+      - name: update templates prerelease tag
         uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
         with:
-          tag_name: "templates-0.0.0-alpha"
+          tag_name: "templates-0.0.0-prerelease"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
-      - name: update templates beta tag
-        uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
-        with:
-          tag_name: "templates-0.0.0-beta"
-        env:
-          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
-
-      - name: release templates' alpha version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
+      - name: release templates' prerelease version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
-          tag: "templates-0.0.0-alpha"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
-          allowUpdates: true
-          removeArtifacts: true
-
-      - name: release templates' beta version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          tag: "templates-0.0.0-beta"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          tag: "templates-0.0.0-prerelease"
+          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -206,7 +162,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -214,7 +170,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0
         with:
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
@@ -255,22 +211,8 @@ jobs:
           git add packages/fx-core/src/common/m365/serviceConstant.ts
           git commit -m "chore: replace sideloading placeholders"
 
-      - name: publish alpha release to npm org
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run: |
-          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
-
-      - name: publish beta release to npm org
-        if: ${{ github.ref == 'refs/heads/ga' }}
-        run: |
-          npx lerna publish from-package --dist-tag=beta --yes --allow-branch ga
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
-
       - name: update cli ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/cli/package.json
@@ -278,7 +220,7 @@ jobs:
           value: ${{ secrets.CLI_PUBLIC_AIKEY }}
 
       - name: update extension ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/vscode-extension/package.json
@@ -286,24 +228,38 @@ jobs:
           value: ${{ secrets.EXT_PUBLIC_AIKEY }}
 
       - name: commit change on local
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         run: |
-          git add .
+          git add ./packages/cli/package.json ./packages/vscode-extension/package.json
           git commit -m "chore: update ai key"
+
+      - name: publish alpha release to npm org
+        if: ${{ github.ref == 'refs/heads/dev'}}
+        run: |
+          npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
+
+      - name: publish beta release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'prerelease' }}
+        run: |
+          npx lerna publish from-package --dist-tag=beta --yes --allow-branch prerelease
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
           npx lerna publish from-package --dist-tag=rc --yes
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna publish from-package --yes
-        env: 
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: pack server bits
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}
@@ -317,37 +273,10 @@ jobs:
             cd ./packages/server
             npm run package
 
-      - name: release alpha, beta server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ga')  }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: "@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}"
-          artifacts: ./packages/server/lib/*.exe
-          prerelease: true
-          artifactErrorsFailBuild: true
-
-      - name: release RC server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
-          artifacts: ./packages/server/lib/*.exe
-          prerelease: true
-          artifactErrorsFailBuild: true
-
-      - name: release stable server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.SERVER_VERSION }}
-          artifacts: ./packages/server/lib/*.exe
-          artifactErrorsFailBuild: true
-
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid != 'prerelease' }}
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -359,26 +288,6 @@ jobs:
             npm install --only=production
             npx vsce package
 
-      - name: release alpha and beta VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ga') }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: "vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}"
-          artifacts: ./packages/**/*.vsix
-          prerelease: true
-          artifactErrorsFailBuild: true
-
-      - name: release RC VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc'}}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
-          artifacts: ./packages/**/*.vsix
-          prerelease: true
-          artifactErrorsFailBuild: true
-
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0
@@ -389,16 +298,7 @@ jobs:
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
 
-      - name: Update Preview TTK ai Key
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/vscode-extension/package.json
-          field: aiKey
-          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
-
       - name: Calculate Version Num
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
         id: preview-version
         working-directory: packages/vscode-extension
         run: |
@@ -408,10 +308,19 @@ jobs:
           echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION
 
+      - name: set vsc version for prerelease
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'prerelease' }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: version
+          value: ${{ steps.preview-version.outputs.version }}
+
       - name: pack vsix for preview
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'prerelease' }}
         env:
           RELEASE: preview
+          NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -425,22 +334,14 @@ jobs:
             npm install --only=production
             npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
 
-      - name: release preview TTK to github release page
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          tag: "vscode-extension-V3-${{ steps.preview-version.outputs.version }}"
-          artifacts: ./packages/vscode-extension/*.vsix
-          artifactErrorsFailBuild: true
-          prerelease: true
-
       - name: save release info
         run: |
           rm -f changed.txt
           rm -f versions.json
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
+          find ./packages/vscode-extension -type f -name '*.vsix' -exec mv {} . \;
+          find ./packages/server/lib -type f -name '*.exe' -exec mv {} server.exe \;
 
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3
@@ -449,3 +350,6 @@ jobs:
           path: |
             changed.txt
             versions.json
+            *.vsix
+            *.exe
+

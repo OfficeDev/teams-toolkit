@@ -3,7 +3,8 @@
 "use strict";
 
 import * as os from "os";
-import { LaunchBrowser } from "../constants";
+import { LaunchBrowser, LaunchUrl } from "../constants";
+import { TaskOverallLabel } from "../../../common/local/constants";
 
 export function generateConfigurations(
   includeFrontend: boolean,
@@ -119,7 +120,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       name: "Start Teams workbench (Edge)",
       type: "pwa-msedge",
       request: "launch",
-      url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+      url: LaunchUrl.teamsLocal,
       webRoot: "${workspaceRoot}/SPFx",
       sourceMaps: true,
       sourceMapPathOverrides: {
@@ -138,7 +139,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       name: "Start Teams workbench (Chrome)",
       type: "pwa-chrome",
       request: "launch",
-      url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+      url: LaunchUrl.teamsLocal,
       webRoot: "${workspaceRoot}/SPFx",
       sourceMaps: true,
       sourceMapPathOverrides: {
@@ -149,6 +150,86 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       },
       postDebugTask: "Terminate All Tasks",
       presentation: {
+        hidden: true,
+      },
+      internalConsoleOptions: "neverOpen",
+    },
+    {
+      name: "Attach to Frontend in Outlook (Edge)",
+      type: "pwa-msedge",
+      request: "launch",
+      url: LaunchUrl.outlookLocalTab,
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        group: "all",
+        hidden: true,
+      },
+      internalConsoleOptions: "neverOpen",
+    },
+    {
+      name: "Attach to Frontend in Outlook (Chrome)",
+      type: "pwa-chrome",
+      request: "launch",
+      url: LaunchUrl.outlookLocalTab,
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        group: "all",
+        hidden: true,
+      },
+      internalConsoleOptions: "neverOpen",
+    },
+    {
+      name: "Attach to Frontend in the Microsoft 365 app (Edge)",
+      type: "pwa-msedge",
+      request: "launch",
+      url: LaunchUrl.officeLocalTab,
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        group: "all",
+        hidden: true,
+      },
+      internalConsoleOptions: "neverOpen",
+    },
+    {
+      name: "Attach to Frontend in the Microsoft 365 app (Chrome)",
+      type: "pwa-chrome",
+      request: "launch",
+      url: LaunchUrl.officeLocalTab,
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        group: "all",
         hidden: true,
       },
       internalConsoleOptions: "neverOpen",
@@ -169,9 +250,9 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
     {
       name: "Teams workbench (Edge)",
       configurations: ["Start Teams workbench (Edge)"],
-      preLaunchTask: "prepare dev env",
+      preLaunchTask: TaskOverallLabel.TransparentDefault,
       presentation: {
-        group: "forteams",
+        group: "group1: Teams",
         order: edgeOrder,
       },
       stopAll: true,
@@ -179,10 +260,50 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
     {
       name: "Teams workbench (Chrome)",
       configurations: ["Start Teams workbench (Chrome)"],
-      preLaunchTask: "prepare dev env",
+      preLaunchTask: TaskOverallLabel.TransparentDefault,
       presentation: {
-        group: "forteams",
+        group: "group1: Teams",
         order: chromeOrder,
+      },
+      stopAll: true,
+    },
+    {
+      name: "Outlook workbench (Edge)",
+      configurations: ["Attach to Frontend in Outlook (Edge)"],
+      preLaunchTask: TaskOverallLabel.TransparentM365,
+      presentation: {
+        group: "group2: Outlook",
+        order: edgeOrder + 2,
+      },
+      stopAll: true,
+    },
+    {
+      name: "Outlook workbench (Chrome)",
+      configurations: ["Attach to Frontend in Outlook (Chrome)"],
+      preLaunchTask: TaskOverallLabel.TransparentM365,
+      presentation: {
+        group: "group2: Outlook",
+        order: chromeOrder + 2,
+      },
+      stopAll: true,
+    },
+    {
+      name: "The Microsoft 365 app workbench (Edge)",
+      configurations: ["Attach to Frontend in the Microsoft 365 app (Edge)"],
+      preLaunchTask: TaskOverallLabel.TransparentM365,
+      presentation: {
+        group: "group3: the Microsoft 365 app",
+        order: edgeOrder + 4,
+      },
+      stopAll: true,
+    },
+    {
+      name: "The Microsoft 365 app workbench (Chrome)",
+      configurations: ["Attach to Frontend in the Microsoft 365 app (Chrome)"],
+      preLaunchTask: TaskOverallLabel.TransparentM365,
+      presentation: {
+        group: "group3: the Microsoft 365 app",
+        order: chromeOrder + 4,
       },
       stopAll: true,
     }

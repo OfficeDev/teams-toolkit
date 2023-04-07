@@ -1262,11 +1262,23 @@
               }
             },
             {
-              "name": "bodyContains",
-              "parameters": {
-                "bodyPattern": "API call to Developer Portal failed: Error, Request failed with status code \\d{3}, API name: (.*), X-Correlation-ID: (.*).",
-                "isRegex": true
-              }
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "bodyContains",
+                  "parameters": {
+                    "bodyPattern": "API call to Developer Portal failed: (.*) API name: (.*), X-Correlation-ID: (.*).",
+                    "isRegex": true
+                  }
+                },
+                {
+                  "name": "bodyContains",
+                  "parameters": {
+                    "isRegex": true,
+                    "bodyPattern": "Failed to (.*) teams app in app studio, due to \\d{3}, .*"
+                  }
+                }
+              ]
             }
           ]
         },

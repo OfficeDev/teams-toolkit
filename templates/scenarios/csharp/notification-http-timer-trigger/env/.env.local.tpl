@@ -1,10 +1,11 @@
+# This file includes environment variables that can be committed to git. It's gitignored by default because it represents your local development environment.
+
 # Built-in environment variables
 TEAMSFX_ENV=local
 
 
-# Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
+# Generated during provision, you can also add your own variables.
 BOT_ID=
-SECRET_BOT_PASSWORD=
 TEAMS_APP_ID=
 BOT_DOMAIN=
 BOT_ENDPOINT=

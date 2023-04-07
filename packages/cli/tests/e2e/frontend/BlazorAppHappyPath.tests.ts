@@ -3,7 +3,6 @@
 
 /**
  * @author Zhijie Huang <zhijie.huang@microsoft.com>
- * @owner Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
 import { describe } from "mocha";

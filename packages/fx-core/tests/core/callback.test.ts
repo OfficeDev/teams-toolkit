@@ -14,7 +14,7 @@ describe("Core event callback tests", async () => {
     let e = false;
     let d = [];
 
-    const cb = (fe?: FxError, fd?: string[]) => {
+    const cb = (name: string, fe?: FxError, fd?: string[]) => {
       if (fe) {
         e = true;
       }
@@ -29,7 +29,7 @@ describe("Core event callback tests", async () => {
     const funcs = CallbackRegistry.get(CoreCallbackEvent.lock);
     expect(funcs.length).eql(1);
 
-    funcs[0](new InvalidObjectError("", "", ""), ["1", "2"]);
+    funcs[0]("", new InvalidObjectError("", "", ""), ["1", "2"]);
     expect(e).is.true;
     expect(d.length).eql(2);
 

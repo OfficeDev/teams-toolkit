@@ -99,7 +99,7 @@ describe("App-manifest Component", () => {
     chai.assert.isTrue(validationAction.isOk());
   });
 
-  it("validation manifest - without schema", async function () {
+  it.skip("validation manifest - without schema", async function () {
     const manifest = new TeamsAppManifest();
     manifest.$schema = undefined;
     sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));

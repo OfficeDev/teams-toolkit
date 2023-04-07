@@ -7,6 +7,7 @@ import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 import { cpUtils, DebugLogger } from "../../../../common/deps-checker/util/cpUtils";
+import * as os from "os";
 
 export class Utils {
   static async configure(configurePath: string, map: Map<string, string>): Promise<void> {
@@ -139,8 +140,80 @@ export class Utils {
       return undefined;
     }
   }
+
+  static async findGloballyInstalledVersion(
+    logger: LogProvider | undefined,
+    packageName: string,
+    timeoutInSeconds: number,
+    shouldThrowIfNotFound = true
+  ): Promise<string | undefined> {
+    const timeout = timeoutInSeconds * 1000;
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        logger,
+        { timeout: timeout, shell: false },
+        getExecCommand("npm"),
+        "ls",
+        `${packageName}`,
+        "-g",
+        "--depth=0"
+      );
+
+      const regex = new RegExp(packageName + "@" + "(?<version>\\d+\\.\\d+\\.\\d+[\\w-.]*)"); // in case user has installed any -alpha, -beta version
+      const match = regex.exec(output.toString());
+      if (match && match.groups) {
+        return match.groups.version;
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      logger?.error(`Failed to execute "npm ls ${packageName}"`);
+      if (shouldThrowIfNotFound) {
+        throw error;
+      }
+    }
+  }
+
+  static async findLatestVersion(
+    logger: LogProvider | undefined,
+    packageName: string,
+    timeoutInSeconds: number
+  ): Promise<string | undefined> {
+    const timeout = timeoutInSeconds * 1000;
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        logger,
+        { timeout: timeout, shell: false },
+        getExecCommand("npm"),
+        "view",
+        `${packageName}`,
+        "version"
+      );
+
+      const regex = new RegExp("(?<version>\\d+\\.\\d+\\.\\d)");
+      const match = regex.exec(output.toString());
+
+      if (match && match.groups) {
+        return match.groups.version;
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      return undefined;
+    }
+  }
 }
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function getExecCommand(command: string): string {
+  return isWindows() ? `${command}.cmd` : command;
+}
+
+function isWindows(): boolean {
+  return os.type() === "Windows_NT";
 }

@@ -1,9 +1,9 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit m365 message extension sample",
     "engines": {
-        "node": ">=14 <=16"
+        "node": "14 || 16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -21,11 +21,12 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "botbuilder": "~4.14.0",
+        "botbuilder": "^4.18.0",
         "restify": "^10.0.0"
     },
     "devDependencies": {
-        "@types/restify": "8.5.5",
+        "@types/restify": "^8.5.5",
+        "@types/node": "^14.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

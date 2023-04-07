@@ -1,11 +1,15 @@
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import { ok, err, FxError, Result, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { Container } from "typedi";
+import { InvalidYmlActionNameError } from "../../error/yml";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { TeamsFxTelemetryReporter } from "../utils/teamsFxTelemetryReporter";
 import { component, lifecycleExecutionEvent, SummaryConstant, TelemetryProperty } from "./constant";
-import { DriverNotFoundError } from "./error";
 import {
   DriverDefinition,
   LifecycleName,
@@ -240,7 +244,13 @@ export class Lifecycle implements ILifecycle {
       let result: Result<Map<string, string>, FxError>;
       let summary: string[];
       if (driver.instance.execute) {
-        const r = await driver.instance.execute(driver.with, ctx);
+        const r = await driver.instance.execute(
+          driver.with,
+          ctx,
+          driver.writeToEnvironmentFile
+            ? new Map(Object.entries(driver.writeToEnvironmentFile))
+            : undefined
+        );
         result = r.result;
         summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
       } else {
@@ -325,7 +335,7 @@ export class Lifecycle implements ILifecycle {
     const drivers: DriverInstance[] = [];
     for (const def of this.driverDefs) {
       if (!Container.has(def.uses)) {
-        return err(new DriverNotFoundError(def.name ?? "", def.uses));
+        return err(new InvalidYmlActionNameError(def.uses));
       }
       const driver = Container.get<StepDriver>(def.uses);
       drivers.push({ instance: driver, ...def });

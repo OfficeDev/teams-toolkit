@@ -1,6 +1,7 @@
+# This file includes environment variables that can be committed to git. It's gitignored by default because it represents your local development environment.
+
 # Built-in environment variables
 TEAMSFX_ENV=local
-
 
 # Generated during provision, you can also add your own variables.
 TAB_DOMAIN=
@@ -13,14 +14,7 @@ AAD_APP_OAUTH_AUTHORITY=
 AAD_APP_OAUTH_AUTHORITY_HOST=
 AAD_APP_ACCESS_AS_USER_PERMISSION_ID=
 TEAMS_APP_PACKAGE_PATH=
-M365_CLIENT_ID=
-M365_CLIENT_SECRET=
-M365_TENANT_ID=
-M365_OAUTH_AUTHORITY_HOST=
 
 # Generated during deploy, you can also add your own variables.
 SSL_CRT_FILE=
 SSL_KEY_FILE=
-
-# Secrets. You can add your own secret value, prefixed with SECRET_
-SECRET_AAD_APP_CLIENT_SECRET=

@@ -24,18 +24,16 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 
 ## Get Started with the Workflow bot
 
->
 > **Prerequisites**
 >
 > To run the workflow bot template in your local dev machine, you will need:
 >
-> - `Node.js` installed locally (recommended version: 16)
+> - [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
 >
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
->
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -56,19 +54,22 @@ When you click the `DoStuff` button, the above adaptive card will be updated to 
 
 ## What's included in the template
 
-| Folder | Contents |
+| Folder / File | Contents |
 | - | - |
-| `teamsfx` | Project level settings, configurations, and environment information |
-| `.vscode` | VSCode files for debugging |
-| `src` | The source code for the workflow bot Teams application |
-| `appPackage` | Templates for the Teams application manifest |
-| `infra` | Templates for provisioning Azure resources |
+| `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
+| `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
+| `.vscode/` | VSCode files for debugging |
+| `appPackage/` | Templates for the Teams application manifest |
+| `infra/` | Templates for provisioning Azure resources |
+| `src/` | The source code for the application |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
 | File | Contents |
 | - | - |
-| `src/index.ts` | Application entry point and `restify` handlers for the Workflow bot |
+| `src/index.ts`| Application entry point and `restify` handlers for the Workflow bot |
+| `src/teamsBot.ts` | An empty teams activity handler for bot customization |
 | `src/commands/helloworldCommandHandler.ts` | Implementation that handles responding to a chat command |
 | `src/adaptiveCards/helloworldCommandResponse.json` | Defines the Adaptive Card (UI) that is displayed in response to a chat command |
 | `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |
@@ -90,8 +91,8 @@ Adding new actions (buttons) to an Adaptive Card is as simple as defining them i
 Here's a sample action with type `Action.Execute`:
 
 ```json
-{ 
-  "type": "AdaptiveCard", 
+{
+  "type": "AdaptiveCard",
   "body": [
     ...
     {
@@ -100,18 +101,18 @@ Here's a sample action with type `Action.Execute`:
         {
           "type": "Action.Execute",
           "title": "DoSomething",
-          "verb": "doSomething" 
+          "verb": "doSomething"
         }
       ]
     },
-    ... 
+    ...
   ]
-} 
+}
 ```
 
-Specifying the `type` as `Action.Execute` allows this Adaptive Card to respond with another card, which will update the UI by replacing the existing card. Learn more about [Adaptive Card Universal Actions in the documentation](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions).
+Specifying the `type` as `Action.Execute` to define an universal action in the base card. User can click the button to perform some business task in Teams chat. Learn more about [Adaptive Card Universal Actions in the documentation](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions).
 
-> **_NOTE:_**  the `verb` property is required here so that the TeamsFx conversation SDK can invoke the corresponding action handler when the action is invoked in Teams. You should provide a global unique string for the `verb` property, otherwise you may experience unexpected behavior if you're using a general string that might cause a collision with other bot actions.  
+> **_NOTE:_** the `verb` property is required here so that the TeamsFx conversation SDK can invoke the corresponding action handler when the action is invoked in Teams. You should provide a global unique string for the `verb` property, otherwise you may experience unexpected behavior if you're using a general string that might cause a collision with other bot actions.
 
 ### Step 2: Respond with a new Adaptive Card
 
@@ -144,14 +145,14 @@ const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
 const responseCard = require("../adaptiveCards/doSomethingResponse.json");
 
-export class DoSomethingActionHandler { 
-    triggerVerb = "doSomething";
+export class DoSomethingActionHandler {
+  triggerVerb = "doSomething";
 
-    async handleActionInvoked(context, message) { 
-        const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
-        return InvokeResponseFactory.adaptiveCard(responseCardJson);
-    } 
-} 
+  async handleActionInvoked(context, message) {
+    const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
+    return InvokeResponseFactory.adaptiveCard(responseCardJson);
+  }
+}
 ```
 
 > Please note:
@@ -172,26 +173,29 @@ Each new card action needs to be configured in the `ConversationBot`, which powe
 2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
 
 ```typescript
-const conversationBot = new ConversationBot({ 
-  ... 
-  cardAction: { 
-    enabled: true, 
-    actions: [ 
+import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+
+const conversationBot = new ConversationBot({
+  ...
+  cardAction: {
+    enabled: true,
+    actions: [
       new DoStuffActionHandler(),
-      new DoSomethingActionHandler() 
-    ], 
-  } 
-}); 
+      new DoSomethingActionHandler()
+    ],
+  }
+});
 ```
 
-Congratulations, you've just created your own workflow! To learn more about extending the Workflow bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-card-action-response). You can find more scenarios like:
+Congratulations, you've just created your own workflow! To learn more about extending the Workflow bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-workflow-new). You can find more scenarios like:
 
-- [Customize the way to respond to an action](https://aka.ms/teamsfx-card-action-response#customize-the-action-response)
-- [Customize the Adaptive Card content](https://aka.ms/teamsfx-card-action-response#customize-the-adaptive-card-content)
-- [Create a user specific view](https://aka.ms/teamsfx-card-action-response#auto-refresh-to-user-specific-view)
-- [Access Microsoft Graph](https://aka.ms/teamsfx-card-action-response#access-microsoft-graph)
-- [Connect to existing APIs](https://aka.ms/teamsfx-card-action-response#connect-to-existing-apis)
-- [Change the way to initialize the bot](https://aka.ms/teamsfx-card-action-response#customize-the-initialization)
+- [Customize the way to respond to an action](https://aka.ms/teamsfx-workflow-new#customize-the-action-response)
+- [Customize the Adaptive Card content](https://aka.ms/teamsfx-workflow-new#customize-the-adaptive-card-content)
+- [Create a user specific view](https://aka.ms/teamsfx-workflow-new#auto-refresh-to-user-specific-view)
+- [Access Microsoft Graph](https://aka.ms/teamsfx-workflow-new#access-microsoft-graph)
+- [Connect to existing APIs](https://aka.ms/teamsfx-workflow-new#connect-to-existing-apis)
+- [Change the way to initialize the bot](https://aka.ms/teamsfx-workflow-new#customize-the-initialization)
 
 ## Extend workflow bot with other bot scenarios
 
@@ -199,11 +203,11 @@ Workflow bot is compatible with other bot scenarios like notification bot and co
 
 ### Add notifications to your workflow bot
 
-The notification feature adds the ability for your application to send Adaptive Cards in response to external events. Follow the [steps here](https://aka.ms/teamsfx-card-action-response#how-to-extend-workflow-bot-with-notification-feature) to add the notification feature to your workflow bot. Refer [the notification document](https://aka.ms/teamsfx-notification) for more information.
+The notification feature adds the ability for your application to send Adaptive Cards in response to external events. Follow the [steps here](https://aka.ms/teamsfx-workflow-new#how-to-extend-workflow-bot-with-notification-feature) to add the notification feature to your workflow bot. Refer [the notification document](https://aka.ms/teamsfx-notification-new) for more information.
 
 ### Add command and responses to your workflow bot
 
-The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message and respond to commands with Adaptive Cards. Follow the [steps here](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add the command response feature to your workflow bot. Refer [the command bot document](https://aka.ms/teamsfx-command-response) for more information.
+The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message and respond to commands with Adaptive Cards. Follow the [steps here](https://aka.ms/teamsfx-command-new#How-to-add-more-command-and-response) to add the command response feature to your workflow bot. Refer [the command bot document](https://aka.ms/teamsfx-command-new) for more information.
 
 ## Additional information and references
 

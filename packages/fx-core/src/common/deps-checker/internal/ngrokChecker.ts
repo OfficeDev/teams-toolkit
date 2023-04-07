@@ -16,6 +16,7 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
+import { getLocalizedString } from "../../localizeUtils";
 
 const ngrokName = "ngrok";
 
@@ -129,7 +130,7 @@ export class NgrokChecker implements DepsChecker {
       Messages.failToValidateNgrok().replace("@NameVersion", displayNgrokName)
     );
     throw new DepsCheckerError(
-      Messages.failToInstallNgrok().split("@NameVersion").join(displayNgrokName),
+      getLocalizedString("error.common.InstallSoftwareError", displayNgrokName),
       ngrokInstallHelpLink
     );
   }

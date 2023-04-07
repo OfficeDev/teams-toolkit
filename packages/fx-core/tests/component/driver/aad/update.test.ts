@@ -21,10 +21,8 @@ import {
   UnhandledSystemError,
   UnhandledUserError,
 } from "../../../../src/component/driver/aad/error/unhandledError";
-import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { cwd } from "process";
-import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
-import { MissingEnvInFileUserError } from "../../../../src/component/driver/aad/error/missingEnvInFileError";
+import { InvalidActionInputError, UnresolvedPlaceholderError } from "../../../../src/error/common";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -64,12 +62,7 @@ describe("aadAppUpdate", async () => {
 
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       manifestPath: "./aad.manifest.json",
@@ -77,12 +70,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       outputFilePath: "./build/aad.manifest.dev.json",
@@ -90,12 +78,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
   it("should throw error if argument property is invalid", async () => {
@@ -106,12 +89,7 @@ describe("aadAppUpdate", async () => {
 
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       manifestPath: "./aad.manifest.json",
@@ -120,12 +98,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
 
     args = {
       manifestPath: true,
@@ -134,12 +107,7 @@ describe("aadAppUpdate", async () => {
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(InvalidParameterUserError)
-      .and.has.property(
-        "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
-      );
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
   it("should success with valid manifest", async () => {
@@ -241,14 +209,7 @@ describe("aadAppUpdate", async () => {
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(MissingEnvInFileUserError)
-      .and.include({
-        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in ${path.resolve(
-          args.manifestPath
-        )} have no values.`, // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
-        source: "aadApp/update",
-      });
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
 
     args = {
       manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
@@ -399,7 +360,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledUserError)
       .and.property("message")
-      .contain("Unhandled error happened in aadApp/update action");
+      .contain("An unexpected error has occurred while performing the aadApp/update task");
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -431,7 +392,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledSystemError)
       .and.property("message")
-      .contain("Unhandled error happened in aadApp/update action");
+      .contain("An unexpected error has occurred while performing the aadApp/update task");
   });
 
   it("should send telemetries when success", async () => {
@@ -550,7 +511,7 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.properties["error-code"]).to.equal("aadApp/update.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
     expect(endTelemetry.properties["error-message"])
-      .contain("Unhandled error happened in aadApp/update action")
+      .contain("An unexpected error has occurred while performing the aadApp/update task")
       .and.contain("Internal server error");
   });
 
@@ -569,13 +530,6 @@ describe("aadAppUpdate", async () => {
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(MissingEnvInFileUserError)
-      .and.include({
-        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME referenced in ${path.resolve(
-          args.manifestPath
-        )} have no values.`,
-        source: "aadApp/update",
-      });
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
   });
 });

@@ -9,7 +9,7 @@ import {
   DeployResult,
 } from "../../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../../utils/common";
-import { DeployExternalApiCallError, DeployTimeoutError } from "../../../../error/deployError";
+import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployImpl } from "./baseDeployImpl";
 import { Base64 } from "js-base64";
@@ -26,7 +26,9 @@ import { AzureResourceInfo } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
-import { progressBarHelper } from "./progressBarHelper";
+import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
+import { getLocalizedString } from "../../../../../common/localizeUtils";
+import { CheckDeploymentStatusTimeoutError } from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -63,18 +65,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     const inputs = { ignoreFile: args.ignoreFile };
 
     if (args.dryRun && this.prepare) {
-      this.progressNames = this.progressPrepare;
-    }
-    this.progressBar = this.createProgressBar(this.ui);
-    this.progressHandler = progressBarHelper(this.progressNames);
-    await this.progressBar?.start();
-
-    if (args.dryRun && this.prepare) {
       await this.prepare(inputs);
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
-    await this.progressBar?.end(true);
     return true;
   }
 
@@ -107,7 +101,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async checkDeployStatus(
+  public async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
     logger?: LogProvider
@@ -135,7 +129,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
             await logger?.error(
               `Deployment is failed with error message: ${JSON.stringify(res.data)}`
             );
-            throw DeployExternalApiCallError.deployRemoteStatusError();
+            throw DeployExternalApiCallError.deployRemoteStatusError(res);
           }
           return res.data;
         } else {
@@ -147,7 +141,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       }
     }
 
-    throw DeployTimeoutError.checkDeployStatusTimeout(this.helpLink);
+    throw new CheckDeploymentStatusTimeoutError(this.helpLink);
   }
 
   /**
@@ -160,20 +154,19 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
-    this.managementClient = new appService.WebSiteManagementClient(
+    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
       azureCredential,
       azureResource.subscriptionId
+    ));
+    const listResponse = await wrapAzureOperation(
+      () =>
+        managementClient.webApps.beginListPublishingCredentialsAndWait(
+          azureResource.resourceGroupName,
+          azureResource.instanceId
+        ),
+      (e) => DeployExternalApiCallError.listPublishingCredentialsRemoteError(e, this.helpLink),
+      (e) => DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink)
     );
-    let listResponse;
-    try {
-      listResponse = await this.managementClient.webApps.beginListPublishingCredentialsAndWait(
-        azureResource.resourceGroupName,
-        azureResource.instanceId
-      );
-    } catch (e) {
-      throw DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink);
-    }
-
     const publishingUserName = listResponse.publishingUserName ?? "";
     const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCredentials: string = Base64.encode(
@@ -200,7 +193,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
         azureResource.instanceId
       );
     } catch (e) {
-      throw DeployExternalApiCallError.restartWebAppError(e, this.helpLink);
+      this.logger?.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
     }
   }
 }

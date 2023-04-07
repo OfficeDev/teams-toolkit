@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/tools";
@@ -20,6 +23,7 @@ import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
+import { AxiosError } from "axios";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -47,10 +51,11 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      zipFilePath: path.join(testFolder, "test.zip"),
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -97,7 +102,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -137,14 +142,14 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
     });
     const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    expect(res.isErr()).to.equal(false);
   });
 
   it("deploy restart throws", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -184,14 +189,14 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
     });
     const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    expect(res.isErr()).to.equal(false);
   });
 
   it("Zip deploy throws when upload", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -238,7 +243,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -281,11 +286,11 @@ describe("Azure Function Deploy Driver test", () => {
     expect(res.isErr()).to.equal(true);
   });
 
-  it("Check deploy throws", async () => {
+  it("Check deploy status ok but cannot start", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -321,7 +326,58 @@ describe("Azure Function Deploy Driver test", () => {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").throws(new Error("test"));
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
+      status: 200,
+      data: { status: 3 },
+    });
+    const res = await deploy.run(args, context);
+    expect(res.isErr()).to.equal(true);
+    assert.equal(res._unsafeUnwrapErr().name, "DeployStatusError");
+  });
+
+  it("Check deploy throws", async () => {
+    const deploy = new AzureFunctionDeployDriver();
+    const args = {
+      workingDirectory: sysTmp,
+      artifactFolder: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    // ignore file
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").callsFake((file) => {
+      if (file === "ignore") {
+        return Promise.resolve(Buffer.from("node_modules"));
+      }
+      throw new Error("not found");
+    });
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "restart").throws(new Error("test"));
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
+      publishingUserName: "test-username",
+      publishingPassword: "test-password",
+    } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    // mock klaw
+    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
+      status: 200,
+      headers: {
+        location: "/api/123",
+      },
+    });
+    sandbox
+      .stub(AzureDeployImpl.AXIOS_INSTANCE, "get")
+      .throws({ isAxiosError: true } as AxiosError);
 
     const res = await deploy.run(args, context);
     expect(res.isErr()).to.equal(true);
@@ -331,7 +387,7 @@ describe("Azure Function Deploy Driver test", () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -375,6 +431,10 @@ describe("Azure Function Deploy Driver test", () => {
     const res = await deploy.execute(args, context);
 
     assert.equal(res.result.isOk(), true);
-    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+    const tmpFile = path.join(sysTmp, "./.deployment/deployment.zip");
+    assert.equal(
+      res.summaries[0],
+      `Deployment preparations are completed. You can find the package in \`${tmpFile}\``
+    );
   });
 });

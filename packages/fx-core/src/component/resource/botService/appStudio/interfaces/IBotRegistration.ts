@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan He <ruhe@microsoft.com>
+ */
 export enum BotChannelType {
   MicrosoftTeams = "msteams",
-  Outlook = "outlook",
+  M365Extensions = "m365extensions",
 }
 
 export interface IBotRegistration {

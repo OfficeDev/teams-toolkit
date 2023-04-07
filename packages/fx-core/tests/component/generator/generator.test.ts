@@ -5,20 +5,24 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import {
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { Generator } from "../../../src/component/generator/generator";
+import {
+  Generator,
+  templateDefaultOnActionError,
+} from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
+  GeneratorContext,
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
@@ -29,18 +33,129 @@ import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
-import { version } from "os";
-import { templateAlphaVersion } from "../../../src/component/generator/constant";
+import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import Mustache from "mustache";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
   const sandbox = createSandbox();
+  let mockedEnvRestore = mockedEnv({});
 
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
+    mockedEnvRestore();
+  });
+
+  it("return rc if set env rc", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "rc",
+    });
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    assert.isTrue(url.includes("0.0.0-rc"));
+  });
+
+  it("alpha or prerelease should return error to use fallback", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "",
+    });
+    sandbox.replace(templateConfig, "version", "0.0.0-alpha");
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    try {
+      await generatorUtils.fetchTemplateZipUrl("templateName");
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("return correct version", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "",
+    });
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    const tag = "2.1.0";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    sandbox.stub(templateConfig, "version").value("^2.0.0");
+    sandbox.replace(templateConfig, "tagPrefix", "templates@");
+    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    assert.isTrue(url.includes(tag));
+  });
+
+  it("return error if version pattern cannot match tag list", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_TEMPLATE_PRERELEASE: "",
+    });
+    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
+    sandbox.stub(templateConfig, "version").value("^4.0.0");
+    sandbox.replace(templateConfig, "tagPrefix", "templates@");
+    try {
+      await generatorUtils.fetchTemplateZipUrl("templateName");
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithRetry throw error if requestFn returns error status code", async () => {
+    const requestFn = async () => {
+      return { status: 400 } as AxiosResponse;
+    };
+    try {
+      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithRetry throw error if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    try {
+      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithTimeout throw error if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    try {
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 1);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("sendRequestWithTimeout throw request timeout if requestFn throw error", async () => {
+    const requestFn = async () => {
+      throw new Error("test");
+    };
+    sandbox.stub(axios, "isCancel").returns(true);
+    try {
+      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 2);
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
   });
 
   it("fetch zip from url", async () => {
@@ -50,11 +165,11 @@ describe("Generator utils", () => {
     assert.equal(zip.getEntries().length, 0);
   });
 
-  it("unzip ", async () => {
+  it("unzip", async () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -70,11 +185,25 @@ describe("Generator utils", () => {
     assert.equal(content, "test");
   });
 
+  it("unzip with no render function", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    const outputDir = path.join(tmpDir, "output");
+    await fs.ensureDir(inputDir);
+    const fileData = "{{appName}}";
+    await fs.writeFile(path.join(inputDir, "test.txt"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
+    await generatorUtils.unzip(new AdmZip(path.join(tmpDir, "test.zip")), outputDir);
+    const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
+    assert.equal(content, fileData);
+  });
+
   it("unzip with relative path", async () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -98,6 +227,26 @@ describe("Generator utils", () => {
       assert.equal(e.message, "invalid sample name: 'test'");
     }
   });
+
+  it("not render if file doensn't end with .tpl", async () => {
+    const res = renderTemplateFileData("fileName", Buffer.from("appName", "utf-8"), {
+      appName: "test",
+    });
+    assert.equal(res.toString(), "appName");
+  });
+
+  it("zip folder", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    await fs.ensureDir(inputDir);
+    const fileData = "test";
+    await fs.writeFile(path.join(inputDir, "test.txt"), fileData);
+    const zip = generatorUtils.zipFolder(inputDir);
+    zip.getEntry("test.txt")!.getData().toString();
+    zip.getEntries().forEach((entry) => {
+      assert.equal(entry.getData().toString(), "test");
+      assert.equal(zip.getEntries().length, 1);
+    });
+  });
 });
 
 describe("Generator error", async () => {
@@ -109,6 +258,32 @@ describe("Generator error", async () => {
 
   afterEach(async () => {
     sandbox.restore();
+  });
+
+  it("no zip url", async () => {
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
+    const generatorContext: GeneratorContext = {
+      name: "test",
+      relativePath: "/",
+      destination: "test",
+      logProvider: tools.logProvider,
+      onActionError: templateDefaultOnActionError,
+    };
+    try {
+      try {
+        await fetchZipFromUrlAction.run(generatorContext);
+      } catch (error) {
+        if (generatorContext.onActionError) {
+          await generatorContext.onActionError(fetchZipFromUrlAction, generatorContext, error);
+        } else {
+          throw error;
+        }
+      }
+    } catch (error) {
+      assert.notExists(error);
+      assert.fail("Should not reach here.");
+    }
+    assert.isTrue(generatorContext.cancelDownloading);
   });
 
   it("fetch sample zip from url error", async () => {
@@ -137,6 +312,63 @@ describe("Generator error", async () => {
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "UnzipError");
     }
+  });
+});
+
+describe("render template", () => {
+  it("escape undefined or variable", () => {
+    [{ variable: "test" }, { variable: "test", app: null }].forEach((variables) => {
+      // arrange
+      const filename = "test.tpl";
+      const fileData = Buffer.from("{{variable}}{{app}}");
+      const expectedResult = "test{{app}}";
+
+      // execute
+      const result = renderTemplateFileData(filename, fileData, variables as any);
+
+      assert.equal(result, expectedResult);
+    });
+  });
+
+  it("do not escape empty string variable", () => {
+    // arrange
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{variable}}{{app}}");
+    const variables = { variable: "test", app: "" };
+
+    // execute
+    const result = renderTemplateFileData(filename, fileData, variables);
+    const expectedResult = Mustache.render(
+      fileData.toString(),
+      variables,
+      {},
+      placeholderDelimiters
+    );
+
+    assert.equal(result, expectedResult);
+  });
+
+  it("skip non template file", () => {
+    // arrange
+    const filename = "test.txt";
+    const fileData = Buffer.from("{{variable}}{{app}}");
+    const variables = { variable: "test", app: "" };
+    const expectedResult = fileData;
+    // execute
+    const result = renderTemplateFileData(filename, fileData, variables);
+
+    assert.deepEqual(result, expectedResult);
+  });
+
+  it("no variables", () => {
+    // arrange
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{variable}}{{app}}");
+    const expectedResult = fileData.toString();
+    // execute
+    const result = renderTemplateFileData(filename, fileData);
+
+    assert.deepEqual(result, expectedResult);
   });
 });
 
@@ -176,7 +408,7 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(path.join(inputDir, templateName));
-    const fileData = "{%appName%}";
+    const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -209,18 +441,5 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
-  });
-
-  it("alpha release should use fallback", async () => {
-    sandbox.stub(generatorUtils, "templateVersion").resolves(templateAlphaVersion);
-    sandbox.stub(generatorUtils, "fetchTagList").resolves(templateAlphaVersion);
-
-    try {
-      await generatorUtils.fetchTemplateZipUrl("ut");
-    } catch (e) {
-      assert.exists(e);
-      return;
-    }
-    assert.fail("Should not reach here.");
   });
 });

@@ -18,12 +18,13 @@ import { lock, unlock } from "proper-lockfile";
 import { TOOLS } from "../globalVars";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
-import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
+import { CoreSource, NoProjectOpenedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 import crypto from "crypto";
 import * as os from "os";
 import { waitSeconds } from "../../common/tools";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
+import { FileNotFoundError, InvalidProjectError } from "../../error/common";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -37,7 +38,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     return;
   }
   if (!(await fs.pathExists(inputs.projectPath))) {
-    ctx.result = err(new PathNotExistError(inputs.projectPath));
+    ctx.result = err(new FileNotFoundError("ConcurrentLockerMW", inputs.projectPath));
     return;
   }
   let configFolder = "";
@@ -46,15 +47,17 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   } else if (isValidProjectV2(inputs.projectPath)) {
     configFolder = path.join(inputs.projectPath, `.${ConfigFolderName}`);
   } else {
-    ctx.result = err(new InvalidProjectError(configFolder));
+    ctx.result = err(new InvalidProjectError());
     return;
   }
 
   const lockFileDir = getLockFolder(inputs.projectPath);
   const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
   await fs.ensureDir(lockFileDir);
-  const taskName = `${ctx.method} ${
-    ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+  const taskName = `${ctx.method}${
+    ctx.method === "executeUserTask" || ctx.method === "executeUserTaskOld"
+      ? ` ${(ctx.arguments[0] as Func).method}`
+      : ""
   }`;
   let acquired = false;
   let retryNum = 0;
@@ -66,7 +69,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
       );
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
-        f();
+        f(taskName);
       }
       try {
         doingTask = taskName;
@@ -83,7 +86,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       } finally {
         await unlock(configFolder, { lockfilePath: lockfilePath });
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
-          f();
+          f(taskName);
         }
         TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
         doingTask = undefined;

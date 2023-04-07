@@ -47,9 +47,9 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "./resource/appManifest/utils/utils";
+import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
 
 const appPackageFolderName = "appPackage";
-const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
 const manifestFileName = "manifest.json";
@@ -95,6 +95,7 @@ async function updateManifest(
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {
+  TelemetryUtils.init(ctx);
   const res = await appStudio.getAppPackage(
     appDefinition.teamsAppId!,
     ctx.tokenProvider!.m365TokenProvider,
@@ -113,18 +114,8 @@ async function updateManifest(
     return err(new UserError(CoordinatorSource, "CouldNotFoundManifest", msg, msg));
   }
 
-  const colorFilePath = path.join(
-    ctx.projectPath!,
-    appPackageFolderName,
-    resourcesFolderName,
-    colorFileName
-  );
-  const outlineFilePath = path.join(
-    ctx.projectPath!,
-    appPackageFolderName,
-    resourcesFolderName,
-    outlineFileName
-  );
+  const colorFilePath = path.join(ctx.projectPath!, appPackageFolderName, colorFileName);
+  const outlineFilePath = path.join(ctx.projectPath!, appPackageFolderName, outlineFileName);
 
   const manifestTemplatePath = path.join(ctx.projectPath!, appPackageFolderName, manifestFileName);
   const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -132,6 +123,10 @@ async function updateManifest(
     return err(manifestRes.error);
   }
   const existingManifestTemplate = manifestRes.value;
+
+  if (!existingManifestTemplate) {
+    return err(new ObjectIsUndefinedError("manifest.json downloaded from template"));
+  }
 
   // icons
   const icons = appPackage.icons;
@@ -148,8 +143,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-  manifest.icons.color = "resources/color.png";
-  manifest.icons.outline = "resources/outline.png";
 
   // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
   // This is a short-term solution to convert the value to what TTK expects.
@@ -178,7 +171,12 @@ async function updateManifest(
     inputs[CoreQuestionNames.ReplaceContentUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
-    updateTabUrl(inputs[CoreQuestionNames.ReplaceContentUrl], TabUrlType.ContentUrl, tabs);
+    updateTabUrl(
+      inputs[CoreQuestionNames.ReplaceContentUrl],
+      TabUrlType.ContentUrl,
+      tabs,
+      existingManifestTemplate.staticTabs
+    );
   }
 
   if (
@@ -186,7 +184,12 @@ async function updateManifest(
     inputs[CoreQuestionNames.ReplaceWebsiteUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
-    updateTabUrl(inputs[CoreQuestionNames.ReplaceWebsiteUrl], TabUrlType.WebsiteUrl, tabs);
+    updateTabUrl(
+      inputs[CoreQuestionNames.ReplaceWebsiteUrl],
+      TabUrlType.WebsiteUrl,
+      tabs,
+      existingManifestTemplate.staticTabs
+    );
   }
 
   if (needUpdateStaticTabUrls) {
@@ -200,11 +203,9 @@ async function updateManifest(
     if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
       if (existingManifestTemplate.bots && existingManifestTemplate.bots.length > 0) {
         manifest.bots = existingManifestTemplate.bots;
-        manifest.validDomains = existingManifestTemplate.validDomains;
       } else {
         manifest.bots = BOTS_TPL_V3;
         manifest.bots[0].botId = "${{BOT_ID}}";
-        manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
 
@@ -214,11 +215,9 @@ async function updateManifest(
         existingManifestTemplate.composeExtensions.length > 0
       ) {
         manifest.composeExtensions = existingManifestTemplate.composeExtensions;
-        manifest.validDomains = existingManifestTemplate.validDomains;
       } else {
         manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
         manifest.composeExtensions[0].botId = "${{BOT_ID}}";
-        manifest.validDomains = existingManifestTemplate.validDomains;
       }
     }
   }
@@ -289,19 +288,28 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
   return ok(undefined);
 }
 
-function updateTabUrl(answers: string[], tabUrlType: TabUrlType, tabs: IStaticTab[] | undefined) {
+function updateTabUrl(
+  answers: string[],
+  tabUrlType: TabUrlType,
+  tabs: IStaticTab[] | undefined,
+  existingManifestStaticTabs: IStaticTab[] | undefined
+) {
   if (!tabs || tabs.length === 0) {
     return err(new ObjectIsUndefinedError("static tabs"));
+  }
+
+  if (!existingManifestStaticTabs || existingManifestStaticTabs.length === 0) {
+    return err(new ObjectIsUndefinedError("static tabs in manifest.json"));
   }
   answers.forEach((answer: string) => {
     const tabToUpdate = findTabBasedOnName(answer, tabs);
     if (tabToUpdate) {
       switch (tabUrlType) {
         case TabUrlType.ContentUrl:
-          tabToUpdate.contentUrl = "${{TAB_ENDPOINT}}/index.html#/tab";
+          tabToUpdate.contentUrl = existingManifestStaticTabs[0].contentUrl;
           break;
         case TabUrlType.WebsiteUrl:
-          tabToUpdate.websiteUrl = "${{TAB_ENDPOINT}}/index.html#/tab";
+          tabToUpdate.websiteUrl = existingManifestStaticTabs[0].websiteUrl;
           break;
         default:
           break;
@@ -347,8 +355,8 @@ export function updateScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
 }
 
-export function isFromDevPortalInVSC(inputs: Inputs): boolean {
-  return !!inputs.teamsAppFromTdp && inputs.platform === Platform.VSCode;
+export function isFromDevPortal(inputs: Inputs): boolean {
+  return !!inputs.teamsAppFromTdp;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

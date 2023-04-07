@@ -4,7 +4,6 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
@@ -16,6 +15,8 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -33,18 +34,14 @@ export class UpdateAadAppDriver implements StepDriver {
     return result.result;
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle")),
+  ])
   public async execute(args: UpdateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
-    const progressBarSettings = this.getProgressBarSetting();
-    const progressHandler = context.ui?.createProgressBar(
-      progressBarSettings.title,
-      progressBarSettings.stepMessages.length
-    );
     const summaries: string[] = [];
 
     try {
-      await progressHandler?.start();
-      await progressHandler?.next(progressBarSettings.stepMessages.shift());
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       const state = this.loadCurrentState();
 
@@ -127,7 +124,6 @@ export class UpdateAadAppDriver implements StepDriver {
         summaries: summaries,
       };
     } finally {
-      await progressHandler?.end(true);
     }
   }
 
@@ -142,17 +138,8 @@ export class UpdateAadAppDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private getProgressBarSetting(): ProgressBarSetting {
-    return {
-      title: getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle"),
-      stepMessages: [
-        getLocalizedString("driver.aadApp.progressBar.updateAadAppStepMessage"), // step 1
-      ],
-    };
   }
 
   private loadCurrentState(): UpdateAadAppOutput {

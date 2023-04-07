@@ -13,6 +13,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
+  Platform,
   ProjectSettingsV3,
   Result,
   Settings,
@@ -20,33 +21,34 @@ import {
   Tools,
   UserCancelError,
   Void,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 
 import {
   AadConstants,
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
+  SPFxQuestionNames,
 } from "../component/constants";
-import {
-  ObjectIsUndefinedError,
-  NoAadManifestExistError,
-  InvalidInputError,
-  InvalidProjectError,
-} from "./error";
+import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
+import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import "../component/driver/index";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
-import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
-import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
+import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
@@ -68,16 +70,33 @@ import {
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
-import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
+import {
+  getQuestionsForAddWebpart,
+  getQuestionsForCreateAppPackage,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+  getQuestionsForUpdateTeamsApp,
+  getQuestionsForValidateManifest,
+  getQuestionsForValidateAppPackage,
+  getQuestionsForPreviewWithManifest,
+} from "../component/question";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
-import { InvalidEnvFolderPath } from "../component/configManager/error";
 import { isV3Enabled } from "../common/tools";
+import { AddWebPartDriver } from "../component/driver/add/addWebPart";
+import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
+import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
+import { FileNotFoundError, InvalidProjectError } from "../error/common";
+import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
+import { YamlFieldMissingError } from "../error/yml";
+import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
+import { pathToFileURL } from "url";
+import { VSCodeExtensionCommand } from "../common/constants";
+import { Hub } from "../common/m365/constants";
+import { LaunchHelper } from "../common/m365/launchHelper";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -121,7 +140,7 @@ export class FxCoreV3Implement {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    if (isFromDevPortalInVSC(inputs)) {
+    if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
         return err(InvalidInputError("Teams app contains unsupported features"));
@@ -167,8 +186,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW(getQuestionsForProvisionV3),
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -197,8 +216,8 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -221,28 +240,24 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
-    ProjectConsolidateMW,
-    EnvLoaderMW(false),
+    QuestionModelMW,
+    EnvLoaderMW(true, true),
     ContextInjectorMW,
-    EnvWriterMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
-      ? inputs.AAD_MANIFEST_FILE
-      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    const manifestTemplatePath: string = inputs[CoreQuestionNames.AadAppManifestFilePath];
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new NoAadManifestExistError(manifestTemplatePath));
+      return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
-    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-    const manifestOutputPath: string = path.join(
-      inputs.projectPath!,
-      "build",
-      `aad.${inputs.env}.json`
-    );
+    let manifestOutputPath: string = manifestTemplatePath;
+    if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
+      await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+    }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
@@ -262,25 +277,40 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
-  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createDriverContext(inputs);
     const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    return ok(Void);
+    if (res.isOk()) {
+      ctx!.envVars = res.value;
+      return ok(Void);
+    } else {
+      // for partial success scenario, output is set in inputs object
+      ctx!.envVars = inputs.envVars;
+      return err(res.error);
+    }
   }
 
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
+    QuestionMW(getQuestionsForUpdateTeamsApp),
     ConcurrentLockerMW,
     EnvLoaderMW(true),
     ContextInjectorMW,
     EnvWriterMW,
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const component = Container.get("app-manifest") as any;
     const res = await component.deployV3(context, inputs as InputsWithProjectPath);
@@ -290,7 +320,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
   async executeUserTask(
     func: Func,
     inputs: Inputs,
@@ -303,20 +333,6 @@ export class FxCoreV3Implement {
         (inputs as InputsWithProjectPath).projectPath
       );
       res = ok(path);
-    } else if (func.method === "validateManifest") {
-      const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
-      const args: ValidateTeamsAppArgs = {
-        manifestPath: func.params.manifestTemplatePath,
-      };
-      res = await driver.run(args, context);
-    } else if (func.method === "buildPackage") {
-      const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
-      const args: CreateAppPackageArgs = {
-        manifestPath: func.params.manifestTemplatePath,
-        outputZipPath: func.params.outputZipPath,
-        outputJsonPath: func.params.outputJsonPath,
-      };
-      res = await driver.run(args, context);
     } else if (func.method === "addSso") {
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
@@ -328,6 +344,25 @@ export class FxCoreV3Implement {
     return res;
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW(getQuestionsForAddWebpart),
+    ProjectMigratorMWV3,
+    ConcurrentLockerMW,
+  ])
+  async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
+    const args: AddWebPartArgs = {
+      manifestPath: inputs[SPFxQuestionNames.ManifestPath],
+      localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
+      spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
+      webpartName: inputs[SPFxQuestionNames.WebPartName],
+      spfxPackage: inputs[SPFXQuestionNames.use_global_package_or_install_local],
+    };
+    const contextV3: DriverContext = createDriverContext(inputs);
+    return await driver.run(args, contextV3);
+  }
+
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
@@ -337,6 +372,48 @@ export class FxCoreV3Implement {
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false, true),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs, ctx);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false, true),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs, ctx);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    QuestionModelMW,
+    EnvLoaderMW(false, true),
+    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    return listCollaboratorFunc(inputs, ctx);
   }
 
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
@@ -435,11 +512,9 @@ export class FxCoreV3Implement {
     if (res.isErr()) return err(res.error);
     const targetDotEnvFile = res.value;
     if (!sourceDotEnvFile || !targetDotEnvFile)
-      return err(
-        new InvalidEnvFolderPath(
-          "missing 'environmentFolderPath' field or environment folder not exist"
-        )
-      );
+      return err(new YamlFieldMissingError("environmentFolderPath"));
+    if (!(await fs.pathExists(sourceDotEnvFile)))
+      return err(new FileNotFoundError("createEnvCopyV3", sourceDotEnvFile));
     const source = await fs.readFile(sourceDotEnvFile);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
@@ -468,7 +543,7 @@ export class FxCoreV3Implement {
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new NoAadManifestExistError(manifestTemplatePath));
+      return err(new FileNotFoundError("previewAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
@@ -479,5 +554,124 @@ export class FxCoreV3Implement {
     const contextV3: DriverContext = createDriverContext(inputs);
     await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForValidateManifest),
+    EnvLoaderMW(true),
+  ])
+  async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.validateApplication);
+    inputs.stage = Stage.validateApplication;
+
+    const context: DriverContext = createDriverContext(inputs);
+
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+    const args: ValidateManifestArgs = {
+      manifestPath: teamsAppManifestFilePath,
+    };
+    const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
+    const result = await driver.run(args, context);
+    if (result.isOk() && context.platform !== Platform.VS) {
+      const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
+      context.ui?.showMessage("info", validationSuccess, false);
+    }
+    return result;
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
+  async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.validateApplication);
+    inputs.stage = Stage.validateApplication;
+
+    const context: DriverContext = createDriverContext(inputs);
+    const teamsAppPackageFilePath = inputs?.[CoreQuestionNames.TeamsAppPackageFilePath] as string;
+    const args: ValidateAppPackageArgs = {
+      appPackagePath: teamsAppPackageFilePath,
+      showMessage: true,
+    };
+    const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return await driver.run(args, context);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForCreateAppPackage),
+    EnvLoaderMW(true),
+  ])
+  async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+    setCurrentStage(Stage.createAppPackage);
+    inputs.stage = Stage.createAppPackage;
+
+    const context: DriverContext = createDriverContext(inputs);
+
+    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+
+    const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    const args: CreateAppPackageArgs = {
+      manifestPath: teamsAppManifestFilePath,
+      outputZipPath:
+        inputs[CoreQuestionNames.OutputZipPathParamName] ??
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+      outputJsonPath:
+        inputs[CoreQuestionNames.OutputManifestParamName] ??
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+    };
+    const result = await driver.run(args, context);
+    if (context.platform === Platform.VSCode) {
+      if (result.isOk()) {
+        const isWindows = process.platform === "win32";
+        let zipFileName = args.outputZipPath;
+        if (!path.isAbsolute(zipFileName)) {
+          zipFileName = path.join(context.projectPath, zipFileName);
+        }
+        let builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice.fallback",
+          zipFileName
+        );
+        if (isWindows) {
+          const folderLink = pathToFileURL(path.dirname(zipFileName));
+          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+        }
+        context.ui?.showMessage("info", builtSuccess, false);
+      }
+    }
+    return result;
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    QuestionMW(getQuestionsForPreviewWithManifest),
+    EnvLoaderMW(false),
+  ])
+  async previewWithManifest(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string, FxError>> {
+    setCurrentStage(Stage.previewWithManifest);
+    inputs.stage = Stage.previewWithManifest;
+
+    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const manifestFilePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
+
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, {}, false, false);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    const teamsAppId = manifestRes.value.id;
+    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
+
+    const launchHelper = new LaunchHelper(
+      this.tools.tokenProvider.m365TokenProvider,
+      this.tools.logProvider
+    );
+    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, capabilities);
+    return result;
   }
 }

@@ -33,6 +33,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "lint-staged": "^11.2.6",
     "prettier": "^2.4.1",
     "rimraf": "^3.0.0",

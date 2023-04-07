@@ -797,11 +797,13 @@ function generateSpfxTasks(): (Record<string, unknown> | CommentJSONValue)[] {
    */
   return [
     startSpfxTeamsAppLocally(),
+    startSpfxTeamsAppLocallyAndInstallAppInTeams(),
     validateAndInstallPrerequisites(false, false, false, false, true),
     buildAndUploadTeamsManifest(),
     installNPMpackages(false, false, false, true),
     gulpTrustDevCert(),
     gulpServe(),
+    installAppInTeams(),
     terminateAllTasks(),
   ];
 }
@@ -810,6 +812,19 @@ function startSpfxTeamsAppLocally(): Record<string, unknown> {
   return {
     label: TaskOverallLabel.TransparentDefault,
     dependsOn: [TaskLabel.PrerequisiteCheck, TaskLabel.PrepareManifest, TaskLabel.GulpServe],
+    dependsOrder: "sequence",
+  };
+}
+
+function startSpfxTeamsAppLocallyAndInstallAppInTeams(): Record<string, unknown> {
+  return {
+    label: TaskOverallLabel.TransparentM365,
+    dependsOn: [
+      TaskLabel.PrerequisiteCheck,
+      TaskLabel.PrepareManifest,
+      TaskLabel.GulpServe,
+      TaskLabel.InstallAppInTeams,
+    ],
     dependsOrder: "sequence",
   };
 }

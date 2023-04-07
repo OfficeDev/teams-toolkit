@@ -18,6 +18,9 @@ import {
   isVideoFilterProject,
   setRegion,
   ConvertTokenToJson,
+  getSPFxToken,
+  isV3Enabled,
+  isApiConnectEnabled,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -35,8 +38,10 @@ import * as path from "path";
 import fs from "fs-extra";
 import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
+import { TOOLS } from "../../src/core/globalVars";
+import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
 
@@ -246,6 +251,9 @@ describe("tools", () => {
     });
 
     it("happy path", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       const projectSettings: ProjectSettings = {
         appName: "app-name",
         projectId: "project-id",
@@ -290,6 +298,7 @@ describe("tools", () => {
       chai.assert.equal(result!.isFromSample, projectSettings.isFromSample);
       chai.assert.equal(result!.isM365, projectSettings.isM365);
       chai.assert.equal(result!.hostType, projectSettings.solutionSettings?.hostType);
+      restore();
     });
 
     it("happy path V3", async () => {
@@ -430,6 +439,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Can recognize normal video filter project", async () => {
       // Arrange
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       const manifest = {
         meetingExtensionDefinition: {
           videoFiltersConfigurationUrl: "https://a.b.c/",
@@ -446,9 +458,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.true;
+      restore();
     });
 
     it("Should not recognize tab project as video filter", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       // Arrange
       const manifest = {
         $schema:
@@ -511,6 +527,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
+      restore();
     });
   });
 
@@ -533,6 +550,49 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("ConvertTokenToJson", async () => {
       const res = ConvertTokenToJson("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c");
       chai.expect(res["userId"]).equal("test@test.com");
+    });
+  });
+  describe("getSPFxToken", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy path", async () => {
+      const mockTools = new MockTools();
+      sinon.stub(mockTools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("xxx"));
+      sinon.stub(axios, "get").resolves({ data: { webUrl: "122" } });
+      const res = await getSPFxToken(mockTools.tokenProvider.m365TokenProvider);
+    });
+  });
+  describe("feature flag check", () => {
+    let mockedEnvRestore: RestoreFn;
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("should return true if no v5 set", () => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
+      const res = isV3Enabled();
+      chai.expect(res).true;
+    });
+    it("should return true if v5 set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
+      const res = isV3Enabled();
+      chai.expect(res).true;
+    });
+    it("should return false is v5 set false", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
+      const res = isV3Enabled();
+      chai.expect(res).false;
+    });
+    it("should return false if no TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).false;
+    });
+    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).true;
     });
   });
 });

@@ -33,10 +33,6 @@ export const Messages = {
 
   downloadBicep: () => getLocalizedString("depChecker.downloadBicep"),
   finishInstallBicep: () => getLocalizedString("depChecker.finishInstallBicep"),
-  failToInstallBicep: () => getLocalizedString("depChecker.failToInstallBicep"),
-  failToInstallBicepOutputVSC: () => getLocalizedString("depChecker.failToInstallBicepOutputVSC"),
-  failToInstallBicepOutputCLI: () => getLocalizedString("depChecker.failToInstallBicepOutputCLI"),
-  failToInstallBicepDialog: () => getLocalizedString("depChecker.failToInstallBicepDialog"),
 };
 
 export enum DepsCheckerEvent {

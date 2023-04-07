@@ -424,16 +424,26 @@ export async function getV3M365TitleId(
   return result.value.M365_TITLE_ID;
 }
 
-export async function triggerV3Migration(): Promise<string | undefined> {
+export async function getV3M365AppId(
+  projectPath: string,
+  env: string
+): Promise<string | undefined> {
+  const result = await envUtil.readEnv(projectPath, env, false, true);
+  if (result.isErr()) {
+    throw result.error;
+  }
+
+  return result.value.M365_APP_ID;
+}
+
+export async function triggerV3Migration(): Promise<void> {
   const inputs = getSystemInputs();
   inputs.stage = Stage.debug;
   const result = await core.phantomMigrationV3(inputs);
   if (result.isErr()) {
-    showError(result.error);
     await vscode.debug.stopDebugging();
     throw result.error;
   }
   // reload window to terminate debugging
   await VS_CODE_UI.reload();
-  return undefined;
 }

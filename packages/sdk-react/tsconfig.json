@@ -16,9 +16,10 @@
     "declarationMap": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "typeRoots": ["node_modules/@types"],
     "types": [
-      "jest"
-    ],
+      "jest", "node", "@types/jest"
+    ]
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/test/*"],

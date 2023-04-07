@@ -1,29 +1,41 @@
 version: 1.0.0
 
-{{#config.registerApp}}
-registerApp:
+{{#config.provision}}
+provision:
+  {{#registerApp}}
   {{#if aad}}
-  - uses: aadApp/create
+  - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
     with:
-      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
-      generateClientSecret: true
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-aad # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
+      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in your organization's Azure AD tenant (for example, single tenant).
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      clientId: AAD_APP_CLIENT_ID
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET # Environment variable that starts with `SECRET_` will be stored to the .env.{envName}.user environment file
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
 
   {{/if}}
   {{#if teamsApp}}
-  - uses: teamsApp/create
+  - uses: teamsApp/create # Creates a Teams app
     with:
-      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
   {{/if}}
 
-{{/config.registerApp}}
-{{#config.provision}}
-provision:
+  {{/registerApp}}
   {{#bot}}
-  - uses: botAadApp/create
+  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+    writeToEnvironmentFile:
+      botId: BOT_ID
+      botPassword: SECRET_BOT_PASSWORD
 
-  - uses: botFramework/create
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: $\{{BOT_ID}}
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -32,56 +44,74 @@ provision:
       channels:
         - name: msteams
         {{#if isM365}}
-        - name: outlook
+        - name: m365extensions
         {{/if}}
-  {{/bot}}
 
-{{/config.provision}}
-{{#config.configureApp}}
-configureApp:
+  {{/bot}}
+  {{#configureApp}}
   {{#tab}}
-  - uses: file/updateEnv
+  - uses: script # Set env for local launch
+    name: Set {{../../../placeholderMappings.tabDomain}} for local launch
     with:
-      envs:
-        {{../../placeholderMappings.tabDomain}}: {{domain}}
-        {{../../placeholderMappings.tabEndpoint}}: {{endpoint}}
-        {{../../placeholderMappings.tabIndexPath}}: /index.html#
+      run: echo "set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}"
+  - uses: script # Set env for local launch
+    name: Set {{../../../placeholderMappings.tabEndpoint}} for local launch
+    with:
+      run: echo "set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}"
+  - uses: script # Set env for local launch
+    name: Set {{../../../placeholderMappings.tabIndexPath}} for local launch
+    with:
+      run: echo "set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#"
 
   {{/tab}}
   {{#if aad}}
-  - uses: aadApp/update
+  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
-      manifestPath: ./aad.manifest.template.json
+      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
 
   {{/if}}
   {{#teamsApp}}
   {{#if appPackagePath}}
-  - uses: teamsApp/update
+  - uses: teamsApp/update # # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      appPackagePath: {{appPackagePath}}
+      appPackagePath: {{appPackagePath}} # Relative path to this file. This is the path for built zip file.
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
   {{else}}
-  - uses: teamsApp/validate
+  - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
 
-  - uses: teamsApp/zipAppPackage
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
 
-  - uses: teamsApp/update
+  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
   {{/if}}
-  {{/teamsApp}}
 
-{{/config.configureApp}}
+  {{/teamsApp}}
+  {{#if isM365}}
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+    with:
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
+
+  {{/if}}
+  {{/configureApp}}
+{{/config.provision}}
 {{#config.deploy}}
 deploy:
   {{#tools}}
-  - uses: prerequisite/install 
+  - uses: prerequisite/install # Install dependencies
     with:
       {{#devCert}}
       devCert:
@@ -92,6 +122,17 @@ deploy:
       {{/func}}
       {{#dotnet}}
       dotnet: true
+      {{/dotnet}}
+    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+      {{#devCert}}
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
+      {{/devCert}}
+      {{#func}}
+      funcPath: FUNC_PATH
+      {{/func}}
+      {{#dotnet}}
+      dotnetPath: DOTNET_PATH
       {{/dotnet}}
 
   {{/tools}}
@@ -106,7 +147,7 @@ deploy:
 
   {{/dotnetCommand}}
   {{#tab}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -118,7 +159,7 @@ deploy:
 
   {{/tab}}
   {{#if bot}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -127,7 +168,7 @@ deploy:
 
   {{/if}}
   {{#ssoTab}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -140,7 +181,7 @@ deploy:
 
   {{/ssoTab}}
   {{#if ssoBot}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -160,7 +201,7 @@ deploy:
 
   {{/if}}
   {{#if ssoFunction}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./api/.env.teamsfx.local
       envs:
@@ -172,7 +213,7 @@ deploy:
 
   {{/if}}
   {{#npmCommands}}
-  - uses: cli/runNpmCommand
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: {{args}}
       {{#if workingDirectory}}
@@ -181,7 +222,7 @@ deploy:
 
   {{/npmCommands}}
   {{#frontendStart}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./tabs/.localSettings
       envs:
@@ -202,7 +243,7 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/updateAppSettings
+  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
     with:
       target: {{appsettingsPath}}
       appsettings:
@@ -217,7 +258,7 @@ deploy:
 
   {{/authStart}}
   {{#botStart}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./bot/.localSettings
       envs:
@@ -241,7 +282,7 @@ deploy:
 
   {{/botStart}}
   {{#if backendStart}}
-  - uses: file/updateEnv
+  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
       target: ./api/.localSettings
       envs:

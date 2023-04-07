@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import { MultiSelectQuestion, OptionItem, UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
 import path from "path";
@@ -487,6 +490,8 @@ export enum SolutionError {
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
+  InvalidManifestError = "InvalidManifestError",
+  FailedToLoadManifestFile = "FailedToLoadManifestFile",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -956,6 +961,13 @@ export enum AzureSolutionQuestionNames {
   Solution = "solution",
   Scenarios = "scenarios",
   Features = "features",
+}
+
+export enum SPFxQuestionNames {
+  SPFxFolder = "spfx-folder",
+  WebPartName = "spfx-webpart-name",
+  ManifestPath = "manifest-path",
+  LocalManifestPath = "local-manifest-path",
 }
 
 export function HostTypeOptionAzure(): OptionItem {

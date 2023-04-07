@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Qianhao Dong <qidon@microsoft.com>
+ */
 import {
   assembleError,
   err,
@@ -13,7 +16,7 @@ import {
   UserError,
   UserErrorOptions,
   Void,
-  PathNotExistError,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -47,7 +50,7 @@ import {
   isV3Enabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
-
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -680,7 +683,8 @@ async function ensureM365Account(
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
-      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      const m365Login: M365TokenProvider = M365TokenInstance;
+      let loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
         return err(loginStatusRes.error);
@@ -698,7 +702,7 @@ async function ensureM365Account(
         if (tokenRes.isErr()) {
           return err(tokenRes.error);
         }
-        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+        loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
         if (loginStatusRes.isErr()) {
           return err(loginStatusRes.error);
         }
@@ -1112,7 +1116,7 @@ function checkNpmInstall(
           result: ResultStatus.warn,
           successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
           failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
-          error: new PathNotExistError(ExtensionSource, folder),
+          error: new FileNotFoundError(ExtensionSource, folder),
         };
       }
 

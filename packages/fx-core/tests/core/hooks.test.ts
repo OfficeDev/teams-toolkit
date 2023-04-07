@@ -24,7 +24,7 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -57,9 +57,6 @@ describe("Middleware - others", () => {
       await fs.ensureDir(path.join(projectPath, ".fx"));
       sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
       sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-      mockedEnvRestore = mockedEnv({
-        __TEAMSFX_INSIDER_PREVIEW: "true",
-      });
     });
     afterEach(async () => {
       await fs.remove(projectPath);
@@ -67,6 +64,9 @@ describe("Middleware - others", () => {
       mockedEnvRestore();
     });
     it("successfully migrate arm templates only tab", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       await fs.copy(
         path.join(__dirname, "../samples/migrationV1Tab/.fx/env.default.json"),
         path.join(projectPath, ".fx", "env.default.json")
@@ -165,6 +165,9 @@ describe("Middleware - others", () => {
     });
 
     it("successfully migration arm templates", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       await fs.copy(
         path.join(__dirname, "../samples/migration/.fx/env.default.json"),
         path.join(projectPath, ".fx", "env.default.json")
@@ -238,9 +241,6 @@ describe("Middleware - others", () => {
 
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
-      mockedEnvRestore = mockedEnv({
-        __TEAMSFX_INSIDER_PREVIEW: "true",
-      });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
 
@@ -251,6 +251,7 @@ describe("Middleware - others", () => {
     });
 
     it("successfully migrate to version of arm and multi-env", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
       const tools = new MockTools();
       setTools(tools);
@@ -388,7 +389,7 @@ describe("Middleware - others", () => {
   describe("EnvInfoLoaderMW with MultiEnv enabled", () => {
     const expectedResult = "ok";
     const projectPath = "mock/this/does/not/exists";
-
+    let mockedEnvRestore: () => void;
     function MockProjectSettingsLoaderMW() {
       return async (ctx: CoreHookContext, next: NextFunction) => {
         ctx.projectSettings = {
@@ -413,7 +414,7 @@ describe("Middleware - others", () => {
     beforeEach(() => {
       envInfo = undefined;
       envLoaded = undefined;
-
+      mockedEnvRestore = mockedEnv({});
       // stub environmentManager.loadEnvInfo()
       sandbox
         .stub(environmentManager, "loadEnvInfo")
@@ -454,6 +455,9 @@ describe("Middleware - others", () => {
       });
     });
     describe("skipping logic", async () => {
+      afterEach(() => {
+        mockedEnvRestore();
+      });
       it("skips on getQuestions of the create stage", async () => {
         // Arrange
         const inputs: Inputs = {
@@ -485,6 +489,7 @@ describe("Middleware - others", () => {
       });
 
       it("skips statically", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const inputs: Inputs = {
           platform: Platform.VSCode,
@@ -513,6 +518,7 @@ describe("Middleware - others", () => {
       });
 
       it("skips dynamically with inputs.ignoreEnvInfo", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const inputs: Inputs = {
           platform: Platform.VSCode,
@@ -547,7 +553,12 @@ describe("Middleware - others", () => {
     });
 
     describe("using inputs.env", async () => {
+      let mockedEnvRestore: RestoreFn;
+      afterEach(() => {
+        mockedEnvRestore();
+      });
       it("accepts inputs.env", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const env = "staging";
         const inputs: Inputs = {
@@ -591,6 +602,7 @@ describe("Middleware - others", () => {
       });
 
       it("handles error for non-existent inputs.env", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const nonExistentEnvName = "nonExistentEnvName";
         const inputs: Inputs = {
@@ -627,13 +639,18 @@ describe("Middleware - others", () => {
 
         // Assert
         assert.isTrue(res.isErr());
-        assert.equal((res as Err<string, FxError>).error.name, "ProjectEnvNotExistError");
+        assert.equal((res as Err<string, FxError>).error.name, "FileNotFoundError");
         assert(!envInfo);
       });
     });
 
     describe("asking env interactively", async () => {
+      let mockedEnvRestore: RestoreFn;
+      afterEach(() => {
+        mockedEnvRestore();
+      });
       it("asks env interactively and put the last used env first", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const inputs: Inputs = {
           platform: Platform.VSCode,
@@ -711,6 +728,7 @@ describe("Middleware - others", () => {
       });
 
       it("handles user canceling", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const inputs: Inputs = {
           platform: Platform.VSCode,
@@ -758,6 +776,7 @@ describe("Middleware - others", () => {
       const inputsEnv = "inputs";
       const askUserEnv = "askUser";
       const envs = [inputsEnv, askUserEnv];
+      let mockedEnvRestore: RestoreFn;
       class MyClass {
         tools: Tools = tools;
         async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
@@ -783,8 +802,12 @@ describe("Middleware - others", () => {
           });
         sandbox.stub(environmentManager, "checkEnvExist").returns(Promise.resolve(ok(true)));
       });
+      afterEach(() => {
+        mockedEnvRestore();
+      });
 
       it("prefers inputs.env than asking user", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const inputs: Inputs = {
           platform: Platform.VSCode,
@@ -813,8 +836,13 @@ describe("Middleware - others", () => {
     });
 
     describe("error handling", async () => {
+      let mockedEnvRestore: RestoreFn;
+      afterEach(() => {
+        mockedEnvRestore();
+      });
       // Test cases for error handling
       it("handles error when project settings is undefined", async () => {
+        mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
         // Arrange
         const inputs: Inputs = {
           platform: Platform.VSCode,

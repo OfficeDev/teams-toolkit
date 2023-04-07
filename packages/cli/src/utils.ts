@@ -31,8 +31,6 @@ import {
   InputConfigsFolderName,
   SingleSelectConfig,
   ProjectSettingsV3,
-  SettingsFolderName,
-  SettingsFileName,
   InputTextConfig,
 } from "@microsoft/teamsfx-api";
 
@@ -49,6 +47,7 @@ import {
   SUPPORTED_SPFX_VERSION,
   TeamsAppManifestFilePathName,
   AadManifestFilePathName,
+  teamsAppFileName,
 } from "./constants";
 import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
@@ -60,6 +59,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
 import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { O_CREAT, O_EXCL, O_RDWR } from "constants";
+import { parse } from "yaml";
 
 export type Json = { [_: string]: any };
 
@@ -168,7 +168,7 @@ export async function askManifestFilePath(): Promise<Result<string, FxError>> {
   const config: InputTextConfig = {
     name: AadManifestFilePathName,
     title: "Enter the AAD app manifest template path",
-    default: "./aad.manifest.template.json",
+    default: "./aad.manifest.json",
   };
   const filePathInput = await CLIUIInstance.inputText(config);
   if (filePathInput.isErr()) {
@@ -194,7 +194,7 @@ export async function askTeamsManifestFilePath(): Promise<Result<string, FxError
 
 export function getSettingsFilePath(projectFolder: string) {
   return isV3Enabled()
-    ? path.join(projectFolder, SettingsFolderName, SettingsFileName)
+    ? path.join(projectFolder, teamsAppFileName)
     : path.join(
         projectFolder,
         `.${ConfigFolderName}`,
@@ -275,13 +275,15 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
   }
 
   try {
-    const settings = fs.readJsonSync(filePath);
     if (isV3Enabled()) {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const configuration = parse(fileContent);
       return ok({
-        projectId: settings.trackingId,
-        version: settings.version,
+        projectId: configuration.projectId,
+        version: configuration.version,
       });
     } else {
+      const settings = fs.readJsonSync(filePath);
       return ok(settings);
     }
   } catch (e) {
@@ -357,7 +359,7 @@ export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 
   const checklist: string[] = isV3Enabled()
-    ? [p, `${p}/${SettingsFolderName}`, path.join(p, SettingsFolderName, SettingsFileName)]
+    ? [p, path.join(p, teamsAppFileName)]
     : [
         p,
         `${p}/.${ConfigFolderName}`,
@@ -507,6 +509,7 @@ export function getSystemInputs(projectPath?: string, env?: string): Inputs {
     projectPath: projectPath,
     correlationId: uuid.v4(),
     env: env,
+    nonInteractive: !CLIUIInstance.interactive,
   };
   return systemInputs;
 }

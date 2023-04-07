@@ -26,7 +26,7 @@ describe("serverConnections", () => {
   const down = new TestStream();
   const msgConn = createMessageConnection(up as any, down as any);
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -142,6 +142,7 @@ describe("serverConnections", () => {
   });
 
   it("deployTeamsAppManifestRequest should return {}", async () => {
+    sandbox.stub(tools, "isV3Enabled").returns(false);
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.resolves(ok("test"));
     sandbox.replace(connection["core"], "executeUserTask", fake);
@@ -356,5 +357,24 @@ describe("serverConnections", () => {
       .then((data) => {
         assert.equal(data, ok(false));
       });
+  });
+
+  it("publishInDeveloperPortalRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok(Void));
+    sandbox.replace(connection["core"], "publishInDeveloperPortal", fake);
+    const inputs = {
+      platform: "vs",
+      projectPath: "test",
+      appPackage: "appPackage",
+    };
+    const token = {};
+    const res = connection.publishInDeveloperPortalRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
   });
 });

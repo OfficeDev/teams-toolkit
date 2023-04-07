@@ -5,6 +5,7 @@
 
 import { ConfigFolderName, StatesFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
+import { strings } from "./resource";
 
 export function NotSupportedProjectType(): UserError {
   return new UserError(
@@ -166,6 +167,15 @@ export class InvalidTemplateName extends UserError {
     super({
       source: constants.cliSource,
       message: `Invalid template name: ${name}`,
+    });
+  }
+}
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: constants.cliSource,
+      message: strings.error.NotAllowedMigrationErrorMessage,
     });
   }
 }

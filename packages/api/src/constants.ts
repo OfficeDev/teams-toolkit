@@ -64,6 +64,7 @@ export enum Stage {
   getProjectConfig = "getProjectConfig",
   init = "init",
   addFeature = "addFeature",
+  addWebpart = "addWebpart",
   addResource = "addResource",
   addCapability = "addCapability",
   addCiCdFlow = "addCiCdFlow",
@@ -72,6 +73,9 @@ export enum Stage {
   initDebug = "initDebug",
   initInfra = "initInfra",
   publishInDeveloperPortal = "publishInDeveloperPortal",
+  validateApplication = "validateApplication",
+  createAppPackage = "createAppPackage",
+  previewWithManifest = "previewWithManifest",
 }
 
 export enum TelemetryEvent {

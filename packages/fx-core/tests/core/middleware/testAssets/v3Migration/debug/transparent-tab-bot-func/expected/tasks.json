@@ -9,8 +9,8 @@
             "dependsOn": [
                 "Validate & install prerequisites",
                 "Start local tunnel",
-                "Create resources",
-                "Build project",
+                "Provision",
+                "Deploy",
                 "Start services"
             ],
             "dependsOrder": "sequence"
@@ -44,8 +44,9 @@
             "command": "debug-start-local-tunnel",
             "args": {
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "type": "ngrok",
                 "env": "local",
-                "output": {
+                "writeToEnvironmentFile": {
                     // Keep consistency with upgraded configuration.
                     "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
                     "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
@@ -56,23 +57,21 @@
         },
         {
             // Create the debug resources.
-            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
-            "label": "Create resources",
+            // See https://aka.ms/teamsfx-tasks/provision to know the details and how to customize the args.
+            "label": "Provision",
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
             // Build project.
-            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Build project",
+            // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
+            "label": "Deploy",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },

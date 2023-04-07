@@ -5,7 +5,9 @@
 
 import chalk from "chalk";
 import figures from "figures";
-import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
+import * as os from "os";
+import * as path from "path";
+import { LogLevel, LogProvider, Colors, ConfigFolderName } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
 import { getColorizedString } from "../utils";
@@ -15,6 +17,12 @@ export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
 
   private static logLevel: CLILogLevel = CLILogLevel.error;
+
+  private logFileName: string;
+
+  constructor() {
+    this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
+  }
 
   public getLogLevel() {
     return CLILogProvider.logLevel;
@@ -34,6 +42,10 @@ export class CLILogProvider implements LogProvider {
     }
 
     return CLILogProvider.instance;
+  }
+
+  getLogFilePath(): string {
+    return path.join(os.tmpdir(), `.${ConfigFolderName}`, "cli-log", this.logFileName);
   }
 
   trace(message: string): Promise<boolean> {

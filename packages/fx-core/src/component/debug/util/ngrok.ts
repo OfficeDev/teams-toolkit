@@ -58,7 +58,7 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
 // TODO: support http://127.0.0.1:4040/api/tunnels/bot
 export async function getNgrokTunnelFromApi(
   webServiceUrl: string
-): Promise<{ src: string; dist: string } | undefined> {
+): Promise<{ src: string; dest: string } | undefined> {
   try {
     const resp = await axios.get(webServiceUrl);
     if (resp && resp.data) {
@@ -66,7 +66,7 @@ export async function getNgrokTunnelFromApi(
       // tunnels will be empty if tunnel connection is not completed
       for (const tunnel of tunnels) {
         if (tunnel.proto === "https") {
-          return { src: tunnel.config.addr, dist: tunnel.public_url };
+          return { src: tunnel.config.addr, dest: tunnel.public_url };
         }
       }
     }

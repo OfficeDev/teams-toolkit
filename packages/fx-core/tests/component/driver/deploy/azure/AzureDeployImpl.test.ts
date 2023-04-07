@@ -15,7 +15,9 @@ import * as tools from "../../../../../src/common/tools";
 import * as sinon from "sinon";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import {
+  CheckDeployStatusError,
   CheckDeploymentStatusTimeoutError,
+  DeployRemoteStartError,
   DeployZipPackageError,
   GetPublishingCredentialsError,
 } from "../../../../../src/error/deploy";
@@ -31,6 +33,8 @@ import {
   WebSiteManagementClient,
 } from "@azure/arm-appservice";
 import { default as axios } from "axios";
+import { HttpStatusCode } from "../../../../../src/component/constant/commonConstant";
+import { DeployStatus } from "../../../../../src/component/constant/deployConstant";
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
@@ -101,6 +105,166 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       .to.be.rejectedWith(CheckDeploymentStatusTimeoutError);
   });
 
+  it("checkDeployStatus reject AxiosError", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").rejects({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          error: {
+            code: "Request_BadRequest",
+            message:
+              "Invalid value specified for property 'displayName' of resource 'Application'.",
+          },
+        },
+      },
+    });
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    await chai
+      .expect(impl.checkDeployStatus("", config))
+      .to.be.rejectedWith(CheckDeployStatusError);
+  });
+  it("checkDeployStatus reject none AxiosError", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").rejects(new Error("other error"));
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    await chai
+      .expect(impl.checkDeployStatus("", config))
+      .to.be.rejectedWith(CheckDeployStatusError);
+  });
+  it("checkDeployStatus DeployRemoteStartError", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
+      status: HttpStatusCode.OK,
+      data: {
+        status: DeployStatus.Failed,
+        message: "fail to start app due to some reasons.",
+      },
+    });
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    await chai
+      .expect(impl.checkDeployStatus("", config))
+      .to.be.rejectedWith(DeployRemoteStartError);
+  });
+  it("checkDeployStatus return status 400", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
+      status: HttpStatusCode.BAD_REQUEST,
+    });
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    await chai
+      .expect(impl.checkDeployStatus("", config))
+      .to.be.rejectedWith(CheckDeployStatusError);
+  });
   it("createAzureDeployConfig GetPublishingCredentialsError", async () => {
     const args = {
       workingDirectory: "/",

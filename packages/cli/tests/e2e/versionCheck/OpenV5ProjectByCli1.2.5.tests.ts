@@ -53,7 +53,7 @@ describe("version check", () => {
     env["TEAMSFX_V3"] = "false";
     Executor.installCLI(testFolder, "1.2.5", true);
     const errorMessage =
-      "The current project is incompatible with the installed version of Teams Toolkit.";
+      "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest";
 
     {
       // provision

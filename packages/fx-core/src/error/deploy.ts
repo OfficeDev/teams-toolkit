@@ -61,3 +61,33 @@ export class DeployZipPackageError extends UserError {
     });
   }
 }
+
+export class CheckDeployStatusError extends UserError {
+  constructor(location: string, error: Error, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.CheckDeployStatusError",
+        location,
+        JSON.stringify(error) || ""
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.CheckDeployStatusError",
+        location,
+        error.message || ""
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class DeployRemoteStartError extends UserError {
+  constructor(location: string, errorMessage: string, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString("error.deploy.DeployRemoteStartError", location, errorMessage),
+      displayMessage: getLocalizedString("error.deploy.DeployRemoteStartError", location),
+      helpLink: helpLink,
+    });
+  }
+}

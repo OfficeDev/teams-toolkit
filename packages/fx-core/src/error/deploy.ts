@@ -51,7 +51,7 @@ export class DeployZipPackageError extends UserError {
         "error.deploy.DeployZipPackageError",
         endpoint,
         JSON.stringify(error) || "",
-        "https://learn.microsoft.com/en-us/azure/app-service/deploy-zip?tabs=cli"
+        "https://learn.microsoft.com/azure/app-service/deploy-zip?tabs=cli"
       ),
       displayMessage: getLocalizedString(
         "error.deploy.DeployZipPackageError.Notification",

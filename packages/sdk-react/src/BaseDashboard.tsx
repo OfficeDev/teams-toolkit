@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { ResizeObserver } from "resize-observer";
 
 import { mergeStyles } from "@fluentui/react";
 

@@ -15,6 +15,7 @@ import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
+import { updateProgress } from "../../middleware/updateProgress";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { CreateAppCatalogFailedError } from "./error/createAppCatalogFailedError";
 import { GetGraphTokenFailedError } from "./error/getGraphTokenFailedError";
@@ -42,6 +43,7 @@ export class SPFxDeployDriver implements StepDriver {
 
   @hooks([
     addStartAndEndTelemetry(Constants.TelemetryDeployEventName, Constants.TelemetryComponentName),
+    updateProgress(getLocalizedString("driver.spfx.deploy.progressbar.stepMessage")),
   ])
   public async run(
     args: DeploySPFxArgs,
@@ -73,104 +75,87 @@ export class SPFxDeployDriver implements StepDriver {
     context: WrapDriverContext
   ): Promise<Map<string, string>> {
     const deployArgs = this.asDeployArgs(args);
-    const progressHandler = context.ui?.createProgressBar(Constants.DeployProgressTitle(), 3);
-    await progressHandler?.start();
-    let success = false;
-    try {
-      const tenant = await this.getTenant(context.m365TokenProvider);
-      SPOClient.setBaseUrl(tenant);
 
-      const spoToken = await getSPFxToken(context.m365TokenProvider);
-      if (!spoToken) {
-        throw new GetSPOTokenFailedError();
-      }
+    const tenant = await this.getTenant(context.m365TokenProvider);
+    SPOClient.setBaseUrl(tenant);
 
-      let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-      if (appCatalogSite) {
-        await progressHandler?.next(DeployProgressMessage.SkipCreateSPAppCatalog());
-        SPOClient.setBaseUrl(appCatalogSite);
-        context.addSummary(DeployProgressMessage.SkipCreateSPAppCatalog());
-      } else {
-        await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog());
-        if (deployArgs.createAppCatalogIfNotExist) {
-          try {
-            await SPOClient.createAppCatalog(spoToken);
-            context.addSummary(DeployProgressMessage.CreateSPAppCatalog());
-          } catch (e) {
-            throw new CreateAppCatalogFailedError(e as Error);
-          }
-        } else {
-          throw new NoValidAppCatelog();
+    const spoToken = await getSPFxToken(context.m365TokenProvider);
+    if (!spoToken) {
+      throw new GetSPOTokenFailedError();
+    }
+
+    let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+    if (appCatalogSite) {
+      SPOClient.setBaseUrl(appCatalogSite);
+      context.addSummary(DeployProgressMessage.SkipCreateSPAppCatalog());
+    } else {
+      if (deployArgs.createAppCatalogIfNotExist) {
+        try {
+          await SPOClient.createAppCatalog(spoToken);
+          context.addSummary(DeployProgressMessage.CreateSPAppCatalog());
+        } catch (e) {
+          throw new CreateAppCatalogFailedError(e as Error);
         }
-        let retry = 0;
+      } else {
+        throw new NoValidAppCatelog();
+      }
+      let retry = 0;
+      appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+      while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
+        context.logProvider.warning(
+          getLocalizedString("driver.spfx.warn.noTenantAppCatalogFound", retry)
+        );
+        await sleep(Constants.APP_CATALOG_REFRESH_TIME);
         appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-        while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
-          context.logProvider.warning(
-            getLocalizedString("driver.spfx.warn.noTenantAppCatalogFound", retry)
-          );
-          await sleep(Constants.APP_CATALOG_REFRESH_TIME);
-          appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-          retry += 1;
-        }
-        if (appCatalogSite) {
-          SPOClient.setBaseUrl(appCatalogSite);
-          context.logProvider.info(
-            getLocalizedString("driver.spfx.info.tenantAppCatalogCreated", appCatalogSite)
-          );
-          await sleep(Constants.APP_CATALOG_ACTIVE_TIME);
-        } else {
-          throw new CreateAppCatalogFailedError(
-            new Error(getLocalizedString("driver.spfx.error.failedToGetAppCatalog"))
-          );
-        }
+        retry += 1;
       }
-
-      const packageSolutionPath = path.isAbsolute(deployArgs.packageSolutionPath)
-        ? deployArgs.packageSolutionPath
-        : path.join(context.projectPath, deployArgs.packageSolutionPath);
-      const appPackage = await this.getPackagePath(packageSolutionPath);
-      if (!(await fs.pathExists(appPackage))) {
-        throw new NoSPPackageError(appPackage);
-      }
-
-      const fileName = path.parse(appPackage).base;
-      const bytes = await fs.readFile(appPackage);
-      try {
-        await progressHandler?.next(DeployProgressMessage.Upload());
-        await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
-        context.addSummary(DeployProgressMessage.Upload());
-      } catch (e: any) {
-        if (e.response?.status === 403) {
-          context.ui?.showMessage(
-            "error",
-            getLocalizedString("plugins.spfx.deployFailedNotice", appCatalogSite!),
-            false,
-            "OK"
-          );
-          throw new InsufficientPermissionError(appCatalogSite!);
-        } else {
-          throw new UploadAppPackageFailedError(e);
-        }
-      }
-
-      await progressHandler?.next(DeployProgressMessage.Deploy());
-      const appID = await this.getAppID(packageSolutionPath);
-      await SPOClient.deployAppPackage(spoToken, appID);
-      context.addSummary(DeployProgressMessage.Deploy());
-      const guidance = getLocalizedString(
-        "plugins.spfx.deployNotice",
-        appPackage,
-        appCatalogSite,
-        appCatalogSite
-      );
-      if (context.platform === Platform.CLI) {
-        context.ui?.showMessage("info", guidance, false);
+      if (appCatalogSite) {
+        SPOClient.setBaseUrl(appCatalogSite);
+        context.logProvider.info(
+          getLocalizedString("driver.spfx.info.tenantAppCatalogCreated", appCatalogSite)
+        );
+        await sleep(Constants.APP_CATALOG_ACTIVE_TIME);
       } else {
-        context.ui?.showMessage("info", guidance, false, "OK");
+        throw new CreateAppCatalogFailedError(
+          new Error(getLocalizedString("driver.spfx.error.failedToGetAppCatalog"))
+        );
       }
-      success = true;
-    } finally {
-      await progressHandler?.end(success);
+    }
+
+    const packageSolutionPath = path.isAbsolute(deployArgs.packageSolutionPath)
+      ? deployArgs.packageSolutionPath
+      : path.join(context.projectPath, deployArgs.packageSolutionPath);
+    const appPackage = await this.getPackagePath(packageSolutionPath);
+    if (!(await fs.pathExists(appPackage))) {
+      throw new NoSPPackageError(appPackage);
+    }
+
+    const fileName = path.parse(appPackage).base;
+    const bytes = await fs.readFile(appPackage);
+    try {
+      await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
+      context.addSummary(DeployProgressMessage.Upload());
+    } catch (e: any) {
+      if (e.response?.status === 403) {
+        throw new InsufficientPermissionError(appCatalogSite!);
+      } else {
+        throw new UploadAppPackageFailedError(e);
+      }
+    }
+
+    const appID = await this.getAppID(packageSolutionPath);
+    await SPOClient.deployAppPackage(spoToken, appID);
+    context.addSummary(DeployProgressMessage.Deploy());
+    const guidance = getLocalizedString(
+      "plugins.spfx.deployNotice",
+      appPackage,
+      appCatalogSite,
+      appCatalogSite
+    );
+    if (context.platform === Platform.CLI) {
+      context.ui?.showMessage("info", guidance, false);
+    } else {
+      context.ui?.showMessage("info", guidance, false, "OK");
     }
     return this.EmptyMap;
   }

@@ -58,7 +58,7 @@ export async function sendRequestWithRetry<T>(
       if (res.status === 200 || res.status === 201) {
         return res;
       } else if (res.status === 403) {
-        error = new Error(`HTTP Request reaches rate limit: ${JSON.stringify(res)}`);
+        error = new Error(`HTTP Request exceeds rate limit: ${JSON.stringify(res)}`);
       } else {
         error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       }
@@ -271,31 +271,27 @@ export async function downloadDirectory(
     .map((node) => node.path);
 
   //step 2: download files with limited concurrency
-  const downloadCallbacks = [];
-  for (const samplePath of samplePaths) {
-    const downloadCallback = async () => {
-      const file = await sendRequestWithRetry(async () => {
-        return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
-      }, retryLimits);
-      const filePath = path.join(dstPath, samplePath.replace(sampleName, ""));
-      await fs.ensureFile(filePath);
-      await fs.writeFile(filePath, Buffer.from(file.data as any));
-    };
-    downloadCallbacks.push(downloadCallback);
-  }
-  await limitConcurrency(downloadCallbacks, concurrencyLimits);
+  const downloadCallback = async (samplePath: string) => {
+    const file = await sendRequestWithRetry(async () => {
+      return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
+    }, retryLimits);
+    const filePath = path.join(dstPath, samplePath.replace(sampleName, ""));
+    await fs.ensureFile(filePath);
+    await fs.writeFile(filePath, Buffer.from(file.data as any));
+  };
+  await limitConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }
 
-async function limitConcurrency(callbacks: any[], limit: number) {
+async function limitConcurrency(data: any[], callback: any, limit: number) {
   const processing: any[] = [];
   let i = 0;
-  while (i < limit && i < callbacks.length) {
-    processing.push(callbacks[i]());
+  while (i < limit && i < data.length) {
+    processing.push(callback(data[i]));
     i++;
   }
-  while (i < callbacks.length) {
+  while (i < data.length) {
     await Promise.race(processing);
-    processing.push(callbacks[i]());
+    processing.push(callback(data[i]));
     i++;
   }
   await Promise.all(processing);

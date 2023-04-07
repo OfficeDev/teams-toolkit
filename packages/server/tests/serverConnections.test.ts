@@ -184,6 +184,7 @@ describe("serverConnections", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
     sandbox.replace(connection["core"], "executeUserTask", fake);
+    sandbox.stub(tools, "isV3Enabled").returns(false);
     const inputs = {
       platform: "vs",
     };

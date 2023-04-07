@@ -15,7 +15,6 @@ import { ExecutionResult } from "../../../interface/stepDriver";
 import {
   ok,
   err,
-  FxError,
   IProgressHandler,
   UserInteraction,
   LogProvider,

@@ -18,11 +18,11 @@ import { getLocalizedMessage } from "../../../../messages";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
-import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { HttpStatusCode } from "../../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
+import { DeployZipFileError } from "../../../../../error/deploy";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -182,11 +182,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                   e.response?.data
                 )}`
               );
-              throw DeployExternalApiCallError.zipDeployWithRemoteError(
-                e,
-                undefined,
-                this.helpLink
-              );
+              throw new DeployZipFileError(zipDeployEndpoint, e, this.helpLink);
             }
           } else {
             // None server error, throw
@@ -195,16 +191,12 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw DeployExternalApiCallError.zipDeployError(
-              e,
-              e.response?.status ?? -1,
-              this.helpLink
-            );
+            throw new DeployZipFileError(zipDeployEndpoint, e, this.helpLink);
           }
         } else {
           // if the error is not axios error, throw
           await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-          throw DeployExternalApiCallError.zipDeployError(e, -1, this.helpLink);
+          throw new DeployZipFileError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
     }
@@ -213,7 +205,11 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }
-      throw DeployExternalApiCallError.zipDeployError(res, res.status, this.helpLink);
+      throw new DeployZipFileError(
+        zipDeployEndpoint,
+        new Error(`Retry times exceeded ${res?.status ? ", status code: " + res.status : ""}`),
+        this.helpLink
+      );
     }
 
     return res.headers.location;

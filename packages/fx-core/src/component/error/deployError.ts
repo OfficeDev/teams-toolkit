@@ -9,40 +9,6 @@ import { ExternalApiCallError } from "./componentError";
  * call external api error when deploy
  */
 export class DeployExternalApiCallError extends ExternalApiCallError {
-  static zipDeployError(
-    e?: unknown,
-    statusCode?: number,
-    helpLink?: string
-  ): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      "ZipDeployError",
-      "plugins.bot.FailedDeployZipFile",
-      statusCode ?? -1,
-      undefined,
-      undefined,
-      undefined,
-      helpLink
-    );
-  }
-
-  static zipDeployWithRemoteError(
-    e?: unknown,
-    statusCode?: number,
-    helpLink?: string
-  ): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      "ZipDeployError",
-      "driver.deploy.error.deployToAzureRemoteFailed",
-      statusCode ?? -1,
-      undefined,
-      ["driver.common.suggestion.retryLater"],
-      JSON.stringify(e),
-      helpLink
-    );
-  }
-
   static deployStatusError(
     e?: unknown,
     statusCode?: number,

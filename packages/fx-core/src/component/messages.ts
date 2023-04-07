@@ -33,6 +33,8 @@ export class ProgressMessages {
   static readonly generateTemplate = () =>
     getLocalizedString("core.progress.generateTemplate.detail");
   static readonly generateSample = () => getLocalizedString("core.progress.generateSample.detail");
+  static readonly downloadDirectory = () =>
+    getLocalizedString("core.progress.downloadDirectory.detail");
   static readonly getDeploymentSrcAndDest = getLocalizedString(
     "core.progress.getDeploymentSrcAndDest"
   );

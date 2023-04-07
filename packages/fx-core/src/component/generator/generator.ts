@@ -120,8 +120,11 @@ export class Generator {
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
-
-    await actionContext?.progressBar?.next(ProgressMessages.generateSample());
+    if (isDownloadDirectoryEnabled()) {
+      await actionContext?.progressBar?.next(ProgressMessages.downloadDirectory());
+    } else {
+      await actionContext?.progressBar?.next(ProgressMessages.generateSample());
+    }
     const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
     await this.generate(generatorContext, actionSeq);
     return ok(undefined);

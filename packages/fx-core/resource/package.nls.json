@@ -75,6 +75,7 @@
   "core.progress.generateTemplate.detail": "Downloading and unzipping Template",
   "core.progress.generateSample": "Generating Sample",
   "core.progress.generateSample.detail": "Downloading and unzipping Sample",
+  "core.progress.downloadDirectory.detail": "Downloading sample directory from GitHub",
   "core.progress.configureStorage": "Configuring Tab",
   "core.progress.packingCode": "Creating application package.",
   "core.progress.deploy": "Deploy",

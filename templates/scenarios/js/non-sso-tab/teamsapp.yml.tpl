@@ -46,7 +46,7 @@ deploy:
       args: install --production
   # Deploy your application to Azure App Service using the zip deploy feature.
   # For additional details, please refer to https://aka.ms/zip-deploy-to-app-services.
-  - uses: azureAppService/deploy
+  - uses: azureAppService/zipDeploy
     with:
       # Deploy base folder
       artifactFolder: .

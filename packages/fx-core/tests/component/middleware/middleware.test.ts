@@ -1,7 +1,7 @@
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { LogLevel, ok, Platform } from "@microsoft/teamsfx-api";
+import { LogLevel, Platform } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import * as path from "path";
 import { createContextV3 } from "../../../src/component/utils";
@@ -11,6 +11,7 @@ import { MockAction, MockDriver, mockProgressHandler } from "./helper";
 import sinon from "sinon";
 import { TelemetryConstants } from "../../../src/component/constants";
 import { TeamsFxTelemetryReporter } from "../../../src/component/utils/teamsFxTelemetryReporter";
+import { performance } from "perf_hooks";
 
 chai.use(chaiAsPromised);
 

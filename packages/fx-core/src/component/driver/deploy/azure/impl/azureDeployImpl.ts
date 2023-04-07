@@ -34,7 +34,7 @@ import {
 } from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
-  managementClient: appService.WebSiteManagementClient | undefined;
+  protected managementClient: appService.WebSiteManagementClient | undefined;
 
   public static readonly AXIOS_INSTANCE = axios.create();
 

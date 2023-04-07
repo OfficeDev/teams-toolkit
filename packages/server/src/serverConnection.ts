@@ -20,6 +20,7 @@ import { FxCore } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
 import TokenProvider from "./providers/tokenProvider";
@@ -172,18 +173,25 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
+    let res;
     if (isV3Enabled()) {
-      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.json`;
-      func = {
-        namespace: "fx-solution-azure",
-        method: "buildPackage",
-        params: {
-          manifestTemplatePath: manifestTemplatePath,
-          outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
-          outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
-          env: inputs.env,
-        },
-      };
+      inputs[
+        CoreQuestionNames.TeamsAppManifestFilePath
+      ] = `${inputs.projectPath}/${AppPackageFolderName}/manifest.json`;
+      inputs[
+        CoreQuestionNames.OutputZipPathParamName
+      ] = `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${inputs.env}.zip`;
+      inputs[
+        CoreQuestionNames.OutputManifestParamName
+      ] = `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${inputs.env}.json`;
+      res = await Correlator.runWithId(
+        corrId,
+        (inputs) => this.core.createAppPackage(inputs),
+        inputs
+      );
+      if (res.isOk()) {
+        return ok(undefined);
+      }
     } else {
       func = {
         namespace: "fx-solution-azure",
@@ -193,19 +201,14 @@ export default class ServerConnection implements IServerConnection {
           env: inputs.env,
         },
       };
+      res = await Correlator.runWithId(
+        corrId,
+        (func, inputs) => this.core.executeUserTask(func, inputs),
+        func,
+        inputs
+      );
     }
-
-    const res = await Correlator.runWithId(
-      corrId,
-      (func, inputs) => this.core.executeUserTask(func, inputs),
-      func,
-      inputs
-    );
-    if (isV3Enabled() && res.isOk()) {
-      return ok(undefined);
-    } else {
-      return standardizeResult(res);
-    }
+    return standardizeResult(res);
   }
 
   public async publishApplicationRequest(

@@ -183,7 +183,8 @@ describe("serverConnections", () => {
   it("buildArtifactsRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
-    sandbox.replace(connection["core"], "buildArtifacts", fake);
+    sandbox.replace(connection["core"], "executeUserTask", fake);
+    sandbox.stub(tools, "isV3Enabled").returns(false);
     const inputs = {
       platform: "vs",
     };
@@ -197,7 +198,7 @@ describe("serverConnections", () => {
   it("buildArtifactsRequest - V3", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.resolves(ok("test"));
-    sandbox.replace(connection["core"], "executeUserTask", fake);
+    sandbox.replace(connection["core"], "createAppPackage", fake);
     sandbox.stub(tools, "isV3Enabled").returns(true);
     const inputs = {
       platform: "vs",

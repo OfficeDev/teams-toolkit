@@ -14,11 +14,21 @@ import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/a
 import * as tools from "../../../../../src/common/tools";
 import * as sinon from "sinon";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
-import { CheckDeploymentStatusTimeoutError } from "../../../../../src/error/deploy";
+import {
+  CheckDeploymentStatusTimeoutError,
+  GetPublishingCredentialsError,
+} from "../../../../../src/error/deploy";
 import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
 chai.use(chaiAsPromised);
+import * as appService from "@azure/arm-appservice";
+import { RestError } from "@azure/storage-blob";
+import {
+  WebAppsListPublishingCredentialsResponse,
+  WebSiteManagementClient,
+} from "@azure/arm-appservice";
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
@@ -87,5 +97,51 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     await chai
       .expect(impl.checkDeployStatus("", config))
       .to.be.rejectedWith(CheckDeploymentStatusTimeoutError);
+  });
+
+  it("createAzureDeployConfig GetPublishingCredentialsError", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    const webApps = {
+      beginListPublishingCredentialsAndWait: async function (
+        resourceGroupName: string,
+        name: string
+      ): Promise<WebAppsListPublishingCredentialsResponse> {
+        throw new RestError("test message", "111", 500);
+      },
+    };
+    const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");
+    mockWebSiteManagementClient.webApps = webApps as any;
+    sandbox.stub(appService, "WebSiteManagementClient").returns(mockWebSiteManagementClient);
+    await chai
+      .expect(
+        impl.createAzureDeployConfig(
+          {
+            subscriptionId: "e24d88be-bbbb-1234-ba25-11111111111",
+            resourceGroupName: "mockGroupName",
+            instanceId: "mockAppName",
+          },
+          new MyTokenCredential()
+        )
+      )
+      .to.be.rejectedWith(GetPublishingCredentialsError);
   });
 });

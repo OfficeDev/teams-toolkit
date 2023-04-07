@@ -18,11 +18,11 @@ import { getLocalizedMessage } from "../../../../messages";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
-import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { HttpStatusCode } from "../../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
+import { DeployZipPackageError } from "../../../../../error/deploy";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -152,7 +152,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async zipDeployPackage(
+  async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
@@ -182,9 +182,13 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                   e.response?.data
                 )}`
               );
-              throw DeployExternalApiCallError.zipDeployWithRemoteError(
-                e,
-                undefined,
+              throw new DeployZipPackageError(
+                zipDeployEndpoint,
+                new Error(
+                  `remote server error with status code: ${
+                    e.response?.status ?? "NA"
+                  }, message: ${JSON.stringify(e.response?.data)}`
+                ),
                 this.helpLink
               );
             }
@@ -195,16 +199,20 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw DeployExternalApiCallError.zipDeployError(
-              e,
-              e.response?.status ?? -1,
+            throw new DeployZipPackageError(
+              zipDeployEndpoint,
+              new Error(
+                `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+                  e.response?.data
+                )}`
+              ),
               this.helpLink
             );
           }
         } else {
           // if the error is not axios error, throw
           await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-          throw DeployExternalApiCallError.zipDeployError(e, -1, this.helpLink);
+          throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
     }
@@ -213,7 +221,11 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }
-      throw DeployExternalApiCallError.zipDeployError(res, res.status, this.helpLink);
+      throw new DeployZipPackageError(
+        zipDeployEndpoint,
+        new Error(`status code: ${res?.status ?? "NA"}`),
+        this.helpLink
+      );
     }
 
     return res.headers.location;

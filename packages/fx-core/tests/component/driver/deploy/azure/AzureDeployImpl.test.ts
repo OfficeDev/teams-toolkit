@@ -16,6 +16,7 @@ import * as sinon from "sinon";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import {
   CheckDeploymentStatusTimeoutError,
+  DeployZipPackageError,
   GetPublishingCredentialsError,
 } from "../../../../../src/error/deploy";
 import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
@@ -29,6 +30,7 @@ import {
   WebAppsListPublishingCredentialsResponse,
   WebSiteManagementClient,
 } from "@azure/arm-appservice";
+import { default as axios } from "axios";
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
@@ -100,7 +102,6 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
   });
 
   it("createAzureDeployConfig GetPublishingCredentialsError", async () => {
-    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
     const args = {
       workingDirectory: "/",
       artifactFolder: "/",
@@ -143,5 +144,139 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
         )
       )
       .to.be.rejectedWith(GetPublishingCredentialsError);
+  });
+
+  it("zipDeployPackage DeployZipPackageError throw 500", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").rejects({
+      isAxiosError: true,
+      response: {
+        status: 500,
+        data: {
+          error: {
+            code: "InternalServerError",
+            message: "Internal server error",
+          },
+        },
+      },
+    });
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    await chai
+      .expect(impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config))
+      .to.be.rejectedWith(DeployZipPackageError);
+  });
+  it("zipDeployPackage DeployZipPackageError throw 404", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").rejects({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          error: {
+            code: "Request_BadRequest",
+            message:
+              "Invalid value specified for property 'displayName' of resource 'Application'.",
+          },
+        },
+      },
+    });
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    await chai
+      .expect(impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config))
+      .to.be.rejectedWith(DeployZipPackageError);
+  });
+  it("zipDeployPackage DeployZipPackageError return 500", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
+      headers: {
+        location: "abc",
+      },
+      status: 500,
+    });
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    await chai
+      .expect(impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config))
+      .to.be.rejectedWith(DeployZipPackageError);
   });
 });

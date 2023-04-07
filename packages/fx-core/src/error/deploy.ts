@@ -36,8 +36,26 @@ export class GetPublishingCredentialsError extends UserError {
       displayMessage: getLocalizedString(
         "error.deploy.GetPublishingCredentialsError.Notification",
         appName,
-        resourceGroup,
-        error.message || ""
+        resourceGroup
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class DeployZipPackageError extends UserError {
+  constructor(endpoint: string, error: Error, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.DeployZipPackageError",
+        endpoint,
+        JSON.stringify(error) || "",
+        "https://learn.microsoft.com/azure/app-service/deploy-zip?tabs=cli"
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.DeployZipPackageError.Notification",
+        endpoint
       ),
       helpLink: helpLink,
     });

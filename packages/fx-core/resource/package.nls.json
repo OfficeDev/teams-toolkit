@@ -782,7 +782,6 @@
   "_plugins.bot.FailedToGetAlreadyCreatedBot.comment": " This is to describe API call, no need to translate 'X-Correlation-ID'.",
   "plugins.bot.FailedToProvision": "Unable to provision %s.",
   "plugins.bot.FailedToUpdateConfigs": "Unable to update configs for %s",
-  "plugins.bot.FailedDeployZipFile": "Unable to deploy zip file.",
   "plugins.bot.FailedCheckDeployStatus": "Unable to check deployment status.",
   "plugins.bot.BotRegistrationNotFoundWith": "Bot registration was not found with botId %s. Click 'Get Help' button to learn more about how to check bot registrations.",
   "plugins.bot.FailedUpdateMessageEndpoint": "Unable to update message endpoint with %s.",
@@ -914,7 +913,6 @@
   "driver.deploy.error.restartWebAppError": "Unable to restart web app.\nPlease try to restart the web app manually if the app doesn't work properly.",
   "driver.deploy.UploadToStorageRemoteError": "Unable to upload local path %s to Azure Storage Account due to remote service error.",
   "driver.deploy.ClearStorageRemoteError": "Unable to clear Azure Storage Account due to remote service error.",
-  "driver.deploy.error.deployToAzureRemoteFailed": "Remote service error, upload failed.",
   "driver.deploy.notice.deployAcceleration": "Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:",
   "driver.deploy.notice.deployDryRunComplete": "Deployment preparations are completed. You can find the package in `%s`",
   "driver.deploy.azureAppServiceDeploySummary": "Project deployed to Azure App Service successfully.",
@@ -1005,12 +1003,15 @@
   "error.m365.M365TenantIdNotFoundInTokenError": "Unable to obtain Microsoft 365 tenant ID in token JSON object. Ensure that your account is authorized to access the tenant and that the token JSON object is valid.",
   "error.m365.M365TenantIdNotMatchError": "Authentication failed. You are currently signed in to Microsoft 365 tenant '%s', which is different from the one specified in the .env file (TEAMS_APP_TENANT_ID='%s'). To resolve this issue and switch to your current signed-in tenant, please remove the values of '%s' from the .env file and try again.",
   "error.arm.CompileBicepError": "Unable to compile Bicep files located in path '%s' to JSON ARM templates. The error message returned was: %s. Check the Bicep files for any syntax or configuration errors and try again.",
-  "error.arm.DeployArmError.Notification": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s'. Refer to the [output channel](command:fx-extension.showOutputChannel) for more detailed error information and try again.",
+  "error.arm.DeployArmError.Notification": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s'. Refer to the [output channel](command:fx-extension.showOutputChannel) for more details and try again.",
   "error.arm.DeployArmError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s",
   "error.arm.GetArmDeploymentError": "The ARM templates for deployment name: '%s' could not be deployed in resource group '%s' for reason: %s. \nUnable to get detailed error message due to: %s. \nRefer to the resource group %s in portal for deployment error.",
   "error.arm.ConvertArmOutputError": "Unable to convert ARM deployment result to action output, there is a duplicated key '%s' in ARM deployment result.",
   "error.deploy.DeployEmptyFolderError": "Unable to locate any files in the distribution folder: '%s'. Please ensure that the folder is not empty and that all necessary files have been included.",
   "error.deploy.CheckDeploymentStatusTimeoutError": "Unable to check deployment status because the process timed out. Check your internet connection and try again. If the issue persists, please review the deployment logs (Deployment -> Deployment center -> Logs) in Azure portal to identify any issues that may have occurred.",
+  "error.deploy.CheckDeploymentStatusError": "Unable to check deployment status due to err. Check your internet connection and try again. If the issue persists, please review the deployment logs (Deployment -> Deployment center -> Logs) in Azure portal to identify any issues that may have occurred.",
   "error.deploy.GetPublishingCredentialsError.Notification": "Unable to obtain publishing credentials of app '%s' in resource group '%s'. Refer to the [output channel](command:fx-extension.showOutputChannel) for more details and try again.",
-  "error.deploy.GetPublishingCredentialsError": "Unable to obtain publishing credentials of app '%s' in resource group '%s' for reason:\n %s.\n Suggestions:\n 1. Verify that the app name and resource group name are spelled correctly and are valid. \n 2. Verify that your Azure account has the necessary permissions to access the API. You may need to elevate your role or request additional permissions from an administrator. \n 3. If the error message includes a specific reason, such as an authentication failure or a network issue, investigate that issue specifically to resolve the error and try again. \n 4. You can test the API in this page: '%s'"
+  "error.deploy.GetPublishingCredentialsError": "Unable to obtain publishing credentials of app '%s' in resource group '%s' for reason:\n %s.\n Suggestions:\n 1. Verify that the app name and resource group name are spelled correctly and are valid. \n 2. Verify that your Azure account has the necessary permissions to access the API. You may need to elevate your role or request additional permissions from an administrator. \n 3. If the error message includes a specific reason, such as an authentication failure or a network issue, investigate that issue specifically to resolve the error and try again. \n 4. You can test the API in this page: '%s'",
+  "error.deploy.DeployZipPackageError.Notification": "Unable to deploy zip package to endpoint: '%s'. Refer to the [output channel](command:fx-extension.showOutputChannel) for more details and try again.",
+  "error.deploy.DeployZipPackageError": "Unable to deploy zip package to endpoint '%s' in Azure due to error %s. \nSuggestions:\n 1. Verify that your Azure account has the necessary permissions to access the API. \n 2. Verify that the endpoint is properly configured in Azure and that the required resources have been provisioned. \n 3. Ensure that the zip package is valid and free of errors. \n 4. If the error message specifies a specific reason, such as an authentication failure or a network issue, troubleshoot that problem to fix the error and try again. \n 5. If the error still persists, you can attempt to deploy the package manually following the guidelines in this link: '%s'"
 }

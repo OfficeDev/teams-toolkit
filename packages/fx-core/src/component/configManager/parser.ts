@@ -109,26 +109,23 @@ export class YamlParser implements IYamlParser {
     validateSchema?: boolean
   ): Promise<Result<RawProjectModel, FxError>> {
     try {
+      globalVars.ymlFilePath = path;
       const str = await fs.readFile(path, "utf8");
       const content = load(str);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
-        return err(new InvalidYamlSchemaError());
+        return err(new InvalidYamlSchemaError(path));
       }
-
       const value = content as unknown as Record<string, unknown>;
-
       if (validateSchema) {
         const valid = validator(value);
         if (!valid) {
-          return err(new InvalidYamlSchemaError());
+          return err(new InvalidYamlSchemaError(path));
         }
       }
-
-      globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {
-      return err(new InvalidYamlSchemaError());
+      return err(new InvalidYamlSchemaError(path));
     }
   }
 }

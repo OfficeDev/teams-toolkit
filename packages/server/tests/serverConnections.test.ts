@@ -183,7 +183,7 @@ describe("serverConnections", () => {
   it("buildArtifactsRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
-    sandbox.replace(connection["core"], "buildArtifacts", fake);
+    sandbox.replace(connection["core"], "executeUserTask", fake);
     const inputs = {
       platform: "vs",
     };

@@ -4,10 +4,11 @@
 import { assembleError, err, FxError, LogProvider, ok, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import os from "os";
-import { exec } from "child_process";
+import { exec, ExecException } from "child_process";
 import { DriverContext } from "../driver/interface/commonArgs";
 import fs from "fs-extra";
 import { DotenvOutput } from "../utils/envUtil";
+import { ScriptExecutionError, ScriptTimeoutError } from "../../error/script";
 
 export function convertToLangKey(programmingLanguage: string): string {
   switch (programmingLanguage) {
@@ -109,12 +110,9 @@ export async function executeCommand(
       },
       async (error, stdout, stderr) => {
         if (error) {
-          await logProvider.error(
-            `Failed to run command: "${maskSecretValues(command)}" on path: "${workingDir}".`
-          );
-          resolve(err(assembleError(error)));
+          resolve(err(convertScriptErrorToFxError(error, resolve, run)));
         } else {
-          // parse '::set-output' patterns
+          // handle '::set-output' or '::set-teamsfx-env' pattern
           const outputString = outputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
           resolve(ok([outputString, outputObject]));
@@ -139,14 +137,25 @@ export async function executeCommand(
   });
 }
 
+export function convertScriptErrorToFxError(error: ExecException, resolve: any, run: string) {
+  if (error.killed) {
+    return new ScriptTimeoutError(run);
+  } else {
+    return new ScriptExecutionError(error.message);
+  }
+}
+
+const SET_ENV_CMD1 = "::set-output ";
+const SET_ENV_CMD2 = "::set-teamsfx-env ";
+
 function parseSetOutputCommand(stdout: string): DotenvOutput {
   const lines = stdout.toString().replace(/\r\n?/gm, "\n").split(/\r?\n/);
   const output: DotenvOutput = {};
   for (const line of lines) {
-    if (line.startsWith("::set-output ") || line.startsWith("set-teamsfx-env ")) {
-      const str = line.startsWith("::set-output ")
-        ? line.substring(12).trim()
-        : line.substring(15).trim();
+    if (line.startsWith(SET_ENV_CMD1) || line.startsWith(SET_ENV_CMD2)) {
+      const str = line.startsWith(SET_ENV_CMD1)
+        ? line.substring(SET_ENV_CMD1.length).trim()
+        : line.substring(SET_ENV_CMD2.length).trim();
       const arr = str.split("=");
       if (arr.length === 2) {
         const key = arr[0].trim();

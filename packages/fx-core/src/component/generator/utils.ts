@@ -282,7 +282,7 @@ export async function downloadDirectory(
   await limitConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }
 
-async function limitConcurrency(data: any[], callback: any, limit: number) {
+async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any, limit: number) {
   const processing: any[] = [];
   let i = 0;
   while (i < limit && i < data.length) {

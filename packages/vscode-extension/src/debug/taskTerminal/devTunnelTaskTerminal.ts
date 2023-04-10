@@ -16,10 +16,16 @@ import {
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
+import { VS_CODE_UI } from "../../extension";
 import { tools } from "../../handlers";
-import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { ExtTelemetry } from "../../telemetry/extTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/extTelemetryEvents";
 import { devTunnelDisplayMessages } from "../constants";
-import { maskValue } from "../localTelemetryReporter";
+import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,
@@ -28,7 +34,6 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
-import { VS_CODE_UI } from "../../extension";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
@@ -175,6 +180,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       if (teamsToolkitTunnels.length === 0) {
         return;
       }
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotificationStart, {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+      });
       VsCodeLogInstance.outputChannel.show();
       VsCodeLogInstance.info(devTunnelDisplayMessages.devTunnelListMessage());
       const tableHeader =
@@ -203,13 +212,26 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           result.isOk() &&
           result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete()
         ) {
-          for (const tunnel of teamsToolkitTunnels) {
-            await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
-            VsCodeLogInstance.info(
-              devTunnelDisplayMessages.deleteDevTunnelMessage(
-                `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
-              )
-            );
+          try {
+            for (const tunnel of teamsToolkitTunnels) {
+              await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
+              VsCodeLogInstance.info(
+                devTunnelDisplayMessages.deleteDevTunnelMessage(
+                  `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
+                )
+              );
+            }
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
+              [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+              [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+            });
+          } catch {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
+              [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+              [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+              [TelemetryProperty.Success]: TelemetrySuccess.No,
+            });
           }
         } else {
           return undefined;

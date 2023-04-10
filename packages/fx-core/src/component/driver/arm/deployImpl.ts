@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
@@ -111,10 +114,6 @@ export class ArmDeployImpl {
       deploymentName: templateArg.deploymentName,
     };
     try {
-      const progressBar = await this.context.createProgressBar(
-        `Deploy arm: ${templateArg.deploymentName}`,
-        1
-      );
       const parameters = await this.getDeployParameters(templateArg.parameters);
       const template = await this.getDeployTemplate(templateArg.path);
       const deploymentParameters: Deployment = {
@@ -125,7 +124,6 @@ export class ArmDeployImpl {
         },
       };
       const res = await this.executeDeployment(templateArg, deploymentParameters, deployCtx);
-      progressBar?.end(res.isOk() ? true : false);
       return res;
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) return err(error);

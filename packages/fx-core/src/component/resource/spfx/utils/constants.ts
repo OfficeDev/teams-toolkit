@@ -34,6 +34,8 @@ export class Constants {
   public static readonly YeomanPackageName = "yo";
   public static readonly DEFAULT_WEBPART_NAME = "helloworld";
   public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
+  public static readonly DevProgramLink =
+    "https://developer.microsoft.com/en-us/microsoft-365/dev-program";
 }
 
 export class PlaceHolders {

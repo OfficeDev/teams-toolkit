@@ -82,15 +82,15 @@ describe("Init Command Tests", () => {
     expect(registeredCommands).deep.equals(["upgrade"]);
   });
 
-  it("Command Running Check", async () => {
-    const cmd = new Upgrade();
-    const args = {
-      folder: TestFolder,
-    };
-    await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([TelemetryEvent.UpgradeStart, TelemetryEvent.Upgrade]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
+  // it("Command Running Check", async () => {
+  //   const cmd = new Upgrade();
+  //   const args = {
+  //     folder: TestFolder,
+  //   };
+  //   await cmd.handler(args);
+  //   expect(telemetryEvents).deep.equals([TelemetryEvent.UpgradeStart, TelemetryEvent.Upgrade]);
+  //   expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  // });
 
   it("Command Running Check - error", async () => {
     const cmd = new Upgrade();

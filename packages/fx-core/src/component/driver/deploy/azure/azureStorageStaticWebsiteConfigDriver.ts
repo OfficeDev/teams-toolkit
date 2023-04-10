@@ -46,15 +46,8 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const progressBar = await context.ui?.createProgressBar(
-      ProgressMessages.configureAzureStorageEnableStaticWebsite,
-      2
-    );
-    return wrapRun(
-      () => this.config(args, context, progressBar),
-      AzureStorageStaticWebsiteConfigDriver.cleanup.bind(progressBar),
-      context.logProvider
-    );
+    context.progressBar?.next(ProgressMessages.configureAzureStorageEnableStaticWebsite);
+    return wrapRun(() => this.config(args, context), undefined, context.logProvider);
   }
 
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
@@ -67,16 +60,9 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
    * enable static website for azure storage account
    * @param args Azure Storage resourceId, index page and error page
    * @param context log provider, progress handler, telemetry reporter
-   * @param progressBar progress handler
    */
-  async config(
-    args: unknown,
-    context: DriverContext,
-    progressBar?: IProgressHandler
-  ): Promise<Map<string, string>> {
+  async config(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const logger = context.logProvider;
-    await progressBar?.start();
-    await progressBar?.next(ProgressMessages.checkAzureStorageEnableStaticWebsite);
     const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(
       args,
       AzureStorageStaticWebsiteConfigDriver.HELP_LINK
@@ -95,12 +81,9 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       await logger.debug(
         `Static website feature is already enabled for Azure Storage account ${input.storageResourceId}.`
       );
-      await progressBar?.next(ProgressMessages.azureStorageStaticWebsiteAlreadyEnabled);
-      await progressBar?.end(true);
       return AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE;
     }
 
-    await progressBar?.next(ProgressMessages.enableAzureStorageStaticWebsite);
     const properties = {
       staticWebsite: {
         indexDocument: input.indexPage ?? DeployConstant.DEFAULT_INDEX_DOCUMENT,
@@ -114,7 +97,6 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       (e) => DeployExternalApiCallError.enableContainerStaticWebsiteRemoteError(e),
       (e) => DeployExternalApiCallError.enableContainerStaticWebsiteError(e)
     );
-    await progressBar?.end(true);
     return Promise.resolve(AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE);
   }
 
@@ -131,13 +113,5 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       (e) => DeployExternalApiCallError.checkContainerStaticWebsiteRemoteError(e),
       (e) => DeployExternalApiCallError.checkContainerStaticWebsiteError(e)
     );
-  }
-
-  /**
-   * call when error happens
-   * do some resource clean up
-   */
-  static async cleanup(progressBar?: IProgressHandler): Promise<void> {
-    await progressBar?.end(false);
   }
 }

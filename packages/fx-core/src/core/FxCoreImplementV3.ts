@@ -443,8 +443,7 @@ export class FxCoreV3Implement {
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
       let isSupport: VersionState;
-      // As projectVersionCheck is a v3 interface, v3 not enabled case is an exception and only called by vs platform
-      if (!isV3Enabled() && inputs.platform === Platform.VS) {
+      if (!isV3Enabled()) {
         if (versionInfo.source === VersionSource.projectSettings) {
           isSupport = VersionState.compatible;
         } else {
@@ -616,10 +615,10 @@ export class FxCoreV3Implement {
       manifestPath: teamsAppManifestFilePath,
       outputZipPath:
         inputs[CoreQuestionNames.OutputZipPathParamName] ??
-        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
       outputJsonPath:
         inputs[CoreQuestionNames.OutputManifestParamName] ??
-        `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
     };
     const result = await driver.run(args, context);
     if (context.platform === Platform.VSCode) {

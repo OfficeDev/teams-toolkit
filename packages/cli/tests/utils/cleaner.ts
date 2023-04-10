@@ -4,7 +4,7 @@
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { AadManager } from "../commonlib";
-import { deleteResourceGroupByName } from "../e2e/commonUtils";
+import { AzureHelper } from "./azureHelper";
 import {
   AADAppIdEnvNames,
   BotIdEnvName,
@@ -23,13 +23,16 @@ export class Cleaner {
       return Promise.resolve(true);
     }
     const envs = await ProjectEnvReader.readAllEnvFiles(projectPath);
+    const azureHelper = AzureHelper.init();
     const aadManager = await AadManager.init(m365TokenProvider);
     const teamsAppHelper = await TeamsAppHelper.init(m365TokenProvider);
     const m365TitleHelper = await M365TitleHelper.init(undefined, undefined, m365TokenProvider);
     return envs.map(async (env) =>
       Promise.all([
         /// clean up resource group
-        deleteResourceGroupByName(env[ResourceGroupEnvName]),
+        azureHelper
+          .deleteResourceGroup(env[ResourceGroupEnvName])
+          .then((result) => console.log(result)),
         /// clean up aad apps
         AADAppIdEnvNames.map((name) => aadManager.deleteAadAppsByClientId(env[name])),
         /// clean up teams app

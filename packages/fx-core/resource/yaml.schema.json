@@ -42,8 +42,8 @@
           { "$ref": "#/definitions/cliRunDotnetCommand" },
           { "$ref": "#/definitions/cliRunNpxCommand" },
           { "$ref": "#/definitions/azureStorageDeploy" },
-          { "$ref": "#/definitions/azureAppServiceDeploy" },
-          { "$ref": "#/definitions/azureFunctionsDeploy" },
+          { "$ref": "#/definitions/azureAppServiceZipDeploy" },
+          { "$ref": "#/definitions/azureFunctionsZipDeploy" },
           { "$ref": "#/definitions/teamsAppCreate" },
           { "$ref": "#/definitions/teamsAppValidateManifest" },
           { "$ref": "#/definitions/teamsAppValidateAppPackage" },
@@ -519,9 +519,9 @@
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["distributionPath", "resourceId"],
+          "required": ["artifactFolder", "resourceId"],
           "properties": {
-            "distributionPath": {
+            "artifactFolder": {
               "type": "string",
               "description": "Path to the distribution folder that contains the files to deploy."
             },
@@ -531,7 +531,7 @@
             },
             "workingDirectory": {
               "type": "string",
-              "description": "The working directory, deploy program will find ignore file based on this directory, default to './'"
+              "description": "The working directory, deploy program will find ignore file and create upload package file based on this directory, default to './'"
             },
             "ignoreFile": {
               "type": "string",
@@ -541,7 +541,7 @@
         }
       }
     },
-    "azureAppServiceDeploy": {
+    "azureAppServiceZipDeploy": {
       "type": "object",
       "additionalProperties": false,
       "description": "Upload and deploy the project to Azure App Service. Refer to https://aka.ms/teamsfx-actions/azure-app-service-deploy for more details.",
@@ -561,15 +561,15 @@
         "uses": {
           "type": "string",
           "description": "This action will upload and deploy the project to Azure App Service. This action has no output. Refer to https://aka.ms/teamsfx-actions/azure-app-service-deploy for more details.",
-          "const": "azureAppService/deploy"
+          "const": "azureAppService/zipDeploy"
         },
         "with": {
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["distributionPath", "resourceId"],
+          "required": ["artifactFolder", "resourceId"],
           "properties": {
-            "distributionPath": {
+            "artifactFolder": {
               "type": "string",
               "description": "Path to the distribution folder that contains the files to deploy."
             },
@@ -579,17 +579,25 @@
             },
             "workingDirectory": {
               "type": "string",
-              "description": "The working directory, deploy program will find ignore file based on this directory, default to './'"
+              "description": "The working directory, deploy program will find ignore file and create upload package file based on this directory, default to './'"
             },
             "ignoreFile": {
               "type": "string",
               "description": "The path to the ignore file. Any files listed in this file will be ignored during upload. default ignores nothing."
+            },
+            "dryRun": {
+              "type": "boolean",
+              "description": "If true, the action will only package the files to be deployed without actually deploying them. Default to false."
+            },
+            "outputZipFile": {
+              "type": "string",
+              "description": "The path to the packaged zip file. If not specified, the zip file will be saved to the workingDirectory/.deployment/deployment.zip."
             }
           }
         }
       }
     },
-    "azureFunctionsDeploy": {
+    "azureFunctionsZipDeploy": {
       "type": "object",
       "additionalProperties": false,
       "description": "Upload and deploy the project to Azure Functions. Refer to https://aka.ms/teamsfx-actions/azure-functions-deploy for more details.",
@@ -609,15 +617,15 @@
         "uses": {
           "type": "string",
           "description": "This action will upload and deploy the project to Azure Functions. This action has no output. Refer to https://aka.ms/teamsfx-actions/azure-functions-deploy for more details.",
-          "const": "azureFunctions/deploy"
+          "const": "azureFunctions/zipDeploy"
         },
         "with": {
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["distributionPath", "resourceId"],
+          "required": ["artifactFolder", "resourceId"],
           "properties": {
-            "distributionPath": {
+            "artifactFolder": {
               "type": "string",
               "description": "Path to the distribution folder that contains the files to deploy."
             },
@@ -632,6 +640,14 @@
             "ignoreFile": {
               "type": "string",
               "description": "The path to the ignore file. Any files listed in this file will be ignored during upload. default ignores nothing."
+            },
+            "dryRun": {
+              "type": "boolean",
+              "description": "If true, the action will only package the files to be deployed without actually deploying them. Default to false."
+            },
+            "outputZipFile": {
+              "type": "string",
+              "description": "The path to the packaged zip file. If not specified, the zip file will be saved to the workingDirectory/.deployment/deployment.zip."
             }
           }
         }
@@ -1055,7 +1071,19 @@
             "envs": {
               "type": "object",
               "description": "the environment variable(s) to be generated",
-              "additionalProperties": { "type": [ "boolean", "number", "string" ] }
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
             },
             "target": {
               "type": "string",

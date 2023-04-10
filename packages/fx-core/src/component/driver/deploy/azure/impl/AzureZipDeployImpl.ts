@@ -13,16 +13,16 @@ import {
 } from "../../../interface/buildAndDeployArgs";
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
-import { IProgressHandler, LogProvider, UserInteraction } from "@microsoft/teamsfx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 import { getLocalizedMessage } from "../../../../messages";
-import { DeployConstant, ProgressBarConstant } from "../../../../constant/deployConstant";
+import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
-import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { HttpStatusCode } from "../../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
+import { DeployZipPackageError } from "../../../../../error/deploy";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -31,8 +31,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   protected helpLink;
   protected summaries: () => string[];
   protected summaryPrepare: () => string[];
-  protected progressHandler?: AsyncIterableIterator<void>;
-  protected progressNames: (() => string)[];
 
   constructor(
     args: unknown,
@@ -49,8 +47,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       summaries.map((summary) => getLocalizedString(summary, this.distDirectory));
     this.summaryPrepare = () =>
       summaryPrepare.map((summary) => getLocalizedString(summary, this.zipFilePath));
-    this.progressNames = ProgressBarConstant.ZIP_DEPLOY_IN_AZURE_PROGRESS;
-    this.progressPrepare = ProgressBarConstant.DRY_RUN_ZIP_DEPLOY_IN_AZURE_PROGRESS;
   }
 
   async azureDeploy(
@@ -59,7 +55,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     azureCredential: TokenCredential
   ): Promise<void> {
     const cost = await this.zipDeploy(args, azureResource, azureCredential);
-    await this.progressHandler?.next();
     await this.restartFunctionApp(azureResource);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
@@ -72,7 +67,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   }
 
   protected prepare: (args: DeployStepArgs) => Promise<void> = async (args: DeployStepArgs) => {
-    await this.progressHandler?.next();
     await this.packageToZip(args, this.context);
   };
 
@@ -89,16 +83,12 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<number> {
-    await this.progressHandler?.next();
     const zipBuffer = await this.packageToZip(args, this.context);
-    await this.progressHandler?.next();
     await this.context.logProvider.debug("Start to get Azure account info for deploy");
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
     await this.context.logProvider.debug("Get Azure account info for deploy complete");
-    await this.progressHandler?.next();
     const endpoint = this.getZipDeployEndpoint(azureResource.instanceId);
     await this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
-    await this.progressHandler?.next();
     const startTime = Date.now();
     const location = await this.zipDeployPackage(
       endpoint,
@@ -107,7 +97,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       this.context.logProvider
     );
     await this.context.logProvider.debug("Upload code to Azure complete");
-    await this.progressHandler?.next();
     await this.context.logProvider.debug("Start to check Azure deploy status");
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
@@ -163,7 +152,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async zipDeployPackage(
+  async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
@@ -193,9 +182,13 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                   e.response?.data
                 )}`
               );
-              throw DeployExternalApiCallError.zipDeployWithRemoteError(
-                e,
-                undefined,
+              throw new DeployZipPackageError(
+                zipDeployEndpoint,
+                new Error(
+                  `remote server error with status code: ${
+                    e.response?.status ?? "NA"
+                  }, message: ${JSON.stringify(e.response?.data)}`
+                ),
                 this.helpLink
               );
             }
@@ -206,16 +199,20 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw DeployExternalApiCallError.zipDeployError(
-              e,
-              e.response?.status ?? -1,
+            throw new DeployZipPackageError(
+              zipDeployEndpoint,
+              new Error(
+                `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+                  e.response?.data
+                )}`
+              ),
               this.helpLink
             );
           }
         } else {
           // if the error is not axios error, throw
           await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-          throw DeployExternalApiCallError.zipDeployError(e, -1, this.helpLink);
+          throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
     }
@@ -224,7 +221,11 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }
-      throw DeployExternalApiCallError.zipDeployError(res, res.status, this.helpLink);
+      throw new DeployZipPackageError(
+        zipDeployEndpoint,
+        new Error(`status code: ${res?.status ?? "NA"}`),
+        this.helpLink
+      );
     }
 
     return res.headers.location;
@@ -239,10 +240,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     return `https://${siteName}.scm.azurewebsites.net/api/zipdeploy?isAsync=true`;
   }
 
-  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
-    return ui?.createProgressBar(
-      `Deploying ${this.workingDirectory ?? ""} to ${this.serviceName}`,
-      this.progressNames.length
-    );
+  updateProgressbar() {
+    this.progressBar?.next(`Deploying ${this.workingDirectory ?? ""} to ${this.serviceName}`);
   }
 }

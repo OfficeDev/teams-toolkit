@@ -9,7 +9,7 @@ import {
   DeployResult,
 } from "../../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../../utils/common";
-import { DeployExternalApiCallError, DeployTimeoutError } from "../../../../error/deployError";
+import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployImpl } from "./baseDeployImpl";
 import { Base64 } from "js-base64";
@@ -26,9 +26,12 @@ import { AzureResourceInfo } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
-import { progressBarHelper } from "./progressBarHelper";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
+import {
+  CheckDeploymentStatusTimeoutError,
+  GetPublishingCredentialsError,
+} from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -65,19 +68,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     const inputs = { ignoreFile: args.ignoreFile };
 
     if (args.dryRun && this.prepare) {
-      this.progressNames = this.progressPrepare;
-    }
-    this.progressBar = this.createProgressBar(this.ui);
-    this.progressHandler = progressBarHelper(this.progressNames, this.progressBar);
-    await this.progressBar?.start();
-
-    if (args.dryRun && this.prepare) {
       await this.prepare(inputs);
-      await this.progressBar?.end(true);
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
-    await this.progressBar?.end(true);
     return true;
   }
 
@@ -110,7 +104,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async checkDeployStatus(
+  public async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
     logger?: LogProvider
@@ -150,16 +144,15 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       }
     }
 
-    throw DeployTimeoutError.checkDeployStatusTimeout(this.helpLink);
+    throw new CheckDeploymentStatusTimeoutError(this.helpLink);
   }
 
   /**
    * create azure deploy config for Azure Function and Azure App service
    * @param azureResource azure resource info
    * @param azureCredential user azure credential
-   * @protected
    */
-  protected async createAzureDeployConfig(
+  async createAzureDeployConfig(
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
@@ -173,8 +166,20 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           azureResource.resourceGroupName,
           azureResource.instanceId
         ),
-      (e) => DeployExternalApiCallError.listPublishingCredentialsRemoteError(e, this.helpLink),
-      (e) => DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink)
+      (e) =>
+        new GetPublishingCredentialsError(
+          azureResource.instanceId,
+          azureResource.resourceGroupName,
+          e as Error,
+          this.helpLink
+        ),
+      (e) =>
+        new GetPublishingCredentialsError(
+          azureResource.instanceId,
+          azureResource.resourceGroupName,
+          e as Error,
+          this.helpLink
+        )
     );
     const publishingUserName = listResponse.publishingUserName ?? "";
     const publishingPassword = listResponse.publishingPassword ?? "";

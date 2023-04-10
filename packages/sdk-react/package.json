@@ -28,6 +28,7 @@
     "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
+    "@fluentui/react": "^8.106.1",
     "@fluentui/react-components": "^9.15.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/eslint-plugin-teamsfx": "^0.0.1",

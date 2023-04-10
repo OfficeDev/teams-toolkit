@@ -12,6 +12,8 @@ import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import Add from "../../../src/cmds/add";
 import { expect } from "../utils";
 import mockedEnv from "mocked-env";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("Add api-connector Command Tests", () => {
   const sandbox = sinon.createSandbox();
@@ -58,6 +60,14 @@ describe("Add api-connector Command Tests", () => {
       .callsFake((eventName: string, error: FxError) => {
         telemetryEvents.push(eventName);
       });
+    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+      ok<VersionCheckRes, FxError>({
+        isSupport: VersionState.compatible,
+        versionSource: "",
+        currentVersion: "1.0.0",
+        trackingId: "",
+      })
+    );
   });
 
   afterEach(() => {

@@ -1,9 +1,4 @@
-import {
-  SystemError,
-  SystemErrorOptions,
-  UserError,
-  UserErrorOptions,
-} from "@microsoft/teamsfx-api";
+import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 /**

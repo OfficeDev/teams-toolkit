@@ -79,20 +79,20 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     return;
   }
 
-  TOOLS?.logProvider.debug(`[core] success to get questions for ${method}`);
+  // TOOLS?.logProvider.debug(`[core] success to get questions for ${method}`);
 
   const node = getQuestionRes.value;
   if (node) {
     const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (res.isErr()) {
-      TOOLS?.logProvider.debug(`[core] failed to run question model for ${method}`);
+      // TOOLS?.logProvider.debug(`[core] failed to run question model for ${method}`);
       ctx.result = err(res.error);
       return;
     }
-    const desensitized = desensitize(node, inputs);
-    TOOLS?.logProvider.info(
-      `[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`
-    );
+    // const desensitized = desensitize(node, inputs);
+    // TOOLS?.logProvider.info(
+    //   `[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`
+    // );
   }
   await next();
 };

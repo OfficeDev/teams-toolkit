@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, LogProvider, ok, Result } from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, LogProvider, ok, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import os from "os";
-import { exec } from "child_process";
+import { exec, ExecException } from "child_process";
 import { DriverContext } from "../driver/interface/commonArgs";
 import fs from "fs-extra";
 import { DotenvOutput } from "../utils/envUtil";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../error/script";
+
 export function convertToLangKey(programmingLanguage: string): string {
   switch (programmingLanguage) {
     case "javascript": {
@@ -109,12 +110,9 @@ export async function executeCommand(
       },
       async (error, stdout, stderr) => {
         if (error) {
-          if (error.killed) {
-            resolve(err(new ScriptTimeoutError(run)));
-          } else {
-            resolve(err(new ScriptExecutionError(error.message)));
-          }
+          resolve(err(convertScriptErrorToFxError(error, resolve, run)));
         } else {
+          // handle '::set-output' or '::set-teamsfx-env' pattern
           const outputString = outputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
           resolve(ok([outputString, outputObject]));
@@ -139,8 +137,17 @@ export async function executeCommand(
   });
 }
 
+export function convertScriptErrorToFxError(error: ExecException, resolve: any, run: string) {
+  if (error.killed) {
+    return new ScriptTimeoutError(run);
+  } else {
+    return new ScriptExecutionError(error.message);
+  }
+}
+
 const SET_ENV_CMD1 = "::set-output ";
 const SET_ENV_CMD2 = "::set-teamsfx-env ";
+
 function parseSetOutputCommand(stdout: string): DotenvOutput {
   const lines = stdout.toString().replace(/\r\n?/gm, "\n").split(/\r?\n/);
   const output: DotenvOutput = {};

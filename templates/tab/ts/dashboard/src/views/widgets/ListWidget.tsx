@@ -1,28 +1,26 @@
+import "../styles/ListWidget.css";
+
 import { Button, Text } from "@fluentui/react-components";
 import { List28Filled, MoreHorizontal32Regular } from "@fluentui/react-icons";
 
 import { ListModel } from "../../models/listModel";
 import { getListData } from "../../services/listService";
 import { Widget } from "../lib/Widget";
-import { headerContentStyle, headerTextStyle } from "../lib/Widget.styles";
-import {
-  bodyContentStyle,
-  dividerStyle,
-  itemLayoutStyle,
-  itemSubtitleStyle,
-  itemTitleStyle,
-} from "../styles/ListWidget.styles";
+
+interface IListWidgetState {
+  data: ListModel[];
+}
 
 /**
  * Extends the Widget class to implement a list widget.
  */
-export class ListWidget extends Widget<ListModel[]> {
+export default class ListWidget extends Widget<any, IListWidgetState> {
   /**
    * Get data required by the widget, you can get data from a api call or static data stored in a file.
    * @returns The data required by the widget to render.
    */
-  async getData(): Promise<ListModel[]> {
-    return getListData();
+  async getData(): Promise<IListWidgetState> {
+    return { data: getListData() };
   }
 
   /**
@@ -31,9 +29,9 @@ export class ListWidget extends Widget<ListModel[]> {
    */
   headerContent(): JSX.Element | undefined {
     return (
-      <div style={headerContentStyle()}>
+      <div>
         <List28Filled />
-        <Text style={headerTextStyle()}>Your List</Text>
+        <Text>Your List</Text>
         <Button icon={<MoreHorizontal32Regular />} appearance="transparent" />
       </div>
     );
@@ -45,21 +43,16 @@ export class ListWidget extends Widget<ListModel[]> {
    */
   bodyContent(): JSX.Element | undefined {
     return (
-      <div style={bodyContentStyle()}>
-        {this.state.data &&
-          this.state.data.map((t: ListModel) => {
-            return (
-              <div key={`${t.id}-div`} style={itemLayoutStyle()}>
-                <div key={`${t.id}-divider`} style={dividerStyle()} />
-                <Text key={`${t.id}-title`} style={itemTitleStyle()}>
-                  {t.title}
-                </Text>
-                <Text key={`${t.id}-content`} style={itemSubtitleStyle()}>
-                  {t.content}
-                </Text>
-              </div>
-            );
-          })}
+      <div className="list-body">
+        {this.state.data?.map((t: ListModel) => {
+          return (
+            <div key={`${t.id}-div`}>
+              <div className="divider" />
+              <Text className="title">{t.title}</Text>
+              <Text className="content">{t.content}</Text>
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -72,7 +65,6 @@ export class ListWidget extends Widget<ListModel[]> {
     return (
       <Button
         appearance="primary"
-        size="medium"
         onClick={() => {}} // navigate to detailed page
       >
         View Details

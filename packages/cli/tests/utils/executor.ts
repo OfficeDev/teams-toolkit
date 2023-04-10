@@ -74,7 +74,12 @@ export class Executor {
     return this.execute(command, workspace);
   }
 
-  private static async executeCmd(
+  static async upgrade(workspace: string) {
+    const command = `teamsfx upgade --force`;
+    return this.execute(command, workspace);
+  }
+
+  static async executeCmd(
     workspace: string,
     cmd: string,
     env = "dev",
@@ -84,7 +89,7 @@ export class Executor {
     return this.execute(command, workspace, processEnv);
   }
 
-  static async provision(workspace: string, env: string) {
+  static async provision(workspace: string, env = "dev") {
     return this.executeCmd(workspace, "provision", env);
   }
 
@@ -130,6 +135,10 @@ export class Executor {
     env = "dev"
   ) {
     return this.executeCmd(workspace, "publish", env, processEnv);
+  }
+
+  static async preview(workspace: string, env = "dev") {
+    return this.executeCmd(workspace, "prevew", env);
   }
 
   static async previewWithCustomizedProcessEnv(

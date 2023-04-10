@@ -16,13 +16,13 @@ New features:
 
   > Note: Teams Toolkit for Visual Studio Code takes a new dependency on [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) which will be installed together with Teams Toolkit.
 
-New getting started experience with Github Codespaces:
+New getting started experience with GitHub Codespaces:
 
-Start developing Teams applications instantly by opening Teams Toolkit samples in Github Codespaces. Try these today：
+Start developing Teams applications instantly by opening Teams Toolkit samples in GitHub Codespaces. Try these samples today：
 
-- [Hello world tab app]()
-- [Notification bot]()
-- [NPM search connector]()
+- [Hello World Tab Sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/hello-world-tab-codespaces)
+- [Notification Sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/notification-codespaces)
+- [NPM Search Message Extension Sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/NPM-search-message-extension-codespaces)
 
 SharePoint Framework developer experience update:
 
@@ -34,6 +34,7 @@ SharePoint Framework developer experience update:
 Teams Toolkit generated project file change:
 
 - Updated lifecycles in yml files to only include provision, deploy, and publish.
+- Added an action `script` so you can run any script in `teamsapp.yml` file.
 - Some actions now support a `writeToEnvironmentFile` parameter to define generated environment variable names.
 - `.env.{envName}` files now only contain non-sensitive information and are removed from `.gitignore`.
 - Added `.env.{envName}.user` files to store sensitive information like password and are added to `.gitignore`.
@@ -42,6 +43,7 @@ Teams Toolkit generated project file change:
 Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.0@beta`:
 
 - Updated `teamsfx validate` command to validate your app package against validation rules.
+- Updated `teamsfx new` command to include a new parameter `--spfx-install-latest-package`  to specify whether to use the latest SPFx package or not.
 - Added `teamsfx add SPFxWebPart` command to add multiple web parts.
 
 TeamsFx-React SDK ([`@microsoft/teamsfx-react`](https://www.npmjs.com/package/@microsoft/teamsfx-react)) `v3.0.0@beta`:
@@ -66,7 +68,15 @@ Enhancemens:
 
 - Sample: enabled [app caching](https://learn.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/build-tabs-for-meeting?tabs=desktop%2Cmeeting-chat-view-desktop%2Cmeeting-stage-view-desktop%2Cchannel-meeting-desktop#app-caching) in "My First Meeting App" sample that improves subsequent launch time of the apps that are loaded in the meeting side panel.
 
-- Template: updated tab templates to use Fluent UI V9 and React 18.
+- Template: updated templates and samples to use Fluent UI V9 and React 18.
+
+Bug fixes:
+
+- Fixed an issue where we will only display relevant how-to guide for SPFx project. ([#8083](https://github.com/OfficeDev/TeamsFx/pull/8083))
+- Fixed an issue where the hyperlink is highlighted multiple colors from output channel. ([#8239](https://github.com/OfficeDev/TeamsFx/pull/8239))
+- Fixed an issue where you might see duplicate error messages. ([#8213](https://github.com/OfficeDev/TeamsFx/pull/8213))
+- Fixed an issue where you might see `Upload failed due to an invalid BotId in your manifest` after migrating your project with prerelease version. ([#8127](https://github.com/OfficeDev/TeamsFx/pull/8127))
+- Fixed an issue where `teamsApp/update` action will not create a new Teams app registration when `TEAMS_APP_ID` doesn't exist. ([#8021](https://github.com/OfficeDev/TeamsFx/pull/8021))
 
 ### Mar 23, 2023
 

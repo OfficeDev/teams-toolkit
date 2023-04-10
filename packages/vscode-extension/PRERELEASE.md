@@ -44,7 +44,7 @@ Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@mic
 
 - Updated `teamsfx validate` command to validate your app package against validation rules.
 - Updated `teamsfx new` command to include a new parameter `--spfx-install-latest-package`  to specify whether to use the latest SPFx package or not.
-- Added `teamsfx add SPFxWebPart` command to add multiple web parts.
+- Added `teamsfx add spfx-web-part` command to add multiple web parts.
 
 TeamsFx-React SDK ([`@microsoft/teamsfx-react`](https://www.npmjs.com/package/@microsoft/teamsfx-react)) `v3.0.0@beta`:
 

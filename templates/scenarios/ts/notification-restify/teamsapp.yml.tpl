@@ -37,6 +37,7 @@ provision:
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/validateAppPackage # Validate app package using validation rules
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.

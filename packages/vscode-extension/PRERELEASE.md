@@ -52,7 +52,7 @@ TeamsFx-React SDK ([`@microsoft/teamsfx-react`](https://www.npmjs.com/package/@m
 - Added `BaseWidget` class: A base component that provides basic functionality to create a widget.
 - Added `IWidgetClassNames` Interface: A Interface for defining the class names of widget elements.
 
-Enhancemens:
+Enhancements:
 
 - Updated Teams Toolkit tree view user interface to streamline the development workflow:
 

@@ -1,4 +1,34 @@
-export const chart1Points_7D = [
+export function getTimeRange() {
+  return ["7 days", "30 days", "60 days"];
+}
+
+export function getChart1Points(range) {
+  switch (range) {
+    case "7 days":
+      return chart1Points_7D;
+    case "30 days":
+      return chart1Points_30D;
+    case "60 days":
+      return chart1Points_60D;
+    default:
+      return [];
+  }
+}
+
+export function getChart2Points(range) {
+  switch (range) {
+    case "7 days":
+      return chart2Points_7D;
+    case "30 days":
+      return chart2Points_30D;
+    case "60 days":
+      return chart2Points_60D;
+    default:
+      return [];
+  }
+}
+
+const chart1Points_7D = [
   { x: new Date("2022/01/01"), y: 18000 },
   { x: new Date("2022/01/06"), y: 14000 },
   { x: new Date("2022/01/11"), y: 19000 },
@@ -8,7 +38,7 @@ export const chart1Points_7D = [
   { x: new Date("2022/01/31"), y: 23000 },
 ];
 
-export const chart2Points_7D = [
+const chart2Points_7D = [
   { x: new Date("2022/01/01"), y: 8000 },
   { x: new Date("2022/01/06"), y: 10000 },
   { x: new Date("2022/01/11"), y: 100 },
@@ -18,7 +48,7 @@ export const chart2Points_7D = [
   { x: new Date("2022/01/31"), y: 7200 },
 ];
 
-export const chart1Points_30D = [
+const chart1Points_30D = [
   { x: new Date("2022/01/01"), y: 18000 },
   { x: new Date("2022/01/02"), y: 14000 },
   { x: new Date("2022/01/03"), y: 19000 },
@@ -52,7 +82,7 @@ export const chart1Points_30D = [
   { x: new Date("2022/01/31"), y: 23000 },
 ];
 
-export const chart2Points_30D = [
+const chart2Points_30D = [
   { x: new Date("2022/01/01"), y: 18000 },
   { x: new Date("2022/01/02"), y: 18000 },
   { x: new Date("2022/01/03"), y: 18000 },
@@ -86,7 +116,7 @@ export const chart2Points_30D = [
   { x: new Date("2022/01/31"), y: 15000 },
 ];
 
-export const chart1Points_60D = [
+const chart1Points_60D = [
   { x: new Date("2022/01/01"), y: 18000 },
   { x: new Date("2022/01/02"), y: 14000 },
   { x: new Date("2022/01/03"), y: 19000 },
@@ -148,7 +178,7 @@ export const chart1Points_60D = [
   { x: new Date("2022/02/28"), y: 13000 },
 ];
 
-export const chart2Points_60D = [
+const chart2Points_60D = [
   { x: new Date("2022/01/01"), y: 18000 },
   { x: new Date("2022/01/02"), y: 18000 },
   { x: new Date("2022/01/03"), y: 18000 },

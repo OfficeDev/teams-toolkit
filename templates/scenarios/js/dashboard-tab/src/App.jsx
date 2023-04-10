@@ -1,3 +1,5 @@
+import "./App.css";
+
 import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 // https://fluentsite.z22.web.core.windows.net/quick-start
@@ -11,10 +13,10 @@ import {
 } from "@fluentui/react-components";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
-import SampleDashboard from "./views/dashboards/SampleDashboard";
-import Privacy from "./views/Privacy";
-import TabConfig from "./views/TabConfig";
-import TermsOfUse from "./views/TermsOfUse";
+import SampleDashboard from "./dashboards/SampleDashboard";
+import Privacy from "./Privacy";
+import TabConfig from "./TabConfig";
+import TermsOfUse from "./TermsOfUse";
 import { TeamsFxContext } from "./internal/context";
 
 /**
@@ -29,6 +31,7 @@ export default function App() {
   return (
     <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>
       <FluentProvider
+        id="fluent-provider"
         theme={
           themeString === "dark"
             ? teamsDarkTheme
@@ -43,7 +46,7 @@ export default function App() {
       >
         <Router>
           {loading ? (
-            <Spinner style={{ margin: 100 }} />
+            <Spinner id="spinner" />
           ) : (
             <Routes>
               <Route path="/privacy" element={<Privacy />} />

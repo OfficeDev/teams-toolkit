@@ -58,7 +58,8 @@ deploy:
       devCert:
         trust: true
     writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
-      funcPath: FUNC_PATH
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
 
   - uses: cli/runNpmCommand # Run npm command
     with:

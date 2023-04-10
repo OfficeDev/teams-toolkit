@@ -3,9 +3,14 @@
 
 import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import { TeamsFxTelemetryReporter } from "../../utils/teamsFxTelemetryReporter";
+import {
+  TeamsFxTelemetryConfig,
+  TeamsFxTelemetryReporter,
+} from "../../utils/teamsFxTelemetryReporter";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ExecutionResult } from "../interface/stepDriver";
+import { TelemetryConstants } from "../../constants";
+import { performance } from "perf_hooks";
 
 // Based on fx-core's design that a component should always return FxError instead of throw exception, no error handling is added
 export function addStartAndEndTelemetry(eventName: string, componentName: string): Middleware {
@@ -18,7 +23,9 @@ export function addStartAndEndTelemetry(eventName: string, componentName: string
       });
     }
     telemetryReporter?.sendStartEvent({ eventName });
+    const startTime = performance.now();
     await next();
+    const timeCost = performance.now() - startTime;
 
     let result: Result<Map<string, string>, FxError>;
 
@@ -29,16 +36,16 @@ export function addStartAndEndTelemetry(eventName: string, componentName: string
       result = ctx.result;
     }
 
+    const telemetryConfig: TeamsFxTelemetryConfig = {
+      eventName: eventName,
+      properties: driverContext.telemetryProperties,
+      measurements: { [TelemetryConstants.properties.timeCost]: timeCost },
+    };
+
     if (result.isOk()) {
-      telemetryReporter?.sendEndEvent({
-        eventName: eventName,
-        properties: driverContext.telemetryProperties,
-      });
+      telemetryReporter?.sendEndEvent(telemetryConfig);
     } else {
-      telemetryReporter?.sendEndEvent(
-        { eventName: eventName, properties: driverContext.telemetryProperties },
-        result.error
-      );
+      telemetryReporter?.sendEndEvent(telemetryConfig, result.error);
     }
   };
 }

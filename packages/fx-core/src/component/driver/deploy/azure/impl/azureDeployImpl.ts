@@ -29,7 +29,9 @@ import { PrerequisiteError } from "../../../../error/componentError";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import {
+  CheckDeployStatusError,
   CheckDeploymentStatusTimeoutError,
+  DeployRemoteStartError,
   GetPublishingCredentialsError,
 } from "../../../../../error/deploy";
 
@@ -120,8 +122,17 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
               e.response?.status ?? "NA"
             }, message: ${JSON.stringify(e.response?.data)}`
           );
+          throw new CheckDeployStatusError(
+            location,
+            new Error(
+              `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+                e.response?.data
+              )}`
+            ),
+            this.helpLink
+          );
         }
-        throw DeployExternalApiCallError.deployStatusError(e, undefined, this.helpLink);
+        throw new CheckDeployStatusError(location, e as Error, this.helpLink);
       }
 
       if (res) {
@@ -132,14 +143,18 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
             await logger?.error(
               `Deployment is failed with error message: ${JSON.stringify(res.data)}`
             );
-            throw DeployExternalApiCallError.deployRemoteStatusError(res);
+            throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
           }
           return res.data;
         } else {
           if (res.status) {
             await logger?.error(`Deployment is failed with error code: ${res.status}.`);
           }
-          throw DeployExternalApiCallError.deployStatusError(res, res.status, this.helpLink);
+          throw new CheckDeployStatusError(
+            location,
+            new Error(`status code: ${res.status ?? "NA"}`),
+            this.helpLink
+          );
         }
       }
     }

@@ -18,6 +18,9 @@ import {
 } from "../../../src/component/middleware/runWithCatchError";
 import { TelemetryMW, ActionTelemetryImplement } from "../../../src/component/middleware/telemetry";
 import { ActionContext } from "../../../src/component/middleware/types";
+import { StepDriver } from "../../../src/component/driver/interface/stepDriver";
+import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
+import { addStartAndEndTelemetry } from "../../../src/component/driver/middleware/addStartAndEndTelemetry";
 
 export class MockAction {
   static readonly source = "mocker-action";
@@ -74,3 +77,10 @@ export const mockProgressHandler: IProgressHandler = {
   next: async (detail?: string): Promise<void> => {},
   end: async (): Promise<void> => {},
 };
+
+export class MockDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry("mock", "mock")])
+  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
+    return ok(new Map<string, string>());
+  }
+}

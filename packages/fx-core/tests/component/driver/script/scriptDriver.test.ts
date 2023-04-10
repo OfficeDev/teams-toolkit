@@ -15,6 +15,7 @@ import * as fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as child_process from "child_process";
 import * as utils from "../../../../src/component/code/utils";
+import { ScriptTimeoutError } from "../../../../src/error/script";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -158,21 +159,24 @@ describe("Script Driver test", () => {
     );
     assert.isTrue(res.isErr());
   });
-  // it("execute command ui.runCommand()", async () => {
-  //   const args = {
-  //     workingDirectory: "./",
-  //     shell: "cmd",
-  //     run: "echo 111",
-  //     redirectTo: "./log",
-  //   };
-  //   const context = {
-  //     azureAccountProvider: new TestAzureAccountProvider(),
-  //     logProvider: new TestLogProvider(),
-  //     ui: new MockUserInteraction(),
-  //     projectPath: "./",
-  //   } as DriverContext;
-  //   sandbox.stub(context.ui!, "runCommand").resolves(ok(""));
-  //   const res = await scriptDriver.execute(args, context);
-  //   assert.isTrue(res.result.isOk());
-  // });
+  it("execute command ScriptTimeoutError", async () => {
+    const args = {
+      workingDirectory: "./",
+      shell: "cmd",
+      timeout: 1,
+      run: "ping www.abc.com",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      projectPath: "./",
+    } as DriverContext;
+    sandbox.stub(context.ui!, "runCommand").resolves(ok(""));
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isErr());
+    if (res.result.isErr()) {
+      assert.isTrue(res.result.error instanceof ScriptTimeoutError);
+    }
+  });
 });

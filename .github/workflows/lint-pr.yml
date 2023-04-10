@@ -180,7 +180,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name ==  'pull_request' && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'prerelease') && github.event.action != 'edited' }}
+    # if: ${{ github.event_name ==  'pull_request' && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'prerelease') && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
@@ -189,16 +189,27 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Add Pull Request Reviewer
-        uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
-        with: 
-          reviewers: "MuyangAmigo"
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Add Pull Request Reviewer
+      #   uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
+      #   with: 
+      #     reviewers: "MuyangAmigo"
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Query Git branch name
+        uses: petehouston/github-actions-query-branch-name@v1.2
+        id: queryBranch
+      - name: Get Git branch name only on pull request
+        if: github.event_name == 'pull_request'
+        run: |-
+          echo "GIT_BRANCH_NAME = $GIT_BRANCH_NAME"
+          echo "GIT_BRANCH_NAME_BASE = $GIT_BRANCH_NAME_BASE"
+          echo "Branch name: ${{ steps.queryBranch.outputs.git_branch_name }}"
+          echo "Branch name: ${{ steps.queryBranch.outputs.git_branch_name_head }}"
+          echo "Branch name: ${{ steps.queryBranch.outputs.git_branch_name_base }}"
       - name: check feature history
         id: description
         shell: "/bin/bash {0}"
         run: |
-          head=$(git describe --first-parent --abbrev=0)
+          head=origin/dev
           echo $head
           history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           echo $history_cli_feat

@@ -194,11 +194,22 @@ jobs:
       #   with: 
       #     reviewers: "MuyangAmigo"
       #     token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Query Git branch name
+        uses: petehouston/github-actions-query-branch-name@v1.2
+        id: queryBranch
+      - name: Get Git branch name only on pull request
+        if: github.event_name == 'pull_request'
+        run: |-
+          echo "GIT_BRANCH_NAME = $GIT_BRANCH_NAME"
+          echo "GIT_BRANCH_NAME_BASE = $GIT_BRANCH_NAME_BASE"
+          echo "Branch name: ${{ steps.queryBranch.outputs.git_branch_name }}"
+          echo "Branch name: ${{ steps.queryBranch.outputs.git_branch_name_head }}"
+          echo "Branch name: ${{ steps.queryBranch.outputs.git_branch_name_base }}"
       - name: check feature history
         id: description
         shell: "/bin/bash {0}"
         run: |
-          head=$GIT_BRANCH_NAME_BASE
+          head=${{ steps.queryBranch.outputs.git_branch_name_base }}
           echo $head
           history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           echo $history_cli_feat

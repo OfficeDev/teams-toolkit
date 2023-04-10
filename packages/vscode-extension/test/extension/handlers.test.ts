@@ -1281,7 +1281,7 @@ describe("handlers", () => {
           platform: "vsc",
           projectPath: undefined,
           vscodeEnv: "local",
-          confirmOnly: true,
+          skipUserConfirm: true,
         } as Inputs)
       );
     });

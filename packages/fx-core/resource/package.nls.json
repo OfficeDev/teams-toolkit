@@ -899,7 +899,7 @@
   "driver.prerequisite.error.funcInstallationError": "Unable to check and install Azure Functions Core Tools.",
   "driver.prerequisite.error.dotnetInstallationError": "Unable to check and install .NET Core SDK.",
   "driver.prerequisite.description": "installing dependencies",
-  "driver.prerequisite.progressBar": "Checking and installing development tools.",
+  "driver.prerequisite.progressBar": "Checking and installing development tool(s).",
   "driver.prerequisite.summary.devCert.trusted.succuss": "Development certificate for localhost is installed.",
   "driver.prerequisite.summary.devCert.notTrusted.succuss": "Development certificate for localhost is generated.",
   "driver.prerequisite.summary.devCert.skipped": "Skip trusting development certificate for localhost.",

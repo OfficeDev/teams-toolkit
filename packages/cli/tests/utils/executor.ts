@@ -75,7 +75,7 @@ export class Executor {
   }
 
   static async upgrade(workspace: string) {
-    const command = `teamsfx upgade --force`;
+    const command = `teamsfx upgrade --force`;
     return this.execute(command, workspace);
   }
 

@@ -9,36 +9,6 @@ import { ExternalApiCallError } from "./componentError";
  * call external api error when deploy
  */
 export class DeployExternalApiCallError extends ExternalApiCallError {
-  static deployStatusError(
-    e?: unknown,
-    statusCode?: number,
-    helpLink?: string
-  ): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      "DeployStatusError",
-      // eslint-disable-next-line no-secrets/no-secrets
-      "plugins.bot.FailedCheckDeployStatus",
-      statusCode ?? -1,
-      undefined,
-      undefined,
-      JSON.stringify(e),
-      helpLink
-    );
-  }
-
-  static deployRemoteStatusError(e: unknown): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      DeployConstant.DEPLOY_ERROR_TYPE,
-      "DeployStatusError",
-      "driver.deploy.zipDeploymentRemoteStartError",
-      HttpStatusCode.INTERNAL_SERVER_ERROR,
-      undefined,
-      ["driver.common.suggestion.retryLater"],
-      JSON.stringify(e)
-    );
-  }
-
   static clearStorageError(
     operateName: string,
     errorCode: string | undefined,

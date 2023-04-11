@@ -1,5 +1,5 @@
 name: publish to VSCode marketplace
-
+run-name: Publish-${{ inputs.run_id }}-${{ github.ref_name }}-isPreview-${{ inputs.isPreview }}
 on:
   workflow_dispatch:
     inputs:

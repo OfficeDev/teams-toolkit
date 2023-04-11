@@ -6,22 +6,22 @@ import {
   fixedNamingsV3,
   namingConverterV3,
   needMigrateToAadManifest,
-} from "../../../src/core/middleware/utils/MigrationUtils";
+} from "../../../../src/core/middleware/utils/MigrationUtils";
 import {
   generateAppIdUri,
   getTemplateFolderPath,
-} from "../../../src/core/middleware/utils/v3MigrationUtils";
-import { randomAppName } from "../utils";
+} from "../../../../src/core/middleware/utils/v3MigrationUtils";
+import { MockTools, randomAppName } from "../../utils";
 import * as os from "os";
 import * as path from "path";
-import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
-import * as migrationUtils from "../../../src/core/middleware/utils/MigrationUtils";
+import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
+import * as migrationUtils from "../../../../src/core/middleware/utils/MigrationUtils";
 import { err, Inputs, Platform, SystemError } from "@microsoft/teamsfx-api";
-import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
-import { mockMigrationContext } from "./projectMigrationV3.test";
+import { MigrationContext } from "../../../../src/core/middleware/utils/migrationContext";
+import { mockMigrationContext } from "./utils";
 import sinon from "sinon";
-import { getPlaceholderMappings } from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { setTools, TOOLS } from "../../../src/core/globalVars";
+import { getPlaceholderMappings } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
+import { setTools, TOOLS } from "../../../../src/core/globalVars";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -346,6 +346,8 @@ describe("Migration: upgrade cancel messages", () => {
   let messageArray: string[];
 
   beforeEach(() => {
+    const tools = new MockTools();
+    setTools(tools);
     messageArray = [];
     sandbox.stub(TOOLS?.logProvider, "warning").callsFake(async (message) => {
       messageArray.push(message);

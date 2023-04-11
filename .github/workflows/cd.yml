@@ -1,5 +1,5 @@
 name: CD
-
+run-name: CD-${{ github.run_id }}-${{ github.ref_name }}-${{ inputs.preid }}
 on:
   workflow_dispatch:
     inputs:

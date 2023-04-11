@@ -12,7 +12,15 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { asBoolean, asFactory, asOptional, asString } from "../../../../utils/common";
 import { ExecutionResult } from "../../../interface/stepDriver";
-import { ok, err, IProgressHandler, UserInteraction, LogProvider } from "@microsoft/teamsfx-api";
+import {
+  ok,
+  err,
+  IProgressHandler,
+  UserInteraction,
+  LogProvider,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { DriverContext } from "../../../interface/commonArgs";
 
 export abstract class BaseDeployImpl {
@@ -112,6 +120,11 @@ export abstract class BaseDeployImpl {
         const errorDetail = e.detail ? `Detail: ${e.detail}` : "";
         await this.context.logProvider.error(`${e.message} ${errorDetail}`);
         return { result: err(e.toFxError()), summaries: [] };
+      } else if (e instanceof SystemError || e instanceof UserError) {
+        return {
+          result: err(e),
+          summaries: [],
+        };
       } else {
         await this.context.logProvider.error(`Unknown error: ${e}`);
         return {

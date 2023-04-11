@@ -78,7 +78,7 @@ export class CapabilityAddSPFxTab extends CapabilityAddBase {
 }
 
 export class AddWebpart extends YargsCommand {
-  public readonly commandHead = `SPFxWebPart`;
+  public readonly commandHead = `spfx-web-part`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Auto-hosted SPFx web part tightly integrated with Microsoft Teams";
 

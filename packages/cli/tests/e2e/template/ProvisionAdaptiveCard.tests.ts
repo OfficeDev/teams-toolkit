@@ -42,9 +42,9 @@ describe("teamsfx new template", function () {
     }
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     if (isV3Enabled()) {
     } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
       await CliHelper.setSubscription(subscription, projectPath);
     }
     await CliHelper.provisionProject(projectPath);

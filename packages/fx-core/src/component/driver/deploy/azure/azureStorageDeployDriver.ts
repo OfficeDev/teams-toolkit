@@ -30,6 +30,7 @@ import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetr
 import { HttpStatusCode, TelemetryConstant } from "../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
+import { ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -177,6 +178,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
   }
 
   updateProgressbar() {
-    this.progressBar?.next(`Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`);
+    this.progressBar?.next(
+      ProgressMessages.deployToAzure(this.workingDirectory, "Azure Storage Service")
+    );
   }
 }

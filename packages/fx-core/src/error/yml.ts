@@ -9,15 +9,15 @@ import { globalVars } from "../core/globalVars";
  * invalid yml schema, failed to parse yml file content into object or schema validation failed
  */
 export class InvalidYamlSchemaError extends UserError {
-  constructor(reason?: string) {
+  constructor(filePath: string, reason?: string) {
     const key = "error.yaml.InvalidYamlSchemaError";
     const keyWithReason = "error.yaml.InvalidYamlSchemaErrorWithReason";
     const defaultMessage = reason
-      ? getDefaultString(keyWithReason, globalVars.ymlFilePath, reason)
-      : getDefaultString(key, globalVars.ymlFilePath);
+      ? getDefaultString(keyWithReason, filePath, reason)
+      : getDefaultString(key, filePath);
     const localizedMessage = reason
-      ? getLocalizedString(keyWithReason, globalVars.ymlFilePath, reason)
-      : getLocalizedString(key, globalVars.ymlFilePath);
+      ? getLocalizedString(keyWithReason, filePath, reason)
+      : getLocalizedString(key, filePath);
     const errorOptions: UserErrorOptions = {
       source: "ConfigManager",
       name: "InvalidYamlSchemaError",

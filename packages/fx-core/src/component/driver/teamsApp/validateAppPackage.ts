@@ -178,12 +178,28 @@ export class ValidateAppPackageDriver implements StepDriver {
             return `${SummaryConstant.Succeeded} ${note.content}`;
           })
           .join(EOL);
+
+        const passed = validationResult.notes.length;
+        const failed = validationResult.errors.length + validationResult.warnings.length;
+        let summaryStr = "";
+        if (failed > 0) {
+          if (passed > 0) {
+            summaryStr =
+              getLocalizedString("driver.teamsApp.summary.validate.failed", failed) +
+              ", " +
+              getLocalizedString("driver.teamsApp.summary.validate.succeed", passed);
+          } else {
+            summaryStr = getLocalizedString("driver.teamsApp.summary.validate.failed", failed);
+          }
+        } else {
+          summaryStr = getLocalizedString("driver.teamsApp.summary.validate.succeed", passed);
+        }
+
         const outputMessage =
           EOL +
           getLocalizedString(
             "driver.teamsApp.summary.validate",
-            validationResult.errors.length + validationResult.warnings.length,
-            validationResult.notes.length,
+            summaryStr,
             errors,
             warnings,
             path.resolve(context.logProvider?.getLogFilePath())

@@ -256,11 +256,6 @@ describe("generateAppYml-m365", () => {
         "app.yml",
         "expected"
       );
-
-      // assert.equal(
-      //   await fs.readFile(path.join(projectPath, "teamsapp.yml"), "utf-8"),
-      //   await fs.readFile(path.join(projectPath, "expected", "app.yml"), "utf-8")
-      // );
     });
   });
 });

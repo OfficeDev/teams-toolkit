@@ -3,8 +3,9 @@
 
 import { TeamsAppManifest } from "./manifest";
 import fs from "fs-extra";
-import Ajv from "ajv-draft-04";
-import { JSONSchemaType } from "ajv";
+import AjvDraft04 from "ajv-draft-04";
+import Ajv, { JSONSchemaType } from "ajv";
+import addFormats from "ajv-formats";
 import axios, { AxiosResponse } from "axios";
 import { DevPreviewSchema } from "./devPreviewManifest";
 
@@ -54,7 +55,14 @@ export class ManifestUtil {
     manifest: T,
     schema: JSONSchemaType<T>
   ): Promise<string[]> {
-    const ajv = new Ajv({ formats: { uri: true } });
+    let ajv;
+    const draft07MetaSchema = require("ajv/dist/refs/json-schema-draft-07.json");
+    if (schema.$schema === draft07MetaSchema.$schema) {
+      ajv = new Ajv();
+      addFormats(ajv);
+    } else {
+      ajv = new AjvDraft04({ formats: { uri: true } });
+    }
     const validate = ajv.compile(schema);
     const valid = validate(manifest);
     if (!valid && validate.errors) {

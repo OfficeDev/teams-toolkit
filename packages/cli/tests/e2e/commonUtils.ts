@@ -424,21 +424,13 @@ export async function readContextMultiEnvV3(projectPath: string, envName: string
 }
 
 export async function readContextMultiEnv(projectPath: string, envName: string): Promise<any> {
-  let context: any = {};
+  const contextFilePath = `${projectPath}/.fx/states/state.${envName}.json`;
+  const userDataFilePath = `${projectPath}/.fx/states/${envName}.userdata`;
+
+  // Read Context and UserData
+  const context = await fs.readJSON(contextFilePath);
+
   let userData: Record<string, string> = {};
-  let userDataFilePath: string;
-  if (isV3Enabled()) {
-    const contextFilePath = `${projectPath}/env/.env.${envName}`;
-    userDataFilePath = `${projectPath}/env/.env.${envName}.userdata`;
-    context = dotenv.parse(await fs.readFile(contextFilePath, "UTF-8"));
-  } else {
-    const contextFilePath = `${projectPath}/.fx/states/state.${envName}.json`;
-    userDataFilePath = `${projectPath}/.fx/states/${envName}.userdata`;
-
-    // Read Context and UserData
-    context = await fs.readJSON(contextFilePath);
-  }
-
   if (await fs.pathExists(userDataFilePath)) {
     const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
     userData = dotenv.parse(dictContent);
@@ -454,8 +446,6 @@ export async function readContextMultiEnv(projectPath: string, envName: string):
       }
     }
   }
-
-  return context;
 }
 
 export async function getActivePluginsFromProjectSetting(projectPath: string): Promise<any> {

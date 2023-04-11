@@ -111,7 +111,7 @@ provision:
 {{#config.deploy}}
 deploy:
   {{#tools}}
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:
       {{#devCert}}
       devCert:
@@ -123,7 +123,7 @@ deploy:
       {{#dotnet}}
       dotnet: true
       {{/dotnet}}
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       {{#devCert}}
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE

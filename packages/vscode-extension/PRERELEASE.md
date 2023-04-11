@@ -6,13 +6,13 @@
 
 New features:
 
-- Run and debug Teams bot and message extension applications with Dev Tunnel.
+- Run and debug Teams bot and message extension applications with dev tunnels in Visual Studio Code. Refer to [this doc](https://aka.ms/teamsfx-switch-tunnel) if you want to switch back to use ngrok.
   ![devtunnel](https://user-images.githubusercontent.com/11220663/230364699-ed108641-4196-4318-949b-17ff56a6593f.png)
 
-- `Validate Application` command can now catch publish errors and provide mitigation suggestions for the application package.
+- `Validate Application` now helps catch errors and warnings that would prevent a successful publish to Teams in addition to schema checks.
   ![validate](https://user-images.githubusercontent.com/11220663/230363745-50bb8b6b-06a1-40df-b6ae-5601a71b193e.png)
 
-- Auto complete when editing the yml files.
+- Auto-complete suggestions and descriptions when editing `teamsapp.yml` files.
 
   > Note: Teams Toolkit for Visual Studio Code takes a new dependency on [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) which will be installed together with Teams Toolkit.
 
@@ -26,15 +26,15 @@ Start developing Teams applications instantly by opening Teams Toolkit samples i
 
 SharePoint Framework developer experience update:
 
-- Streamlined full stack debugging for SPFx based tab apps on Teams, Outlook and the Microsoft 365 app.
 - Automated the process to add multiple SPFx web parts as Teams Tab pages and configure the new web parts with Teams app.
-- Provided flexibility to let user decide which SharePoint Framework (SPFx) package version to use when creating a SPFx-based Teams tab app, either to choose from a globally installed version or let Teams Toolkit install the latest version for you.
+- Choose which SharePoint Framework (SPFx) package version to use when creating a SPFx-based Teams tab app, either from a globally installed version or let Teams Toolkit install the latest version for you.
+- Streamlined full stack debugging for SPFx based tab apps on Teams, Outlook and the Microsoft 365 app.
   ![SPFx](https://user-images.githubusercontent.com/11220663/230363218-98e16312-17b0-49cf-8617-333ca961c4b0.png)
 
 Teams Toolkit generated project file change:
 
-- Updated lifecycles in yml files to only include provision, deploy, and publish.
-- Added an action `script` so you can run any script in `teamsapp.yml` file.
+- Simplified the default lifecycle steps in `teamsapp.yml` to be Provision, Deploy, and Publish. The ConfigureApp and RegisterApp steps are removed, and their actions are defaulted to the Provision step.
+- Added support for a new action, `uses: script`, that can be used to run any script command.
 - Some actions now support a `writeToEnvironmentFile` parameter to define generated environment variable names.
 - `.env.{envName}` files now only contain non-sensitive information and are removed from `.gitignore`.
 - Added `.env.{envName}.user` files to store sensitive information like password and are added to `.gitignore`.

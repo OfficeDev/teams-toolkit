@@ -113,7 +113,7 @@ export class YamlParser implements IYamlParser {
       const content = load(str);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
-        return err(new InvalidYamlSchemaError());
+        return err(new InvalidYamlSchemaError(path));
       }
 
       const value = content as unknown as Record<string, unknown>;
@@ -121,14 +121,14 @@ export class YamlParser implements IYamlParser {
       if (validateSchema) {
         const valid = validator(value);
         if (!valid) {
-          return err(new InvalidYamlSchemaError());
+          return err(new InvalidYamlSchemaError(path));
         }
       }
 
       globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {
-      return err(new InvalidYamlSchemaError());
+      return err(new InvalidYamlSchemaError(path));
     }
   }
 }

@@ -43,6 +43,8 @@ export class ProgressMessages {
   );
   static readonly runCommand = (command: string, directory: string) =>
     getLocalizedString("core.progress.runCommand", command, directory);
+  static readonly deployToAzure = (folder: string, target?: string) =>
+    getLocalizedString("core.progress.deployToAzure", folder, target);
 }
 
 export class LogMessages {

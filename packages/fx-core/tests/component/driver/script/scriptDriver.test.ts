@@ -15,6 +15,8 @@ import * as fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as child_process from "child_process";
 import * as utils from "../../../../src/component/code/utils";
+import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
+import { convertScriptErrorToFxError } from "../../../../src/component/code/utils";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -158,21 +160,14 @@ describe("Script Driver test", () => {
     );
     assert.isTrue(res.isErr());
   });
-  // it("execute command ui.runCommand()", async () => {
-  //   const args = {
-  //     workingDirectory: "./",
-  //     shell: "cmd",
-  //     run: "echo 111",
-  //     redirectTo: "./log",
-  //   };
-  //   const context = {
-  //     azureAccountProvider: new TestAzureAccountProvider(),
-  //     logProvider: new TestLogProvider(),
-  //     ui: new MockUserInteraction(),
-  //     projectPath: "./",
-  //   } as DriverContext;
-  //   sandbox.stub(context.ui!, "runCommand").resolves(ok(""));
-  //   const res = await scriptDriver.execute(args, context);
-  //   assert.isTrue(res.result.isOk());
-  // });
+  it("convertScriptErrorToFxError ScriptTimeoutError", async () => {
+    const error = { killed: true } as child_process.ExecException;
+    const res = convertScriptErrorToFxError(error, () => {}, "test");
+    assert.isTrue(res instanceof ScriptTimeoutError);
+  });
+  it("convertScriptErrorToFxError ScriptExecutionError", async () => {
+    const error = { killed: false, message: "command failed" } as child_process.ExecException;
+    const res = convertScriptErrorToFxError(error, () => {}, "test");
+    assert.isTrue(res instanceof ScriptExecutionError);
+  });
 });

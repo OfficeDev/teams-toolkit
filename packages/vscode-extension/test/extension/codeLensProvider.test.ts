@@ -12,6 +12,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import * as globalVariables from "../../src/globalVariables";
 
 describe("Manifest codelens", () => {
   afterEach(() => {
@@ -160,6 +161,10 @@ describe("Manifest codelens", () => {
 });
 
 describe("Crypto CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("userData codelens", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(false);
     const document = {
@@ -254,5 +259,35 @@ describe("Crypto CodeLensProvider", () => {
     chai.expect(codelens[0].command?.title).equal("🔑Decrypt secret");
     chai.expect(codelens[0].command?.command).equal("fx-extension.decryptSecret");
     sinon.restore();
+  });
+
+  it("hides when command is running", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sinon.stub(globalVariables, "commandIsRunning").value(true);
+    const document = {
+      fileName: ".env.local",
+      getText: () => {
+        return "SECRET_VAR_2=crypto_abc";
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: "SECRET_VAR_2=crypto_abc",
+        };
+      },
+      positionAt: () => {
+        return {
+          character: 0,
+          line: 0,
+        };
+      },
+    } as unknown as vscode.TextDocument;
+
+    const cryptoProvider = new CryptoCodeLensProvider();
+    const codelens: vscode.CodeLens[] = cryptoProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 0);
   });
 });

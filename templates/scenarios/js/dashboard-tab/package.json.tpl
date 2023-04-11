@@ -6,7 +6,6 @@
     },
     "private": true,
     "dependencies": {
-        "@fluentui/react": "^8.106.1",
         "@fluentui/react-charting": "^5.14.10",
         "@fluentui/react-components": "^9.18.0",
         "@fluentui/react-icons": "^2.0.186",

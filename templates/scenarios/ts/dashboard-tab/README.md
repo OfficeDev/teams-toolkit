@@ -69,13 +69,15 @@ The following files provide the business logic for the dashboard tab. These file
 | `src/styles/ListWidget.css`          | The list widget style file                         |
 | `src/widgets/ChartWidget.tsx`        | A widget implementation that can display a chart   |
 | `src/widgets/ListWidget.tsx`         | A widget implementation that can display a list    |
+| `src/App.css`                        | The style of application route                     |
+| `src/App.tsx`                        | Application route                                  |
 
 The following files are project-related files. You generally will not need to customize these files.
 
 | File                               | Contents                                                     |
 | ---------------------------------- | ------------------------------------------------------------ |
+| `src/index.css`                    | The style of application entry point                         |
 | `src/index.tsx`                    | Application entry point                                      |
-| `src/App.tsx`                      | Application route                                            |
 | `src/internal/addNewScopes.ts`     | Implementation of new scopes add                             |
 | `src/internal/context.ts`          | TeamsFx Context                                              |
 | `src/internal/login.ts`            | Implementation of login                                      |
@@ -92,9 +94,10 @@ You can use the following steps to add a new widget to the dashboard:
 
 ### Step 1: Define a data model
 
-Define a data model based on the business scenario, and put it in `src/models` folder. The widget model defined according to the data you want to display in the widget. Here's a sample data model:
+Define a data model based on the business scenario, we recommend that you place the data model under the `src/models` directory. Here is an example of a data model::
 
 ```typescript
+//sampleModel.ts
 export interface SampleModel {
   content: string;
 }
@@ -102,26 +105,20 @@ export interface SampleModel {
 
 ### Step 2: Create a data retrive service
 
-Simplely, you can create a service that returns dummy data. We recommend that you put data files in the `src/data` folder, and put data retrive services in the `src/services` folder.
+Typically, a widget requires a service to retrieve the necessary data for displaying its content. This service can either fetch static data from a predefined source or retrieve dynamic data from a backend service or API.
 
-Here's a sample json file that contains dummy data:
+For instance, we will implement a service that returns static data and place under the `src/services` directory.
 
-```json
-{
-  "content": "Hello world!"
-}
-```
-
-Here's a dummy data retrive service:
+Here is a sample service for retrieving static data:
 
 ```typescript
+//sampleService.ts
 import { SampleModel } from "../models/sampleModel";
-import SampleData from "../data/SampleData.json";
 
-export const getSampleData = (): SampleModel => SampleData;
+export const getSampleData = (): SampleModel => {
+  return { content: "Hello world!" };
+};
 ```
-
-> Note: You can also implement a service to retrieve data from the backend service or from the Microsoft Graph API.
 
 ### Step 3: Create a widget file
 
@@ -135,11 +132,12 @@ Create a widget file in `src/widgets` folder. Inherit the `BaseWidget` class fro
 | `footer()`  | Customize the content of the widget footer                                                                                                    |
 | `styling()` | Customize the widget style                                                                                                                    |
 
-> All methods are optional. If you do not override any method, the default widget layout will be used.
+> All method overrides are optional.
 
 Here's a sample widget implementation:
 
 ```tsx
+//SampleWidget.tsx
 import { Button, Text } from "@fluentui/react-components";
 import { BaseWidget } from "@microsoft/teamsfx-react";
 import { SampleModel } from "../models/sampleModel";
@@ -170,8 +168,7 @@ export class SampleWidget extends BaseWidget<any, SampleWidgetState> {
 
 ### Step 4: Add the widget to the dashboard
 
-1. Go to `src/dashboards/SampleDashboard.tsx`, if you want create a new dashboard, please refer to [How to add a new dashboard](#how-to-add-a-new-dashboard).
-2. Update your `layout()` method to add the widget to the dashboard:
+Open the `src/dashboards/SampleDashboard.tsx` file and add the widget to the implementation of the `layout` method. If you want create a new dashboard, please refer to [How to add a new dashboard](#how-to-add-a-new-dashboard).
 
 ```tsx
 override layout(): JSX.Element | undefined {
@@ -185,7 +182,7 @@ override layout(): JSX.Element | undefined {
 }
 ```
 
-Optional: If you want put your widget in a column, you can refer to the following code:
+Optional: If you want to arrange multiple widgets in the same column, you can refer to the following code snippet:
 
 ```css
 .one-column {
@@ -196,7 +193,7 @@ Optional: If you want put your widget in a column, you can refer to the followin
 ```
 
 ```jsx
-override layout() {
+override layout(): JSX.Element | undefined {
   return (
     <>
       <ListWidget />
@@ -208,9 +205,10 @@ override layout() {
   );
 }
 ```
+
 ## How to add a new dashboard
 
-You can use the following steps to add a new dashboard layout:
+You can use the following steps to add a new dashboard:
 
 1. [Step 1: Create a dashboard class](#step-1-create-a-dashboard-class)
 2. [Step 2: Override methods to customize dashboard layout](#step-2-override-methods-to-customize-dashboard-layout)
@@ -222,6 +220,7 @@ You can use the following steps to add a new dashboard layout:
 Create a file with the extension `.tsx` for your dashboard in the `src/dashboards` directory, for example, `YourDashboard.tsx`. Then, define a class that inherits the `BaseDashboard` class from `@microsoft/teamsfx-react`.
 
 ```tsx
+//YourDashboard.tsx
 import { BaseDashboard } from "@microsoft/teamsfx-react";
 
 export default class YourDashboard extends BaseDashboard<any, any> {}
@@ -240,7 +239,7 @@ Here is an example to customize the dashboard layout.
 
 ```css
 .your-dashboard-layout {
-  grid-template-columns: 4fr 6fr;
+  grid-template-columns: 6fr 4fr;
 }
 ```
 
@@ -264,8 +263,6 @@ export default class YourDashboard extends BaseDashboard<any, any> {
   }
 }
 ```
-
-> Note: All methods are optional. If you do not override any method, the default dashboard layout will be used.
 
 ### Step 3: Add a route for the new dashboard
 

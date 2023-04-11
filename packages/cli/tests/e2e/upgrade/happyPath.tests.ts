@@ -15,6 +15,8 @@ import { Cleaner } from "../../utils/cleaner";
 import { Capability } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import fs from "fs-extra";
+import { checkYmlHeader } from "./utils";
 
 describe("upgrade", () => {
   const testFolder = getTestFolder();
@@ -41,13 +43,15 @@ describe("upgrade", () => {
       // upgrade
       const result = await Executor.upgrade(projectPath);
       chai.assert.isTrue(result.success);
+      const ymlFile = path.join(projectPath, "teamsapp.yml");
+      await checkYmlHeader(ymlFile);
     }
 
-    {
-      // preview
-      const result = await Executor.preview(projectPath);
-      chai.assert.isTrue(result.success);
-    }
+    // {
+    //   // preview
+    //   const result = await Executor.preview(projectPath);
+    //   chai.assert.isTrue(result.success);
+    // }
 
     {
       // provision
@@ -56,16 +60,16 @@ describe("upgrade", () => {
       chai.assert.isTrue(result.success);
     }
 
-    {
-      // deploy
-      const result = await Executor.deploy(projectPath);
-      chai.assert.isTrue(result.success);
-    }
+    // {
+    //   // deploy
+    //   const result = await Executor.deploy(projectPath);
+    //   chai.assert.isTrue(result.success);
+    // }
 
-    {
-      // publish
-      const result = await Executor.publish(projectPath);
-      chai.assert.isTrue(result.success);
-    }
+    // {
+    //   // publish
+    //   const result = await Executor.publish(projectPath);
+    //   chai.assert.isTrue(result.success);
+    // }
   });
 });

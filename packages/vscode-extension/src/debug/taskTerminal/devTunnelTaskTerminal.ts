@@ -26,7 +26,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
 import { devTunnelDisplayMessages } from "../constants";
-import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
+import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {
   BaseTunnelTaskTerminal,

@@ -158,10 +158,10 @@ deploy:
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:      
       dotnet: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       dotnetPath: DOTNET_PATH
   - uses: cli/runNpmCommand
     name: install api dependencies
@@ -172,7 +172,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by prerequisite/install action
+      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by devTool/install action
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
     name: build api app

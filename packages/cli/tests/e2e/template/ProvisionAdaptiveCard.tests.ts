@@ -31,22 +31,23 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.AdaptiveCard}`, { testPlanCaseId: 15277474 }, async function () {
-    if (isV3Enabled()) {
-      this.skip();
-    }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.AdaptiveCard,
-      TemplateProject.AdaptiveCard
-    );
+    await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
 
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+    if (isV3Enabled()) {
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    }
+    {
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+    }
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
+    if (isV3Enabled()) {
+    } else {
+      await CliHelper.setSubscription(subscription, projectPath);
+    }
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
@@ -59,16 +60,8 @@ describe("teamsfx new template", function () {
     // deploy
     await CliHelper.deployAll(projectPath);
 
-    {
-      // Validate deployment
-
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-      // Validate Bot Deploy
-      const bot = new BotValidator(context, projectPath, env);
-      await bot.validateDeploy();
-    }
+    // Validate Deploy
+    await bot.validateDeploy();
 
     // test (validate)
     await execAsync(`teamsfx validate`, {

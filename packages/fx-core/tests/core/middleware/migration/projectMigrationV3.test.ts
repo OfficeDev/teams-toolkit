@@ -13,13 +13,13 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
-import { MockTools, MockUserInteraction, randomAppName } from "../utils";
-import { CoreHookContext } from "../../../src/core/types";
-import { setTools } from "../../../src/core/globalVars";
+import { MockTools, MockUserInteraction, randomAppName } from "../../utils";
+import { CoreHookContext } from "../../../../src/core/types";
+import { setTools } from "../../../../src/core/globalVars";
 import {
   backupFolder,
   MigrationContext,
-} from "../../../src/core/middleware/utils/migrationContext";
+} from "../../../../src/core/middleware/utils/migrationContext";
 import {
   generateAppYml,
   manifestsMigration,
@@ -33,20 +33,18 @@ import {
   userdataMigration,
   debugMigration,
   azureParameterMigration,
-  generateLocalConfig,
   checkapimPluginExists,
   ProjectMigratorMWV3,
   errorNames,
-} from "../../../src/core/middleware/projectMigratorV3";
-import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../src/core/error";
+} from "../../../../src/core/middleware/projectMigratorV3";
+import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
+import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
 import {
   Metadata,
-  MetadataV2,
   MetadataV3,
   VersionSource,
   VersionState,
-} from "../../../src/common/versionMetadata";
+} from "../../../../src/common/versionMetadata";
 import {
   buildEnvUserFileName,
   getDownloadLinkByVersionAndPlatform,
@@ -54,12 +52,21 @@ import {
   getVersionState,
   migrationNotificationMessage,
   outputCancelMessage,
-} from "../../../src/core/middleware/utils/v3MigrationUtils";
-import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
-import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { VersionForMigration } from "../../../src/core/middleware/types";
-import * as loader from "../../../src/core/middleware/projectSettingsLoader";
-import { SettingsUtils } from "../../../src/component/utils/settingsUtil";
+} from "../../../../src/core/middleware/utils/v3MigrationUtils";
+import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
+import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
+import { VersionForMigration } from "../../../../src/core/middleware/types";
+import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
+import { SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import {
+  copyTestProject,
+  mockMigrationContext,
+  assertFileContent,
+  readEnvFile,
+  getTestAssetsPath,
+  readEnvUserFile,
+  Constants,
+} from "./utils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -280,316 +287,6 @@ describe("MigrationContext", () => {
     context.addTelemetryProperties({ testProperrty: "test property" });
     await context.restoreBackup();
     await context.cleanBackup();
-  });
-});
-
-describe("generateAppYml-js/ts", () => {
-  const appName = randomAppName();
-  const projectPath = path.join(os.tmpdir(), appName);
-  let migrationContext: MigrationContext;
-
-  beforeEach(async () => {
-    migrationContext = await mockMigrationContext(projectPath);
-    await fs.ensureDir(projectPath);
-  });
-
-  afterEach(async () => {
-    await fs.remove(projectPath);
-  });
-
-  it("should success for js SSO tab", async () => {
-    await copyTestProject("jsSsoTab", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts SSO tab", async () => {
-    await copyTestProject("jsSsoTab", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js non SSO tab", async () => {
-    await copyTestProject("jsNonSsoTab", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts non SSO tab", async () => {
-    await copyTestProject("jsNonSsoTab", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js tab with api", async () => {
-    await copyTestProject("jsTabWithApi", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts tab with api", async () => {
-    await copyTestProject("jsTabWithApi", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js function bot", async () => {
-    await copyTestProject("jsFunctionBot", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts function bot", async () => {
-    await copyTestProject("jsFunctionBot", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js webapp bot", async () => {
-    await copyTestProject("jsWebappBot", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts webapp bot", async () => {
-    await copyTestProject("jsWebappBot", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js webapp bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsWebappBot_botWebAppId", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsWebappBot_botWebAppId", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js function bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsFuncBot_botWebAppId", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts function bot as resourceId eq botWebAppResourceId", async () => {
-    await copyTestProject("jsFuncBot_botWebAppId", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js webApp bot as resourceId eq webAppResourceId", async () => {
-    await copyTestProject("jsWebappBot_webAppId", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts webApp bot as resourceId eq webAppResourceId", async () => {
-    await copyTestProject("jsWebappBot_webAppId", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-
-  it("should success for js function bot as resourceId eq webAppResourceId", async () => {
-    await copyTestProject("jsFuncBot_webAppId", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "js.app.yml");
-  });
-
-  it("should success for ts function bot as resourceId eq webAppResourceId", async () => {
-    await copyTestProject("jsFuncBot_webAppId", projectPath);
-    const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.programmingLanguage = "typescript";
-    await fs.writeJson(
-      path.join(projectPath, Constants.oldProjectSettingsFilePath),
-      projectSetting
-    );
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "ts.app.yml");
-  });
-});
-
-describe("generateAppYml-csharp", () => {
-  const appName = randomAppName();
-  const projectPath = path.join(os.tmpdir(), appName);
-  let migrationContext: MigrationContext;
-
-  beforeEach(async () => {
-    migrationContext = await mockMigrationContext(projectPath);
-    migrationContext.arguments.push({
-      platform: "vs",
-    });
-    await fs.ensureDir(projectPath);
-  });
-
-  afterEach(async () => {
-    await fs.remove(projectPath);
-  });
-
-  it("should success for sso tab project", async () => {
-    await copyTestProject("csharpSsoTab", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
-  });
-
-  it("should success for non-sso tab project", async () => {
-    await copyTestProject("csharpNonSsoTab", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
-  });
-
-  it("should success for web app bot project", async () => {
-    await copyTestProject("csharpWebappBot", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
-  });
-
-  it("should success for function bot project", async () => {
-    await copyTestProject("csharpFunctionBot", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
-  });
-});
-
-describe("generateAppYml-csharp", () => {
-  const appName = randomAppName();
-  const projectPath = path.join(os.tmpdir(), appName);
-  let migrationContext: MigrationContext;
-
-  beforeEach(async () => {
-    migrationContext = await mockMigrationContext(projectPath);
-    migrationContext.arguments.push({
-      platform: "vs",
-    });
-    await fs.ensureDir(projectPath);
-  });
-
-  afterEach(async () => {
-    await fs.remove(projectPath);
-  });
-
-  it("should success for local sso tab project", async () => {
-    await copyTestProject("csharpSsoTab", projectPath);
-
-    await generateLocalConfig(migrationContext);
-  });
-});
-
-describe("generateAppYml-spfx", () => {
-  const appName = randomAppName();
-  const projectPath = path.join(os.tmpdir(), appName);
-  let migrationContext: MigrationContext;
-
-  beforeEach(async () => {
-    migrationContext = await mockMigrationContext(projectPath);
-    await fs.ensureDir(projectPath);
-  });
-
-  afterEach(async () => {
-    await fs.remove(projectPath);
-  });
-
-  it("should success for spfx project", async () => {
-    await copyTestProject("spfxTab", projectPath);
-
-    await generateAppYml(migrationContext);
-
-    await assertFileContent(projectPath, Constants.appYmlPath, "app.yml");
   });
 });
 
@@ -956,25 +653,6 @@ describe("updateLaunchJson", () => {
       assert.equal(
         await fs.readFile(path.join(projectPath, ".vscode", "launch.json"), "utf-8"),
         await fs.readFile(path.join(projectPath, "expected", "launch.json"), "utf-8")
-      );
-    });
-  });
-});
-
-describe("generateAppYml-m365", () => {
-  const appName = randomAppName();
-  const projectPath = path.join(os.tmpdir(), appName);
-
-  ["transparent-m365-tab", "transparent-m365-me"].forEach((testCase) => {
-    it(testCase, async () => {
-      const migrationContext = await mockMigrationContext(projectPath);
-      await copyTestProject(path.join("debug", testCase), projectPath);
-
-      await generateAppYml(migrationContext);
-
-      assert.equal(
-        await fs.readFile(path.join(projectPath, "teamsapp.yml"), "utf-8"),
-        await fs.readFile(path.join(projectPath, "expected", "app.yml"), "utf-8")
       );
     });
   });
@@ -1610,80 +1288,3 @@ describe("updateGitignore", async () => {
     await assertFileContent(projectPath, ".gitignore", "whenGitignoreNotExist");
   });
 });
-
-export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
-  const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
-  inputs.projectPath = projectPath;
-  const ctx = {
-    arguments: [inputs],
-  };
-  return await MigrationContext.create(ctx);
-}
-
-function getTestAssetsPath(projectName: string): string {
-  return path.join("tests/core/middleware/testAssets/v3Migration", projectName.toString());
-}
-
-// Change CRLF to LF to avoid test failures in different OS
-function normalizeLineBreaks(content: string): string {
-  return content.replace(/\r\n/g, "\n");
-}
-
-async function assertFileContent(
-  projectPath: string,
-  actualFilePath: string,
-  expectedFileName: string
-): Promise<void> {
-  const actualFileFullPath = path.join(projectPath, actualFilePath);
-  const expectedFileFulePath = path.join(projectPath, "expectedResult", expectedFileName);
-  assert.isTrue(await fs.pathExists(actualFileFullPath));
-  const actualFileContent = normalizeLineBreaks(await fs.readFile(actualFileFullPath, "utf8"));
-  const expectedFileContent = normalizeLineBreaks(await fs.readFile(expectedFileFulePath, "utf8"));
-  assert.equal(actualFileContent, expectedFileContent);
-}
-
-async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
-  await fs.copy(getTestAssetsPath(projectName), targetPath);
-}
-
-async function readOldProjectSettings(projectPath: string): Promise<any> {
-  return await fs.readJson(path.join(projectPath, Constants.oldProjectSettingsFilePath));
-}
-
-async function readSettingJson(projectPath: string): Promise<any> {
-  return await fs.readJson(path.join(projectPath, Constants.settingsFilePath));
-}
-
-async function readEnvFile(projectPath: string, env: string): Promise<any> {
-  return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
-}
-
-async function readEnvUserFile(projectPath: string, env: string): Promise<any> {
-  return await fs.readFileSync(path.join(projectPath, buildEnvUserFileName(env))).toString();
-}
-
-function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
-  if (lifecycleDefinition) {
-    return lifecycleDefinition.filter((item) => item.uses === actionName);
-  }
-  return [];
-}
-
-const Constants = {
-  happyPathTestProject: "happyPath",
-  settingsFilePath: "teamsfx/settings.json",
-  oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
-  appYmlPath: "teamsapp.yml",
-  manifestsMigrationHappyPath: "manifestsHappyPath",
-  manifestsMigrationHappyPathWithoutAad: "manifestsHappyPathWithoutAad",
-  manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
-  manifestsMigrationHappyPathOld: "manifestsMigrationHappyPathOld",
-  launchJsonPath: ".vscode/launch.json",
-  happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
-  happyPathAadManifestTemplateExist:
-    "happyPath_for_needMigrateToAadManifest/happyPath_aadManifestTemplateExist",
-  happyPathWithoutPermission: "happyPath_for_needMigrateToAadManifest/happyPath_no_permissionFile",
-  happyPathAadPluginNotActive:
-    "happyPath_for_needMigrateToAadManifest/happyPath_aadPluginNotActive",
-  environmentFolder: "env",
-};

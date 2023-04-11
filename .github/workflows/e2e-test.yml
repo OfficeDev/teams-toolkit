@@ -218,7 +218,7 @@ jobs:
         with:
           repository: OfficeDev/TeamsFx-Samples
           ref: v3
-          path: resource
+          path: packages/cli/tests/e2e/resource
 
       - name: run test
         working-directory: packages/cli/tests/e2e

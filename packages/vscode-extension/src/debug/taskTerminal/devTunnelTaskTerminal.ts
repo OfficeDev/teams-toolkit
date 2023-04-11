@@ -28,6 +28,7 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
+import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
@@ -209,7 +210,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
       const host = new TunnelRelayTunnelHost(this.tunnelManagementClientImpl);
       host.trace = (level, eventId, msg, err) => {
-        if (msg) {
+        if (msg && level !== TraceLevel.Verbose) {
           this.writeEmitter.fire(`${msg}\r\n`);
         }
         if (err) {

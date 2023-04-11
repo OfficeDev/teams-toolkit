@@ -413,7 +413,6 @@
     "teamstoolkit.taskDefinitions.args.ports.portNumber.title": "Local server port number.",
     "teamstoolkit.taskDefinitions.args.ports.protocol.title": "Protocol for the port.",
     "teamstoolkit.taskDefinitions.args.ports.access.title": "Access control for the tunnel.",
-    "teamstoolkit.taskDefinitions.args.template.title": "The path to yml template.",
     "teamstoolkit.manageCollaborator.grantPermission.label": "Add App Owners",
     "teamstoolkit.manageCollaborator.grantPermission.description": "Add owners to your Teams app and Azure Active Director app registrations so they can make changes",
     "teamstoolkit.manageCollaborator.listCollaborator.label": "List App Owners",

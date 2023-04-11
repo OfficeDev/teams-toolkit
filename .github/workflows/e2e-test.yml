@@ -212,8 +212,16 @@ jobs:
         run: |
           lscpu
 
-      - name: Download samples
-        if: startsWith(matrix.cases, './template/') 
+      - name: Download samples(daily)
+        if: startsWith(matrix.cases, './template/') && ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@dev
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: dev
+          path: packages/cli/tests/e2e/resource
+
+      - name: Download samples(rc)
+        if: startsWith(matrix.cases, './template/') && ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples

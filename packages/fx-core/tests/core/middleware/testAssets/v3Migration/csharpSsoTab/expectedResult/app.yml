@@ -33,7 +33,7 @@ provision:
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
   - uses: script # Add additional item to .env file
     with:
-      run: echo "set-teamsfx-env PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/" # Used in appPackage/manifest.json file.
+      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/" # Used in appPackage/manifest.json file.
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app

@@ -26,15 +26,15 @@ provision:
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN for local launch
     with:
-      run: echo "set-teamsfx-env PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN=localhost:53000"
+      run: echo "::set-teamsfx-env PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__DOMAIN=localhost:53000"
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT for local launch
     with:
-      run: echo "set-teamsfx-env PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT=https://localhost:53000"
+      run: echo "::set-teamsfx-env PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT=https://localhost:53000"
   - uses: script # Set env for local launch
     name: Set PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH for local launch
     with:
-      run: echo "set-teamsfx-env PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH=/index.html#"
+      run: echo "::set-teamsfx-env PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH=/index.html#"
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:

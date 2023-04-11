@@ -21,7 +21,7 @@ provision:
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
   - uses: script # Add additional item to .env file
     with:
-      run: echo "set-teamsfx-env PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/" # Used in appPackage/manifest.json file.
+      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH=/" # Used in appPackage/manifest.json file.
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template

@@ -229,12 +229,12 @@ describe("Crypto CodeLensProvider", () => {
     const document = {
       fileName: ".env.local",
       getText: () => {
-        return "SECRET_VAR=crypto_abc";
+        return "SECRET_VAR_2=crypto_abc";
       },
       lineAt: () => {
         return {
           lineNumber: 0,
-          text: "SECRET_VAR=crypto_abc",
+          text: "SECRET_VAR_2=crypto_abc",
         };
       },
       positionAt: () => {

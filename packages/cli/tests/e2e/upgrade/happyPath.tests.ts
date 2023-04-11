@@ -27,7 +27,7 @@ describe("upgrade", () => {
     await Cleaner.clean(projectPath);
   });
 
-  it("upgrade project", { testPlanCaseId: 17603383 }, async function () {
+  it("upgrade project", { testPlanCaseId: 17184119 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }

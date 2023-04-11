@@ -117,14 +117,8 @@ export abstract class YargsCommand {
         if (result.isOk()) {
           const inputs = getSystemInputs(args.folder as string);
           inputs.ignoreEnvInfo = true;
-          if (
-            this.commandHead !== "new" &&
-            this.commandHead !== "template" &&
-            this.commandHead !== "infra" &&
-            this.commandHead !== "debug" &&
-            args.folder &&
-            !args.global
-          ) {
+          const skipCommands = ["new", "template", "infra", "debug", "upgrade"];
+          if (!skipCommands.includes(this.commandHead) && args.folder && !args.global) {
             const res = await result.value.projectVersionCheck(inputs);
             if (res.isErr()) {
               throw res.error;

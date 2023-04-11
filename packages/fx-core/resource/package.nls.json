@@ -171,7 +171,7 @@
   "plugins.spfx.questions.packageSelect.placeholder": "Select an option for scaffolding",
   "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label": "Use globally installed SPFx (%s)",
   "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label": "Use globally installed SPFx",
-  "plugins.spfx.questions.packageSelect.useGlobalPackage.detail": "Recommend SPFx %s or later",
+  "plugins.spfx.questions.packageSelect.useGlobalPackage.detail": "SPFx %s or later",
   "plugins.spfx.questions.packageSelect.installLocally.withVersion.label": "Install the latest SPFx (%s) locally in Teams Toolkit directory ",
   "plugins.spfx.questions.packageSelect.installLocally.noVersion.label": "Install the latest SPFx locally in Teams Toolkit directory ",
   "plugins.spfx.buildNotice": "SharePoint package successfully built at %s.",

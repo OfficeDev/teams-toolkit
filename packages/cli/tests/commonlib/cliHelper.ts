@@ -272,12 +272,16 @@ export class CliHelper {
     template: TemplateProject,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const oldPath = path.resolve("resource", template);
+    const timeout = 100000;
+    const oldPath = path.resolve("./resource", template);
     const newPath = path.resolve(testFolder, appName);
-    await fs.mkdir(newPath);
     try {
-      await fs.copy(oldPath, newPath);
+      await execAsync(`mv ${oldPath} ${newPath}`, {
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
     } catch (error) {
+      console.log(error);
       throw new Error(`Failed to open project: ${newPath}`);
     }
   }

@@ -13,6 +13,7 @@ import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
+import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
@@ -28,7 +29,6 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
-import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };

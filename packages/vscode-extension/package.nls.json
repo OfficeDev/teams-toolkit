@@ -187,7 +187,6 @@
     "teamstoolkit.handlers.coreNotReady": "Core module is loading",
     "teamstoolkit.handlers.createProjectNotification": "You should create a new app or open an existing one to open the README file.",
     "teamstoolkit.handlers.createProjectTitle": "Create a New App",
-    "teamstoolkit.handlers.decryptFailed": "Failed to decrypt secret.",
     "teamstoolkit.handlers.disableAutomaticNpmInstall": "Disable Auto NPM Install",
     "teamstoolkit.handlers.editSecretTitle": "Edit the decrypted secret value",
     "teamstoolkit.handlers.fileNotFound": "%s not found, cannot open it.",

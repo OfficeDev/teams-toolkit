@@ -108,6 +108,9 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: sampleName,
     });
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled() ? "true" : "false",
+    });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {

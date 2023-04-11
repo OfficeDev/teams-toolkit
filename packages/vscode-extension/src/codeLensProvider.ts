@@ -26,6 +26,7 @@ import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";
 import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";
 import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { commandIsRunning } from "./globalVariables";
 
 async function resolveStateAndConfigCodeLens(
   lens: vscode.CodeLens,
@@ -161,7 +162,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument
   ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
     if (isV3Enabled()) {
-      if (document.fileName.includes(".env.")) {
+      if (!commandIsRunning && document.fileName.includes(".env.")) {
         return this.computeCodeLenses(document, this.envSecretRegex);
       } else {
         return [];
@@ -185,7 +186,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     const text = document.getText();
     const regex = new RegExp(secretRegex);
     let matches;
-    while ((matches = regex.exec(text)) !== null) {
+    while (!commandIsRunning && (matches = regex.exec(text)) !== null) {
       const match = matches[1];
       const line = document.lineAt(document.positionAt(matches.index).line);
       const indexOf = line.text.indexOf(match);

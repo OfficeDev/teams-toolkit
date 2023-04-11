@@ -36,8 +36,7 @@ describe("teamsfx new template", function () {
     if (isV3Enabled()) {
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
-    }
-    {
+    } else {
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }

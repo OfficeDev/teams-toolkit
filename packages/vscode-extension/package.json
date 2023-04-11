@@ -1071,10 +1071,6 @@
                       },
                       {}
                     ]
-                  },
-                  "template": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.template.title%"
                   }
                 },
                 "additionalProperties": false

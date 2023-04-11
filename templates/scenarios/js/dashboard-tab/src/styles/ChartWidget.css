@@ -1,6 +1,6 @@
 .time-span {
   display: grid;
-  gap: 1rem;
+  gap: var(--spacingVerticalXL) var(--spacingHorizontalXL);
   grid-template-columns: repeat(3, max-content);
 }
 

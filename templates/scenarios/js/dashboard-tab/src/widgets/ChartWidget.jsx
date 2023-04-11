@@ -9,7 +9,7 @@ import {
 } from "@fluentui/react-icons";
 import { BaseWidget } from "@microsoft/teamsfx-react";
 
-import { getTimeRange, getChart1Points, getChart2Points } from "../services/chartService";
+import { getChart1Points, getChart2Points, getTimeRange } from "../services/chartService";
 
 export default class ChartWidget extends BaseWidget {
   async getData() {
@@ -74,12 +74,6 @@ export default class ChartWidget extends BaseWidget {
         View details
       </Button>
     );
-  }
-
-  styling() {
-    return {
-      footer: "chart-footer",
-    };
   }
 
   retriveChartsData(r) {

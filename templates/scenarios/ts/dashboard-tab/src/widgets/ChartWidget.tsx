@@ -1,7 +1,5 @@
 import "../styles/ChartWidget.css";
 
-import * as d3 from "d3-format";
-
 import { AreaChart, IChartProps } from "@fluentui/react-charting";
 import { Button, Text, ToggleButton } from "@fluentui/react-components";
 import {
@@ -9,7 +7,7 @@ import {
   DataPie24Regular,
   MoreHorizontal32Regular,
 } from "@fluentui/react-icons";
-import { BaseWidget, IWidgetClassNames } from "@microsoft/teamsfx-react";
+import { BaseWidget } from "@microsoft/teamsfx-react";
 
 import { DayRange, TimeModel } from "../models/chartModel";
 import { getChart1Points, getChart2Points, getTimeRange } from "../services/chartService";
@@ -21,7 +19,7 @@ interface IChartWidgetState {
 }
 
 export default class ChartWidget extends BaseWidget<any, IChartWidgetState> {
-  async getData(): Promise<IChartWidgetState> {
+  override async getData(): Promise<IChartWidgetState> {
     return {
       selectedRange: DayRange.Seven,
       chartProps: this.retriveChartsData(DayRange.Seven),
@@ -29,7 +27,7 @@ export default class ChartWidget extends BaseWidget<any, IChartWidgetState> {
     };
   }
 
-  header(): JSX.Element | undefined {
+  override header(): JSX.Element | undefined {
     return (
       <div>
         <DataPie24Regular />
@@ -39,49 +37,42 @@ export default class ChartWidget extends BaseWidget<any, IChartWidgetState> {
     );
   }
 
-  body(): JSX.Element | undefined {
+  override body(): JSX.Element | undefined {
     return (
       <div>
-        <div className="chart-selector">
-          {this.state.timeRange &&
-            this.state.timeRange.map((t: TimeModel, i) => {
-              return (
-                <ToggleButton
-                  key={`tb-time-range-${i}`}
-                  appearance="transparent"
-                  checked={this.state.selectedRange === t.range}
-                  onClick={() =>
-                    this.setState({
-                      chartProps: this.retriveChartsData(t.range),
-                      selectedRange: t.range,
-                    })
-                  }
-                >
-                  {t.name}
-                </ToggleButton>
-              );
-            })}
+        <div className="time-span">
+          {this.state.timeRange?.map((t: TimeModel, i: any) => {
+            return (
+              <ToggleButton
+                key={`tb-time-range-${i}`}
+                appearance="transparent"
+                checked={this.state.selectedRange === t.range}
+                onClick={() =>
+                  this.setState({
+                    chartProps: this.retriveChartsData(t.range),
+                    selectedRange: t.range,
+                  })
+                }
+              >
+                {t.name}
+              </ToggleButton>
+            );
+          })}
         </div>
 
-        <div className="chart">
-          {this.state.chartProps && (
-            <AreaChart
-              data={this.state.chartProps}
-              yAxisTickFormat={d3.format(".1s")}
-              wrapXAxisLables={false}
-              legendProps={{
-                allowFocusOnLegends: true,
-              }}
-            />
-          )}
-        </div>
+        {this.state.chartProps && (
+          <div className="area-chart">
+            <AreaChart data={this.state.chartProps} />
+          </div>
+        )}
       </div>
     );
   }
 
-  footer(): JSX.Element | undefined {
+  override footer(): JSX.Element | undefined {
     return (
       <Button
+        id="chart-footer"
         appearance="transparent"
         icon={<ArrowRight16Filled />}
         iconPosition="after"
@@ -90,12 +81,6 @@ export default class ChartWidget extends BaseWidget<any, IChartWidgetState> {
         View details
       </Button>
     );
-  }
-
-  styling(): IWidgetClassNames {
-    return {
-      footer: "chart-footer",
-    };
   }
 
   private retriveChartsData(r: DayRange): IChartProps {

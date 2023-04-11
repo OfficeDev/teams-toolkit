@@ -2,22 +2,20 @@ import "./App.css";
 
 import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
-// https://fluentsite.z22.web.core.windows.net/quick-start
 import {
   FluentProvider,
   Spinner,
   teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
-  tokens,
 } from "@fluentui/react-components";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
 import SampleDashboard from "./dashboards/SampleDashboard";
+import { TeamsFxContext } from "./internal/context";
 import Privacy from "./Privacy";
 import TabConfig from "./TabConfig";
 import TermsOfUse from "./TermsOfUse";
-import { TeamsFxContext } from "./internal/context";
 
 /**
  * The main app which handles the initialization and routing
@@ -39,10 +37,6 @@ export default function App() {
             ? teamsHighContrastTheme
             : teamsLightTheme
         }
-        style={{
-          height: "100vh",
-          background: tokens.colorNeutralBackground3,
-        }}
       >
         <Router>
           {loading ? (
@@ -53,7 +47,7 @@ export default function App() {
               <Route path="/termsofuse" element={<TermsOfUse />} />
               <Route path="/tab" element={<SampleDashboard />} />
               <Route path="/config" element={<TabConfig />} />
-              <Route path="*" element={<Navigate to={"/tab"} />}></Route>
+              <Route path="*" element={<Navigate to={"/tab"} />} />
             </Routes>
           )}
         </Router>

@@ -1,6 +1,6 @@
 .list-body {
   display: grid;
-  gap: 0.5rem;
+  row-gap: var(--spacingVerticalS);
   align-content: start;
   min-width: 13.5rem;
 }
@@ -11,7 +11,7 @@
 
 .list-body .divider {
   margin: 0 -2rem 0.5rem;
-  height: 1px;
+  height: var(--strokeWidthThin);
   background: var(--colorNeutralStroke2);
 }
 

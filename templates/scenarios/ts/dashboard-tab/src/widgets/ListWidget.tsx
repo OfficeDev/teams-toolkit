@@ -29,7 +29,7 @@ export default class ListWidget extends BaseWidget<any, IListWidgetState> {
   body(): JSX.Element | undefined {
     return (
       <div className="list-body">
-        {this.state.data.map((t: ListModel) => {
+        {this.state.data?.map((t: ListModel) => {
           return (
             <div key={`${t.id}-div`}>
               <div className="divider" />

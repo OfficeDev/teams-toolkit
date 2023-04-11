@@ -6,6 +6,7 @@ import { execAsync, execAsyncWithRetry, editDotEnvFile } from "../e2e/commonUtil
 import { TemplateProject, Resource, ResourceToDeploy, Capability } from "./constants";
 import path from "path";
 import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
+import fs from "fs-extra";
 
 export class CliHelper {
   static async setSubscription(
@@ -263,6 +264,21 @@ export class CliHelper {
       if (e.killed && e.signal == "SIGTERM") {
         console.log(`Command ${command} killed due to timeout ${timeout}`);
       }
+    }
+  }
+  static async openTemplateProject(
+    appName: string,
+    testFolder: string,
+    template: TemplateProject,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const oldPath = path.resolve("resource", template);
+    const newPath = path.resolve(testFolder, appName);
+    await fs.mkdir(newPath);
+    try {
+      await fs.copy(oldPath, newPath);
+    } catch (error) {
+      throw new Error(`Failed to open project: ${newPath}`);
     }
   }
 

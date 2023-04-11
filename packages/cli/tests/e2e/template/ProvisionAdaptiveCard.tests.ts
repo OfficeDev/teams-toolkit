@@ -31,12 +31,12 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.AdaptiveCard}`, { testPlanCaseId: 15277474 }, async function () {
-    await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
-
     if (isV3Enabled()) {
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }

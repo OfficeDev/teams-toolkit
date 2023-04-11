@@ -212,6 +212,14 @@ jobs:
         run: |
           lscpu
 
+      - name: Download samples
+        if: startsWith(matrix.cases, './template/') 
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: v3
+          path: resource
+
       - name: run test
         working-directory: packages/cli/tests/e2e
         run: |

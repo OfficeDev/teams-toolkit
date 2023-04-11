@@ -15,6 +15,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  readContextMultiEnvV3,
   getUniqueAppName,
 } from "../commonUtils";
 import { AadValidator, FrontendValidator } from "../../commonlib";
@@ -32,25 +33,27 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.ContactExporter}`, { testPlanCaseId: 15277462 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.ContactExporter);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.ContactExporter);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.ContactExporter,
-      TemplateProject.ContactExporter
-    );
-
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
+    if (isV3Enabled()) {
+    } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+    }
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, env)
+      : await readContextMultiEnv(projectPath, env);
     // Validate Aad App
     const aad = AadValidator.init(context, false, m365Login);
     await AadValidator.validate(aad);

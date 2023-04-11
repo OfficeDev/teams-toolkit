@@ -189,5 +189,6 @@ export class EnvConstants {
   static readonly BOT_ID = "BOT_ID";
   static readonly BOT_PASSWORD = "SECRET_BOT_PASSWORD";
   static readonly BOT_AZURE_APP_SERVICE_RESOURCE_ID = "BOT_AZURE_APP_SERVICE_RESOURCE_ID";
+  static readonly BOT_AZURE_FUNCTION_RESOURCE_ID = "BOT_AZURE_FUNCTION_APP_RESOURCE_ID";
   static readonly BOT_DOMAIN = "BOT_DOMAIN";
 }

@@ -16,6 +16,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  readContextMultiEnvV3,
   getUniqueAppName,
 } from "../commonUtils";
 import { AadValidator, FrontendValidator } from "../../commonlib";
@@ -33,25 +34,27 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.GraphConnector}`, { testPlanCaseId: 15277460 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.GraphConnector);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.GraphConnector);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.GraphConnector,
-      TemplateProject.GraphConnector
-    );
-
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
+    if (isV3Enabled()) {
+    } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+    }
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, env)
+      : await readContextMultiEnv(projectPath, env);
     // Validate Aad App
     const aad = AadValidator.init(context, false, m365Login);
     await AadValidator.validate(aad);
@@ -59,17 +62,6 @@ describe("teamsfx new template", function () {
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
-
-    const result = await execAsync(`npm i @types/node -D`, {
-      cwd: path.join(projectPath, "api"),
-      env: process.env,
-      timeout: 0,
-    });
-    if (!result.stderr) {
-      console.log("success to run cmd: npm i @types/node -D");
-    } else {
-      console.log("[failed] ", result.stderr);
-    }
 
     // deploy
     await CliHelper.deployAll(projectPath);

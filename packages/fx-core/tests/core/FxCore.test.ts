@@ -867,7 +867,7 @@ async function mockV2Project(): Promise<string> {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
   await fs.copy(
-    path.join(__dirname, "../core/middleware/testAssets/v3Migration/happyPath"),
+    path.join(__dirname, "../core/middleware/migration/testAssets/happyPath"),
     path.join(projectPath)
   );
   return appName;

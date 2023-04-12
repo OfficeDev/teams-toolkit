@@ -13,6 +13,7 @@ import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
+import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
@@ -209,7 +210,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
       const host = new TunnelRelayTunnelHost(this.tunnelManagementClientImpl);
       host.trace = (level, eventId, msg, err) => {
-        if (msg) {
+        if (msg && level !== TraceLevel.Verbose) {
           this.writeEmitter.fire(`${msg}\r\n`);
         }
         if (err) {

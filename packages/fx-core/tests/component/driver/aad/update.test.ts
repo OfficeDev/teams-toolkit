@@ -440,9 +440,9 @@ describe("aadAppUpdate", async () => {
 
     expect(result.result.isOk()).to.be.true;
     expect(startTelemetry.eventName).to.equal("aadApp/update-start");
-    expect(startTelemetry.properties.component).to.equal("aadApp/update");
+    expect(startTelemetry.properties.component).to.equal("aadAppupdate");
     expect(endTelemetry.eventName).to.equal("aadApp/update");
-    expect(endTelemetry.properties.component).to.equal("aadApp/update");
+    expect(endTelemetry.properties.component).to.equal("aadAppupdate");
     expect(endTelemetry.properties.success).to.equal("yes");
   });
 
@@ -504,9 +504,9 @@ describe("aadAppUpdate", async () => {
 
     expect(result.result.isOk()).to.be.false;
     expect(startTelemetry.eventName).to.equal("aadApp/update-start");
-    expect(startTelemetry.properties.component).to.equal("aadApp/update");
+    expect(startTelemetry.properties.component).to.equal("aadAppupdate");
     expect(endTelemetry.eventName).to.equal("aadApp/update");
-    expect(endTelemetry.properties.component).to.equal("aadApp/update");
+    expect(endTelemetry.properties.component).to.equal("aadAppupdate");
     expect(endTelemetry.properties.success).to.equal("no");
     expect(endTelemetry.properties["error-code"]).to.equal("aadApp/update.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");

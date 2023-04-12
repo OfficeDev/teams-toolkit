@@ -1,3 +1,6 @@
+# yaml-language-server: $schema=https://developer.microsoft.com/json-schemas/teams-toolkit/teamsapp-yaml/1.0.0/yaml.schema.json
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
 projectId: {{projectId}}
@@ -23,6 +26,7 @@ provision:
     with:
       name: {{teamsAppName}} # Teams app name
     writeToEnvironmentFile:
+      # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
 {{#if activePlugins.fx-resource-bot}}
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
@@ -47,7 +51,6 @@ provision:
       storageResourceId: $\{{ {{~placeholderMappings.[state.fx-resource-frontend-hosting.storageResourceId]~}} }}
       indexPage: index.html
       errorPage: error.html
-    # Output: N/A
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
@@ -66,8 +69,6 @@ provision:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile:
-      teamsAppId: TEAMS_APP_ID
 {{#if isM365}}
   - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
     with:
@@ -157,10 +158,10 @@ deploy:
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:      
       dotnet: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       dotnetPath: DOTNET_PATH
   - uses: cli/runNpmCommand
     name: install api dependencies
@@ -171,7 +172,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by prerequisite/install action
+      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by devTool/install action
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
     name: build api app
@@ -204,8 +205,6 @@ publish:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile:
-      teamsAppId: TEAMS_APP_ID
   - uses: teamsApp/publishAppPackage # Publish the app to Teams Admin Center (https://admin.teams.microsoft.com/policies/manage-apps) for review and approval
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip

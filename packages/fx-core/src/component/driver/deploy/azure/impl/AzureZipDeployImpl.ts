@@ -14,7 +14,7 @@ import {
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { getLocalizedMessage } from "../../../../messages";
+import { getLocalizedMessage, ProgressMessages } from "../../../../messages";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
@@ -229,6 +229,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   }
 
   updateProgressbar() {
-    this.progressBar?.next(`Deploying ${this.workingDirectory ?? ""} to ${this.serviceName}`);
+    this.progressBar?.next(ProgressMessages.deployToAzure(this.workingDirectory, this.serviceName));
   }
 }

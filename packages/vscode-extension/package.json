@@ -565,7 +565,7 @@
         "command": "fx-extension.addEnvironmentWithIcon",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
         "icon": "$(add)",
-        "enablement": "fx-extension.isTeamsFx"
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked"
       },
       {
         "command": "fx-extension.addFeature",
@@ -1071,10 +1071,6 @@
                       },
                       {}
                     ]
-                  },
-                  "template": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.template.title%"
                   }
                 },
                 "additionalProperties": false

@@ -23,7 +23,7 @@ export async function mockMigrationContext(projectPath: string): Promise<Migrati
 }
 
 export function getTestAssetsPath(projectName: string): string {
-  return path.join("tests/core/middleware/testAssets/v3Migration", projectName.toString());
+  return path.join("tests/core/middleware/migration/testAssets", projectName.toString());
 }
 
 // Change CRLF to LF to avoid test failures in different OS

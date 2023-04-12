@@ -31,9 +31,6 @@ describe("Provision", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it("Provision Resource: project with new bot", { testPlanCaseId: 10306848 }, async function () {
-    if (isV3Enabled()) {
-      return this.skip();
-    }
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
       cwd: testFolder,
       env: process.env,

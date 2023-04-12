@@ -23,6 +23,7 @@ import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 import { CancelDownloading } from "./error";
 import { deepCopy } from "../../common/tools";
+import _ from "lodash";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -282,17 +283,23 @@ export async function downloadDirectory(
   await limitConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }
 
-async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any, limit: number) {
-  const processing: any[] = [];
-  let i = 0;
-  while (i < limit && i < data.length) {
-    processing.push(callback(data[i]));
-    i++;
+export async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any, limit: number) {
+  const queue: any[] = [];
+  const ret = [];
+  for (const ele of data) {
+    // fire the async function, add its promise to the queue, and remove
+    // it from queue when complete
+    const p = callback(ele).then((res: any) => {
+      queue.splice(queue.indexOf(p), 1);
+      return res;
+    });
+    queue.push(p);
+    ret.push(p);
+    // if max concurrent, wait for one to finish
+    if (queue.length >= limit) {
+      await Promise.race(queue);
+    }
   }
-  while (i < data.length) {
-    await Promise.race(processing);
-    processing.push(callback(data[i]));
-    i++;
-  }
-  await Promise.all(processing);
+  // wait for the rest of the calls to finish
+  await Promise.all(queue);
 }

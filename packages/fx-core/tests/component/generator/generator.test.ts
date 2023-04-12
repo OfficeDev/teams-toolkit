@@ -9,6 +9,7 @@ import axios, { AxiosResponse } from "axios";
 import {
   downloadDirectory,
   getSampleInfoFromName,
+  limitConcurrency,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
@@ -281,6 +282,20 @@ describe("Generator utils", () => {
     );
     const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
     assert.equal(data, mockFileData);
+  });
+
+  it("limit concurrency", async () => {
+    const data = [1, 10, 2, 3];
+    let res: number[] = [];
+    const callback = async (num: number) => {
+      await new Promise((resolve) => setTimeout(resolve, num * 10));
+      res.push(num);
+    };
+    await limitConcurrency(data, callback, 2);
+    assert.deepEqual(res, [1, 2, 3, 10]);
+    res = [];
+    await limitConcurrency(data, callback, 1);
+    assert.deepEqual(res, [1, 10, 2, 3]);
   });
 });
 

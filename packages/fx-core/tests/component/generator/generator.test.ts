@@ -37,7 +37,6 @@ import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
-import { tmpdir } from "os";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");

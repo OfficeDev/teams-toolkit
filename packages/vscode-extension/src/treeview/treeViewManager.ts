@@ -200,7 +200,7 @@ class TreeViewManager {
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
-        "fx-extension.debug",
+        "fx-extension.localdebug",
         undefined,
         { name: "debug-alt", custom: false }
       ),

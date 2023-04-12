@@ -235,7 +235,7 @@ export function getSampleRelativePath(sampleName: string): string {
 }
 
 export function getSampleUrl(sample: SampleInfo): string {
-  if (sample.url == sampleConfig.baseUrl) {
+  if (sample.url === sampleConfig.baseUrl) {
     return `${sample.url}${sample.id}`;
   } else {
     return sample.url;

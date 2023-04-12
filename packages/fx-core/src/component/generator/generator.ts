@@ -19,6 +19,7 @@ import {
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
   FetchZipFromUrlError,
+  MissKeyError,
   TemplateZipFallbackError,
   UnzipError,
 } from "./error";
@@ -107,8 +108,6 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: sampleName,
-    });
-    merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled() ? "true" : "false",
     });
     const sample = getSampleInfoFromName(sampleName);

@@ -82,7 +82,10 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
 export const downloadDirectoryAction: GeneratorAction = {
   name: GeneratorActionName.DownloadDirectory,
   run: async (context: GeneratorContext) => {
-    await downloadDirectory(context.url!, context.destination);
+    if (!context.url) {
+      throw new MissKeyError("url");
+    }
+    await downloadDirectory(context.url, context.destination);
   },
 };
 

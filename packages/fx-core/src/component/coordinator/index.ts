@@ -13,7 +13,6 @@ import {
   ResourceContextV3,
   Result,
   UserCancelError,
-  UserError,
   Void,
 } from "@microsoft/teamsfx-api";
 import { camelCase, merge } from "lodash";
@@ -84,7 +83,7 @@ import { DotenvParseOutput } from "dotenv";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
@@ -103,7 +102,7 @@ import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import { UnresolvedPlaceholderError } from "../../error/common";
-import { SelectSubscriptionError } from "../../error/azure";
+import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -757,7 +756,7 @@ export class Coordinator {
         );
         if (createRgRes.isErr()) {
           const error = createRgRes.error;
-          if (error.name !== "ResourceGroupConflictError") {
+          if (!(error instanceof ResourceGroupConflictError)) {
             return err(error);
           }
         }

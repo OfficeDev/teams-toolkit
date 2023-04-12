@@ -285,7 +285,6 @@ export async function downloadDirectory(
 
 export async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any, limit: number) {
   const queue: any[] = [];
-  const ret = [];
   for (const ele of data) {
     // fire the async function, add its promise to the queue, and remove
     // it from queue when complete
@@ -294,7 +293,6 @@ export async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any,
       return res;
     });
     queue.push(p);
-    ret.push(p);
     // if max concurrent, wait for one to finish
     if (queue.length >= limit) {
       await Promise.race(queue);

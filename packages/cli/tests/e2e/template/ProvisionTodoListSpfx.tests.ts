@@ -33,7 +33,7 @@ describe("teamsfx new template", function () {
     if (isV3Enabled()) {
       await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.TodoListSpfx);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
-      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be.true;
     } else {
       await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.TodoListSpfx);
       expect(fs.pathExistsSync(projectPath)).to.be.true;

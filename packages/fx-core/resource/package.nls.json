@@ -840,6 +840,7 @@
   "error.BadComponent": "Component '%s' lacks of property: %s.",
   "error.InvalidFeature": "This feature is not applicable for your project.",
   "error.UpdateAadManifest.MissingEnvHint": "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables.",
+  "error.driver.outputEnvironmentVariableUndefined": "The output environment variable name(s) are not defined.",
   "driver.aadApp.description.create": "Create an Azure Active Directory app to authenticate users",
   "driver.aadApp.description.update": "Apply Azure Active Directory app manifest to an existing app",
   "driver.aadApp.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",

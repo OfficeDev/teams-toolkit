@@ -12,6 +12,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import {
   execAsync,
   getTestFolder,
+  setSimpleAuthSkuNameToB1Bicep,
   cleanUpLocalProject,
   getSubscriptionId,
   execAsyncWithRetry,
@@ -31,16 +32,14 @@ describe("teamsfx new template", function () {
   it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
     if (isV3Enabled()) {
       this.skip();
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.TodoListSpfx);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be.true;
+    } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.TodoListSpfx);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.TodoListSpfx,
-      "todo-list-SPFx"
-    );
-
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     // validation succeed without provision
     await execAsync("teamsfx validate", {
@@ -50,18 +49,15 @@ describe("teamsfx new template", function () {
     });
 
     // provision
-    await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    if (isV3Enabled()) {
+    } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+    }
+    await CliHelper.provisionProject(projectPath);
 
     // deploy
-    await execAsyncWithRetry(`teamsfx deploy`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.deployAll(projectPath);
   });
 
   afterEach(async () => {

@@ -7,7 +7,6 @@ import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
 import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
-import { ProgressBarSetting } from "./interface/progressBarSetting";
 import {
   FxError,
   M365TokenProvider,
@@ -30,20 +29,12 @@ import { InvalidActionInputError } from "../../../error/common";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { SignInAudience } from "./interface/signInAudience";
 import { updateProgress } from "../middleware/updateProgress";
+import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
 const driverConstants = {
   generateSecretErrorMessageKey: "driver.aadApp.error.generateSecretFailed",
-};
-
-const defaultOutputEnvVarNames = {
-  clientId: "AAD_APP_CLIENT_ID",
-  objectId: "AAD_APP_OBJECT_ID",
-  tenantId: "AAD_APP_TENANT_ID",
-  authorityHost: "AAD_APP_OAUTH_AUTHORITY_HOST",
-  authority: "AAD_APP_OAUTH_AUTHORITY",
-  clientSecret: "SECRET_AAD_APP_CLIENT_SECRET",
 };
 
 @Service(actionName) // DO NOT MODIFY the service name
@@ -73,10 +64,10 @@ export class CreateAadAppDriver implements StepDriver {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
       this.validateArgs(args);
-      // TODO: Remove this logic when config manager forces schema validation
       if (!outputEnvVarNames) {
-        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+        throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
+
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const aadAppState: CreateAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       if (!aadAppState.clientId) {

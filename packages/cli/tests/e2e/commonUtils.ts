@@ -661,19 +661,23 @@ export function getKeyVaultSecretReference(vaultName: string, secretName: string
 }
 
 export function editDotEnvFile(filePath: string, key: string, value: string): void {
-  const envFileContent: string = fs.readFileSync(filePath, "utf-8");
-  const envVars: { [key: string]: string } = envFileContent
-    .split("\n")
-    .reduce((acc: { [key: string]: string }, line: string) => {
-      const [key, value] = line.split("=");
-      if (key && value) {
-        acc[key.trim()] = value.trim();
-      }
-      return acc;
-    }, {});
-  envVars[key] = value;
-  const newEnvFileContent: string = Object.entries(envVars)
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
-  fs.writeFileSync(filePath, newEnvFileContent);
+  try {
+    const envFileContent: string = fs.readFileSync(filePath, "utf-8");
+    const envVars: { [key: string]: string } = envFileContent
+      .split("\n")
+      .reduce((acc: { [key: string]: string }, line: string) => {
+        const [key, value] = line.split("=");
+        if (key && value) {
+          acc[key.trim()] = value.trim();
+        }
+        return acc;
+      }, {});
+    envVars[key] = value;
+    const newEnvFileContent: string = Object.entries(envVars)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
+    fs.writeFileSync(filePath, newEnvFileContent);
+  } catch (error) {
+    console.log('Failed to edit ".env" file.');
+  }
 }

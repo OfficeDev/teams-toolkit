@@ -55,7 +55,7 @@
           { "$ref": "#/definitions/fileCreateOrUpdateEnvironmentFile" },
           { "$ref": "#/definitions/fileCreateOrUpdateJsonFile" },
           { "$ref": "#/definitions/devToolInstall" },
-          { "$ref": "#/definitions/m365TitleAcquire" },
+          { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
           { "$ref": "#/definitions/script" }
@@ -1207,10 +1207,10 @@
         }
       }
     },
-    "m365TitleAcquire": {
+    "teamsAppExtendToM365": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Upload app as M365 title. Refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
+      "description": "Extend Teams app across Microsoft 365. Refer to https://aka.ms/teamsfx-actions/teamsapp-extendToM365 for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -1226,8 +1226,8 @@
         },
         "uses": {
           "type": "string",
-          "description": "Upload app as M365 title. Refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
-          "const": "m365Title/acquire"
+          "description": "Extend Teams app across Microsoft 365. Refer to https://aka.ms/teamsfx-actions/teamsapp-extendToM365 for more details.",
+          "const": "teamsApp/extendToM365"
         },
         "with": {
           "type": "object",

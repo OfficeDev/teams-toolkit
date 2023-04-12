@@ -455,7 +455,7 @@
   "error.debugHandler.InvalidExistingBotArgsError": "botId and botPassword need to be set together if you use existing bot.",
   "error.debugHandler.DebugArgumentEmptyError": "Debug argument '%s' is empty.",
   "error.debugHandler.InvalidTabBaseUrlError": "baseUrl must be a valid https url.",
-  "error.m365.M365TitleNotAcquiredError": "Microsoft 365 title is not acquired yet, please use m365Title/acquire action to acquire Microsoft 365 title.",
+  "error.m365.NotExtendedToM365Error": "Teams app is not extended across Microsoft 365 yet, please use teamsApp/extendToM365 action to extend your Teams app across Microsoft 365.",
   "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",

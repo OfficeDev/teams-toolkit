@@ -51,7 +51,7 @@
             "request": "launch",
             "url": "https://www.office.com/m365apps/${{M365_APP_ID}}?auth=2&${account-hint}",
             "presentation": {
-                "group": "group 3: Office",
+                "group": "group 3: the Microsoft 365 app",
                 "order": 3
             },
             "internalConsoleOptions": "neverOpen"

@@ -6,21 +6,15 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { environmentManager, ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { getLocalizedString } from "@microsoft/teamsfx-core/src/common/localizeUtils";
 import * as chai from "chai";
-import { expect } from "chai";
-import * as fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
-import { AadValidator } from "../../commonlib/aadValidate";
 import { Cleaner } from "../../utils/cleaner";
 import { Capability } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
-import { ProjectEnvReader } from "../../utils/projectEnvReader";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import { getTeamsApp } from "../debug/utility";
 
 describe("version check", () => {
   const testFolder = getTestFolder();
@@ -28,9 +22,6 @@ describe("version check", () => {
   const projectPath = path.resolve(testFolder, appName);
 
   afterEach(async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
     await Cleaner.clean(projectPath);
   });
 

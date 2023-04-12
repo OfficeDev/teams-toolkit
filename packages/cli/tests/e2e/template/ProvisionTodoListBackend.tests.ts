@@ -15,7 +15,9 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  readContextMultiEnvV3,
   getUniqueAppName,
+  editDotEnvFile,
 } from "../commonUtils";
 import { AadValidator, FrontendValidator, FunctionValidator, SqlValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
@@ -33,28 +35,35 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.TodoListBackend}`, { testPlanCaseId: 15277465 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.TodoListBackend);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.TodoListBackend);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.TodoListBackend,
-      TemplateProject.TodoListBackend
-    );
-
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(
-      projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
-    );
+    if (isV3Enabled()) {
+      const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
+      editDotEnvFile(envFilePath, "SQL_PASSWORD", "Cab232332" + getUuid().substring(0, 6));
+      await CliHelper.provisionProject(projectPath);
+    } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(
+        projectPath,
+        `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
+      );
+    }
 
     // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, env)
+      : await readContextMultiEnv(projectPath, env);
+
     // Validate Aad App
     const aad = AadValidator.init(context, false, m365Login);
     await AadValidator.validate(aad);

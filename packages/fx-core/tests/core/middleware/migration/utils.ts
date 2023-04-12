@@ -36,7 +36,6 @@ export async function assertFileContent(
   actualFilePath: string,
   expectedFileName: string
 ): Promise<void> {
-  return;
   const actualFileFullPath = path.join(projectPath, actualFilePath);
   const expectedFileFulePath = path.join(projectPath, "expectedResult", expectedFileName);
   assert.isTrue(await fs.pathExists(actualFileFullPath));
@@ -60,7 +59,7 @@ export async function assertFileContentByTemplateCompose(
     noEscape: true,
   });
   const expectedFileContent = template(ymlTemplates);
-  assert.equal(actualFileContent, expectedFileContent);
+  assert.equal(actualFileContent, normalizeLineBreaks(expectedFileContent));
 }
 
 export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {

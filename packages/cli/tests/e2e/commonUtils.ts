@@ -446,8 +446,6 @@ export async function readContextMultiEnv(projectPath: string, envName: string):
       }
     }
   }
-
-  return context;
 }
 
 export async function getActivePluginsFromProjectSetting(projectPath: string): Promise<any> {
@@ -660,4 +658,26 @@ export async function validateServicePlan(
 
 export function getKeyVaultSecretReference(vaultName: string, secretName: string): string {
   return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
+}
+
+export function editDotEnvFile(filePath: string, key: string, value: string): void {
+  try {
+    const envFileContent: string = fs.readFileSync(filePath, "utf-8");
+    const envVars: { [key: string]: string } = envFileContent
+      .split("\n")
+      .reduce((acc: { [key: string]: string }, line: string) => {
+        const [key, value] = line.split("=");
+        if (key && value) {
+          acc[key.trim()] = value.trim();
+        }
+        return acc;
+      }, {});
+    envVars[key] = value;
+    const newEnvFileContent: string = Object.entries(envVars)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
+    fs.writeFileSync(filePath, newEnvFileContent);
+  } catch (error) {
+    console.log('Failed to edit ".env" file.');
+  }
 }

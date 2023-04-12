@@ -19,12 +19,14 @@ import { Service } from "typedi";
 import fs from "fs-extra";
 import * as path from "path";
 import { EOL } from "os";
+import { merge } from "lodash";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
+import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
@@ -125,6 +127,11 @@ export class ValidateAppPackageDriver implements StepDriver {
             content: `${validationResult.errors.length} failed, `,
             color: Colors.BRIGHT_RED,
           });
+          merge(context.telemetryProperties, {
+            [TelemetryPropertyKey.validationErrors]: validationResult.errors
+              .map((x) => x.title)
+              .join(";"),
+          });
         }
         if (validationResult.warnings.length > 0) {
           outputMessage.push({
@@ -133,6 +140,11 @@ export class ValidateAppPackageDriver implements StepDriver {
               (validationResult.warnings.length > 1 ? "s" : "") +
               ", ",
             color: Colors.BRIGHT_RED,
+          });
+          merge(context.telemetryProperties, {
+            [TelemetryPropertyKey.validationWarnings]: validationResult.warnings
+              .map((x) => x.title)
+              .join(";"),
           });
         }
         outputMessage.push({
@@ -197,12 +209,22 @@ export class ValidateAppPackageDriver implements StepDriver {
         const summaryStr = [];
         if (failed > 0) {
           summaryStr.push(getLocalizedString("driver.teamsApp.summary.validate.failed", failed));
+          merge(context.telemetryProperties, {
+            [TelemetryPropertyKey.validationErrors]: validationResult.errors
+              .map((x) => x.title)
+              .join(";"),
+          });
         }
         if (warns > 0) {
           summaryStr.push(
             getLocalizedString("driver.teamsApp.summary.validate.warning", warns) +
               (warns > 1 ? "s" : "")
           );
+          merge(context.telemetryProperties, {
+            [TelemetryPropertyKey.validationWarnings]: validationResult.warnings
+              .map((x) => x.title)
+              .join(";"),
+          });
         }
         if (passed > 0) {
           summaryStr.push(getLocalizedString("driver.teamsApp.summary.validate.succeed", passed));
@@ -224,9 +246,7 @@ export class ValidateAppPackageDriver implements StepDriver {
         if (args.showMessage) {
           const message = getLocalizedString(
             "driver.teamsApp.validate.result",
-            validationResult.errors.length,
-            validationResult.warnings.length,
-            validationResult.notes.length,
+            summaryStr.join(", "),
             "command:fx-extension.showOutputChannel"
           );
           context.ui?.showMessage("info", message, false);

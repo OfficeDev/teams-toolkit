@@ -977,7 +977,7 @@
   "driver.teamsApp.validate.skip": "%s action is currently skipped, will be updated in the future version.",
   "driver.teamsApp.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.teamsApp.validate.invalidParameter": "Parameter %s should be provided for action %s",
-  "driver.teamsApp.validate.result": "Teams Toolkit has completed checking your app package against validation rules. %s failed, %s warnings, %s passed. Check [output window](%s) for details.",
+  "driver.teamsApp.validate.result": "Teams Toolkit has completed checking your app package against validation rules. %s. Check [output window](%s) for details.",
   "error.teamsApp.validate.apiFailed": "Unable to validate Teams app package due to %s",
   "error.teamsApp.validate.apiFailed.display": "Unable to validate Teams app package. Check [output window](%s) for details.",
   "error.teamsApp.AppIdNotExistError": "Teams app with ID %s does not exist in Teams Developer Portal.",

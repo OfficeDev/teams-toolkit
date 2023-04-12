@@ -29,7 +29,7 @@ export class DownloadSampleNetworkError extends BaseComponentInnerError {
   constructor(url: string) {
     super(
       errorSource,
-      "SystemError",
+      "UserError",
       "DownloadSampleNetworkError",
       "error.generator.DownloadSampleNetworkError",
       [url]
@@ -41,7 +41,7 @@ export class DownloadSampleApiLimitError extends BaseComponentInnerError {
   constructor(url: string) {
     super(
       errorSource,
-      "SystemError",
+      "UserError",
       "DownloadSampleApiLimitError",
       "error.generator.DownloadSampleApiLimitError",
       [url]

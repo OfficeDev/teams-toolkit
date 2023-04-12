@@ -108,7 +108,7 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: sampleName,
-      [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled() ? "true" : "false",
+      [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled().toString(),
     });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
@@ -122,11 +122,7 @@ export class Generator {
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
-    if (isDownloadDirectoryEnabled()) {
-      await actionContext?.progressBar?.next(ProgressMessages.downloadDirectory());
-    } else {
-      await actionContext?.progressBar?.next(ProgressMessages.generateSample());
-    }
+    await actionContext?.progressBar?.next(ProgressMessages.generateSample());
     const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
     await this.generate(generatorContext, actionSeq);
     return ok(undefined);

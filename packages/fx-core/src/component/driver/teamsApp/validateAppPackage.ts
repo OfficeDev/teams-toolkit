@@ -119,14 +119,26 @@ export class ValidateAppPackageDriver implements StepDriver {
             content: "Teams Toolkit has checked against all validation rules:\n\nSummary: \n",
             color: Colors.BRIGHT_WHITE,
           },
-          {
-            content: `${
-              validationResult.errors.length + validationResult.warnings.length
-            } failed, `,
-            color: Colors.BRIGHT_RED,
-          },
-          { content: `${validationResult.notes.length} passed.\n`, color: Colors.BRIGHT_GREEN },
         ];
+        if (validationResult.errors.length > 0) {
+          outputMessage.push({
+            content: `${validationResult.errors.length} failed, `,
+            color: Colors.BRIGHT_RED,
+          });
+        }
+        if (validationResult.warnings.length > 0) {
+          outputMessage.push({
+            content:
+              `${validationResult.warnings.length} warning` +
+              (validationResult.warnings.length > 1 ? "s" : "") +
+              ", ",
+            color: Colors.BRIGHT_RED,
+          });
+        }
+        outputMessage.push({
+          content: `${validationResult.notes.length} passed.\n`,
+          color: Colors.BRIGHT_GREEN,
+        });
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
@@ -180,26 +192,27 @@ export class ValidateAppPackageDriver implements StepDriver {
           .join(EOL);
 
         const passed = validationResult.notes.length;
-        const failed = validationResult.errors.length + validationResult.warnings.length;
-        let summaryStr = "";
+        const failed = validationResult.errors.length;
+        const warns = validationResult.warnings.length;
+        const summaryStr = [];
         if (failed > 0) {
-          if (passed > 0) {
-            summaryStr =
-              getLocalizedString("driver.teamsApp.summary.validate.failed", failed) +
-              ", " +
-              getLocalizedString("driver.teamsApp.summary.validate.succeed", passed);
-          } else {
-            summaryStr = getLocalizedString("driver.teamsApp.summary.validate.failed", failed);
-          }
-        } else {
-          summaryStr = getLocalizedString("driver.teamsApp.summary.validate.succeed", passed);
+          summaryStr.push(getLocalizedString("driver.teamsApp.summary.validate.failed", failed));
+        }
+        if (warns > 0) {
+          summaryStr.push(
+            getLocalizedString("driver.teamsApp.summary.validate.warning", warns) +
+              (warns > 1 ? "s" : "")
+          );
+        }
+        if (passed > 0) {
+          summaryStr.push(getLocalizedString("driver.teamsApp.summary.validate.succeed", passed));
         }
 
         const outputMessage =
           EOL +
           getLocalizedString(
             "driver.teamsApp.summary.validate",
-            summaryStr,
+            summaryStr.join(", "),
             errors,
             warnings,
             path.resolve(context.logProvider?.getLogFilePath())
@@ -211,7 +224,8 @@ export class ValidateAppPackageDriver implements StepDriver {
         if (args.showMessage) {
           const message = getLocalizedString(
             "driver.teamsApp.validate.result",
-            validationResult.errors.length + validationResult.warnings.length,
+            validationResult.errors.length,
+            validationResult.warnings.length,
             validationResult.notes.length,
             "command:fx-extension.showOutputChannel"
           );

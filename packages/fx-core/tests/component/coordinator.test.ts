@@ -1503,7 +1503,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox
       .stub(resourceGroupHelper, "createNewResourceGroup")
-      .resolves(err(new UserError({ source: "test", name: "ResourceGroupExists" })));
+      .resolves(err(new UserError({ source: "test", name: "ResourceGroupConflictError" })));
     sandbox.stub(provisionUtils, "getM365TenantId").resolves(
       ok({
         tenantIdInToken: "mockM365Tenant",

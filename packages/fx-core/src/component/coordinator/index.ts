@@ -757,7 +757,7 @@ export class Coordinator {
         );
         if (createRgRes.isErr()) {
           const error = createRgRes.error;
-          if (error.name !== "ResourceGroupExists") {
+          if (error.name !== "ResourceGroupConflictError") {
             return err(error);
           }
         }

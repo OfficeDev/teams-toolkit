@@ -5,22 +5,20 @@ import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/t
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
-import path from "path";
-import { inc } from "semver";
+import * as path from "path";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
-import { PluginId, StateConfigKey, EnvConstants } from "./constants";
+import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 
 import {
-  getSubscriptionIdFromResourceId,
+  getExpectedBotClientSecret,
+  getExpectedM365ApplicationIdUri,
+  getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
-  getWebappServicePlan,
+  getSubscriptionIdFromResourceId,
   getWebappSettings,
-  getExpectedM365ClientSecret,
-  getExpectedM365ApplicationIdUri,
-  getExpectedBotClientSecret,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -85,8 +83,7 @@ export class BotValidator {
     const botWebAppResourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
     const botFunctionAppResourceId = ctx[PluginId.Bot][StateConfigKey.functionAppResourceId];
     const botResourceId = ctx[PluginId.Bot][StateConfigKey.botResourceId];
-    const resourceId = botResourceId || botWebAppResourceId || botFunctionAppResourceId;
-    return resourceId;
+    return botResourceId || botWebAppResourceId || botFunctionAppResourceId;
   }
   public static async validateScaffold(
     projectPath: string,

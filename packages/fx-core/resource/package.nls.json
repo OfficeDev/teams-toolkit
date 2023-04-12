@@ -586,7 +586,7 @@
   "core.getUserEmailQuestion.validation1": "Email address cannot be null or empty",
   "core.getUserEmailQuestion.validation2": "Please change [UserName] to the real user name",
   "core.collaboration.error.failedToLoadDotEnvFile": "Unable to load your .env File. Reason: %s",
-  "core.collaboration.error.failedToGetTeamsAppId": "Unable to find Teams app id in your .env file. Please correctly set the value with key '%s' in your .env file.",
+  "core.collaboration.error.failedToGetTeamsAppId": "Unable to find Teams app id in your .env file. Please make sure you have already run 'Provision' or correctly set the value with key '%s' in your .env file.",
   "core.selectAadAppManifestQuestion.title": "Select Azure Active Directory manifest.json file",
   "core.selectTeamsAppManifestQuestion.title": "Select Teams manifest.json file",
   "core.selectTeamsAppPackageQuestion.title": "Select Teams app package file", 

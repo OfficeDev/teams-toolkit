@@ -13,7 +13,7 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 
-describe("m365Title/acquire", async () => {
+describe("teamsApp/extendToM365", async () => {
   const acquireDriver = new M365TitleAcquireDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),

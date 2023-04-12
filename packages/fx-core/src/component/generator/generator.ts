@@ -39,6 +39,7 @@ import {
   renderTemplateFileName,
 } from "./utils";
 import { isDownloadDirectoryEnabled } from "../../common/tools";
+import { BaseComponentInnerError } from "../error/componentError";
 
 export class Generator {
   public static getDefaultVariables(appName: string): { [key: string]: string } {
@@ -180,7 +181,8 @@ export async function sampleDefaultOnActionError(
   await context.logProvider.error(error.message);
   switch (action.name) {
     case GeneratorActionName.DownloadDirectory:
-      if (error.message.includes("403")) {
+      if (error instanceof BaseComponentInnerError) throw error.toFxError();
+      else if (error.message.includes("403")) {
         throw new DownloadSampleApiLimitError(context.url!).toFxError();
       } else {
         throw new DownloadSampleNetworkError(context.url!).toFxError();

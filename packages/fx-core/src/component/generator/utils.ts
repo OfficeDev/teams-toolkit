@@ -21,7 +21,7 @@ import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
-import { CancelDownloading } from "./error";
+import { CancelDownloading, ParseUrlError } from "./error";
 import { deepCopy } from "../../common/tools";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
@@ -256,7 +256,9 @@ export async function downloadDirectory(
 ): Promise<void> {
   //step 1: get file info
   const urlParserRegex = /https:\/\/github.com[/]([^/]+)[/]([^/]+)[/]tree[/]([^/]+)[/](.*)/;
-  const [owner, repository, ref, sampleName] = urlParserRegex.exec(sampleUrl)!.slice(1);
+  const parsed = urlParserRegex.exec(sampleUrl);
+  if (!parsed) throw new ParseUrlError(sampleUrl);
+  const [owner, repository, ref, dir] = parsed.slice(1);
   const fileInfoUrl = `https://api.github.com/repos/${owner}/${repository}/git/trees/${ref}?recursive=1`;
   const fileInfo = (
     await sendRequestWithRetry(async () => {
@@ -267,7 +269,7 @@ export async function downloadDirectory(
   const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
   const fileInfoTree = fileInfo.tree as any[];
   const samplePaths = fileInfoTree
-    .filter((node) => node.path.startsWith(sampleName) && node.type !== "tree")
+    .filter((node) => node.path.startsWith(dir) && node.type !== "tree")
     .map((node) => node.path);
 
   //step 2: download files with limited concurrency
@@ -275,7 +277,7 @@ export async function downloadDirectory(
     const file = await sendRequestWithRetry(async () => {
       return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
     }, retryLimits);
-    const filePath = path.join(dstPath, samplePath.replace(sampleName, ""));
+    const filePath = path.join(dstPath, samplePath.replace(dir, ""));
     await fs.ensureFile(filePath);
     await fs.writeFile(filePath, Buffer.from(file.data as any));
   };

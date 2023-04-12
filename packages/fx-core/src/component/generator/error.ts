@@ -49,6 +49,12 @@ export class DownloadSampleApiLimitError extends BaseComponentInnerError {
   }
 }
 
+export class ParseUrlError extends BaseComponentInnerError {
+  constructor(url: string) {
+    super(errorSource, "SystemError", "ParseUrlError", "error.generator.ParseUrlError", [url]);
+  }
+}
+
 export class FetchZipFromUrlError extends BaseComponentInnerError {
   constructor(url: string) {
     super(

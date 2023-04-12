@@ -8,9 +8,11 @@ import * as sinon from "sinon";
 import { ok } from "@microsoft/teamsfx-api";
 
 import * as commonUtils from "../../src/debug/commonUtils";
+import * as globalVariables from "../../src/globalVariables";
 import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import { Uri } from "vscode";
 
 const testDataFolder = path.resolve(__dirname, "test-data");
 
@@ -69,6 +71,7 @@ describe("[debug > commonUtils]", () => {
     });
 
     it("returns teamsAppId successfully", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(pathUtils, "getYmlFilePath");
       sandbox.stub(metadataUtil, "parse").resolves(
         ok({

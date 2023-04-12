@@ -23,7 +23,6 @@ import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 import { CancelDownloading } from "./error";
 import { deepCopy } from "../../common/tools";
-import _ from "lodash";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE

@@ -57,7 +57,11 @@ describe("teamsfx new template", function () {
 
     // Validate Bot Provision
     const bot = new BotValidator(context, projectPath, env);
-    await bot.validateProvision(false);
+    if (isV3Enabled()) {
+      await bot.validateProvisionV3(false);
+    } else {
+      await bot.validateProvision(false);
+    }
 
     // deploy
     await CliHelper.deployAll(projectPath);

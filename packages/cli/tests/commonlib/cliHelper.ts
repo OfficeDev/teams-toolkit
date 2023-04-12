@@ -284,6 +284,21 @@ export class CliHelper {
       console.log(error);
       throw new Error(`Failed to open project: ${newPath}`);
     }
+    if (isV3Enabled()) {
+      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    } else {
+      await execAsync(
+        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
+        {
+          cwd: testFolder,
+          env: processEnv ? processEnv : process.env,
+          timeout: timeout,
+        }
+      );
+    }
   }
 
   static async createTemplateProject(

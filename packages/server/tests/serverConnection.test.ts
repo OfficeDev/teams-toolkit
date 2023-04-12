@@ -202,6 +202,7 @@ describe("serverConnections", () => {
     sandbox.stub(tools, "isV3Enabled").returns(true);
     const inputs = {
       platform: "vs",
+      projectPath: ".",
     };
     const token = {};
     const res = connection.buildArtifactsRequest(inputs as Inputs, token as CancellationToken);

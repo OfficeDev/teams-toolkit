@@ -289,10 +289,14 @@ export async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any,
   for (const ele of data) {
     // fire the async function, add its promise to the queue, and remove
     // it from queue when complete
-    const p = callback(ele).then((res: any) => {
-      queue.splice(queue.indexOf(p), 1);
-      return res;
-    });
+    const p = callback(ele)
+      .then((res: any) => {
+        queue.splice(queue.indexOf(p), 1);
+        return res;
+      })
+      .catch((err: any) => {
+        throw err;
+      });
     queue.push(p);
     // if max concurrent, wait for one to finish
     if (queue.length >= limit) {

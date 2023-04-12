@@ -55,7 +55,6 @@ describe("upgrade", () => {
 
     {
       // provision
-      await CliHelper.provisionProject(projectPath);
       const result = await Executor.provision(projectPath);
       chai.assert.isTrue(result.success);
     }

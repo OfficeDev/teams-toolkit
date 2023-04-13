@@ -83,7 +83,7 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
     });
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.relativePath ? this.props.url : this.props.url + this.props.sampleAppFolder,
+      data: this.props.url,
     });
   };
 }

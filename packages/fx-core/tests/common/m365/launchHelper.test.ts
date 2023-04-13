@@ -147,7 +147,7 @@ describe("LaunchHelper", () => {
       });
       const result = await launchHelper.getM365AppId("test-id");
       chai.assert(result.isErr());
-      chai.assert.deepEqual((result as any).error.name, "M365TitleNotAcquiredError");
+      chai.assert.deepEqual((result as any).error.name, "NotExtendedToM365Error");
     });
 
     it("retrieveAppId undefined", async () => {
@@ -155,7 +155,7 @@ describe("LaunchHelper", () => {
       sinon.stub(PackageService.prototype, "retrieveAppId").resolves(undefined);
       const result = await launchHelper.getM365AppId("test-id");
       chai.assert(result.isErr());
-      chai.assert.deepEqual((result as any).error.name, "M365TitleNotAcquiredError");
+      chai.assert.deepEqual((result as any).error.name, "NotExtendedToM365Error");
     });
 
     it("happy path", async () => {

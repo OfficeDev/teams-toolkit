@@ -166,7 +166,7 @@ const M365Actions = [
   "aadApp/create",
   "aadApp/update",
   "botFramework/create",
-  "m365Title/acquire",
+  "teamsApp/extendToM365",
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [

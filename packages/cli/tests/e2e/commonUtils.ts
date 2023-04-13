@@ -576,9 +576,9 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
   // Validate Bot Provision
   const bot = new BotValidator(context, projectPath, env);
   if (isV3Enabled) {
-    await bot.validateProvision();
-  } else {
     await bot.validateProvisionV3();
+  } else {
+    await bot.validateProvision();
   }
 }
 

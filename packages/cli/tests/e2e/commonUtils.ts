@@ -564,7 +564,9 @@ export async function customizeBicepFilesToCustomizedRg(
 }
 
 export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
-  const context = await readContextMultiEnv(projectPath, env);
+  const context = isV3Enabled()
+    ? await readContextMultiEnvV3(projectPath, env)
+    : await readContextMultiEnv(projectPath, env);
   // Validate Aad App
   const aad = AadValidator.init(context, false, m365Login);
   await AadValidator.validate(aad);
@@ -575,7 +577,11 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
 
   // Validate Bot Provision
   const bot = new BotValidator(context, projectPath, env);
-  await bot.validateProvision();
+  if (isV3Enabled()) {
+    await bot.validateProvisionV3();
+  } else {
+    await bot.validateProvision();
+  }
 }
 
 export async function getRGAfterProvision(

@@ -124,10 +124,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
 
-      - name: Install Yaml lint and mustache
+      - name: Install Yaml lint
         run: |
           pip install yamllint
-          npm install mustache -g
+
+      - name: install mustache
+        run: |
+          npm i -g mustache 
           echo "{}" > test.json
       
       - name: check yaml lint

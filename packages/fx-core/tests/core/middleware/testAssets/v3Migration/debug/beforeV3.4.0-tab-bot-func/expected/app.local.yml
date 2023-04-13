@@ -98,7 +98,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./tabs/.localSettings
+      target: ./tabs/.localConfigs
       envs:
         BROWSER: none
         HTTPS: true
@@ -126,7 +126,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./bot/.localSettings
+      target: ./bot/.localConfigs
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
@@ -140,7 +140,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./api/.localSettings
+      target: ./api/.localConfigs
       envs:
         FUNCTIONS_WORKER_RUNTIME: node
         M365_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}

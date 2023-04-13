@@ -133,7 +133,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "npx env-cmd --silent -f .localSettings react-scripts start",
+            "command": "npx env-cmd --silent -f .localConfigs react-scripts start",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/tabs"
@@ -169,7 +169,7 @@
         {
             "label": "Start backend",
             "type": "shell",
-            "command": "npx env-cmd --silent -f .localSettings func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"",
+            "command": "npx env-cmd --silent -f .localConfigs func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/api",
@@ -211,7 +211,7 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js",
+            "command": "npx env-cmd --silent -f .localConfigs nodemon --inspect=9239 --signal SIGINT index.js",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/bot"

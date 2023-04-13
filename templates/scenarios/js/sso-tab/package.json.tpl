@@ -24,7 +24,7 @@
         "env-cmd": "^10.1.0"
     },
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
+        "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

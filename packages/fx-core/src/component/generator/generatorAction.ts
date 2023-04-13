@@ -17,7 +17,7 @@ export interface GeneratorContext {
   tryLimits?: number;
   timeoutInMs?: number;
   relativePath?: string;
-  // for downloading directory, the url will be the directoru url
+  // for downloading directory, the url will be the github directory url
   // for downloading zip, the url will be the zip url
   url?: string;
   zip?: AdmZip;

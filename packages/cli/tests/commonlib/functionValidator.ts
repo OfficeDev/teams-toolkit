@@ -8,7 +8,7 @@ import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
-import { StateConfigKey, PluginId } from "./constants";
+import { StateConfigKey, PluginId, EnvConstants } from "./constants";
 import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
@@ -57,7 +57,8 @@ export class FunctionValidator {
     this.projectPath = projectPath;
     this.env = env;
 
-    const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+    const resourceId =
+      ctx[EnvConstants.FUNCTION_ID] ?? ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);

@@ -23,6 +23,8 @@ import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/ext
 import { expect } from "chai";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -362,6 +364,9 @@ describe("CommonUtils", () => {
           TEAMS_APP_ID: "xxx",
         })
       );
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(ok({} as any));
 
       const result = await commonUtils.getProvisionSucceedFromEnv("test");
 

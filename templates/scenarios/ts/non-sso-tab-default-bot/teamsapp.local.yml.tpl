@@ -64,7 +64,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables for tab
     with:
-      target: ./tab/.localSettings
+      target: ./tab/.localConfigs
       envs:
         BROWSER: none
         HTTPS: true
@@ -74,7 +74,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables for bot
     with:
-      target: ./bot/.localSettings
+      target: ./bot/.localConfigs
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

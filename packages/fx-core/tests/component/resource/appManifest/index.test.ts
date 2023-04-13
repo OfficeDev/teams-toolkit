@@ -20,6 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
+import { MockedM365Provider, MockedAzureAccountProvider } from "../../../plugins/solution/util";
 import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
@@ -38,6 +39,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import * as commonTools from "../../../../src/common/tools";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
+import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 
 describe("App-manifest Component", () => {
@@ -643,12 +645,18 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
 
     context.logProvider = new MockLogProvider();
+    context.tokenProvider = {
+      m365TokenProvider: new MockedM365Provider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
+    };
 
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox
       .stub(Container, "get")
       .withArgs(sandbox.match("teamsApp/zipAppPackage"))
-      .returns(new CreateAppPackageDriver());
+      .returns(new CreateAppPackageDriver())
+      .withArgs(sandbox.match("teamsApp/update"))
+      .returns(new ConfigureTeamsAppDriver());
     sandbox.stub(envUtil, "readEnv").resolves();
   });
 
@@ -656,30 +664,19 @@ describe("App-manifest Component - v3", () => {
     sandbox.restore();
   });
 
-  it("deploy - filenotfound - v3", async function () {
-    const inputs2 = _.cloneDeep(inputs);
-    inputs2.projectPath = path.join(os.homedir(), "TeamsApps", appName);
-    const deployAction = await component.deploy(context as ResourceContextV3, inputs2);
-    chai.assert.isTrue(deployAction.isErr());
-    if (deployAction.isErr()) {
-      chai.assert.equal(deployAction.error.name, AppStudioError.FileNotFoundError.name);
-    }
-  });
-
-  it("deploy - preview only", async function () {
+  it("deploy - happy path", async function () {
     const manifest = new TeamsAppManifest();
     manifest.id = "";
     manifest.icons.color = "resources/color.png";
     manifest.icons.outline = "resources/outline.png";
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
-    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
-    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
 
-    const deployAction = await component.deploy(context as ResourceContextV3, inputs);
-    chai.assert.isTrue(deployAction.isErr());
+    const deployAction = await component.deployV3(context as ResourceContextV3, inputs);
   });
 });

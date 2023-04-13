@@ -87,7 +87,7 @@ describe("Samples", () => {
     const samples = sampleProvider.SampleCollection.samples;
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
-    chai.expect(faked?.url).equals(sampleConfigV3.baseUrl);
+    chai.expect(faked?.url).equals(sampleConfigV3.baseUrl + fakedExternalSample.id);
     chai.expect(faked?.link).equals(fakedExternalSample.packageLink);
 
     restore();

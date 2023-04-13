@@ -35,10 +35,11 @@ jobs:
           TRAGET=origin/${{ github.event.pull_request.base.ref }}
           echo '-------------- step 0', $TRAGET
           CHANGED=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios)
-          echo '-------------- step1' CHANGED
+          echo '-------------- step1' $CHANGED
           YMLTPL=$(echo $CHANGED | grep -E '.yml.tpl$')
+          echo '-------------- step2.1' $YMLTPL
           YML=$(echo $CHANGED| grep -E '.yml$')
-          echo '-------------- step2' $YMLTPL $YML
+          echo '-------------- step2.2' $YML
           if [ ! -z "$YMLTPL" ]
           then
               for obj in "$YMLTPL"

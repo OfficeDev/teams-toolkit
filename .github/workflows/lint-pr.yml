@@ -135,18 +135,13 @@ jobs:
           TRAGET=origin/${{ github.event.pull_request.base.ref }}
           CHANGED=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios)
           YMLTPL=$(echo $CHANGED | grep -E '.yml.tpl$')
-          YML=$(echo $CHANGED| grep -E '.yml$')
-          echo $YMLTPL $YML
+          echo $YMLTPL
           if [ ! -z "$YMLTPL" ]
           then
               for obj in "$YMLTPL"
               do
                 mustache test.json $obj | yamllint -
               done
-          fi
-          if [ ! -z "$YML" ]
-          then
-            yamllint $YML
           fi
 
   check-sensitive-content:

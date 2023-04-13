@@ -1,56 +1,30 @@
-import * as d3 from "d3-format";
+import "../styles/ChartWidget.css";
 
 import { AreaChart } from "@fluentui/react-charting";
+import { Text, Button, ToggleButton } from "@fluentui/react-components";
 import {
   ArrowRight16Filled,
   DataPie24Regular,
   MoreHorizontal32Regular,
 } from "@fluentui/react-icons";
-import { Text, Button, ToggleButton } from "@fluentui/react-components";
 
-import {
-  chart1Points_30D,
-  chart1Points_60D,
-  chart1Points_7D,
-  chart2Points_30D,
-  chart2Points_60D,
-  chart2Points_7D,
-} from "../../services/chartServices";
+import { getChart1Points, getChart2Points, getTimeRange } from "../../services/chartServices";
 import { Widget } from "../lib/Widget";
-import { headerContentStyle, headerTextStyle } from "../lib/Widget.styles";
-import {
-  areaChartStyle,
-  footerButtonStyle,
-  timeSpanStyle,
-  pieIconStyle,
-} from "../styles/ChartWidget.style";
 
 export default class ChartWidget extends Widget {
   async getData() {
-    const chartPoints = [
-      {
-        legend: "Line 1",
-        data: chart1Points_7D,
-        color: "#6264A7",
-      },
-      {
-        legend: "Line 2",
-        data: chart2Points_7D,
-        color: "#D9DBDB",
-      },
-    ];
-    const chartData = {
-      chartTitle: "Area chart multiple example",
-      lineChartData: chartPoints,
+    return {
+      selectedRange: "7 days",
+      chartProps: this.retriveChartsData("7 days"),
+      timeRange: getTimeRange(),
     };
-    return { dayRange: "7D", chartProps: chartData };
   }
 
   headerContent() {
     return (
-      <div style={headerContentStyle()}>
-        <DataPie24Regular style={pieIconStyle()} />
-        <Text style={headerTextStyle()}>Your chart</Text>
+      <div>
+        <DataPie24Regular />
+        <Text>Your chart</Text>
         <Button icon={<MoreHorizontal32Regular />} appearance="transparent" />
       </div>
     );
@@ -58,80 +32,45 @@ export default class ChartWidget extends Widget {
 
   bodyContent() {
     return (
-      <>
-        <div>
-          <ToggleButton
-            appearance="transparent"
-            checked={this.state.data?.dayRange === "7D"}
-            style={timeSpanStyle()}
-            onClick={() =>
-              this.setState({
-                data: {
-                  chartProps: this.retriveChartsData("7D"),
-                  dayRange: "7D",
-                },
-              })
-            }
-          >
-            7 Days
-          </ToggleButton>
-          <ToggleButton
-            appearance="transparent"
-            checked={this.state.data?.dayRange === "30D"}
-            style={timeSpanStyle()}
-            onClick={() =>
-              this.setState({
-                data: {
-                  chartProps: this.retriveChartsData("30D"),
-                  dayRange: "30D",
-                },
-              })
-            }
-          >
-            30 Days
-          </ToggleButton>
-          <ToggleButton
-            appearance="transparent"
-            checked={this.state.data?.dayRange === "60D"}
-            style={timeSpanStyle()}
-            onClick={() =>
-              this.setState({
-                data: {
-                  chartProps: this.retriveChartsData("60D"),
-                  dayRange: "60D",
-                },
-              })
-            }
-          >
-            60 Days
-          </ToggleButton>
+      <div>
+        <div className="time-span">
+          {this.state.timeRange &&
+            this.state.timeRange.map((t, i) => {
+              return (
+                <ToggleButton
+                  key={`tb-time-range-${i}`}
+                  appearance="transparent"
+                  checked={this.state.selectedRange === t}
+                  onClick={() =>
+                    this.setState({
+                      chartProps: this.retriveChartsData(t),
+                      selectedRange: t,
+                    })
+                  }
+                >
+                  {t}
+                </ToggleButton>
+              );
+            })}
         </div>
 
-        <div style={areaChartStyle()}>
-          {this.state.data && (
-            <AreaChart
-              data={this.state.data.chartProps}
-              legendsOverflowText={"Overflow Items"}
-              yAxisTickFormat={d3.format(".1s")}
-              wrapXAxisLables={false}
-              legendProps={{
-                allowFocusOnLegends: true,
-              }}
-            />
-          )}
-        </div>
-      </>
+        {this.state.chartProps && (
+          <div className="area-chart">
+            <AreaChart data={this.state.chartProps} />
+          </div>
+        )}
+      </div>
     );
   }
 
   footerContent() {
     return (
       <Button
+        id="chart-footer"
         appearance="transparent"
         icon={<ArrowRight16Filled />}
         iconPosition="after"
         size="small"
-        style={footerButtonStyle()}
         onClick={() => {}} // navigate to detailed page
       >
         View details
@@ -143,27 +82,16 @@ export default class ChartWidget extends Widget {
     const chartPoints = [
       {
         legend: "Line 1",
-        data:
-          r === "7D"
-            ? chart1Points_7D
-            : r === "30D"
-            ? chart1Points_30D
-            : chart1Points_60D,
+        data: getChart1Points(r),
         color: "#6264A7",
       },
       {
         legend: "Line 2",
-        data:
-          r === "7D"
-            ? chart2Points_7D
-            : r === "30D"
-            ? chart2Points_30D
-            : chart2Points_60D,
+        data: getChart2Points(r),
         color: "#D9DBDB",
       },
     ];
     const chartData = {
-      chartTitle: "Area chart multiple example",
       lineChartData: chartPoints,
     };
     return chartData;

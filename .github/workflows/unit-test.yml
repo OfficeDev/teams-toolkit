@@ -5,24 +5,22 @@ on:
     branches:
       - main
       - dev
-      - ga
       - hotfix/**/*
-      - v3-folder-structure-refactor
+      - prerelease
   push:
     branches:
       - main
       - dev
-      - ga
       - hotfix/**/*
-      - v3-folder-structure-refactor
- 
+      - prerelease
+
 jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout-pr
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
@@ -47,14 +45,14 @@ jobs:
           git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x 
+          dotnet-version: 3.1.x
 
       - name: Setup project
         run: |
@@ -63,4 +61,26 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
-          npx codecov
+
+      - name: CodeCov report attempt 1
+        id: codecov1
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+
+      - name: CodeCov report attempt 2
+        id: codecov2
+        if: steps.codecov1.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true
+
+      - name: CodeCov report attempt 3
+        id: codecov3
+        if: steps.codecov2.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true

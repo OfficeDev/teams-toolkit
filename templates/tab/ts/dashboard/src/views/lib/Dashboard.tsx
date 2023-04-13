@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { dashboardStyles } from "./Dashboard.styles";
+import { mergeStyles } from "@fluentui/react";
 
 interface IDashboardState {
   isMobile?: boolean;
@@ -39,7 +39,6 @@ export class Dashboard extends Component<{}, IDashboardState> {
         if (entry.target === this.ref.current) {
           const { width } = entry.contentRect;
           this.setState({ isMobile: width < 600 });
-          console.log(this.state.isMobile + " " + width);
         }
       }
     });
@@ -61,16 +60,20 @@ export class Dashboard extends Component<{}, IDashboardState> {
    * Define thie dashboard default layout, you can edit the code here to customize your dashboard layout.
    */
   render() {
+    const styling = mergeStyles({
+      display: "grid",
+      gap: "20px",
+      padding: "1rem",
+      gridTemplateColumns: "4fr 6fr",
+      gridTemplateRows: "1fr",
+      ...(this.state.isMobile && { gridTemplateColumns: "1fr" }),
+      ...(this.columnWidths() && { gridTemplateColumns: this.columnWidths() }),
+      ...(this.rowHeights() && { gridTemplateRows: this.rowHeights() }),
+    });
+
     return (
       <>
-        <div
-          ref={this.ref}
-          style={dashboardStyles(
-            this.state.isMobile,
-            this.rowHeights(),
-            this.columnWidths()
-          )}
-        >
+        <div ref={this.ref} className={styling}>
           {this.dashboardLayout()}
         </div>
       </>

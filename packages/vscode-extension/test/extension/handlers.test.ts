@@ -381,17 +381,6 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("debugHandler()", async () => {
-      const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
-
-      await handlers.debugHandler();
-
-      sinon.assert.calledOnceWithExactly(executeCommandStub, "workbench.action.debug.start");
-      sinon.assert.calledOnce(sendTelemetryEventStub);
-      sinon.restore();
-    });
-
     it("treeViewPreviewHandler() - previewWithManifest error", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");

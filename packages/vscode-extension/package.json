@@ -386,10 +386,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.debug",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "false"
         },
@@ -593,12 +589,6 @@
         "enablement": "fx-extension.initialized"
       },
       {
-        "command": "fx-extension.debug",
-        "title": "%teamstoolkit.commands.debug.title%",
-        "enablement": "!fx-extension.commandLocked",
-        "category": "Teams"
-      },
-      {
         "command": "fx-extension.deploy",
         "title": "%teamstoolkit.commands.deploy.title%",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
@@ -707,7 +697,9 @@
       },
       {
         "command": "fx-extension.localdebug",
-        "title": "%teamstoolkit.commands.localDebug.title%"
+        "title": "%teamstoolkit.commands.localDebug.title%",
+        "enablement": "!fx-extension.commandLocked",
+        "category": "Teams"
       },
       {
         "command": "fx-extension.localdebugWithIcon",

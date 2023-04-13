@@ -81,7 +81,7 @@ describe("Init Command Tests", () => {
     sandbox.stub(FxCore.prototype, "phantomMigrationV3").callsFake((inputs) => {
       expect(inputs.projectPath).equals(TestFolder);
       expect(inputs.skipUserConfirm).equals(true);
-      expect(inputs.skipUserConfirm).equals(undefined);
+      expect(inputs.nonInteractive).equals(undefined);
       return Promise.resolve(ok(Void));
     });
     const cmd = new Upgrade();

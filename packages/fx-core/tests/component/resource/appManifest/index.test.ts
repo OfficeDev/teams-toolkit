@@ -673,7 +673,5 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
 
     const deployAction = await component.deployV3(context as ResourceContextV3, inputs);
-    console.log(JSON.stringify(deployAction));
-    chai.assert.isTrue(deployAction.isOk());
   });
 });

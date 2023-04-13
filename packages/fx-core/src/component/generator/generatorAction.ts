@@ -17,10 +17,11 @@ export interface GeneratorContext {
   tryLimits?: number;
   timeoutInMs?: number;
   relativePath?: string;
-  zipUrl?: string;
-  zip?: AdmZip;
+  // for downloading directory, the url will be the directoru url
+  // for downloading zip, the url will be the zip url
   url?: string;
-  fallbackZipPath?: string;
+  zip?: AdmZip;
+  fallback?: boolean;
   cancelDownloading?: boolean;
 
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
@@ -92,15 +93,11 @@ export const downloadDirectoryAction: GeneratorAction = {
 export const fetchTemplateUrlWithTagAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateUrlWithTag,
   run: async (context: GeneratorContext) => {
-    if (context.zip || context.zipUrl || context.cancelDownloading) {
+    if (context.zip || context.url || context.cancelDownloading) {
       return;
     }
 
-    context.zipUrl = await fetchTemplateZipUrl(
-      context.name,
-      context.tryLimits,
-      context.timeoutInMs
-    );
+    context.url = await fetchTemplateZipUrl(context.name, context.tryLimits, context.timeoutInMs);
   },
 };
 
@@ -111,10 +108,10 @@ export const fetchZipFromUrlAction: GeneratorAction = {
       return;
     }
 
-    if (!context.zipUrl) {
-      throw new MissKeyError("zipUrl");
+    if (!context.url) {
+      throw new MissKeyError("url");
     }
-    context.zip = await fetchZipFromUrl(context.zipUrl, context.tryLimits, context.timeoutInMs);
+    context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
   },
 };
 
@@ -125,12 +122,9 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
       return;
     }
 
-    if (!context.fallbackZipPath) {
-      context.fallbackZipPath = path.join(getTemplatesFolder(), "fallback");
-    }
-
+    const fallbackPath = path.join(getTemplatesFolder(), "fallback");
     const fileName = `${context.name}.zip`;
-    const zipPath: string = path.join(context.fallbackZipPath, fileName);
+    const zipPath: string = path.join(fallbackPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
     context.zip = new AdmZip(data);

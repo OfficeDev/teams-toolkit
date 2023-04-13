@@ -40,6 +40,7 @@ import {
 } from "./utils";
 import { isDownloadDirectoryEnabled } from "../../common/tools";
 import { BaseComponentInnerError } from "../error/componentError";
+import fs from "fs-extra";
 
 export class Generator {
   public static getDefaultVariables(appName: string): { [key: string]: string } {
@@ -82,10 +83,10 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
     });
-    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate());
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate(scenario));
     await this.generate(generatorContext, TemplateActionSeq);
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.Fallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
+      [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
     return ok(undefined);
   }
@@ -117,13 +118,12 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      zipUrl: sample.link,
-      url: getSampleUrl(sample),
+      url: isDownloadDirectoryEnabled() ? getSampleUrl(sample) : sample.link,
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
-    await actionContext?.progressBar?.next(ProgressMessages.generateSample());
+    await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
     const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
     await this.generate(generatorContext, actionSeq);
     return ok(undefined);
@@ -181,6 +181,7 @@ export async function sampleDefaultOnActionError(
   await context.logProvider.error(error.message);
   switch (action.name) {
     case GeneratorActionName.DownloadDirectory:
+      await fs.rm(context.destination, { recursive: true });
       if (error instanceof BaseComponentInnerError) throw error.toFxError();
       else if (error.message.includes("403")) {
         throw new DownloadSampleApiLimitError(context.url!).toFxError();
@@ -188,7 +189,7 @@ export async function sampleDefaultOnActionError(
         throw new DownloadSampleNetworkError(context.url!).toFxError();
       }
     case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.zipUrl!).toFxError();
+      throw new FetchZipFromUrlError(context.url!).toFxError();
     case GeneratorActionName.Unzip:
       throw new UnzipError().toFxError();
     default:

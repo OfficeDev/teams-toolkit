@@ -235,9 +235,11 @@ export function getSampleRelativePath(sampleName: string): string {
 }
 
 export function getSampleUrl(sample: SampleInfo): string {
+  //teamsfx sample
   if (sample.url === sampleConfig.baseUrl) {
     return `${sample.url}${sample.id}`;
   } else {
+    //external sample
     return sample.url;
   }
 }
@@ -255,7 +257,7 @@ export async function downloadDirectory(
   retryLimits = sampleDefaultRetryLimits
 ): Promise<void> {
   //step 1: get file info
-  const urlParserRegex = /https:\/\/github.com[/]([^/]+)[/]([^/]+)[/]tree[/]([^/]+)[/](.*)/;
+  const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
   const parsed = urlParserRegex.exec(sampleUrl);
   if (!parsed) throw new ParseUrlError(sampleUrl);
   const [owner, repository, ref, dir] = parsed.slice(1);
@@ -266,30 +268,34 @@ export async function downloadDirectory(
     }, retryLimits)
   ).data as any;
 
-  const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
   const fileInfoTree = fileInfo.tree as any[];
   const samplePaths = fileInfoTree
     .filter((node) => node.path.startsWith(dir) && node.type !== "tree")
     .map((node) => node.path);
 
   //step 2: download files with limited concurrency
+  const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
   const downloadCallback = async (samplePath: string) => {
     const file = await sendRequestWithRetry(async () => {
       return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
     }, retryLimits);
-    const filePath = path.join(dstPath, samplePath.replace(dir, ""));
+    const filePath = path.join(dstPath, path.relative(samplePath, `/${dir}`));
     await fs.ensureFile(filePath);
     await fs.writeFile(filePath, Buffer.from(file.data as any));
   };
-  await limitConcurrency(samplePaths, downloadCallback, concurrencyLimits);
+  await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }
 
-export async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any, limit: number) {
+export async function runWithLimitedConcurrency<T>(
+  items: T[],
+  callback: (arg: T) => any,
+  concurrencyLimit: number
+) {
   const queue: any[] = [];
-  for (const ele of data) {
+  for (const item of items) {
     // fire the async function, add its promise to the queue, and remove
     // it from queue when complete
-    const p = callback(ele)
+    const p = callback(item)
       .then((res: any) => {
         queue.splice(queue.indexOf(p), 1);
         return res;
@@ -299,7 +305,7 @@ export async function limitConcurrency<T>(data: T[], callback: (arg0: T) => any,
       });
     queue.push(p);
     // if max concurrent, wait for one to finish
-    if (queue.length >= limit) {
+    if (queue.length >= concurrencyLimit) {
       await Promise.race(queue);
     }
   }

@@ -9,7 +9,7 @@ import axios, { AxiosResponse } from "axios";
 import {
   downloadDirectory,
   getSampleInfoFromName,
-  limitConcurrency,
+  runWithLimitedConcurrency,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
@@ -290,10 +290,10 @@ describe("Generator utils", () => {
       await new Promise((resolve) => setTimeout(resolve, num * 10));
       res.push(num);
     };
-    await limitConcurrency(data, callback, 2);
+    await runWithLimitedConcurrency(data, callback, 2);
     assert.deepEqual(res, [1, 2, 3, 10]);
     res = [];
-    await limitConcurrency(data, callback, 1);
+    await runWithLimitedConcurrency(data, callback, 1);
     assert.deepEqual(res, [1, 10, 2, 3]);
   });
 });

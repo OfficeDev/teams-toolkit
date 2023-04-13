@@ -41,9 +41,6 @@ export function happyPathTest(runtime: Runtime): void {
     }
 
     it("Provision Resource: workflow bot", async function () {
-      if (isV3Enabled()) {
-        return this.skip();
-      }
       const cmd =
         runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities workflow-bot --programming-language typescript`

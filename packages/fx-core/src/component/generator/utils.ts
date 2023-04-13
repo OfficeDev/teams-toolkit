@@ -234,16 +234,6 @@ export function getSampleRelativePath(sampleName: string): string {
   return `${sampleConfig.baseFolderName}/${sampleName}/`;
 }
 
-export function getSampleUrl(sample: SampleInfo): string {
-  //teamsfx sample
-  if (sample.url === sampleConfig.baseUrl) {
-    return `${sample.url}${sample.id}`;
-  } else {
-    //external sample
-    return sample.url;
-  }
-}
-
 export function zipFolder(folderPath: string): AdmZip {
   const zip = new AdmZip();
   zip.addLocalFolder(folderPath);

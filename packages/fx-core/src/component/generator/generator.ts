@@ -33,7 +33,6 @@ import {
 import {
   getSampleInfoFromName,
   getSampleRelativePath,
-  getSampleUrl,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
@@ -117,7 +116,7 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: isDownloadDirectoryEnabled() ? getSampleUrl(sample) : sample.link,
+      url: isDownloadDirectoryEnabled() ? sample.url : sample.link,
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,

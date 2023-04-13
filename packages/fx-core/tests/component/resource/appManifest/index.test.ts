@@ -20,6 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
+import { MockedM365Provider, MockedAzureAccountProvider } from "../../../plugins/solution/util";
 import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
@@ -644,6 +645,10 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
 
     context.logProvider = new MockLogProvider();
+    context.tokenProvider = {
+      m365TokenProvider: new MockedM365Provider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
+    };
 
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox

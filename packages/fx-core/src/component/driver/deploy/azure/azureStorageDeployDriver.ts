@@ -30,6 +30,11 @@ import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetr
 import { HttpStatusCode, TelemetryConstant } from "../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
+import {
+  AzureStorageClearBlobsError,
+  AzureStorageGetContainerError,
+  AzureStorageUploadFilesError,
+} from "../../../../error/deploy";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -104,11 +109,9 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     );
     const responses = await Promise.all(tasks);
     const errorResponse = responses.find((res) => res.errorCode);
-    if (errorResponse?._response?.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
-      throw DeployExternalApiCallError.uploadToStorageRemoteError(sourceFolder, errorResponse);
-    }
     if (errorResponse) {
-      throw DeployExternalApiCallError.uploadToStorageError(
+      throw new AzureStorageUploadFilesError(
+        azureResource.instanceId,
         sourceFolder,
         errorResponse,
         this.helpLink
@@ -133,8 +136,18 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
         }
         return container;
       },
-      (e) => DeployExternalApiCallError.getStorageContainerRemoteError(e),
-      (e) => DeployExternalApiCallError.getStorageContainerError(e)
+      (e) =>
+        new AzureStorageGetContainerError(
+          azureResource.instanceId,
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME,
+          e
+        ),
+      (e) =>
+        new AzureStorageGetContainerError(
+          azureResource.instanceId,
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME,
+          e
+        )
     );
   }
 
@@ -156,19 +169,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
 
     const responses = await Promise.all(deleteJobs);
     const errorResponse = responses.find((res) => res.errorCode);
-    if (errorResponse?._response?.status === HttpStatusCode.INTERNAL_SERVER_ERROR) {
-      throw DeployExternalApiCallError.clearStorageRemoteError(
-        errorResponse?._response.status,
-        errorResponse
-      );
-    }
     if (errorResponse) {
-      throw DeployExternalApiCallError.clearStorageError(
-        "delete blob",
-        errorResponse.errorCode,
-        errorResponse,
-        this.helpLink
-      );
+      throw new AzureStorageClearBlobsError(storageName, errorResponse);
     }
   }
 

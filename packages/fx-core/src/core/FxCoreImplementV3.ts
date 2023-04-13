@@ -256,7 +256,11 @@ export class FxCoreV3Implement {
     let manifestOutputPath: string = manifestTemplatePath;
     if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
       await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+      manifestOutputPath = path.join(
+        inputs.projectPath!,
+        "build",
+        `aad.manifest.${inputs.env}.json`
+      );
     }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,

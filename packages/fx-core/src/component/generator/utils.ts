@@ -279,7 +279,7 @@ export async function downloadDirectory(
     const file = await sendRequestWithRetry(async () => {
       return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
     }, retryLimits);
-    const filePath = path.join(dstPath, path.relative(samplePath, `/${dir}`));
+    const filePath = path.join(dstPath, path.relative(`${dir}/`, samplePath));
     await fs.ensureFile(filePath);
     await fs.writeFile(filePath, Buffer.from(file.data as any));
   };

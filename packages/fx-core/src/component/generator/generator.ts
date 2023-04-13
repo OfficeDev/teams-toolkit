@@ -181,7 +181,9 @@ export async function sampleDefaultOnActionError(
   await context.logProvider.error(error.message);
   switch (action.name) {
     case GeneratorActionName.DownloadDirectory:
-      await fs.rm(context.destination, { recursive: true });
+      if (await fs.pathExists(context.destination)) {
+        await fs.rm(context.destination, { recursive: true });
+      }
       if (error instanceof BaseComponentInnerError) throw error.toFxError();
       else if (error.message.includes("403")) {
         throw new DownloadSampleApiLimitError(context.url!).toFxError();

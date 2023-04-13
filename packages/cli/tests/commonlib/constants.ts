@@ -194,4 +194,5 @@ export class EnvConstants {
 
   // FUNCTION
   static readonly FUNCTION_ID = "FUNCTION_RESOURCE_ID";
+  static readonly FUNCTION_ENDPOINT = "FUNCTION_ENDPOINT";
 }

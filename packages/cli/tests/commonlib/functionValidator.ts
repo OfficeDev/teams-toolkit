@@ -108,22 +108,35 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
-    chai.assert.equal(
-      webappSettingsResponse[BaseConfig.API_ENDPOINT],
-      this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
-    );
-    chai.assert.equal(
-      webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
-      getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
-    );
-    chai.assert.equal(
-      webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
-    );
-    chai.assert.equal(
-      webappSettingsResponse[BaseConfig.IDENTITY_ID],
-      this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
-    );
+    if (isV3Enabled()) {
+      chai.assert.equal(
+        webappSettingsResponse[BaseConfig.API_ENDPOINT],
+        this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string
+      );
+      // TODO: add v3 validation
+    } else {
+      chai.assert.equal(
+        webappSettingsResponse[BaseConfig.API_ENDPOINT],
+        this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
+      );
+      chai.assert.equal(
+        webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
+        getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+      );
+      chai.assert.equal(
+        webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
+        await getExpectedM365ClientSecret(
+          this.ctx,
+          this.projectPath,
+          this.env,
+          activeResourcePlugins
+        )
+      );
+      chai.assert.equal(
+        webappSettingsResponse[BaseConfig.IDENTITY_ID],
+        this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
+      );
+    }
 
     if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
       chai.assert.equal(

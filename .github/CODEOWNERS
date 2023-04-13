@@ -198,8 +198,8 @@
 /packages/fx-core/src/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
-/packages/fx-core/src/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 

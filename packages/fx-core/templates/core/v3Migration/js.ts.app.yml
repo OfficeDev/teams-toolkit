@@ -70,7 +70,7 @@ provision:
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 {{#if isM365}}
-  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365 # Extend your Teams app to Outlook and the Microsoft 365 app
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
@@ -158,10 +158,10 @@ deploy:
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:      
       dotnet: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       dotnetPath: DOTNET_PATH
   - uses: cli/runNpmCommand
     name: install api dependencies
@@ -172,7 +172,7 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by prerequisite/install action
+      execPath: $\{{ {{~dotnetPath~}} }} # Use dotnet installed by devTool/install action
     {{#if isTypescript}}
   - uses: cli/runNpmCommand
     name: build api app

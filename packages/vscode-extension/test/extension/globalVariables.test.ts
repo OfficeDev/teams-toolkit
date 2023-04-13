@@ -115,5 +115,12 @@ describe("Global Variables", () => {
       chai.expect(globalVariables.defaultExtensionLogPath).equals("fakePath");
       sinon.restore();
     });
+
+    it("set commandIsRunning", async () => {
+      globalVariables.setCommandIsRunning(true);
+
+      chai.expect(globalVariables.commandIsRunning).equals(true);
+      sinon.restore();
+    });
   });
 });

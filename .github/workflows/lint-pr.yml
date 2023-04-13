@@ -38,16 +38,10 @@ jobs:
           echo '-------------- step1' $CHANGED
           YMLTPL=$(echo $CHANGED | grep -E '.yml.tpl$')
           echo '-------------- step2.1' $YMLTPL
-          YML=$(echo $CHANGED| grep -E '.yml$')
-          echo '-------------- step2.2' $YML
           if [ ! -z "$YMLTPL" ]
           then
               for obj in "$YMLTPL"
               do
                 mustache test.json $obj | yamllint -
               done
-          fi
-          if [ ! -z "$YML" ]
-          then
-            yamllint $YML
           fi

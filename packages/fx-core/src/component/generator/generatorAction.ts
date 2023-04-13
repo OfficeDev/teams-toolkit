@@ -121,7 +121,7 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
     if (context.zip) {
       return;
     }
-
+    context.fallback = true;
     const fallbackPath = path.join(getTemplatesFolder(), "fallback");
     const fileName = `${context.name}.zip`;
     const zipPath: string = path.join(fallbackPath, fileName);

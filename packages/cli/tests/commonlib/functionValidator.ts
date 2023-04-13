@@ -19,6 +19,7 @@ import {
   getExpectedM365ApplicationIdUri,
   getExpectedM365ClientSecret,
 } from "./utilities";
+import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
@@ -94,7 +95,9 @@ export class FunctionValidator {
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
-    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    const activeResourcePlugins = isV3Enabled()
+      ? []
+      : await getActivePluginsFromProjectSetting(this.projectPath);
     chai.assert.isArray(activeResourcePlugins);
     // Validating app settings
     console.log("validating app settings.");

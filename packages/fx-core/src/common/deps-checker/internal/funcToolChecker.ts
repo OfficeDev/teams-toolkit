@@ -227,11 +227,7 @@ export class FuncToolChecker implements DepsChecker {
       // TODO: check this line collect or not
       await createSymlink(
         portableFunc.binaryFolder,
-        path.join(
-          installOptions.projectPath ?? "",
-          installOptions.outputBinFolder ?? "",
-          path.basename(portableFunc.binaryFolder)
-        )
+        path.join(installOptions.projectPath ?? "", installOptions.outputBinFolder ?? "")
       );
     }
 
@@ -359,6 +355,9 @@ export class FuncToolChecker implements DepsChecker {
       ) {
         return maxValidFuncStatus;
       } else if (historyFuncStatus.isInstalled) {
+        if (isWindows()) {
+          await this.cleanupPortablePs1(historyFuncStatus.funcVersion.versionStr);
+        }
         return historyFuncStatus;
       }
     } catch {
@@ -529,6 +528,16 @@ export class FuncToolChecker implements DepsChecker {
     } catch (err) {}
   }
 
+  private async cleanupPortablePs1(VersionStr: string): Promise<void> {
+    // delete func.ps1 from portable function
+    for (const funcFolder of this.getPortableFuncBinFolders(VersionStr)) {
+      const funcPath = path.join(funcFolder, "func.ps1");
+      if (await fs.pathExists(funcPath)) {
+        await fs.remove(funcPath);
+      }
+    }
+  }
+
   private async getPortableFuncBinaryFolder(
     versionStr: string | undefined
   ): Promise<string | undefined> {
@@ -563,6 +572,7 @@ export class FuncToolChecker implements DepsChecker {
         "--no-audit"
       );
 
+      await this.cleanupPortablePs1(tmpVersion);
       await fs.ensureFile(FuncToolChecker.getSentinelPath(tmpVersion));
       return ok(tmpVersion);
     } catch (error: unknown) {
@@ -572,6 +582,28 @@ export class FuncToolChecker implements DepsChecker {
 
   private getExecCommand(command: string): string {
     return isWindows() ? `${command}.cmd` : command;
+  }
+
+  private async getFuncPSScriptPath(): Promise<string> {
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        {
+          shell: "cmd.exe",
+        },
+        "where",
+        "func"
+      );
+
+      const funcPath = output.split(/\r?\n/)[0];
+      const funcFolder = path.dirname(funcPath);
+
+      return path.join(funcFolder, "func.ps1");
+    } catch {
+      // ignore error and regard func.ps1 as not found.
+      return "";
+    }
   }
 }
 

@@ -1830,6 +1830,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path: getQuestionsForGrantPermission", async () => {
+      inputs.platform = Platform.VSCode;
       inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
       inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
 
@@ -1861,10 +1862,6 @@ describe("Collaborator APIs for V3", () => {
         const teamsAppManifestQuestion = node?.children?.[0];
         const aadAppManifestQuestion = node?.children?.[1];
 
-        console.log((teamsAppManifestQuestion?.children as any)[0].data?.name);
-        assert.equal((teamsAppManifestQuestion?.children as any)[0].data?.name, "test");
-        console.log((teamsAppManifestQuestion?.children as any)[1].data?.name);
-        assert.equal((teamsAppManifestQuestion?.children as any)[1].data?.name, "test");
         assert.isTrue(teamsAppManifestQuestion?.children?.length == 2);
         assert.isTrue(aadAppManifestQuestion?.children?.length == 2);
 

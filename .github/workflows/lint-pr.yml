@@ -133,8 +133,7 @@ jobs:
       - name: check yaml lint
         run: |
           TRAGET=origin/${{ github.event.pull_request.base.ref }}
-          CHANGED=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios)
-          YMLTPL=$(echo $CHANGED | grep -E '.yml.tpl$')
+          YMLTPL=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios | grep -E '.yml.tpl$')
           echo $YMLTPL
           if [ ! -z "$YMLTPL" ]
           then

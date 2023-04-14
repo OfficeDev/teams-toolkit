@@ -122,9 +122,9 @@ describe("aadAppUpdate", async () => {
       manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
-
+    const showMessage = sinon.spy(mockedDriverContext.ui, "showMessage");
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-
+    chai.assert.isFalse(showMessage.called);
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;
@@ -147,6 +147,7 @@ describe("aadAppUpdate", async () => {
     expect(result.summaries).includes(
       `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
+    showMessage.restore();
   });
   it("should success with valid manifest on cli", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();

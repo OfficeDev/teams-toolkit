@@ -298,7 +298,7 @@ describe("Azure Storage enable static website Driver test", () => {
       context
     );
     chai.assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "CheckContainerStaticWebsiteError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageGetContainerPropertiesError");
   });
 
   it("Azure Storage enable static website get properties remote error", async () => {
@@ -331,6 +331,6 @@ describe("Azure Storage enable static website Driver test", () => {
       context
     );
     chai.assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "checkContainerStaticWebsiteRemoteError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageGetContainerPropertiesError");
   });
 });

@@ -176,7 +176,7 @@ describe("Azure Storage Deploy Driver test", () => {
       .resolves({ errorCode: "403" } as BlobDeleteResponse);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "ClearStorageError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageClearBlobsError");
   });
 
   it("clear storage with remote server error", async () => {
@@ -215,7 +215,7 @@ describe("Azure Storage Deploy Driver test", () => {
       .resolves({ errorCode: "error", _response: { status: 500 } } as BlobDeleteResponse);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "ClearStorageRemoteError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageClearBlobsError");
   });
 
   it("upload with error", async () => {
@@ -262,7 +262,7 @@ describe("Azure Storage Deploy Driver test", () => {
     } as BlockBlobClient);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "UploadToStorageError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageUploadFilesError");
     const rex = await deploy.execute(args, context);
     assert.equal(rex.result.isErr(), true);
   });
@@ -311,7 +311,7 @@ describe("Azure Storage Deploy Driver test", () => {
     } as BlockBlobClient);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "UploadToStorageRemoteError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageUploadFilesError");
   });
 
   it("get container with remote server error", async () => {
@@ -344,7 +344,7 @@ describe("Azure Storage Deploy Driver test", () => {
     } as BlockBlobClient);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "GetStorageContainerRemoteError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageGetContainerError");
   });
 
   it("get container with normal error", async () => {
@@ -377,6 +377,6 @@ describe("Azure Storage Deploy Driver test", () => {
     } as BlockBlobClient);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "GetStorageContainerError");
+    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageGetContainerError");
   });
 });

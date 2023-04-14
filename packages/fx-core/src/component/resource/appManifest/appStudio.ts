@@ -665,20 +665,15 @@ export async function updateManifestV3(
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
   const state = {
-    TAB_ENDPOINT: process.env.TAB_ENDPOINT,
-    TAB_DOMAIN: process.env.TAB_DOMAIN,
-    BOT_ID: process.env.BOT_ID,
-    BOT_DOMAIN: process.env.BOT_DOMAIN,
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
-  const teamsAppId = process.env.TEAMS_APP_ID;
   const manifestTemplatePath =
     inputs.manifestTemplatePath ??
     (await manifestUtils.getTeamsAppManifestPath(inputs.projectPath));
   const manifestFileName = path.join(
     inputs.projectPath,
-    BuildFolderName,
     AppPackageFolderName,
+    BuildFolderName,
     `manifest.${state.ENV_NAME}.json`
   );
 
@@ -712,6 +707,7 @@ export async function updateManifestV3(
     }
   }
   const existingManifest = await fs.readJSON(manifestFileName);
+  const teamsAppId = manifest.id;
   delete manifest.id;
   delete existingManifest.id;
   if (!_.isEqual(manifest, existingManifest)) {
@@ -767,8 +763,6 @@ export async function updateManifestV3(
       return err(result.error);
     }
 
-    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
-
     let loginHint = "";
     const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
       scopes: AppStudioScopes,
@@ -777,11 +771,7 @@ export async function updateManifestV3(
       loginHint = accountRes.value.unique_name as string;
     }
 
-    const url = util.format(
-      Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL,
-      result.value.get("TEAMS_APP_ID"),
-      loginHint
-    );
+    const url = util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, teamsAppId, loginHint);
     if (inputs.platform === Platform.CLI) {
       const message = [
         {

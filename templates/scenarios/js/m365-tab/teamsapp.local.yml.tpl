@@ -77,7 +77,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./.localSettings
+      target: ./.localConfigs
       envs:
         BROWSER: none
         HTTPS: true

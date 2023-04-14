@@ -52,7 +52,7 @@
     "onCommand:fx-extension.signinM365",
     "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
-    "workspaceContains:**/.fx/*",
+    "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project",
     "onUri"

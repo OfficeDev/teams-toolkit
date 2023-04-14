@@ -74,7 +74,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./tabs/.localSettings
+      target: ./tabs/.localConfigs
       envs:
         BROWSER: none
         HTTPS: true

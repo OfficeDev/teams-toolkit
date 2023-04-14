@@ -251,6 +251,7 @@ export class Constants {
   public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";
   public static readonly TEAMS_APP_ID = "teamsAppId";
   public static readonly TEAMS_APP_UPDATED_AT = "teamsAppUpdatedAt";
+  public static readonly TEAMS_APP_ID_ENV = "TEAMS_APP_ID";
 
   public static readonly PERMISSIONS = {
     name: "Teams App",

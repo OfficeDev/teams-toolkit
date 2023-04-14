@@ -23,7 +23,7 @@ import {
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { cwd } from "process";
 import { InvalidActionInputError, UnresolvedPlaceholderError } from "../../../../src/error/common";
-
+import { Platform } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -122,9 +122,9 @@ describe("aadAppUpdate", async () => {
       manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
-
+    const showMessage = sinon.spy(mockedDriverContext.ui, "showMessage");
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-
+    chai.assert.isFalse(showMessage.called);
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;
@@ -147,6 +147,49 @@ describe("aadAppUpdate", async () => {
     expect(result.summaries).includes(
       `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
+    showMessage.restore();
+  });
+  it("should success with valid manifest on cli", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    const showMessage = sinon.spy(mockedDriverContext.ui, "showMessage");
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    mockedDriverContext.platform = Platform.CLI;
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(showMessage.calledOnce);
+    chai.assert.equal(showMessage.getCall(0).args[0], "info");
+    chai.assert.equal(
+      showMessage.getCall(0).args[1],
+      "Your Azure Active Directory application has been successfully updated."
+    );
+    chai.assert.isFalse(showMessage.getCall(0).args[2]);
+    expect(result.result.isOk()).to.be.true;
+    showMessage.restore();
+  });
+  it("should success while context ui not support on cli", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    delete mockedDriverContext.ui;
+    mockedDriverContext.platform = Platform.CLI;
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
   });
 
   it("should use absolute path in args directly", async () => {

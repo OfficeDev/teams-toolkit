@@ -1,5 +1,6 @@
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { BlobDeleteResponse, BlobUploadCommonResponse } from "@azure/storage-blob";
 
 export class DeployEmptyFolderError extends UserError {
   constructor(folderPath: string) {
@@ -86,7 +87,116 @@ export class DeployRemoteStartError extends UserError {
     super({
       source: "azureDeploy",
       message: getDefaultString("error.deploy.DeployRemoteStartError", location, errorMessage),
-      displayMessage: getLocalizedString("error.deploy.DeployRemoteStartError", location),
+      displayMessage: getLocalizedString(
+        "error.deploy.DeployRemoteStartError.Notification",
+        location
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class AzureStorageClearBlobsError extends UserError {
+  constructor(storageName: string, errorResponse: BlobDeleteResponse, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.AzureStorageClearBlobsError",
+        storageName,
+        JSON.stringify(errorResponse, undefined, 4)
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.AzureStorageClearBlobsError.Notification",
+        storageName
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class AzureStorageUploadFilesError extends UserError {
+  constructor(
+    storageName: string,
+    localFolder: string,
+    errorResponse: BlobUploadCommonResponse,
+    helpLink?: string
+  ) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.AzureStorageUploadFilesError",
+        localFolder,
+        storageName,
+        JSON.stringify(errorResponse, undefined, 4)
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.AzureStorageUploadFilesError.Notification",
+        localFolder,
+        storageName
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class AzureStorageGetContainerError extends UserError {
+  constructor(storageName: string, containerName: string, error: any, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.AzureStorageGetContainerError",
+        containerName,
+        storageName,
+        JSON.stringify(error)
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.AzureStorageGetContainerError.Notification",
+        containerName,
+        storageName,
+        error.message || ""
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class AzureStorageGetContainerPropertiesError extends UserError {
+  constructor(storageName: string, containerName: string, error: any, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.AzureStorageGetContainerPropertiesError",
+        containerName,
+        storageName,
+        JSON.stringify(error)
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.AzureStorageGetContainerPropertiesError.Notification",
+        containerName,
+        storageName,
+        error.message || ""
+      ),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class AzureStorageSetContainerPropertiesError extends UserError {
+  constructor(storageName: string, containerName: string, error: any, helpLink?: string) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString(
+        "error.deploy.AzureStorageSetContainerPropertiesError",
+        containerName,
+        storageName,
+        JSON.stringify(error)
+      ),
+      displayMessage: getLocalizedString(
+        "error.deploy.AzureStorageSetContainerPropertiesError.Notification",
+        containerName,
+        storageName,
+        error.message || ""
+      ),
       helpLink: helpLink,
     });
   }

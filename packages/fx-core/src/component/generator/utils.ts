@@ -247,9 +247,9 @@ export async function downloadDirectory(
   retryLimits = sampleDefaultRetryLimits
 ): Promise<void> {
   const urlInfo = parseSampleUrl(sampleUrl);
-  const { samplePaths, filePrefixUrl } = await getSampleFileInfo(urlInfo, retryLimits);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(urlInfo, retryLimits);
   await downloadSampleFiles(
-    filePrefixUrl,
+    fileUrlPrefix,
     samplePaths,
     dstPath,
     urlInfo.dir,
@@ -284,23 +284,23 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
   const samplePaths = fileInfoTree
     .filter((node) => node.path.startsWith(urlInfo.dir) && node.type !== "tree")
     .map((node) => node.path);
-  const filePrefixUrl = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
-  return { samplePaths, filePrefixUrl };
+  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
+  return { samplePaths, fileUrlPrefix };
 }
 
 async function downloadSampleFiles(
-  filePrefixUrl: string,
+  fileUrlPrefix: string,
   samplePaths: string[],
   dstPath: string,
-  dir: string,
+  relativePath: string,
   retryLimits: number,
   concurrencyLimits: number
 ): Promise<void> {
   const downloadCallback = async (samplePath: string) => {
     const file = await sendRequestWithRetry(async () => {
-      return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });
+      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
     }, retryLimits);
-    const filePath = path.join(dstPath, path.relative(`${dir}/`, samplePath));
+    const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
     await fs.ensureFile(filePath);
     await fs.writeFile(filePath, Buffer.from(file.data as any));
   };

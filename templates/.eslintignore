@@ -1,3 +1,12 @@
+# Ignore everything in the root directory except for package.json
+/*
+!package.json
+
+# Ignore all files in tab/csharp/default/
 tab/csharp/default/*
+
+# Ignore all files in tab/csharp/non-sso/
 tab/csharp/non-sso/*
+
+# Ignore all CSS files
 **/*.css

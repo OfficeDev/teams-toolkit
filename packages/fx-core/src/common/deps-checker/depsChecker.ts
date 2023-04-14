@@ -47,8 +47,9 @@ export interface BaseInstallOptions {
   version?: string;
 }
 
-export interface FuncInstallOptions {
+export interface FuncInstallOptions extends BaseInstallOptions {
   nodeVersion?: string;
+  outputBinFolder?: string;
 }
 
 export type InstallOptions = BaseInstallOptions | FuncInstallOptions;

@@ -78,7 +78,7 @@ export class UpdateAadAppDriver implements StepDriver {
       );
 
       if (context.platform === Platform.CLI) {
-        const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+        const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
         context.ui?.showMessage("info", msg, false);
       }
 

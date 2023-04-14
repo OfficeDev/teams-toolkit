@@ -170,8 +170,26 @@ describe("aadAppUpdate", async () => {
       showMessage.getCall(0).args[1],
       "Your Azure Active Directory application has been successfully updated."
     );
+    chai.assert.isFalse(showMessage.getCall(0).args[2]);
     expect(result.result.isOk()).to.be.true;
     showMessage.restore();
+  });
+  it("should success while context ui not support on cli", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    delete mockedDriverContext.ui;
+    mockedDriverContext.platform = Platform.CLI;
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
   });
 
   it("should use absolute path in args directly", async () => {

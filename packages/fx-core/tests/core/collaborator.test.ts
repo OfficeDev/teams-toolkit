@@ -1830,6 +1830,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path: getQuestionsForGrantPermission", async () => {
+      inputs.platform = Platform.VSCode;
       inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
       inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
 

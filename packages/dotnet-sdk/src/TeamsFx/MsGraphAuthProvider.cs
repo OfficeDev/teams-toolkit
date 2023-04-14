@@ -5,7 +5,9 @@ namespace Microsoft.TeamsFx;
 using global::Azure.Core;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Authentication;
+
 
 /// <summary>
 /// Microsoft Graph auth provider for Teams Framework.
@@ -13,6 +15,7 @@ using Microsoft.Graph;
 public class MsGraphAuthProvider : IAuthenticationProvider
 {
     private const string DefaultScope = ".default";
+    private const string AuthorizationHeaderKey = "Authorization";
     private readonly TokenCredential _credential;
     private readonly ILogger _logger;
     readonly internal string[] _scopes;
@@ -65,14 +68,18 @@ public class MsGraphAuthProvider : IAuthenticationProvider
     /// <summary>
     /// Authenticates the specified request message.
     /// </summary>
-    /// <param name="request">The System.Net.Http.HttpRequestMessage to authenticate.</param>
+    /// <param name="request">The RequestInformation to authenticate.</param>
+    /// <param name="additionalAuthenticationContext"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The task to await.</returns>
-    public async Task AuthenticateRequestAsync(HttpRequestMessage request)
+    #nullable enable
+    public async Task AuthenticateRequestAsync(RequestInformation request, Dictionary<string, object>? additionalAuthenticationContext = default, CancellationToken cancellationToken = default)
     {
         var tokenRequestContext = new TokenRequestContext(_scopes);
-        var accessToken = await _credential.GetTokenAsync(tokenRequestContext, new CancellationToken()).ConfigureAwait(false);
-        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken.Token);
+        var accessToken = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken).ConfigureAwait(false);
+        request.Headers.Add(AuthorizationHeaderKey, $"Bearer {accessToken.Token}");
     }
+    #nullable disable
 
     /// <summary>
     /// Get access token for Microsoft Graph API requests.

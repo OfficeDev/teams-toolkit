@@ -246,12 +246,34 @@ export async function downloadDirectory(
   concurrencyLimits = sampleConcurrencyLimits,
   retryLimits = sampleDefaultRetryLimits
 ): Promise<void> {
-  //step 1: get file info
+  const urlInfo = parseSampleUrl(sampleUrl);
+  const { samplePaths, filePrefixUrl } = await getSampleFileInfo(urlInfo, retryLimits);
+  await downloadSampleFiles(
+    filePrefixUrl,
+    samplePaths,
+    dstPath,
+    urlInfo.dir,
+    retryLimits,
+    concurrencyLimits
+  );
+}
+
+type SampleUrlInfo = {
+  owner: string;
+  repository: string;
+  ref: string;
+  dir: string;
+};
+function parseSampleUrl(url: string): SampleUrlInfo {
   const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
-  const parsed = urlParserRegex.exec(sampleUrl);
-  if (!parsed) throw new ParseUrlError(sampleUrl);
+  const parsed = urlParserRegex.exec(url);
+  if (!parsed) throw new ParseUrlError(url);
   const [owner, repository, ref, dir] = parsed.slice(1);
-  const fileInfoUrl = `https://api.github.com/repos/${owner}/${repository}/git/trees/${ref}?recursive=1`;
+  return { owner, repository, ref, dir };
+}
+
+async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
+  const fileInfoUrl = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/git/trees/${urlInfo.ref}?recursive=1`;
   const fileInfo = (
     await sendRequestWithRetry(async () => {
       return await axios.get(fileInfoUrl);
@@ -260,11 +282,20 @@ export async function downloadDirectory(
 
   const fileInfoTree = fileInfo.tree as any[];
   const samplePaths = fileInfoTree
-    .filter((node) => node.path.startsWith(dir) && node.type !== "tree")
+    .filter((node) => node.path.startsWith(urlInfo.dir) && node.type !== "tree")
     .map((node) => node.path);
+  const filePrefixUrl = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
+  return { samplePaths, filePrefixUrl };
+}
 
-  //step 2: download files with limited concurrency
-  const filePrefixUrl = `https://raw.githubusercontent.com/${owner}/${repository}/${fileInfo.sha}/`;
+async function downloadSampleFiles(
+  filePrefixUrl: string,
+  samplePaths: string[],
+  dstPath: string,
+  dir: string,
+  retryLimits: number,
+  concurrencyLimits: number
+): Promise<void> {
   const downloadCallback = async (samplePath: string) => {
     const file = await sendRequestWithRetry(async () => {
       return await axios.get(filePrefixUrl + samplePath, { responseType: "arraybuffer" });

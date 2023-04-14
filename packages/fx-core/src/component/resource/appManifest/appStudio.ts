@@ -964,8 +964,8 @@ function generateCreateAppPackageArgs(
 ): CreateAppPackageArgs {
   const manifestFileName = path.join(
     projectPath,
-    BuildFolderName,
     AppPackageFolderName,
+    BuildFolderName,
     `manifest.${envName}.json`
   );
 

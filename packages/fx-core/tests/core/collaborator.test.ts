@@ -1861,7 +1861,9 @@ describe("Collaborator APIs for V3", () => {
         const teamsAppManifestQuestion = node?.children?.[0];
         const aadAppManifestQuestion = node?.children?.[1];
 
-        assert.equal(teamsAppManifestQuestion?.children?.length, 1);
+        assert.exists((teamsAppManifestQuestion?.children as any)[0].data?.name);
+        assert.exists((teamsAppManifestQuestion?.children as any)[1].data?.name);
+        assert.isTrue(teamsAppManifestQuestion?.children?.length == 2);
         assert.isTrue(aadAppManifestQuestion?.children?.length == 2);
 
         const teamsAppConfirmNode = teamsAppManifestQuestion?.children?.[0];

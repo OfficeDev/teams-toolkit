@@ -188,6 +188,7 @@ describe("env utils", () => {
   it("envUtil.writeEnv to default path", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    sandbox.stub(fs, "writeFile").resolves();
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
     assert.isTrue(res.isOk());
   });

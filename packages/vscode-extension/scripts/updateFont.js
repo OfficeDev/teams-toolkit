@@ -1,22 +1,21 @@
-const webfont = require("webfont");
+const svgtofont = require("svgtofont");
 const fs = require("fs");
 const path = require("path");
 
 async function generateFont() {
   try {
-    const result = await webfont.webfont({
-      files: "img/font/*.svg",
-      filePath: path.join(__dirname, ".."),
-      formats: ["woff"],
+    svgtofont({
+      src: path.join(__dirname, "..", "img", "font"),
+      dist: path.join(__dirname, "..", "media", "font"),
+      fontName: "teamstoolkit",
       startUnicode: 0xe000,
-      verbose: true,
-      normalize: true,
-      sort: false,
-      fontHeight: 1000,
+      svgicons2svgfont: {
+        fontHeight: 1000,
+        normalize: true,
+      },
+    }).then(() => {
+      console.log(`Font created.`);
     });
-    const dest = path.join(__dirname, "..", "media", "font", "teamstoolkit.woff");
-    fs.writeFileSync(dest, result.woff, "binary");
-    console.log(`Font created at ${dest}`);
   } catch (e) {
     console.error("Font creation failed.", e);
   }

@@ -5,6 +5,7 @@ import { assert, expect } from "chai";
 import "mocha";
 import { Duplex } from "stream";
 import sinon from "sinon";
+import fs from "fs-extra";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { Namespaces, NotificationTypes } from "../../src/apis";
 import ServerLogProvider from "../../src/providers/logger";
@@ -99,6 +100,17 @@ describe("ServerLogProvider", () => {
       res.then((data) => {
         assert.isTrue(data);
         expect(stub).is.called.with(LogLevel.Fatal, "test");
+      });
+    });
+
+    it("write to file", () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      sandbox.stub(fs, "mkdir").resolves();
+      sandbox.stub(fs, "appendFile").resolves();
+      const res = logger.info("test", true);
+      res.then((data) => {
+        assert.isTrue(data);
+        expect(stub).is.called.with(LogLevel.Info, "test");
       });
     });
 

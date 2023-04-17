@@ -2,32 +2,79 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Remote (Edge)",
+            "name": "Launch Remote in Teams (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
-                "group": "remote",
-                "order": 1
+                "group": "group 1: Teams",
+                "order": 3
             },
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Remote (Chrome)",
+            "name": "Launch Remote in Teams (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
-                "group": "remote",
-                "order": 2
+                "group": "group 1: Teams",
+                "order": 3
             },
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Attach to Frontend (Edge)",
+            "name": "Launch Remote in Outlook (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{M365_APP_ID}}?${account-hint}",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Outlook (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{M365_APP_ID}}?${account-hint}",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in the Microsoft 365 app (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{M365_APP_ID}}?auth=2&${account-hint}",
+            "presentation": {
+                "group": "group 3: the Microsoft 365 app",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in the Microsoft 365 app (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{M365_APP_ID}}?auth=2&${account-hint}",
+            "presentation": {
+                "group": "group 3: the Microsoft 365 app",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in Teams (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
             "presentation": {
                 "group": "all",
                 "hidden": true
@@ -35,10 +82,81 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Attach to Frontend (Chrome)",
+            "name": "Attach to Frontend in Teams (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in Outlook (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{local:M365_APP_ID}}?${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in Outlook (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{local:M365_APP_ID}}?${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in the Microsoft 365 app (Edge)",
+            "type": "pwa-msedge",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{local:M365_APP_ID}}?auth=2&${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in the Microsoft 365 app (Chrome)",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{local:M365_APP_ID}}?auth=2&${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Local Service",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9239,
+            "restart": true,
             "presentation": {
                 "group": "all",
                 "hidden": true
@@ -48,25 +166,79 @@
     ],
     "compounds": [
         {
-            "name": "Debug (Edge)",
+            "name": "Debug in Teams (Edge)",
             "configurations": [
-                "Attach to Frontend (Edge)"
+                "Attach to Frontend (Edge)",
+                "Attach to Local Service",
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+                "group": "group 1: Teams",
                 "order": 1
             },
             "stopAll": true
         },
         {
-            "name": "Debug (Chrome)",
+            "name": "Debug in Teams (Chrome)",
             "configurations": [
-                "Attach to Frontend (Chrome)"
+                "Attach to Frontend (Chrome)",
+                "Attach to Local Service",
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+                "group": "group 1: Teams",
+                "order": 2
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Outlook (Edge)",
+            "configurations": [
+                "Attach to Frontend in Outlook (Edge)",
+                "Attach to Local Service",
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 1
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Outlook (Chrome)",
+            "configurations": [
+                "Attach to Frontend in Outlook (Chrome)",
+                "Attach to Local Service",
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 2
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in the Microsoft 365 app (Edge)",
+            "configurations": [
+                "Attach to Frontend in the Microsoft 365 app (Edge)",
+                "Attach to Local Service",
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group 3: the Microsoft 365 app",
+                "order": 1
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in the Microsoft 365 app (Chrome)",
+            "configurations": [
+                "Attach to Frontend in the Microsoft 365 app (Chrome)",
+                "Attach to Local Service",
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group 3: the Microsoft 365 app",
                 "order": 2
             },
             "stopAll": true

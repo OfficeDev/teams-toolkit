@@ -12,6 +12,7 @@ import * as path from "path";
 import { MigrationContext } from "../../../../src/core/middleware/utils/migrationContext";
 import { buildEnvUserFileName } from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import * as Handlebars from "handlebars";
+import { YamlParser } from "../../../../src/component/configManager/parser";
 
 export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -60,6 +61,10 @@ export async function assertFileContentByTemplateCompose(
   });
   const expectedFileContent = template(ymlTemplates);
   assert.equal(actualFileContent, normalizeLineBreaks(expectedFileContent));
+
+  const parser = new YamlParser();
+  const res = await parser.parse(path.join(projectPath, actualFilePath));
+  assert.isTrue(res.isOk());
 }
 
 export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {

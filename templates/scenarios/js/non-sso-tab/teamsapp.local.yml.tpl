@@ -21,6 +21,7 @@ provision:
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
+
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template
@@ -32,6 +33,13 @@ provision:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+
+  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+    with:
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
+    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
 
 deploy:
   - uses: prerequisite/install # Install dependencies

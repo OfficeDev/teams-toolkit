@@ -85,9 +85,13 @@ export class ResourceGroupHelper {
         );
       }
       return ok(response.name);
-    } catch (e) {
+    } catch (e: any) {
       return err(
-        new CreateResourceGroupError(resourceGroupName, subscriptionId, JSON.stringify(e))
+        new CreateResourceGroupError(
+          resourceGroupName,
+          subscriptionId,
+          e.message || JSON.stringify(e)
+        )
       );
     }
   }
@@ -123,9 +127,13 @@ export class ResourceGroupHelper {
           location: getRes.location,
         });
       } else return ok(undefined);
-    } catch (e) {
+    } catch (e: any) {
       return err(
-        new GetResourceGroupError(resourceGroupName, rmClient.subscriptionId, JSON.stringify(e))
+        new GetResourceGroupError(
+          resourceGroupName,
+          rmClient.subscriptionId,
+          e.message || JSON.stringify(e)
+        )
       );
     }
   }
@@ -143,8 +151,10 @@ export class ResourceGroupHelper {
         result = await res.next();
       }
       return ok(results);
-    } catch (e) {
-      return err(new ListResourceGroupsError(rmClient.subscriptionId, JSON.stringify(e)));
+    } catch (e: any) {
+      return err(
+        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+      );
     }
   }
 
@@ -157,15 +167,13 @@ export class ResourceGroupHelper {
     const subscriptionClient = new SubscriptionClient(azureToken);
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     try {
+      const res = subscriptionClient.subscriptions.listLocations(askSubRes!.subscriptionId);
       const locations: string[] = [];
-      for await (const page of subscriptionClient.subscriptions
-        .listLocations(askSubRes!.subscriptionId)
-        .byPage({ maxPageSize: 100 })) {
-        for (const location of page) {
-          if (location.displayName) {
-            locations.push(location.displayName);
-          }
-        }
+      let result = await res.next();
+      if (result.value.displayName) locations.push(result.value.displayName);
+      while (!result.done) {
+        if (result.value.displayName) locations.push(result.value.displayName);
+        result = await res.next();
       }
       const providerData = await rmClient.providers.get(MsResources);
       const resourceTypeData = providerData.resourceTypes?.find(
@@ -182,8 +190,10 @@ export class ResourceGroupHelper {
         );
       }
       return ok(rgLocations);
-    } catch (e) {
-      return err(new ListResourceGroupLocationsError(rmClient.subscriptionId, JSON.stringify(e)));
+    } catch (e: any) {
+      return err(
+        new ListResourceGroupLocationsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+      );
     }
   }
 

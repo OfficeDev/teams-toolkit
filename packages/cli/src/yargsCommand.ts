@@ -1,26 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { Colors, FxError, LogLevel, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { IncompatibleProjectError, isUserCancelError } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { readFileSync } from "fs";
+import path from "path";
 import { Argv, exit, Options } from "yargs";
-
-import { FxError, Result, SystemError, UserError, LogLevel, Colors } from "@microsoft/teamsfx-api";
-
+import activate from "./activate";
 import CLILogProvider from "./commonlib/log";
+import { CliTelemetryReporter } from "./commonlib/telemetry";
+import Progress from "./console/progress";
 import * as constants from "./constants";
 import { UnknownError } from "./error";
 import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
-import { CliTelemetryReporter } from "./commonlib/telemetry";
-import { readFileSync } from "fs";
-import path from "path";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import Progress from "./console/progress";
-import { getColorizedString, getSystemInputs } from "./utils";
 import UI from "./userInteraction";
-import activate from "./activate";
-import { IncompatibleProjectError, isUserCancelError } from "@microsoft/teamsfx-core";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { getColorizedString, getSystemInputs } from "./utils";
 
 export abstract class YargsCommand {
   /**
@@ -193,6 +189,7 @@ export abstract class YargsCommand {
     } finally {
       await CliTelemetryInstance.flush();
       Progress.end(true);
+      process.exit();
     }
   }
 }

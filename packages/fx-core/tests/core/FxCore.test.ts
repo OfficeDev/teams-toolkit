@@ -913,6 +913,7 @@ describe("createEnvCopyV3", async () => {
 
   it("should create new .env file with desired content", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("./env/.env.dev"));
+    sandbox.stub(fs, "pathExists").resolves(true);
     const core = new FxCore(tools);
     const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());

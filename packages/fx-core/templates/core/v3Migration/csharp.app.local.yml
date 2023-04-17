@@ -3,7 +3,7 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
     with:
@@ -24,9 +24,7 @@ registerApp:
     writeToEnvironmentFile:
       # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
-
 {{#if activePlugins.fx-resource-bot}}
-provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
       name: {{appName}}
@@ -53,8 +51,6 @@ provision:
             OAuthAuthority: $\{{AAD_APP_OAUTH_AUTHORITY}}
   {{/if}}
 {{/if}}
-
-configureApp:
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: script # Set env for local launch
     name: Set {{placeholderMappings.tabDomain}} for local launch
@@ -79,12 +75,6 @@ configureApp:
             ClientSecret: $\{{SECRET_AAD_APP_CLIENT_SECRET}}
             OAuthAuthority: $\{{AAD_APP_OAUTH_AUTHORITY}}
   {{/if}} 
-{{/if}}
-{{#if activePlugins.fx-resource-bot}}
-  - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.botDomain}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.botDomain}}=$\{{BOT_DOMAIN}}"
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.

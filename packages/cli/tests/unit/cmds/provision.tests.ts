@@ -45,6 +45,7 @@ describe("Provision Command Tests", function () {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
@@ -261,6 +262,7 @@ describe("teamsfx provision manifest", async () => {
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
       telemetryEvents.push(eventName);
     });

@@ -134,16 +134,15 @@ export class ResourceGroupHelper {
     rmClient: ResourceManagementClient
   ): Promise<Result<[string, string][], FxError>> {
     try {
-      const resourceGroupResults = [];
-      for await (const page of rmClient.resourceGroups.list().byPage({ maxPageSize: 100 })) {
-        for (const resourceGroup of page) {
-          resourceGroupResults.push(resourceGroup);
-        }
+      const results: [string, string][] = [];
+      const res = rmClient.resourceGroups.list();
+      let result = await res.next();
+      if (result.value.name) results.push([result.value.name, result.value.location]);
+      while (!result.done) {
+        if (result.value.name) results.push([result.value.name, result.value.location]);
+        result = await res.next();
       }
-      const resourceGroupNameLocations = resourceGroupResults
-        .filter((item) => item.name)
-        .map((item) => [item.name, item.location] as [string, string]);
-      return ok(resourceGroupNameLocations);
+      return ok(results);
     } catch (e) {
       return err(new ListResourceGroupsError(rmClient.subscriptionId, JSON.stringify(e)));
     }

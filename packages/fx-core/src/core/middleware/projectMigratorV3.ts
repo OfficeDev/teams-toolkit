@@ -790,11 +790,10 @@ export async function userdataMigration(context: MigrationContext): Promise<void
       // get envName
       const envFileName = buildEnvUserFileName(envName);
       const bicepContent = await readBicepContent(context);
-      const envData = await readAndConvertUserdata(
-        context,
-        path.join(stateFolder, stateFile),
-        bicepContent
-      );
+      const envData =
+        MetadataV3.secretFileComment +
+        EOL +
+        (await readAndConvertUserdata(context, path.join(stateFolder, stateFile), bicepContent));
       await context.fsWriteFile(
         path.join(MetadataV3.defaultEnvironmentFolder, envFileName),
         envData,

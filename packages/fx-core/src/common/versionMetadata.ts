@@ -18,6 +18,8 @@ export const MetadataV3 = {
   teamsManifestFileName: "manifest.json",
   aadManifestFileName: "aad.manifest.json",
   v3UpgradeWikiLink: "https://aka.ms/teams-toolkit-5.0-upgrade",
+  secretFileComment:
+    "# This file includes environment variables that will not be committed to git by default. You can set these environment variables in your CI/CD system for your project.",
 };
 
 export const MetadataV2 = {

@@ -45,6 +45,17 @@ describe("ServerLogProvider", () => {
     });
   });
 
+  it("write to file", () => {
+    const logger = new ServerLogProvider(msgConn);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "mkdir").resolves();
+    sandbox.stub(fs, "appendFile").resolves();
+    const res = logger.log(LogLevel.Info, "test", true);
+    res.then((data) => {
+      assert.isTrue(data);
+    });
+  });
+
   describe("methods", () => {
     const logger = new ServerLogProvider(msgConn);
     const stub = sandbox.stub(logger, "log");
@@ -100,17 +111,6 @@ describe("ServerLogProvider", () => {
       res.then((data) => {
         assert.isTrue(data);
         expect(stub).is.called.with(LogLevel.Fatal, "test");
-      });
-    });
-
-    it("write to file", () => {
-      sandbox.stub(fs, "pathExists").resolves(false);
-      sandbox.stub(fs, "mkdir").resolves();
-      sandbox.stub(fs, "appendFile").resolves();
-      const res = logger.info("test", true);
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Info, "test");
       });
     });
 

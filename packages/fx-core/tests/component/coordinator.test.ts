@@ -78,6 +78,7 @@ import {
 import { DotenvParseOutput } from "dotenv";
 import * as os from "os";
 import * as path from "path";
+import { InputValidationError, MissingRequiredInputError } from "../../src/error/common";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -3236,7 +3237,7 @@ describe("Office Addin", async () => {
     };
 
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
   });
 
   it("should return error if app name is undefined", async () => {
@@ -3251,7 +3252,7 @@ describe("Office Addin", async () => {
     };
 
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {

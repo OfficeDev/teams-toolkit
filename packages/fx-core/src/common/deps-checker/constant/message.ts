@@ -13,7 +13,7 @@ export const Messages = {
   finishInstallFunctionCoreTool: () =>
     getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
   // needReplaceWithFuncCoreToolV3: () => getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
-  needInstallFuncCoreTool: () => getLocalizedString("depChecker.needInstallFuncCoreTool"),
+  needInstallNpm: () => getLocalizedString("depChecker.needInstallNpm"),
   failToValidateFuncCoreTool: () => getLocalizedString("depChecker.failToValidateFuncCoreTool"),
   globalFuncNodeNotMatched: () => getLocalizedString("depChecker.globalFuncNodeNotMatched"),
   portableFuncNodeNotMatched: () => getLocalizedString("depChecker.portableFuncNodeNotMatched"),

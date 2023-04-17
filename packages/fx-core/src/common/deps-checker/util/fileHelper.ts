@@ -29,5 +29,3 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
 export async function rename(oldPath: string, newPath: string): Promise<void> {
   await fs.rename(oldPath, newPath);
 }
-
-//createSymlink("C:\\Users\\xiaofhua\\.fx\\bin\\func\\6f1d8433-5245-4722-aef3-eca96c8870c9")

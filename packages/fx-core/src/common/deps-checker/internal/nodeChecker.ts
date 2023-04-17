@@ -74,12 +74,7 @@ export abstract class NodeChecker implements DepsChecker {
           DepsCheckerEvent.nodeNotFound,
           "Node.js can't be found."
         );
-        const error = new NodeNotFoundError(
-          Messages.NodeNotFound()
-            .split("@NodeVersion")
-            .join(supportedVersions[supportedVersions.length - 1]),
-          this._nodeNotFoundHelpLink
-        );
+        const error = new NodeNotFoundError(Messages.NodeNotFound(), this._nodeNotFoundHelpLink);
         return await this.getDepsInfo(false, supportedVersions, undefined, error);
       }
       this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {

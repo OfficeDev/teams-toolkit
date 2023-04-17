@@ -25,6 +25,36 @@ export class UnzipError extends BaseComponentInnerError {
   }
 }
 
+export class DownloadSampleNetworkError extends BaseComponentInnerError {
+  constructor(url: string) {
+    super(
+      errorSource,
+      "UserError",
+      "DownloadSampleNetworkError",
+      "error.generator.DownloadSampleNetworkError",
+      [url]
+    );
+  }
+}
+
+export class DownloadSampleApiLimitError extends BaseComponentInnerError {
+  constructor(url: string) {
+    super(
+      errorSource,
+      "UserError",
+      "DownloadSampleApiLimitError",
+      "error.generator.DownloadSampleApiLimitError",
+      [url]
+    );
+  }
+}
+
+export class ParseUrlError extends BaseComponentInnerError {
+  constructor(url: string) {
+    super(errorSource, "SystemError", "ParseUrlError", "error.generator.ParseUrlError", [url]);
+  }
+}
+
 export class FetchZipFromUrlError extends BaseComponentInnerError {
   constructor(url: string) {
     super(

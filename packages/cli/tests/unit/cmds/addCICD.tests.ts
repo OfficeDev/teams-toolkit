@@ -27,6 +27,7 @@ describe("Add CICD Command Tests", function () {
   let mockedEnvRestore: () => void;
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "false",
     });

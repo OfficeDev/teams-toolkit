@@ -37,6 +37,7 @@ describe("Account Command Tests", function () {
   let loglevels: LogLevel[] = [];
   let mockedEnvRestore: RestoreFn;
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {

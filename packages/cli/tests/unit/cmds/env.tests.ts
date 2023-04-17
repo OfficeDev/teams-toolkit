@@ -77,6 +77,7 @@ function mockYargs(sandbox: SinonSandbox, vars: Reference<MockVars>) {
   sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
     throw err;
   });
+  sandbox.stub(process, "exit");
 }
 
 function mockCommonUtils(sandbox: SinonSandbox, vars: Reference<MockVars>) {

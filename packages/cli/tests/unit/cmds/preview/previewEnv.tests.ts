@@ -41,6 +41,7 @@ describe("Preview --env", () => {
     defaultOptions = {};
     logs = [];
     telemetries = [];
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }, more?: any) => {
       if (typeof ops === "string") {
         options.push(ops);

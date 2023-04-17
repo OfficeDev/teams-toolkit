@@ -202,10 +202,18 @@ describe("resouce group helper test", () => {
   it("listResourceGroups success", async () => {
     const client = new ResourceManagementClient(new MyTokenCredential(), "id");
     const iterator = {
-      next: sandbox.stub().resolves({
-        value: { name: "rg", location: "east us" },
-        done: true,
-      }),
+      next: sandbox
+        .stub()
+        .onFirstCall()
+        .resolves({
+          value: { name: "rg1", location: "east us" },
+          done: false,
+        })
+        .onSecondCall()
+        .resolves({
+          value: { name: "rg2", location: "east us" },
+          done: true,
+        }),
       byPage: sandbox.stub().resolves([[{ name: "rg", location: "east us" }]]),
       [Symbol.asyncIterator]() {
         return this;
@@ -215,7 +223,7 @@ describe("resouce group helper test", () => {
     const res = await resourceGroupHelper.listResourceGroups(client);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
-      assert.isTrue(res.value.length === 1);
+      assert.isTrue(res.value.length === 2);
     }
   });
 

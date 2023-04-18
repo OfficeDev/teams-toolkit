@@ -145,20 +145,20 @@ catch (ExceptionWithCode e)
        using Microsoft.Bot.Builder;
        using Microsoft.Bot.Builder.Integration.AspNet.Core;
        using Microsoft.TeamsFx.Conversation;
-
+   
        [Route("api/messages")]
        [ApiController]
        public class BotController : ControllerBase
        {
            private readonly ConversationBot _conversation;
            private readonly IBot _bot;
-
+   
            public BotController(ConversationBot conversation, IBot bot)
            {
                _conversation = conversation;
                _bot = bot;
            }
-
+   
            [HttpPost]
            public async Task PostAsync(CancellationToken cancellationToken = default)
            {
@@ -243,7 +243,7 @@ catch (ExceptionWithCode e)
        foreach (var installation in installations)
        {
            await installation.SendMessage("Hello.", cancellationToken);
-
+   
            // Or, send adaptive card (need to build your own card object)
            // await installation.SendAdaptiveCard(cardObject, cancellationToken);
        }
@@ -265,7 +265,7 @@ catch (ExceptionWithCode e)
        /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
        /// </summary>
        public string TriggerVerb => "doStuff";
-
+   
        /// <summary>
        /// Indicate how your acrion response card is sent in the conversation.
        /// By default, the response card can only be updated for the interactor who trigger the action.
@@ -277,13 +277,13 @@ catch (ExceptionWithCode e)
        {
            // Send invoke response with text message
            return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
-
+    
            /**
             * If you want to send invoke response with adaptive card, you can:
             *
             * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
             */
-
+    
            /**
             * If you want to send invoke response with error message, you can:
             *
@@ -325,20 +325,20 @@ catch (ExceptionWithCode e)
        using Microsoft.Bot.Builder;
        using Microsoft.Bot.Builder.Integration.AspNet.Core;
        using Microsoft.TeamsFx.Conversation;
-
+   
        [Route("api/messages")]
        [ApiController]
        public class BotController : ControllerBase
        {
            private readonly ConversationBot _conversation;
            private readonly IBot _bot;
-
+   
            public BotController(ConversationBot conversation, IBot bot)
            {
                _conversation = conversation;
                _bot = bot;
            }
-
+   
            [HttpPost]
            public async Task PostAsync(CancellationToken cancellationToken = default)
            {
@@ -445,6 +445,126 @@ Starting from TeamsFx .NET SDK 1.2.0, TeamsJS V2 are referenced. Though previous
 | registerChangeSettingHandler() | registerChangeConfigHandler() |
 
 For more APIs, please [visit the TeamsJS documentation to learn more](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/using-teams-client-sdk?tabs=javascript%2Cmanifest-teams-toolkit).
+
+### Upgrade from 1.x.x to 2.0.0
+
+In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `frameworkreference`. `auth-start.html` and `auth-end.html` are removed from SDK, and added to templates. You could use the following steps to upgrade existing projects.
+
+1. Upgrade package dependencies in `{{ProjectName}}.csproj`.
+
+   ```csharp
+   <PackageReference Include="Microsoft.Graph" Version="5.6.0" />
+   <PackageReference Include="Microsoft.TeamsFx" Version="2.0.0" />
+   ```
+
+2.  If you are using class `User`, add `@using Microsoft.Graph.Models` to the top of the file.
+
+3. Update requests to Microsoft Graph as follows.
+
+   ```csharp
+   // Previous
+   var Profile = await graph.Me.Request().GetAsync();
+   var photoStream = await graph.Me.Photo.Content.Request().GetAsync();
+   
+   // Now
+   var Profile = await graph.Me.GetAsync();
+   var photoStream = await graph.Me.Photo.Content.GetAsync();
+   ```
+
+4. Download `auth-start.html` and `auth-end.html` from [GitHub Repo](https://github.com/OfficeDev/TeamsFx/tree/dev/templates/scenarios/csharp/sso-tab/wwwroot) to `{ProjectDirectory}/wwwroot`.
+
+5. Update `appsetting.json` and `appsettings.Development.json` to add `InitiateLoginEndpoint`.
+
+   ```json
+   {
+     "TeamsFx": {
+       "Authentication": {
+         "ClientId": "$clientId$",
+         "ClientSecret": "$client-secret$",
+         "InitiateLoginEndpoint": "$TAB_ENDPOINT$/auth-start.html", //New Line
+         "OAuthAuthority": "$oauthAuthority$"
+       }
+     }
+   }
+   ```
+
+6. Update `azure.bicep` under `{ProjectDirectory}/infra`.
+
+   ```bicep
+   // Previous
+   resource webApp 'Microsoft.Web/sites@2021-02-01' = {
+     kind: 'app'
+     location: location
+     name: webAppName
+     properties: {
+       serverFarmId: serverfarm.id
+       httpsOnly: true
+       siteConfig: {
+         appSettings: [
+           {
+             name: 'WEBSITE_RUN_FROM_PACKAGE'
+             value: '1'
+           }
+           {
+             name: 'TeamsFx__Authentication__ClientId'
+             value: tabAadAppClientId
+           }
+           {
+             name: 'TeamsFx__Authentication__ClientSecret'
+             value: tabAadAppClientSecret
+           }
+           {
+             name: 'TeamsFx__Authentication__OAuthAuthority'
+             value: uri(tabAadAppOauthAuthorityHost, tabAadAppTenantId)
+           }
+         ]
+         ftpsState: 'FtpsOnly'
+       }
+     }
+   }
+   
+   // Updated
+   resource webApp 'Microsoft.Web/sites@2021-02-01' = {
+     kind: 'app'
+     location: location
+     name: webAppName
+     properties: {
+       serverFarmId: serverfarm.id
+       httpsOnly: true
+       siteConfig: {
+         ftpsState: 'FtpsOnly'
+       }
+     }
+   }
+   
+   resource  webAppConfig  'Microsoft.Web/sites/config@2021-02-01' = {
+     name: '${webAppName}/appsettings'
+     properties: {
+       WEBSITE_RUN_FROM_PACKAGE: '1'
+       TeamsFx__Authentication__ClientId: tabAadAppClientId
+       TeamsFx__Authentication__ClientSecret: tabAadAppClientSecret
+       TeamsFx__Authentication__InitiateLoginEndpoint: 'https://${webApp.properties.defaultHostName}/auth-start.html'
+       TeamsFx__Authentication__OAuthAuthority: uri(tabAadAppOauthAuthorityHost, tabAadAppTenantId)
+     }
+   }
+   ```
+
+7. [Optional] Update `teamsapp.local.yml` as follows.
+
+   ```yaml
+   - uses: file/updateJson # Generate runtime appsettings to JSON file
+     with:
+     target: ./appsettings.Development.json
+     appsettings:
+       TeamsFx:
+         Authentication:
+           ClientId: ${{AAD_APP_CLIENT_ID}}
+           ClientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+           InitiateLoginEndpoint: ${{TAB_ENDPOINT}}/auth-start.html # New line
+           OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}
+   ```
+
+   
 
 ### Configure Logging
 

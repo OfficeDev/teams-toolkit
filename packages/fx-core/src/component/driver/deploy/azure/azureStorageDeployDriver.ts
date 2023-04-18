@@ -14,7 +14,6 @@ import {
   ContainerClient,
 } from "@azure/storage-blob";
 import { DeployConstant } from "../../../constant/deployConstant";
-import { DeployExternalApiCallError } from "../../../error/deployError";
 import { forEachFileAndDir } from "../../../utils/fileOperation";
 import * as fs from "fs-extra";
 import path from "path";
@@ -27,7 +26,7 @@ import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
-import { HttpStatusCode, TelemetryConstant } from "../../../constant/commonConstant";
+import { TelemetryConstant } from "../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
 import {
@@ -35,6 +34,7 @@ import {
   AzureStorageGetContainerError,
   AzureStorageUploadFilesError,
 } from "../../../../error/deploy";
+import { ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -179,6 +179,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
   }
 
   updateProgressbar() {
-    this.progressBar?.next(`Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`);
+    this.progressBar?.next(
+      ProgressMessages.deployToAzure(this.workingDirectory, "Azure Storage Service")
+    );
   }
 }

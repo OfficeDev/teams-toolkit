@@ -86,6 +86,7 @@
   "core.progress.uploadTabToStorage": "Uploading Tab front end to Azure Storage account.",
   "core.progress.configureAzureStorage": "Configuring Azure Storage, enable static website setting.",
   "core.progress.runCommand": "Run command %s at %s",
+  "core.progress.deployToAzure": "Deploying %s to %s.",
   "core.log.updateFunctionAppSettings": "Updating Azure Functions app settings.",
   "core.error.programmingLanguageInvalid": "Invalid programming language found in project settings.",
   "core.Notification.ReadMore": "Read more",

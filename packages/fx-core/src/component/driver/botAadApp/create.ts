@@ -8,7 +8,6 @@ import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { performance } from "perf_hooks";
-import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
 import { wrapRun } from "../../utils/common";
 import {
@@ -24,7 +23,7 @@ import { progressBarKeys } from "../../resource/botService/botRegistration/const
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { updateProgress } from "../middleware/updateProgress";
 import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
-import { InvalidActionInputError } from "../../../error/common";
+import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -156,9 +155,9 @@ export class CreateBotAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(actionName, JSON.stringify(error.response!.data), helpLink);
+          throw new UnhandledUserError(new Error(error.response!.data), actionName, helpLink);
         } else {
-          throw new UnhandledSystemError(actionName, JSON.stringify(error.response!.data));
+          throw new UnhandledError(new Error(error.response!.data), actionName);
         }
       }
 
@@ -166,7 +165,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, JSON.stringify(error));
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 

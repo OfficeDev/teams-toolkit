@@ -8,14 +8,13 @@ import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
 import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
-import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
-import { InvalidActionInputError } from "../../../error/common";
+import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
@@ -104,12 +103,12 @@ export class UpdateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new UnhandledUserError(actionName, message, helpLink)),
+            result: err(new UnhandledUserError(error as Error, actionName, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new UnhandledSystemError(actionName, message)),
+            result: err(new UnhandledError(error as Error, actionName)),
             summaries: summaries,
           };
         }
@@ -120,7 +119,7 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledSystemError(actionName, JSON.stringify(error))),
+        result: err(new UnhandledError(error as Error, actionName)),
         summaries: summaries,
       };
     } finally {

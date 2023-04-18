@@ -94,8 +94,36 @@ export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: camelCase(source || "unknown"),
-      message: getDefaultString("error.common.UnhandledError", source || "", e.message),
-      displayMessage: getLocalizedString("error.common.UnhandledError", source || "", e.message),
+      message: getDefaultString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+      displayMessage: getLocalizedString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+    });
+    if (e.stack) super.stack = e.stack;
+  }
+}
+
+export class UnhandledUserError extends UserError {
+  constructor(e: Error, source?: string, helpLink?: string) {
+    super({
+      source: camelCase(source || "unknown"),
+      message: getDefaultString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+      displayMessage: getLocalizedString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+      helpLink: helpLink,
     });
     if (e.stack) super.stack = e.stack;
   }

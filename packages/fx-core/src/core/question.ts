@@ -893,10 +893,8 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
   };
 
   const res = new QTreeNode(aadAppManifestNode);
-  if (inputs.platform != Platform.CLI) {
-    const confirmNode = confirmManifestNode(manifestPath, false);
-    res.addChild(confirmNode);
-  }
+  const confirmNode = confirmManifestNode(manifestPath, false);
+  res.addChild(confirmNode);
   return res;
 }
 

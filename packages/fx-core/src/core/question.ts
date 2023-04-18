@@ -94,7 +94,7 @@ export enum CoreQuestionNames {
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "manifest-path",
   LocalTeamsAppManifestFilePath = "local-manifest-path",
-  AadAppManifestFilePath = "aadAppManifestFilePath",
+  AadAppManifestFilePath = "manifest-file-path",
   TeamsAppPackageFilePath = "teamsAppPackageFilePath",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
@@ -893,8 +893,10 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
   };
 
   const res = new QTreeNode(aadAppManifestNode);
-  const confirmNode = confirmManifestNode(manifestPath, false);
-  res.addChild(confirmNode);
+  if (inputs.platform != Platform.CLI) {
+    const confirmNode = confirmManifestNode(manifestPath, false);
+    res.addChild(confirmNode);
+  }
   return res;
 }
 

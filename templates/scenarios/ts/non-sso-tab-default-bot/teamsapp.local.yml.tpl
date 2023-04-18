@@ -50,11 +50,11 @@ provision:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
 deploy:
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:
       devCert:
         trust: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
 
@@ -64,7 +64,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables for tab
     with:
-      target: ./tab/.localSettings
+      target: ./tab/.localConfigs
       envs:
         BROWSER: none
         HTTPS: true
@@ -74,7 +74,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables for bot
     with:
-      target: ./bot/.localSettings
+      target: ./bot/.localConfigs
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

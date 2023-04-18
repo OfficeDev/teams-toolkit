@@ -1346,7 +1346,7 @@ describe("debugMigration", () => {
         {
           "label": "Start frontend",
           "type": "shell",
-          "command": "npx env-cmd --silent -f .localSettings react-scripts start",
+          "command": "npx env-cmd --silent -f .localConfigs react-scripts start",
           "isBackground": true,
           "options": {
               "cwd": "\${workspaceFolder}/tabs"

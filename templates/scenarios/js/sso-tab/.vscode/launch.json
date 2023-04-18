@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Launch Remote (Edge)",
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
@@ -14,7 +14,7 @@
         },
         {
             "name": "Launch Remote (Chrome)",
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
@@ -25,7 +25,7 @@
         },
         {
             "name": "Attach to Frontend (Edge)",
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
@@ -36,7 +36,7 @@
         },
         {
             "name": "Attach to Frontend (Chrome)",
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {

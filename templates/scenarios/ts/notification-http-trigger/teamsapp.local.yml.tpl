@@ -44,10 +44,10 @@ provision:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
 deploy:
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:
       func: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       funcPath: FUNC_PATH
 
   - uses: cli/runNpmCommand # Run npm command
@@ -56,7 +56,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./.localSettings
+      target: ./.localConfigs
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

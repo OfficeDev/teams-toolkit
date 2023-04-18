@@ -12,7 +12,7 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "dev:teamsfx": "env-cmd --silent -f .localSettings npm run dev",
+    "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
     "dev": "nodemon --inspect=9239 --signal SIGINT ./index.js",
     "start": "node ./index.js",
     "watch": "nodemon ./index.js"

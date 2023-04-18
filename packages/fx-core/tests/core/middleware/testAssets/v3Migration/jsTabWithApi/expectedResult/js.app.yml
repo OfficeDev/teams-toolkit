@@ -41,7 +41,7 @@ deploy:
   - uses: prerequisite/install # Install dependencies
     with:      
       dotnet: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       dotnetPath: DOTNET_PATH
   - uses: cli/runNpmCommand
     name: install api dependencies

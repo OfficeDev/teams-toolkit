@@ -9,7 +9,6 @@ import {
   FeatureId,
   getQuestionsForAddWebpart,
 } from "@microsoft/teamsfx-core/build/component/question";
-import { SPFxQuestionNames } from "@microsoft/teamsfx-core/build/component/constants";
 import { Argv } from "yargs";
 import activate from "../activate";
 import { CLIHelpInputs, EmptyQTreeNode, RootFolderNode } from "../constants";
@@ -78,7 +77,7 @@ export class CapabilityAddSPFxTab extends CapabilityAddBase {
 }
 
 export class AddWebpart extends YargsCommand {
-  public readonly commandHead = `SPFxWebPart`;
+  public readonly commandHead = `spfx-web-part`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Auto-hosted SPFx web part tightly integrated with Microsoft Teams";
 
@@ -110,21 +109,6 @@ export class AddWebpart extends YargsCommand {
     const core = resultFolder.value;
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.stage = Stage.addWebpart;
-    if (args["spfx-install-latest-package"]) {
-      inputs["spfx-install-latest-package"] = args["spfx-install-latest-package"];
-    }
-    if (args[SPFxQuestionNames.SPFxFolder]) {
-      inputs[SPFxQuestionNames.SPFxFolder] = args[SPFxQuestionNames.SPFxFolder];
-    }
-    if (args[SPFxQuestionNames.WebPartName]) {
-      inputs[SPFxQuestionNames.WebPartName] = args[SPFxQuestionNames.WebPartName];
-    }
-    if (args[SPFxQuestionNames.ManifestPath]) {
-      inputs[SPFxQuestionNames.ManifestPath] = args[SPFxQuestionNames.ManifestPath];
-    }
-    if (args[SPFxQuestionNames.LocalManifestPath]) {
-      inputs[SPFxQuestionNames.LocalManifestPath] = args[SPFxQuestionNames.LocalManifestPath];
-    }
     const result = await core.addWebpart(inputs);
     if (result.isErr()) {
       cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddWebpart, result.error);

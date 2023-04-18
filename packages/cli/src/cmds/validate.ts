@@ -54,12 +54,8 @@ export class ManifestValidate extends YargsCommand {
       if (isV3Enabled()) {
         if (args[AppPackageFilePathParamName]) {
           inputs.validateMethod = "validateAgainstAppPackage";
-          inputs[CoreQuestionNames.TeamsAppPackageFilePath] = args[AppPackageFilePathParamName];
         } else {
           inputs.validateMethod = "validateAgainstSchema";
-          inputs[CoreQuestionNames.TeamsAppManifestFilePath] =
-            args[ManifestFilePathParamName] ??
-            `${rootFolder}/${AppPackageFolderName}/manifest.json`;
         }
         result = await core.validateApplication(inputs);
       } else {

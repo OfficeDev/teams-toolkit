@@ -30,7 +30,7 @@ public class AuthenticationOptions
     /// <summary>
     /// Login page for Teams to redirect to.
     /// </summary>
-    [RegularExpression(@"^http(s)?://[-a-zA-Z0-9@:%._\+~#=/]{1,100}$")]
+    [RegularExpression(@"^http(s)?://[-a-zA-Z0-9@:%._\+~#=/]{1,256}$")]
     public string InitiateLoginEndpoint { get; set; }
 
     /// <summary>

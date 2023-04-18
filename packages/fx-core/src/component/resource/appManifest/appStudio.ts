@@ -83,13 +83,23 @@ export async function createTeamsApp(
   let create = true;
   if (inputs.appPackagePath) {
     if (!(await fs.pathExists(inputs.appPackagePath))) {
-      return err(new FileNotFoundError("createTeamsApp", inputs.appPackagePath));
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
+        )
+      );
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
     const zipEntries = new AdmZip(archivedFile).getEntries();
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
     if (!manifestFile) {
-      return err(new FileNotFoundError("createTeamsApp", Constants.MANIFEST_FILE));
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+        )
+      );
     }
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
@@ -217,7 +227,12 @@ export async function updateTeamsApp(
   let archivedFile;
   if (inputs.appPackagePath) {
     if (!(await fs.pathExists(inputs.appPackagePath))) {
-      return err(new FileNotFoundError("updateTeamsApp", inputs.appPackagePath));
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
+        )
+      );
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
@@ -266,7 +281,12 @@ export async function publishTeamsApp(
     if (await fs.pathExists(inputs.appPackagePath)) {
       archivedFile = await fs.readFile(inputs.appPackagePath);
     } else {
-      return err(new FileNotFoundError("publishTeamsApp", inputs.appPackagePath));
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
+        )
+      );
     }
   } else {
     const buildPackage = await buildTeamsAppPackage(
@@ -286,7 +306,12 @@ export async function publishTeamsApp(
 
   const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
   if (!manifestFile) {
-    return err(new FileNotFoundError("publishTeamsApp", Constants.MANIFEST_FILE));
+    return err(
+      AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+      )
+    );
   }
   const manifestString = manifestFile.getData().toString();
   const manifest = JSON.parse(manifestString) as TeamsAppManifest;
@@ -373,12 +398,22 @@ export async function buildTeamsAppPackage(
   const appDirectory = await getAppDirectory(projectPath);
   const colorFile = path.join(appDirectory, manifest.icons.color);
   if (!(await fs.pathExists(colorFile))) {
-    return err(new FileNotFoundError("buildTeamsAppPackage", colorFile));
+    return err(
+      AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(colorFile)
+      )
+    );
   }
 
   const outlineFile = path.join(appDirectory, manifest.icons.outline);
   if (!(await fs.pathExists(outlineFile))) {
-    return err(new FileNotFoundError("buildTeamsAppPackage", outlineFile));
+    return err(
+      AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(outlineFile)
+      )
+    );
   }
 
   const zip = new AdmZip();
@@ -401,7 +436,10 @@ export async function buildTeamsAppPackage(
         const file = language.file;
         const fileName = `${appDirectory}/${file}`;
         if (!(await fs.pathExists(fileName))) {
-          throw new FileNotFoundError("buildTeamsAppPackage", fileName);
+          throw AppStudioResultFactory.UserError(
+            AppStudioError.FileNotFoundError.name,
+            AppStudioError.FileNotFoundError.message(fileName)
+          );
         }
         const dir = path.dirname(file);
         zip.addLocalFile(fileName, dir === "." ? "" : dir);

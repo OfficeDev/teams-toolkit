@@ -179,11 +179,11 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     );
     ctx.result = err(AbandonedProjectError());
     return;
-  } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
-    if (!checkUserTasks(ctx)) {
-      ctx.result = ok(undefined);
-      return;
-    }
+  }
+  const projectPath = getParameterFromCxt(ctx, "projectPath", "");
+  const isValid = await checkActiveResourcePlugins(projectPath);
+  const isUpgradeable = isValid && versionForMigration.state === VersionState.upgradeable;
+  if (isUpgradeable) {
     if (!isV3Enabled()) {
       await TOOLS?.ui.showMessage(
         "warn",
@@ -459,7 +459,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   );
 
   const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
+    ?.activeResourcePlugins;
   const component = (projectSettings as ProjectSettingsV3).components;
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
@@ -936,6 +936,20 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
           }
         }
     }
+  }
+}
+
+export async function checkActiveResourcePlugins(projectPath: string): Promise<boolean> {
+  try {
+    const projectSettings = await loadProjectSettings(projectPath);
+    const solutionSettings = projectSettings.solutionSettings;
+    if (projectSettings && solutionSettings && solutionSettings.activeResourcePlugins) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
   }
 }
 

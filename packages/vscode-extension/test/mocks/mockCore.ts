@@ -28,10 +28,6 @@ export class MockCore implements Core {
     return ok("");
   }
 
-  async buildArtifacts(inputs: Inputs): Promise<Result<string, FxError>> {
-    return ok("");
-  }
-
   async deployAadManifest(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
   }

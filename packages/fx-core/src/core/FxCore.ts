@@ -747,10 +747,6 @@ export class FxCore implements v3.ICore {
     return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
   }
 
-  async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.createEnv, inputs);

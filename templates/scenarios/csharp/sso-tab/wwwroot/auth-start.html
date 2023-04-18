@@ -172,7 +172,7 @@
 
       // Return the base64-urlencoded sha256 hash for the PKCE challenge
       async function pkceChallengeFromVerifier(v) {
-        hashed = await sha256(v);
+        var hashed = await sha256(v);
         return base64urlencode(hashed);
       }
     </script>

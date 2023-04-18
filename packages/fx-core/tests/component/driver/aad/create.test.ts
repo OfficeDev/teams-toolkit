@@ -464,7 +464,7 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/create");
     expect(endTelemetry.properties.component).to.equal("aadApp/create");
     expect(endTelemetry.properties.success).to.equal("no");
-    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledUserError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
     expect(endTelemetry.properties["error-message"])
       .contain("An unexpected error has occurred while performing the aadApp/create task")

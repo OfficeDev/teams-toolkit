@@ -553,7 +553,7 @@ export class ManifestUtils {
 
     let teamsAppId = "";
     if (generateIdIfNotResolved) {
-      // Corner Case: Avoid UnresolvedPlaceholderError for manifest.id
+      // Corner Case: Avoid MissingEnvironmentVariablesError for manifest.id
       teamsAppId = expandEnvironmentVariable(manifest.id);
       manifest.id = "";
     }

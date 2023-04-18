@@ -704,12 +704,6 @@ export class Coordinator {
         }
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
-
-      // will not happen
-      // if (!resolvedSubscriptionId) {
-      //   return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
-      // }
-
       // ensure resource group
       if (resourceGroupUnresolved) {
         const inputRG = inputs["targetResourceGroupName"];

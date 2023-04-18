@@ -2656,7 +2656,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
+  it("convertExecuteResult PartialSuccess - MissingEnvironmentVariablesError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",

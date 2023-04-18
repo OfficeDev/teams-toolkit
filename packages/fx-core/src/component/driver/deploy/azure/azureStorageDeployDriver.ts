@@ -14,7 +14,6 @@ import {
   ContainerClient,
 } from "@azure/storage-blob";
 import { DeployConstant } from "../../../constant/deployConstant";
-import { DeployExternalApiCallError } from "../../../error/deployError";
 import { forEachFileAndDir } from "../../../utils/fileOperation";
 import * as fs from "fs-extra";
 import path from "path";

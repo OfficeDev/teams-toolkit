@@ -16,9 +16,8 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
-import { UnhandledSystemError } from "./error/unhandledError";
-import { FileNotFoundUserError } from "./error/FileNotFoundUserError";
-import { InvalidActionInputError } from "../../../error/common";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { UnhandledError } from "../../../error/common";
 
 interface AcquireArgs {
   appPackagePath?: string; // The path of the app package
@@ -84,7 +83,7 @@ export class M365TitleAcquireDriver implements StepDriver {
       this.validateOutputEnvVarNames(outputEnvVarNames);
       const appPackagePath = getAbsolutePath(args.appPackagePath!, context.projectPath);
       if (!(await fs.pathExists(appPackagePath))) {
-        throw new FileNotFoundUserError(actionName, appPackagePath, helpLink);
+        throw new FileNotFoundError(actionName, appPackagePath, helpLink);
       }
 
       // get sideloading service settings
@@ -121,7 +120,7 @@ export class M365TitleAcquireDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, message);
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 

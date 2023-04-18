@@ -64,7 +64,6 @@ import {
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
-  TaskNotSupportError,
   WriteFileError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
@@ -749,7 +748,7 @@ export class FxCore implements v3.ICore {
   }
 
   async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw new TaskNotSupportError(Stage.build);
+    return ok(Void);
   }
 
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {

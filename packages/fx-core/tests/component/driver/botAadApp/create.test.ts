@@ -10,11 +10,8 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import {
-  UnhandledSystemError,
-  UnhandledUserError,
-} from "../../../../src/component/driver/botAadApp/error/unhandledError";
 import axios from "axios";
+import { UnhandledError, UnhandledUserError } from "../../../../src/error/common";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -174,7 +171,7 @@ describe("botAadAppCreate", async () => {
 
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
-        expect(error instanceof UnhandledSystemError).to.be.true;
+        expect(error instanceof UnhandledError).to.be.true;
         expect(error.message).contains(
           "An unexpected error has occurred while performing the botAadApp/create task"
         );
@@ -189,7 +186,7 @@ describe("botAadAppCreate", async () => {
     };
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
-        expect(error instanceof UnhandledSystemError).to.be.true;
+        expect(error instanceof UnhandledError).to.be.true;
       }
     );
   });

@@ -13,7 +13,6 @@ import {
   ResourceContextV3,
   Result,
   UserCancelError,
-  UserError,
   Void,
 } from "@microsoft/teamsfx-api";
 import { camelCase, merge } from "lodash";
@@ -102,7 +101,11 @@ import { pathUtils } from "../utils/pathUtils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { metadataUtil } from "../utils/metadataUtil";
 import { LifeCycleUndefinedError } from "../../error/yml";
-import { UnresolvedPlaceholderError } from "../../error/common";
+import {
+  InputValidationError,
+  MissingRequiredInputError,
+  UnresolvedPlaceholderError,
+} from "../../error/common";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 
 export enum TemplateNames {
@@ -193,7 +196,7 @@ export class Coordinator {
   ): Promise<Result<string, FxError>> {
     const folder = inputs["folder"] as string;
     if (!folder) {
-      return err(InvalidInputError("folder is undefined"));
+      return err(new MissingRequiredInputError("folder"));
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
@@ -202,7 +205,7 @@ export class Coordinator {
       // create from sample
       const sampleId = inputs[CoreQuestionNames.Samples] as string;
       if (!sampleId) {
-        throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
+        throw new MissingRequiredInputError(CoreQuestionNames.Samples);
       }
       projectPath = path.join(folder, sampleId);
       let suffix = 1;
@@ -220,12 +223,15 @@ export class Coordinator {
     } else if (!scratch || scratch === ScratchOptionYes().id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+      if (undefined === appName)
+        return err(new MissingRequiredInputError(CoreQuestionNames.AppName));
       const validateResult = jsonschema.validate(appName, {
         pattern: ProjectNamePattern,
       });
       if (validateResult.errors && validateResult.errors.length > 0) {
-        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+        return err(
+          new InputValidationError(CoreQuestionNames.AppName, validateResult.errors[0].message)
+        );
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
@@ -265,12 +271,15 @@ export class Coordinator {
       }
     } else if (scratch === CreateNewOfficeAddinOption().id) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+      if (undefined === appName)
+        return err(new MissingRequiredInputError(CoreQuestionNames.AppName));
       const validateResult = jsonschema.validate(appName, {
         pattern: ProjectNamePattern,
       });
       if (validateResult.errors && validateResult.errors.length > 0) {
-        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+        return err(
+          new InputValidationError(CoreQuestionNames.AppName, validateResult.errors[0].message)
+        );
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;

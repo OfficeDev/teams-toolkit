@@ -78,6 +78,7 @@ import {
 import { DotenvParseOutput } from "dotenv";
 import * as os from "os";
 import * as path from "path";
+import { InputValidationError, MissingRequiredInputError } from "../../src/error/common";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -184,7 +185,88 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.createProject(inputs);
     assert.isTrue(res2.isOk());
   });
-
+  it("create project from scratch MissingRequiredInputError missing folder", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project from scratch MissingRequiredInputError missing App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project from scratch MissingRequiredInputError invalid App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      "app-name": "__#$%___",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof InputValidationError);
+    }
+  });
+  it("create project for new office Addin MissingRequiredInputError missing App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: "newAddin",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project for new office Addin MissingRequiredInputError invalid App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: "newAddin",
+      "app-name": "__#$%___",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof InputValidationError);
+    }
+  });
+  it("create project from sample MissingRequiredInputError missing sample id", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: "no",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
   it("create m365 project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -3236,7 +3318,7 @@ describe("Office Addin", async () => {
     };
 
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
   });
 
   it("should return error if app name is undefined", async () => {
@@ -3251,7 +3333,7 @@ describe("Office Addin", async () => {
     };
 
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {

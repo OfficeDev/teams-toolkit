@@ -104,7 +104,7 @@ import { LifeCycleUndefinedError } from "../../error/yml";
 import {
   InputValidationError,
   MissingRequiredInputError,
-  UnresolvedPlaceholderError,
+  MissingEnvironmentVariablesError,
 } from "../../error/common";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 
@@ -873,7 +873,7 @@ export class Coordinator {
           error = reason.error;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
-          error = new UnresolvedPlaceholderError(
+          error = new MissingEnvironmentVariablesError(
             camelCase(reason.failedDriver.uses),
             placeholders,
             templatePath

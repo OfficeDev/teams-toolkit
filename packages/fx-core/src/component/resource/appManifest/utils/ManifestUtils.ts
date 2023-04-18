@@ -60,7 +60,7 @@ import {
 } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
-import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../error/common";
+import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -493,7 +493,7 @@ export class ManifestUtils {
     const manifestTemplatePath = await this.getTeamsAppManifestPath(projectPath);
     if (tokens.length > 0) {
       return err(
-        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+        new MissingEnvironmentVariablesError("teamsApp", tokens.join(","), manifestTemplatePath)
       );
     }
     const manifest: TeamsAppManifest = JSON.parse(resolvedManifestString);
@@ -515,7 +515,7 @@ export class ManifestUtils {
       if (botId) {
         if (!botDomain && !ignoreEnvStateValueMissing) {
           return err(
-            new UnresolvedPlaceholderError("teamsApp", "validDomain", manifestTemplatePath)
+            new MissingEnvironmentVariablesError("teamsApp", "validDomain", manifestTemplatePath)
           );
         } else if (botDomain) {
           validDomains.push(botDomain);
@@ -570,7 +570,7 @@ export class ManifestUtils {
     const tokens = getEnvironmentVariables(resolvedManifestString);
     if (tokens.length > 0) {
       return err(
-        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+        new MissingEnvironmentVariablesError("teamsApp", tokens.join(","), manifestTemplatePath)
       );
     }
 

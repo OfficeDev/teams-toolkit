@@ -17,14 +17,18 @@ export class FileNotFoundError extends UserError {
   }
 }
 
-export class UnresolvedPlaceholderError extends UserError {
-  constructor(source: string, placeholders: string, filePath?: string, helpLink?: string) {
-    const key = "error.common.UnresolvedPlaceholderError";
+export class MissingEnvironmentVariablesError extends UserError {
+  constructor(source: string, variableNames: string, filePath?: string, helpLink?: string) {
+    const key = "error.common.MissingEnvironmentVariablesError";
     const errorOptions: UserErrorOptions = {
       source: camelCase(source),
-      name: "UnresolvedPlaceholderError",
-      message: getDefaultString(key, placeholders, filePath || globalVars.ymlFilePath),
-      displayMessage: getLocalizedString(key, placeholders, filePath || globalVars.ymlFilePath),
+      name: "MissingEnvironmentVariablesError",
+      message: getDefaultString(key, variableNames, filePath || globalVars.ymlFilePath || ""),
+      displayMessage: getLocalizedString(
+        key,
+        variableNames,
+        filePath || globalVars.ymlFilePath || ""
+      ),
       helpLink: helpLink || "https://aka.ms/teamsfx-actions",
     };
     super(errorOptions);

@@ -5,23 +5,22 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 import * as fs from "fs-extra";
-import * as path from "path";
 import * as os from "os";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
-
-import { defaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
-import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../depsError";
-import { cpUtils } from "../util/cpUtils";
-import { isLinux, isWindows } from "../util/system";
-import { DepsLogger } from "../depsLogger";
-import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType, FuncInstallOptions } from "../depsChecker";
-import { Messages } from "../constant/message";
-import { NodeChecker } from "./nodeChecker";
-import { getLocalizedString } from "../../localizeUtils";
+import * as path from "path";
 import semver from "semver";
 import * as uuid from "uuid";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../localizeUtils";
+import { defaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
+import { Messages } from "../constant/message";
+import { DependencyStatus, DepsChecker, DepsType, FuncInstallOptions } from "../depsChecker";
+import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../depsError";
+import { DepsLogger } from "../depsLogger";
+import { DepsTelemetry } from "../depsTelemetry";
+import { cpUtils } from "../util/cpUtils";
 import { createSymlink, rename } from "../util/fileHelper";
+import { isLinux, isWindows } from "../util/system";
+import { NodeChecker } from "./nodeChecker";
 
 type FuncVersion = {
   majorVersion: number;
@@ -30,23 +29,19 @@ type FuncVersion = {
   versionStr: string;
 };
 
-type FuncInstallationStatus =
-  | {
-      isInstalled: true;
-      funcVersion: FuncVersion;
-      binaryFolder: string;
-    }
-  | {
-      isInstalled: false;
-    };
-type GlobalFuncInstallationStatus =
-  | {
-      isInstalled: true;
-      funcVersion: FuncVersion;
-    }
-  | {
-      isInstalled: false;
-    };
+type FuncInstallationStatus = {
+  funcVersion: FuncVersion;
+  funcFolder?: string;
+};
+
+type GlobalFuncInstallationStatus = {
+  funcVersion: FuncVersion;
+};
+
+type PortableFuncInstallationStatus = {
+  funcVersion: FuncVersion;
+  funcFolder: string;
+};
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Functions Core Tools";
@@ -54,27 +49,24 @@ const funcToolName = "Azure Functions Core Tools";
 const timeout = 5 * 60 * 1000;
 
 export class FuncToolChecker implements DepsChecker {
-  private readonly _logger?: DepsLogger;
-  private readonly _telemetry?: DepsTelemetry;
-
-  constructor(logger: DepsLogger, telemetry: DepsTelemetry) {}
+  constructor(logger?: DepsLogger, telemetry?: DepsTelemetry) {
+    // TODO: add telemetry
+  }
 
   public async getDepsInfo(
-    isInstalled: boolean,
-    installVersion: string | undefined,
-    outputBinFolder: string | undefined,
+    installationStatus: FuncInstallationStatus | null,
     error?: DepsCheckerError
   ): Promise<DependencyStatus> {
     return Promise.resolve({
       name: funcToolName,
       type: DepsType.FuncCoreTools,
-      isInstalled: isInstalled,
+      isInstalled: !!installationStatus,
       command: "func",
       details: {
         isLinuxSupported: false,
-        installVersion: installVersion,
+        installVersion: installationStatus?.funcVersion?.versionStr ?? undefined,
         supportedVersions: [], // TODO: removed this field
-        binFolders: outputBinFolder ? [outputBinFolder] : undefined,
+        binFolders: installationStatus?.funcFolder ? [installationStatus.funcFolder] : undefined,
       },
       error: error,
     });
@@ -104,14 +96,9 @@ export class FuncToolChecker implements DepsChecker {
       return installationInfo;
     } catch (error) {
       if (error instanceof DepsCheckerError) {
-        return await this.getDepsInfo(false, undefined, undefined, error);
+        return await this.getDepsInfo(null, error);
       }
-      return await this.getDepsInfo(
-        false,
-        undefined,
-        undefined,
-        new DepsCheckerError(error.message, defaultHelpLink)
-      );
+      return await this.getDepsInfo(null, new DepsCheckerError(error.message, defaultHelpLink));
     }
   }
 
@@ -120,30 +107,24 @@ export class FuncToolChecker implements DepsChecker {
       installOptions.projectPath,
       installOptions.symlinkDir
     );
+
     if (symlinkPath) {
       const symlinkFunc = await this.checkSymlinkedFuncVersion(symlinkPath, installOptions.version);
-      if (symlinkFunc.isInstalled) {
-        return await this.getDepsInfo(true, symlinkFunc.funcVersion.versionStr, symlinkPath);
+      if (symlinkFunc) {
+        return await this.getDepsInfo(symlinkFunc);
       }
     }
     const portableFunc = await this.checkPortableFuncVersion(installOptions.version);
-    if (portableFunc.isInstalled) {
+    if (portableFunc) {
       if (symlinkPath) {
-        await createSymlink(portableFunc.binaryFolder, symlinkPath);
+        await createSymlink(portableFunc.funcFolder, symlinkPath);
+        portableFunc.funcFolder = symlinkPath;
       }
-      return await this.getDepsInfo(
-        true,
-        portableFunc.funcVersion.versionStr,
-        symlinkPath ?? portableFunc.binaryFolder
-      );
+      return await this.getDepsInfo(portableFunc);
     }
 
     const globalFunc = await this.checkGlobalFuncVersion(installOptions.version);
-    return await this.getDepsInfo(
-      globalFunc.isInstalled,
-      globalFunc.isInstalled ? globalFunc.funcVersion.versionStr : undefined,
-      undefined
-    );
+    return await this.getDepsInfo(globalFunc);
   }
 
   private async getNodeVersion(): Promise<string> {
@@ -158,29 +139,13 @@ export class FuncToolChecker implements DepsChecker {
     expectedVersion: string,
     nodeVersion: string
   ): Promise<DepsCheckerError | undefined> {
-    // TODO: add node 18
-    // if (expectedVersion.majorVersion) {
-    //   if (!FuncNodeVersionWhiteList[expectedVersion.majorVersion.toString()]?.[nodeVersion]) {
-    //     return new PortableFuncNodeNotMatchedError(
-    //       Messages.portableFuncNodeNotMatched()
-    //         .split("@FuncVersion")
-    //         .join(`v${expectedVersion.majorVersion}`)
-    //         .split("@NodeVersion")
-    //         .join(`v${nodeVersion}`)
-    //         .split("@Link")
-    //         .join(nodeInstallationLink)
-    //         .split("@RecommendedVersion")
-    //         .join(`v${RecommendedNodeVersion}`),
-    //       functionDepsVersionsLink
-    //     );
-    //   }
-    // }
+    // TODO validate expected func version and actual node version
     return undefined;
   }
 
-  private async findValidFuncInDictionary(
+  private async getMaxPortableFunc(
     expectedFuncVersion: string
-  ): Promise<FuncInstallationStatus> {
+  ): Promise<PortableFuncInstallationStatus | null> {
     const files = await fs.readdir(FuncToolChecker.getDefaultInstallPath(), {
       withFileTypes: true,
     });
@@ -191,14 +156,14 @@ export class FuncToolChecker implements DepsChecker {
     while (funcDictionaries.length > 0) {
       const matchedVersion = semver.maxSatisfying(funcDictionaries, expectedFuncVersion);
       if (!matchedVersion) {
-        return { isInstalled: false };
+        return null;
       }
 
       const actualVersion = await this.queryPortableFuncVersion(matchedVersion);
       const binaryFolder = await this.getPortableFuncBinaryFolder(matchedVersion);
 
       if (actualVersion?.versionStr === matchedVersion && binaryFolder) {
-        return { isInstalled: true, funcVersion: actualVersion, binaryFolder: binaryFolder };
+        return { funcVersion: actualVersion, funcFolder: binaryFolder };
       }
       const matchedVersionIndex = funcDictionaries.indexOf(matchedVersion);
       if (matchedVersionIndex < 0) {
@@ -207,10 +172,12 @@ export class FuncToolChecker implements DepsChecker {
       }
       funcDictionaries.splice(matchedVersionIndex, 1);
     }
-    return { isInstalled: false };
+    return null;
   }
 
-  private async checkHistoryFunc(expectedFuncVersion: string): Promise<FuncInstallationStatus> {
+  private async checkHistoryPortableFunc(
+    expectedFuncVersion: string
+  ): Promise<PortableFuncInstallationStatus | null> {
     const historyFuncVersion = await this.queryPortableFuncVersion(undefined);
     const binaryFolder = historyFuncVersion
       ? await this.getPortableFuncBinaryFolder(undefined)
@@ -219,63 +186,59 @@ export class FuncToolChecker implements DepsChecker {
     return !!historyFuncVersion &&
       isFuncVersionSupport(historyFuncVersion, expectedFuncVersion) &&
       binaryFolder
-      ? { isInstalled: true, funcVersion: historyFuncVersion, binaryFolder: binaryFolder }
-      : { isInstalled: false };
+      ? { funcVersion: historyFuncVersion, funcFolder: binaryFolder }
+      : null;
   }
 
   public async checkPortableFuncVersion(
     expectedFuncVersion: string
-  ): Promise<FuncInstallationStatus> {
+  ): Promise<PortableFuncInstallationStatus | null> {
     try {
-      const historyFuncStatus = await this.checkHistoryFunc(expectedFuncVersion);
-      const maxValidFuncStatus = await this.findValidFuncInDictionary(expectedFuncVersion);
+      const historyFuncStatus = await this.checkHistoryPortableFunc(expectedFuncVersion);
+      const maxValidFuncStatus = await this.getMaxPortableFunc(expectedFuncVersion);
       if (
-        maxValidFuncStatus.isInstalled &&
-        (!historyFuncStatus.isInstalled ||
+        maxValidFuncStatus &&
+        (!historyFuncStatus ||
           semver.gte(
             maxValidFuncStatus.funcVersion.versionStr,
             historyFuncStatus.funcVersion.versionStr
           ))
       ) {
         return maxValidFuncStatus;
-      } else if (historyFuncStatus.isInstalled) {
+      } else if (historyFuncStatus) {
         if (isWindows()) {
-          await this.cleanupPortablePs1(historyFuncStatus.funcVersion.versionStr);
+          await this.cleanupPortablePs1(undefined);
         }
         return historyFuncStatus;
       }
     } catch {
       // do nothing
     }
-    return {
-      isInstalled: false,
-    };
+    return null;
   }
 
   public async checkGlobalFuncVersion(
     expectedFuncVersion: string
-  ): Promise<GlobalFuncInstallationStatus> {
+  ): Promise<GlobalFuncInstallationStatus | null> {
     const globalFuncVersion = await this.queryGlobalFuncVersion();
     return globalFuncVersion && isFuncVersionSupport(globalFuncVersion, expectedFuncVersion)
       ? {
-          isInstalled: true,
           funcVersion: globalFuncVersion,
         }
-      : { isInstalled: false };
+      : null;
   }
 
   public async checkSymlinkedFuncVersion(
     symlinkPath: string,
     expectedFuncVersion: string
-  ): Promise<FuncInstallationStatus> {
+  ): Promise<PortableFuncInstallationStatus | null> {
     const symlinkFuncVersion = await this.querySymlinkFuncVersion(symlinkPath);
     return symlinkFuncVersion && isFuncVersionSupport(symlinkFuncVersion, expectedFuncVersion)
       ? {
-          isInstalled: true,
           funcVersion: symlinkFuncVersion,
-          binaryFolder: symlinkPath,
+          funcFolder: symlinkPath,
         }
-      : { isInstalled: false };
+      : null;
   }
 
   public async install(expectedFuncVersion: string): Promise<void> {
@@ -286,7 +249,7 @@ export class FuncToolChecker implements DepsChecker {
       );
     }
     if (!(await this.hasNPM())) {
-      this.handleNpmNotFound();
+      throw new DepsCheckerError(Messages.needInstallNpm(), defaultHelpLink);
     }
 
     const tmpVersion = uuid.v4();
@@ -319,10 +282,6 @@ export class FuncToolChecker implements DepsChecker {
     } catch (err) {
       return null;
     }
-  }
-
-  private handleNpmNotFound() {
-    throw new DepsCheckerError(Messages.needInstallNpm(), defaultHelpLink);
   }
 
   private static getDefaultInstallPath(): string {
@@ -358,6 +317,19 @@ export class FuncToolChecker implements DepsChecker {
     ];
   }
 
+  public async getPortableFuncBinaryFolder(
+    versionStr: string | undefined
+  ): Promise<string | undefined> {
+    for (const funcFolder of this.getPortableFuncBinFolders(versionStr)) {
+      const fileName = this.getExecCommand("func");
+      const funcPath = path.join(funcFolder, fileName);
+      if (await fs.pathExists(funcPath)) {
+        return funcFolder;
+      }
+    }
+    return undefined;
+  }
+
   public getSymlinkFuncBinFolder(
     projectPath: string,
     symlinkDir: string | undefined
@@ -368,7 +340,7 @@ export class FuncToolChecker implements DepsChecker {
   private async queryFuncVersion(path: string): Promise<FuncVersion | null> {
     const output = await cpUtils.executeCommand(
       undefined,
-      this._logger,
+      undefined,
       { shell: true },
       "node",
       `"${path}"`,
@@ -396,7 +368,7 @@ export class FuncToolChecker implements DepsChecker {
     try {
       const output = await cpUtils.executeCommand(
         undefined,
-        this._logger,
+        undefined,
         // same as backend start, avoid powershell execution policy issue.
         { shell: isWindows() ? "cmd.exe" : true },
         "func",
@@ -412,7 +384,7 @@ export class FuncToolChecker implements DepsChecker {
     try {
       const output = await cpUtils.executeCommand(
         undefined,
-        this._logger,
+        undefined,
         // same as backend start, avoid powershell execution policy issue.
         { shell: isWindows() ? "cmd.exe" : true },
         `"${path.join(symlinkFuncBinFolder, "func")}"`,
@@ -426,7 +398,7 @@ export class FuncToolChecker implements DepsChecker {
 
   private async hasNPM(): Promise<boolean> {
     try {
-      await cpUtils.executeCommand(undefined, this._logger, { shell: true }, "npm", "--version");
+      await cpUtils.executeCommand(undefined, undefined, { shell: true }, "npm", "--version");
       return true;
     } catch (error) {
       return false;
@@ -439,7 +411,7 @@ export class FuncToolChecker implements DepsChecker {
     } catch (err) {}
   }
 
-  private async cleanupPortablePs1(VersionStr: string): Promise<void> {
+  private async cleanupPortablePs1(VersionStr: string | undefined): Promise<void> {
     // delete func.ps1 from portable function
     for (const funcFolder of this.getPortableFuncBinFolders(VersionStr)) {
       const funcPath = path.join(funcFolder, "func.ps1");
@@ -449,37 +421,26 @@ export class FuncToolChecker implements DepsChecker {
     }
   }
 
-  private async getPortableFuncBinaryFolder(
-    versionStr: string | undefined
-  ): Promise<string | undefined> {
-    for (const funcFolder of this.getPortableFuncBinFolders(versionStr)) {
-      const fileName = this.getExecCommand("func");
-      const funcPath = path.join(funcFolder, fileName);
-      if (await fs.pathExists(funcPath)) {
-        return funcFolder;
-      }
-    }
-    return undefined;
-  }
-
   // TODO: validate the value of the version
   private async installFunc(tmpVersion: string, expectedFuncVersion: string): Promise<void> {
     try {
       const tmpFolder = FuncToolChecker.getFuncInstallPath(tmpVersion);
       await cpUtils.executeCommand(
         undefined,
-        this._logger,
+        undefined,
         { timeout: timeout, shell: false },
         this.getExecCommand("npm"),
         "install",
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
-        `${funcPackageName}@${expectedFuncVersion}`,
+        `${funcPackageName}@"${expectedFuncVersion}"`,
         "--prefix",
         tmpFolder,
         "--no-audit"
       );
 
-      await this.cleanupPortablePs1(tmpVersion);
+      if (isWindows()) {
+        await this.cleanupPortablePs1(tmpVersion);
+      }
       await fs.ensureFile(FuncToolChecker.getSentinelPath(tmpVersion));
     } catch (error: unknown) {
       await this.cleanup(tmpVersion);

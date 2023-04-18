@@ -27,5 +27,8 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
 }
 
 export async function rename(oldPath: string, newPath: string): Promise<void> {
+  if (await fs.pathExists(newPath)) {
+    await fs.remove(newPath);
+  }
   await fs.rename(oldPath, newPath);
 }

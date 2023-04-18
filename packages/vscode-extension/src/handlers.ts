@@ -92,7 +92,6 @@ import {
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
-
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
@@ -1597,19 +1596,16 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  * Usage like ${command:...}${env:PATH} so need to include delimiter as well
  */
 export async function getFuncPathHandler(): Promise<string> {
-  try {
-    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
-    if (funcStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
-        path.delimiter
-      }`;
-    }
-  } catch (error: any) {
-    showError(assembleError(error));
+  // TODO: remove this command
+  if (!globalVariables.workspaceUri?.fsPath) {
+    return path.delimiter;
   }
+  const funcPaths = [
+    path.resolve(globalVariables.workspaceUri?.fsPath, "./devTools/func"),
+    path.resolve(globalVariables.workspaceUri?.fsPath, "./devTools/func/", "node_modules", ".bin"),
+  ];
 
-  return `${path.delimiter}`;
+  return `${path.delimiter}${funcPaths.join(path.delimiter)}${path.delimiter}`;
 }
 
 /**

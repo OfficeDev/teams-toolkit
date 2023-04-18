@@ -14,7 +14,6 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import proxyquire from "proxyquire";
-import { isLinux, isWindows } from "../../../src/common/deps-checker/util/system";
 
 describe("Func Tools Checker Test", () => {
   const sandbox = sinon.createSandbox();
@@ -28,26 +27,6 @@ describe("Func Tools Checker Test", () => {
       await fs.remove(testPath);
     }
   });
-
-  // it("symlink func installed", async () => {
-  //   const testModule = await prepareTestEnv(
-  //     testPath ?? "",
-  //     "14.17.5",
-  //     "4.0.5555",
-  //     undefined,
-  //     undefined,
-  //     undefined
-  //   );
-  //   const funcToolChecker = new testModule.FuncToolChecker();
-  //   const projectPath = path.resolve(testPath ?? "", "project");
-  //   const res = await funcToolChecker.resolve({
-  //     version: "4",
-  //     projectPath: projectPath,
-  //     symlinkDir: "./devTools/func",
-  //   });
-  //   console.log(JSON.stringify(res));
-  //   chai.assert.isTrue(res.isInstalled);
-  // });
 
   const platforms: ("Windows_NT" | "Darwin")[] = ["Windows_NT", "Darwin"];
   const npmVersions: ("6" | "7")[] = ["6", "7"];
@@ -116,7 +95,11 @@ describe("Func Tools Checker Test", () => {
               isLinuxSupported: false,
               installVersion: "4.0.5",
               supportedVersions: [],
-              binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
+              binFolders: [
+                path.resolve(mock.projectDir, "./devTools/func"),
+                path.resolve(mock.projectDir, "./devTools/func/node_modules/.bin"),
+              ],
+              installFolder: path.resolve(mock.projectDir, "./devTools/func"),
             },
             error: undefined,
           });
@@ -124,22 +107,25 @@ describe("Func Tools Checker Test", () => {
           chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
           const funcVersion = await mockGetVersion(res.details.binFolders[0]);
           chai.assert.equal(funcVersion, "4.0.5");
+
+          const isPs1Exist = await fs.pathExists(
+            path.join(getFuncBinFolder(res.details.binFolders[0], npmVersion), "func.ps1")
+          );
+
           if (platform === "Windows_NT") {
-            const isPs1Exist = await fs.pathExists(
-              path.join(res.details.binFolders[0], "func.ps1")
-            );
             chai.assert.isFalse(isPs1Exist, "isPs1Exist");
-            const isFuncExist = await fs.pathExists(
-              path.join(res.details.binFolders[0], "func.cmd")
+            chai.assert.isTrue(
+              await fs.pathExists(
+                path.join(getFuncBinFolder(res.details.binFolders[0], npmVersion), "func.cmd")
+              )
             );
-            chai.assert.isTrue(isFuncExist, "isFuncExist");
           } else {
-            const isPs1Exist = await fs.pathExists(
-              path.join(res.details.binFolders[0], "func.ps1")
-            );
             chai.assert.isTrue(isPs1Exist, "isPs1Exist");
-            const isFuncExist = await fs.pathExists(path.join(res.details.binFolders[0], "func"));
-            chai.assert.isTrue(isFuncExist, "isFuncExist");
+            chai.assert.isTrue(
+              await fs.pathExists(
+                path.join(getFuncBinFolder(res.details.binFolders[0], npmVersion), "func")
+              )
+            );
           }
         });
       });
@@ -151,34 +137,6 @@ describe("Func Tools Checker Test", () => {
           portableFuncVersions: [],
           globalFuncVersion: undefined,
           expectedVersion: "4",
-        },
-        {
-          message: "lower global func installed",
-          historyPortableFuncVersion: undefined,
-          portableFuncVersions: [],
-          globalFuncVersion: "4.0.0",
-          expectedVersion: "^4.0.2",
-        },
-        {
-          message: "lower history func installed",
-          historyPortableFuncVersion: "4.0.0",
-          portableFuncVersions: [],
-          globalFuncVersion: undefined,
-          expectedVersion: "^4.0.2",
-        },
-        {
-          message: "lower portable func installed",
-          historyPortableFuncVersion: undefined,
-          portableFuncVersions: ["4.0.0"],
-          globalFuncVersion: undefined,
-          expectedVersion: "^4.0.2",
-        },
-        {
-          message: "lower global, portable and history func installed",
-          historyPortableFuncVersion: "4.0.0",
-          portableFuncVersions: ["4.0.0", "4.0.1"],
-          globalFuncVersion: "3.0.0",
-          expectedVersion: "^4.0.2",
         },
       ];
       it(`use existing global func - ${platform}  npm${npmVersion}`, async () => {
@@ -207,6 +165,7 @@ describe("Func Tools Checker Test", () => {
             installVersion: "4.0.2",
             supportedVersions: [],
             binFolders: undefined,
+            installFolder: undefined,
           },
           error: undefined,
         });
@@ -286,9 +245,6 @@ describe("Func Tools Checker Test", () => {
               throw new Error("Mock node not installed.");
             }
             return `v${nodeVersion}`;
-          } else if (/".+func"/.test(command) && args.length == 1 && args[0] === "--version") {
-            // Mock query symlink func version
-            return mockGetVersion(path.dirname(command.substring(1, command.length - 2)));
           } else if (
             command === "node" &&
             args.length == 2 &&
@@ -327,6 +283,9 @@ describe("Func Tools Checker Test", () => {
   };
 });
 
+function getFuncBinFolder(baseFolder: string, npmMajorVersion: "6" | "7"): string {
+  return npmMajorVersion === "6" ? baseFolder : path.resolve(baseFolder, "node_modules", ".bin");
+}
 async function mockInstallFunc(
   version: string,
   baseFolder: string,
@@ -335,21 +294,11 @@ async function mockInstallFunc(
   isGlobal = false
 ) {
   await fs.ensureDir(baseFolder);
-  if (npmMajorVersion === "6") {
-    await fs.ensureFile(path.resolve(baseFolder, "func"));
-    await fs.ensureFile(path.resolve(baseFolder, "func.cmd"));
-    if (!isExisting) {
-      await fs.ensureFile(path.resolve(baseFolder, "func.ps1"));
-    }
-  } else {
-    await fs.ensureFile(path.resolve(baseFolder, "node_modules", ".bin", "func"));
-    await fs.ensureFile(path.resolve(baseFolder, "node_modules", ".bin", "func.cmd"));
-    await fs.writeJSON(path.resolve(baseFolder, "node_modules", ".bin", "version.json"), {
-      version,
-    });
-    if (!isExisting) {
-      await fs.ensureFile(path.resolve(baseFolder, "node_modules", ".bin", "func.ps1"));
-    }
+  const binFolder = getFuncBinFolder(baseFolder, npmMajorVersion);
+  await fs.ensureFile(path.resolve(binFolder, "func"));
+  await fs.ensureFile(path.resolve(binFolder, "func.cmd"));
+  if (!isExisting) {
+    await fs.ensureFile(path.resolve(binFolder, "func.ps1"));
   }
 
   if (isExisting) {

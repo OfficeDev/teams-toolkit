@@ -28,6 +28,12 @@ public class AuthenticationOptions
     public string ClientSecret { get; set; }
 
     /// <summary>
+    /// Login page for Teams to redirect to.
+    /// </summary>
+    [RegularExpression(@"^http(s)?://[-a-zA-Z0-9@:%._\+~#=/]{1,100}$")]
+    public string InitiateLoginEndpoint { get; set; }
+
+    /// <summary>
     /// Application ID URI.
     /// </summary>
     public string ApplicationIdUri { get; set; }

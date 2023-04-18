@@ -40,6 +40,7 @@ provision:
           Authentication:
             ClientId: ${{AAD_APP_CLIENT_ID}}
             ClientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+            InitiateLoginEndpoint: ${{TAB_ENDPOINT}}/auth-start.html
             OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.

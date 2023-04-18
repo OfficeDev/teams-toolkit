@@ -11,7 +11,11 @@ import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import axios from "axios";
-import { UnhandledError, UnhandledUserError } from "../../../../src/error/common";
+import {
+  MissingEnvironmentVariablesError,
+  UnhandledError,
+  UnhandledUserError,
+} from "../../../../src/error/common";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -43,22 +47,18 @@ describe("botAadAppCreate", async () => {
 
   it("should throw error if argument property is missing", async () => {
     const args: any = {};
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
-        "Following parameter is missing or invalid for botAadApp/create action: name."
-      )
-      .and.is.instanceOf(UserError);
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).and.is.instanceOf(
+      MissingEnvironmentVariablesError
+    );
   });
 
   it("should throw error if argument property is invalid", async () => {
     const args: any = {
       name: "",
     };
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
-        "Following parameter is missing or invalid for botAadApp/create action: name."
-      )
-      .and.is.instanceOf(UserError);
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).and.is.instanceOf(
+      MissingEnvironmentVariablesError
+    );
   });
 
   it("happy path with handler", async () => {

@@ -12,6 +12,7 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
+import { FileNotFoundError } from "../../../../src/error/common";
 
 describe("m365Title/acquire", async () => {
   const acquireDriver = new M365TitleAcquireDriver();
@@ -109,7 +110,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "FileNotFound");
+      chai.assert.isTrue(result.result.error instanceof FileNotFoundError);
     }
   });
 

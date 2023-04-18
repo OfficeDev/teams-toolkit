@@ -509,7 +509,7 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/update");
     expect(endTelemetry.properties.component).to.equal("aadApp/update");
     expect(endTelemetry.properties.success).to.equal("no");
-    // expect(endTelemetry.properties["error-code"]).to.equal("aadApp/update.UnhandledError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppUpdate.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
     expect(endTelemetry.properties["error-message"])
       .contain("An unexpected error has occurred while performing the aadApp/update task")

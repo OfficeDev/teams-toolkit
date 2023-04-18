@@ -34,26 +34,19 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     serverFarmId: serverfarm.id
     httpsOnly: true
     siteConfig: {
-      appSettings: [
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
-          name: 'TeamsFx__Authentication__ClientId'
-          value: tabAadAppClientId
-        }
-        {
-          name: 'TeamsFx__Authentication__ClientSecret'
-          value: tabAadAppClientSecret
-        }
-        {
-          name: 'TeamsFx__Authentication__OAuthAuthority'
-          value: uri(tabAadAppOauthAuthorityHost, tabAadAppTenantId)
-        }
-      ]
       ftpsState: 'FtpsOnly'
     }
+  }
+}
+
+resource  webAppConfig  'Microsoft.Web/sites/config@2021-02-01' = {
+  name: '${webAppName}/appsettings'
+  properties: {
+    WEBSITE_RUN_FROM_PACKAGE: '1'
+    TeamsFx__Authentication__ClientId: tabAadAppClientId
+    TeamsFx__Authentication__ClientSecret: tabAadAppClientSecret
+    TeamsFx__Authentication__InitiateLoginEndpoint: 'https://${webApp.properties.defaultHostName}/auth-start.html'
+    TeamsFx__Authentication__OAuthAuthority: uri(tabAadAppOauthAuthorityHost, tabAadAppTenantId)
   }
 }
 

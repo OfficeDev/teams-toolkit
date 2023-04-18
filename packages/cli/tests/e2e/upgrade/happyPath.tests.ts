@@ -59,16 +59,10 @@ describe("upgrade", () => {
       chai.assert.isTrue(result.success);
     }
 
-    // {
-    //   // deploy
-    //   const result = await Executor.deploy(projectPath);
-    //   chai.assert.isTrue(result.success);
-    // }
-
-    // {
-    //   // publish
-    //   const result = await Executor.publish(projectPath);
-    //   chai.assert.isTrue(result.success);
-    // }
+    {
+      // deploy
+      const result = await Executor.deploy(projectPath);
+      chai.assert.isTrue(result.success);
+    }
   });
 });

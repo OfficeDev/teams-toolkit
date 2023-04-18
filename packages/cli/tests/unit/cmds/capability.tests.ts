@@ -54,6 +54,7 @@ describe("Capability Command Tests", function () {
   let telemetryEventStatus: string | undefined = undefined;
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
     sandbox
       .stub<any, any>(yargs, "command")

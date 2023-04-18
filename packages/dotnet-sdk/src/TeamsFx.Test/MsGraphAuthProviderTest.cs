@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.TeamsFx.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Kiota.Abstractions;
 
 using Moq;
 
@@ -54,10 +55,9 @@ public class MsGraphAuthProviderTest
     public async Task TestAuthenticateRequestAsync()
     {
         teamsUserCredentialMock.Setup(credential => credential.GetTokenAsync(It.IsAny<TokenRequestContext>(), It.IsAny<CancellationToken>())).ReturnsAsync(fakeAccessToken);
-        var request = new HttpRequestMessage();
+        var request = new RequestInformation();
         await msGraphAuthProvider.AuthenticateRequestAsync(request);
-        Assert.AreEqual("Bearer", request.Headers.Authorization.Scheme);
-        Assert.AreEqual("token", request.Headers.Authorization.Parameter);
+        Assert.AreEqual("Bearer token", request.Headers["Authorization"].First());
     }
 
     [TestMethod]

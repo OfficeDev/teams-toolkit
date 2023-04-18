@@ -41,6 +41,7 @@ export enum TelemetryProperty {
   TemplateFallback = "template-fallback",
   TemplateName = "template-name",
   SampleName = "sample-name",
+  SampleDownloadDirectory = "sample-download-directory",
   Fallback = "fallback",
   HasSwitchedSubscription = "has-switched-subscription",
   HasSwitchedM365Tenant = "has-switched-m365",

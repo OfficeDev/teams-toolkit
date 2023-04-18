@@ -7,7 +7,9 @@ import fs from "fs-extra";
 import path from "path";
 import axios, { AxiosResponse } from "axios";
 import {
+  downloadDirectory,
   getSampleInfoFromName,
+  runWithLimitedConcurrency,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
@@ -247,6 +249,53 @@ describe("Generator utils", () => {
       assert.equal(zip.getEntries().length, 1);
     });
   });
+
+  it("download directory get file info error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 403 });
+    try {
+      await downloadDirectory(
+        "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/bot-sso",
+        tmpDir
+      );
+    } catch (e) {
+      assert.exists(e);
+      assert.isTrue(e.message.includes("HTTP Request exceeds rate limit"));
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("download directory happy path", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "bot-sso";
+    const mockFileName = "test.txt";
+    const mockFileData = "bot sso data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
+    await fs.ensureDir(tmpDir);
+    await downloadDirectory(
+      "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/bot-sso",
+      tmpDir
+    );
+    const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
+    assert.equal(data, mockFileData);
+  });
+
+  it("limit concurrency", async () => {
+    const data = [1, 10, 2, 3];
+    let res: number[] = [];
+    const callback = async (num: number) => {
+      await new Promise((resolve) => setTimeout(resolve, num * 10));
+      res.push(num);
+    };
+    await runWithLimitedConcurrency(data, callback, 2);
+    assert.deepEqual(res, [1, 2, 3, 10]);
+    res = [];
+    await runWithLimitedConcurrency(data, callback, 1);
+    assert.deepEqual(res, [1, 10, 2, 3]);
+  });
 });
 
 describe("Generator error", async () => {
@@ -441,5 +490,60 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
+  });
+});
+
+describe("Generate sample using download directory", () => {
+  const tmpDir = path.join(__dirname, "tmp");
+  const sandbox = createSandbox();
+  let mockedEnvRestore = mockedEnv({});
+  const tools = new MockTools();
+  setTools(tools);
+  const ctx = createContextV3();
+  beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      DOWNLOAD_DIRECTORY: "true",
+    });
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+    mockedEnvRestore();
+    if (await fs.pathExists(tmpDir)) {
+      await fs.rm(tmpDir, { recursive: true });
+    }
+  });
+
+  it("generate sample using download directory", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "bot-sso";
+    const mockFileName = "test.txt";
+    const mockFileData = "bot sso data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
+    assert.isTrue(result.isOk());
+  });
+
+  it("download directory throw api limit error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 403 });
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleApiLimitError");
+    }
+  });
+
+  it("download directory throw network error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 502 });
+    axiosStub.onSecondCall().resolves({ status: 502 });
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+    }
   });
 });

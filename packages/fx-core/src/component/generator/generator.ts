@@ -16,6 +16,8 @@ import {
 } from "./constant";
 import {
   CancelDownloading,
+  DownloadSampleApiLimitError,
+  DownloadSampleNetworkError,
   FetchZipFromUrlError,
   TemplateZipFallbackError,
   UnzipError,
@@ -26,6 +28,7 @@ import {
   TemplateActionSeq,
   GeneratorContext,
   GeneratorActionName,
+  DownloadDirectoryActionSeq,
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
@@ -33,6 +36,9 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
+import { isDownloadDirectoryEnabled } from "../../common/tools";
+import { BaseComponentInnerError } from "../error/componentError";
+import fs from "fs-extra";
 
 export class Generator {
   public static getDefaultVariables(appName: string): { [key: string]: string } {
@@ -75,10 +81,10 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
     });
-    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate());
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate(scenario));
     await this.generate(generatorContext, TemplateActionSeq);
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.Fallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
+      [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
     return ok(undefined);
   }
@@ -102,6 +108,7 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: sampleName,
+      [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled().toString(),
     });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
@@ -109,14 +116,14 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      zipUrl: sample.link,
+      url: isDownloadDirectoryEnabled() ? sample.url : sample.link,
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
-
-    await actionContext?.progressBar?.next(ProgressMessages.generateSample());
-    await this.generate(generatorContext, SampleActionSeq);
+    await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
+    const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
+    await this.generate(generatorContext, actionSeq);
     return ok(undefined);
   }
 
@@ -171,8 +178,18 @@ export async function sampleDefaultOnActionError(
 ): Promise<void> {
   await context.logProvider.error(error.message);
   switch (action.name) {
+    case GeneratorActionName.DownloadDirectory:
+      if (await fs.pathExists(context.destination)) {
+        await fs.rm(context.destination, { recursive: true });
+      }
+      if (error instanceof BaseComponentInnerError) throw error.toFxError();
+      else if (error.message.includes("403")) {
+        throw new DownloadSampleApiLimitError(context.url!).toFxError();
+      } else {
+        throw new DownloadSampleNetworkError(context.url!).toFxError();
+      }
     case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.zipUrl!).toFxError();
+      throw new FetchZipFromUrlError(context.url!).toFxError();
     case GeneratorActionName.Unzip:
       throw new UnzipError().toFxError();
     default:

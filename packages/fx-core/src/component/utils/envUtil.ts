@@ -193,14 +193,13 @@ export class EnvUtil {
     const contentSecret = dotenvUtil.serialize(parsedDotenvSecret);
 
     //persist
-    if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
-    if (!envSecretFileExists) await fs.ensureFile(dotEnvSecretFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
-    await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
+    if (Object.keys(parsedDotenvSecret.obj).length > 0)
+      await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
     if (!envFileExists) {
       TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
     }
-    if (!envSecretFileExists) {
+    if (!envSecretFileExists && Object.keys(parsedDotenvSecret.obj).length > 0) {
       TOOLS.logProvider.info(
         "  Created environment file (secret) at " + dotEnvSecretFilePath + EOL + EOL
       );

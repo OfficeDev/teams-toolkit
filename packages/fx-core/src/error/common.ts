@@ -107,3 +107,23 @@ export class InstallSoftwareError extends UserError {
     if (helpLink) this.helpLink = helpLink;
   }
 }
+
+export class MissingRequiredInputError extends UserError {
+  constructor(name: string) {
+    super({
+      source: "coordinator",
+      message: getDefaultString("error.common.MissingRequiredInputError", name),
+      displayMessage: getLocalizedString("error.common.MissingRequiredInputError", name),
+    });
+  }
+}
+
+export class InputValidationError extends UserError {
+  constructor(name: string, reason: string) {
+    super({
+      source: "coordinator",
+      message: getDefaultString("error.common.InputValidationError", name, reason),
+      displayMessage: getLocalizedString("error.common.InputValidationError", name, reason),
+    });
+  }
+}

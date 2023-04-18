@@ -185,9 +185,19 @@ describe("env utils", () => {
     assert.isTrue(decRes.isOk());
     assert.equal(decRes.value, decrypted);
   });
+  it("envUtil.writeEnv no variables", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+    sandbox.stub(fs, "readFile").resolves("" as any);
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.writeEnv(".", "dev", {});
+    assert.isTrue(res.isOk());
+  });
   it("envUtil.writeEnv to default path", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    sandbox.stub(fs, "writeFile").resolves();
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
     assert.isTrue(res.isOk());
   });

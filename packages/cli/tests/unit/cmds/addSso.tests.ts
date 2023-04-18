@@ -30,6 +30,7 @@ describe("Add SSO Command Tests", function () {
   });
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
     mockedEnvRestore = mockedEnv({
       TEAMSFX_AAD_MANIFEST: "true",
       TEAMSFX_V3: "false",

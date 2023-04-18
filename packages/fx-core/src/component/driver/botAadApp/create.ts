@@ -8,7 +8,6 @@ import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { performance } from "perf_hooks";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
 import { wrapRun } from "../../utils/common";
@@ -25,6 +24,7 @@ import { progressBarKeys } from "../../resource/botService/botRegistration/const
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { updateProgress } from "../middleware/updateProgress";
 import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -177,7 +177,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 }

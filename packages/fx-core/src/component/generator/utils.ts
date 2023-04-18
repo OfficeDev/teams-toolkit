@@ -262,6 +262,7 @@ type SampleUrlInfo = {
   ref: string;
   dir: string;
 };
+
 function parseSampleUrl(url: string): SampleUrlInfo {
   const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
   const parsed = urlParserRegex.exec(url);

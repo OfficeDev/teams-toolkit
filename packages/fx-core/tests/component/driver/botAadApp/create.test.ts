@@ -47,8 +47,10 @@ describe("botAadAppCreate", async () => {
 
   it("should throw error if argument property is missing", async () => {
     const args: any = {};
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).rejectedWith(
-      MissingEnvironmentVariablesError
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        expect(error instanceof MissingEnvironmentVariablesError).to.be.true;
+      }
     );
   });
 
@@ -56,8 +58,10 @@ describe("botAadAppCreate", async () => {
     const args: any = {
       name: "",
     };
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).rejectedWith(
-      MissingEnvironmentVariablesError
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        expect(error instanceof MissingEnvironmentVariablesError).to.be.true;
+      }
     );
   });
 

@@ -19,22 +19,14 @@ export class FileNotFoundError extends UserError {
 
 export class MissingEnvironmentVariablesError extends UserError {
   constructor(source: string, variableNames: string, filePath?: string, helpLink?: string) {
+    const templateFilePath = filePath || globalVars.ymlFilePath || "";
+    const envFilePath = globalVars.envFilePath || "";
     const key = "error.common.MissingEnvironmentVariablesError";
     const errorOptions: UserErrorOptions = {
       source: camelCase(source),
       name: "MissingEnvironmentVariablesError",
-      message: getDefaultString(
-        key,
-        variableNames,
-        filePath || globalVars.ymlFilePath || "",
-        globalVars.envFilePath || ""
-      ),
-      displayMessage: getLocalizedString(
-        key,
-        variableNames,
-        filePath || globalVars.ymlFilePath || "",
-        globalVars.envFilePath || ""
-      ),
+      message: getDefaultString(key, variableNames, templateFilePath, envFilePath),
+      displayMessage: getLocalizedString(key, variableNames, templateFilePath, envFilePath),
       helpLink: helpLink || "https://aka.ms/teamsfx-actions",
     };
     super(errorOptions);

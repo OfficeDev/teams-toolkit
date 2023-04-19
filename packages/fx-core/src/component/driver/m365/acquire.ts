@@ -24,8 +24,8 @@ interface AcquireArgs {
   appPackagePath?: string; // The path of the app package
 }
 
-const actionName = "m365Title/acquire";
-const helpLink = "https://aka.ms/teamsfx-actions/m365-title-acquire";
+const actionName = "teamsApp/extendToM365";
+const helpLink = "https://aka.ms/teamsfx-actions/teamsapp-extendToM365";
 
 const outputKeys = {
   titleId: "titleId",

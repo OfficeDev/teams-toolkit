@@ -26,7 +26,7 @@ import {
   updateLocalEnv,
   watchBackendTask,
 } from "./debugV3MigrationUtils";
-import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
+import { InstallToolArgs } from "../../../../component/driver/devTool/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { LocalCrypto } from "../../../crypto";
 import * as os from "os";

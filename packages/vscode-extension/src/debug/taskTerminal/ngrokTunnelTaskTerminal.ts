@@ -486,7 +486,7 @@ const NgrokTunnelError = Object.freeze({
         getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
         webServiceUrl
       ),
-      util.format(localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError", webServiceUrl))
+      util.format(localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError"), webServiceUrl)
     ),
   NgrokNotFoundError: () =>
     new UserError(

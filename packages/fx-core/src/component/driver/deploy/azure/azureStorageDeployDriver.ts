@@ -35,6 +35,7 @@ import {
   AzureStorageGetContainerError,
   AzureStorageUploadFilesError,
 } from "../../../../error/deploy";
+import { ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -179,6 +180,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
   }
 
   updateProgressbar() {
-    this.progressBar?.next(`Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`);
+    this.progressBar?.next(
+      ProgressMessages.deployToAzure(this.workingDirectory, "Azure Storage Service")
+    );
   }
 }

@@ -179,7 +179,26 @@ describe("aadAppUpdate", async () => {
     expect(result.result.isOk()).to.be.true;
     openUrl.restore();
   });
-  it("check learn more link after success without click", async () => {
+  it("check lerna more link after success without click", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves();
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isFalse(openUrl.called);
+    expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
+  });
+  it("check learn more link after success click close", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
     envRestore = mockedEnv({
       AAD_APP_OBJECT_ID: expectedObjectId,

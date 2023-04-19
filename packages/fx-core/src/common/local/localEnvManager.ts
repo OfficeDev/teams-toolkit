@@ -35,6 +35,7 @@ import {
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
 import { getNgrokTunnelFromApi } from "../../component/debug/util/ngrok";
 import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
+import { FileNotFoundError } from "../../error/common";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -148,12 +149,7 @@ export class LocalEnvManager {
       const projectSettingsPath = getProjectSettingsPath(projectPath);
 
       if (!(await fs.pathExists(projectSettingsPath))) {
-        throw new UserError(
-          CoreSource,
-          "FileNotFoundError",
-          getDefaultString("error.FileNotFoundError", projectSettingsPath),
-          getLocalizedString("error.FileNotFoundError", projectSettingsPath)
-        );
+        throw new FileNotFoundError(CoreSource, projectSettingsPath);
       }
       try {
         const res = await loadProjectSettingsByProjectPath(projectPath, true);

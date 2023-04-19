@@ -13,7 +13,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
-import { UnhandledSystemError } from "./error/unhandledError";
 import {
   CreateOrUpdateBotFrameworkBotArgs,
   MicrosoftTeamsChannelSettings,
@@ -24,7 +23,7 @@ import {
   BotChannelType,
   IBotRegistration,
 } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
-import { InvalidActionInputError } from "../../../error/common";
+import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -132,7 +131,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, message);
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 

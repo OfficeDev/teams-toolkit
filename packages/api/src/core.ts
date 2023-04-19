@@ -14,7 +14,6 @@ export interface Core {
   version?: string;
   createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
   provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-  buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;

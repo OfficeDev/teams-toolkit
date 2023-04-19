@@ -20,7 +20,6 @@ import { DeployConstant } from "../../../constant/deployConstant";
 import { ProgressMessages } from "../../../messages";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
-import { DeployExternalApiCallError } from "../../../error/deployError";
 import {
   AzureStorageGetContainerPropertiesError,
   AzureStorageSetContainerPropertiesError,

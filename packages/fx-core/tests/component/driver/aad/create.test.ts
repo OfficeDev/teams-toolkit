@@ -14,12 +14,12 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/resource/aadApp/interfaces/AADApplication";
-import {
-  UnhandledSystemError,
-  UnhandledUserError,
-} from "../../../../src/component/driver/aad/error/unhandledError";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
-import { InvalidActionInputError } from "../../../../src/error/common";
+import {
+  InvalidActionInputError,
+  UnhandledError,
+  UnhandledUserError,
+} from "../../../../src/error/common";
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
 
@@ -352,7 +352,7 @@ describe("aadAppCreate", async () => {
     const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledSystemError)
+      .is.instanceOf(UnhandledError)
       .and.has.property("message")
       .and.contains("An unexpected error has occurred while performing the aadApp/create task");
   });
@@ -464,7 +464,7 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/create");
     expect(endTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.properties.success).to.equal("no");
-    expect(endTelemetry.properties["error-code"]).to.equal("aadApp/create.UnhandledError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledUserError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
     expect(endTelemetry.properties["error-message"])
       .contain("An unexpected error has occurred while performing the aadApp/create task")

@@ -1,6 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
+import { EOL } from "os";
+
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 export const MetadataV3 = {
   projectVersion: "1.0.0",
   platformVersion: {
@@ -19,7 +27,12 @@ export const MetadataV3 = {
   aadManifestFileName: "aad.manifest.json",
   v3UpgradeWikiLink: "https://aka.ms/teams-toolkit-5.0-upgrade",
   secretFileComment:
-    "# This file includes environment variables that will not be committed to git by default. You can set these environment variables in your CI/CD system for your project.",
+    "# This file includes environment variables that will not be committed to git by default. You can set these environment variables in your CI/CD system for your project." +
+    EOL,
+  secretComment:
+    "# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs." + EOL,
+  envFileComment:
+    "# This file includes environment variables that will be committed to git by default." + EOL,
 };
 
 export const MetadataV2 = {

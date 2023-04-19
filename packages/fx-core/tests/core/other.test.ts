@@ -30,11 +30,9 @@ import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import {
-  ContextUpgradeError,
   FetchSampleError,
   ProjectFolderExistError,
   ReadFileError,
-  TaskNotSupportError,
   WriteFileError,
 } from "../../src/core/error";
 import {
@@ -169,11 +167,6 @@ describe("Other test case", () => {
     assert.isTrue(error.message === msg);
   });
 
-  it("error: TaskNotSupportError", async () => {
-    const error = new TaskNotSupportError(Stage.createEnv);
-    assert.isTrue(error.name === "TaskNotSupportError");
-  });
-
   it("error: FetchSampleError", async () => {
     const error = new FetchSampleError("hello world app");
     assert.isTrue(error.name === "FetchSampleError");
@@ -230,13 +223,6 @@ describe("Other test case", () => {
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
     restore();
-  });
-
-  it("ContextUpgradeError", async () => {
-    const userError = ContextUpgradeError(new Error("11"), true);
-    assert.isTrue(userError instanceof UserError);
-    const sysError = ContextUpgradeError(new Error("11"), false);
-    assert.isTrue(sysError instanceof SystemError);
   });
 
   it("parseTeamsAppTenantId", async () => {

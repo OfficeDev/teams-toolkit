@@ -9,7 +9,6 @@ import {
   DeployResult,
 } from "../../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../../utils/common";
-import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployImpl } from "./baseDeployImpl";
 import { Base64 } from "js-base64";

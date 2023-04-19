@@ -17,12 +17,13 @@ import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAp
 import path from "path";
 import * as fs from "fs-extra";
 import { MissingFieldInManifestUserError } from "../../../../src/component/driver/aad/error/invalidFieldInManifestError";
-import {
-  UnhandledSystemError,
-  UnhandledUserError,
-} from "../../../../src/component/driver/aad/error/unhandledError";
 import { cwd } from "process";
-import { InvalidActionInputError, UnresolvedPlaceholderError } from "../../../../src/error/common";
+import {
+  InvalidActionInputError,
+  MissingEnvironmentVariablesError,
+  UnhandledError,
+  UnhandledUserError,
+} from "../../../../src/error/common";
 import { Platform } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -252,7 +253,7 @@ describe("aadAppUpdate", async () => {
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvironmentVariablesError);
 
     args = {
       manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
@@ -433,7 +434,7 @@ describe("aadAppUpdate", async () => {
 
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledSystemError)
+      .is.instanceOf(UnhandledError)
       .and.property("message")
       .contain("An unexpected error has occurred while performing the aadApp/update task");
   });
@@ -551,7 +552,7 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/update");
     expect(endTelemetry.properties.component).to.equal("aadAppupdate");
     expect(endTelemetry.properties.success).to.equal("no");
-    expect(endTelemetry.properties["error-code"]).to.equal("aadApp/update.UnhandledError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppUpdate.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
     expect(endTelemetry.properties["error-message"])
       .contain("An unexpected error has occurred while performing the aadApp/update task")
@@ -573,6 +574,6 @@ describe("aadAppUpdate", async () => {
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(UnresolvedPlaceholderError);
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvironmentVariablesError);
   });
 });

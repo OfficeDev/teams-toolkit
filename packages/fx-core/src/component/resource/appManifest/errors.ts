@@ -42,14 +42,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly InvalidParameterError = {
-    name: "InvalidParamError",
-    message: (actionName: string, params: string[]): [string, string] => [
-      getDefaultString("driver.teamsApp.invalidParameter", actionName, params),
-      getLocalizedString("driver.teamsApp.invalidParameter", actionName, params),
-    ],
-  };
-
   public static readonly TeamsAppCreateFailedError = {
     name: "TeamsAppCreateFailed",
     message: (error?: any): [string, string] => [

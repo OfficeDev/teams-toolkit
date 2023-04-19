@@ -78,7 +78,11 @@ import {
 import { DotenvParseOutput } from "dotenv";
 import * as os from "os";
 import * as path from "path";
-import { InputValidationError, MissingRequiredInputError } from "../../src/error/common";
+import {
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
+} from "../../src/error/common";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -2652,7 +2656,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
+  it("convertExecuteResult PartialSuccess - MissingEnvironmentVariablesError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2665,7 +2669,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
+    assert.isTrue(convertRes[1]! instanceof MissingEnvironmentVariablesError);
   });
 
   it("init infra happy path vsc", async () => {

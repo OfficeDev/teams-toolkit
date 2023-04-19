@@ -298,6 +298,22 @@ export const devTunnelDisplayMessages = Object.freeze(
           getDefaultString("teamstoolkit.localDebug.output.tunnel.createDevTunnelMessage"),
           tag
         ),
+      deleteDevTunnelMessage: (tunnelId: string) =>
+        util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.deleteDevTunnelMessage"),
+          tunnelId
+        ),
+      devTunnelLimitExceededMessage: () =>
+        util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceededMessage"),
+          "command:fx-extension.showOutputChannel"
+        ),
+      devTunnelListMessage: () =>
+        localize("teamstoolkit.localDebug.output.tunnel.devTunnelListMessage"),
+      devTunnelLimitExceededAnswerDelete: () =>
+        localize("teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceeded.deleteAllTunnels"),
+      devTunnelLimitExceededAnswerCancel: () =>
+        localize("teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceeded.cancel"),
     },
     baseTunnelDisplayMessages
   )

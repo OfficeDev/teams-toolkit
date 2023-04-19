@@ -1,6 +1,7 @@
 ﻿@using System.IO
 @using Azure.Core
 @using Microsoft.Graph
+@using Microsoft.Graph.Models;
 @inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
 
@@ -50,7 +51,7 @@
         IsLoading = true;
         var graph = GetGraphServiceClient();
 
-        Profile = await graph.Me.Request().GetAsync();
+        Profile = await graph.Me.GetAsync();
         UserPhotoUri = await GetPhotoAsync(graph);
 
         IsLoading = false;
@@ -107,7 +108,7 @@
         string userPhoto = "";
         try
         {
-            var photoStream = await graph.Me.Photo.Content.Request().GetAsync();
+            var photoStream = await graph.Me.Photo.Content.GetAsync();
 
             if (photoStream != null)
             {

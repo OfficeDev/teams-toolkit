@@ -5,14 +5,14 @@ import { UserError } from "@microsoft/teamsfx-api";
 
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
-export class M365TitleNotAcquiredError extends UserError {
+export class NotExtendedToM365Error extends UserError {
   constructor(source: string) {
     super({
       source: source,
-      name: "M365TitleNotAcquiredError",
-      message: getDefaultString("error.m365.M365TitleNotAcquiredError"),
-      displayMessage: getLocalizedString("error.m365.M365TitleNotAcquiredError"),
-      helpLink: "https://aka.ms/teamsfx-actions/m365-title-acquire",
+      name: "NotExtendedToM365Error",
+      message: getDefaultString("error.m365.NotExtendedToM365Error"),
+      displayMessage: getLocalizedString("error.m365.NotExtendedToM365Error"),
+      helpLink: "https://aka.ms/teamsfx-actions/teamsapp-extendToM365",
     });
   }
 }

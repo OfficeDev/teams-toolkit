@@ -101,7 +101,7 @@ describe("Debug V3 m365-message-extension template", () => {
     context = await readContextMultiEnvV3(projectPath, "local");
     chai.assert.isDefined(context);
 
-    // validate .localSettings
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));
+    // validate .localConfigs
+    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
   });
 });

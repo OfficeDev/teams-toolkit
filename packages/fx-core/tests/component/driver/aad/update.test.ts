@@ -24,7 +24,6 @@ import {
   UnhandledError,
   UnhandledUserError,
 } from "../../../../src/error/common";
-import { cwd } from "process";
 import { Platform } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;

@@ -14,6 +14,12 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import proxyquire from "proxyquire";
+import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
+import {
+  defaultHelpLink,
+  v3NodeNotFoundHelpLink,
+} from "../../../src/common/deps-checker/constant/helpLink";
 
 describe("Func Tools Checker Test", () => {
   const sandbox = sinon.createSandbox();
@@ -28,163 +34,594 @@ describe("Func Tools Checker Test", () => {
     }
   });
 
-  const platforms: ("Windows_NT" | "Darwin")[] = ["Windows_NT", "Darwin"];
-  const npmVersions: ("6" | "7")[] = ["6", "7"];
-  npmVersions.forEach((npmVersion) => {
-    platforms.forEach((platform) => {
-      const installNewFuncTestDataArr = [
-        {
-          message: "none func installed",
-          historyPortableFuncVersion: undefined,
-          portableFuncVersions: [],
-          globalFuncVersion: undefined,
-          expectedVersion: "4",
-        },
-        {
-          message: "lower global func installed",
-          historyPortableFuncVersion: undefined,
-          portableFuncVersions: [],
-          globalFuncVersion: "4.0.0",
-          expectedVersion: "^4.0.2",
-        },
-        {
-          message: "lower history func installed",
-          historyPortableFuncVersion: "4.0.0",
-          portableFuncVersions: [],
-          globalFuncVersion: undefined,
-          expectedVersion: "^4.0.2",
-        },
-        {
-          message: "lower portable func installed",
-          historyPortableFuncVersion: undefined,
-          portableFuncVersions: ["4.0.0"],
-          globalFuncVersion: undefined,
-          expectedVersion: "^4.0.2",
-        },
-        {
-          message: "lower global, portable and history func installed",
-          historyPortableFuncVersion: "4.0.0",
-          portableFuncVersions: ["4.0.0", "4.0.1"],
-          globalFuncVersion: "3.0.0",
-          expectedVersion: "^4.0.2",
-        },
-      ];
-      installNewFuncTestDataArr.forEach((installNewFuncTestData) => {
-        it(`install new portable func, ${installNewFuncTestData.message} - ${platform} npm${npmVersion}`, async () => {
-          const mock = await prepareTestEnv(
-            "4.0.5",
-            installNewFuncTestData.historyPortableFuncVersion,
-            installNewFuncTestData.portableFuncVersions,
-            installNewFuncTestData.globalFuncVersion,
-            "14.0.0",
-            npmVersion,
-            platform
-          );
-          const funcToolChecker = new mock.module.FuncToolChecker();
-          const res = await funcToolChecker.resolve({
-            version: installNewFuncTestData.expectedVersion,
-            projectPath: mock.projectDir,
-            symlinkDir: "./devTools/func",
-          });
-          chai.assert.deepEqual(res, {
-            name: "Azure Functions Core Tools",
-            type: "func-core-tools",
-            isInstalled: true,
-            command: "func",
-            details: {
-              isLinuxSupported: false,
-              installVersion: "4.0.5",
-              supportedVersions: [],
-              binFolders: [
-                path.resolve(mock.projectDir, "./devTools/func"),
-                path.resolve(mock.projectDir, "./devTools/func/node_modules/.bin"),
-              ],
-              installFolder: path.resolve(mock.projectDir, "./devTools/func"),
-            },
-            error: undefined,
-          });
-          const stat = await fs.lstat(res.details.binFolders[0]);
-          chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
-          const funcVersion = await mockGetVersion(res.details.binFolders[0]);
-          chai.assert.equal(funcVersion, "4.0.5");
-
-          const isPs1Exist = await fs.pathExists(
-            path.join(getFuncBinFolder(res.details.binFolders[0], npmVersion), "func.ps1")
-          );
-
-          if (platform === "Windows_NT") {
-            chai.assert.isFalse(isPs1Exist, "isPs1Exist");
-            chai.assert.isTrue(
-              await fs.pathExists(
-                path.join(getFuncBinFolder(res.details.binFolders[0], npmVersion), "func.cmd")
-              )
-            );
-          } else {
-            chai.assert.isTrue(isPs1Exist, "isPs1Exist");
-            chai.assert.isTrue(
-              await fs.pathExists(
-                path.join(getFuncBinFolder(res.details.binFolders[0], npmVersion), "func")
-              )
-            );
-          }
-        });
+  const installNewFuncTestDataArr = [
+    {
+      message: "none func installed",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [],
+      globalFuncVersion: undefined,
+      expectedVersion: "4",
+    },
+    {
+      message: "lower global func installed",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [],
+      globalFuncVersion: "4.0.0",
+      expectedVersion: "^4.0.2",
+    },
+    {
+      message: "lower history func installed",
+      historyPortableFuncVersion: { version: "4.0.0" },
+      portableFuncVersions: [],
+      globalFuncVersion: undefined,
+      expectedVersion: "^4.0.2",
+    },
+    {
+      message: "lower portable func installed",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [{ version: "4.0.0" }],
+      globalFuncVersion: undefined,
+      expectedVersion: "^4.0.2",
+    },
+    {
+      message: "lower portable func installed and linked",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [{ version: "4.0.0", symlinkDir: "./devTools/func" }],
+      globalFuncVersion: undefined,
+      expectedVersion: "^4.0.2",
+    },
+    {
+      message: "lower global, portable and history func installed",
+      historyPortableFuncVersion: { version: "4.0.0" },
+      portableFuncVersions: [{ version: "4.0.0" }, { version: "4.0.1" }],
+      globalFuncVersion: "3.0.0",
+      expectedVersion: "^4.0.2",
+    },
+    {
+      message: "lower global, portable and history func installed and linked",
+      historyPortableFuncVersion: { version: "4.0.0" },
+      portableFuncVersions: [
+        { version: "4.0.0" },
+        { version: "4.0.1", symlinkDir: "./devTools/func" },
+      ],
+      globalFuncVersion: "3.0.0",
+      expectedVersion: "^4.0.2",
+    },
+  ];
+  installNewFuncTestDataArr.forEach((installNewFuncTestData) => {
+    it(`install new portable func, ${installNewFuncTestData.message}`, async () => {
+      const mock = await prepareTestEnv(
+        "4.0.5",
+        installNewFuncTestData.historyPortableFuncVersion,
+        installNewFuncTestData.portableFuncVersions,
+        installNewFuncTestData.globalFuncVersion,
+        "14.0.0",
+        "6",
+        "Windows_NT"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: installNewFuncTestData.expectedVersion,
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
       });
-
-      const useGlobalFuncTestDataArr = [
-        {
-          message: "none func installed",
-          historyPortableFuncVersion: undefined,
-          portableFuncVersions: [],
-          globalFuncVersion: undefined,
-          expectedVersion: "4",
+      chai.assert.deepEqual(res, {
+        name: "Azure Functions Core Tools",
+        type: "func-core-tools",
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "4.0.5",
+          supportedVersions: [],
+          binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
         },
-      ];
-      it(`use existing global func - ${platform}  npm${npmVersion}`, async () => {
-        const mock = await prepareTestEnv(
-          undefined,
-          undefined,
-          [],
-          "4.0.2",
-          "14.0.0",
-          npmVersion,
-          platform
-        );
-        const funcToolChecker = new mock.module.FuncToolChecker();
-        const res = await funcToolChecker.resolve({
-          version: "~4.0.1",
-          projectPath: mock.projectDir,
-          symlinkDir: "./devTools/func",
-        });
-        chai.assert.deepEqual(res, {
-          name: "Azure Functions Core Tools",
-          type: "func-core-tools",
-          isInstalled: true,
-          command: "func",
-          details: {
-            isLinuxSupported: false,
-            installVersion: "4.0.2",
-            supportedVersions: [],
-            binFolders: undefined,
-            installFolder: undefined,
-          },
-          error: undefined,
-        });
-        const isSymbolicLink = await fs.pathExists(
-          path.resolve(mock.projectDir, "./devTools/func")
-        );
-        chai.assert.isFalse(isSymbolicLink, "isSymbolicLink");
+        error: undefined,
       });
+      const stat = await fs.lstat(res.details.binFolders[0]);
+      chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
+      const funcVersion = await mockGetVersion(res.details.binFolders[0]);
+      chai.assert.equal(funcVersion, "4.0.5");
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func.exe")));
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func")));
+      chai.assert.isTrue(
+        await fs.pathExists(path.join(res.details.binFolders[0], "func-sentinel"))
+      );
     });
   });
 
+  const useGlobalFuncTestDataArr = [
+    {
+      message: "none portable func installed",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [],
+      expectedVersion: "^4.0.2",
+      platform: "Darwin",
+    },
+    {
+      message: "lower history func installed",
+      historyPortableFuncVersion: { version: "4.0.0" },
+      portableFuncVersions: [],
+      expectedVersion: "^4.0.2",
+      platform: "Windows_NT",
+    },
+    {
+      message: "lower versioning func installed",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [{ version: "4.0.0" }],
+      expectedVersion: "^4.0.2",
+      platform: "Windows_NT",
+    },
+    {
+      message: "lower versioning func installed and linked",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [{ version: "4.0.0", symlinkDir: "./devTools/func" }],
+      expectedVersion: "^4.0.2",
+      platform: "Windows_NT",
+    },
+    {
+      message: "multiple portable func installed and linked",
+      historyPortableFuncVersion: { version: "4.0.4" },
+      portableFuncVersions: [
+        { version: "4.0.0", symlinkDir: "./devTools/func" },
+        { version: "4.0.1" },
+      ],
+      expectedVersion: "^4.0.5",
+      platform: "Windows_NT",
+    },
+    {
+      message: "linux",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [],
+      expectedVersion: "^4.0.5",
+      platform: "Linux",
+    },
+  ];
+  useGlobalFuncTestDataArr.forEach((useGlobalFuncTestData) => {
+    it(`use existing global func, ${useGlobalFuncTestData.message}`, async () => {
+      const mock = await prepareTestEnv(
+        undefined,
+        useGlobalFuncTestData.historyPortableFuncVersion,
+        useGlobalFuncTestData.portableFuncVersions,
+        "4.0.5",
+        "14.0.0",
+        "6",
+        useGlobalFuncTestData.platform as "Linux" | "Windows_NT" | "Darwin"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: useGlobalFuncTestData.expectedVersion,
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
+      });
+      chai.assert.deepEqual(res, {
+        name: "Azure Functions Core Tools",
+        type: "func-core-tools",
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "4.0.5",
+          supportedVersions: [],
+          binFolders: undefined,
+        },
+        error: undefined,
+      });
+      const isSymbolicLink = await fs.pathExists(path.resolve(mock.projectDir, "./devTools/func"));
+      chai.assert.isFalse(isSymbolicLink, "isSymbolicLink");
+    });
+  });
+
+  const useSymlinkFuncTestDataArr = [
+    {
+      message: "linked history portable func",
+      historyPortableFuncVersion: { version: "4.0.3", symlinkDir: "./devTools/func" },
+      portableFuncVersions: [{ version: "4.0.4" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.5",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.3",
+    },
+    {
+      message: "linked versioning portable func",
+      historyPortableFuncVersion: { version: "4.0.5" },
+      portableFuncVersions: [
+        { version: "4.0.4", symlinkDir: "./devTools/func" },
+        { version: "4.0.0" },
+        { version: "4.0.3" },
+        { version: "4.0.6" },
+      ],
+      globalFuncVersion: undefined,
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+  ];
+  useSymlinkFuncTestDataArr.forEach((useSymlinkFuncTestData) => {
+    it(`use symlink portable func, ${useSymlinkFuncTestData.message}`, async () => {
+      const mock = await prepareTestEnv(
+        undefined,
+        useSymlinkFuncTestData.historyPortableFuncVersion,
+        useSymlinkFuncTestData.portableFuncVersions,
+        useSymlinkFuncTestData.globalFuncVersion,
+        "14.0.0",
+        "6",
+        "Windows_NT"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: useSymlinkFuncTestData.expectedVersion,
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
+      });
+      chai.assert.deepEqual(res, {
+        name: "Azure Functions Core Tools",
+        type: "func-core-tools",
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          installVersion: useSymlinkFuncTestData.linkedVersion,
+          supportedVersions: [],
+          binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
+        },
+        error: undefined,
+      });
+      const stat = await fs.lstat(res.details.binFolders[0]);
+      chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
+      const funcVersion = await mockGetVersion(res.details.binFolders[0]);
+      chai.assert.equal(funcVersion, useSymlinkFuncTestData.linkedVersion);
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func.exe")));
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func")));
+    });
+  });
+
+  const linkPortableFuncTestDataArr = [
+    {
+      message: "empty project, link the history func",
+      historyPortableFuncVersion: { version: "4.0.4" },
+      portableFuncVersions: [{ version: "4.0.3" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.5",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "empty project, link max versioning portable func",
+      historyPortableFuncVersion: { version: "4.0.3" },
+      portableFuncVersions: [{ version: "4.0.4" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.4",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "empty project, same history and versioning",
+      historyPortableFuncVersion: { version: "4.0.4" },
+      portableFuncVersions: [{ version: "4.0.4" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.4",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "linked old func, updated to latest portable func",
+      historyPortableFuncVersion: { version: "4.0.1" },
+      portableFuncVersions: [
+        { version: "4.0.0", symlinkDir: "./devTools/func" },
+        { version: "4.0.3" },
+      ],
+      globalFuncVersion: "4.0.4",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.3",
+    },
+  ];
+  linkPortableFuncTestDataArr.forEach((linkPortableFuncTestData) => {
+    it(`use local portable func and link to the project, ${linkPortableFuncTestData.message}`, async () => {
+      const mock = await prepareTestEnv(
+        undefined,
+        linkPortableFuncTestData.historyPortableFuncVersion,
+        linkPortableFuncTestData.portableFuncVersions,
+        linkPortableFuncTestData.globalFuncVersion,
+        "14.0.0",
+        "6",
+        "Windows_NT"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: linkPortableFuncTestData.expectedVersion,
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
+      });
+      chai.assert.deepEqual(res, {
+        name: "Azure Functions Core Tools",
+        type: "func-core-tools",
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          installVersion: linkPortableFuncTestData.linkedVersion,
+          supportedVersions: [],
+          binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
+        },
+        error: undefined,
+      });
+      const stat = await fs.lstat(res.details.binFolders[0]);
+      chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
+      const funcVersion = await mockGetVersion(res.details.binFolders[0]);
+      chai.assert.equal(funcVersion, linkPortableFuncTestData.linkedVersion);
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func.exe")));
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func")));
+    });
+  });
+
+  const noSymlinkTestDataArr = [
+    {
+      message: "empty project, use history func",
+      historyPortableFuncVersion: { version: "4.0.4" },
+      portableFuncVersions: [{ version: "4.0.3" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.5",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "empty project, use versioning func",
+      historyPortableFuncVersion: { version: "4.0.3" },
+      portableFuncVersions: [{ version: "4.0.4" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.5",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "linked history func, use history func",
+      historyPortableFuncVersion: { version: "4.0.4", symlinkDir: "./devTools/func" },
+      portableFuncVersions: [{ version: "4.0.3" }, { version: "4.0.1" }],
+      globalFuncVersion: "4.0.5",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "linked portable func, use history func",
+      historyPortableFuncVersion: { version: "4.0.4" },
+      portableFuncVersions: [
+        { version: "4.0.3", symlinkDir: "./devTools/func" },
+        { version: "4.0.1" },
+      ],
+      globalFuncVersion: "4.0.5",
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.4",
+    },
+    {
+      message: "linked portable func, use portable func",
+      historyPortableFuncVersion: undefined,
+      portableFuncVersions: [
+        { version: "4.0.3" },
+        { version: "4.0.1", symlinkDir: "./devTools/func" },
+      ],
+      globalFuncVersion: undefined,
+      expectedVersion: "~4.0.2",
+      linkedVersion: "4.0.3",
+    },
+  ];
+
+  noSymlinkTestDataArr.forEach((noSymlinkTestData) => {
+    it(`use local portable func and link to the project, ${noSymlinkTestData.message}`, async () => {
+      const mock = await prepareTestEnv(
+        undefined,
+        noSymlinkTestData.historyPortableFuncVersion,
+        noSymlinkTestData.portableFuncVersions,
+        noSymlinkTestData.globalFuncVersion,
+        "14.0.0",
+        "6",
+        "Windows_NT"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: noSymlinkTestData.expectedVersion,
+        projectPath: mock.projectDir,
+      });
+      chai.assert.deepEqual(res, {
+        name: "Azure Functions Core Tools",
+        type: "func-core-tools",
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          installVersion: noSymlinkTestData.linkedVersion,
+          supportedVersions: [],
+          binFolders: [
+            noSymlinkTestData.linkedVersion !==
+            noSymlinkTestData.historyPortableFuncVersion?.version
+              ? path.resolve(
+                  mock.homeDir,
+                  "./.fx/bin/azfunc/",
+                  noSymlinkTestData.linkedVersion,
+                  "./node_modules/azure-functions-core-tools/bin"
+                )
+              : path.resolve(
+                  mock.homeDir,
+                  "./.fx/bin/func/node_modules/azure-functions-core-tools/bin"
+                ),
+          ],
+        },
+        error: undefined,
+      });
+
+      // Do not clean the symlink if user choose not to generate the symlink
+      const symlink =
+        noSymlinkTestData.historyPortableFuncVersion?.symlinkDir ??
+        (noSymlinkTestData.portableFuncVersions.filter((v: any) => v.symlinkDir)?.[0] as any)
+          ?.symlinkDir;
+      if (symlink) {
+        chai.assert.isTrue(await fs.pathExists(path.resolve(mock.projectDir, symlink)));
+      } else {
+        chai.assert.isFalse(await fs.pathExists(path.resolve(mock.projectDir, "./devTools/func")));
+      }
+      chai.assert.isTrue(await fs.pathExists(res.details.binFolders[0]));
+      const funcVersion = await mockGetVersion(res.details.binFolders[0]);
+      chai.assert.equal(funcVersion, noSymlinkTestData.linkedVersion);
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func.exe")));
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func")));
+    });
+  });
+
+  const installFailureDataArr = [
+    {
+      message: "command throw error",
+      func: async (version: string, baseFolder: string) => {
+        await fs.ensureDir(getFuncBinFolder(baseFolder));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func"));
+        throw new Error("Failed to install func");
+      },
+    },
+    {
+      message: "failed to get version",
+      func: async (version: string, baseFolder: string) => {
+        await fs.ensureDir(getFuncBinFolder(baseFolder));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func"));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func.exe"));
+      },
+    },
+    {
+      message: "installed not matched version",
+      func: async (version: string, baseFolder: string) => {
+        await fs.ensureDir(getFuncBinFolder(baseFolder));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func"));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func.exe"));
+        await fs.writeJSON(path.resolve(getFuncBinFolder(baseFolder), "version.json"), {
+          version: "3.0.0",
+        });
+      },
+    },
+    {
+      message: "failed to get version, error format",
+      func: async (version: string, baseFolder: string) => {
+        await fs.ensureDir(getFuncBinFolder(baseFolder));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func"));
+        await fs.ensureFile(path.resolve(getFuncBinFolder(baseFolder), "func.exe"));
+        await fs.writeJSON(path.resolve(getFuncBinFolder(baseFolder), "version.json"), {
+          version: "errorVersion",
+        });
+      },
+    },
+  ];
+  installFailureDataArr.forEach((installFailureData) => {
+    it(`failed to install func, ${installFailureData.message}`, async () => {
+      const mock = await prepareTestEnv(
+        "4.0.5",
+        undefined,
+        [],
+        undefined,
+        "14.0.0",
+        "6",
+        "Windows_NT",
+        installFailureData.func
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: "4",
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
+      });
+
+      chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+      chai.assert.isFalse(await fs.pathExists(path.resolve(mock.projectDir, "./devTools/func")));
+      // The data has been cleaned.
+      const files = await fs.readdir(path.resolve(mock.homeDir, "./.fx/bin/azfunc"), {
+        withFileTypes: true,
+      });
+      chai.assert.equal(files.length, 0);
+    });
+  });
+
+  it(`failed to find node`, async () => {
+    const mock = await prepareTestEnv(
+      "4.0.5",
+      undefined,
+      [],
+      undefined,
+      undefined,
+      "6",
+      "Windows_NT"
+    );
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./devTools/func",
+    });
+
+    chai.assert.equal(
+      JSON.stringify(res),
+      JSON.stringify({
+        name: "Azure Functions Core Tools",
+        type: "func-core-tools",
+        isInstalled: false,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          installVersion: undefined,
+          supportedVersions: [],
+          binFolders: undefined,
+        },
+        error: {
+          helpLink: v3NodeNotFoundHelpLink,
+        },
+      })
+    );
+  });
+
+  it(`failed to find npm`, async () => {
+    const mock = await prepareTestEnv(
+      "4.0.5",
+      undefined,
+      [],
+      undefined,
+      "14.0.0",
+      undefined,
+      "Windows_NT"
+    );
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./devTools/func",
+    });
+
+    chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+  });
+
+  it(`throw error in linux`, async () => {
+    const mock = await prepareTestEnv("4.0.5", undefined, [], undefined, "14.0.0", "6", "Linux");
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./devTools/func",
+    });
+
+    chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+  });
+
+  const failedResult = {
+    name: "Azure Functions Core Tools",
+    type: "func-core-tools",
+    isInstalled: false,
+    command: "func",
+    details: {
+      isLinuxSupported: false,
+      installVersion: undefined,
+      supportedVersions: [],
+      binFolders: undefined,
+    },
+    error: {
+      helpLink: defaultHelpLink,
+    },
+  };
   const prepareTestEnv = async (
     installFuncVersion: string | undefined,
-    historyPortableFuncVersion: string | undefined,
-    portableFuncVersions: string[],
+    historyPortableFuncVersion: { version: string; symlinkDir?: string } | undefined,
+    portableFuncs: { version: string; symlinkDir?: string }[],
     globalFuncVersion: string | undefined,
     nodeVersion: string | undefined,
     npmMajorVersion: "6" | "7" | undefined,
-    osType: "Windows_NT" | "Darwin" | "Linux"
+    osType: "Windows_NT" | "Darwin" | "Linux",
+    overrideInstallFunc?: (version: string, baseFolder: string) => Promise<void>
   ): Promise<{ module: any; projectDir: string; homeDir: string }> => {
     // Init test folder
     testPath = path.resolve(baseDir, uuid.v4().substring(0, 6));
@@ -195,25 +632,29 @@ describe("Func Tools Checker Test", () => {
     await fs.ensureDir(projectDir);
 
     // Init history func
-    if (npmMajorVersion) {
-      if (historyPortableFuncVersion) {
-        await mockInstallFunc(
-          historyPortableFuncVersion,
-          path.resolve(homeDir, `.${ConfigFolderName}`, "bin", "func"),
-          npmMajorVersion,
-          true,
-          true
-        );
+    if (historyPortableFuncVersion) {
+      const installPath = path.resolve(homeDir, `.${ConfigFolderName}`, "bin", "func");
+      await mockInstallFunc(historyPortableFuncVersion.version, installPath, true, true);
+      if (historyPortableFuncVersion.symlinkDir) {
+        const symlinkPath = path.resolve(projectDir, historyPortableFuncVersion.symlinkDir);
+        await fs.mkdir(path.dirname(symlinkPath), { recursive: true, mode: 0o777 });
+        await fs.ensureSymlink(getFuncBinFolder(installPath), symlinkPath, "junction");
       }
+    }
 
-      for (const portableFuncVersion of portableFuncVersions) {
-        await mockInstallFunc(
-          portableFuncVersion,
-          path.resolve(homeDir, `.${ConfigFolderName}`, "bin", "azfunc", portableFuncVersion),
-          npmMajorVersion,
-          true,
-          false
-        );
+    for (const portableFunc of portableFuncs) {
+      const installPath = path.resolve(
+        homeDir,
+        `.${ConfigFolderName}`,
+        "bin",
+        "azfunc",
+        portableFunc.version
+      );
+      await mockInstallFunc(portableFunc.version, installPath, true, false);
+      if (portableFunc.symlinkDir) {
+        const symlinkPath = path.resolve(projectDir, portableFunc.symlinkDir);
+        await fs.mkdir(path.dirname(symlinkPath), { recursive: true, mode: 0o777 });
+        await fs.ensureSymlink(getFuncBinFolder(installPath), symlinkPath, "junction");
       }
     }
 
@@ -245,22 +686,17 @@ describe("Func Tools Checker Test", () => {
               throw new Error("Mock node not installed.");
             }
             return `v${nodeVersion}`;
-          } else if (
-            command === "node" &&
-            args.length == 2 &&
-            args[0].endsWith('main.js"') &&
-            args[1] === "--version"
-          ) {
-            // Mock query portable func version
-            return mockGetVersion(
-              path.resolve(args[0].substring(1, args[0].length - 2), "../../../../")
-            );
           } else if (command === "func" && args.length == 1 && args[0] === "--version") {
-            // Mock query global func version
-            if (!globalFuncVersion) {
-              throw new Error("Mock global func not installed.");
+            if (!options?.env?.PATH) {
+              // Mock query global func version
+              if (!globalFuncVersion) {
+                throw new Error("Mock global func not installed.");
+              }
+              return globalFuncVersion;
+            } else {
+              const funcBinPath = options.env.PATH.split(path.delimiter)[0];
+              return await mockGetVersion(funcBinPath);
             }
-            return globalFuncVersion;
           } else if (command === "npm" && args.length == 1 && args[0] === "--version") {
             // Mock query npm version
             if (!npmMajorVersion) {
@@ -269,10 +705,22 @@ describe("Func Tools Checker Test", () => {
             return `${npmMajorVersion}.0.0`;
           } else if (args.length > 4 && args[0] === "install") {
             // Mock install func
-            if (!installFuncVersion || !npmMajorVersion) {
+            if (!installFuncVersion) {
               throw new Error("Mock install failed");
             }
-            await mockInstallFunc(installFuncVersion, args[3], npmMajorVersion, false, false);
+            if (overrideInstallFunc) {
+              await overrideInstallFunc(
+                installFuncVersion,
+                args[3].substring(1, args[3].length - 1)
+              );
+            } else {
+              await mockInstallFunc(
+                installFuncVersion,
+                args[3].substring(1, args[3].length - 1),
+                false,
+                false
+              );
+            }
             return "";
           } else {
             throw new Error("Not mocked error");
@@ -283,36 +731,32 @@ describe("Func Tools Checker Test", () => {
   };
 });
 
-function getFuncBinFolder(baseFolder: string, npmMajorVersion: "6" | "7"): string {
-  return npmMajorVersion === "6" ? baseFolder : path.resolve(baseFolder, "node_modules", ".bin");
+function getFuncBinFolder(baseFolder: string): string {
+  return path.resolve(baseFolder, "./node_modules/azure-functions-core-tools/bin");
 }
 async function mockInstallFunc(
   version: string,
   baseFolder: string,
-  npmMajorVersion: "6" | "7",
   isExisting = true,
   isGlobal = false
 ) {
-  await fs.ensureDir(baseFolder);
-  const binFolder = getFuncBinFolder(baseFolder, npmMajorVersion);
+  const binFolder = getFuncBinFolder(baseFolder);
+  await fs.ensureDir(binFolder);
   await fs.ensureFile(path.resolve(binFolder, "func"));
-  await fs.ensureFile(path.resolve(binFolder, "func.cmd"));
-  if (!isExisting) {
-    await fs.ensureFile(path.resolve(binFolder, "func.ps1"));
-  }
+  await fs.ensureFile(path.resolve(binFolder, "func.exe"));
 
   if (isExisting) {
     const funcSentinelPath = isGlobal
       ? path.resolve(baseFolder, "../../func-sentinel")
-      : path.resolve(baseFolder, "func-sentinel");
+      : path.resolve(binFolder, "func-sentinel");
     await fs.ensureFile(funcSentinelPath);
   }
-  await fs.writeJSON(path.resolve(baseFolder, "version.json"), { version });
+  await fs.writeJSON(path.resolve(binFolder, "version.json"), { version });
 }
 
-async function mockGetVersion(baseFolder: string): Promise<string> {
+async function mockGetVersion(binFolder: string): Promise<string> {
   try {
-    const versionJson = await fs.readJSON(path.resolve(baseFolder, "version.json"));
+    const versionJson = await fs.readJSON(path.resolve(binFolder, "version.json"));
     if (!versionJson?.version) {
       throw new Error("Failed to get func version");
     }

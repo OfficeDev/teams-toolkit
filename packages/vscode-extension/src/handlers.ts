@@ -1602,12 +1602,8 @@ export async function getFuncPathHandler(): Promise<string> {
   if (!globalVariables.workspaceUri?.fsPath) {
     return path.delimiter;
   }
-  const funcPaths = [
-    path.resolve(globalVariables.workspaceUri?.fsPath, "./devTools/func"),
-    path.resolve(globalVariables.workspaceUri?.fsPath, "./devTools/func/", "node_modules", ".bin"),
-  ];
-
-  return `${path.delimiter}${funcPaths.join(path.delimiter)}${path.delimiter}`;
+  const funcPath = path.resolve(globalVariables.workspaceUri?.fsPath, "./devTools/func");
+  return `${path.delimiter}${funcPath}${path.delimiter}`;
 }
 
 /**

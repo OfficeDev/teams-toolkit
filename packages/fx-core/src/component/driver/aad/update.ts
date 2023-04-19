@@ -15,6 +15,7 @@ import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
+import { ViewAadAppHelpLink } from "../../constants";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -79,6 +80,17 @@ export class UpdateAadAppDriver implements StepDriver {
       if (context.platform === Platform.CLI) {
         const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
         context.ui?.showMessage("info", msg, false);
+      } else {
+        const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+        context.logProvider?.info(msg);
+        context.ui
+          ?.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+              context.ui?.openUrl(ViewAadAppHelpLink);
+            }
+          });
       }
 
       return {

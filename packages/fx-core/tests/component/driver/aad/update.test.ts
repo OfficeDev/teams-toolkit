@@ -34,6 +34,8 @@ const outputKeys = {
 
 const testAssetsRoot = "./tests/component/driver/aad/testAssets";
 const outputRoot = path.join(testAssetsRoot, "output");
+const promtionOnVSC =
+  'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
 
 describe("aadAppUpdate", async () => {
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";
@@ -125,7 +127,11 @@ describe("aadAppUpdate", async () => {
     };
     const showMessage = sinon.spy(mockedDriverContext.ui, "showMessage");
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-    chai.assert.isFalse(showMessage.called);
+    chai.assert.isTrue(showMessage.called);
+    chai.assert.equal(showMessage.getCall(0).args[0], "info");
+    chai.assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
+    chai.assert.isFalse(showMessage.getCall(0).args[2]);
+    chai.assert.equal(showMessage.getCall(0).args[3], "Learn more");
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;

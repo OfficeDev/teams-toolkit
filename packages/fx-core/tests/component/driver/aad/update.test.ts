@@ -126,12 +126,15 @@ describe("aadAppUpdate", async () => {
       outputFilePath: outputPath,
     };
     const showMessage = sinon.spy(mockedDriverContext.ui, "showMessage");
+    const informationSpy = sinon.spy(mockedDriverContext.logProvider, "info");
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(showMessage.called);
     chai.assert.equal(showMessage.getCall(0).args[0], "info");
     chai.assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
     chai.assert.isFalse(showMessage.getCall(0).args[2]);
     chai.assert.equal(showMessage.getCall(0).args[3], "Learn more");
+    chai.assert.isTrue(informationSpy.called);
+    chai.assert.equal(informationSpy.getCall(0).args[0], promtionOnVSC);
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;

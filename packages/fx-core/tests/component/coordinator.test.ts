@@ -70,7 +70,11 @@ import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/version
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
-import { InvalidAzureCredentialError, SelectSubscriptionError } from "../../src/error/azure";
+import {
+  InvalidAzureCredentialError,
+  ResourceGroupConflictError,
+  SelectSubscriptionError,
+} from "../../src/error/azure";
 import { DotenvParseOutput } from "dotenv";
 import * as os from "os";
 import * as path from "path";
@@ -1503,7 +1507,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox
       .stub(resourceGroupHelper, "createNewResourceGroup")
-      .resolves(err(new UserError({ source: "test", name: "ResourceGroupExists" })));
+      .resolves(err(new ResourceGroupConflictError("xxx", "sss")));
     sandbox.stub(provisionUtils, "getM365TenantId").resolves(
       ok({
         tenantIdInToken: "mockM365Tenant",

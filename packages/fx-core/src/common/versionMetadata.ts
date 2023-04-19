@@ -31,8 +31,11 @@ export const MetadataV3 = {
     EOL,
   secretComment:
     "# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs." + EOL,
-  envFileComment:
+  envFileDevComment:
     "# This file includes environment variables that will be committed to git by default." + EOL,
+  envFileLocalComment:
+    "# This file includes environment variables that can be committed to git. It's gitignored by default because it represents your local development environment." +
+    EOL,
 };
 
 export const MetadataV2 = {

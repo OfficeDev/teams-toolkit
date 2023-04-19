@@ -695,7 +695,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             // add first line of comment
             await context.fsWriteFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
-              MetadataV3.envFileComment,
+              envName === "local" ? MetadataV3.envFileLocalComment : MetadataV3.envFileDevComment,
               Constants.envWriteOption
             );
           }
@@ -764,7 +764,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             // add first line of comment
             await context.fsWriteFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
-              MetadataV3.envFileComment,
+              envName === "local" ? MetadataV3.envFileLocalComment : MetadataV3.envFileDevComment,
               Constants.envWriteOption
             );
           }

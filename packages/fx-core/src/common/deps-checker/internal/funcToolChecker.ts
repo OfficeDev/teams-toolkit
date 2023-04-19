@@ -18,7 +18,7 @@ import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { cpUtils } from "../util/cpUtils";
-import { createSymlink, rename } from "../util/fileHelper";
+import { createSymlink, rename, unlinkSymlink } from "../util/fileHelper";
 import { isLinux, isWindows } from "../util/system";
 import { NodeChecker } from "./nodeChecker";
 
@@ -114,6 +114,8 @@ export class FuncToolChecker implements DepsChecker {
       const symlinkFunc = await this.checkSymlinkedFuncVersion(symlinkPath, installOptions.version);
       if (symlinkFunc) {
         return await this.getDepsInfo(symlinkFunc);
+      } else {
+        await unlinkSymlink(symlinkPath);
       }
     }
 

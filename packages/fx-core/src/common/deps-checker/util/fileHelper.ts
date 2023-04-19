@@ -4,8 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-export async function createSymlink(target: string, linkFilePath: string): Promise<void> {
-  // TODO: check if destination already exists
+export async function unlinkSymlink(linkFilePath: string): Promise<void> {
   try {
     const stat = await fs.lstat(linkFilePath);
     if (stat.isSymbolicLink()) {
@@ -17,6 +16,11 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
       throw error;
     }
   }
+}
+
+export async function createSymlink(target: string, linkFilePath: string): Promise<void> {
+  // TODO: check if destination already exists
+  await unlinkSymlink(linkFilePath);
   await fs.mkdir(path.dirname(linkFilePath), { recursive: true, mode: 0o777 });
   return await fs.ensureSymlink(
     target,

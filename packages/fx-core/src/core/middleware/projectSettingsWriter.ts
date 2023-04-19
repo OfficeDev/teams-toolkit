@@ -50,7 +50,6 @@ export const ProjectSettingsWriterMW: Middleware = async (
 
         const settingFile = getProjectSettingsPath(inputs.projectPath);
         await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
-        TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
       }
     } catch (e) {
       if ((ctx.result as Result<any, FxError>).isOk()) {

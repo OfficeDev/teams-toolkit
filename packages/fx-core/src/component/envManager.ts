@@ -25,10 +25,5 @@ export async function createEnvWithName(
   if (writeEnvResult.isErr()) {
     return err(writeEnvResult.error);
   }
-  TOOLS.logProvider?.debug(
-    `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
-      newEnvConfig
-    )}`
-  );
   return ok(undefined);
 }

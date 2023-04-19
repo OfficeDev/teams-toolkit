@@ -217,21 +217,21 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 };
 
 export function outputCancelMessage(ctx: CoreHookContext) {
-  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`Upgrade cancelled.`);
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.10.0`
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.10.0`
     );
   } else {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.10.0`
+      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.10.0`
     );
   }
 }
@@ -326,7 +326,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    TOOLS?.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
+    TOOLS?.logProvider.error(`Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
@@ -388,7 +388,7 @@ async function handleError(
     await cleanup(projectPath, backupFolder);
   } catch (e) {
     // try my best to cleanup
-    TOOLS?.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
+    TOOLS?.logProvider.error(`Failed to cleanup the backup, error: '${e}'`);
   }
   TOOLS?.ui
     .showMessage(
@@ -430,10 +430,10 @@ async function postMigration(
   await updateGitIgnore(projectPath, TOOLS.logProvider, backupFolder);
 
   TOOLS?.logProvider.warning(
-    `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
+    `Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
   );
   TOOLS?.logProvider.warning(
-    `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
+    `Read upgrade-change-logs.md to learn about details for this upgrade.`
   );
 
   if (inputs.platform === Platform.VSCode) {
@@ -540,7 +540,7 @@ async function generateLocalTemplate(manifestString: string, isSPFx: boolean, lo
           const componentID = result[0];
           tab.configurationUrl = `https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26openPropertyPane=true%26teams%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
         } else {
-          const message = `[core] Cannot find componentID in configurableTabs[${index}].configrationUrl, Teams workbench debug may fail.`;
+          const message = `Cannot find componentID in configurableTabs[${index}].configrationUrl, Teams workbench debug may fail.`;
           log.warning(message);
         }
       }
@@ -860,7 +860,7 @@ async function addItemToGitignore(
       await fs.appendFile(gitignorePath, appendedContent);
     }
   } catch {
-    log.warning(`[core] Failed to add '${item}' to '${gitignorePath}', please do it manually.`);
+    log.warning(`Failed to add '${item}' to '${gitignorePath}', please do it manually.`);
   }
 }
 

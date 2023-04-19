@@ -21,6 +21,7 @@ export let isSPFxProject = false;
 export let isExistingUser = "no";
 export let uriEventHandler: UriHandler;
 export let defaultExtensionLogPath: string;
+export let commandIsRunning = false;
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {
@@ -62,4 +63,8 @@ function checkIsSPFx(directory: string): boolean {
 
 export function setUriEventHandler(uriHandler: UriHandler) {
   uriEventHandler = uriHandler;
+}
+
+export function setCommandIsRunning(isRunning: boolean) {
+  commandIsRunning = isRunning;
 }

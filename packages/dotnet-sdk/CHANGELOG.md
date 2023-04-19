@@ -1,3 +1,8 @@
+# 2.0.0-rc
+
+- Support Graph SDK v5.6.0
+- Remove `frameworkreference` and remove auth-start and auth-end html pages
+
 # 1.2.0 -rc.2
 
 - Update to use Teams JS SDK V2

@@ -76,6 +76,12 @@ export namespace ExtTelemetry {
         return TelemetryEvent.PublishInDeveloperPortal;
       case Stage.addWebpart:
         return TelemetryEvent.AddWebpart;
+      case Stage.validateApplication:
+        return TelemetryEvent.ValidateApplication;
+      case Stage.createAppPackage:
+        return TelemetryEvent.Build;
+      case Stage.deployTeams:
+        return TelemetryEvent.UpdateTeamsApp;
       default:
         return undefined;
     }

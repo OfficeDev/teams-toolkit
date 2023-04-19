@@ -104,7 +104,7 @@ describe("Debug V3 notification-http-trigger template", () => {
     // validate func
     chai.assert.isUndefined(context.FUNC_PATH); // FUNC_PATH is undefined for global func
 
-    // validate .localSettings
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));
+    // validate .localConfigs
+    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
   });
 });

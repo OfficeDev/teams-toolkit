@@ -98,7 +98,7 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js",
+            "command": "npx env-cmd --silent -f .localConfigs nodemon --inspect=9239 --signal SIGINT index.js",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/bot"

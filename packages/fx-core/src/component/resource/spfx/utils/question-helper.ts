@@ -53,7 +53,7 @@ export class PackageSelectOptionsHelper {
             : getLocalizedString(
                 "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
               ),
-        detail: getLocalizedString(
+        description: getLocalizedString(
           "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
           Constants.RecommendedLowestSpfxVersion
         ),

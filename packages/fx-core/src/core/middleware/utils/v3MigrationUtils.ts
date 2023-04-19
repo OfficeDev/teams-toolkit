@@ -250,20 +250,9 @@ export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {
   TabSso: boolean;
   BotSso: boolean;
 } {
-  let tabSso, botSso;
-  if ((projectSettings as ProjectSettingsV3).components) {
-    tabSso = (projectSettings as ProjectSettingsV3).components.some((component, index, obj) => {
-      return component.name === "teams-tab" && component.sso == true;
-    });
-    botSso = (projectSettings as ProjectSettingsV3).components.some((component, index, obj) => {
-      return component.name === "teams-bot" && component.sso == true;
-    });
-  } else {
-    // For projects that does not componentize.
-    const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
-    tabSso = capabilities.includes("TabSso");
-    botSso = capabilities.includes("BotSso");
-  }
+  const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+  const tabSso = capabilities.includes("TabSSO");
+  const botSso = capabilities.includes("BotSSO");
 
   return {
     TabSso: tabSso,

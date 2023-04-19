@@ -35,8 +35,8 @@ import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
-const ACTION_NAME = "prerequisite/install";
-const helpLink = "https://aka.ms/teamsfx-actions/prerequisite-install";
+const ACTION_NAME = "devTool/install";
+const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
 
 const outputKeys = {
   sslCertFile: "sslCertFile",

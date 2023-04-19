@@ -67,7 +67,7 @@ export class Executor {
     localManifestPath: string
   ) {
     const command =
-      `teamsfx add SPFxWebPart --spfx-webpart-name ${webpartName}` +
+      `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
       ` --local-manifest-path ${localManifestPath}` +
       ` --spfx-install-latest-package true`;

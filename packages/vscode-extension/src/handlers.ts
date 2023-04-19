@@ -245,9 +245,11 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     if (isV3Enabled()) {
       core.on(CoreCallbackEvent.lock, async (command: string) => {
+        globalVariables.setCommandIsRunning(true);
         await commandController.lockedByOperation(command);
       });
       core.on(CoreCallbackEvent.unlock, async (command: string) => {
+        globalVariables.setCommandIsRunning(false);
         await commandController.unlockedByOperation(command);
       });
     }
@@ -2757,7 +2759,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     }
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    window.showErrorMessage(localize("teamstoolkit.handlers.decryptFailed"));
+    window.showErrorMessage(result.error.message);
   }
 }
 

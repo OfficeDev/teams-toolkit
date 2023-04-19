@@ -36,8 +36,8 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
 
-const ACTION_NAME = "prerequisite/install";
-const helpLink = "https://aka.ms/teamsfx-actions/prerequisite-install";
+const ACTION_NAME = "devTool/install";
+const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
 
 const outputKeys = {
   sslCertFile: "sslCertFile",

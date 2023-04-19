@@ -28,7 +28,7 @@ export class WrapDriverContext {
     Object.assign(this, driverContext, {});
     this.eventName = eventName;
     this.telemetryProperties = {
-      component: eventName,
+      component: componentName.replace(/\//g, ""), // Remove `/` in the componentName to avoid the value being redacted.
     };
     if (driverContext.telemetryReporter) {
       this.wrapTelemetryReporter = new TeamsFxTelemetryReporter(driverContext.telemetryReporter, {

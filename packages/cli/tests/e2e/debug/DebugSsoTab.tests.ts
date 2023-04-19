@@ -86,7 +86,7 @@ describe("Debug V3 sso-tab template", () => {
     chai.assert.isDefined(context.SSL_KEY_FILE);
     chai.assert.isNotEmpty(context.SSL_KEY_FILE);
 
-    // validate .localSettings
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));
+    // validate .localConfigs
+    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
   });
 });

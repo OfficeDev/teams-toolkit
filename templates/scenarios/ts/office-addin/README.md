@@ -38,10 +38,13 @@ To sideload the deployed add-in:
 
 ## Validate manifest file
 
+Known issue: manifest validation is not supported for now.
+
 To check that your manifest file is valid:
 
-- From Visual Studio Code: open the command palette and select: `Teams: Validate manifest file`.
+- From Visual Studio Code: open the command palette and select: `Teams: Validate Application` and select `Validate using manifest schema`.
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
 
 ## Known Issues
-- Publish doesn't work for a Outlook add-in project now.
+- Publish is not supported for an Outlook add-in project now.
+- Manifest validation is not supported for now.

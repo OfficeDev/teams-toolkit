@@ -687,10 +687,18 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             !(await context.fsPathExists(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
-          )
+          ) {
+            // create env file
             await context.fsCreateFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
+            // add first line of comment
+            await context.fsWriteFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
+              MetadataV3.envFileComment,
+              Constants.envWriteOption
+            );
+          }
           const obj = await readJsonFile(
             context,
             path.join(".fx", "configs", "config." + envName + ".json")
@@ -748,10 +756,18 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             !(await context.fsPathExists(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
-          )
+          ) {
+            // create env file
             await context.fsCreateFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
+            // add first line of comment
+            await context.fsWriteFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
+              MetadataV3.envFileComment,
+              Constants.envWriteOption
+            );
+          }
           const obj = await readJsonFile(
             context,
             path.join(".fx", "states", "state." + envName + ".json")
@@ -793,6 +809,7 @@ export async function userdataMigration(context: MigrationContext): Promise<void
       const envData =
         MetadataV3.secretFileComment +
         EOL +
+        MetadataV3.secretComment +
         (await readAndConvertUserdata(context, path.join(stateFolder, stateFile), bicepContent));
       await context.fsWriteFile(
         path.join(MetadataV3.defaultEnvironmentFolder, envFileName),

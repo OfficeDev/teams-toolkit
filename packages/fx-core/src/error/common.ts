@@ -23,11 +23,17 @@ export class MissingEnvironmentVariablesError extends UserError {
     const errorOptions: UserErrorOptions = {
       source: camelCase(source),
       name: "MissingEnvironmentVariablesError",
-      message: getDefaultString(key, variableNames, filePath || globalVars.ymlFilePath || ""),
+      message: getDefaultString(
+        key,
+        variableNames,
+        filePath || globalVars.ymlFilePath || "",
+        globalVars.envFilePath || ""
+      ),
       displayMessage: getLocalizedString(
         key,
         variableNames,
-        filePath || globalVars.ymlFilePath || ""
+        filePath || globalVars.ymlFilePath || "",
+        globalVars.envFilePath || ""
       ),
       helpLink: helpLink || "https://aka.ms/teamsfx-actions",
     };

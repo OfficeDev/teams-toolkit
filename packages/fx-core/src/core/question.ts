@@ -924,7 +924,11 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false):
   };
 
   const res = new QTreeNode(teamsAppManifestNode);
-  if (inputs.platform !== Platform.CLI_HELP && inputs.platform !== Platform.CLI) {
+  if (
+    inputs.platform !== Platform.CLI_HELP &&
+    inputs.platform !== Platform.CLI &&
+    inputs.platform !== Platform.VS
+  ) {
     const manifestPath = path.join(
       inputs.projectPath!,
       AppPackageFolderName,

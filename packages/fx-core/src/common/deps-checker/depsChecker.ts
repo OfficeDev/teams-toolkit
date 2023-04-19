@@ -22,12 +22,6 @@ export type DependencyStatus = {
   error?: DepsCheckerError;
 };
 
-export type FuncDependencyStatus = {
-  details: {
-    installFolder?: string;
-  };
-} & DependencyStatus;
-
 export interface DepsInfo {
   name: string;
   isLinuxSupported: boolean;

@@ -257,7 +257,9 @@ export class Coordinator {
         const templateName = Feature2TemplateName[`${feature}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
-          context.templateVariables = Generator.getDefaultVariables(appName);
+          const safeProjectNameFromVS =
+            language === "csharp" ? inputs[CoreQuestionNames.SafeProjectName] : undefined;
+          context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
         }

@@ -21,6 +21,7 @@ provision:
     with:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
     writeToEnvironmentFile:
+      # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
 
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
@@ -66,7 +67,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./bot/.localSettings
+      target: ./bot/.localConfigs
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

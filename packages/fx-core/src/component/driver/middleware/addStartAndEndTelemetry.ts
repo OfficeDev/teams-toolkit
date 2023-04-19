@@ -13,13 +13,15 @@ import { TelemetryConstants } from "../../constants";
 import { performance } from "perf_hooks";
 
 // Based on fx-core's design that a component should always return FxError instead of throw exception, no error handling is added
+// Will remove `/` in the componentName to avoid the value being redacted.
 export function addStartAndEndTelemetry(eventName: string, componentName: string): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const driverContext = ctx.arguments[1] as WrapDriverContext;
     let telemetryReporter: TeamsFxTelemetryReporter | undefined = undefined;
     if (driverContext.telemetryReporter) {
+      const normalizedComponentName = componentName.replace(/\//g, ""); // Remove `/` in the componentName to avoid the value being redacted.
       telemetryReporter = new TeamsFxTelemetryReporter(driverContext.telemetryReporter, {
-        componentName,
+        componentName: normalizedComponentName,
       });
     }
     telemetryReporter?.sendStartEvent({ eventName });

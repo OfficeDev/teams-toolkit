@@ -4,10 +4,9 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
-import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err, FxError, Result, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -76,6 +75,11 @@ export class UpdateAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
+
+      if (context.platform === Platform.CLI) {
+        const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
+        context.ui?.showMessage("info", msg, false);
+      }
 
       return {
         result: ok(

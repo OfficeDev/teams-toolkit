@@ -40,7 +40,12 @@ Follow below instructions to get started with this application template for loca
 1. Select a target Microsoft application where the message extension runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
 
 ### Test your application with TeamsFx CLI
-
+1. Install [ngrok](https://ngrok.com/download) and start your local tunnel service by running the command `ngrok http 3978`.
+1. In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your ngrok URL.
+   ```
+   BOT_DOMAIN=sample-id.ngrok.io
+   BOT_ENDPOINT=http://sample-id.ngrok.io
+   ```
 1. Executing the command `teamsfx provision --env local` in your project directory.
 1. Executing the command `teamsfx deploy --env local` in your project directory.
 1. Executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.

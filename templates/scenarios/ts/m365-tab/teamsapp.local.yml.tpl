@@ -54,7 +54,7 @@ provision:
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
-  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365 # Extend your Teams app to Outlook and the Microsoft 365 app
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
@@ -62,11 +62,11 @@ provision:
       appId: M365_APP_ID
 
 deploy:
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:
       devCert:
         trust: true
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
 
@@ -77,7 +77,7 @@ deploy:
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./.localSettings
+      target: ./.localConfigs
       envs:
         BROWSER: none
         HTTPS: true

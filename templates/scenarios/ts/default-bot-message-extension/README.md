@@ -37,6 +37,12 @@ This is a simple hello world application with both Bot and Message extension cap
 - From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
 - From TeamsFx CLI: 
+  - Install [ngrok](https://ngrok.com/download) and start your local tunnel service by running the command `ngrok http 3978`.
+  - In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your ngrok URL.
+    ```
+    BOT_DOMAIN=sample-id.ngrok.io
+    BOT_ENDPOINT=http://sample-id.ngrok.io
+    ```
   - Executing the command `teamsfx provision --env local` in your project directory.
   - Executing the command `teamsfx deploy --env local` in your project directory.
   - Executing the command `teamsfx preview --env local` in your project directory.

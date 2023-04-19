@@ -14,7 +14,7 @@
         "nodemon": "^2.0.21"
     },
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run start",
+        "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
         "start": "nodemon --inspect=9239 --signal SIGINT src/app.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

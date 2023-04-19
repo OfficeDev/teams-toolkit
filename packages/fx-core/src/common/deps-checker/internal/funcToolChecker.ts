@@ -66,6 +66,7 @@ export class FuncToolChecker implements DepsChecker {
       installationInfo = await this.getInstallationInfo(installOptions);
       if (!installationInfo.isInstalled) {
         await this.install(installOptions.version);
+        // TODO: remove duplicate func check
         installationInfo = await this.getInstallationInfo(installOptions);
       }
 
@@ -212,9 +213,8 @@ export class FuncToolChecker implements DepsChecker {
           funcVersion: actualFunc,
           binFolder: binFolder,
         };
-      } else {
-        await this.cleanup(matchedVersion);
       }
+
       const matchedVersionIndex = funcDictionaries.indexOf(matchedVersion);
       if (matchedVersionIndex < 0) {
         return null;
@@ -245,10 +245,7 @@ export class FuncToolChecker implements DepsChecker {
     );
     if (!funcVersion) {
       await this.cleanup(tmpVersion);
-      throw new DepsCheckerError(
-        getLocalizedString("error.common.InstallSoftwareError", funcToolName),
-        defaultHelpLink
-      );
+      throw new DepsCheckerError(Messages.failToValidateFuncCoreTool(), defaultHelpLink);
     }
 
     await rename(

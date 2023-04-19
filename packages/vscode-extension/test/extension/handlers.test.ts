@@ -2006,4 +2006,27 @@ describe("handlers", () => {
     chai.expect(initGlobalVariables.calledOnce).to.be.true;
     chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
   });
+
+  describe("getFuncPathHandler", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "~/" });
+      const actualPath = await handlers.getFuncPathHandler();
+      chai.assert.equal(
+        actualPath,
+        `${path.delimiter}${path.resolve("~/devTools/func")}${path.delimiter}`
+      );
+    });
+
+    it("no workspace opened", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value({});
+      const actualPath = await handlers.getFuncPathHandler();
+      chai.assert.equal(actualPath, path.delimiter);
+    });
+  });
 });

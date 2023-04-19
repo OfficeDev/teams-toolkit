@@ -9,14 +9,11 @@ export const Messages = {
     getDefaultString("error.depChecker.DefaultErrorMessage"),
     getLocalizedString("error.depChecker.DefaultErrorMessage"),
   ],
-  startInstallFunctionCoreTool: () => getLocalizedString("depChecker.startInstallFunctionCoreTool"),
-  finishInstallFunctionCoreTool: () =>
-    getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
-  // needReplaceWithFuncCoreToolV3: () => getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
   needInstallNpm: () => getLocalizedString("depChecker.needInstallNpm"),
   failToValidateFuncCoreTool: () => getLocalizedString("depChecker.failToValidateFuncCoreTool"),
   globalFuncNodeNotMatched: () => getLocalizedString("depChecker.globalFuncNodeNotMatched"),
   portableFuncNodeNotMatched: () => getLocalizedString("depChecker.portableFuncNodeNotMatched"),
+  symlinkDirAlreadyExist: () => getLocalizedString("depChecker.symlinkDirAlreadyExist"),
 
   startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),
   finishInstallNgrok: () => getLocalizedString("depChecker.finishInstallNgrok"),

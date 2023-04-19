@@ -597,6 +597,185 @@ describe("Func Tools Checker Test", () => {
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
 
+  it(`white space in path`, async () => {
+    const mock = await prepareTestEnv(
+      "4.0.5",
+      undefined,
+      [],
+      undefined,
+      "14.0.0",
+      "6",
+      "Windows_NT",
+      undefined,
+      true
+    );
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./dev tools/func",
+    });
+
+    chai.assert.deepEqual(res, {
+      name: "Azure Functions Core Tools",
+      type: "func-core-tools",
+      isInstalled: true,
+      command: "func",
+      details: {
+        isLinuxSupported: false,
+        installVersion: "4.0.5",
+        supportedVersions: [],
+        binFolders: [path.resolve(mock.projectDir, "./dev tools/func")],
+      },
+      error: undefined,
+    });
+  });
+
+  it(`path has already exist`, async () => {
+    const mock = await prepareTestEnv(
+      "4.0.5",
+      undefined,
+      [],
+      undefined,
+      "14.0.0",
+      "6",
+      "Windows_NT"
+    );
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    await fs.ensureFile(path.resolve(mock.projectDir, "./devtools/func"));
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./devtools/func",
+    });
+
+    chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+  });
+
+  it(`wrong func in the azfunc folder, find a target version`, async () => {
+    const mock = await prepareTestEnv(
+      undefined,
+      undefined,
+      [
+        { version: "4.0.0" },
+        { version: "errorFolder" },
+        { version: "4.0.1" },
+        { version: "4.0.2" },
+        { version: "4.0.4" },
+        { version: "4.0.5" },
+      ],
+      undefined,
+      "14.0.0",
+      "6",
+      "Windows_NT"
+    );
+
+    // 4.0.5 => version not match
+    await fs.writeJSON(
+      path.resolve(
+        getFuncBinFolder(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.5/")),
+        "version.json"
+      ),
+      {
+        version: "4.0.4",
+      }
+    );
+    // 4.0.4 => sentinel file not exist
+    await fs.remove(
+      path.resolve(
+        getFuncBinFolder(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.4/")),
+        "func-sentinel"
+      )
+    );
+    // 4.0.3 => empty
+    await fs.ensureDir(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.3/"));
+    // 4.0.2 => error version
+    await fs.writeJSON(
+      path.resolve(
+        getFuncBinFolder(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.2/")),
+        "version.json"
+      ),
+      {
+        version: "error version",
+      }
+    );
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./devtools/func",
+    });
+
+    chai.assert.deepEqual(res, {
+      name: "Azure Functions Core Tools",
+      type: "func-core-tools",
+      isInstalled: true,
+      command: "func",
+      details: {
+        isLinuxSupported: false,
+        installVersion: "4.0.1",
+        supportedVersions: [],
+        binFolders: [path.resolve(mock.projectDir, "./devtools/func")],
+      },
+      error: undefined,
+    });
+  });
+
+  it(`wrong func in the azfunc folder, no version find`, async () => {
+    const mock = await prepareTestEnv(
+      undefined,
+      undefined,
+      [
+        { version: "errorFolder" },
+        { version: "4.0.2" },
+        { version: "4.0.4" },
+        { version: "4.0.5" },
+      ],
+      undefined,
+      "14.0.0",
+      "6",
+      "Windows_NT"
+    );
+
+    // 4.0.5 => version not match
+    await fs.writeJSON(
+      path.resolve(
+        getFuncBinFolder(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.5/")),
+        "version.json"
+      ),
+      {
+        version: "4.0.4",
+      }
+    );
+    // 4.0.4 => sentinel file not exist
+    await fs.remove(
+      path.resolve(
+        getFuncBinFolder(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.4/")),
+        "func-sentinel"
+      )
+    );
+    // 4.0.3 => empty
+    await fs.ensureDir(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.3/"));
+    // 4.0.2 => error version
+    await fs.writeJSON(
+      path.resolve(
+        getFuncBinFolder(path.resolve(mock.homeDir, "./.fx/bin/azfunc/4.0.2/")),
+        "version.json"
+      ),
+      {
+        version: "error version",
+      }
+    );
+    const funcToolChecker = new mock.module.FuncToolChecker();
+    const res = await funcToolChecker.resolve({
+      version: "4",
+      projectPath: mock.projectDir,
+      symlinkDir: "./devtools/func",
+    });
+
+    chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+  });
+
   const failedResult = {
     name: "Azure Functions Core Tools",
     type: "func-core-tools",
@@ -620,10 +799,14 @@ describe("Func Tools Checker Test", () => {
     nodeVersion: string | undefined,
     npmMajorVersion: "6" | "7" | undefined,
     osType: "Windows_NT" | "Darwin" | "Linux",
-    overrideInstallFunc?: (version: string, baseFolder: string) => Promise<void>
+    overrideInstallFunc?: (version: string, baseFolder: string) => Promise<void>,
+    whitespaceInPath = false
   ): Promise<{ module: any; projectDir: string; homeDir: string }> => {
     // Init test folder
-    testPath = path.resolve(baseDir, uuid.v4().substring(0, 6));
+    testPath = path.resolve(
+      baseDir,
+      whitespaceInPath ? uuid.v4().substring(0, 6) + " whitespace" : uuid.v4().substring(0, 6)
+    );
     await fs.ensureDir(testPath);
     const homeDir = path.resolve(testPath, "homeDir");
     await fs.ensureDir(homeDir);

@@ -82,7 +82,6 @@ export class UpdateAadAppDriver implements StepDriver {
         context.ui?.showMessage("info", msg, false);
       } else {
         const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-        context.logProvider?.info(msg);
         context.ui
           ?.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
           .then((result) => {

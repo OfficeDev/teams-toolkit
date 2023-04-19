@@ -134,7 +134,7 @@ describe("aadAppUpdate", async () => {
     chai.assert.isFalse(showMessage.getCall(0).args[2]);
     chai.assert.equal(showMessage.getCall(0).args[3], "Learn more");
     chai.assert.isTrue(informationSpy.called);
-    chai.assert.equal(informationSpy.getCall(0).args[0], promtionOnVSC);
+    chai.assert.equal(informationSpy.getCall(0).args[0], "Executing action aadApp/update");
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;

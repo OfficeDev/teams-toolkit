@@ -17,7 +17,7 @@
   ],
   "command": {
     "version": {
-      "message": "chore(release): publish detail",
+      "message": "build(release): publish detail",
       "allowBranch": ["main"]
     }
   },

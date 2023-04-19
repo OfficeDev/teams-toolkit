@@ -145,10 +145,10 @@ export class FuncToolChecker implements DepsChecker {
     binFolder: string;
   } | null> {
     try {
-      const historyBinFolder = FuncToolChecker.getPortableFuncBinFolder(undefined);
+      const historyFuncBinFolder = FuncToolChecker.getPortableFuncBinFolder(undefined);
       const historyFunc = await this.checkFuncVersion(
         expectedFuncVersion,
-        historyBinFolder,
+        historyFuncBinFolder,
         FuncToolChecker.getHistorySentinelPath()
       );
       const versioningFuncStatus = await this.getVersioningPortableFunc(expectedFuncVersion);
@@ -159,7 +159,7 @@ export class FuncToolChecker implements DepsChecker {
       ) {
         return versioningFuncStatus;
       } else if (historyFunc) {
-        return { funcVersion: historyFunc, binFolder: historyBinFolder };
+        return { funcVersion: historyFunc, binFolder: historyFuncBinFolder };
       }
     } catch {
       // do nothing

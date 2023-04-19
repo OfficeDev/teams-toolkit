@@ -10,12 +10,12 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { Messages, vxTestAppInstallHelpLink } from "../constant";
 import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, BaseInstallOptions } from "../depsChecker";
 import { isMacOS, isWindows } from "../util";
-import { Messages, vxTestAppInstallHelpLink } from "../constant";
 import { createSymlink } from "../util/fileHelper";
 
 interface InstallOptionsSafe {

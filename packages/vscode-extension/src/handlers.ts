@@ -92,6 +92,7 @@ import {
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { FxCore, isOfficeAddinEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
+
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
@@ -1599,11 +1600,11 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  */
 export async function getFuncPathHandler(): Promise<string> {
   // TODO: remove this command
-  if (!globalVariables.workspaceUri?.fsPath) {
-    return path.delimiter;
-  }
-  const funcPath = path.resolve(globalVariables.workspaceUri?.fsPath, "./devTools/func");
-  return `${path.delimiter}${funcPath}${path.delimiter}`;
+  return globalVariables.workspaceUri?.fsPath
+    ? `${path.delimiter}${path.resolve(globalVariables.workspaceUri.fsPath, "./devTools/func")}${
+        path.delimiter
+      }`
+    : path.delimiter;
 }
 
 /**

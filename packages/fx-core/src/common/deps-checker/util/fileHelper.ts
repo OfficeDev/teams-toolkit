@@ -31,7 +31,7 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
   return await fs.ensureSymlink(
     target,
     linkFilePath,
-    // /* Only used for Windows. Directory junction is similar to directory link but does not require admin permission. */
+    /* Only used for Windows. Directory junction is similar to directory link but does not require admin permission. */
     "junction"
   );
 }

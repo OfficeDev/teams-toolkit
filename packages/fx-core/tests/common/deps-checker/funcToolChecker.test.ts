@@ -5,21 +5,20 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 import "mocha";
-import * as sinon from "sinon";
+
 import chai from "chai";
-import * as fs from "fs-extra";
-import { cpUtils, DebugLogger } from "../../../src/common/deps-checker/util/cpUtils";
 import { SpawnOptions } from "child_process";
+import * as fs from "fs-extra";
 import * as path from "path";
+import proxyquire from "proxyquire";
+import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import proxyquire from "proxyquire";
-import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
-import { getLocalizedString } from "../../../src/common/localizeUtils";
 import {
   defaultHelpLink,
   v3NodeNotFoundHelpLink,
 } from "../../../src/common/deps-checker/constant/helpLink";
+import { cpUtils, DebugLogger } from "../../../src/common/deps-checker/util/cpUtils";
 
 describe("Func Tools Checker Test", () => {
   const sandbox = sinon.createSandbox();

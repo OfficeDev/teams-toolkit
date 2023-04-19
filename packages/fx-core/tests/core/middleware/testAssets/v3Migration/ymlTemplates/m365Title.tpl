@@ -1,4 +1,4 @@
-  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365 # Extend your Teams app to Outlook and the Microsoft 365 app
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).

@@ -158,7 +158,7 @@ export function startFrontendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "npx env-cmd --silent -f .localSettings react-scripts start",
+    command: "npx env-cmd --silent -f .localConfigs react-scripts start",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/tabs",
@@ -231,7 +231,7 @@ export function watchBackendTask(label: string): CommentJSONValue {
 
 export function startBackendTask(label: string, programmingLanguage?: string): CommentJSONValue {
   programmingLanguage = programmingLanguage || "javascript";
-  const command = `npx env-cmd --silent -f .localSettings func start --${programmingLanguage} --language-worker="--inspect=9229" --port "7071" --cors "*"`;
+  const command = `npx env-cmd --silent -f .localConfigs func start --${programmingLanguage} --language-worker="--inspect=9229" --port "7071" --cors "*"`;
   const task = {
     label,
     type: "shell",
@@ -267,8 +267,8 @@ export function startBackendTask(label: string, programmingLanguage?: string): C
 export function startBotTask(label: string, programmingLanguage?: string): CommentJSONValue {
   const command =
     programmingLanguage === "typescript"
-      ? "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
-      : "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js";
+      ? "npx env-cmd --silent -f .localConfigs nodemon --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
+      : "npx env-cmd --silent -f .localConfigs nodemon --inspect=9239 --signal SIGINT index.js";
   const task = {
     label,
     type: "shell",

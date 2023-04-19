@@ -24,6 +24,8 @@ export enum TelemetryPropertyKey {
   tenantId = "tenant-id",
   publishedAppId = "published-app-id",
   customizedKeys = "customized-manifest-keys",
+  validationErrors = "validation-errors",
+  validationWarnings = "validation-warnings",
   manual = "manual",
   statusCode = "status-code",
   url = "url",

@@ -5,13 +5,13 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 
-import { ToolsInstallDriver } from "../../../../src/component/driver/prerequisite/installDriver";
+import { ToolsInstallDriver } from "../../../../src/component/driver/devTool/installDriver";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { LocalCertificateManager } from "../../../../src/common/local/localCertificateManager";
 import { UserError } from "@microsoft/teamsfx-api";
 import { CoreSource } from "../../../../src/core/error";
-import { InstallToolArgs } from "../../../../src/component/driver/prerequisite/interfaces/InstallToolArgs";
+import { InstallToolArgs } from "../../../../src/component/driver/devTool/interfaces/InstallToolArgs";
 import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/funcToolChecker";
 import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { DepsCheckerError } from "../../../../src/common/deps-checker/depsError";

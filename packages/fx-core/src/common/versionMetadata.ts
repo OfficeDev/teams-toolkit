@@ -6,9 +6,6 @@
  */
 import { EOL } from "os";
 
-/**
- * @author xzf0587 <zhaofengxu@microsoft.com>
- */
 export const MetadataV3 = {
   projectVersion: "1.0.0",
   platformVersion: {

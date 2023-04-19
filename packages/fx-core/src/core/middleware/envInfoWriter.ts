@@ -74,4 +74,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     ctx.contextV2!.cryptoProvider,
     envInfoV2.envName
   );
+
+  if (envStatePath.isOk()) {
+    TOOLS.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
+  }
 }

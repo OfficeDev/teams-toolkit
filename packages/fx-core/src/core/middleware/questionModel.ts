@@ -73,7 +73,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
 
   if (getQuestionRes.isErr()) {
     TOOLS?.logProvider.error(
-      `Unable to get questions for ${method}: ${getQuestionRes.error.message}`
+      `[core] failed to get questions for ${method}: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return;

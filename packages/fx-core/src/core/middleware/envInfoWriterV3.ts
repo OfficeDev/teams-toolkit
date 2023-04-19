@@ -64,5 +64,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
       envInfoV3.envName,
       true
     );
+    if (envStatePath.isOk()) {
+      TOOLS?.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
+    }
   }
 }

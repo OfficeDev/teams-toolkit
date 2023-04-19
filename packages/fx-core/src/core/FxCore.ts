@@ -833,6 +833,10 @@ export class FxCore implements v3.ICore {
       return err(CopyFileError(e as Error));
     }
 
+    TOOLS.logProvider.debug(
+      `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
+    );
+
     return ok(Void);
   }
 

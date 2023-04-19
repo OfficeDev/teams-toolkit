@@ -155,20 +155,20 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
 }
 
 function outputCancelMessage(ctx: CoreHookContext) {
-  TOOLS?.logProvider.warning(` Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
 
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 3.7.0`
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 3.7.0`
     );
   } else {
     TOOLS?.logProvider.warning(
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 3.7.0`
+      `[core] If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 3.7.0`
     );
   }
 }
@@ -407,7 +407,7 @@ async function postConsolidate(
   if (moveFiles.length > 0) {
     moveFiles = moveFiles.substring(0, moveFiles.length - 1);
     TOOLS?.logProvider.warning(
-      ` Upgrade success! Old ${moveFiles} have been backed up to the .backup folder and you can delete it.`
+      `[core] Upgrade success! Old ${moveFiles} have been backed up to the .backup folder and you can delete it.`
     );
   }
 

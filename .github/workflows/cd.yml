@@ -215,7 +215,7 @@ jobs:
       - name: commit change on local
         run: |
           git add packages/fx-core/src/common/m365/serviceConstant.ts
-          git commit -m "chore: replace sideloading placeholders"
+          git commit -m "build: replace sideloading placeholders"
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
@@ -237,7 +237,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         run: |
           git add ./packages/cli/package.json ./packages/vscode-extension/package.json
-          git commit -m "chore: update ai key"
+          git commit -m "build: update ai key"
 
       - name: publish alpha release to npm org
         if: ${{ github.ref == 'refs/heads/dev'}}

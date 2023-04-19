@@ -64,7 +64,6 @@ import {
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
-  TaskNotSupportError,
   WriteFileError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
@@ -746,10 +745,6 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
     if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
     return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
-  }
-
-  async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw new TaskNotSupportError(Stage.build);
   }
 
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {

@@ -22,6 +22,7 @@ import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { Constants } from "../../../../src/component/resource/appManifest/constants";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 describe("teamsApp/validateManifest", async () => {
   const teamsAppDriver = new ValidateManifestDriver();
@@ -56,7 +57,7 @@ describe("teamsApp/validateManifest", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+      chai.assert.isTrue(result.error instanceof InvalidActionInputError);
     }
   });
 

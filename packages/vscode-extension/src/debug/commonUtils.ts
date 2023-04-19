@@ -37,51 +37,6 @@ export async function getProjectRoot(
   return projectExists ? projectRoot : undefined;
 }
 
-function getLocalEnvWithPrefix(
-  env: { [key: string]: string } | undefined,
-  prefix: string
-): { [key: string]: string } | undefined {
-  if (env === undefined) {
-    return undefined;
-  }
-  const result: { [key: string]: string } = {};
-  for (const key of Object.keys(env)) {
-    if (key.startsWith(prefix) && env[key]) {
-      result[key.slice(prefix.length)] = env[key];
-    }
-  }
-  return Object.keys(result).length > 0 ? result : undefined;
-}
-
-export function getFrontendLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.frontendLocalEnvPrefix);
-}
-
-export function getBackendLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.backendLocalEnvPrefix);
-}
-
-export function getAuthLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnvWithPrefix(env, constants.authLocalEnvPrefix);
-}
-
-export function getAuthServicePath(env: { [key: string]: string } | undefined): string | undefined {
-  return env ? env[constants.authServicePathEnvKey] : undefined;
-}
-
-export function getBotLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
-}
-
 export async function hasTeamsfxBackend(): Promise<boolean> {
   if (!globalVariables.workspaceUri) {
     return false;

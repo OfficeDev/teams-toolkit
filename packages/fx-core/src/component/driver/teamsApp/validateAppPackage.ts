@@ -37,6 +37,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { SummaryConstant } from "../../configManager/constant";
 import { updateProgress } from "../middleware/updateProgress";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -84,12 +85,7 @@ export class ValidateAppPackageDriver implements StepDriver {
       appPackagePath = path.join(context.projectPath, appPackagePath);
     }
     if (!(await fs.pathExists(appPackagePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(appPackagePath)
-        )
-      );
+      return err(new FileNotFoundError(actionName, appPackagePath));
     }
     const archivedFile = await fs.readFile(appPackagePath);
 
@@ -271,20 +267,9 @@ export class ValidateAppPackageDriver implements StepDriver {
   private validateArgs(args: ValidateAppPackageArgs): Result<any, FxError> {
     if (!args || !args.appPackagePath) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          [
-            getDefaultString(
-              "driver.teamsApp.validate.invalidParameter",
-              "appPackagePath",
-              actionName
-            ),
-            getLocalizedString(
-              "driver.teamsApp.validate.invalidParameter",
-              "appPackagePath",
-              actionName
-            ),
-          ],
+        new InvalidActionInputError(
+          actionName,
+          ["appPackagePath"],
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );

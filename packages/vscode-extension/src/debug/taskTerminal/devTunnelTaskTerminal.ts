@@ -17,8 +17,14 @@ import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
+import { VS_CODE_UI } from "../../extension";
 import { tools } from "../../handlers";
-import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { ExtTelemetry } from "../../telemetry/extTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/extTelemetryEvents";
 import { devTunnelDisplayMessages } from "../constants";
 import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -157,16 +163,97 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           tunnelId: devTunnelState.tunnelId,
           clusterId: devTunnelState.clusterId,
         });
-        if (!tunnelInstance) {
-          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
-        }
         if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
           await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
-          await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
         }
       } catch {
         // Do nothing if delete existing tunnel failed.
       }
+      await this.devTunnelStateManager.deleteTunnelState(devTunnelState);
+    }
+  }
+
+  private async deleteAllTunnelsMessage(): Promise<void> {
+    try {
+      const tunnels = await this.tunnelManagementClientImpl.listTunnels();
+      const teamsToolkitTunnels = tunnels.filter((t) => t?.tags?.includes(DevTunnelTag));
+
+      if (teamsToolkitTunnels.length === 0) {
+        return;
+      }
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotificationStart, {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+      });
+      VsCodeLogInstance.outputChannel.show();
+      VsCodeLogInstance.info(devTunnelDisplayMessages.devTunnelListMessage());
+      const tableHeader =
+        "Tunnel ID".padEnd(20, " ") +
+        "Hosts Connections".padEnd(20, " ") +
+        "Tags".padEnd(30, " ") +
+        "Created".padEnd(30, " ");
+
+      VsCodeLogInstance.outputChannel.appendLine(tableHeader);
+      for (const tunnel of teamsToolkitTunnels) {
+        const line =
+          `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`.padEnd(20, " ") +
+          `${tunnel.endpoints?.length ?? "0"}`.padEnd(20, " ") +
+          `${tunnel?.tags?.join(",") ?? ""}`.padEnd(30, " ") +
+          `${tunnel.created?.toISOString() ?? ""}`.padEnd(30, " ");
+        VsCodeLogInstance.outputChannel.appendLine(line);
+      }
+      VS_CODE_UI.showMessage(
+        "info",
+        devTunnelDisplayMessages.devTunnelLimitExceededMessage(),
+        false,
+        devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete(),
+        devTunnelDisplayMessages.devTunnelLimitExceededAnswerCancel()
+      ).then(async (result) => {
+        if (
+          result.isOk() &&
+          result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete()
+        ) {
+          try {
+            for (const tunnel of teamsToolkitTunnels) {
+              await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
+              VsCodeLogInstance.info(
+                devTunnelDisplayMessages.deleteDevTunnelMessage(
+                  `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
+                )
+              );
+            }
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
+              [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+              [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+            });
+          } catch {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
+              [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+              [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+              [TelemetryProperty.Success]: TelemetrySuccess.No,
+            });
+          }
+        } else {
+          return undefined;
+        }
+      });
+    } catch {
+      // Do nothing if delete existing tunnel failed.
+    }
+  }
+
+  private async createTunnelWithCleanMessage(
+    tunnel: Tunnel,
+    options?: TunnelRequestOptions
+  ): Promise<Tunnel> {
+    try {
+      return await this.tunnelManagementClientImpl.createTunnel(tunnel, options);
+    } catch (error: any) {
+      if (error?.response?.data?.title === "Resource limit exceeded.") {
+        this.deleteAllTunnelsMessage();
+      }
+      throw error;
     }
   }
 
@@ -197,10 +284,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         tokenScopes: ["host"],
         includePorts: true,
       };
-      const tunnelInstance = await this.tunnelManagementClientImpl.createTunnel(
-        tunnel,
-        tunnelRequestOptions
-      );
+      const tunnelInstance = await this.createTunnelWithCleanMessage(tunnel, tunnelRequestOptions);
 
       this.tunnel = tunnelInstance;
 

@@ -10,11 +10,13 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import {
-  UnhandledSystemError,
-  UnhandledUserError,
-} from "../../../../src/component/driver/botAadApp/error/unhandledError";
 import axios from "axios";
+import {
+  InvalidActionInputError,
+  MissingEnvironmentVariablesError,
+  UnhandledError,
+  UnhandledUserError,
+} from "../../../../src/error/common";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -46,22 +48,18 @@ describe("botAadAppCreate", async () => {
 
   it("should throw error if argument property is missing", async () => {
     const args: any = {};
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
-        "Following parameter is missing or invalid for botAadApp/create action: name."
-      )
-      .and.is.instanceOf(UserError);
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.rejectedWith(
+      InvalidActionInputError
+    );
   });
 
   it("should throw error if argument property is invalid", async () => {
     const args: any = {
       name: "",
     };
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
-        "Following parameter is missing or invalid for botAadApp/create action: name."
-      )
-      .and.is.instanceOf(UserError);
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.rejectedWith(
+      InvalidActionInputError
+    );
   });
 
   it("happy path with handler", async () => {
@@ -174,7 +172,7 @@ describe("botAadAppCreate", async () => {
 
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
-        expect(error instanceof UnhandledSystemError).to.be.true;
+        expect(error instanceof UnhandledError).to.be.true;
         expect(error.message).contains(
           "An unexpected error has occurred while performing the botAadApp/create task"
         );
@@ -189,7 +187,7 @@ describe("botAadAppCreate", async () => {
     };
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
-        expect(error instanceof UnhandledSystemError).to.be.true;
+        expect(error instanceof UnhandledError).to.be.true;
       }
     );
   });

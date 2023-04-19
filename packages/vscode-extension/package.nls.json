@@ -370,7 +370,7 @@
     "teamstoolkit.guides.cardActionResponse.label": "Initiate Sequential Workflows in Teams",
     "teamstoolkit.guides.cicdPipeline.detail": "Automate development workflow while building Teams application for GitHub, Azure DevOps and Jenkins.",
     "teamstoolkit.guides.cicdPipeline.label": "Automate CI/CD Pipelines",
-    "teamstoolkit.guides.mobilePreview.detail": "Run and debug your Teams application on iOS or Andriod client.",
+    "teamstoolkit.guides.mobilePreview.detail": "Run and debug your Teams application on iOS or Android client.",
     "teamstoolkit.guides.mobilePreview.label": "Run and Debug on Mobile Client",
     "teamstoolkit.guides.commandAndResponse.detail": "Automate repetitive tasks with a simple command and response in conversation.",
     "teamstoolkit.guides.commandAndResponse.label": "Respond to Chat Commands in Teams",

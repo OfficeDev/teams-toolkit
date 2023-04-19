@@ -24,7 +24,7 @@ import {
   UnhandledError,
   UnhandledUserError,
 } from "../../../../src/error/common";
-import { Platform } from "@microsoft/teamsfx-api";
+import { Platform, ok } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -155,6 +155,45 @@ describe("aadAppUpdate", async () => {
       `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
     showMessage.restore();
+  });
+  it("check learn more link after success updated", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Learn more"));
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(openUrl.called);
+    chai.assert.equal(openUrl.getCall(0).args[0], "https://aka.ms/teamsfx-view-aad-app");
+    expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
+  });
+  it("check learn more link after success without click", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok(undefined));
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isFalse(openUrl.called);
+    expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
   });
   it("should success with valid manifest on cli", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();

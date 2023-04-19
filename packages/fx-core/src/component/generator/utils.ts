@@ -57,8 +57,6 @@ export async function sendRequestWithRetry<T>(
       const res = await requestFn();
       if (res.status === 200 || res.status === 201) {
         return res;
-      } else if (res.status === 403) {
-        error = new Error(`HTTP Request exceeds rate limit: ${JSON.stringify(res)}`);
       } else {
         error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       }
@@ -264,6 +262,7 @@ type SampleUrlInfo = {
   ref: string;
   dir: string;
 };
+
 function parseSampleUrl(url: string): SampleUrlInfo {
   const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
   const parsed = urlParserRegex.exec(url);

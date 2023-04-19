@@ -56,6 +56,7 @@ describe("teamsfx validate", () => {
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
+    sandbox.stub(process, "exit");
     sandbox
       .stub(CliTelemetry, "sendTelemetryEvent")
       .callsFake((eventName: string, options?: { [_: string]: string }) => {

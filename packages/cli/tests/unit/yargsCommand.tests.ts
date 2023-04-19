@@ -46,6 +46,7 @@ describe("Yargs Command Tests", function () {
   const existedSubId = "existedSubId";
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });

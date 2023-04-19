@@ -21,7 +21,7 @@
 /packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
 /packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
-/packages/cli @chagong @Alive-Fish
+/packages/cli @chagong @Alive-Fish @LongOddCode
 /packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
@@ -30,7 +30,6 @@
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish
 /packages/cli/src/cmds/m365 @swatDong @kuojianlu @kimizhu
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
-/packages/cli/tests @LongOddCode
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen @formulahendry
@@ -200,8 +199,8 @@
 /packages/fx-core/src/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
-/packages/fx-core/src/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 

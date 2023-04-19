@@ -23,7 +23,7 @@ import "./script/dotnetBuildDriver";
 import "./script/npmBuildDriver";
 import "./script/npxBuildDriver";
 import "./script/scriptDriver";
-import "./prerequisite/installDriver";
+import "./devTool/installDriver";
 import "./file/createOrUpdateEnvironmentFile";
 import "./file/createOrUpdateJsonFile";
 import "./botFramework/createOrUpdateBot";

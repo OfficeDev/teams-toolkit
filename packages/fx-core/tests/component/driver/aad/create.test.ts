@@ -401,9 +401,9 @@ describe("aadAppCreate", async () => {
 
     expect(result.result.isOk()).to.be.true;
     expect(startTelemetry.eventName).to.equal("aadApp/create-start");
-    expect(startTelemetry.properties.component).to.equal("aadApp/create");
+    expect(startTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.eventName).to.equal("aadApp/create");
-    expect(endTelemetry.properties.component).to.equal("aadApp/create");
+    expect(endTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.properties.success).to.equal("yes");
   });
 
@@ -460,9 +460,9 @@ describe("aadAppCreate", async () => {
 
     expect(result.result.isOk()).to.be.false;
     expect(startTelemetry.eventName).to.equal("aadApp/create-start");
-    expect(startTelemetry.properties.component).to.equal("aadApp/create");
+    expect(startTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.eventName).to.equal("aadApp/create");
-    expect(endTelemetry.properties.component).to.equal("aadApp/create");
+    expect(endTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.properties.success).to.equal("no");
     expect(endTelemetry.properties["error-code"]).to.equal("aadApp/create.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");

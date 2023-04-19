@@ -95,7 +95,7 @@ export enum CoreQuestionNames {
   TeamsAppManifestFilePath = "manifest-path",
   LocalTeamsAppManifestFilePath = "local-manifest-path",
   AadAppManifestFilePath = "manifest-file-path",
-  TeamsAppPackageFilePath = "teamsAppPackageFilePath",
+  TeamsAppPackageFilePath = "app-package-file-path",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
   OutputZipPathParamName = "output-zip-path",
@@ -924,7 +924,7 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false):
   };
 
   const res = new QTreeNode(teamsAppManifestNode);
-  if (inputs.platform !== Platform.CLI_HELP) {
+  if (inputs.platform !== Platform.CLI_HELP && inputs.platform !== Platform.CLI) {
     const manifestPath = path.join(
       inputs.projectPath!,
       AppPackageFolderName,

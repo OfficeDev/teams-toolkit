@@ -14,7 +14,7 @@ import {
 import { CoreSource } from "../../core/error";
 import { AppStudioScopes } from "../tools";
 import { Hub } from "./constants";
-import { M365TitleNotAcquiredError } from "./errors";
+import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
 
@@ -91,12 +91,12 @@ export class LaunchHelper {
     try {
       const m365AppId = await packageService.retrieveAppId(sideloadingToken, teamsAppId);
       if (!m365AppId) {
-        return err(new M365TitleNotAcquiredError(CoreSource));
+        return err(new NotExtendedToM365Error(CoreSource));
       }
       return ok(m365AppId);
     } catch (error) {
       if ((error as FxError).innerError?.response.status === 404) {
-        return err(new M365TitleNotAcquiredError(CoreSource));
+        return err(new NotExtendedToM365Error(CoreSource));
       }
       return err(assembleError(error));
     }

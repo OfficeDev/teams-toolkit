@@ -28,6 +28,7 @@ describe("Add api-connector Command Tests", () => {
       TEAMSFX_API_CONNECT_ENABLE: "true",
       TEAMSFX_V3: "false",
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
     });

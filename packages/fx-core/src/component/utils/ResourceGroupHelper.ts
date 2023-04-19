@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
-import { RestError } from "@azure/ms-rest-js";
-import { HookContext, hooks, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   AzureAccountProvider,
   err,
@@ -19,7 +17,6 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../common/constants";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { TOOLS } from "../../core/globalVars";
 import {
   CoreQuestionNames,
@@ -27,8 +24,16 @@ import {
   QuestionNewResourceGroupLocation,
   QuestionSelectResourceGroup,
 } from "../../core/question";
-import { InvalidAzureCredentialError, ResourceGroupConflictError } from "../../error/azure";
-import { CoordinatorSource, SolutionError, SolutionSource } from "../constants";
+import {
+  CheckResourceGroupExistenceError,
+  CreateResourceGroupError,
+  GetResourceGroupError,
+  InvalidAzureCredentialError,
+  ListResourceGroupLocationsError,
+  ListResourceGroupsError,
+  ResourceGroupConflictError,
+} from "../../error/azure";
+import { SolutionSource } from "../constants";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -48,49 +53,7 @@ export type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
-export function ResourceGroupErrorHandlerMW(operation: string): Middleware {
-  return async (ctx: HookContext, next: NextFunction) => {
-    const resourceGroupName =
-      ctx.arguments.length > 0 && typeof ctx.arguments[0] === "string"
-        ? (ctx.arguments[0] as string)
-        : undefined;
-    try {
-      await next();
-    } catch (e) {
-      const fxError = new ResourceGroupApiError(operation, resourceGroupName, e);
-      ctx.result = err(fxError);
-    }
-  };
-}
-
-export class ResourceGroupApiError extends UserError {
-  constructor(operation: string, resourceGroupName?: string, error?: any) {
-    const baseErrorMessage = `${operation} failed ${
-      resourceGroupName ? "resource group:" + resourceGroupName : ""
-    }`;
-    const errorName = new.target.name;
-    if (!error) super(SolutionSource, new.target.name, baseErrorMessage);
-    else if (error instanceof RestError) {
-      const restError = error as RestError;
-      // Avoid sensitive information like request headers in the error message.
-      const rawErrorString = JSON.stringify({
-        code: restError.code,
-        statusCode: restError.statusCode,
-        body: restError.body,
-        name: restError.name,
-        message: restError.message,
-      });
-      super(SolutionSource, errorName, `${baseErrorMessage}, error: '${rawErrorString}'`);
-    } else if (error instanceof Error) {
-      super({ name: errorName, error: error, source: SolutionSource });
-    } else {
-      super(SolutionSource, errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`);
-    }
-  }
-}
-
 export class ResourceGroupHelper {
-  @hooks([ResourceGroupErrorHandlerMW("create")])
   async createNewResourceGroup(
     resourceGroupName: string,
     azureAccountProvider: AzureAccountProvider,
@@ -107,54 +70,92 @@ export class ResourceGroupHelper {
     if (maybeExist.value) {
       return err(new ResourceGroupConflictError(resourceGroupName, subscriptionId));
     }
-    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
-      location: location,
-      tags: { "created-by": "teamsfx" },
-    });
-    if (response.name === undefined) {
-      return err(new ResourceGroupApiError("create", resourceGroupName));
+    try {
+      const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
+        location: location,
+        tags: { "created-by": "teamsfx" },
+      });
+      if (response.name === undefined) {
+        return err(
+          new CreateResourceGroupError(
+            resourceGroupName,
+            subscriptionId,
+            `illegal response: ${JSON.stringify(response)}`
+          )
+        );
+      }
+      return ok(response.name);
+    } catch (e: any) {
+      return err(
+        new CreateResourceGroupError(
+          resourceGroupName,
+          subscriptionId,
+          e.message || JSON.stringify(e)
+        )
+      );
     }
-    return ok(response.name);
   }
 
-  @hooks([ResourceGroupErrorHandlerMW("checkExistence")])
   async checkResourceGroupExistence(
     resourceGroupName: string,
     rmClient: ResourceManagementClient
   ): Promise<Result<boolean, FxError>> {
-    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
-    return ok(!!checkRes.body);
+    try {
+      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
+      return ok(!!checkRes.body);
+    } catch (e) {
+      return err(
+        new CheckResourceGroupExistenceError(
+          resourceGroupName,
+          rmClient.subscriptionId,
+          JSON.stringify(e)
+        )
+      );
+    }
   }
 
-  @hooks([ResourceGroupErrorHandlerMW("get")])
   async getResourceGroupInfo(
     resourceGroupName: string,
     rmClient: ResourceManagementClient
   ): Promise<Result<ResourceGroupInfo | undefined, FxError>> {
-    const getRes = await rmClient.resourceGroups.get(resourceGroupName);
-    if (getRes.name) {
-      return ok({
-        createNewResourceGroup: false,
-        name: getRes.name,
-        location: getRes.location,
-      });
-    } else return ok(undefined);
+    try {
+      const getRes = await rmClient.resourceGroups.get(resourceGroupName);
+      if (getRes.name) {
+        return ok({
+          createNewResourceGroup: false,
+          name: getRes.name,
+          location: getRes.location,
+        });
+      } else return ok(undefined);
+    } catch (e: any) {
+      return err(
+        new GetResourceGroupError(
+          resourceGroupName,
+          rmClient.subscriptionId,
+          e.message || JSON.stringify(e)
+        )
+      );
+    }
   }
 
-  @hooks([ResourceGroupErrorHandlerMW("list")])
   async listResourceGroups(
     rmClient: ResourceManagementClient
   ): Promise<Result<[string, string][], FxError>> {
-    const resourceGroupResults = [];
-    for await (const page of rmClient.resourceGroups.list().byPage({ maxPageSize: 100 })) {
-      for (const resourceGroup of page) {
-        resourceGroupResults.push(resourceGroup);
+    try {
+      const results: [string, string][] = [];
+      const res = rmClient.resourceGroups.list();
+      let result = await res.next();
+      if (result.value.name) results.push([result.value.name, result.value.location]);
+      while (!result.done) {
+        if (result.value.name) results.push([result.value.name, result.value.location]);
+        result = await res.next();
       }
+      return ok(results);
+    } catch (e: any) {
+      return err(
+        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+      );
     }
-    const resourceGroupNameLocations = resourceGroupResults
-      .filter((item) => item.name)
-      .map((item) => [item.name, item.location] as [string, string]);
-    return ok(resourceGroupNameLocations);
   }
 
   async getLocations(
@@ -165,33 +166,35 @@ export class ResourceGroupHelper {
     if (!azureToken) return err(new InvalidAzureCredentialError());
     const subscriptionClient = new SubscriptionClient(azureToken);
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
-    const locations: string[] = [];
-    for await (const page of subscriptionClient.subscriptions
-      .listLocations(askSubRes!.subscriptionId)
-      .byPage({ maxPageSize: 100 })) {
-      for (const location of page) {
-        if (location.displayName) {
-          locations.push(location.displayName);
-        }
+    try {
+      const res = subscriptionClient.subscriptions.listLocations(askSubRes!.subscriptionId);
+      const locations: string[] = [];
+      let result = await res.next();
+      if (result.value.displayName) locations.push(result.value.displayName);
+      while (!result.done) {
+        if (result.value.displayName) locations.push(result.value.displayName);
+        result = await res.next();
       }
-    }
-    const providerData = await rmClient.providers.get(MsResources);
-    const resourceTypeData = providerData.resourceTypes?.find(
-      (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
-    );
-    const resourceLocations = resourceTypeData?.locations;
-    const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
-    if (!rgLocations || rgLocations.length == 0) {
+      const providerData = await rmClient.providers.get(MsResources);
+      const resourceTypeData = providerData.resourceTypes?.find(
+        (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
+      );
+      const resourceLocations = resourceTypeData?.locations;
+      const rgLocations = resourceLocations?.filter((item) => locations.includes(item));
+      if (!rgLocations || rgLocations.length == 0) {
+        return err(
+          new ListResourceGroupLocationsError(
+            rmClient.subscriptionId,
+            "No available locations found!"
+          )
+        );
+      }
+      return ok(rgLocations);
+    } catch (e: any) {
       return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.FailedToListResourceGroupLocation,
-          getDefaultString("error.FailedToListResourceGroupLocation"),
-          getLocalizedString("error.FailedToListResourceGroupLocation")
-        )
+        new ListResourceGroupLocationsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
       );
     }
-    return ok(rgLocations);
   }
 
   async getQuestionsForResourceGroup(

@@ -322,7 +322,7 @@ describe("teamsApp/validateAppPackage", async () => {
 
     const args: ValidateAppPackageArgs = {
       appPackagePath: "fakePath",
-      showMessage: true,
+      showMessage: false,
     };
     let result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());

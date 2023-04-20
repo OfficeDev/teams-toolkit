@@ -2,7 +2,6 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 import * as fs from "fs-extra";
-import * as path from "path";
 import { defaultHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DepsCheckerError } from "../depsError";

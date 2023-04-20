@@ -954,7 +954,7 @@ export function NewProjectTypeBotOptionItem(): OptionItem {
 export function NewProjectTypeMessageExtensionOptionItem(): OptionItem {
   return {
     id: "me-type",
-    label: getLocalizedString("core.MessageExtensionOption.label"),
+    label: `$(symbol-keyword) ${getLocalizedString("core.MessageExtensionOption.label")}`,
     detail: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
   };
 }

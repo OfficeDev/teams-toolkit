@@ -3611,6 +3611,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                     ],
                   },
                   {
+                    id: "mobilePreview",
+                    label: `${localize("teamstoolkit.guides.mobilePreview.label")}`,
+                    detail: localize("teamstoolkit.guides.mobilePreview.detail"),
+                    groupName: localize("teamstoolkit.guide.development"),
+                    data: "https://aka.ms/teamsfx-mobile",
+                    buttons: [
+                      {
+                        iconPath: "file-symlink-file",
+                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                        command: "fx-extension.openTutorial",
+                      },
+                    ],
+                  },
+                  {
                     id: "addAzureFunction",
                     label: localize("teamstoolkit.guides.addAzureFunction.label"),
                     detail: localize("teamstoolkit.guides.addAzureFunction.detail"),

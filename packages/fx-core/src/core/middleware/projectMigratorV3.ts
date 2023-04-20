@@ -457,11 +457,13 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const appIdUri = generateAppIdUri(capabilities);
   const isSpfx = isSPFxProject(projectSettings);
 
-  await handleValidDomainForManifest(
-    path.join(context.projectPath, oldManifestPath),
-    capabilities.Tab,
-    capabilities.BotSso
-  );
+  if (!isSpfx) {
+    await handleValidDomainForManifest(
+      path.join(context.projectPath, oldManifestPath),
+      capabilities.Tab,
+      capabilities.BotSso
+    );
+  }
   // Read Teams app manifest and save to templates/appPackage/manifest.json
   const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
   let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");

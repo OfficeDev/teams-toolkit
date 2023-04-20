@@ -197,7 +197,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result.isOk()).to.be.true;
     openUrl.restore();
   });
-  it("check lerna more link after success without click", async () => {
+  it("check learn more link after success without click", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
     envRestore = mockedEnv({
       AAD_APP_OBJECT_ID: expectedObjectId,
@@ -235,7 +235,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result.isOk()).to.be.true;
     openUrl.restore();
   });
-  it("check lerna more while return error", async () => {
+  it("check learn more while return error", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
     envRestore = mockedEnv({
       AAD_APP_OBJECT_ID: expectedObjectId,

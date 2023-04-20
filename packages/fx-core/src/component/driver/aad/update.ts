@@ -15,11 +15,10 @@ import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
-import { ViewAadAppHelpLink } from "../../constants";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
-
+const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app-v5";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {

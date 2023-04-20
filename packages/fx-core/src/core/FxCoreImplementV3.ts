@@ -57,7 +57,7 @@ import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
-import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
@@ -455,6 +455,12 @@ export class FxCoreV3Implement {
         }
       } else {
         isSupport = getVersionState(versionInfo);
+        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+        if (isSupport === VersionState.upgradeable) {
+          if (await checkActiveResourcePlugins(projectPath)) {
+            return err(new InvalidProjectError());
+          }
+        }
       }
       return ok({
         currentVersion: versionInfo.version,

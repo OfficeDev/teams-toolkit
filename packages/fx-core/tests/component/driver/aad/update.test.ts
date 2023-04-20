@@ -193,7 +193,7 @@ describe("aadAppUpdate", async () => {
     sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Learn more"));
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(openUrl.called);
-    chai.assert.equal(openUrl.getCall(0).args[0], "https://aka.ms/teamsfx-view-aad-app");
+    chai.assert.equal(openUrl.getCall(0).args[0], "https://aka.ms/teamsfx-view-aad-app-v5");
     expect(result.result.isOk()).to.be.true;
     openUrl.restore();
   });

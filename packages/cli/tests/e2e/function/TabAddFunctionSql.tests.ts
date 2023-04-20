@@ -36,7 +36,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
   it(`tab + function + azure sql`, { testPlanCaseId: 15686873 }, async function () {
     if (isV3Enabled()) {
-      return this.skip();
+      return;
     }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);

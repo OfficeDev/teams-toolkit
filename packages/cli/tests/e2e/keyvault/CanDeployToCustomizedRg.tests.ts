@@ -42,7 +42,7 @@ describe("Deploy to customized resource group", function () {
     { testPlanCaseId: 15686991 },
     async function () {
       if (isV3Enabled()) {
-        this.skip();
+        return;
       }
       // Create new tab + keyvault project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);

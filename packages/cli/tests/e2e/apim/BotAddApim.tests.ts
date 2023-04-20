@@ -37,7 +37,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
   it(`bot + apim`, { testPlanCaseId: 15685003 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      return;
     }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await ApimValidator.init(subscription, AzureLogin, M365Login);

@@ -37,7 +37,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
   it(`tab + apim`, { testPlanCaseId: 15685496 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      return;
     }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await ApimValidator.init(subscription, AzureLogin, M365Login);

@@ -36,7 +36,7 @@ describe("Test Azure Key Vault", function () {
 
   it(`bot + key vault project happy path`, { testPlanCaseId: 15686894 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      return;
     }
     // Create bot + key vault project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);

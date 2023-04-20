@@ -35,7 +35,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
   it(`tab + function + bot`, { testPlanCaseId: 10308358 }, async function () {
     if (isV3Enabled()) {
-      return this.skip();
+      return;
     }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);

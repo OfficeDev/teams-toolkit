@@ -37,7 +37,7 @@ describe("Test Azure Key Vault", function () {
 
   it(`tab + key vault project happy path`, { testPlanCaseId: 15686997 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      return;
     }
     // Create tab + key vault project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);

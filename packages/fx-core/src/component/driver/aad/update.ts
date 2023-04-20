@@ -87,7 +87,7 @@ export class UpdateAadAppDriver implements StepDriver {
           .then((result) => {
             const userSelected = result.isOk() ? result.value : undefined;
             if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
-              context.ui?.openUrl(ViewAadAppHelpLink);
+              context.ui!.openUrl(ViewAadAppHelpLink);
             }
           });
       }

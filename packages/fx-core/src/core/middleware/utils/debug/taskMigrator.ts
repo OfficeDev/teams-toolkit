@@ -101,17 +101,17 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
     if (isCommentObject(task["args"])) {
       if (task["args"]["ngrokArgs"] === TaskDefaultValue.startLocalTunnel.ngrokArgs) {
         task["args"] = generateLocalTunnelTaskArgs(context);
+        const comment = `{
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+        }`;
+        const comments = task[Symbol.for("before:label") as CommentSymbol];
+        comments?.splice(0, comments?.length ?? 0);
+        assign(task, parse(comment));
       } else {
         // TODO: use shell task and js script to start global ngrok
       }
     }
-    const comment = `{
-      // Start the local tunnel service to forward public URL to local port and inspect traffic.
-      // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
-    }`;
-    const comments = task[Symbol.for("before:label") as CommentSymbol];
-    comments?.splice(0, comments?.length ?? 0);
-    assign(task, parse(comment));
   }
 }
 

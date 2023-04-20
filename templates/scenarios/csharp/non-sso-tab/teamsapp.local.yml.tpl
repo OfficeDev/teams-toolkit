@@ -5,6 +5,7 @@ version: 1.0.0
 
 
 provision:
+  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
   - uses: script 
     with:
       run:

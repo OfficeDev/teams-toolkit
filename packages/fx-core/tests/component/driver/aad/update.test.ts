@@ -135,6 +135,24 @@ describe("aadAppUpdate", async () => {
     chai.assert.equal(showMessage.getCall(0).args[3], "Learn more");
     chai.assert.isTrue(informationSpy.called);
     chai.assert.equal(informationSpy.getCall(0).args[0], "Executing action aadApp/update");
+    const manifestOutputFilePath = path.join(
+      mockedDriverContext.projectPath,
+      outputRoot,
+      "manifest.output.json"
+    );
+    const manifestPath = path.join(testAssetsRoot, "manifest.json");
+    chai.assert.equal(
+      informationSpy.getCall(1).args[0],
+      `Build Azure Active Directory app manifest completed, and app manifest content is written to ${manifestOutputFilePath}`
+    );
+    chai.assert.equal(
+      informationSpy.getCall(2).args[0],
+      `Applied manifest ${manifestPath} to Azure Active Directory application with object id 00000000-0000-0000-0000-000000000000`
+    );
+    chai.assert.equal(
+      informationSpy.getCall(3).args[0],
+      `Action aadApp/update executed successfully`
+    );
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;

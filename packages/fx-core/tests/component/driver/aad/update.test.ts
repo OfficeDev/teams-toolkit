@@ -24,7 +24,7 @@ import {
   UnhandledError,
   UnhandledUserError,
 } from "../../../../src/error/common";
-import { Platform } from "@microsoft/teamsfx-api";
+import { Platform, ok, err } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -34,6 +34,8 @@ const outputKeys = {
 
 const testAssetsRoot = "./tests/component/driver/aad/testAssets";
 const outputRoot = path.join(testAssetsRoot, "output");
+const promtionOnVSC =
+  'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
 
 describe("aadAppUpdate", async () => {
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";
@@ -124,8 +126,33 @@ describe("aadAppUpdate", async () => {
       outputFilePath: outputPath,
     };
     const showMessage = sinon.spy(mockedDriverContext.ui, "showMessage");
+    const informationSpy = sinon.spy(mockedDriverContext.logProvider, "info");
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-    chai.assert.isFalse(showMessage.called);
+    chai.assert.isTrue(showMessage.called);
+    chai.assert.equal(showMessage.getCall(0).args[0], "info");
+    chai.assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
+    chai.assert.isFalse(showMessage.getCall(0).args[2]);
+    chai.assert.equal(showMessage.getCall(0).args[3], "Learn more");
+    chai.assert.isTrue(informationSpy.called);
+    chai.assert.equal(informationSpy.getCall(0).args[0], "Executing action aadApp/update");
+    const manifestOutputFilePath = path.join(
+      mockedDriverContext.projectPath,
+      outputRoot,
+      "manifest.output.json"
+    );
+    const manifestPath = path.join(testAssetsRoot, "manifest.json");
+    chai.assert.equal(
+      informationSpy.getCall(1).args[0],
+      `Build Azure Active Directory app manifest completed, and app manifest content is written to ${manifestOutputFilePath}`
+    );
+    chai.assert.equal(
+      informationSpy.getCall(2).args[0],
+      `Applied manifest ${manifestPath} to Azure Active Directory application with object id 00000000-0000-0000-0000-000000000000`
+    );
+    chai.assert.equal(
+      informationSpy.getCall(3).args[0],
+      `Action aadApp/update executed successfully`
+    );
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
       .not.empty;
@@ -149,6 +176,83 @@ describe("aadAppUpdate", async () => {
       `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
     showMessage.restore();
+  });
+  it("check learn more link after success updated", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Learn more"));
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(openUrl.called);
+    chai.assert.equal(openUrl.getCall(0).args[0], "https://aka.ms/teamsfx-view-aad-app-v5");
+    expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
+  });
+  it("check learn more link after success without click", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves();
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isFalse(openUrl.called);
+    expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
+  });
+  it("check learn more link after success click close", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok(undefined));
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isFalse(openUrl.called);
+    expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
+  });
+  it("check learn more while return error", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").throws(err("Learn more"));
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isFalse(openUrl.called);
+    expect(result.result.isErr()).to.be.true;
+    openUrl.restore();
   });
   it("should success with valid manifest on cli", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();

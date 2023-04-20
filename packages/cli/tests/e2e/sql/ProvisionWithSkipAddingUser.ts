@@ -34,7 +34,7 @@ describe("Provision to Azure with SQL", function () {
 
   it(`Provision SQL with skip adding user`, { testPlanCaseId: 12730645 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      return;
     }
     // new a project ( tab + function + sql )
     await CliHelper.createProjectWithCapability(

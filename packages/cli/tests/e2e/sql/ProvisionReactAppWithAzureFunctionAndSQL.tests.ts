@@ -35,7 +35,7 @@ describe("Provision to Azure with SQL", function () {
     { testPlanCaseId: 12700953 },
     async function () {
       if (isV3Enabled()) {
-        this.skip();
+        return;
       }
       // new a project ( tab + function + sql )
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);

@@ -39,7 +39,7 @@ describe("User can customize Bicep files", function () {
     { testPlanCaseId: 15687187 },
     async function () {
       if (isV3Enabled()) {
-        this.skip();
+        return;
       }
       // Arrange
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);

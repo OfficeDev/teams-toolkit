@@ -39,7 +39,7 @@ describe("Add capabilities", function () {
     { testPlanCaseId: 15687142 },
     async function () {
       if (isV3Enabled()) {
-        this.skip();
+        return;
       }
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
@@ -69,7 +69,7 @@ describe("Add capabilities", function () {
     { testPlanCaseId: 15687143 },
     async function () {
       if (isV3Enabled()) {
-        this.skip();
+        return;
       }
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);

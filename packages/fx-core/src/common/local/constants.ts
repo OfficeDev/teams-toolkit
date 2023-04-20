@@ -157,6 +157,13 @@ export const TaskDefaultValue = Object.freeze({
       endpoint: "BOT_ENDPOINT",
       domain: "BOT_DOMAIN",
     },
+    devTunnel: {
+      bot: {
+        port: 3978,
+        protocol: "http",
+        access: "public",
+      },
+    },
   },
   setUpTab: {
     baseUrl: "https://localhost:53000",

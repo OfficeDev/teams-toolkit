@@ -5,49 +5,26 @@
         "node": "14 || 16 || 18"
     },
     "private": true,
+    "main": "./lib/app.js",
     "dependencies": {
-        "@fluentui/react-components": "^9.18.0",
-        "@microsoft/teams-js": "^2.7.1",
-        "@microsoft/teamsfx": "^2.2.0",
-        "@microsoft/teamsfx-react": "^3.0.0-alpha",
-        "axios": "^0.21.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-router-dom": "^6.8.0",
-        "react-scripts": "^5.0.1"
+        "restify": "^11.1.0",
+        "send": "^0.18.0"
     },
     "devDependencies": {
         "@types/node": "^14.0.0",
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
-        "@types/react-router-dom": "^5.3.3",
+        "@types/restify": "^8.5.6",
+        "@types/send": "^0.17.1",
         "env-cmd": "^10.1.0",
-        "typescript": "^4.1.2"
+        "nodemon": "^2.0.21",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.1.2",
+        "shx": "^0.3.3"
     },
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "eject": "react-scripts eject",
+        "start": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register src/app.ts",
+        "build": "tsc --build & shx cp -r ./src/views ./src/static ./lib/",
         "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
     },
     "homepage": "."
 }

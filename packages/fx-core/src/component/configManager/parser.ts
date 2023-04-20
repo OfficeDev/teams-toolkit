@@ -5,18 +5,21 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
-import Ajv, { DefinedError } from "ajv";
+import Ajv from "ajv";
 import { globalVars } from "../../core/globalVars";
 import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
 import path from "path";
 import { getResourceFolder } from "../../folder";
+import { YAMLDiagnostics } from "./diagnostic";
 
 const ajv = new Ajv();
 ajv.addKeyword("deprecationMessage");
 const schema = fs.readJSONSync(path.join(getResourceFolder(), "yaml.schema.json"));
 const validator = ajv.compile(schema);
+const schemaString = fs.readFileSync(path.join(getResourceFolder(), "yaml.schema.json"), "utf8");
+const yamlDiagnostic = new YAMLDiagnostics(schemaString);
 
 const environmentFolderPath = "environmentFolderPath";
 const writeToEnvironmentFile = "writeToEnvironmentFile";
@@ -121,7 +124,8 @@ export class YamlParser implements IYamlParser {
       if (validateSchema) {
         const valid = validator(value);
         if (!valid) {
-          return err(new InvalidYamlSchemaError(path));
+          const diagnostic = await yamlDiagnostic.doValidation(path);
+          return err(new InvalidYamlSchemaError(path, diagnostic));
         }
       }
 

@@ -35,11 +35,14 @@ import {
 } from "./utils";
 
 export class Generator {
-  public static getDefaultVariables(appName: string): { [key: string]: string } {
+  public static getDefaultVariables(
+    appName: string,
+    safeProjectNameFromVS?: string
+  ): { [key: string]: string } {
     return {
       appName: appName,
       ProjectName: appName,
-      SafeProjectName: convertToAlphanumericOnly(appName),
+      SafeProjectName: safeProjectNameFromVS ?? convertToAlphanumericOnly(appName),
     };
   }
   @hooks([

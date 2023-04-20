@@ -135,7 +135,7 @@ export class ValidateAppPackageDriver implements StepDriver {
               `${validationResult.warnings.length} warning` +
               (validationResult.warnings.length > 1 ? "s" : "") +
               ", ",
-            color: Colors.BRIGHT_RED,
+            color: Colors.BRIGHT_YELLOW,
           });
           merge(context.telemetryProperties, {
             [TelemetryPropertyKey.validationWarnings]: validationResult.warnings
@@ -177,6 +177,15 @@ export class ValidateAppPackageDriver implements StepDriver {
           });
         });
         context.ui?.showMessage("info", outputMessage, false);
+        if (validationResult.errors.length > 0) {
+          const message = `Teams Toolkit has completed checking your app package against validation rules. ${validationResult.errors.length} failed`;
+          return err(
+            AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
+              message,
+              message,
+            ])
+          );
+        }
       } else {
         // logs in output window
         const errors = validationResult.errors

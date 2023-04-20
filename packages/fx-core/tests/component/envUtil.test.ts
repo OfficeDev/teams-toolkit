@@ -145,6 +145,16 @@ describe("env utils", () => {
       assert.deepEqual(res.value, { TEAMSFX_ENV: "dev" });
     }
   });
+  it("envUtil.readEnv not silent", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false, false);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof FileNotFoundError);
+    }
+  });
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
     const encRes = await cryptoProvider.encrypt(decrypted);

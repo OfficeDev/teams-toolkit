@@ -10,14 +10,11 @@ provision:
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
 
-  - uses: script # Set TAB_DOMAIN for local launch
-    name: Set TAB_DOMAIN for local launch
+  - uses: script # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
     with:
-      run: echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"
-  - uses: script # Set TAB_ENDPOINT for local launch
-    name: Set TAB_ENDPOINT for local launch
-    with:
-      run: echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000"
+      run:
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
       manifestPath: ./appPackage/manifest.json # Path to manifest template

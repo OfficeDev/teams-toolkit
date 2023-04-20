@@ -5,14 +5,11 @@ version: 1.0.0
 
 
 provision:
-  - uses: script # Set TAB_DOMAIN for local launch
-    name: Set TAB_DOMAIN for local launch
+  - uses: script # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
     with:
-      run: echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302"
-  - uses: script # Set TAB_ENDPOINT for local launch
-    name: Set TAB_ENDPOINT for local launch
-    with:
-      run: echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302"
+      run:
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
+        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
 
   - uses: teamsApp/create # Creates a Teams app
     with:

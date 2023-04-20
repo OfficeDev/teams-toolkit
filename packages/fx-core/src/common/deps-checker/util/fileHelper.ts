@@ -27,7 +27,7 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
   if (await fs.pathExists(linkFilePath)) {
     throw new DepsCheckerError(Messages.symlinkDirAlreadyExist(), defaultHelpLink);
   }
-  await fs.mkdir(path.dirname(linkFilePath), { recursive: true, mode: 0o777 });
+  await fs.mkdir(path.dirname(linkFilePath), { recursive: true });
   return await fs.ensureSymlink(
     target,
     linkFilePath,

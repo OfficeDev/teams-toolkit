@@ -2,7 +2,7 @@
   - uses: teamsApp/extendToM365
     with:
       # Relative path to the build app package.
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:

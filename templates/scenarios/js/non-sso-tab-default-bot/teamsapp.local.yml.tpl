@@ -25,8 +25,9 @@ provision:
       description: ""
       channels:
         - name: msteams
-
-  - uses: script # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+        
+  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  - uses: script 
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";

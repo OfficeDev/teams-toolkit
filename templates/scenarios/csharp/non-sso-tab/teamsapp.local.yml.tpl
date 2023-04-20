@@ -5,7 +5,7 @@ version: 1.0.0
 
 
 provision:
-  - uses: script # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  - uses: script 
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";

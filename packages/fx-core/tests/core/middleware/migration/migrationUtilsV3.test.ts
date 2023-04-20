@@ -1,3 +1,6 @@
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import { assert } from "chai";
 import fs from "fs-extra";
 import {
@@ -10,18 +13,20 @@ import {
 import {
   generateAppIdUri,
   getTemplateFolderPath,
+  validDomain,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import { MockTools, randomAppName } from "../../utils";
 import * as os from "os";
 import * as path from "path";
 import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import * as migrationUtils from "../../../../src/core/middleware/utils/MigrationUtils";
-import { err, Inputs, Platform, SystemError } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, SystemError, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import { MigrationContext } from "../../../../src/core/middleware/utils/migrationContext";
 import { mockMigrationContext } from "./utils";
 import sinon from "sinon";
 import { getPlaceholderMappings } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { setTools, TOOLS } from "../../../../src/core/globalVars";
+import { ManifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -398,5 +403,34 @@ describe("Migration: upgrade cancel messages", () => {
     v3MigrationUtils.outputCancelMessage("4.2.2", Platform.VS);
     const groundTruth = [""];
     assert.equal(messageArray.join(""), groundTruth.join(""));
+  });
+});
+
+describe("Migration utils: handleValidDomainForManifest", () => {
+  const sandbox = sinon.createSandbox();
+  let messageArray: string[];
+
+  beforeEach(() => {
+    const tools = new MockTools();
+    setTools(tools);
+    messageArray = [];
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("add tab and bot", async () => {
+    const teamsAppManifest = {
+      validDomains: [],
+    } as unknown as TeamsAppManifest;
+    sandbox.stub(ManifestUtils.prototype, "_readAppManifest").resolves(ok(teamsAppManifest));
+    const stub = sandbox.stub(ManifestUtils.prototype, "_writeAppManifest");
+    await v3MigrationUtils.handleValidDomainForManifest("", true, true);
+    const res = {
+      validDomains: [validDomain.tab, validDomain.bot],
+    };
+    stub.calledOnceWith(res as TeamsAppManifest, "");
+    // assert.equal(messageArray.join(""), groundTruth.join(""));
   });
 });

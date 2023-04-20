@@ -6,7 +6,6 @@ import { YAMLSchemaService } from "yaml-language-server/lib/umd/languageservice/
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { Telemetry } from "yaml-language-server/lib/umd/languageserver/telemetry";
 import fse from "fs-extra";
-import os from "os";
 
 // A telemetry class that does nothing, used to initialize YAMLValidation below.
 class DummyTelemetry {
@@ -40,13 +39,12 @@ export class YAMLDiagnostics {
     });
   }
 
-  public async doValidation(yamlPath: string): Promise<string> {
-    const yamlString = await fse.readFile(yamlPath, "utf8");
+  public async doValidation(yamlPath: string, yamlString: string): Promise<string> {
     const textDocument = TextDocument.create(`file://${yamlPath}`, "yaml", 1, yamlString);
 
     const diagnostics = await this.validator.doValidation(textDocument, false);
     return diagnostics
       .map((diag) => `[line ${diag.range.start.line + 1}] ${diag.message}`)
-      .join("");
+      .join(" ");
   }
 }

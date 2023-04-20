@@ -284,7 +284,7 @@ describe("teamsApp/validateAppPackage", async () => {
     chai.assert(result.isOk());
   });
 
-  it("validate app package - no passed", async () => {
+  it("validate app package - stop-on-error", async () => {
     sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
       errors: [
         {
@@ -325,10 +325,10 @@ describe("teamsApp/validateAppPackage", async () => {
       showMessage: false,
     };
     let result = await teamsAppDriver.run(args, mockedDriverContext);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
 
     result = await teamsAppDriver.run(args, contextWithoutUI);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
   });
 
   it("happy path - cli", async () => {
@@ -393,6 +393,6 @@ describe("teamsApp/validateAppPackage", async () => {
     };
 
     const result = await teamsAppDriver.run(args, mockedCliDriverContext);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
   });
 });

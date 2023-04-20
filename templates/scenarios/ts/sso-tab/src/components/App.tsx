@@ -1,10 +1,11 @@
 // https://fluentsite.z22.web.core.windows.net/quick-start
+import { app } from "@microsoft/teams-js";
+import { useEffect } from "react";
 import {
   FluentProvider,
   teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
-  Spinner,
   tokens,
 } from "@fluentui/react-components";
 import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
@@ -25,6 +26,12 @@ export default function App() {
     initiateLoginEndpoint: config.initiateLoginEndpoint!,
     clientId: config.clientId!,
   });
+  useEffect(() => {
+    loading &&
+      app.initialize().then(() => {
+        app.notifySuccess();
+      });
+  }, [loading]);
   return (
     <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
       <FluentProvider
@@ -41,9 +48,7 @@ export default function App() {
         style={{ background: tokens.colorNeutralBackground3 }}
       >
         <Router>
-          {loading ? (
-            <Spinner style={{ margin: 100 }} />
-          ) : (
+          {!loading && (
             <Routes>
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/termsofuse" element={<TermsOfUse />} />

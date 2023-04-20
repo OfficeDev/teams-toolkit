@@ -48,7 +48,7 @@ import {
   generateAppIdUri,
   getProjectVersion,
   jsonObjectNamesConvertV3,
-  getCapabilitySsoStatus,
+  getCapabilityStatus,
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
@@ -62,6 +62,8 @@ import {
   buildEnvUserFileName,
   tryExtractEnvFromUserdata,
   buildEnvFileName,
+  handleValidDomainForManifest,
+  validDomain,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -102,6 +104,7 @@ import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
+import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
 
 export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -146,6 +149,7 @@ export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
+  manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
 export const moreInfoButton = getLocalizedString("core.option.moreInfo");
@@ -406,6 +410,31 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     );
   }
 
+  const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
+  if (!oldManifestExists) {
+    // templates/appPackage/manifest.template.json does not exist
+    throw MigrationError(
+      new Error(getLocalizedString("core.migrationV3.manifestNotExist")),
+      errorNames.manifestTemplateNotExist,
+      learnMoreLink
+    );
+  } else {
+    const res = await manifestUtils._readAppManifest(
+      path.join(context.projectPath, oldManifestPath)
+    );
+    if (res.isErr()) {
+      throw MigrationError(
+        new Error("templates/appPackage/manifest.template.json is invalid"),
+        errorNames.manifestTemplateInvalid
+      );
+    }
+    const teamsAppManifest = res.value;
+    if (teamsAppManifest.validDomains?.includes(validDomain.botWithValid)) {
+      context.isBotValidDomain = true;
+    }
+  }
+
   // Ensure appPackage
   await context.fsEnsureDir(AppPackageFolderName);
 
@@ -424,30 +453,24 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
 
   // Read capability project settings
   const projectSettings = await loadProjectSettings(context.projectPath);
-  const capabilities = getCapabilitySsoStatus(projectSettings);
+  const capabilities = getCapabilityStatus(projectSettings);
   const appIdUri = generateAppIdUri(capabilities);
   const isSpfx = isSPFxProject(projectSettings);
 
+  await handleValidDomainForManifest(
+    path.join(context.projectPath, oldManifestPath),
+    capabilities.Tab,
+    capabilities.BotSso
+  );
   // Read Teams app manifest and save to templates/appPackage/manifest.json
-  const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
-  if (oldManifestExists) {
-    const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
-    let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
-    oldManifest = replaceAppIdUri(oldManifest, appIdUri);
-    const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    if (isSpfx) {
-      await updateAndSaveManifestForSpfx(context, manifest);
-    } else {
-      await context.fsWriteFile(manifestPath, manifest);
-    }
+  const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+  let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+  oldManifest = replaceAppIdUri(oldManifest, appIdUri);
+  const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
+  if (isSpfx) {
+    await updateAndSaveManifestForSpfx(context, manifest);
   } else {
-    // templates/appPackage/manifest.template.json does not exist
-    throw MigrationError(
-      new Error(getLocalizedString("core.migrationV3.manifestNotExist")),
-      errorNames.manifestTemplateNotExist,
-      learnMoreLink
-    );
+    await context.fsWriteFile(manifestPath, manifest);
   }
 
   // Read AAD app manifest and save to ./aad.manifest.json
@@ -457,7 +480,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   );
 
   const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    ?.activeResourcePlugins;
+    .activeResourcePlugins;
   const component = (projectSettings as ProjectSettingsV3).components;
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||

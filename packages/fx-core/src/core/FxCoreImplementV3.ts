@@ -460,7 +460,7 @@ export class FxCoreV3Implement {
         isSupport = getVersionState(versionInfo);
         // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
         if (isSupport === VersionState.upgradeable) {
-          if (await checkActiveResourcePlugins(projectPath)) {
+          if (!(await checkActiveResourcePlugins(projectPath))) {
             return err(new InvalidProjectError());
           }
         }

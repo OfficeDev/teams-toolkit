@@ -23,7 +23,8 @@ provision:
     writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
 
-  - uses: script # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  - uses: script 
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";

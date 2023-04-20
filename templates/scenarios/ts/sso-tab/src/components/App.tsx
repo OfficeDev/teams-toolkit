@@ -1,6 +1,4 @@
 // https://fluentsite.z22.web.core.windows.net/quick-start
-import { app } from "@microsoft/teams-js";
-import { useEffect } from "react";
 import {
   FluentProvider,
   teamsLightTheme,
@@ -8,7 +6,9 @@ import {
   teamsHighContrastTheme,
   tokens,
 } from "@fluentui/react-components";
+import { useEffect } from "react";
 import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import { app } from "@microsoft/teams-js";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 import Privacy from "./Privacy";
 import TermsOfUse from "./TermsOfUse";

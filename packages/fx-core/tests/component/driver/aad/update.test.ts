@@ -24,7 +24,7 @@ import {
   UnhandledError,
   UnhandledUserError,
 } from "../../../../src/error/common";
-import { Platform, ok } from "@microsoft/teamsfx-api";
+import { Platform, ok, err } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -215,6 +215,25 @@ describe("aadAppUpdate", async () => {
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
     chai.assert.isFalse(openUrl.called);
     expect(result.result.isOk()).to.be.true;
+    openUrl.restore();
+  });
+  it("check lerna more while return error", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const openUrl = sinon.spy(mockedDriverContext.ui, "openUrl");
+    sinon.stub(mockedDriverContext.ui, "showMessage").throws(err("Learn more"));
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isFalse(openUrl.called);
+    expect(result.result.isErr()).to.be.true;
     openUrl.restore();
   });
   it("should success with valid manifest on cli", async () => {

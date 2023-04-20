@@ -35,8 +35,10 @@ const funcToolName = "Azure Functions Core Tools";
 const timeout = 5 * 60 * 1000;
 
 export class FuncToolChecker implements DepsChecker {
+  private log: string;
   constructor(logger?: DepsLogger, telemetry?: DepsTelemetry) {
-    // TODO: add telemetry
+    // TODO: add log and telemetry
+    this.log = "";
   }
 
   public async getDepsInfo(
@@ -161,8 +163,9 @@ export class FuncToolChecker implements DepsChecker {
       } else if (historyFunc) {
         return { funcVersion: historyFunc, binFolder: historyFuncBinFolder };
       }
-    } catch {
+    } catch (error: any) {
       // do nothing
+      this.appendLog(error);
     }
     return null;
   }
@@ -179,7 +182,8 @@ export class FuncToolChecker implements DepsChecker {
       return !!funcVersion && hasSentinel && isFuncVersionSupport(funcVersion, expectedFuncVersion)
         ? funcVersion
         : null;
-    } catch (err) {
+    } catch (error: any) {
+      this.appendLog(error);
       return null;
     }
   }
@@ -294,7 +298,8 @@ export class FuncToolChecker implements DepsChecker {
         "--version"
       );
       return mapToFuncToolsVersion(output);
-    } catch (error) {
+    } catch (error: any) {
+      this.appendLog(error);
       return null;
     }
   }
@@ -311,7 +316,9 @@ export class FuncToolChecker implements DepsChecker {
   private async cleanup(tmpVersionStr: string): Promise<void> {
     try {
       await fs.remove(FuncToolChecker.getFuncInstallPath(tmpVersionStr));
-    } catch (err) {}
+    } catch (error: any) {
+      this.appendLog(error);
+    }
   }
 
   private async installFunc(tmpVersion: string, expectedFuncVersion: string): Promise<void> {
@@ -324,9 +331,9 @@ export class FuncToolChecker implements DepsChecker {
         this.getExecCommand("npm"),
         "install",
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
-        `${funcPackageName}@"${expectedFuncVersion}"`,
+        `${funcPackageName}@${expectedFuncVersion}`,
         "--prefix",
-        `"${tmpFolder}"`,
+        `${tmpFolder}`,
         "--no-audit"
       );
 
@@ -342,6 +349,10 @@ export class FuncToolChecker implements DepsChecker {
 
   private getExecCommand(command: string): string {
     return isWindows() ? `${command}.cmd` : command;
+  }
+
+  private appendLog(error: any): void {
+    this.log = this.log + "\n" + error?.message;
   }
 }
 

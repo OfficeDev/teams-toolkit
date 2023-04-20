@@ -178,7 +178,7 @@ export class ValidateAppPackageDriver implements StepDriver {
         });
         context.ui?.showMessage("info", outputMessage, false);
         if (validationResult.errors.length > 0) {
-          const message = `Teams Toolkit has completed checking your app package against validation rules. ${validationResult.errors.length} failed`;
+          const message = `Teams Toolkit has completed checking your app package against validation rules. ${validationResult.errors.length} failed.`;
           return err(
             AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
               message,

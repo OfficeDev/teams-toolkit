@@ -16,12 +16,11 @@ import {
   Platform,
   AzureSolutionSettings,
   ProjectSettingsV3,
-  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
-import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
+import { upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
@@ -58,7 +57,6 @@ import {
   getParameterFromCxt,
   migrationNotificationMessage,
   outputCancelMessage,
-  getDownloadLinkByVersionAndPlatform,
   getVersionState,
   getTrackingIdFromPath,
   buildEnvUserFileName,
@@ -128,6 +126,7 @@ export const TelemetryPropertyKey = {
   button: "button",
   mode: "mode",
   upgradeVersion: "upgrade-version",
+  reason: "reason",
 };
 
 export const TelemetryPropertyValue = {
@@ -169,6 +168,7 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  await ensureTrackingIdInGlobal(ctx);
   const versionForMigration = await checkVersionForMigration(ctx);
   // abandoned v3 project which will not be supported. Show user the message to create new project.
   if (versionForMigration.source === VersionSource.settings) {
@@ -200,8 +200,6 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = err(new NotAllowedMigrationError());
       return;
     }
-
-    await ensureTrackingIdInGlobal(ctx);
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
     if (isRunMigration) {
@@ -946,9 +944,17 @@ export async function checkActiveResourcePlugins(projectPath: string): Promise<b
     if (projectSettings && solutionSettings && solutionSettings.activeResourcePlugins) {
       return true;
     } else {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
+        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+        [TelemetryPropertyKey.reason]: "solutionSettings invalid",
+      });
       return false;
     }
-  } catch (error) {
+  } catch (error: any) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.reason]: error.message,
+    });
     return false;
   }
 }

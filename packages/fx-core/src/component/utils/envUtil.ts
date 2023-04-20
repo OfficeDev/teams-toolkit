@@ -51,7 +51,7 @@ export class EnvUtil {
     const dotEnvFilePath = dotEnvFilePathRes.value;
 
     //global var
-    globalVars.envFilePath = dotEnvFilePath || "";
+    globalVars.envFilePath = dotEnvFilePath;
 
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {

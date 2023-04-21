@@ -468,8 +468,8 @@ export class FxCore implements v3.ICore {
   /**
    * v3 only none lifecycle command
    */
-  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return this.v3Implement.dispatch(this.previewAadManifest, inputs);
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.buildAadManifest, inputs);
   }
 
   /**

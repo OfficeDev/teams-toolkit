@@ -130,7 +130,7 @@ export class MockCore implements Core {
   async previewWithManifest(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
-  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok("");
   }
 }

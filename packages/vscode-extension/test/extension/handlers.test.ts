@@ -2043,8 +2043,16 @@ describe("openPreviewAadFile", () => {
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(fs, "existsSync").returns(false);
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(extension.VS_CODE_UI, "selectOption").resolves(
+      ok({
+        type: "success",
+        result: "dev",
+      })
+    );
     sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
-    sandbox.stub(handlers.core, "previewAadManifest").resolves(ok(Void));
+    sandbox.stub(handlers, "showError").callsFake(async () => {});
+    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(Void));
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     const res = await handlers.openPreviewAadFile([]);
     chai.assert.isTrue(res.isErr());

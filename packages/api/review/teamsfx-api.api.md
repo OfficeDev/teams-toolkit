@@ -1774,6 +1774,8 @@ export enum Stage {
     // (undocumented)
     build = "build",
     // (undocumented)
+    buildAad = "buildAad",
+    // (undocumented)
     checkPermission = "checkPermission",
     // (undocumented)
     create = "create",
@@ -1807,8 +1809,6 @@ export enum Stage {
     listEnv = "listEnv",
     // (undocumented)
     package = "package",
-    // (undocumented)
-    previewAad = "previewAad",
     // (undocumented)
     previewWithManifest = "previewWithManifest",
     // (undocumented)

@@ -549,12 +549,12 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
-  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new FileNotFoundError("previewAadManifest", manifestTemplatePath));
+      return err(new FileNotFoundError("buildAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(

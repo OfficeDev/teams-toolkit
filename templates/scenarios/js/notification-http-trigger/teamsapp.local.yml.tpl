@@ -60,7 +60,9 @@ provision:
 deploy:
   - uses: devTool/install # Install development tool(s)
     with:
-      func: true
+      func:
+        version: ~4.0.4670
+        symlinkDir: ./devTools/func
     writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       funcPath: FUNC_PATH
 

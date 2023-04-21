@@ -21,3 +21,4 @@ teamsapp.*.yml
 /appPackage/
 /infra/
 /teamsfx/
+/devTools/

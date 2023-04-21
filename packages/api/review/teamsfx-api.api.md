@@ -1808,6 +1808,8 @@ export enum Stage {
     // (undocumented)
     package = "package",
     // (undocumented)
+    previewAad = "previewAad",
+    // (undocumented)
     previewWithManifest = "previewWithManifest",
     // (undocumented)
     provision = "provision",

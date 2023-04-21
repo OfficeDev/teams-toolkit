@@ -344,9 +344,6 @@ export class FxCoreV3Implement {
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "buildAadManifest") {
-      // used in v3
-      res = await this.previewAadManifest(inputs);
     }
     return res;
   }
@@ -551,6 +548,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
   async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE

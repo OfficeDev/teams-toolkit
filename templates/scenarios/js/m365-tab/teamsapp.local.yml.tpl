@@ -17,10 +17,14 @@ provision:
       authority: AAD_APP_OAUTH_AUTHORITY
       authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
 
-  - uses: teamsApp/create # Creates a Teams app
+  # Creates a Teams app
+  - uses: teamsApp/create
     with:
-      name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}}
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
       
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
@@ -35,22 +39,32 @@ provision:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
-  - uses: teamsApp/validateManifest # Validate using manifest schema
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
     with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
 
-  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
+  # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
-  - uses: teamsApp/validateAppPackage # Validate app package using validation rules
+  # Validate app package using validation rules
+  - uses: teamsApp/validateAppPackage
     with:
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
-  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
+  # Apply the Teams app manifest to an existing Teams app in
+  # Teams Developer Portal.
+  # Will use the app id in manifest file to determine which Teams app to update.
+  - uses: teamsApp/update
     with:
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365

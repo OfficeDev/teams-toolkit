@@ -235,7 +235,7 @@ export class ToolsInstallDriverImpl {
         throw new InvalidActionInputError(ACTION_NAME, ["func.version"], helpLink);
       }
       if (typeof args.func.symlinkDir !== "string" && typeof args.func.symlinkDir !== "undefined") {
-        throw new InvalidActionInputError(ACTION_NAME, ["func.outputBinaryPath"], helpLink);
+        throw new InvalidActionInputError(ACTION_NAME, ["func.symlinkDir"], helpLink);
       }
     }
     if (!!args.dotnet && typeof args.dotnet !== "boolean") {

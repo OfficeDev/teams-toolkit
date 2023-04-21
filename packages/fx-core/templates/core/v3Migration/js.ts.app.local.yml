@@ -55,17 +55,11 @@ provision:
   {{#configureApp}}
   {{#tab}}
   - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabDomain}} for local launch
     with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}"
-  - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabEndpoint}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}"
-  - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabIndexPath}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#"
+      run:
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}";
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}";
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#";
 
   {{/tab}}
   {{#if aad}}
@@ -98,10 +92,14 @@ provision:
 
   {{/teamsApp}}
   {{#if isM365}}
-  - uses: teamsApp/extendToM365 # Extend your Teams app to Outlook and the Microsoft 365 app
+  # Extend your Teams app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365
     with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      # Relative path to the build app package.
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 

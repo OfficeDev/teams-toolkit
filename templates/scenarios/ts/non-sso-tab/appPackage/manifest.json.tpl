@@ -7,8 +7,8 @@
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "${{TAB_ENDPOINT}}",
-        "privacyUrl": "${{TAB_ENDPOINT}}/index.html#/privacy",
-        "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
+        "privacyUrl": "${{TAB_ENDPOINT}}/privacy",
+        "termsOfUseUrl": "${{TAB_ENDPOINT}}/termsofuse"
     },
     "icons": {
         "color": "color.png",
@@ -25,22 +25,12 @@
     "accentColor": "#FFFFFF",
     "bots": [],
     "composeExtensions": [],
-    "configurableTabs": [
-        {
-            "configurationUrl": "${{TAB_ENDPOINT}}/index.html#/config",
-            "canUpdateConfiguration": true,
-            "scopes": [
-                "team",
-                "groupchat"
-            ]
-        }
-    ],
     "staticTabs": [
         {
             "entityId": "index0",
             "name": "Personal Tab",
-            "contentUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
-            "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
+            "contentUrl": "${{TAB_ENDPOINT}}/tab",
+            "websiteUrl": "${{TAB_ENDPOINT}}/tab",
             "scopes": [
                 "personal"
             ]
@@ -52,5 +42,6 @@
     ],
     "validDomains": [
         "${{TAB_DOMAIN}}"
-    ]
+    ],
+    "showLoadingIndicator": true
 }

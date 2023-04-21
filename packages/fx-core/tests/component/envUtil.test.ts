@@ -21,7 +21,7 @@ import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
 import { MockTools } from "../core/utils";
-import { setTools } from "../../src/core/globalVars";
+import { globalVars, setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { EnvInfoLoaderMW_V3 } from "../../src/core/middleware/envInfoLoaderV3";
@@ -31,7 +31,7 @@ import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
 import { MetadataV3 } from "../../src/common/versionMetadata";
-import { FileNotFoundError } from "../../src/error/common";
+import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../src/error/common";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -144,6 +144,33 @@ describe("env utils", () => {
     if (res.isOk()) {
       assert.deepEqual(res.value, { TEAMSFX_ENV: "dev" });
     }
+  });
+  it("envUtil.readEnv not silent 1", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false, false);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof FileNotFoundError);
+    }
+  });
+  it("envUtil.readEnv not silent 2", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(""));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false, false);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof FileNotFoundError);
+    }
+  });
+  it("MissingEnvironmentVariablesError", async () => {
+    new MissingEnvironmentVariablesError("test", "ABC", "./abc.yml");
+    globalVars.ymlFilePath = "./abc.yml";
+    new MissingEnvironmentVariablesError("test", "ABC");
+    globalVars.ymlFilePath = "";
+    new MissingEnvironmentVariablesError("test", "ABC");
   });
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));

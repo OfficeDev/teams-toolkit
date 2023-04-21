@@ -700,7 +700,10 @@ export async function updateManifestV3(
   }
 
   // read built manifest file
-  if (!(await fs.pathExists(manifestFileName))) {
+  if (
+    !(await fs.pathExists(manifestFileName)) ||
+    !(await fs.pathExists(createAppPackageArgs.outputZipPath))
+  ) {
     const res = await buildDriver.run(createAppPackageArgs, driverContext);
     if (res.isErr()) {
       return err(res.error);

@@ -3,7 +3,7 @@
 }
 
 body {
-  margin: 0;
+  margin: 4em;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -12,4 +12,8 @@ body {
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+span p {
+  display: inline;
 }

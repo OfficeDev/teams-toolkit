@@ -25,17 +25,11 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   - uses: script # Set env for local launch
-    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN for local launch
     with:
-      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000"
-  - uses: script # Set env for local launch
-    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT for local launch
-    with:
-      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000"
-  - uses: script # Set env for local launch
-    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH for local launch
-    with:
-      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#"
+      run:
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000";
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#";
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
@@ -56,10 +50,14 @@ provision:
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
-  - uses: teamsApp/extendToM365 # Extend your Teams app to Outlook and the Microsoft 365 app
+  # Extend your Teams app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365
     with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to the built app package.
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      # Relative path to the build app package.
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 

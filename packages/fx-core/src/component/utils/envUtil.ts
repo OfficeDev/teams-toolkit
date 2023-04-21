@@ -49,6 +49,10 @@ export class EnvUtil {
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
     if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
     const dotEnvFilePath = dotEnvFilePathRes.value;
+
+    //global var
+    globalVars.envFilePath = dotEnvFilePath;
+
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         // .env file does not exist, just ignore
@@ -58,9 +62,6 @@ export class EnvUtil {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
       }
     }
-
-    //global var
-    globalVars.envFilePath = dotEnvFilePath;
 
     // deserialize
     const parseResult = dotenvUtil.deserialize(

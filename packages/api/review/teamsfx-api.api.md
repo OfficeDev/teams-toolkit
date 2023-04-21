@@ -1774,6 +1774,8 @@ export enum Stage {
     // (undocumented)
     build = "build",
     // (undocumented)
+    buildAad = "buildAad",
+    // (undocumented)
     checkPermission = "checkPermission",
     // (undocumented)
     create = "create",

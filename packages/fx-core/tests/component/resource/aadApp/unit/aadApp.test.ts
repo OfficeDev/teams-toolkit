@@ -104,9 +104,7 @@ describe("aadApp", () => {
     ctx.envInfo = {
       envName: "dev",
       state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: {},
+        solution: {},
       },
       config: {},
     };
@@ -116,7 +114,7 @@ describe("aadApp", () => {
     };
 
     const aadApp = new AadApp();
-    const res = await aadApp.listCollaborator(ctx);
+    const res = await aadApp.listCollaborator(ctx, "");
     chai.assert.isTrue(res.isErr());
   });
 

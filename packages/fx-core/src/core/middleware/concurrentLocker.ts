@@ -65,9 +65,6 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     try {
       await lock(configFolder, { lockfilePath: lockfilePath });
       acquired = true;
-      TOOLS?.logProvider.debug(
-        `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
-      );
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
         f(taskName);
       }
@@ -88,7 +85,6 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
           f(taskName);
         }
-        TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
         doingTask = undefined;
       }
       break;
@@ -102,12 +98,8 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     }
   }
   if (!acquired) {
-    const log = `[core] failed to acquire lock for task ${taskName} on: ${configFolder}`;
-    if (inputs.loglevel && inputs.loglevel === "Debug") {
-      TOOLS?.logProvider?.debug(log);
-    } else {
-      TOOLS?.logProvider?.error(log);
-    }
+    const log = `Failed to acquire lock for task ${taskName} on: ${configFolder}`;
+    TOOLS?.logProvider?.error(log);
     // failed for 10 times and finally failed
     sendTelemetryErrorEvent(CoreSource, "concurrent-operation", new ConcurrentError(CoreSource), {
       retry: retryNum + "",

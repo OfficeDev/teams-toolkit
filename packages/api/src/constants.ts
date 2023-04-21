@@ -69,6 +69,7 @@ export enum Stage {
   addCapability = "addCapability",
   addCiCdFlow = "addCiCdFlow",
   deployAad = "deployAad",
+  buildAad = "buildAad",
   deployTeams = "deployTeams",
   initDebug = "initDebug",
   initInfra = "initInfra",

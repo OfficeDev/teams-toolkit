@@ -88,6 +88,7 @@ import {
   randomAppName,
 } from "../core/utils";
 import { MockedUserInteraction } from "../plugins/solution/util";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -3127,7 +3128,15 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
     assert.isTrue(res2.isOk());
   });
-
+  it("buildAadManifest", async () => {
+    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.buildAadManifest(inputs);
+    assert.isTrue(res1.isOk());
+  });
   it("executeUserTaskNew", async () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));

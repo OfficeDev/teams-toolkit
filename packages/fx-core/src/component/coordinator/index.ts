@@ -104,7 +104,7 @@ import { LifeCycleUndefinedError } from "../../error/yml";
 import {
   InputValidationError,
   MissingRequiredInputError,
-  UnresolvedPlaceholderError,
+  MissingEnvironmentVariablesError,
 } from "../../error/common";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 
@@ -170,7 +170,7 @@ const M365Actions = [
   "aadApp/create",
   "aadApp/update",
   "botFramework/create",
-  "m365Title/acquire",
+  "teamsApp/extendToM365",
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [
@@ -704,12 +704,6 @@ export class Coordinator {
         }
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
-
-      // will not happen
-      // if (!resolvedSubscriptionId) {
-      //   return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
-      // }
-
       // ensure resource group
       if (resourceGroupUnresolved) {
         const inputRG = inputs["targetResourceGroupName"];
@@ -873,7 +867,7 @@ export class Coordinator {
           error = reason.error;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
-          error = new UnresolvedPlaceholderError(
+          error = new MissingEnvironmentVariablesError(
             camelCase(reason.failedDriver.uses),
             placeholders,
             templatePath

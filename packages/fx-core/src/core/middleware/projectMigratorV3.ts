@@ -16,12 +16,11 @@ import {
   Platform,
   AzureSolutionSettings,
   ProjectSettingsV3,
-  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
-import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
+import { upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
@@ -58,7 +57,6 @@ import {
   getParameterFromCxt,
   migrationNotificationMessage,
   outputCancelMessage,
-  getDownloadLinkByVersionAndPlatform,
   getVersionState,
   getTrackingIdFromPath,
   buildEnvUserFileName,
@@ -128,6 +126,7 @@ export const TelemetryPropertyKey = {
   button: "button",
   mode: "mode",
   upgradeVersion: "upgrade-version",
+  reason: "reason",
 };
 
 export const TelemetryPropertyValue = {
@@ -169,6 +168,7 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  await ensureTrackingIdInGlobal(ctx);
   const versionForMigration = await checkVersionForMigration(ctx);
   // abandoned v3 project which will not be supported. Show user the message to create new project.
   if (versionForMigration.source === VersionSource.settings) {
@@ -179,11 +179,11 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     );
     ctx.result = err(AbandonedProjectError());
     return;
-  } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
-    if (!checkUserTasks(ctx)) {
-      ctx.result = ok(undefined);
-      return;
-    }
+  }
+  const projectPath = getParameterFromCxt(ctx, "projectPath", "");
+  const isValid = await checkActiveResourcePlugins(projectPath);
+  const isUpgradeable = isValid && versionForMigration.state === VersionState.upgradeable;
+  if (isUpgradeable) {
     if (!isV3Enabled()) {
       await TOOLS?.ui.showMessage(
         "warn",
@@ -200,8 +200,6 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = err(new NotAllowedMigrationError());
       return;
     }
-
-    await ensureTrackingIdInGlobal(ctx);
 
     const isRunMigration = await showNotification(ctx, versionForMigration);
     if (isRunMigration) {
@@ -459,7 +457,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   );
 
   const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
+    ?.activeResourcePlugins;
   const component = (projectSettings as ProjectSettingsV3).components;
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
@@ -687,10 +685,18 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             !(await context.fsPathExists(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
-          )
+          ) {
+            // create env file
             await context.fsCreateFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
+            // add first line of comment
+            await context.fsWriteFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
+              envName === "local" ? MetadataV3.envFileLocalComment : MetadataV3.envFileDevComment,
+              Constants.envWriteOption
+            );
+          }
           const obj = await readJsonFile(
             context,
             path.join(".fx", "configs", "config." + envName + ".json")
@@ -748,10 +754,18 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             !(await context.fsPathExists(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
-          )
+          ) {
+            // create env file
             await context.fsCreateFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
+            // add first line of comment
+            await context.fsWriteFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
+              envName === "local" ? MetadataV3.envFileLocalComment : MetadataV3.envFileDevComment,
+              Constants.envWriteOption
+            );
+          }
           const obj = await readJsonFile(
             context,
             path.join(".fx", "states", "state." + envName + ".json")
@@ -790,11 +804,11 @@ export async function userdataMigration(context: MigrationContext): Promise<void
       // get envName
       const envFileName = buildEnvUserFileName(envName);
       const bicepContent = await readBicepContent(context);
-      const envData = await readAndConvertUserdata(
-        context,
-        path.join(stateFolder, stateFile),
-        bicepContent
-      );
+      const envData =
+        MetadataV3.secretFileComment +
+        EOL +
+        MetadataV3.secretComment +
+        (await readAndConvertUserdata(context, path.join(stateFolder, stateFile), bicepContent));
       await context.fsWriteFile(
         path.join(MetadataV3.defaultEnvironmentFolder, envFileName),
         envData,
@@ -920,6 +934,28 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
           }
         }
     }
+  }
+}
+
+export async function checkActiveResourcePlugins(projectPath: string): Promise<boolean> {
+  try {
+    const projectSettings = await loadProjectSettings(projectPath);
+    const solutionSettings = projectSettings.solutionSettings;
+    if (projectSettings && solutionSettings && solutionSettings.activeResourcePlugins) {
+      return true;
+    } else {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
+        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+        [TelemetryPropertyKey.reason]: "solutionSettings invalid",
+      });
+      return false;
+    }
+  } catch (error: any) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.reason]: error.message,
+    });
+    return false;
   }
 }
 

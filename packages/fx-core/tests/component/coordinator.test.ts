@@ -78,7 +78,12 @@ import {
 import { DotenvParseOutput } from "dotenv";
 import * as os from "os";
 import * as path from "path";
-import { InputValidationError, MissingRequiredInputError } from "../../src/error/common";
+import {
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
+} from "../../src/error/common";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -2652,7 +2657,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
+  it("convertExecuteResult PartialSuccess - MissingEnvironmentVariablesError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2665,7 +2670,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
+    assert.isTrue(convertRes[1]! instanceof MissingEnvironmentVariablesError);
   });
 
   it("init infra happy path vsc", async () => {
@@ -3116,7 +3121,15 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
     assert.isTrue(res2.isOk());
   });
-
+  it("buildAadManifest", async () => {
+    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.buildAadManifest(inputs);
+    assert.isTrue(res1.isOk());
+  });
   it("executeUserTaskNew", async () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));

@@ -10,7 +10,7 @@ import { DriverContext } from "../../interface/commonArgs";
 import { AADManifest } from "../../../resource/aadApp/interfaces/AADManifest";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { getUuid } from "../../../../common/tools";
-import { UnresolvedPlaceholderError } from "../../../../error/common";
+import { MissingEnvironmentVariablesError } from "../../../../error/common";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -79,7 +79,7 @@ async function loadManifest(
     const manifestString = expandEnvironmentVariable(manifestTemplate);
     const unresolvedEnvironmentVariable = getEnvironmentVariables(manifestString);
     if (unresolvedEnvironmentVariable && unresolvedEnvironmentVariable.length > 0) {
-      const error = new UnresolvedPlaceholderError(
+      const error = new MissingEnvironmentVariablesError(
         "aadAppUpdate",
         unresolvedEnvironmentVariable.join(", "),
         manifestPath,

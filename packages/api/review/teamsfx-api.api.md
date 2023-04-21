@@ -546,8 +546,6 @@ export interface Core {
     // (undocumented)
     activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
     checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1775,6 +1773,8 @@ export enum Stage {
     addWebpart = "addWebpart",
     // (undocumented)
     build = "build",
+    // (undocumented)
+    buildAad = "buildAad",
     // (undocumented)
     checkPermission = "checkPermission",
     // (undocumented)

@@ -48,7 +48,9 @@ export interface BaseInstallOptions {
 }
 
 export interface FuncInstallOptions {
-  nodeVersion?: string;
+  symlinkDir?: string;
+  projectPath: string;
+  version: string;
 }
 
 export type InstallOptions = BaseInstallOptions | FuncInstallOptions;

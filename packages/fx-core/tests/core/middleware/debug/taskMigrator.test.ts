@@ -618,20 +618,26 @@ describe("debugMigration", () => {
       ]`;
       const expectedTaskContent = `[
         {
-          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
           "label": "Start local tunnel",
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
-              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-              "type": "ngrok",
+              "type": "dev-tunnel",
+              "ports": [
+                {
+                  "portNumber": 3978,
+                  "protocol": "http",
+                  "access": "public",
+                  "writeToEnvironmentFile": {
+                    // Keep consistency with upgraded configuration.
+                    "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                  }
+                }
+              ],
               "env": "local",
-              "writeToEnvironmentFile": {
-                // Keep consistency with upgraded configuration.
-                "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
-                "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
-              }
           },
           "isBackground": true,
           "problemMatcher": "$teamsfx-local-tunnel-watch"
@@ -674,21 +680,26 @@ describe("debugMigration", () => {
       ]`;
       const expectedTaskContent = `[
         {
-          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
           "label": "Start local tunnel",
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
-              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-              "ngrokPath": "ngrok",
-              "type": "ngrok",
-              "env": "local",
-              "writeToEnvironmentFile": {
-                // Keep consistency with upgraded configuration.
-                "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
-                "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+            "type": "dev-tunnel",
+            "ports": [
+              {
+                "portNumber": 3978,
+                "protocol": "http",
+                "access": "public",
+                "writeToEnvironmentFile": {
+                  // Keep consistency with upgraded configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                }
               }
+            ],
+            "env": "local",
           },
           "isBackground": true,
           "problemMatcher": "$teamsfx-local-tunnel-watch"
@@ -1346,7 +1357,7 @@ describe("debugMigration", () => {
         {
           "label": "Start frontend",
           "type": "shell",
-          "command": "npx env-cmd --silent -f .localSettings react-scripts start",
+          "command": "npx env-cmd --silent -f .localConfigs react-scripts start",
           "isBackground": true,
           "options": {
               "cwd": "\${workspaceFolder}/tabs"
@@ -1541,24 +1552,26 @@ describe("debugMigration", () => {
           "dependsOn": ["Start local tunnel"]
         },
         {
-          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-          // as well as samples to:
-          //   - use your own ngrok command / configuration / binary
-          //   - use your own tunnel solution
-          //   - provide alternatives if ngrok does not work on your dev machine
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
           "label": "Start local tunnel",
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
-              "type": "ngrok",
-              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-              "env": "local",
-              "writeToEnvironmentFile": {
+            "type": "dev-tunnel",
+            "ports": [
+              {
+                "portNumber": 3978,
+                "protocol": "http",
+                "access": "public",
+                "writeToEnvironmentFile": {
                   // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                }
               }
+            ],
+            "env": "local",
           },
           "isBackground": true,
           "problemMatcher": "$teamsfx-local-tunnel-watch"
@@ -1598,24 +1611,26 @@ describe("debugMigration", () => {
           "dependsOn": ["Start local tunnel"]
         },
         {
-          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-          // as well as samples to:
-          //   - use your own ngrok command / configuration / binary
-          //   - use your own tunnel solution
-          //   - provide alternatives if ngrok does not work on your dev machine
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
           "label": "Start local tunnel",
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
           "args": {
-              "type": "ngrok",
-              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-              "env": "local",
-              "writeToEnvironmentFile": {
+            "type": "dev-tunnel",
+            "ports": [
+              {
+                "portNumber": 3978,
+                "protocol": "http",
+                "access": "public",
+                "writeToEnvironmentFile": {
                   // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                }
               }
+            ],
+            "env": "local",
           },
           "isBackground": true,
           "problemMatcher": "$teamsfx-local-tunnel-watch"
@@ -1643,7 +1658,6 @@ describe("debugMigration", () => {
     it("ngrok task with comment", async () => {
       const testTaskContent = `[
         {
-          // Before comment
           "label": "start ngrok",
           "type": "teamsfx",
           "command": "ngrok start",
@@ -1655,13 +1669,8 @@ describe("debugMigration", () => {
       ]`;
       const content = `[
         {
-          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-          // as well as samples to:
-          //   - use your own ngrok command / configuration / binary
-          //   - use your own tunnel solution
-          //   - provide alternatives if ngrok does not work on your dev machine
-          // Before comment
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
           "label": "start ngrok",
           "type": "teamsfx",
           "command": "debug-start-local-tunnel",
@@ -1670,14 +1679,20 @@ describe("debugMigration", () => {
             "bot npm install"
           ],
           "args": {
-              "type": "ngrok",
-              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-              "env": "local",
-              "writeToEnvironmentFile": {
+            "type": "dev-tunnel",
+            "ports": [
+              {
+                "portNumber": 3978,
+                "protocol": "http",
+                "access": "public",
+                "writeToEnvironmentFile": {
                   // Keep consistency with upgraded configuration.
                   "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                   "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                }
               }
+            ],
+            "env": "local",
           },
           "problemMatcher": "$teamsfx-local-tunnel-watch",
         }

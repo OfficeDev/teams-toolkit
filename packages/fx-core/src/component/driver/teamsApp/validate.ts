@@ -17,6 +17,7 @@ import { getDefaultString, getLocalizedString } from "../../../common/localizeUt
 import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
 import { updateProgress } from "../middleware/updateProgress";
+import { InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/validateManifest";
 
@@ -125,20 +126,9 @@ export class ValidateManifestDriver implements StepDriver {
   private validateArgs(args: ValidateManifestArgs): Result<any, FxError> {
     if (!args || !args.manifestPath) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          [
-            getDefaultString(
-              "driver.teamsApp.validate.invalidParameter",
-              "manifestPath",
-              actionName
-            ),
-            getLocalizedString(
-              "driver.teamsApp.validate.invalidParameter",
-              "manifestPath",
-              actionName
-            ),
-          ],
+        new InvalidActionInputError(
+          actionName,
+          ["manifestPath"],
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );

@@ -19,13 +19,12 @@ import {
 import { GraphScopes } from "../../../common/tools";
 import { Constants } from "../../resource/aadApp/constants";
 import { MissingEnvUserError } from "./error/missingEnvError";
-import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
-import { InvalidActionInputError } from "../../../error/common";
+import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { SignInAudience } from "./interface/signInAudience";
 import { updateProgress } from "../middleware/updateProgress";
@@ -161,12 +160,12 @@ export class CreateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new UnhandledUserError(actionName, message, helpLink)),
+            result: err(new UnhandledUserError(error as Error, actionName, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new UnhandledSystemError(actionName, message)),
+            result: err(new UnhandledError(error as Error, actionName)),
             summaries: summaries,
           };
         }
@@ -177,7 +176,7 @@ export class CreateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledSystemError(actionName, JSON.stringify(error))),
+        result: err(new UnhandledError(error as Error, actionName)),
         summaries: summaries,
       };
     }

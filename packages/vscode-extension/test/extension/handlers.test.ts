@@ -68,6 +68,7 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
+import { environmentManager } from "../../../fx-core/build";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -450,7 +451,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 15);
+      chai.assert.equal(tutorialOptions.length, 16);
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(tutorialOptions[1].data, "https://aka.ms/teamsfx-notification-new");
     });
@@ -2005,5 +2006,55 @@ describe("handlers", () => {
 
     chai.expect(initGlobalVariables.calledOnce).to.be.true;
     chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
+  });
+
+  describe("getFuncPathHandler", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "~/" });
+      const actualPath = await handlers.getFuncPathHandler();
+      chai.assert.equal(
+        actualPath,
+        `${path.delimiter}${path.resolve("~/devTools/func")}${path.delimiter}`
+      );
+    });
+
+    it("no workspace opened", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value({});
+      const actualPath = await handlers.getFuncPathHandler();
+      chai.assert.equal(actualPath, path.delimiter);
+    });
+  });
+});
+
+describe("openPreviewAadFile", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const core = new MockCore();
+    sandbox.stub(handlers, "core").value(core);
+    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(fs, "existsSync").returns(false);
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(extension.VS_CODE_UI, "selectOption").resolves(
+      ok({
+        type: "success",
+        result: "dev",
+      })
+    );
+    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+    sandbox.stub(handlers, "showError").callsFake(async () => {});
+    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(Void));
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+    const res = await handlers.openPreviewAadFile([]);
+    chai.assert.isTrue(res.isErr());
   });
 });

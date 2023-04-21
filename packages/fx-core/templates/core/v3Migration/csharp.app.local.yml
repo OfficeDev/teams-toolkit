@@ -1,6 +1,9 @@
+# yaml-language-server: $schema=https://developer.microsoft.com/json-schemas/teams-toolkit/teamsapp-yaml/1.0.0/yaml.schema.json
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
+provision:
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
     with:
@@ -19,10 +22,9 @@ registerApp:
     with:
       name: {{teamsAppName}} # Teams app name
     writeToEnvironmentFile:
+      # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
-
 {{#if activePlugins.fx-resource-bot}}
-provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
       name: {{appName}}
@@ -49,21 +51,13 @@ provision:
             OAuthAuthority: $\{{AAD_APP_OAUTH_AUTHORITY}}
   {{/if}}
 {{/if}}
-
-configureApp:
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.tabDomain}} for local launch
     with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.tabDomain}}=localhost:44302"
-  - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.tabEndpoint}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.tabEndpoint}}=https://localhost:44302"
-  - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.tabIndexPath}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.tabIndexPath}}=#"
+      run:
+        echo "::set-teamsfx-env {{placeholderMappings.tabDomain}}=localhost:44302";
+        echo "::set-teamsfx-env {{placeholderMappings.tabEndpoint}}=https://localhost:44302";
+        echo "::set-teamsfx-env {{placeholderMappings.tabIndexPath}}=#";
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: file/createOrUpdateJsonFile
     with:
@@ -99,5 +93,3 @@ configureApp:
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    writeToEnvironmentFile:
-      teamsAppId: TEAMS_APP_ID

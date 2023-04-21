@@ -53,9 +53,10 @@
     "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:workbench.action.debug.start",
-    "workspaceContains:**/.fx/*",
+    "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
-    "onView:teamsfx-empty-project"
+    "onView:teamsfx-empty-project",
+    "onUri"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -562,7 +563,7 @@
         "command": "fx-extension.addEnvironmentWithIcon",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
         "icon": "$(add)",
-        "enablement": "fx-extension.isTeamsFx"
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked"
       },
       {
         "command": "fx-extension.addFeature",
@@ -903,73 +904,6 @@
                 "type": "object",
                 "required": [
                   "type",
-                  "ngrokArgs"
-                ],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.type.title%",
-                    "const": "ngrok"
-                  },
-                  "ngrokArgs": {
-                    "oneOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      }
-                    ],
-                    "description": "%teamstoolkit.taskDefinitions.args.ngrokArgs.title%"
-                  },
-                  "ngrokPath": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.ngrokPath.title%"
-                  },
-                  "tunnelInspection": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.tunnelInspection.title%",
-                    "anyOf": [
-                      {
-                        "const": "http://127.0.0.1:4040/api/tunnels"
-                      },
-                      {}
-                    ]
-                  },
-                  "env": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
-                    "anyOf": [
-                      {
-                        "const": "local"
-                      },
-                      {}
-                    ]
-                  },
-                  "writeToEnvironmentFile": {
-                    "type": "object",
-                    "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.title%",
-                    "properties": {
-                      "domain": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.domain.title%"
-                      },
-                      "endpoint": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.endpoint.title%"
-                      }
-                    }
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
-                  "type",
                   "ports"
                 ],
                 "properties": {
@@ -1064,10 +998,6 @@
                       },
                       {}
                     ]
-                  },
-                  "template": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.template.title%"
                   }
                 },
                 "additionalProperties": false

@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assign, CommentArray, CommentJSONValue, CommentObject, parse } from "comment-json";
+import {
+  assign,
+  CommentArray,
+  CommentJSONValue,
+  CommentObject,
+  CommentSymbol,
+  parse,
+} from "comment-json";
 import { DebugMigrationContext } from "./debugMigrationContext";
 import {
   defaultNpmInstallArg,
@@ -26,7 +33,7 @@ import {
   updateLocalEnv,
   watchBackendTask,
 } from "./debugV3MigrationUtils";
-import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
+import { InstallToolArgs } from "../../../../component/driver/devTool/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { LocalCrypto } from "../../../crypto";
 import * as os from "os";
@@ -92,17 +99,18 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
     }
 
     if (isCommentObject(task["args"])) {
-      const comment = `
-        {
-          // Keep consistency with upgraded configuration.
-        }
-      `;
-      task["args"]["type"] = TunnelType.ngrok;
-      task["args"]["env"] = "local";
-      task["args"]["writeToEnvironmentFile"] = assign(parse(comment), {
-        endpoint: context.placeholderMapping.botEndpoint,
-        domain: context.placeholderMapping.botDomain,
-      });
+      if (task["args"]["ngrokArgs"] === TaskDefaultValue.startLocalTunnel.ngrokArgs) {
+        task["args"] = generateLocalTunnelTaskArgs(context);
+        const comment = `{
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+        }`;
+        const comments = task[Symbol.for("before:label") as CommentSymbol];
+        comments?.splice(0, comments?.length ?? 0);
+        assign(task, parse(comment));
+      } else {
+        // TODO: use shell task and js script to start global ngrok
+      }
     }
   }
 }
@@ -889,34 +897,40 @@ function generatePrerequisiteTask(
 
 function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentObject) {
   const comment = `{
-      // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-      // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-      // as well as samples to:
-      //   - use your own ngrok command / configuration / binary
-      //   - use your own tunnel solution
-      //   - provide alternatives if ngrok does not work on your dev machine
+        // Start the local tunnel service to forward public URL to local port and inspect traffic.
+        // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
     }`;
+  const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
+    type: "teamsfx",
+    command: TaskCommand.startLocalTunnel,
+    args: generateLocalTunnelTaskArgs(context),
+    isBackground: true,
+    problemMatcher: "$teamsfx-local-tunnel-watch",
+  });
+  return assign(parse(comment), newTask);
+}
+
+function generateLocalTunnelTaskArgs(context: DebugMigrationContext): CommentJSONValue {
   const placeholderComment = `
     {
       // Keep consistency with upgraded configuration.
     }
   `;
-  const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
-    type: "teamsfx",
-    command: TaskCommand.startLocalTunnel,
-    args: {
-      type: TunnelType.ngrok,
-      ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
-      env: "local",
-      writeToEnvironmentFile: assign(parse(placeholderComment), {
-        endpoint: context.placeholderMapping.botEndpoint,
-        domain: context.placeholderMapping.botDomain,
-      }),
-    },
-    isBackground: true,
-    problemMatcher: "$teamsfx-local-tunnel-watch",
+  return assign(parse("{}"), {
+    type: TunnelType.devTunnel,
+    ports: [
+      {
+        portNumber: TaskDefaultValue.startLocalTunnel.devTunnel.bot.port,
+        protocol: TaskDefaultValue.startLocalTunnel.devTunnel.bot.protocol,
+        access: TaskDefaultValue.startLocalTunnel.devTunnel.bot.access,
+        writeToEnvironmentFile: assign(parse(placeholderComment), {
+          endpoint: context.placeholderMapping.botEndpoint,
+          domain: context.placeholderMapping.botDomain,
+        }),
+      },
+    ],
+    env: "local",
   });
-  return assign(parse(comment), newTask);
 }
 
 function handleProvisionAndDeploy(

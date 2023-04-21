@@ -246,9 +246,11 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     if (isV3Enabled()) {
       core.on(CoreCallbackEvent.lock, async (command: string) => {
+        globalVariables.setCommandIsRunning(true);
         await commandController.lockedByOperation(command);
       });
       core.on(CoreCallbackEvent.unlock, async (command: string) => {
+        globalVariables.setCommandIsRunning(false);
         await commandController.unlockedByOperation(command);
       });
     }
@@ -1055,6 +1057,10 @@ export async function runCommand(
         result = await core.deployTeamsManifest(inputs);
         break;
       }
+      case Stage.buildAad: {
+        result = await core.buildAadManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -1597,19 +1603,12 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  * Usage like ${command:...}${env:PATH} so need to include delimiter as well
  */
 export async function getFuncPathHandler(): Promise<string> {
-  try {
-    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
-    if (funcStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
+  // TODO: remove this command
+  return globalVariables.workspaceUri?.fsPath
+    ? `${path.delimiter}${path.resolve(globalVariables.workspaceUri.fsPath, "./devTools/func")}${
         path.delimiter
-      }`;
-    }
-  } catch (error: any) {
-    showError(assembleError(error));
-  }
-
-  return `${path.delimiter}`;
+      }`
+    : path.delimiter;
 }
 
 /**
@@ -2761,7 +2760,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     }
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    window.showErrorMessage(localize("teamstoolkit.handlers.decryptFailed"));
+    window.showErrorMessage(result.error.message);
   }
 }
 
@@ -2824,7 +2823,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.BuildAadManifestStart,
     getTriggerFromProperty(args)
   );
-  const res = await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
+  const inputs = getSystemInputs();
+  inputs.env = envName;
+  const res = isV3Enabled()
+    ? await runCommand(Stage.buildAad, inputs)
+    : await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);
@@ -3600,6 +3603,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                     detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
                     groupName: localize("teamstoolkit.guide.development"),
                     data: "https://aka.ms/teamsfx-add-cicd-new",
+                    buttons: [
+                      {
+                        iconPath: "file-symlink-file",
+                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                        command: "fx-extension.openTutorial",
+                      },
+                    ],
+                  },
+                  {
+                    id: "mobilePreview",
+                    label: `${localize("teamstoolkit.guides.mobilePreview.label")}`,
+                    detail: localize("teamstoolkit.guides.mobilePreview.detail"),
+                    groupName: localize("teamstoolkit.guide.development"),
+                    data: "https://aka.ms/teamsfx-mobile",
                     buttons: [
                       {
                         iconPath: "file-symlink-file",

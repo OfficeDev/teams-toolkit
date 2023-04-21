@@ -10,12 +10,13 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { Messages, vxTestAppInstallHelpLink } from "../constant";
 import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, BaseInstallOptions } from "../depsChecker";
 import { isMacOS, isWindows } from "../util";
-import { Messages, vxTestAppInstallHelpLink } from "../constant";
+import { createSymlink } from "../util/fileHelper";
 
 interface InstallOptionsSafe {
   version: string;
@@ -124,7 +125,7 @@ export class VxTestAppChecker implements DepsChecker {
 
     // ensure vxTestApp is installed in project dir
     const projectInstallDir = path.join(installOptions.projectPath, VxTestAppDirRelPath);
-    await this.createSymlink(globalInstallDir, projectInstallDir);
+    await createSymlink(globalInstallDir, projectInstallDir);
     // TODO: need to chmod to add executable permission for non-Windows OS
     if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
@@ -189,28 +190,6 @@ export class VxTestAppChecker implements DepsChecker {
       .replace(/@arch/g, os.arch());
 
     return url;
-  }
-
-  private async createSymlink(target: string, linkFilePath: string): Promise<void> {
-    // TODO: check if destination already exists
-    try {
-      const stat = await fs.lstat(linkFilePath);
-      if (stat.isSymbolicLink()) {
-        await fs.unlink(linkFilePath);
-      }
-    } catch (error: unknown) {
-      const statError = error as { code?: string };
-      if (statError.code !== "ENOENT") {
-        throw error;
-      }
-    }
-    await fs.mkdir(path.dirname(linkFilePath), { recursive: true });
-    return await fs.symlink(
-      target,
-      linkFilePath,
-      /* Only used for Windows. Directory junction is similar to directory link but does not require admin permission. */
-      "junction"
-    );
   }
 
   private async isValidInstalltion(installDir: string, version: string): Promise<boolean> {

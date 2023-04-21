@@ -26,6 +26,7 @@ provision:
     with:
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
     writeToEnvironmentFile:
+      # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
   {{/if}}
 
@@ -54,17 +55,11 @@ provision:
   {{#configureApp}}
   {{#tab}}
   - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabDomain}} for local launch
     with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}"
-  - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabEndpoint}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}"
-  - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabIndexPath}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#"
+      run:
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}";
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}";
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#";
 
   {{/tab}}
   {{#if aad}}
@@ -97,10 +92,14 @@ provision:
 
   {{/teamsApp}}
   {{#if isM365}}
-  - uses: m365Title/acquire # Upload your app to Outlook and the Microsoft 365 app
+  # Extend your Teams app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365
     with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      # Relative path to the build app package.
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 
@@ -110,7 +109,7 @@ provision:
 {{#config.deploy}}
 deploy:
   {{#tools}}
-  - uses: prerequisite/install # Install dependencies
+  - uses: devTool/install # Install development tool(s)
     with:
       {{#devCert}}
       devCert:
@@ -122,7 +121,7 @@ deploy:
       {{#dotnet}}
       dotnet: true
       {{/dotnet}}
-    writeToEnvironmentFile: # Write the information of installed dependencies into environment file for the specified environment variable(s).
+    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       {{#devCert}}
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
@@ -223,7 +222,7 @@ deploy:
   {{#frontendStart}}
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./tabs/.localSettings
+      target: ./tabs/.localConfigs
       envs:
         BROWSER: none
         HTTPS: true
@@ -259,7 +258,7 @@ deploy:
   {{#botStart}}
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./bot/.localSettings
+      target: ./bot/.localConfigs
       envs:
         BOT_ID: $\{{BOT_ID}}
         BOT_PASSWORD: $\{{SECRET_BOT_PASSWORD}}
@@ -283,7 +282,7 @@ deploy:
   {{#if backendStart}}
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
-      target: ./api/.localSettings
+      target: ./api/.localConfigs
       envs:
         FUNCTIONS_WORKER_RUNTIME: node
         M365_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}

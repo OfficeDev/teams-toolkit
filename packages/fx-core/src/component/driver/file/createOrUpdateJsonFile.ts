@@ -14,9 +14,8 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
-import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
-import { InvalidActionInputError } from "../../../error/common";
+import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 
 const actionName = "file/createOrUpdateJsonFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
@@ -97,7 +96,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, message);
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 

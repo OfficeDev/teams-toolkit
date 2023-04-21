@@ -94,30 +94,60 @@ export async function migrateTransparentPrerequisite(
 }
 
 export async function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
-  for (const task of context.tasks) {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
     if (
       !isCommentObject(task) ||
       !(task["type"] === "teamsfx") ||
       !(task["command"] === TaskCommand.startLocalTunnel)
     ) {
+      ++index;
       continue;
     }
 
     if (isCommentObject(task["args"])) {
-      if (task["args"]["ngrokArgs"] === TaskDefaultValue.startLocalTunnel.ngrokArgs) {
-        task["args"] = generateLocalTunnelTaskArgs(context);
-        const comment = `{
-          // Start the local tunnel service to forward public URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
-        }`;
-        const comments = task[Symbol.for("before:label") as CommentSymbol];
-        comments?.splice(0, comments?.length ?? 0);
-        assign(task, parse(comment));
-      } else {
-        // TODO: use shell task and js script to start global ngrok
+      if (typeof task["args"]["ngrokArgs"] === "string") {
+        const portNumber = getNgrokPort(task["args"]["ngrokArgs"]);
+        if (portNumber) {
+          task["args"] = generateLocalTunnelTaskArgs(context, portNumber);
+          const comment = `{
+            // Start the local tunnel service to forward public URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+          }`;
+          const comments = task[Symbol.for("before:label") as CommentSymbol];
+          comments?.splice(0, comments?.length ?? 0);
+          assign(task, parse(comment));
+          ++index;
+          continue;
+        }
       }
     }
+
+    const comment = `{
+          // Teams Toolkit now uses Dev Tunnel as default tunnel solution.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for more details.
+          // If you still prefer to use ngrok, please refer to https://aka.ms/teamsfx-tasks/customize-tunnel-service to learn how to use your own tunnel service.
+        }`;
+    const newTask = assign(parse(comment), {
+      label: task["label"],
+      type: "shell",
+      command:
+        "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.'; exit 1;",
+    });
+    context.tasks.splice(index, 1, newTask);
+    ++index;
   }
+}
+
+function getNgrokPort(ngrokCommand: string): number | undefined {
+  const regex = /http\s+(?<port>\d+)\s+--log=stdout\s+--log-format=logfmt\s?/gm;
+  const match = regex.exec(ngrokCommand);
+  if (!match) {
+    return undefined;
+  }
+  const portNumber = Number.parseInt(match.groups?.port ?? "");
+  return Number.isInteger(portNumber) ? portNumber : undefined;
 }
 
 export async function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
@@ -924,7 +954,10 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
   return assign(parse(comment), newTask);
 }
 
-function generateLocalTunnelTaskArgs(context: DebugMigrationContext): CommentJSONValue {
+function generateLocalTunnelTaskArgs(
+  context: DebugMigrationContext,
+  portNumnber = TaskDefaultValue.startLocalTunnel.devTunnel.bot.port
+): CommentJSONValue {
   const placeholderComment = `
     {
       // Keep consistency with upgraded configuration.
@@ -934,7 +967,7 @@ function generateLocalTunnelTaskArgs(context: DebugMigrationContext): CommentJSO
     type: TunnelType.devTunnel,
     ports: [
       {
-        portNumber: TaskDefaultValue.startLocalTunnel.devTunnel.bot.port,
+        portNumber: portNumnber,
         protocol: TaskDefaultValue.startLocalTunnel.devTunnel.bot.protocol,
         access: TaskDefaultValue.startLocalTunnel.devTunnel.bot.access,
         writeToEnvironmentFile: assign(parse(placeholderComment), {

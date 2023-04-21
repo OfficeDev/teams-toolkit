@@ -50,6 +50,11 @@ provision:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
+    with:
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

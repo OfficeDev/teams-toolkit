@@ -317,4 +317,4 @@ export function launchRemote(
 }
 
 export const defaultFuncSymlinkDir = "./devTools/func";
-export const ignoreDevToolsDir = "devTools";
+export const ignoreDevToolsDir = "/devTools/";

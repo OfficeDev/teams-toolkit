@@ -30,6 +30,7 @@ export default function App() {
   useEffect(() => {
     loading &&
       app.initialize().then(() => {
+        // Hide the loading indicator.
         app.notifySuccess();
       });
   }, [loading]);

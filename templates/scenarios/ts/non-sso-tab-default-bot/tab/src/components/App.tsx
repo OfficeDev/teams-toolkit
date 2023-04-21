@@ -18,6 +18,7 @@ export default function App() {
   const { theme } = useTeams({})[0];
   useEffect(() => {
     app.initialize().then(() => {
+      // Hide the loading indicator.
       app.notifySuccess();
     });
   }, []);

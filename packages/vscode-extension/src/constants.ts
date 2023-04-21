@@ -18,10 +18,6 @@ export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
 }
 
-export enum PrereleaseState {
-  Version = "teamsToolkit:prerelease:version",
-}
-
 export enum GlobalKey {
   OpenWalkThrough = "fx-extension.openWalkThrough",
   OpenReadMe = "fx-extension.openReadMe",

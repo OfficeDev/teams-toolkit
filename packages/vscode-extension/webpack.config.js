@@ -101,10 +101,6 @@ const config = {
           to: "../resource/WHATISNEW.md",
         },
         {
-          from: "./PRERELEASE.md",
-          to: "../resource/PRERELEASE.md",
-        },
-        {
           from: "./node_modules/@vscode/codicons/dist/codicon.css",
           to: "../resource/codicon.css",
         },

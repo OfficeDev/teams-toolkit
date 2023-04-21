@@ -69,7 +69,6 @@ import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/t
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-import { PrereleasePage } from "./utils/prerelease";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -1010,8 +1009,6 @@ async function runBackgroundAsyncTasks(
   await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
-  const preview = new PrereleasePage(context);
-  preview.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 

@@ -3121,13 +3121,13 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
     assert.isTrue(res2.isOk());
   });
-  it("previewAadManifest", async () => {
-    sandbox.stub(FxCoreV3Implement.prototype, "previewAadManifest").resolves(ok(Void));
+  it("buildAadManifest", async () => {
+    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
     const inputs: Inputs = {
       platform: Platform.VSCode,
     };
     const fxCore = new FxCore(tools);
-    const res1 = await fxCore.previewAadManifest(inputs);
+    const res1 = await fxCore.buildAadManifest(inputs);
     assert.isTrue(res1.isOk());
   });
   it("executeUserTaskNew", async () => {

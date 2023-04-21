@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { ConfigFolderName, StatesFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
 import { strings } from "./resource";
@@ -39,8 +37,7 @@ export function NotFoundSubscriptionId(): UserError {
   return new UserError(
     constants.cliSource,
     "NotFoundSubscriptionId",
-    "Cannot find selected subscription. Ensure your signed-in account has access to this subscription. " +
-      "You can also select another subscription using 'teamsfx account set`."
+    strings["error.NotFoundSubscriptionId"]
   );
 }
 
@@ -175,7 +172,7 @@ export class NotAllowedMigrationError extends UserError {
   constructor() {
     super({
       source: constants.cliSource,
-      message: strings.error.NotAllowedMigrationErrorMessage,
+      message: strings["error.NotAllowedMigrationErrorMessage"],
     });
   }
 }

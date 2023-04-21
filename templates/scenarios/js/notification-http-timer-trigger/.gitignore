@@ -29,4 +29,4 @@ _storage_emulator
 /build
 
 # Dev tool directories
-devTools
+/devTools/

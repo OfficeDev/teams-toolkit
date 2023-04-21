@@ -84,10 +84,8 @@
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}",
-                "options": {
-                    "env": {
-                        "PATH": "${workspaceFolder}/devTools/func:${env:PATH}"
-                    }
+                "env": {
+                    "PATH": "${workspaceFolder}/devTools/func:${env:PATH}"
                 }
             },
             "windows": {

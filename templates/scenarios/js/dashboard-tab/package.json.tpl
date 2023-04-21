@@ -2,7 +2,7 @@
     "name": "{{appName}}",
     "version": "0.1.0",
     "engines": {
-        "node": "14 || 16 || 18"
+        "node": "16 || 18"
     },
     "private": true,
     "dependencies": {

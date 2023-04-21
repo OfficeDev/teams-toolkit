@@ -229,7 +229,7 @@ export class AzureNodeChecker extends NodeChecker {
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16", "18"];
+    return ["16", "18"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
@@ -260,7 +260,7 @@ export class LtsNodeChecker extends NodeChecker {
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16", "18"];
+    return ["16", "18"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {

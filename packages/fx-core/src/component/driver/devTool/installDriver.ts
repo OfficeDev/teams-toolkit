@@ -224,20 +224,20 @@ export class ToolsInstallDriverImpl {
     if (!!args.devCert && typeof args.devCert?.trust !== "boolean") {
       throw new InvalidActionInputError(ACTION_NAME, ["devCert.trust"], helpLink);
     }
-    if (typeof args.func !== "object") {
-      throw new InvalidActionInputError(ACTION_NAME, ["func"], helpLink);
+    if (typeof args.func !== "undefined") {
+      if (typeof args.func !== "object") {
+        throw new InvalidActionInputError(ACTION_NAME, ["func"], helpLink);
+      }
+      if (
+        (typeof args.func.version !== "string" && typeof args.func.version !== "number") ||
+        !semver.validRange(`${args.func?.version}`)
+      ) {
+        throw new InvalidActionInputError(ACTION_NAME, ["func.version"], helpLink);
+      }
+      if (typeof args.func.symlinkDir !== "string" && typeof args.func.symlinkDir !== "undefined") {
+        throw new InvalidActionInputError(ACTION_NAME, ["func.outputBinaryPath"], helpLink);
+      }
     }
-
-    if (
-      (typeof args.func.version !== "string" && typeof args.func.version !== "number") ||
-      !semver.validRange(`${args.func?.version}`)
-    ) {
-      throw new InvalidActionInputError(ACTION_NAME, ["func.version"], helpLink);
-    }
-    if (typeof args.func.symlinkDir !== "string" && typeof args.func.symlinkDir !== "undefined") {
-      throw new InvalidActionInputError(ACTION_NAME, ["func.outputBinaryPath"], helpLink);
-    }
-
     if (!!args.dotnet && typeof args.dotnet !== "boolean") {
       throw new InvalidActionInputError(ACTION_NAME, ["dotnet"], helpLink);
     }

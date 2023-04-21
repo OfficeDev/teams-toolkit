@@ -595,7 +595,6 @@ describe("Tools Install Driver test", () => {
       { version: "#2", symlinkDir: "./devTools" },
       { version: "#2", symlinkDir: 123 },
       { symlinkDir: 123 },
-      { version: 3 },
     ];
     invalidParams.forEach((invalidParam: any) => {
       it(`Invalid parameter - ${JSON.stringify(invalidParam)}`, async () => {

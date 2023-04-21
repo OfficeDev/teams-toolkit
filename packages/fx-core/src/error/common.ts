@@ -27,7 +27,7 @@ export class MissingEnvironmentVariablesError extends UserError {
       name: "MissingEnvironmentVariablesError",
       message: getDefaultString(key, variableNames, templateFilePath, envFilePath),
       displayMessage: getLocalizedString(key, variableNames, templateFilePath, envFilePath),
-      helpLink: helpLink || "https://aka.ms/teamsfx-actions",
+      helpLink: helpLink || "https://aka.ms/teamsfx-v5.0-guide#environments",
     };
     super(errorOptions);
   }

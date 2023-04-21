@@ -239,9 +239,9 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     QuestionModelMW,
     EnvLoaderMW(true, true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -308,8 +308,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW(getQuestionsForUpdateTeamsApp),
-    ConcurrentLockerMW,
     EnvLoaderMW(true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -476,8 +476,8 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async preProvisionForVS(
@@ -569,8 +569,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForValidateManifest),
+    ConcurrentLockerMW,
     EnvLoaderMW(true),
   ])
   async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -592,7 +592,7 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForValidateAppPackage), ConcurrentLockerMW])
   async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.validateApplication);
     inputs.stage = Stage.validateApplication;
@@ -609,9 +609,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForCreateAppPackage),
     EnvLoaderMW(true),
+    ConcurrentLockerMW,
   ])
   async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.createAppPackage);
@@ -656,9 +656,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForPreviewWithManifest),
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
   ])
   async previewWithManifest(
     inputs: Inputs,

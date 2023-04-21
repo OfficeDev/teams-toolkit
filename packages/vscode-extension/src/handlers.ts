@@ -1057,6 +1057,10 @@ export async function runCommand(
         result = await core.deployTeamsManifest(inputs);
         break;
       }
+      case Stage.buildAad: {
+        result = await core.buildAadManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -2819,7 +2823,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.BuildAadManifestStart,
     getTriggerFromProperty(args)
   );
-  const res = await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
+  const inputs = getSystemInputs();
+  inputs.env = envName;
+  const res = isV3Enabled()
+    ? await runCommand(Stage.buildAad, inputs)
+    : await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);

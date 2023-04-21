@@ -140,54 +140,22 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * @deprecated  Not used any more and can be deleted
+   * lifecycle command: create new project
    */
-  async createExistingTabApp(
-    inputs: Inputs,
-    folder: string,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
-    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.CreateStart, {
-      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
-      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem().id,
-    });
-
-    const appName = inputs[CoreQuestionNames.AppName] as string;
-    inputs.folder = path.join(folder, appName);
-    const result = await this._init(inputs, ctx, true);
-    if (result.isErr()) {
-      return err(
-        sendErrorTelemetryThenReturnError(
-          CoreTelemetryEvent.Create,
-          result.error,
-          TOOLS.telemetryReporter
-        )
-      );
-    }
-
-    TOOLS.ui.showMessage("info", getLocalizedString("core.create.successNotice"), false);
-    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.Create, {
-      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
-      [CoreTelemetryProperty.Success]: CoreTelemetrySuccess.Yes,
-      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem().id,
-    });
-    return result;
-  }
-
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     if (isV3Enabled()) return this.v3Implement.dispatch(this.createProject, inputs);
     else return this.createProjectOld(inputs);
   }
 
   /**
-   * @deprecated  Not used any more and can be deleted
+   * @deprecated  Not used any more but still referenced by CLI code
    */
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.initInfra, inputs);
   }
 
   /**
-   * @deprecated  Not used any more and can be deleted
+   * @deprecated  Not used any more but still referenced by CLI code
    */
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.initDebug, inputs);
@@ -495,6 +463,13 @@ export class FxCore implements v3.ICore {
       return res;
     }
     return res;
+  }
+
+  /**
+   * v3 only none lifecycle command
+   */
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.buildAadManifest, inputs);
   }
 
   /**

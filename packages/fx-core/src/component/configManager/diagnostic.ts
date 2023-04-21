@@ -5,19 +5,12 @@ import { YAMLValidation } from "yaml-language-server/lib/umd/languageservice/ser
 import { YAMLSchemaService } from "yaml-language-server/lib/umd/languageservice/services/yamlSchemaService";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { Telemetry } from "yaml-language-server/lib/umd/languageserver/telemetry";
-import fse from "fs-extra";
 
 // A telemetry class that does nothing, used to initialize YAMLValidation below.
 class DummyTelemetry {
-  send(): void {
-    return;
-  }
-  sendError(): void {
-    return;
-  }
-  sendTrack(): void {
-    return;
-  }
+  send(): void {}
+  sendError(): void {}
+  sendTrack(): void {}
 }
 
 export class YAMLDiagnostics {

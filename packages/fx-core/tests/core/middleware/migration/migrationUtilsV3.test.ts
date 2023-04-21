@@ -431,6 +431,5 @@ describe("Migration utils: handleValidDomainForManifest", () => {
       validDomains: [validDomain.tab, validDomain.bot],
     };
     stub.calledOnceWith(res as TeamsAppManifest, "");
-    // assert.equal(messageArray.join(""), groundTruth.join(""));
   });
 });

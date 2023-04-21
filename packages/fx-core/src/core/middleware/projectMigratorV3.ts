@@ -147,7 +147,6 @@ export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 
 // MigrationError provides learnMoreLink as helplink for user. Remember add related error message in learnMoreLink when adding new error.
 export const errorNames = {
-  appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
   manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
@@ -396,22 +395,11 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
 }
 
 export async function manifestsMigration(context: MigrationContext): Promise<void> {
-  // Backup templates/appPackage
+  // Check manifest existing
   const oldAppPackageFolderPath = path.join(getTemplateFolderPath(context), AppPackageFolderName);
-  const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
-
-  if (!oldAppPackageFolderBackupRes) {
-    // templates/appPackage does not exists
-    // invalid teamsfx project
-    throw MigrationError(
-      new Error("templates/appPackage does not exist"),
-      errorNames.appPackageNotExist,
-      learnMoreLink
-    );
-  }
-
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
+  const oldManifestAbsolutePath = path.join(context.projectPath, oldManifestPath);
+  const oldManifestExists = await fs.pathExists(oldManifestAbsolutePath);
   if (!oldManifestExists) {
     // templates/appPackage/manifest.template.json does not exist
     throw MigrationError(
@@ -419,13 +407,18 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
       errorNames.manifestTemplateNotExist,
       learnMoreLink
     );
-  } else {
+  }
+  // Backup templates/appPackage
+  await context.backup(oldAppPackageFolderPath);
+
+  // Validate manifest template
+  {
     const res = await manifestUtils._readAppManifest(
       path.join(context.projectPath, oldManifestPath)
     );
     if (res.isErr()) {
       throw MigrationError(
-        new Error("templates/appPackage/manifest.template.json is invalid"),
+        new Error(getLocalizedString("core.migrationV3.manifestInvalid")),
         errorNames.manifestTemplateInvalid
       );
     }

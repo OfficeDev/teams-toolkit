@@ -339,7 +339,7 @@ describe("Generator error", async () => {
       tags: [],
       time: "",
       configuration: "test-configuration",
-      link: "test-id",
+      link: "test-link",
       suggested: false,
       url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
     };
@@ -463,7 +463,7 @@ describe("Generator happy path", async () => {
       tags: [],
       time: "",
       configuration: "test-configuration",
-      link: "test-id",
+      link: "test-link",
       suggested: false,
       url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
     };
@@ -532,7 +532,7 @@ describe("Generate sample using download directory", () => {
       tags: [],
       time: "",
       configuration: "test-configuration",
-      link: "test-id",
+      link: "test-link",
       suggested: false,
       url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
     };

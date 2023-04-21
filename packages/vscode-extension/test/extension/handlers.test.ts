@@ -68,6 +68,7 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
+import { environmentManager } from "../../../fx-core/build";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -2028,5 +2029,24 @@ describe("handlers", () => {
       const actualPath = await handlers.getFuncPathHandler();
       chai.assert.equal(actualPath, path.delimiter);
     });
+  });
+});
+
+describe("openPreviewAadFile", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const core = new MockCore();
+    sandbox.stub(handlers, "core").value(core);
+    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(fs, "existsSync").returns(false);
+    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+    sandbox.stub(handlers.core, "previewAadManifest").resolves(ok(Void));
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+    const res = await handlers.openPreviewAadFile([]);
+    chai.assert.isTrue(res.isErr());
   });
 });

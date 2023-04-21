@@ -613,7 +613,7 @@ describe("Tools Install Driver test", () => {
         });
         const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
         const res = await toolsInstallDriver.execute(
-          { func: { version: "hello" } } as unknown as InstallToolArgs,
+          { func: invalidParam } as unknown as InstallToolArgs,
           mockedDriverContext,
           outputEnvVarNames
         );

@@ -35,7 +35,7 @@ provision:
     with:
       botId: ${{BOT_ID}}
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
-      messagingEndpoint: ${{PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT}}/api/messages
+      messagingEndpoint: ${{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/api/messages
       description: ""
       channels:
         - name: msteams
@@ -72,7 +72,7 @@ deploy:
       devCert:
         trust: true
       func:
-        version: 4
+        version: ~4.0.4670
         symlinkDir: ./devTools/func
       dotnet: true
     writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
@@ -80,6 +80,12 @@ deploy:
       sslKeyFile: SSL_KEY_FILE
       funcPath: FUNC_PATH
       dotnetPath: DOTNET_PATH
+
+  - uses: cli/runDotnetCommand
+    with:
+      args: build extensions.csproj -o ./bin --ignore-failed-sources
+      workingDirectory: api
+      execPath: ${{DOTNET_PATH}}
 
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
@@ -115,7 +121,7 @@ deploy:
         M365_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
         M365_TENANT_ID: ${{AAD_APP_TENANT_ID}}
         M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
-        INITIATE_LOGIN_ENDPOINT: ${{PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT}}/auth-start.html
+        INITIATE_LOGIN_ENDPOINT: ${{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/auth-start.html
         M365_APPLICATION_ID_URI: api://${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/botid-${{BOT_ID}}
         API_ENDPOINT: http://localhost:7071
 
@@ -132,15 +138,15 @@ deploy:
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-      workingDirectory: ./tabs
+      workingDirectory: tabs
 
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-      workingDirectory: ./api
+      workingDirectory: api
 
   - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit
-      workingDirectory: ./bot
+      workingDirectory: bot
 

@@ -67,6 +67,7 @@ import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
   getPlaceholderMappings,
+  ignoreDevToolsDir,
   isCommentObject,
   launchRemote,
   OldProjectSettingsHelper,
@@ -973,6 +974,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvUserFileName("*")}`;
   ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvFileName("local")}`;
   ignoreFileContent += EOL + `${backupFolder}/*`;
+  ignoreFileContent += EOL + ignoreDevToolsDir;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);
 }

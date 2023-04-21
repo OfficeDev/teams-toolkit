@@ -7,7 +7,6 @@ import chai from "chai";
 
 import { ToolsInstallDriver } from "../../../../src/component/driver/devTool/installDriver";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { LocalCertificateManager } from "../../../../src/common/local/localCertificateManager";
 import { UserError } from "@microsoft/teamsfx-api";
 import { CoreSource } from "../../../../src/core/error";
@@ -106,15 +105,38 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: true,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["./devTools/func"],
         },
       });
-      const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
+      const res = await toolsInstallDriver.run(
+        { func: { version: "4", symlinkDir: "./devTools/func" } },
+        mockedDriverContext
+      );
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.isEmpty(res.value);
+      }
+    });
+
+    it("Install func without symlinkDir", async () => {
+      sandbox.stub(FuncToolChecker.prototype, "resolve").resolves({
+        name: "Azure Functions Core Tools",
+        type: DepsType.FuncCoreTools,
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["~/.fx/bin/func/node_modules/azure-functions-core-tools/bin"],
+        },
+      });
+      const res = await toolsInstallDriver.run({ func: { version: "4" } }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         chai.assert.isEmpty(res.value);
@@ -126,16 +148,19 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: false,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: undefined,
         },
         error: new DepsCheckerError("test message", "test link"),
       });
-      const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
+      const res = await toolsInstallDriver.run(
+        { func: { version: 4, symlinkDir: "./devTools/func" } },
+        mockedDriverContext
+      );
       chai.assert.isTrue(res.isErr());
     });
 
@@ -144,28 +169,53 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: true,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["/devTools/func"],
         },
         error: new DepsCheckerError("warning message", "test link"),
       });
-      const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
+      const res = await toolsInstallDriver.run(
+        { func: { version: "4", symlinkDir: "./devTools/func" } },
+        mockedDriverContext
+      );
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         chai.assert.isEmpty(res.value);
       }
     });
 
-    it("Invalid parameter", async () => {
-      const res = await toolsInstallDriver.run(
-        { func: { version: "hello" } } as unknown as InstallToolArgs,
-        mockedDriverContext
-      );
-      chai.assert.isTrue(res.isErr());
+    const invalidParams: any[] = [
+      { version: "hello" },
+      false,
+      { hello: "hello" },
+      { version: "#2", symlinkDir: "./devTools" },
+      { version: "#2", symlinkDir: 123 },
+      { symlinkDir: 123 },
+    ];
+    invalidParams.forEach((invalidParam: any) => {
+      it(`Invalid parameter - ${JSON.stringify(invalidParam)}`, async () => {
+        sandbox.stub(FuncToolChecker.prototype, "resolve").resolves({
+          name: "Azure Functions Core Tools",
+          type: DepsType.FuncCoreTools,
+          isInstalled: true,
+          command: "func",
+          details: {
+            isLinuxSupported: false,
+            supportedVersions: [],
+            installVersion: "4.0.0",
+            binFolders: ["./devTools/func"],
+          },
+        });
+        const res = await toolsInstallDriver.run(
+          { func: invalidParam } as unknown as InstallToolArgs,
+          mockedDriverContext
+        );
+        chai.assert.isTrue(res.isErr());
+      });
     });
   });
 
@@ -410,17 +460,17 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: true,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["./devTools/func"],
         },
       });
       const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
       const res = await toolsInstallDriver.execute(
-        { func: true },
+        { func: { version: "~4.0.0", symlinkDir: "./devTools/func" } },
         mockedDriverContext,
         outputEnvVarNames
       );
@@ -428,8 +478,34 @@ describe("Tools Install Driver test", () => {
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
         chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
-          ["MY_FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"],
+          ["MY_FUNC_PATH", "./devTools/func"],
         ]);
+      }
+    });
+
+    it("Install func without symlinkDir", async () => {
+      sandbox.stub(FuncToolChecker.prototype, "resolve").resolves({
+        name: "Azure Functions Core Tools",
+        type: DepsType.FuncCoreTools,
+        isInstalled: true,
+        command: "func",
+        details: {
+          isLinuxSupported: false,
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["~/.fx/bin/func/node_modules/azure-functions-core-tools/bin"],
+        },
+      });
+      const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { func: { version: 4 } },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value.entries());
       }
     });
 
@@ -438,17 +514,17 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: true,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["./devTools/func"],
         },
       });
       const outputEnvVarNames = new Map();
       const res = await toolsInstallDriver.execute(
-        { func: true },
+        { func: { version: "4", symlinkDir: "./devTools/func" } },
         mockedDriverContext,
         outputEnvVarNames
       );
@@ -464,18 +540,18 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: false,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: undefined,
         },
         error: new DepsCheckerError("test message", "test link"),
       });
       const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
       const res = await toolsInstallDriver.execute(
-        { func: true },
+        { func: { version: "4", symlinkDir: "./devTools/func" } },
         mockedDriverContext,
         outputEnvVarNames
       );
@@ -488,18 +564,18 @@ describe("Tools Install Driver test", () => {
         name: "Azure Functions Core Tools",
         type: DepsType.FuncCoreTools,
         isInstalled: true,
-        command: "node ~/.fx/bin/func/node_modules/azure-functions-core-tools/lib/main.js",
+        command: "func",
         details: {
           isLinuxSupported: false,
-          supportedVersions: ["4"],
-          installVersion: "4",
-          binFolders: ["~/.fx/bin/func/node_modules/.bin"],
+          supportedVersions: [],
+          installVersion: "4.0.0",
+          binFolders: ["./devTools/func"],
         },
         error: new DepsCheckerError("warning message", "test link"),
       });
       const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
       const res = await toolsInstallDriver.execute(
-        { func: true },
+        { func: { version: "4", symlinkDir: "./devTools/func" } },
         mockedDriverContext,
         outputEnvVarNames
       );
@@ -507,20 +583,43 @@ describe("Tools Install Driver test", () => {
       chai.assert.isTrue(res.result.isOk());
       if (res.result.isOk()) {
         chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
-          ["MY_FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"],
+          ["MY_FUNC_PATH", "./devTools/func"],
         ]);
       }
     });
 
-    it("Invalid parameter", async () => {
-      const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
-      const res = await toolsInstallDriver.execute(
-        { func: { version: "hello" } } as unknown as InstallToolArgs,
-        mockedDriverContext,
-        outputEnvVarNames
-      );
-      chai.assert.isEmpty(res.summaries);
-      chai.assert.isTrue(res.result.isErr());
+    const invalidParams: any[] = [
+      { version: "hello" },
+      false,
+      { hello: "hello" },
+      { version: "#2", symlinkDir: "./devTools" },
+      { version: "#2", symlinkDir: 123 },
+      { symlinkDir: 123 },
+      { version: 3 },
+    ];
+    invalidParams.forEach((invalidParam: any) => {
+      it(`Invalid parameter - ${JSON.stringify(invalidParam)}`, async () => {
+        sandbox.stub(FuncToolChecker.prototype, "resolve").resolves({
+          name: "Azure Functions Core Tools",
+          type: DepsType.FuncCoreTools,
+          isInstalled: true,
+          command: "func",
+          details: {
+            isLinuxSupported: false,
+            supportedVersions: [],
+            installVersion: "4.0.0",
+            binFolders: ["./devTools/func"],
+          },
+        });
+        const outputEnvVarNames = new Map([["funcPath", "MY_FUNC_PATH"]]);
+        const res = await toolsInstallDriver.execute(
+          { func: { version: "hello" } } as unknown as InstallToolArgs,
+          mockedDriverContext,
+          outputEnvVarNames
+        );
+        chai.assert.isEmpty(res.summaries);
+        chai.assert.isTrue(res.result.isErr());
+      });
     });
   });
 

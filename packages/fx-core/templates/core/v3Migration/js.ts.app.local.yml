@@ -116,7 +116,9 @@ deploy:
         trust: {{trust}}
       {{/devCert}}
       {{#func}}
-      func: true
+      func:
+        version: {{version}}
+        symlinkDir: {{symlinkDir}}
       {{/func}}
       {{#dotnet}}
       dotnet: true

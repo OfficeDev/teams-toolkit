@@ -12,10 +12,14 @@ provision:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
 
-  - uses: teamsApp/create # Creates a Teams app
+  # Creates a Teams app
+  - uses: teamsApp/create
     with:
-      name: {{appName}}-${{TEAMSFX_ENV}} # Teams app name
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}}
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
   # Build Teams app package with latest env value

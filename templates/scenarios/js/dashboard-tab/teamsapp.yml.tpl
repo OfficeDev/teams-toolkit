@@ -7,10 +7,13 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsfx provision' is executed
 provision:
-  - uses: teamsApp/create # Creates a Teams app
+  # Creates a Teams app
+  - uses: teamsApp/create
     with:
       name: {{appName}}-${{TEAMSFX_ENV}}
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.

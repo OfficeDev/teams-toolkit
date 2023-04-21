@@ -74,12 +74,7 @@ export abstract class NodeChecker implements DepsChecker {
           DepsCheckerEvent.nodeNotFound,
           "Node.js can't be found."
         );
-        const error = new NodeNotFoundError(
-          Messages.NodeNotFound()
-            .split("@NodeVersion")
-            .join(supportedVersions[supportedVersions.length - 1]),
-          this._nodeNotFoundHelpLink
-        );
+        const error = new NodeNotFoundError(Messages.NodeNotFound(), this._nodeNotFoundHelpLink);
         return await this.getDepsInfo(false, supportedVersions, undefined, error);
       }
       this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
@@ -234,7 +229,7 @@ export class AzureNodeChecker extends NodeChecker {
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16", "18"];
+    return ["16", "18"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
@@ -265,7 +260,7 @@ export class LtsNodeChecker extends NodeChecker {
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16", "18"];
+    return ["16", "18"];
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {

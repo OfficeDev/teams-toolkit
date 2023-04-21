@@ -34,6 +34,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
 
 const ACTION_NAME = "devTool/install";
 const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
@@ -154,8 +155,12 @@ export class ToolsInstallDriverImpl {
     outputEnvVarNames?: Map<string, string>
   ): Promise<Map<string, string>> {
     const res = new Map<string, string>();
-    const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
-    const funcStatus = await depsManager.ensureDependency(DepsType.FuncCoreTools, true);
+    const funcToolChecker = new FuncToolChecker(new EmptyLogger(), new EmptyTelemetry());
+    const funcStatus = await funcToolChecker.resolve({
+      version: "4",
+      symlinkDir: "./devTools/func",
+      projectPath: this.context.projectPath,
+    });
 
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 

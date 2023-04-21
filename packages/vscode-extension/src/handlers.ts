@@ -1603,19 +1603,12 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  * Usage like ${command:...}${env:PATH} so need to include delimiter as well
  */
 export async function getFuncPathHandler(): Promise<string> {
-  try {
-    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
-    if (funcStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
+  // TODO: remove this command
+  return globalVariables.workspaceUri?.fsPath
+    ? `${path.delimiter}${path.resolve(globalVariables.workspaceUri.fsPath, "./devTools/func")}${
         path.delimiter
-      }`;
-    }
-  } catch (error: any) {
-    showError(assembleError(error));
-  }
-
-  return `${path.delimiter}`;
+      }`
+    : path.delimiter;
 }
 
 /**

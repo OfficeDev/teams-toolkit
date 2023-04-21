@@ -6,6 +6,7 @@ namespace Microsoft.TeamsFx.Test.Conversation
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [Obsolete]
     public class LocalFileStorageTest
     {
         private const string testDir = "./test-local";

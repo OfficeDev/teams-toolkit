@@ -38,6 +38,19 @@ import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
 
+const mockedSampleInfo: SampleInfo = {
+  id: "test-id",
+  title: "test-title",
+  shortDescription: "test-sd",
+  fullDescription: "test-fd",
+  tags: [],
+  time: "",
+  configuration: "test-configuration",
+  link: "test-link",
+  suggested: false,
+  url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
+};
+
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
   const sandbox = createSandbox();
@@ -331,18 +344,6 @@ describe("Generator error", async () => {
 
   it("fetch sample zip from url error", async () => {
     sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
-    const mockedSampleInfo: SampleInfo = {
-      id: "test-id",
-      title: "test-title",
-      shortDescription: "test-sd",
-      fullDescription: "test-fd",
-      tags: [],
-      time: "",
-      configuration: "test-configuration",
-      link: "test-link",
-      suggested: false,
-      url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
-    };
     sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     if (result.isErr()) {
@@ -455,18 +456,6 @@ describe("Generator happy path", async () => {
   it("teamsfx sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
     const sampleName = "test";
-    const mockedSampleInfo: SampleInfo = {
-      id: "test-id",
-      title: "test-title",
-      shortDescription: "test-sd",
-      fullDescription: "test-fd",
-      tags: [],
-      time: "",
-      configuration: "test-configuration",
-      link: "test-link",
-      suggested: false,
-      url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
-    };
     sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
@@ -524,18 +513,6 @@ describe("Generate sample using download directory", () => {
     mockedEnvRestore = mockedEnv({
       DOWNLOAD_DIRECTORY: "true",
     });
-    const mockedSampleInfo: SampleInfo = {
-      id: "test-id",
-      title: "test-title",
-      shortDescription: "test-sd",
-      fullDescription: "test-fd",
-      tags: [],
-      time: "",
-      configuration: "test-configuration",
-      link: "test-link",
-      suggested: false,
-      url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
-    };
     sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
   });
 
@@ -590,7 +567,7 @@ describe("Generate sample using download directory", () => {
       { type: "file", path: `${sampleName}/${mockFileName}_1` },
       { type: "file", path: `${sampleName}/${mockFileName}_2` },
     ];
-    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onCall(0).resolves({ status: 200, data: { tree: fileInfo } });
     axiosStub.onCall(1).resolves({ status: 200, data: mockFileData });
     axiosStub.onCall(2).resolves({ status: 200, data: mockFileData });
     axiosStub.onCall(3).resolves({ status: 502 });

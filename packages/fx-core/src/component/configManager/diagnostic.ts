@@ -13,8 +13,12 @@ class DummyTelemetry {
   sendTrack(): void {}
 }
 
+type Path = string;
+type Content = string;
+type Version = number;
 export class YAMLDiagnostics {
   private validator: YAMLValidation;
+  private cache: Map<Path, [Content, Version]>;
 
   constructor(private readonly schema: string) {
     const schemaService = new YAMLSchemaService(async () => {
@@ -30,10 +34,15 @@ export class YAMLDiagnostics {
       disableAdditionalProperties: true,
       customTags: [],
     });
+    this.cache = new Map();
   }
 
   public async doValidation(yamlPath: string, yamlString: string): Promise<string> {
-    const textDocument = TextDocument.create(`file://${yamlPath}`, "yaml", 1, yamlString);
+    const [cachedYamlString, cachedVersion] = this.cache.get(yamlPath) ?? [yamlString, 0];
+    const version = yamlString === cachedYamlString ? cachedVersion : cachedVersion + 1;
+    // Need to bump version to work around the internal cache of yaml language server
+    const textDocument = TextDocument.create(`file://${yamlPath}`, "yaml", version, yamlString);
+    this.cache.set(yamlPath, [yamlString, version]);
 
     const diagnostics = await this.validator.doValidation(textDocument, false);
     return diagnostics

@@ -27,7 +27,7 @@ provision:
       # Referencing other environment variables with empty values
       # will skip the subscription selection prompt.
       subscriptionId: ${{AZURE_SUBSCRIPTION_ID}}
-      # AZURE_SUBSCRIPTION_ID is a built-in environment variable,
+      # AZURE_RESOURCE_GROUP_NAME is a built-in environment variable,
       # if its value is empty, TeamsFx will prompt you to select or create one
       # resource group.
       # Referencing other environment variables with empty values

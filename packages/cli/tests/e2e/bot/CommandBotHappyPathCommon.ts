@@ -53,11 +53,6 @@ export function happyPathTest(runtime: Runtime): void {
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
-      // set subscription
-      await CliHelper.setSubscription(subscription, projectPath, env);
-
-      console.log(`[Successfully] set subscription for ${projectPath}`);
-
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,

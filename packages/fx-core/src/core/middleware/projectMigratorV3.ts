@@ -62,7 +62,7 @@ import {
   buildEnvUserFileName,
   tryExtractEnvFromUserdata,
   buildEnvFileName,
-  handleValidDomainForManifest,
+  addMissingValidDomainForManifest,
   validDomain,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
@@ -451,7 +451,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const isSpfx = isSPFxProject(projectSettings);
 
   if (!isSpfx) {
-    await handleValidDomainForManifest(
+    await addMissingValidDomainForManifest(
       path.join(context.projectPath, oldManifestPath),
       capabilities.Tab,
       capabilities.BotSso

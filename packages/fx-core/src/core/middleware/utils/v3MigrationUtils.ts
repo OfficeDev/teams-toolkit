@@ -350,7 +350,7 @@ export async function updateAndSaveManifestForSpfx(
   await context.fsWriteFile(localTemplatePath, localTemplate);
 }
 
-export async function handleValidDomainForManifest(
+export async function addMissingValidDomainForManifest(
   manifestPath: string,
   tab: boolean,
   bot: boolean

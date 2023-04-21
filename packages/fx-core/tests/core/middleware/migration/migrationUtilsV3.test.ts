@@ -406,7 +406,7 @@ describe("Migration: upgrade cancel messages", () => {
   });
 });
 
-describe("Migration utils: handleValidDomainForManifest", () => {
+describe("Migration utils: addMissingValidDomainForManifest", () => {
   const sandbox = sinon.createSandbox();
   let messageArray: string[];
 
@@ -426,7 +426,7 @@ describe("Migration utils: handleValidDomainForManifest", () => {
     } as unknown as TeamsAppManifest;
     sandbox.stub(ManifestUtils.prototype, "_readAppManifest").resolves(ok(teamsAppManifest));
     const stub = sandbox.stub(ManifestUtils.prototype, "_writeAppManifest");
-    await v3MigrationUtils.handleValidDomainForManifest("", true, true);
+    await v3MigrationUtils.addMissingValidDomainForManifest("", true, true);
     const res = {
       validDomains: [validDomain.tab, validDomain.bot],
     };

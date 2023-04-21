@@ -332,13 +332,7 @@ export class FxCoreV3Implement {
   ): Promise<Result<any, FxError>> {
     let res: Result<any, FxError> = ok(undefined);
     const context = createDriverContext(inputs);
-    if (func.method === "getManifestTemplatePath") {
-      // not used in v3
-      const path = await manifestUtils.getTeamsAppManifestPath(
-        (inputs as InputsWithProjectPath).projectPath
-      );
-      res = ok(path);
-    } else if (func.method === "addSso") {
+    if (func.method === "addSso") {
       // used in v3 only in VS
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;

@@ -27,12 +27,19 @@ import { LocalCrypto } from "../../../../src/core/crypto";
 import { mockMigrationContext } from "./utils";
 import * as os from "os";
 import * as path from "path";
+import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
 
 describe("debugMigration", () => {
   const projectPath = ".";
 
   describe("migrateTransparentPrerequisite", () => {
+    afterEach(async () => {
+      sinon.restore();
+    });
     it("happy path", async () => {
+      sinon
+        .stub(NodeChecker, "getInstalledNodeVersion")
+        .resolves({ version: "14.0.0", majorVersion: "14" });
       const migrationContext = await mockMigrationContext(projectPath);
       const testTaskContent = `[
       {
@@ -97,7 +104,10 @@ describe("debugMigration", () => {
       );
       chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.devCert?.trust);
       chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.dotnet);
-      chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.func);
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.tools?.func, {
+        version: "4",
+        symlinkDir: "./devTools/func",
+      });
     });
 
     it("customized prerequisite", async () => {

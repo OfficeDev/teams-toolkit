@@ -21,6 +21,7 @@ import {
 } from "../../../../common/local";
 import {
   createResourcesTask,
+  defaultFuncSymlinkDir,
   generateLabel,
   isCommentArray,
   isCommentObject,
@@ -38,6 +39,7 @@ import { BuildArgs } from "../../../../component/driver/interface/buildAndDeploy
 import { LocalCrypto } from "../../../crypto";
 import * as os from "os";
 import * as path from "path";
+import { NodeChecker } from "../../../../common/deps-checker/internal/nodeChecker";
 
 export async function migrateTransparentPrerequisite(
   context: DebugMigrationContext
@@ -67,7 +69,10 @@ export async function migrateTransparentPrerequisite(
             `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`
           );
         } else if (prerequisite === Prerequisite.func) {
-          toolsArgs.func = true;
+          toolsArgs.func = {
+            version: await getFuncVersion(),
+            symlinkDir: defaultFuncSymlinkDir,
+          };
         } else if (prerequisite === Prerequisite.devCert) {
           toolsArgs.devCert = { trust: true };
         } else if (prerequisite === Prerequisite.dotnet) {
@@ -416,7 +421,10 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
       }
     }
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      toolsArgs.func = true;
+      toolsArgs.func = {
+        version: await getFuncVersion(),
+        symlinkDir: defaultFuncSymlinkDir,
+      };
       toolsArgs.dotnet = true;
     }
     if (Object.keys(toolsArgs).length > 0) {
@@ -676,7 +684,10 @@ export async function migrateValidateLocalPrerequisites(
     }
 
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      toolsArgs.func = true;
+      toolsArgs.func = {
+        version: await getFuncVersion(),
+        symlinkDir: defaultFuncSymlinkDir,
+      };
       toolsArgs.dotnet = true;
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
@@ -691,7 +702,10 @@ export async function migrateValidateLocalPrerequisites(
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
       if (OldProjectSettingsHelper.includeFuncHostedBot(context.oldProjectSettings)) {
-        toolsArgs.func = true;
+        toolsArgs.func = {
+          version: await getFuncVersion(),
+          symlinkDir: defaultFuncSymlinkDir,
+        };
       }
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
@@ -1004,4 +1018,9 @@ function getLabels(tasks: CommentArray<CommentJSONValue>): string[] {
   }
 
   return labels;
+}
+
+async function getFuncVersion(): Promise<string> {
+  const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
+  return !nodeVersion || Number.parseInt(nodeVersion) >= 18 ? "~4.0.4670" : "4";
 }

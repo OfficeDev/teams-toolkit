@@ -67,6 +67,7 @@ import {
   readEnvUserFile,
   Constants,
 } from "./utils";
+import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -1222,6 +1223,9 @@ describe("debugMigration", () => {
     "V3.5.0-V4.0.6-tab-bot-func",
     "V3.5.0-V4.0.6-notification-trigger",
     "V3.5.0-V4.0.6-command",
+    "V3.5.0-V4.0.6-tab-bot-func-node18",
+    "beforeV3.4.0-tab-bot-func-node18",
+    "transparent-notification-node18",
   ];
 
   const simpleAuthPath = path.join(os.homedir(), ".fx", "localauth").replace(/\\/g, "\\\\");
@@ -1234,6 +1238,10 @@ describe("debugMigration", () => {
 
   testCases.forEach((testCase) => {
     it(testCase, async () => {
+      const nodeMajorVersion = testCase.endsWith("node18") ? "18" : "16";
+      sinon
+        .stub(NodeChecker, "getInstalledNodeVersion")
+        .resolves({ version: `${nodeMajorVersion}.0.0`, majorVersion: nodeMajorVersion });
       const migrationContext = await mockMigrationContext(projectPath);
 
       await copyTestProject(path.join("debug", testCase), projectPath);

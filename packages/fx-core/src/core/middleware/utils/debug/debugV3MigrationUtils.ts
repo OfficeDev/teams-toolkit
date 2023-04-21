@@ -315,3 +315,6 @@ export function launchRemote(
     internalConsoleOptions: "neverOpen",
   };
 }
+
+export const defaultFuncSymlinkDir = "./devTools/func";
+export const ignoreDevToolsDir = "/devTools/";

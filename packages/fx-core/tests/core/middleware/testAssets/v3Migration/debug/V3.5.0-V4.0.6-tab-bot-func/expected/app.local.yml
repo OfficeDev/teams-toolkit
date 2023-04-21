@@ -71,7 +71,9 @@ deploy:
     with:
       devCert:
         trust: true
-      func: true
+      func:
+        version: 4
+        symlinkDir: ./devTools/func
       dotnet: true
     writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       sslCertFile: SSL_CRT_FILE

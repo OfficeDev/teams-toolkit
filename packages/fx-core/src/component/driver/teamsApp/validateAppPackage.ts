@@ -185,6 +185,8 @@ export class ValidateAppPackageDriver implements StepDriver {
               message,
             ])
           );
+        } else {
+          return ok(new Map());
         }
       } else {
         // logs in output window

@@ -97,6 +97,12 @@ export default class PreviewEnv extends YargsCommand {
         description: 'Argument to pass to the browser (e.g. --browser-args="--guest")',
         string: true,
         array: true,
+      })
+      .options("exec-path", {
+        description:
+          'A path that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
+        string: true,
+        default: constants.defaultExecPath,
       });
     return yargs.version(false);
   }
@@ -116,6 +122,7 @@ export default class PreviewEnv extends YargsCommand {
     const runningPattern = args["running-pattern"] as string;
     const openOnly = args["open-only"] as boolean;
     const m365Host = args["m365-host"] as constants.Hub;
+    const execPath: string = args["exec-path"] as string;
     let hub = Hub.teams;
     if (m365Host === constants.Hub.outlook) {
       hub = Hub.outlook;
@@ -143,7 +150,8 @@ export default class PreviewEnv extends YargsCommand {
           openOnly,
           hub,
           browser,
-          browserArguments
+          browserArguments,
+          execPath
         ),
       (result: Result<null, FxError>, ctx: TelemetryContext) => {
         // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
@@ -164,7 +172,8 @@ export default class PreviewEnv extends YargsCommand {
     openOnly: boolean,
     hub: Hub,
     browser: constants.Browser,
-    browserArguments: string[]
+    browserArguments: string[],
+    execPath: string
   ): Promise<Result<null, FxError>> {
     // 1. load envs
     const envRes = await envUtil.readEnv(workspaceFolder, env, false, false);
@@ -220,7 +229,7 @@ export default class PreviewEnv extends YargsCommand {
       if (runCommand !== undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
         const runTaskRes = await localTelemetryReporter.runWithTelemetry(
           TelemetryEvent.PreviewStartServices,
-          () => this.runCommandAsTask(workspaceFolder, runCommand!, runningPatternRegex)
+          () => this.runCommandAsTask(workspaceFolder, runCommand!, runningPatternRegex, execPath)
         );
         if (runTaskRes.isErr()) {
           throw runTaskRes.error;
@@ -360,12 +369,16 @@ export default class PreviewEnv extends YargsCommand {
   protected async runCommandAsTask(
     projectPath: string,
     runCommand: string,
-    runningPatternRegex: RegExp
+    runningPatternRegex: RegExp,
+    execPath: string
   ): Promise<Result<null, FxError>> {
     const taskName = "Run Command";
     const runningTask = new Task(taskName, true, runCommand, undefined, {
       shell: true,
       cwd: projectPath,
+      env: {
+        PATH: `${path.resolve(projectPath, execPath)}${path.delimiter}${process.env.PATH}`,
+      },
     });
     this.runningTasks.push(runningTask);
     const bar = CLIUIInstance.createProgressBar(taskName, 1);

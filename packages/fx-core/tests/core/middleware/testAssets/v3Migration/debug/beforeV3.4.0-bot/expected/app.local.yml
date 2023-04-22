@@ -65,7 +65,8 @@ deploy:
       args: install -D env-cmd
       workingDirectory: .
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.localConfigs
       envs:

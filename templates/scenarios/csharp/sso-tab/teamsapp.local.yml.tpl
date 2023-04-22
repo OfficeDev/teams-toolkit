@@ -34,7 +34,8 @@ provision:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
 
-  - uses: file/createOrUpdateJsonFile # Generate runtime appsettings to JSON file
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
     with:
       target: ./appsettings.Development.json
       appsettings:

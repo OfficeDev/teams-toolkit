@@ -50,7 +50,8 @@ deploy:
     writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
       funcPath: FUNC_PATH
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.env.teamsfx.local
       envs:

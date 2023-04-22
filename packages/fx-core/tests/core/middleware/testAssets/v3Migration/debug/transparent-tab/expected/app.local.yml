@@ -41,7 +41,8 @@ deploy:
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:

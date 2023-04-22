@@ -167,10 +167,13 @@ deploy:
   {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-function}}
-  - uses: devTool/install # Install development tool(s)
+  # Install development tool(s)
+  - uses: devTool/install
     with:      
       dotnet: true
-    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
       dotnetPath: DOTNET_PATH
   - uses: cli/runNpmCommand
     name: install api dependencies

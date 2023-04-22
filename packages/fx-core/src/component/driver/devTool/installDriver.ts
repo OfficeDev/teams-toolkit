@@ -178,7 +178,9 @@ export class ToolsInstallDriverImpl {
       throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
     } else if (funcStatus.error) {
       this.context.logProvider.warning(funcStatus.error?.message);
-      this.context.addSummary(funcStatus.error?.message);
+      this.context.addSummary(
+        Summaries.funcSuccess(funcStatus?.details?.binFolders) + funcStatus.error?.message
+      );
     } else {
       this.context.addSummary(Summaries.funcSuccess(funcStatus?.details?.binFolders));
     }

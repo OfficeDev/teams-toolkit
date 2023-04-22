@@ -11,11 +11,7 @@ import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";
-import {
-  defaultHelpLink,
-  nodeInstallationLink,
-  v3NodeNotFoundHelpLink,
-} from "../constant/helpLink";
+import { defaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DependencyStatus, DepsChecker, DepsType, FuncInstallOptions } from "../depsChecker";
 import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../depsError";
@@ -156,12 +152,7 @@ export class FuncToolChecker implements DepsChecker {
     const funcVersionRange = nodeFuncVersionRangeMapping[nodeVersion];
     if (funcVersionRange && !semver.satisfies(funcVersion, funcVersionRange)) {
       return new DepsCheckerError(
-        Messages.portableFuncNodeNotMatched(
-          nodeVersion,
-          funcVersion,
-          funcVersionRange,
-          nodeInstallationLink
-        ),
+        Messages.portableFuncNodeNotMatched(nodeVersion, funcVersion),
         defaultHelpLink
       );
     }

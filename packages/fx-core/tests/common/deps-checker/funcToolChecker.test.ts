@@ -776,6 +776,116 @@ describe("Func Tools Checker Test", () => {
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
 
+  const nodeVersionValidationDataArr = [
+    // not match cases
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "12.0.0",
+      isSuccess: false,
+    },
+    {
+      funcVersion: "3.0.0",
+      nodeVersion: "16.0.0",
+      isSuccess: false,
+    },
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "18.0.0",
+      isSuccess: false,
+    },
+    // match cases
+    {
+      funcVersion: "3.0.0",
+      nodeVersion: "12.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "3.0.0",
+      nodeVersion: "14.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "16.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.4670",
+      nodeVersion: "18.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.5095",
+      nodeVersion: "18.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "5.0.0",
+      nodeVersion: "16.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "5.0.0",
+      nodeVersion: "18.0.0",
+      isSuccess: true,
+    },
+    // ignore validation cases
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "11.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "20.0.0",
+      isSuccess: true,
+    },
+  ];
+  nodeVersionValidationDataArr.forEach((nodeVersionValidationData) => {
+    it(`validate node and func version, func - ${nodeVersionValidationData.funcVersion}, node - ${nodeVersionValidationData.nodeVersion}`, async () => {
+      const mock = await prepareTestEnv(
+        nodeVersionValidationData.funcVersion,
+        undefined,
+        [],
+        undefined,
+        nodeVersionValidationData.nodeVersion,
+        "6",
+        "Windows_NT"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: nodeVersionValidationData.funcVersion,
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
+      });
+      chai.assert.equal(
+        JSON.stringify(res),
+        JSON.stringify({
+          name: "Azure Functions Core Tools",
+          type: "func-core-tools",
+          isInstalled: true,
+          command: "func",
+          details: {
+            isLinuxSupported: false,
+            installVersion: nodeVersionValidationData.funcVersion,
+            supportedVersions: [],
+            binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
+          },
+          error: nodeVersionValidationData.isSuccess ? undefined : { helpLink: defaultHelpLink },
+        })
+      );
+      const stat = await fs.lstat(res.details.binFolders[0]);
+      chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
+      const funcVersion = await mockGetVersion(res.details.binFolders[0]);
+      chai.assert.equal(funcVersion, nodeVersionValidationData.funcVersion);
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func.exe")));
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func")));
+      chai.assert.isTrue(
+        await fs.pathExists(path.join(res.details.binFolders[0], "func-sentinel"))
+      );
+    });
+  });
+
   const failedResult = {
     name: "Azure Functions Core Tools",
     type: "func-core-tools",

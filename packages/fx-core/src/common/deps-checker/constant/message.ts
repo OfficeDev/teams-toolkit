@@ -12,7 +12,17 @@ export const Messages = {
   needInstallNpm: () => getLocalizedString("depChecker.needInstallNpm"),
   failToValidateFuncCoreTool: () => getLocalizedString("depChecker.failToValidateFuncCoreTool"),
   globalFuncNodeNotMatched: () => getLocalizedString("depChecker.globalFuncNodeNotMatched"),
-  portableFuncNodeNotMatched: () => getLocalizedString("depChecker.portableFuncNodeNotMatched"),
+  portableFuncNodeNotMatched: (
+    nodeVersion: string,
+    funcVersion: string,
+    recommendedVersion: string,
+    link: string
+  ) =>
+    getLocalizedString("depChecker.portableFuncNodeNotMatched")
+      .replace("@NodeVersion", nodeVersion)
+      .replace("@FuncVersion", funcVersion)
+      .replace("@RecommendedVersion", recommendedVersion)
+      .replace("@Link", link),
   symlinkDirAlreadyExist: () => getLocalizedString("depChecker.symlinkDirAlreadyExist"),
 
   startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),

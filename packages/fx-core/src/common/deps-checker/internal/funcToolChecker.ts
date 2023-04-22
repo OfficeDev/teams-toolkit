@@ -11,7 +11,11 @@ import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";
-import { defaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
+import {
+  defaultHelpLink,
+  nodeInstallationLink,
+  v3NodeNotFoundHelpLink,
+} from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DependencyStatus, DepsChecker, DepsType, FuncInstallOptions } from "../depsChecker";
 import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../depsError";
@@ -27,6 +31,13 @@ type FuncVersion = {
   minorVersion: number;
   patchVersion: number;
   versionStr: string;
+};
+
+const nodeFuncVersionRangeMapping: { [key: string]: string } = {
+  "12": "3",
+  "14": "3 || 4",
+  "16": ">=4",
+  "18": ">=4.0.4670",
 };
 
 const funcPackageName = "azure-functions-core-tools";
@@ -72,9 +83,13 @@ export class FuncToolChecker implements DepsChecker {
         installationInfo = await this.getInstallationInfo(installOptions);
       }
 
-      if (!installationInfo.error && installationInfo.isInstalled) {
+      if (
+        !installationInfo.error &&
+        installationInfo.isInstalled &&
+        installationInfo.details.installVersion
+      ) {
         const expectedFuncNodeError = await this.checkExpectedFuncAndNode(
-          installOptions.version,
+          installationInfo.details.installVersion,
           nodeVersion
         );
         if (expectedFuncNodeError) {
@@ -135,10 +150,21 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   private async checkExpectedFuncAndNode(
-    expectedVersion: string,
+    funcVersion: string,
     nodeVersion: string
   ): Promise<DepsCheckerError | undefined> {
-    // TODO validate expected func version and actual node version
+    const funcVersionRange = nodeFuncVersionRangeMapping[nodeVersion];
+    if (funcVersionRange && !semver.satisfies(funcVersion, funcVersionRange)) {
+      return new DepsCheckerError(
+        Messages.portableFuncNodeNotMatched(
+          nodeVersion,
+          funcVersion,
+          funcVersionRange,
+          nodeInstallationLink
+        ),
+        defaultHelpLink
+      );
+    }
     return undefined;
   }
 

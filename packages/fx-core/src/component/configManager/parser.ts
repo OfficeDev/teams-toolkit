@@ -16,10 +16,11 @@ import { YAMLDiagnostics } from "./diagnostic";
 
 const ajv = new Ajv();
 ajv.addKeyword("deprecationMessage");
-const schema = fs.readJSONSync(path.join(getResourceFolder(), "yaml.schema.json"));
+const schemaPath = path.join(getResourceFolder(), "yaml.schema.json");
+const schema = fs.readJSONSync(schemaPath);
 const validator = ajv.compile(schema);
 const schemaString = fs.readFileSync(path.join(getResourceFolder(), "yaml.schema.json"), "utf8");
-const yamlDiagnostic = new YAMLDiagnostics(schemaString);
+const yamlDiagnostic = new YAMLDiagnostics(schemaPath, schemaString);
 
 const environmentFolderPath = "environmentFolderPath";
 const writeToEnvironmentFile = "writeToEnvironmentFile";
@@ -118,7 +119,7 @@ export class YamlParser implements IYamlParser {
       const content = load(str);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
-        return err(new InvalidYamlSchemaError(path));
+        return err(new InvalidYamlSchemaError(path, diagnostic));
       }
 
       const value = content as unknown as Record<string, unknown>;

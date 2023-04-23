@@ -20,10 +20,11 @@ export class YAMLDiagnostics {
   private validator: YAMLValidation;
   private cache: Map<Path, [Content, Version]>;
 
-  constructor(private readonly schema: string) {
+  constructor(private readonly schemaPath: string, private readonly schemaString: string) {
     const schemaService = new YAMLSchemaService(async () => {
-      return this.schema;
+      return this.schemaString;
     });
+    schemaService.registerExternalSchema(schemaPath, ["*teamsapp.*yml"]);
     this.validator = new YAMLValidation(
       schemaService,
       new DummyTelemetry() as unknown as Telemetry

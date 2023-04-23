@@ -868,15 +868,15 @@ describe("Func Tools Checker Test", () => {
               throw new Error("Mock node not installed.");
             }
             return `v${nodeVersion}`;
-          } else if (command === "func" && args.length == 1 && args[0] === "--version") {
-            if (!options?.env?.PATH) {
+          } else if (command.endsWith("func") && args.length == 1 && args[0] === "--version") {
+            if (command === "func") {
               // Mock query global func version
               if (!globalFuncVersion) {
                 throw new Error("Mock global func not installed.");
               }
               return globalFuncVersion;
             } else {
-              const funcBinPath = options.env.PATH.split(path.delimiter)[0];
+              const funcBinPath = path.dirname(command);
               return await mockGetVersion(funcBinPath);
             }
           } else if (command === "npm" && args.length == 1 && args[0] === "--version") {

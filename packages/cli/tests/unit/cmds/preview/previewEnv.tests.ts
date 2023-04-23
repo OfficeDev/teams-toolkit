@@ -315,9 +315,10 @@ describe("PreviewEnv Steps", () => {
     public runCommandAsTask(
       projectPath: string,
       runCommand: string,
-      runningPatternRegex: RegExp
+      runningPatternRegex: RegExp,
+      execPath: string
     ): Promise<Result<null, FxError>> {
-      return super.runCommandAsTask(projectPath, runCommand, runningPatternRegex);
+      return super.runCommandAsTask(projectPath, runCommand, runningPatternRegex, execPath);
     }
 
     public launchBrowser(
@@ -547,7 +548,12 @@ describe("PreviewEnv Steps", () => {
     sandbox.stub(Task.prototype, "waitFor").resolves(ok({ foo: "bar" } as any));
 
     const previewEnv = new PreviewEnvTest();
-    const taskRes = await previewEnv.runCommandAsTask("./", "npm start", /done/i);
+    const taskRes = await previewEnv.runCommandAsTask(
+      "./",
+      "npm start",
+      /done/i,
+      "./devTools/func"
+    );
     expect(taskRes.isOk()).to.be.true;
     const tasks = previewEnv.getRunningTasks();
     expect(tasks.length).equals(1);

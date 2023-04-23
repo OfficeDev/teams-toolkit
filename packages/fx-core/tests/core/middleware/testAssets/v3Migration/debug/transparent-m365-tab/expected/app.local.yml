@@ -90,7 +90,8 @@ deploy:
         REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
         REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
 
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
       workingDirectory: ./tabs

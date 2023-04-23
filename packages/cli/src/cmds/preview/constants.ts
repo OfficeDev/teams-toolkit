@@ -167,5 +167,4 @@ export const m365TenantHintMessage =
 export const m365SwitchedMessage =
   "WARN: You are now using a different Microsoft 365 tenant from what you previously used. Please visit https://aka.ms/teamsfx-switch-tenant-or-subscription-help to learn more.";
 
-export const execPathHintMessage = "Option 'exec-path' is not provided, set to: ";
 export const defaultExecPath = "devTools/func";

@@ -133,7 +133,15 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
       label: task["label"],
       type: "shell",
       command:
-        "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.'; exit 1;",
+        "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.' && exit 1",
+      windows: {
+        options: {
+          shell: {
+            executable: "cmd.exe",
+            args: ["/d", "/c"],
+          },
+        },
+      },
     });
     context.tasks.splice(index, 1, newTask);
     ++index;

@@ -829,7 +829,17 @@ describe("debugMigration", () => {
           // If you still prefer to use ngrok, please refer to https://aka.ms/teamsfx-tasks/customize-tunnel-service to learn how to use your own tunnel service.
           "label": "Start local tunnel 1",
           "type": "shell",
-          "command": "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.'; exit 1;"
+          "command": "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.' && exit 1",
+          "windows": {
+              "options": {
+                  "shell": {
+                      "executable": "cmd.exe",
+                      "args": [
+                          "/d", "/c"
+                      ]
+                  }
+              }
+          }
         },
         {
           // Start the local tunnel service to forward public URL to local port and inspect traffic.

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { getDefaultString, getLocalizedString } from "../../localizeUtils";
+import { nodeInstallationLink } from "./helpLink";
 
 export const Messages = {
   // learnMoreButtonText: getLocalizedString("depChecker.learnMoreButtonText"),
@@ -26,15 +27,26 @@ export const Messages = {
   dotnetInstallStderr: () => getLocalizedString("depChecker.dotnetInstallStderr"),
   dotnetInstallErrorCode: () => getLocalizedString("depChecker.dotnetInstallErrorCode"),
 
-  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound"),
+  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound", nodeInstallationLink),
+  // TODO: remove this message after clean useless code
   NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),
 
   // In v3, the message will be displayed in the output.
   // TODO: add localized string to FxError.displayMessage
   V3NodeNotSupported: (currentVersion: string, supportedVersions: string) =>
-    getDefaultString("depChecker.V3NodeNotSupported", currentVersion, supportedVersions),
+    getDefaultString(
+      "depChecker.V3NodeNotSupported",
+      currentVersion,
+      supportedVersions,
+      nodeInstallationLink
+    ),
   NodeNotLts: (currentVersion: string, supportedVersions: string) =>
-    getDefaultString("depChecker.NodeNotLts", currentVersion, supportedVersions),
+    getDefaultString(
+      "depChecker.NodeNotLts",
+      currentVersion,
+      supportedVersions,
+      nodeInstallationLink
+    ),
 
   dotnetNotFound: () => getLocalizedString("depChecker.dotnetNotFound"),
   // depsNotFound: () => getLocalizedString("depChecker.depsNotFound"),

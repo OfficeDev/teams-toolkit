@@ -15,6 +15,7 @@ There's no immediate action required from you. This part illustrates what's chan
 2. You need to take some manual steps when creating or provisioning new environments for your old project. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 3. You need to manually update `.vscode/launch.json` when launching your app for a certain environment if your current project contains it. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
 4. You need to provide values to `APIM__PUBLISHEREMAIL` and `APIM__PUBLISHERNAME` environment variable if your current project uses APIM. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)
+5. You need to manually update `.vscode/task.json` if you have customized your `Start local tunnel` task. Teams Toolkit now uses Dev Tunnel as default tunnel solution. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#start-tunnel-service)
 
 You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-changes-that-impact-your-development-flow) to learn more changes to Teams Toolkit.
 

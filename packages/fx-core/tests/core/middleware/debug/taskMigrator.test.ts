@@ -2003,7 +2003,7 @@ describe("debugMigration", () => {
         "osx": {
           "options": {
             "env": {
-                "path": "\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}\${env:path}\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}"
+                "path": "\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}\${env:path}\${command:fx-extension.get-path-delimiter}\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}"
             }
           }
         }

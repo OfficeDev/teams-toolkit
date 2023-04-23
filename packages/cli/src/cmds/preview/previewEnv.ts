@@ -100,7 +100,7 @@ export default class PreviewEnv extends YargsCommand {
       })
       .options("exec-path", {
         description:
-          'A path that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
+          'The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
         string: true,
         default: constants.defaultExecPath,
       });
@@ -373,11 +373,15 @@ export default class PreviewEnv extends YargsCommand {
     execPath: string
   ): Promise<Result<null, FxError>> {
     const taskName = "Run Command";
+    const execPathStr = execPath
+      .split(path.delimiter)
+      .map((subPath) => (path.isAbsolute(subPath) ? subPath : path.resolve(projectPath, subPath)))
+      .join(path.delimiter);
     const runningTask = new Task(taskName, true, runCommand, undefined, {
       shell: true,
       cwd: projectPath,
       env: {
-        PATH: `${path.resolve(projectPath, execPath)}${path.delimiter}${process.env.PATH}`,
+        PATH: `${execPathStr}${path.delimiter}${process.env.PATH}`,
       },
     });
     this.runningTasks.push(runningTask);

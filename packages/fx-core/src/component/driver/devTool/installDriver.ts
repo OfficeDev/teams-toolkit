@@ -177,12 +177,12 @@ export class ToolsInstallDriverImpl {
     if (!funcStatus.isInstalled && funcStatus.error) {
       throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
     } else if (funcStatus.error) {
-      this.context.logProvider.warning(funcStatus.error?.message);
+      this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
-        Summaries.funcSuccess(funcStatus?.details?.binFolders) + funcStatus.error?.message
+        Summaries.funcSuccess(funcStatus.details.binFolders) + funcStatus.error.message
       );
     } else {
-      this.context.addSummary(Summaries.funcSuccess(funcStatus?.details?.binFolders));
+      this.context.addSummary(Summaries.funcSuccess(funcStatus.details.binFolders));
     }
 
     if (funcStatus?.details?.binFolders !== undefined) {

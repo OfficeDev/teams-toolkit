@@ -40,7 +40,7 @@ export function happyPathTest(runtime: Runtime): void {
     if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
       if (process.env["DOTNET_ROOT"]) {
-        env["PATH"] = `${process.env["DOTNET_ROOT"]}${path.delimiter}${env["PATH"]}`;
+        env["PATH"] = `${process.env["DOTNET_ROOT"]}${path.delimiter}${process.env["PATH"]}`;
       }
     }
 

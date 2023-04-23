@@ -93,6 +93,7 @@ import {
   migrateBackendStart,
   migratePreDebugCheck,
   migrateInstallAppInTeams,
+  migrateGetFuncPathCommand,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -853,6 +854,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,
     migrateNgrokStartCommand,
+    migrateGetFuncPathCommand,
   ];
 
   const oldProjectSettings = await loadProjectSettings(context.projectPath);

@@ -285,10 +285,11 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(backendExtensionsInstallCmd);
 
   // Referenced by tasks.json
-  const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
-    Correlator.run(handlers.getFuncPathHandler)
+  const getPathDelimiterCmd = vscode.commands.registerCommand(
+    "fx-extension.get-path-delimiter",
+    () => Correlator.run(handlers.getPathDelimiterHandler)
   );
-  context.subscriptions.push(getFuncPathCmd);
+  context.subscriptions.push(getPathDelimiterCmd);
 
   const getDotnetPathCmd = vscode.commands.registerCommand("fx-extension.get-dotnet-path", () =>
     Correlator.run(handlers.getDotnetPathHandler)

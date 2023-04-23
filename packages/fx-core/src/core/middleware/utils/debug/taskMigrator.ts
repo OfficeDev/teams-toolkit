@@ -891,6 +891,56 @@ export async function migrateNgrokStartCommand(context: DebugMigrationContext): 
   }
 }
 
+export async function migrateGetFuncPathCommand(context: DebugMigrationContext): Promise<void> {
+  const getFuncPathCommand = "${command:fx-extension.get-func-path}";
+  const getFuncPathDelimiterCommand = "${command:fx-extension.get-path-delimiter}";
+  for (const task of context.tasks) {
+    if (!isCommentObject(task)) {
+      continue;
+    }
+
+    const generateNewValue = (oldStr: string): string => {
+      const newStr = oldStr.startsWith(getFuncPathCommand)
+        ? oldStr.replace(
+            getFuncPathCommand,
+            `\${workspaceFolder}/devTools/func${getFuncPathDelimiterCommand}`
+          )
+        : oldStr;
+      return newStr.replace(
+        /\${command:fx-extension.get-func-path}/g,
+        `${getFuncPathDelimiterCommand}\${workspaceFolder}/devTools/func${getFuncPathDelimiterCommand}`
+      );
+    };
+
+    if (isCommentObject(task["options"]) && isCommentObject(task["options"]["env"])) {
+      for (const [key, value] of Object.entries(task["options"]["env"])) {
+        if (typeof value === "string") {
+          task["options"]["env"][key] = generateNewValue(value);
+        }
+      }
+    }
+
+    const platforms = ["windows", "linux", "osx"];
+    platforms.forEach((platform) => {
+      if (
+        isCommentObject(task[platform]) &&
+        isCommentObject((task[platform] as CommentObject)["options"]) &&
+        isCommentObject(((task[platform] as CommentObject)["options"] as CommentObject)["env"])
+      ) {
+        const envObj = ((task[platform] as CommentObject)["options"] as CommentObject)[
+          "env"
+        ] as CommentObject;
+
+        for (const [key, value] of Object.entries(envObj)) {
+          if (typeof value === "string") {
+            envObj[key] = generateNewValue(value);
+          }
+        }
+      }
+    });
+  }
+}
+
 function generatePrerequisiteTask(
   task: CommentObject,
   context: DebugMigrationContext

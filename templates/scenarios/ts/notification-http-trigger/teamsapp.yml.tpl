@@ -17,12 +17,16 @@ provision:
     writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
-  - uses: botAadApp/create # Creates a new or reuses an existing Azure Active Directory application for bot.
+  # Create or reuse an existing Azure Active Directory application for bot.
+  - uses: botAadApp/create
     with:
-      name: {{appName}}-${{TEAMSFX_ENV}} # The Azure Active Directory application's display name
+      # The Azure Active Directory application's display name
+      name: {{appName}}-${{TEAMSFX_ENV}}
     writeToEnvironmentFile:
-      botId: BOT_ID # The Azure Active Directory application's client id created for bot.
-      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot. 
+      # The Azure Active Directory application's client id created for bot.
+      botId: BOT_ID
+      # The Azure Active Directory application's client secret created for bot.
+      botPassword: SECRET_BOT_PASSWORD 
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:

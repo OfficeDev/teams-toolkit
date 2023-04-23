@@ -39,6 +39,9 @@ export function happyPathTest(runtime: Runtime): void {
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
     if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
+      if (process.env["DOTNET_ROOT"]) {
+        env["PATH"] = `${process.env["DOTNET_ROOT"]}${path.delimiter}${env["PATH"]}`;
+      }
     }
 
     it("Provision Resource: command and response", async function () {

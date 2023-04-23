@@ -39,6 +39,9 @@ export function happyPathTest(runtime: Runtime): void {
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
     if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
+      if (process.env["DOTNET_ROOT"]) {
+        env["PATH"] = `${process.env["DOTNET_ROOT"]}${path.delimiter}${process.env["PATH"]}`;
+      }
     }
 
     it("Provision Resource: command and response", async function () {
@@ -52,11 +55,6 @@ export function happyPathTest(runtime: Runtime): void {
         timeout: 0,
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
-
-      // set subscription
-      await CliHelper.setSubscription(subscription, projectPath, env);
-
-      console.log(`[Successfully] set subscription for ${projectPath}`);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {

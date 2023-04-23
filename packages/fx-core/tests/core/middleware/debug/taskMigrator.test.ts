@@ -671,7 +671,7 @@ describe("debugMigration", () => {
       );
     });
 
-    it("customized ngrok", async () => {
+    it("customized ngrok path", async () => {
       const migrationContext = await mockMigrationContext(projectPath);
       const testTaskContent = `[
         {
@@ -710,6 +710,158 @@ describe("debugMigration", () => {
               }
             ],
             "env": "local",
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      await migrateTransparentLocalTunnel(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+    });
+
+    it("customized ngrok port", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3999 --log=stdout --log-format=logfmt"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "type": "dev-tunnel",
+              "ports": [
+                {
+                  "portNumber": 3999,
+                  "protocol": "http",
+                  "access": "public",
+                  "writeToEnvironmentFile": {
+                    // Keep consistency with upgraded configuration.
+                    "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                  }
+                }
+              ],
+              "env": "local",
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      await migrateTransparentLocalTunnel(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+    });
+
+    it("customized ngrok command", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel 1",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "ngrok start dev"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        },
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel 2",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3999 --log=stdout --log-format=logfmt"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          // Teams Toolkit now uses Dev Tunnel as default tunnel solution.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for more details.
+          // If you still prefer to use ngrok, please refer to https://aka.ms/teamsfx-tasks/customize-tunnel-service to learn how to use your own tunnel service.
+          "label": "Start local tunnel 1",
+          "type": "shell",
+          "command": "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.' && exit 1",
+          "windows": {
+              "options": {
+                  "shell": {
+                      "executable": "cmd.exe",
+                      "args": [
+                          "/d", "/c"
+                      ]
+                  }
+              }
+          }
+        },
+        {
+          // Start the local tunnel service to forward public URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+          "label": "Start local tunnel 2",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "type": "dev-tunnel",
+              "ports": [
+                {
+                  "portNumber": 3999,
+                  "protocol": "http",
+                  "access": "public",
+                  "writeToEnvironmentFile": {
+                    // Keep consistency with upgraded configuration.
+                    "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                  }
+                }
+              ],
+              "env": "local",
           },
           "isBackground": true,
           "problemMatcher": "$teamsfx-local-tunnel-watch"

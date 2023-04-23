@@ -62,12 +62,15 @@ provision:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  - uses: devTool/install # Install development tool(s)
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       func:
         version: ~4.0.4670
         symlinkDir: ./devTools/func
-    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
       funcPath: FUNC_PATH
 
   - uses: cli/runNpmCommand # Run npm command

@@ -737,6 +737,9 @@ export function DashboardOptionItem(): OptionItem {
     label: `${getLocalizedString("core.DashboardOption.label")}`,
     cliName: "dashboard-tab",
     detail: getLocalizedString("core.DashboardOption.detail"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
     data: "https://aka.ms/teamsfx-dashboard-app",
     buttons: [
       {
@@ -874,6 +877,9 @@ export function TabSPFxNewUIItem(): OptionItem {
     label: `${getLocalizedString("core.TabSPFxOption.labelNew")}`,
     cliName: "tab-spfx",
     detail: getLocalizedString("core.TabSPFxOption.detailNew"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
   };
 }
 
@@ -903,6 +909,9 @@ export function TabNonSsoItem(): OptionItem {
     label: `${getLocalizedString("core.TabNonSso.label")}`,
     cliName: "tab-non-sso",
     detail: getLocalizedString("core.TabNonSso.detail"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
   };
 }
 export function TabNonSsoAndDefaultBotItem(): OptionItem {
@@ -924,6 +933,9 @@ export function M365SsoLaunchPageOptionItem(): OptionItem {
     label: `${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
     cliName: "sso-launch-page",
     detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
   };
 }
 export function M365SearchAppOptionItem(): OptionItem {

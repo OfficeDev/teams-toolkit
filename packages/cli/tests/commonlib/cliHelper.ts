@@ -62,14 +62,9 @@ export class CliHelper {
     }
   }
 
-  static async provisionProject(
-    projectPath: string,
-    env = "dev",
-    option = "",
-    processEnv?: NodeJS.ProcessEnv
-  ) {
+  static async provisionProject(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
     const result = await execAsyncWithRetry(
-      `teamsfx provision --env ${env} ${option} --interactive false --verbose`,
+      `teamsfx provision ${option} --interactive false --verbose`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,

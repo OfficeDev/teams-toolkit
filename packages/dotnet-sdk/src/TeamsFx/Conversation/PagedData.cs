@@ -21,6 +21,7 @@ namespace Microsoft.TeamsFx.Conversation
         /// </summary>
         /// <value>
         /// The Continuation Token to pass to get the next page of results.
+        /// Null or empty token means the page reaches the end.
         /// </value>
         public string ContinuationToken { get; set; }
     }

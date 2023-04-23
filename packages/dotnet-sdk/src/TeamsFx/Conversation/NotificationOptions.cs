@@ -14,11 +14,11 @@ namespace Microsoft.TeamsFx.Conversation
         public string BotAppId { get; set; } = string.Empty;
 
         /// <summary>
-        /// An optional store to persist bot notification connections.
+        /// An optional store to persist bot notification target references.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// If <c>Store</c> is not provided, a default local store will be used, which stores notification connections into:
+        /// If <c>Store</c> is not provided, a default local store will be used, which stores notification target references into:
         /// </para>
         /// <list type="bullet">
         ///     <item>
@@ -38,11 +38,11 @@ namespace Microsoft.TeamsFx.Conversation
         public IConversationReferenceStore Store { get; set; }
 
         /// <summary>
-        /// An optional storage to persist bot notification connections.
+        /// An optional storage to persist bot notification target references.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// If <c>Storage</c> is not provided, a default local file storage will be used, which stores notification connections into:
+        /// If <c>Storage</c> is not provided, a default local file storage will be used, which stores notification target references into:
         /// </para>
         /// <list type="bullet">
         ///     <item>
@@ -59,7 +59,7 @@ namespace Microsoft.TeamsFx.Conversation
         /// It's recommended to use your own shared storage for production environment.
         /// </para>
         /// </remarks>
-        [Obsolete($"Use {nameof(Store)} to customize the way to persist bot notification connections instead.")]
+        [Obsolete($"Use {nameof(Store)} to customize the way to persist bot notification target references instead.")]
         public INotificationTargetStorage Storage { get; set; }
     }
 }

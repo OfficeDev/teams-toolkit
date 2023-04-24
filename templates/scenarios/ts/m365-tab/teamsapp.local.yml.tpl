@@ -111,7 +111,8 @@ deploy:
       workingDirectory: .
       args: install --no-audit
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./.localConfigs
       envs:

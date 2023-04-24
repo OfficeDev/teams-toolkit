@@ -69,7 +69,8 @@ deploy:
       args: install -D env-cmd
       workingDirectory: .
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.localConfigs
       envs:
@@ -82,7 +83,8 @@ deploy:
         REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}/auth-start.html
         REACT_APP_TEAMSFX_ENDPOINT: http://localhost:55000
 
-  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
     with:
       target: SIMPLE_AUTH_APPSETTINGS_PATH
       appsettings:

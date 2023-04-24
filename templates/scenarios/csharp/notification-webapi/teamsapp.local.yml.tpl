@@ -25,7 +25,8 @@ provision:
       # The Azure Active Directory application's client secret created for bot.
       botPassword: SECRET_BOT_PASSWORD 
 
-  - uses: file/createOrUpdateJsonFile # Generate runtime appsettings to JSON file
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
     with:
       target: ./appsettings.Development.json
       appsettings:

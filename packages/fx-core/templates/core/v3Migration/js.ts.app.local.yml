@@ -151,7 +151,8 @@ deploy:
 
   {{/dotnetCommand}}
   {{#tab}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -163,7 +164,8 @@ deploy:
 
   {{/tab}}
   {{#if bot}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -172,7 +174,8 @@ deploy:
 
   {{/if}}
   {{#ssoTab}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -185,7 +188,8 @@ deploy:
 
   {{/ssoTab}}
   {{#if ssoBot}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -205,7 +209,8 @@ deploy:
 
   {{/if}}
   {{#if ssoFunction}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./api/.env.teamsfx.local
       envs:
@@ -226,7 +231,8 @@ deploy:
 
   {{/npmCommands}}
   {{#frontendStart}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.localConfigs
       envs:
@@ -247,7 +253,8 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
     with:
       target: {{appsettingsPath}}
       appsettings:
@@ -262,7 +269,8 @@ deploy:
 
   {{/authStart}}
   {{#botStart}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.localConfigs
       envs:
@@ -286,7 +294,8 @@ deploy:
 
   {{/botStart}}
   {{#if backendStart}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./api/.localConfigs
       envs:

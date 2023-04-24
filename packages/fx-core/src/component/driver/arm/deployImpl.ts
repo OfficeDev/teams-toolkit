@@ -47,8 +47,10 @@ export class ArmDeployImpl {
     await this.validateArgs();
     await this.createClient();
     const needBicepCli = hasBicepTemplate(this.args.templates);
-    if (needBicepCli) {
+    if (needBicepCli && this.args.bicepCliVersion) {
       this.bicepCommand = await this.ensureBicepCli();
+    } else {
+      this.bicepCommand = "bicep";
     }
     const deployRes = await this.deployTemplates();
     if (deployRes.isOk()) {

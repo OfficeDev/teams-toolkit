@@ -1,4 +1,4 @@
-# 2.0.0-rc
+# 2.0.0
 
 - Support Graph SDK v5.6.0
 - Remove `frameworkreference` and remove auth-start and auth-end html pages

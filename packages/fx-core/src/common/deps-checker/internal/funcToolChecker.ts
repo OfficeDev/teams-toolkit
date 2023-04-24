@@ -279,7 +279,7 @@ export class FuncToolChecker implements DepsChecker {
       if (actualFuncRes.isErr()) {
         this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] =
           (this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] ?? "") +
-          actualFuncRes.error.message;
+          `[${matchedVersion}] ${actualFuncRes.error.message}`;
       }
 
       const matchedVersionIndex = funcDictionaries.indexOf(matchedVersion);

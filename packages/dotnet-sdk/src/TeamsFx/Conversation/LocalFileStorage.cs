@@ -7,6 +7,7 @@ namespace Microsoft.TeamsFx.Conversation
 
     using Microsoft.Bot.Schema;
 
+    [Obsolete]
     internal sealed class LocalFileStorage : INotificationTargetStorage
     {
         private const string LocalFileName = ".notification.localstore.json";

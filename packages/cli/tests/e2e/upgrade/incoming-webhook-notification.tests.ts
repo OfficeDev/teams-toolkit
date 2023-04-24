@@ -49,7 +49,7 @@ describe("upgrade", () => {
       chai.assert.isFalse(result.success);
       chai.assert.include(
         result.stderr,
-        "The command only works for project created by Teams Toolkit"
+        "This command only works for project created by Teams Toolkit"
       );
     }
   });

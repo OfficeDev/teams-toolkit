@@ -15,7 +15,7 @@ import * as tools from "../../../../../src/common/tools";
 import * as sinon from "sinon";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import {
-  CheckDeployStatusError,
+  CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
   DeployRemoteStartError,
   DeployZipPackageError,
@@ -150,7 +150,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     );
     await chai
       .expect(impl.checkDeployStatus("", config))
-      .to.be.rejectedWith(CheckDeployStatusError);
+      .to.be.rejectedWith(CheckDeploymentStatusError);
   });
   it("checkDeployStatus reject none AxiosError", async () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").rejects(new Error("other error"));
@@ -185,7 +185,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     );
     await chai
       .expect(impl.checkDeployStatus("", config))
-      .to.be.rejectedWith(CheckDeployStatusError);
+      .to.be.rejectedWith(CheckDeploymentStatusError);
   });
   it("checkDeployStatus DeployRemoteStartError", async () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
@@ -263,7 +263,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     );
     await chai
       .expect(impl.checkDeployStatus("", config))
-      .to.be.rejectedWith(CheckDeployStatusError);
+      .to.be.rejectedWith(CheckDeploymentStatusError);
   });
   it("createAzureDeployConfig GetPublishingCredentialsError", async () => {
     const args = {

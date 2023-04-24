@@ -54,7 +54,7 @@ import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migra
 import { LocalCrypto } from "./crypto";
 import { envUtil } from "../component/utils/envUtil";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { FileNotFoundError } from "../error/common";
+import { FileNotFoundError, NoEnvFilesError } from "../error/common";
 
 export interface EnvStateFiles {
   envState: string;
@@ -239,14 +239,7 @@ class EnvironmentManager {
       if (allEnvsRes.isErr()) return err(allEnvsRes.error);
       const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
       if (remoteEnvs.length === 0 && returnErrorIfEmpty)
-        return err(
-          new UserError({
-            source: "EnvironmentManager",
-            name: "NoEnvFilesError",
-            displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
-            message: getDefaultString("core.error.NoEnvFilesError"),
-          })
-        );
+        return err(new NoEnvFilesError("EnvironmentManager"));
       return ok(remoteEnvs);
     }
 
@@ -258,14 +251,7 @@ class EnvironmentManager {
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null && name !== this.getLocalEnvName());
     if (envNames.length === 0 && returnErrorIfEmpty)
-      return err(
-        new UserError({
-          source: "EnvironmentManager",
-          name: "NoEnvFilesError",
-          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
-          message: getDefaultString("core.error.NoEnvFilesError"),
-        })
-      );
+      return err(new NoEnvFilesError("EnvironmentManager"));
     return ok(envNames);
   }
 

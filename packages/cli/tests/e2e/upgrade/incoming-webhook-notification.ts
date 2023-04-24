@@ -12,11 +12,9 @@ import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Cleaner } from "../../utils/cleaner";
-import { Capability } from "../../commonlib/constants";
+import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import fs from "fs-extra";
-import { checkYmlHeader } from "./utils";
 
 describe("upgrade", () => {
   const testFolder = getTestFolder();
@@ -27,42 +25,32 @@ describe("upgrade", () => {
     await Cleaner.clean(projectPath);
   });
 
-  it("upgrade project", { testPlanCaseId: 17184119 }, async function () {
+  it("sample incoming webhook notification", { testPlanCaseId: 19298763 }, async function () {
     if (!isV3Enabled()) {
       return;
     }
 
     {
+      Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);
       env["TEAMSFX_V3"] = "false";
-      // new a project ( tab only )
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
+      // new projiect
+      await CliHelper.createTemplateProject(
+        appName,
+        testFolder,
+        TemplateProject.IncomingWebhook,
+        env
+      );
     }
-
-    {
-      // upgrade
-      const result = await Executor.upgrade(projectPath);
-      chai.assert.isTrue(result.success);
-      const ymlFile = path.join(projectPath, "teamsapp.yml");
-      await checkYmlHeader(ymlFile);
-    }
-
-    // {
-    //   // preview
-    //   const result = await Executor.preview(projectPath);
-    //   chai.assert.isTrue(result.success);
-    // }
 
     {
       // provision
       const result = await Executor.provision(projectPath);
-      chai.assert.isTrue(result.success);
-    }
-
-    {
-      // deploy
-      const result = await Executor.deploy(projectPath);
-      chai.assert.isTrue(result.success);
+      chai.assert.isFalse(result.success);
+      chai.assert.include(
+        result.stderr,
+        "The command only works for project created by Teams Toolkit"
+      );
     }
   });
 });

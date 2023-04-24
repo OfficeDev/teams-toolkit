@@ -70,6 +70,7 @@ export enum TelemetryProperties {
   HistoryFuncVersionError = "history-func-version-error",
   VersioningFuncVersionError = "versioning-func-version-error",
   GlobalFuncVersionError = "global-func-version",
+  InstallFuncError = "install-func-error",
 }
 
 export enum TelemetryMessurement {

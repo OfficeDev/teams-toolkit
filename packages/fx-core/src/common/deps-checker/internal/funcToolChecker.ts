@@ -296,8 +296,7 @@ export class FuncToolChecker implements DepsChecker {
   ): Promise<DependencyStatus> {
     if (isLinux()) {
       throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound().split("@SupportedPackages").join(funcToolName) +
-          JSON.stringify(this.telemetryProperties),
+        Messages.linuxDepsNotFound().split("@SupportedPackages").join(funcToolName),
         v3DefaultHelpLink
       );
     }
@@ -315,6 +314,7 @@ export class FuncToolChecker implements DepsChecker {
     );
     if (funcVersionRes.isErr()) {
       await this.cleanup(tmpVersion);
+      this.telemetryProperties[TelemetryProperties.InstallFuncError] = funcVersionRes.error.message;
       throw new DepsCheckerError(
         Messages.failToValidateFuncCoreTool() + " " + funcVersionRes.error.message,
         v3DefaultHelpLink
@@ -409,8 +409,9 @@ export class FuncToolChecker implements DepsChecker {
       await fs.ensureFile(FuncToolChecker.getVersioningSentinelPath(tmpVersion));
     } catch (error: any) {
       await this.cleanup(tmpVersion);
+      this.telemetryProperties[TelemetryProperties.InstallFuncError] = error.message;
       throw new DepsCheckerError(
-        getLocalizedString("error.common.InstallSoftwareError", funcToolName) + " " + error.message,
+        getLocalizedString("error.common.InstallSoftwareError", funcToolName),
         v3DefaultHelpLink
       );
     }

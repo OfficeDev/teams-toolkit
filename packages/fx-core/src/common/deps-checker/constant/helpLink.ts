@@ -3,11 +3,12 @@
 
 // TODO: remove this link after clean the useless code.
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
+export const v3DefaultHelpLink = "https://aka.ms/teamsfx-actions/devtool-install";
+
 // TODO: remove this link after clean the useless code.
 export const validationSettingsHelpLink = `${defaultHelpLink}#teams-toolkit-validation-settings`;
 
 export const functionDepsVersionsLink = "https://aka.ms/functions-node-versions";
-export const functionDefaultHelpLink = "https://aka.ms/teamsfx-actions/devtool-install";
 
 // TODO: remove this link after clean the useless code.
 export const nodeNotFoundHelpLink = `https://aka.ms/teamsfx-node`;

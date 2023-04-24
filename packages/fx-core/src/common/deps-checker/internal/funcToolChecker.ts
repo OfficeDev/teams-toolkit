@@ -11,7 +11,7 @@ import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";
-import { functionDefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
+import { v3DefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DependencyStatus, DepsChecker, DepsType, FuncInstallOptions } from "../depsChecker";
 import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../depsError";
@@ -103,14 +103,14 @@ export class FuncToolChecker implements DepsChecker {
       return await this.getDepsInfo(
         undefined,
         undefined,
-        new DepsCheckerError(error.message, functionDefaultHelpLink)
+        new DepsCheckerError(error.message, v3DefaultHelpLink)
       );
     }
   }
 
   public async getInstallationInfo(installOptions: FuncInstallOptions): Promise<DependencyStatus> {
     const symlinkDir = installOptions.symlinkDir
-      ? path.join(installOptions.projectPath, installOptions.symlinkDir)
+      ? path.resolve(installOptions.projectPath, installOptions.symlinkDir)
       : undefined;
 
     if (symlinkDir) {
@@ -165,7 +165,7 @@ export class FuncToolChecker implements DepsChecker {
     if (funcVersionRange && !semver.satisfies(funcVersion, funcVersionRange)) {
       return new DepsCheckerError(
         Messages.portableFuncNodeNotMatched(nodeVersion, funcVersion),
-        functionDefaultHelpLink
+        v3DefaultHelpLink
       );
     }
     return undefined;
@@ -216,20 +216,20 @@ export class FuncToolChecker implements DepsChecker {
       // For portable func, avoid "func -v" and "func new" work well, but "func start" fail.
       const hasSentinel = sentinelPath ? await fs.pathExists(sentinelPath) : true;
       if (!hasSentinel) {
-        return err(new DepsCheckerError(Messages.noSentinelFile(), functionDefaultHelpLink));
+        return err(new DepsCheckerError(Messages.noSentinelFile(), v3DefaultHelpLink));
       }
       const funcVersionSupport = isFuncVersionSupport(funcVersion, expectedFuncVersion);
       if (!funcVersionSupport) {
         return err(
           new DepsCheckerError(
             Messages.funcVersionNotMatch(funcVersion.versionStr, expectedFuncVersion),
-            functionDefaultHelpLink
+            v3DefaultHelpLink
           )
         );
       }
       return ok(funcVersion);
     } catch (error: any) {
-      return err(new DepsCheckerError(error.message, functionDefaultHelpLink));
+      return err(new DepsCheckerError(error.message, v3DefaultHelpLink));
     }
   }
 
@@ -286,11 +286,11 @@ export class FuncToolChecker implements DepsChecker {
       throw new LinuxNotSupportedError(
         Messages.linuxDepsNotFound().split("@SupportedPackages").join(funcToolName) +
           JSON.stringify(this.telemetryProperties),
-        functionDefaultHelpLink
+        v3DefaultHelpLink
       );
     }
     if (!(await this.hasNPM())) {
-      throw new DepsCheckerError(Messages.needInstallNpm(), functionDefaultHelpLink);
+      throw new DepsCheckerError(Messages.needInstallNpm(), v3DefaultHelpLink);
     }
 
     const tmpVersion = uuid.v4();
@@ -305,7 +305,7 @@ export class FuncToolChecker implements DepsChecker {
       await this.cleanup(tmpVersion);
       throw new DepsCheckerError(
         Messages.failToValidateFuncCoreTool() + " " + funcVersionRes.error.message,
-        functionDefaultHelpLink
+        v3DefaultHelpLink
       );
     }
     this.telemetryProperties[TelemetryProperties.InstalledFuncVersion] =
@@ -399,7 +399,7 @@ export class FuncToolChecker implements DepsChecker {
       await this.cleanup(tmpVersion);
       throw new DepsCheckerError(
         getLocalizedString("error.common.InstallSoftwareError", funcToolName) + " " + error.message,
-        functionDefaultHelpLink
+        v3DefaultHelpLink
       );
     }
   }
@@ -413,7 +413,7 @@ export function mapToFuncToolsVersion(output: string): FuncVersion {
   const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   const match = regex.exec(output);
   if (!match) {
-    throw new DepsCheckerError(Messages.invalidFuncVersion(output), functionDefaultHelpLink);
+    throw new DepsCheckerError(Messages.invalidFuncVersion(output), v3DefaultHelpLink);
   }
 
   const majorVersion = Number.parseInt(match.groups?.major_version ?? "");
@@ -425,7 +425,7 @@ export function mapToFuncToolsVersion(output: string): FuncVersion {
     !Number.isInteger(minorVersion) ||
     !Number.isInteger(patchVersion)
   ) {
-    throw new DepsCheckerError(Messages.invalidFuncVersion(output), functionDefaultHelpLink);
+    throw new DepsCheckerError(Messages.invalidFuncVersion(output), v3DefaultHelpLink);
   }
   return {
     majorVersion: majorVersion,

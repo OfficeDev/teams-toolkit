@@ -1,3 +1,13 @@
+import { DotenvParseOutput } from "dotenv";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { camelCase, merge } from "lodash";
+import { EOL } from "os";
+import * as path from "path";
+import { Container } from "typedi";
+import * as uuid from "uuid";
+import * as xml2js from "xml2js";
+
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
@@ -15,17 +25,31 @@ import {
   UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
-import { camelCase, merge } from "lodash";
-import { Container } from "typedi";
+
+import { globalStateUpdate } from "../../common/globalState";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
+import { getResourceGroupInPortal } from "../../common/tools";
+import { MetadataV3 } from "../../common/versionMetadata";
+import { downloadSampleHook } from "../../core/downloadSample";
 import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
+import { globalVars } from "../../core/globalVars";
 import {
   CoreQuestionNames,
-  CreateNewOfficeAddinOption,
   ProjectNamePattern,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../../core/question";
+import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
+import {
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
+} from "../../error/common";
+import { LifeCycleUndefinedError } from "../../error/yml";
+import { convertToLangKey } from "../code/utils";
+import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
+import { Lifecycle } from "../configManager/lifecycle";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -34,37 +58,30 @@ import {
   AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
   BotFeatureIds,
+  BotOptionItem,
   CicdOptionItem,
+  CommandAndResponseOptionItem,
+  ComponentNames,
+  CoordinatorSource,
+  DashboardOptionItem,
+  DefaultBotAndMessageExtensionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
+  MessageExtensionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  NotificationOptionItem,
   SingleSignOnOptionItem,
   TabFeatureIds,
-  TabSPFxNewUIItem,
-  ComponentNames,
-  WorkflowOptionItem,
-  NotificationOptionItem,
-  CommandAndResponseOptionItem,
-  TabOptionItem,
-  TabNonSsoItem,
-  MessageExtensionItem,
-  CoordinatorSource,
-  BotOptionItem,
   TabNonSsoAndDefaultBotItem,
-  DefaultBotAndMessageExtensionItem,
-  DashboardOptionItem,
+  TabNonSsoItem,
+  TabOptionItem,
+  TabSPFxNewUIItem,
+  WorkflowOptionItem,
 } from "../constants";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import {
-  getQuestionsForAddFeatureV3,
-  InitOptionNo,
-  InitEditorVSCode,
-  InitEditorVS,
-} from "../question";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import { globalVars } from "../../core/globalVars";
-import fs from "fs-extra";
-import { globalStateUpdate } from "../../common/globalState";
+import { getBotTroubleShootMessage } from "../core";
+import { deployUtils } from "../deployUtils";
+import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
+import { DriverContext } from "../driver/interface/commonArgs";
 import { QuestionNames } from "../feature/bot/constants";
 import {
   AppServiceOptionItem,
@@ -74,39 +91,24 @@ import {
   FunctionsTimerTriggerOptionItem,
 } from "../feature/bot/question";
 import { Generator } from "../generator/generator";
-import { convertToLangKey } from "../code/utils";
-import { downloadSampleHook } from "../../core/downloadSample";
-import * as uuid from "uuid";
-import { settingsUtil } from "../utils/settingsUtil";
-import { DriverContext } from "../driver/interface/commonArgs";
-import { DotenvParseOutput } from "dotenv";
-import { provisionUtils } from "../provisionUtils";
-import { envUtil } from "../utils/envUtil";
+import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfxGenerator";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
-import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { getBotTroubleShootMessage } from "../core";
-import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { provisionUtils } from "../provisionUtils";
+import {
+  getQuestionsForAddFeatureV3,
+  InitEditorVS,
+  InitEditorVSCode,
+  InitOptionNo,
+} from "../question";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
-import * as xml2js from "xml2js";
-import { Lifecycle } from "../configManager/lifecycle";
-import { SummaryReporter } from "./summary";
-import { EOL } from "os";
-import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { deployUtils } from "../deployUtils";
-import { pathUtils } from "../utils/pathUtils";
-import { MetadataV3 } from "../../common/versionMetadata";
+import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
-import { LifeCycleUndefinedError } from "../../error/yml";
-import {
-  InputValidationError,
-  MissingRequiredInputError,
-  MissingEnvironmentVariablesError,
-} from "../../error/common";
-import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
+import { pathUtils } from "../utils/pathUtils";
+import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
+import { settingsUtil } from "../utils/settingsUtil";
+import { SummaryReporter } from "./summary";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -252,6 +254,13 @@ export class Coordinator {
       if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+      } else if (
+        inputs[CoreQuestionNames.ProjectType] === NewProjectTypeOutlookAddinOptionItem().id
+      ) {
+        const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        }
       } else {
         if (
           feature === M365SsoLaunchPageOptionItem().id ||
@@ -268,27 +277,6 @@ export class Coordinator {
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
         }
-      }
-    } else if (scratch === CreateNewOfficeAddinOption().id) {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName)
-        return err(new MissingRequiredInputError(CoreQuestionNames.AppName));
-      const validateResult = jsonschema.validate(appName, {
-        pattern: ProjectNamePattern,
-      });
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        return err(
-          new InputValidationError(CoreQuestionNames.AppName, validateResult.errors[0].message)
-        );
-      }
-      projectPath = path.join(folder, appName);
-      inputs.projectPath = projectPath;
-
-      await fs.ensureDir(projectPath);
-
-      const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-      if (res.isErr()) {
-        return err(res.error);
       }
     }
 

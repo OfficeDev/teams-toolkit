@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, AppPackageFolderName, ok, Func } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Func } from "@microsoft/teamsfx-api";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -12,7 +11,6 @@ import {
   EnvOptions,
   ValidateApplicationOptions,
   AppPackageFilePathParamName,
-  ManifestFilePathParamName,
 } from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -22,6 +20,8 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import CLIUIInstance from "../userInteraction";
+import { EnvNotSpecified } from "../error";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -56,6 +56,12 @@ export class ManifestValidate extends YargsCommand {
           inputs.validateMethod = "validateAgainstAppPackage";
         } else {
           inputs.validateMethod = "validateAgainstSchema";
+          // Throw error if --env not specified
+          if (!args.env && !CLIUIInstance.interactive) {
+            const error = new EnvNotSpecified();
+            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+            return err(error);
+          }
         }
         result = await core.validateApplication(inputs);
       } else {

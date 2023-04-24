@@ -102,6 +102,12 @@ export class UpdateTeamsApp extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
 
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[TeamsAppManifestFilePathName];
+    // Throw error if --env not specified
+    if (!args.env && !CLIUIInstance.interactive) {
+      const error = new EnvNotSpecified();
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      return err(error);
+    }
 
     const result = await core.deployTeamsManifest(inputs);
     if (result.isErr()) {

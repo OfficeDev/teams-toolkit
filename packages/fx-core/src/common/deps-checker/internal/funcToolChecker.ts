@@ -145,7 +145,6 @@ export class FuncToolChecker implements DepsChecker {
         globalFuncRes.value.versionStr;
       return await this.getDepsInfo(globalFuncRes.value, undefined);
     }
-    this.telemetryProperties["global-error"] = globalFuncRes.error.message;
     return await this.getDepsInfo(undefined, undefined);
   }
 

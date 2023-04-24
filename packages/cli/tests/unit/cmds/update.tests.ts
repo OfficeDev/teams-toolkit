@@ -249,4 +249,19 @@ describe("Update Teams app manifest Command Tests", function () {
       expect(e.message).equals("Fake_Err_msg");
     }
   });
+
+  it("Update Teams app - Run command failed without env", async () => {
+    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(""));
+    const cmd = new Update();
+    const updateTeamsAppManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
+    const args = {
+      folder: "fake_test",
+      "manifest-file-path": "./appPackage/manifest.json",
+    };
+    const res = await updateTeamsAppManifest!.runCommand(args);
+    expect(res.isErr()).to.be.true;
+    if (res.isErr()) {
+      expect(res.error.message).equal("The --env argument is not specified");
+    }
+  });
 });

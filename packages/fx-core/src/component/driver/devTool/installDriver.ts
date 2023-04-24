@@ -165,7 +165,7 @@ export class ToolsInstallDriverImpl {
     outputEnvVarNames?: Map<string, string>
   ): Promise<Map<string, string>> {
     const res = new Map<string, string>();
-    const funcToolChecker = new FuncToolChecker(new EmptyLogger(), new EmptyTelemetry());
+    const funcToolChecker = new FuncToolChecker();
     const funcStatus = await funcToolChecker.resolve({
       version: version,
       symlinkDir: symlinkDir,
@@ -249,7 +249,14 @@ export class ToolsInstallDriverImpl {
     this.context.addTelemetryProperties({
       [TelemetryProperties.driverArgs]: JSON.stringify({
         devCert: args.devCert,
-        func: args.func,
+        func: {
+          version: args.func?.version,
+          symlinkDir: args.func?.symlinkDir
+            ? args.func.symlinkDir === "./devTools/func"
+              ? "<default>"
+              : "<unknown>"
+            : "<undefined>",
+        },
         dotnet: args.dotnet,
       }),
     });
@@ -278,5 +285,8 @@ export class ToolsInstallDriverImpl {
           : TelemetryDepsCheckStatus.success
         : TelemetryDepsCheckStatus.failed,
     });
+    if (depStatus.telemetryProperties) {
+      this.context.addTelemetryProperties(depStatus.telemetryProperties);
+    }
   }
 }

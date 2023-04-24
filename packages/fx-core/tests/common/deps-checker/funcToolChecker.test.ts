@@ -15,7 +15,7 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
-  defaultHelpLink,
+  functionDefaultHelpLink,
   v3NodeNotFoundHelpLink,
 } from "../../../src/common/deps-checker/constant/helpLink";
 import { cpUtils, DebugLogger } from "../../../src/common/deps-checker/util/cpUtils";
@@ -871,7 +871,9 @@ describe("Func Tools Checker Test", () => {
             supportedVersions: [],
             binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
           },
-          error: nodeVersionValidationData.isSuccess ? undefined : { helpLink: defaultHelpLink },
+          error: nodeVersionValidationData.isSuccess
+            ? undefined
+            : { helpLink: functionDefaultHelpLink },
         })
       );
       const stat = await fs.lstat(res.details.binFolders[0]);
@@ -898,7 +900,7 @@ describe("Func Tools Checker Test", () => {
       binFolders: undefined,
     },
     error: {
-      helpLink: defaultHelpLink,
+      helpLink: functionDefaultHelpLink,
     },
   };
   const prepareTestEnv = async (

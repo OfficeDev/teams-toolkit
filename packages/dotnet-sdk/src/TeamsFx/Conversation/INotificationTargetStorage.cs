@@ -5,6 +5,7 @@
     /// <summary>
     /// Interface for a storage provider that stores and retrieves notification target references.
     /// </summary>
+    [Obsolete($"Use {nameof(IConversationReferenceStore)} to customize the way to persist bot notification connections instead.")]
     public interface INotificationTargetStorage
     {
         /// <summary>

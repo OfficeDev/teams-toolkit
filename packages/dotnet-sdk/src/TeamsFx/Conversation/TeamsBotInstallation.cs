@@ -162,29 +162,50 @@ namespace Microsoft.TeamsFx.Conversation
         }
 
         /// <summary>
+        /// Get a pagined list of members from this bot installation.
+        /// </summary>
+        /// <param name="pageSize">Suggested number of entries on a page.</param>
+        /// <param name="continuationToken">The continuation token.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>An Array of members from where the bot is installed.</returns>
+        public async Task<PagedData<Member>> GetPagedMembersAsync(
+            int? pageSize = default,
+            string continuationToken = default,
+            CancellationToken cancellationToken = default)
+        {
+            PagedData<Member> result = null;
+            await Adapter.ContinueConversationAsync(
+                BotAppId,
+                ConversationReference,
+                async (context, ct) => {
+                    var pagedMembers = await TeamsInfo.GetPagedMembersAsync(context, pageSize, continuationToken, ct).ConfigureAwait(false);
+                    result = new PagedData<Member> {
+                        Data = pagedMembers.Members.Select(member => new Member(this, member)).ToArray(),
+                        ContinuationToken = pagedMembers.ContinuationToken,
+                    };
+                },
+                cancellationToken
+            ).ConfigureAwait(false);
+
+            return result;
+        }
+
+        /// <summary>
         /// Get members from this bot installation.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An array of members from where the bot is installed.</returns>
+        [Obsolete($"Use {nameof(GetPagedMembersAsync)} instead.")]
         public async Task<Member[]> GetMembersAsync(CancellationToken cancellationToken = default)
         {
             var members = new List<Member>();
-            await Adapter.ContinueConversationAsync
-            (
-                BotAppId,
-                ConversationReference,
-                async (context, ct) => {
-                    string continuationToken = null;
-                    do
-                    {
-                        var pagedMembers = await TeamsInfo.GetPagedMembersAsync(context, null, continuationToken, ct).ConfigureAwait(false);
-                        continuationToken = pagedMembers.ContinuationToken;
-                        members.AddRange(pagedMembers.Members.Select(member => new Member(this, member)));
-                    }
-                    while (!string.IsNullOrEmpty(continuationToken));
-                },
-                cancellationToken
-            ).ConfigureAwait(false);
+            string continuationToken = null;
+            do
+            {
+                var pagedData = await GetPagedMembersAsync(null, continuationToken, cancellationToken).ConfigureAwait(false);
+                continuationToken = pagedData.ContinuationToken;
+                members.AddRange(pagedData.Data);
+            } while (!string.IsNullOrEmpty(continuationToken));
 
             return members.ToArray();
         }

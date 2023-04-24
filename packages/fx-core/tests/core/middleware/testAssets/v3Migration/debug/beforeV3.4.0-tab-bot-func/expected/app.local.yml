@@ -91,7 +91,8 @@ deploy:
       workingDirectory: api
       execPath: ${{DOTNET_PATH}}
 
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install -D env-cmd
       workingDirectory: .

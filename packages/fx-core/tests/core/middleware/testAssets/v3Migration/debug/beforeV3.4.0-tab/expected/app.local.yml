@@ -64,7 +64,8 @@ deploy:
       sslKeyFile: SSL_KEY_FILE
       dotnetPath: DOTNET_PATH
 
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install -D env-cmd
       workingDirectory: .

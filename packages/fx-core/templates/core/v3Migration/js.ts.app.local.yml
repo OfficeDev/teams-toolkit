@@ -222,7 +222,8 @@ deploy:
 
   {{/if}}
   {{#npmCommands}}
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: {{args}}
       {{#if workingDirectory}}

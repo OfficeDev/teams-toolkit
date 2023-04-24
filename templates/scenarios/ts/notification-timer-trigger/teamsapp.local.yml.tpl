@@ -74,7 +74,8 @@ deploy:
     writeToEnvironmentFile:
       funcPath: FUNC_PATH
 
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
 

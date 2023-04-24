@@ -13,6 +13,7 @@ describe("colorize", () => {
 
   beforeEach(() => {
     sandox.stub(ScreenManager, "writeLine").callsFake((msg: string) => (message += msg));
+    sandox.stub(process.stdout, "isTTY").returns(true);
   });
 
   afterEach(() => {

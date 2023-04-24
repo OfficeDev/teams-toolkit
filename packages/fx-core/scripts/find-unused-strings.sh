@@ -29,8 +29,10 @@ isStringBeingUsed() {
 STRING_KEYS=$(jq 'keys | .[]' '../resource/package.nls.json')
 for key in ${STRING_KEYS[@]}; do
     used=$(isStringBeingUsed $key)
-    if [[ !$key = \"_* ]] && [ $? = 1 ]; then
-        echo "The string $key is not being used."
-        # sed -i "/$key/d" './package.nls.json'
+    if [ $? = 1 ]; then
+        if [[ ! $key = \"_* ]] ; then
+            echo $key
+            # sed -i "/$key/d" './package.nls.json'
+        fi
     fi
 done

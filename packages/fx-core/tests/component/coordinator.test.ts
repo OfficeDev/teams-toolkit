@@ -1,3 +1,14 @@
+import "mocha";
+
+import { assert } from "chai";
+import { DotenvParseOutput } from "dotenv";
+import fs, { PathLike } from "fs-extra";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as os from "os";
+import * as path from "path";
+import * as sinon from "sinon";
+import Container from "typedi";
+
 import {
   err,
   FxError,
@@ -15,31 +26,8 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import "mocha";
-import * as sinon from "sinon";
-import { Generator } from "../../src/component/generator/generator";
-import { settingsUtil } from "../../src/component/utils/settingsUtil";
-import { setTools } from "../../src/core/globalVars";
-import {
-  CoreQuestionNames,
-  CreateNewOfficeAddinOption,
-  ScratchOptionNo,
-  ScratchOptionYes,
-} from "../../src/core/question";
-import {
-  MockAzureAccountProvider,
-  MockM365TokenProvider,
-  MockTools,
-  randomAppName,
-} from "../core/utils";
-import { assert } from "chai";
-import {
-  M365SsoLaunchPageOptionItem,
-  SolutionSource,
-  TabOptionItem,
-} from "../../src/component/constants";
-import { FxCore } from "../../src/core/FxCore";
-import mockedEnv, { RestoreFn } from "mocked-env";
+
+import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 import {
   DriverInstance,
   ExecutionError,
@@ -47,42 +35,59 @@ import {
   ExecutionResult,
   ProjectModel,
 } from "../../src/component/configManager/interface";
-import { DriverContext } from "../../src/component/driver/interface/commonArgs";
-import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
-import { provisionUtils } from "../../src/component/provisionUtils";
+import {
+  M365SsoLaunchPageOptionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  SolutionSource,
+  TabOptionItem,
+} from "../../src/component/constants";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
-import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import fs, { PathLike } from "fs-extra";
-import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
-import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
-import { createContextV3, createDriverContext } from "../../src/component/utils";
-import * as appStudio from "../../src/component/resource/appManifest/appStudio";
-import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
-import Container from "typedi";
-import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
-import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
-import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
 import { deployUtils } from "../../src/component/deployUtils";
-import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
-import { pathUtils } from "../../src/component/utils/pathUtils";
-import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
+import { DriverContext } from "../../src/component/driver/interface/commonArgs";
+import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { Generator } from "../../src/component/generator/generator";
+import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
+import { provisionUtils } from "../../src/component/provisionUtils";
+import * as appStudio from "../../src/component/resource/appManifest/appStudio";
+import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
+import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
+import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { pathUtils } from "../../src/component/utils/pathUtils";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import { settingsUtil } from "../../src/component/utils/settingsUtil";
+import { FxCore } from "../../src/core/FxCore";
+import { setTools } from "../../src/core/globalVars";
+import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
+import {
+  CoreQuestionNames,
+  CreateNewOfficeAddinOption,
+  ScratchOptionNo,
+  ScratchOptionYes,
+  ScratchOptionYesVSC,
+} from "../../src/core/question";
 import {
   InvalidAzureCredentialError,
   ResourceGroupConflictError,
   SelectSubscriptionError,
 } from "../../src/error/azure";
-import { DotenvParseOutput } from "dotenv";
-import * as os from "os";
-import * as path from "path";
 import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
 } from "../../src/error/common";
+import {
+  MockAzureAccountProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../core/utils";
+import { MockedUserInteraction } from "../plugins/solution/util";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
@@ -135,7 +140,7 @@ describe("component coordinator test", () => {
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       folder: ".",
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
@@ -159,7 +164,7 @@ describe("component coordinator test", () => {
       .onSecondCall()
       .resolves([]);
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       folder: ".",
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
@@ -234,7 +239,8 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       ignoreLockByUT: true,
       folder: ".",
-      [CoreQuestionNames.CreateFromScratch]: "newAddin",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
     const context = createContextV3();
     const res = await coordinator.create(context, inputs);
@@ -248,7 +254,8 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       ignoreLockByUT: true,
       folder: ".",
-      [CoreQuestionNames.CreateFromScratch]: "newAddin",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
       "app-name": "__#$%___",
     };
     const context = createContextV3();
@@ -260,7 +267,7 @@ describe("component coordinator test", () => {
   });
   it("create project from sample MissingRequiredInputError missing sample id", async () => {
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       ignoreLockByUT: true,
       folder: ".",
       [CoreQuestionNames.CreateFromScratch]: "no",
@@ -3312,6 +3319,7 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
     };
@@ -3327,7 +3335,8 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: "__invalid__",
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
@@ -3342,7 +3351,8 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: undefined,
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
@@ -3365,7 +3375,8 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");

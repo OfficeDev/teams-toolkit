@@ -29,6 +29,13 @@ type FuncVersion = {
   versionStr: string;
 };
 
+const nodeFuncVersionRangeMapping: { [key: string]: string } = {
+  "12": "3",
+  "14": "3 || 4",
+  "16": ">=4",
+  "18": ">=4.0.4670",
+};
+
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Functions Core Tools";
 
@@ -72,9 +79,13 @@ export class FuncToolChecker implements DepsChecker {
         installationInfo = await this.getInstallationInfo(installOptions);
       }
 
-      if (!installationInfo.error && installationInfo.isInstalled) {
+      if (
+        !installationInfo.error &&
+        installationInfo.isInstalled &&
+        installationInfo.details.installVersion
+      ) {
         const expectedFuncNodeError = await this.checkExpectedFuncAndNode(
-          installOptions.version,
+          installationInfo.details.installVersion,
           nodeVersion
         );
         if (expectedFuncNodeError) {
@@ -135,10 +146,16 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   private async checkExpectedFuncAndNode(
-    expectedVersion: string,
+    funcVersion: string,
     nodeVersion: string
   ): Promise<DepsCheckerError | undefined> {
-    // TODO validate expected func version and actual node version
+    const funcVersionRange = nodeFuncVersionRangeMapping[nodeVersion];
+    if (funcVersionRange && !semver.satisfies(funcVersion, funcVersionRange)) {
+      return new DepsCheckerError(
+        Messages.portableFuncNodeNotMatched(nodeVersion, funcVersion),
+        defaultHelpLink
+      );
+    }
     return undefined;
   }
 

@@ -18,7 +18,8 @@ provision:
       botId: BOT_ID
       botPassword: SECRET_BOT_PASSWORD
 
-  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
     with:
       botId: ${{BOT_ID}}
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -42,12 +43,15 @@ provision:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
 deploy:
-  - uses: devTool/install # Install development tool(s)
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       func:
         version: 4
         symlinkDir: ./devTools/func
-    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
       funcPath: FUNC_PATH
 
   # Generate runtime environment variables

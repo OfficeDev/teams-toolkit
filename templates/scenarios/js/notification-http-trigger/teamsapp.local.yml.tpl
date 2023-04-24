@@ -14,14 +14,19 @@ provision:
     writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
-  - uses: botAadApp/create # Creates a new or reuses an existing Azure Active Directory application for bot.
+  # Create or reuse an existing Azure Active Directory application for bot.
+  - uses: botAadApp/create
     with:
-      name: {{appName}}-${{TEAMSFX_ENV}} # The Azure Active Directory application's display name
+      # The Azure Active Directory application's display name
+      name: {{appName}}-${{TEAMSFX_ENV}}
     writeToEnvironmentFile:
-      botId: BOT_ID # The Azure Active Directory application's client id created for bot.
-      botPassword: SECRET_BOT_PASSWORD # The Azure Active Directory application's client secret created for bot. 
+      # The Azure Active Directory application's client id created for bot.
+      botId: BOT_ID
+      # The Azure Active Directory application's client secret created for bot.
+      botPassword: SECRET_BOT_PASSWORD  
 
-  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
     with:
       botId: ${{BOT_ID}}
       name: {{appName}}
@@ -58,12 +63,15 @@ provision:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  - uses: devTool/install # Install development tool(s)
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       func:
         version: ~4.0.4670
         symlinkDir: ./devTools/func
-    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
       funcPath: FUNC_PATH
 
   - uses: cli/runNpmCommand # Run npm command

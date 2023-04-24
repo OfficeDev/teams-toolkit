@@ -822,7 +822,7 @@
   "depChecker.symlinkDirAlreadyExist": "The destination of the symlink already exists",
   "depChecker.portableFuncNodeNotMatched": "Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion).",
   "depChecker.invalidFuncVersion": "The format of version %s is invalid.",
-  "depChecker.noSentinelFile": "Azure Functions Core Tools installation incomplete.",
+  "depChecker.noSentinelFile": "Azure Functions Core Tools installation is incomplete.",
   "depChecker.funcVersionNotMatch": "The version of Azure Functions Core Tools (%s) is not compatible with the specified version range (%s).",
   "depChecker.startInstallNgrok": "Downloading and installing @NameVersion.",
   "depChecker.finishInstallNgrok": "Successfully installed @NameVersion.",

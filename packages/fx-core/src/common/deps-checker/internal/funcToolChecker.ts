@@ -124,6 +124,8 @@ export class FuncToolChecker implements DepsChecker {
           symlinkFuncRes.value.versionStr;
         return await this.getDepsInfo(symlinkFuncRes.value, symlinkDir);
       } else {
+        this.telemetryProperties[TelemetryProperties.SymlinkFuncVersionError] =
+          symlinkFuncRes.error.message;
         await unlinkSymlink(symlinkDir);
       }
     }
@@ -144,8 +146,10 @@ export class FuncToolChecker implements DepsChecker {
       this.telemetryProperties[TelemetryProperties.GlobalFuncVersion] =
         globalFuncRes.value.versionStr;
       return await this.getDepsInfo(globalFuncRes.value, undefined);
+    } else {
+      this.telemetryProperties[TelemetryProperties.GlobalFuncVersion] = globalFuncRes.error.message;
+      return await this.getDepsInfo(undefined, undefined);
     }
-    return await this.getDepsInfo(undefined, undefined);
   }
 
   private async getNodeVersion(): Promise<string> {
@@ -187,6 +191,9 @@ export class FuncToolChecker implements DepsChecker {
       if (historyFuncRes.isOk()) {
         this.telemetryProperties[TelemetryProperties.HistoryFuncVersion] =
           historyFuncRes.value.versionStr;
+      } else {
+        this.telemetryProperties[TelemetryProperties.HistoryFuncVersionError] =
+          historyFuncRes.error.message;
       }
 
       const versioningFuncStatus = await this.getVersioningPortableFunc(expectedFuncVersion);
@@ -266,6 +273,12 @@ export class FuncToolChecker implements DepsChecker {
           funcVersion: actualFuncRes.value,
           binFolder: binFolder,
         };
+      }
+
+      if (actualFuncRes.isErr()) {
+        this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] =
+          (this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] ?? "") +
+          actualFuncRes.error.message;
       }
 
       const matchedVersionIndex = funcDictionaries.indexOf(matchedVersion);

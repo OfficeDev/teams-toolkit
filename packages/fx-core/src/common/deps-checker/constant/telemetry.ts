@@ -66,6 +66,10 @@ export enum TelemetryProperties {
   VersioningFuncVersions = "versioning-func-versions",
   GlobalFuncVersion = "global-func-version",
   InstalledFuncVersion = "installed-func-version",
+  SymlinkFuncVersionError = "symlink-func-version-error",
+  HistoryFuncVersionError = "history-func-version-error",
+  VersioningFuncVersionError = "versioning-func-version-error",
+  GlobalFuncVersionError = "global-func-version",
 }
 
 export enum TelemetryMessurement {

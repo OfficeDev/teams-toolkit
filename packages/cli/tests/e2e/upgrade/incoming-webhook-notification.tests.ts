@@ -11,10 +11,10 @@ import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Cleaner } from "../../utils/cleaner";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import fs from "fs-extra";
 
 describe("upgrade", () => {
   const testFolder = getTestFolder();
@@ -22,7 +22,7 @@ describe("upgrade", () => {
   const projectPath = path.resolve(testFolder, appName);
 
   afterEach(async function () {
-    await Cleaner.clean(projectPath);
+    await fs.remove(projectPath);
   });
 
   it("sample incoming webhook notification", { testPlanCaseId: 19298763 }, async function () {

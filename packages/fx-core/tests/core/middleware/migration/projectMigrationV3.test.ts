@@ -483,8 +483,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, errorNames.appPackageNotExist);
-      assert.equal(error.innerError.message, "templates/appPackage does not exist");
+      assert.equal(error.name, errorNames.manifestTemplateNotExist);
     }
   });
 

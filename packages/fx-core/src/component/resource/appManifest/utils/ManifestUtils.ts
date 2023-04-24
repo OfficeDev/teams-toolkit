@@ -86,9 +86,16 @@ export class ManifestUtils {
     projectPath: string
   ): Promise<Result<undefined, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
+    return await this._writeAppManifest(appManifest, filePath);
+  }
+
+  async _writeAppManifest(
+    appManifest: TeamsAppManifest,
+    manifestTemplatePath: string
+  ): Promise<Result<undefined, FxError>> {
     const content = JSON.stringify(appManifest, undefined, 4);
     const contentV2 = convertManifestTemplateToV2(content);
-    await fs.writeFile(filePath, contentV2);
+    await fs.writeFile(manifestTemplatePath, contentV2);
     return ok(undefined);
   }
 

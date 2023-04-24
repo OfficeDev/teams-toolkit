@@ -95,6 +95,7 @@ describe("Debug V3 notification-http-trigger template", () => {
     chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
     // deploy
+    console.log(`[process env] ${JSON.stringify(process.env)}`);
     await CliHelper.deployAll(projectPath, "--env local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 

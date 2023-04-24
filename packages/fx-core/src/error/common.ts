@@ -157,3 +157,16 @@ export class InputValidationError extends UserError {
     });
   }
 }
+
+export class NoEnvFilesError extends UserError {
+  constructor(source: string) {
+    const key = "error.common.NoEnvFilesError";
+    const errorOptions: UserErrorOptions = {
+      source: camelCase(source),
+      name: "NoEnvFilesError",
+      message: getDefaultString(key),
+      displayMessage: getLocalizedString(key),
+    };
+    super(errorOptions);
+  }
+}

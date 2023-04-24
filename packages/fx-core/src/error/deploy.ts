@@ -63,17 +63,17 @@ export class DeployZipPackageError extends UserError {
   }
 }
 
-export class CheckDeployStatusError extends UserError {
+export class CheckDeploymentStatusError extends UserError {
   constructor(location: string, error: Error, helpLink?: string) {
     super({
       source: "azureDeploy",
       message: getDefaultString(
-        "error.deploy.CheckDeployStatusError",
+        "error.deploy.CheckDeploymentStatusError",
         location,
         JSON.stringify(error) || ""
       ),
       displayMessage: getLocalizedString(
-        "error.deploy.CheckDeployStatusError",
+        "error.deploy.CheckDeploymentStatusError",
         location,
         error.message || ""
       ),

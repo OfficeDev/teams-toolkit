@@ -58,6 +58,15 @@ describe("Preview --env", () => {
     sandbox.stub(cliLogger, "necessaryLog").callsFake((lv, msg, white) => {
       logs.push(msg);
     });
+    sandbox.stub(cliLogger, "outputInfo").callsFake((message: string) => {
+      logs.push(message);
+    });
+    sandbox.stub(cliLogger, "outputError").callsFake((message: string) => {
+      logs.push(message);
+    });
+    sandbox.stub(cliLogger, "outputSuccess").callsFake((message: string) => {
+      logs.push(message);
+    });
     sandbox.stub(cliTelemetry, "sendTelemetryEvent").callsFake((eventName, properties) => {
       telemetries.push([eventName, properties]);
     });

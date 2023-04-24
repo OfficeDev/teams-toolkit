@@ -83,8 +83,8 @@ deploy:
     with:
       args: install --no-audit
 
-  # Generate runtime environment variables
-  - uses: file/createOrUpdateEnvironmentFile for tab
+  # Generate runtime environment variables for tab
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tab/.localConfigs
       envs:
@@ -94,8 +94,8 @@ deploy:
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
 
-  # Generate runtime environment variables
-  - uses: file/createOrUpdateEnvironmentFile for bot
+  # Generate runtime environment variables for bot
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.localConfigs
       envs:

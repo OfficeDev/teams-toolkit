@@ -284,7 +284,8 @@ export class FuncToolChecker implements DepsChecker {
   ): Promise<DependencyStatus> {
     if (isLinux()) {
       throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound().split("@SupportedPackages").join(funcToolName),
+        Messages.linuxDepsNotFound().split("@SupportedPackages").join(funcToolName) +
+          JSON.stringify(this.telemetryProperties),
         functionDefaultHelpLink
       );
     }

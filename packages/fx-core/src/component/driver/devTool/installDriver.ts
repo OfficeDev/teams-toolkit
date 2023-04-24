@@ -175,7 +175,10 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 
     if (!funcStatus.isInstalled && funcStatus.error) {
-      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
+      throw new FuncInstallationUserError(
+        ACTION_NAME,
+        funcStatus.error + JSON.stringify(funcStatus.telemetryProperties)
+      );
     } else if (funcStatus.error) {
       this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(

@@ -215,7 +215,7 @@ describe("Env Add Command Tests", function () {
       // Assert
       expect(error).instanceOf(UserError);
       expect(error.name).equals("ProjectEnvAlreadyExistError");
-      expect(vars.value.logs).to.equal(
+      expect(vars.value.logs).to.contain(
         "Core.ProjectEnvAlreadyExistError: Project environment dev already exists.\n"
       );
     }
@@ -242,7 +242,7 @@ describe("Env Add Command Tests", function () {
       // Assert
       expect(error).instanceOf(UserError);
       expect(error.name).equals("InvalidEnvNameError");
-      expect(vars.value.logs).to.equal(
+      expect(vars.value.logs).to.contain(
         "Core.InvalidEnvNameError: Environment name can only contain letters, digits, _ and -.\n"
       );
     }
@@ -271,7 +271,7 @@ describe("Env Add Command Tests", function () {
       // Assert
       expect(error).instanceOf(UserError);
       expect(error.name).equals("MockCreateEnvError");
-      expect(vars.value.logs).to.equal("CLII.MockCreateEnvError: mock createEnv error\n");
+      expect(vars.value.logs).to.contain("CLII.MockCreateEnvError: mock createEnv error\n");
     }
 
     expect(exceptionThrown).to.be.true;

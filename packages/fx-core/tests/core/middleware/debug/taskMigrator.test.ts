@@ -18,6 +18,7 @@ import {
   migrateBackendWatch,
   migrateFrontendStart,
   migrateBackendStart,
+  migrateGetFuncPathCommand,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -1874,6 +1875,153 @@ describe("debugMigration", () => {
       );
       migrateNgrokStartCommand(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+    });
+  });
+
+  describe("migrateGetFuncPathCommand", () => {
+    it("happy path", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+            "label": "Start bot",
+            "type": "shell",
+            "command": "npm run dev:teamsfx",
+            "isBackground": true,
+            "options": {
+                "cwd": "\${workspaceFolder}/bot",
+                "env": {
+                    "PATH": "\${command:fx-extension.get-func-path}\${env:PATH}"
+                }
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+                    "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+                }
+            },
+            "dependsOn": [
+                "Start Azurite emulator",
+                "Watch bot"
+            ]
+        },
+        {
+          "label": "Customized path",
+          "type": "shell",
+          "command": "npm run dev:teamsfx",
+          "isBackground": true,
+          "options": {
+              "cwd": "\${workspaceFolder}/bot",
+              "env": {
+                  "PATH": "\${command:fx-extension.get-func-path}\${env:PATH}"
+              }
+          },
+          "windows": {
+            "options": {
+              "env": {
+                  "PATH": "\${env:PATH}\${command:fx-extension.get-func-path}"
+              }
+            }
+          },
+          "linux": {
+            "options": {
+              "env": {
+                  "PATH": "\${command:fx-extension.get-func-path}"
+              }
+            }
+          },
+          "osx": {
+            "options": {
+              "env": {
+                  "path": "\${command:fx-extension.get-func-path}\${env:path}\${command:fx-extension.get-func-path}"
+              }
+            }
+          }
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          "label": "Start bot",
+          "type": "shell",
+          "command": "npm run dev:teamsfx",
+          "isBackground": true,
+          "options": {
+              "cwd": "\${workspaceFolder}/bot",
+              "env": {
+                  "PATH": "\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}\${env:PATH}"
+              }
+          },
+          "problemMatcher": {
+              "pattern": {
+                  "regexp": "^.*$",
+                  "file": 0,
+                  "location": 1,
+                  "message": 2
+              },
+              "background": {
+                  "activeOnStart": true,
+                  "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+                  "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+              }
+          },
+          "dependsOn": [
+              "Start Azurite emulator",
+              "Watch bot"
+          ]
+      },
+      {
+        "label": "Customized path",
+        "type": "shell",
+        "command": "npm run dev:teamsfx",
+        "isBackground": true,
+        "options": {
+            "cwd": "\${workspaceFolder}/bot",
+            "env": {
+                "PATH": "\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}\${env:PATH}"
+            }
+        },
+        "windows": {
+          "options": {
+            "env": {
+                "PATH": "\${env:PATH}\${command:fx-extension.get-path-delimiter}\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}"
+            }
+          }
+        },
+        "linux": {
+          "options": {
+            "env": {
+                "PATH": "\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}"
+            }
+          }
+        },
+        "osx": {
+          "options": {
+            "env": {
+                "path": "\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}\${env:path}\${command:fx-extension.get-path-delimiter}\${workspaceFolder}/devTools/func\${command:fx-extension.get-path-delimiter}"
+            }
+          }
+        }
+      }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateGetFuncPathCommand(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
     });
   });
 });

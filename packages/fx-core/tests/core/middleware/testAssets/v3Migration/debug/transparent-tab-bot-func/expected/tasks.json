@@ -119,7 +119,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/api",
                 "env": {
-                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                    "PATH": "${workspaceFolder}/devTools/func${command:fx-extension.get-path-delimiter}${env:PATH}"
                 }
             },
             "problemMatcher": {
@@ -179,7 +179,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/bot",
                 "env": {
-                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                    "PATH": "${workspaceFolder}/devTools/func${command:fx-extension.get-path-delimiter}${env:PATH}"
                 }
             },
             "problemMatcher": {

@@ -1599,16 +1599,11 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 }
 
 /**
- * Get func binary path to be referenced by task definition.
- * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ * Get path delimiter
+ * Usage like ${workspaceFolder}/devTools/func${command:...}${env:PATH}
  */
-export async function getFuncPathHandler(): Promise<string> {
-  // TODO: remove this command
-  return globalVariables.workspaceUri?.fsPath
-    ? `${path.delimiter}${path.resolve(globalVariables.workspaceUri.fsPath, "./devTools/func")}${
-        path.delimiter
-      }`
-    : path.delimiter;
+export async function getPathDelimiterHandler(): Promise<string> {
+  return path.delimiter;
 }
 
 /**

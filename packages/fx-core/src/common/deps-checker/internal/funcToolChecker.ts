@@ -303,15 +303,13 @@ export class FuncToolChecker implements DepsChecker {
 
   private async queryFuncVersion(funcBinFolder: string | undefined): Promise<FuncVersion | null> {
     try {
-      const env = funcBinFolder
-        ? { PATH: `${funcBinFolder}${path.delimiter}${process.env.PATH}` }
-        : undefined;
+      const execPath = funcBinFolder ? path.resolve(funcBinFolder, "func") : "func";
       const output = await cpUtils.executeCommand(
         undefined,
         undefined,
         // same as backend start, avoid powershell execution policy issue.
-        { shell: isWindows() ? "cmd.exe" : true, env },
-        "func",
+        { shell: isWindows() ? "cmd.exe" : true },
+        execPath,
         "--version"
       );
       return mapToFuncToolsVersion(output);

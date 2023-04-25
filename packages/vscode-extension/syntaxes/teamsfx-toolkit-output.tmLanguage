@@ -200,7 +200,7 @@
                     </dict>
                 </dict>
                 <key>match</key>
-                <string>([0-9]+ failed[,. ]+)?([0-9]+ warning[s,. ]+)?([0-9]+ passed.)</string>
+                <string>([0-9]+ failed[,. ]+)?([0-9]+ warning[s,. ]+)?([0-9]+ passed.)?</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.validate.summary</string>
             </dict>

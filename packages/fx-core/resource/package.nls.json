@@ -942,6 +942,7 @@
   "driver.teamsApp.summary.validate.succeed": "%s passed",
   "driver.teamsApp.summary.validate.failed": "%s failed",
   "driver.teamsApp.summary.validate.warning": "%s warning",
+  "driver.teamsApp.summary.validate.all": "All",
   "driver.teamsApp.validate.result": "Teams Toolkit has completed checking your app package against validation rules. %s.",
   "driver.teamsApp.validate.result.display": "Teams Toolkit has completed checking your app package against validation rules. %s. Check [Output panel](command:fx-extension.showOutputChannel) for details.",
   "error.teamsApp.validate.apiFailed": "Teams app package validation failed due to  %s",

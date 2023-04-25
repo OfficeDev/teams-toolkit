@@ -102,11 +102,11 @@ export class ValidateManifestDriver implements StepDriver {
       );
     }
 
-    const summaryStr = getLocalizedString(
-      "driver.teamsApp.summary.validate.failed",
-      validationResult.length
-    );
     if (validationResult.length > 0) {
+      const summaryStr = getLocalizedString(
+        "driver.teamsApp.summary.validate.failed",
+        validationResult.length
+      );
       // logs in output window
       const errors = validationResult
         .map((error: string) => {
@@ -124,18 +124,28 @@ export class ValidateManifestDriver implements StepDriver {
           getLocalizedString("driver.teamsApp.validate.result.display", summaryStr),
         ])
       );
+    } else {
+      // logs in output window
+      const summaryStr = getLocalizedString(
+        "driver.teamsApp.summary.validate.succeed",
+        getLocalizedString("driver.teamsApp.summary.validate.all")
+      );
+      const outputMessage =
+        EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, "");
+      context.logProvider?.info(outputMessage);
+
+      const validationSuccess = getLocalizedString(
+        "driver.teamsApp.validate.result.display",
+        summaryStr
+      );
+      if (context.platform === Platform.VS) {
+        context.logProvider.info(validationSuccess);
+      }
+      if (args.showMessage) {
+        context.ui?.showMessage("info", validationSuccess, false);
+      }
+      return ok(new Map());
     }
-    const validationSuccess = getLocalizedString(
-      "driver.teamsApp.validate.result.display",
-      summaryStr
-    );
-    if (context.platform === Platform.VS) {
-      context.logProvider.info(validationSuccess);
-    }
-    if (args.showMessage) {
-      context.ui?.showMessage("info", validationSuccess, false);
-    }
-    return ok(new Map());
   }
 
   private loadCurrentState() {

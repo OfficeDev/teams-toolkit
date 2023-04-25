@@ -951,7 +951,6 @@
   "driver.botFramework.summary.create": "The bot registration has been created successfully (%s).",
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
-  "driver.generateAppsettings.description": "Add or update environment variables to appsettings file.",
   "error.yaml.InvalidYamlSchemaError": "Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.",
   "error.yaml.InvalidYamlSchemaErrorWithReason": "Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details",
   "error.yaml.YamlFieldTypeError": "Field '%s' should have %s type, yaml file: %s",

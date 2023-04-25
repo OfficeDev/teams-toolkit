@@ -44,7 +44,12 @@ export function renderTemplate(manifestString: string, view: any): string {
 }
 
 export function isPersonalApp(appDefinition: AppDefinition): boolean {
-  return !!appDefinition.staticTabs && appDefinition.staticTabs.length > 0;
+  if (!!appDefinition.staticTabs && appDefinition.staticTabs.length > 0) {
+    const tabsWithUrls = appDefinition.staticTabs.filter((tab) => !!tab.contentUrl);
+    return tabsWithUrls.length > 0;
+  }
+
+  return false;
 }
 
 export function isGroupApp(appDefinition: AppDefinition): boolean {

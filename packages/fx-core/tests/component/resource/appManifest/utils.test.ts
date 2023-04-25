@@ -137,6 +137,19 @@ describe("utils", () => {
       chai.assert.isTrue(needTab);
     });
 
+    it("static tabs without url: returns false", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        staticTabs: [{ ...validStaticTab, contentUrl: "" }],
+        bots: [validBot],
+      };
+
+      const needTab = needTabCode(appDefinition);
+
+      chai.assert.isFalse(needTab);
+    });
+
     it("channel tab, group channel scope: returns true", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mockAppId",

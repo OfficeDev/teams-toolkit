@@ -308,7 +308,7 @@ describe("CommonUtils", () => {
 
     it("get app name successfully - v3", () => {
       const ymlData = `# Triggered when 'teamsfx provision' is executed
-      registerApp:
+      provision:
         - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
           with:
             name: appNameTest-aad

@@ -311,24 +311,24 @@ const featureToScenario: Map<string, (triggers?: string) => TemplateProjectsScen
 ]);
 
 const triggersToScenarios: Map<string, TemplateProjectsScenarios[]> = new Map([
-  [AppServiceOptionItem.id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
-  [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
+  [AppServiceOptionItem().id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
+  [AppServiceOptionItemForVS().id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
   [
-    FunctionsHttpTriggerOptionItem.id,
+    FunctionsHttpTriggerOptionItem().id,
     [
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
     ],
   ],
   [
-    FunctionsTimerTriggerOptionItem.id,
+    FunctionsTimerTriggerOptionItem().id,
     [
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
     ],
   ],
   [
-    FunctionsHttpAndTimerTriggerOptionItem.id,
+    FunctionsHttpAndTimerTriggerOptionItem().id,
     [
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
@@ -348,9 +348,9 @@ const resolveHosting: (inputs: InputsWithProjectPath) => string = (inputs): stri
   let hosting = "azure-web-app";
   const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
   if (
-    triggers?.includes(FunctionsHttpTriggerOptionItem.id) ||
-    triggers?.includes(FunctionsTimerTriggerOptionItem.id) ||
-    triggers?.includes(FunctionsHttpAndTimerTriggerOptionItem.id)
+    triggers?.includes(FunctionsHttpTriggerOptionItem().id) ||
+    triggers?.includes(FunctionsTimerTriggerOptionItem().id) ||
+    triggers?.includes(FunctionsHttpAndTimerTriggerOptionItem().id)
   ) {
     hosting = "azure-function";
   }

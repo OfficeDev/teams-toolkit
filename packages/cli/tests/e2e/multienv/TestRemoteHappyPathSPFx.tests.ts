@@ -16,13 +16,14 @@ import {
   execAsyncWithRetry,
   getTestFolder,
   getUniqueAppName,
-  loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
-import { AppStudioValidator } from "../../commonlib";
+import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+
 describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -37,7 +38,7 @@ describe("Multi Env Happy Path for SPFx", function () {
     "Can create/provision/deploy/validate/package/publish an SPFx project",
     { testPlanCaseId: 15687128 },
     async function () {
-      if (isV3Enabled()) {
+      if (!isV3Enabled()) {
         return this.skip();
       }
       const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
@@ -55,7 +56,6 @@ describe("Multi Env Happy Path for SPFx", function () {
         "config/serve.json",
         "config/write-manifests.json",
         "src/webparts/helloworld/HelloworldWebPart.manifest.json",
-        "src/webparts/helloworld/HelloworldWebPart.module.scss",
         "src/webparts/helloworld/HelloworldWebPart.ts",
         "src/webparts/helloworld/loc/en-us.js",
         "src/webparts/helloworld/loc/mystrings.d.ts",
@@ -71,7 +71,7 @@ describe("Multi Env Happy Path for SPFx", function () {
         "tsconfig.json",
       ];
       for (const file of files) {
-        const filePath = path.join(testFolder, appName, `SPFx`, file);
+        const filePath = path.join(testFolder, appName, `src`, file);
         expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
       }
 
@@ -110,15 +110,10 @@ describe("Multi Env Happy Path for SPFx", function () {
 
       {
         // Get context
-        const contextResult = await loadContext(projectPath, env);
-        if (contextResult.isErr()) {
-          throw contextResult.error;
-        }
-        const context = contextResult.value;
+        const context = await readContextMultiEnvV3(projectPath, env);
 
-        // Only check Teams App existence
-        const appStudio = AppStudioValidator.init(context);
-        AppStudioValidator.validateTeamsAppExist(appStudio);
+        teamsAppId = context.TEAMS_APP_ID;
+        AppStudioValidator.setE2ETestProvider();
       }
 
       // deploy
@@ -130,13 +125,15 @@ describe("Multi Env Happy Path for SPFx", function () {
       console.log(`[Successfully] deploy, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
 
       {
-        // Validate sharepoint package, see fx-core/src/plugins/resource/spfx/plugin.ts: SPFxPluginImpl.buildSPPackge()
-        const solutionConfig = await fs.readJson(
-          `${projectPath}/SPFx/config/package-solution.json`
-        );
-        const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+        const solutionConfig = await fs.readJson(`${projectPath}/src/config/package-solution.json`);
+        const sharepointPackage = `${projectPath}/src/sharepoint/${solutionConfig.paths.zippedPackage}`;
         appId = solutionConfig["solution"]["id"];
+        expect(appId).to.not.be.empty;
         expect(await fs.pathExists(sharepointPackage)).to.be.true;
+
+        // Check if package exsist in App Catalog
+        SharepointValidator.init();
+        SharepointValidator.validateDeploy(appId);
       }
 
       // validate manifest
@@ -163,7 +160,7 @@ describe("Multi Env Happy Path for SPFx", function () {
 
       {
         // Validate package
-        const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
+        const file = `${projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${env}.zip`;
         expect(await fs.pathExists(file)).to.be.true;
       }
 
@@ -176,14 +173,6 @@ describe("Multi Env Happy Path for SPFx", function () {
 
       {
         // Validate publish result
-        const contextResult = await loadContext(projectPath, env);
-        if (contextResult.isErr()) {
-          throw contextResult.error;
-        }
-        const context = contextResult.value;
-        const appStudioObject = AppStudioValidator.init(context);
-        teamsAppId = appStudioObject.teamsAppId;
-        assert.isNotNull(teamsAppId);
         await AppStudioValidator.validatePublish(teamsAppId!);
       }
     }

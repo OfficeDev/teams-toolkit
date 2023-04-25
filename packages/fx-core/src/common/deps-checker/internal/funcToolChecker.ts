@@ -76,7 +76,7 @@ export class FuncToolChecker implements DepsChecker {
       installationInfo = await this.getInstallationInfo(installOptions);
       if (!installationInfo.isInstalled) {
         const symlinkDir = installOptions.symlinkDir
-          ? path.join(installOptions.projectPath, installOptions.symlinkDir)
+          ? path.resolve(installOptions.projectPath, installOptions.symlinkDir)
           : undefined;
         installationInfo = await this.install(installOptions.version, symlinkDir);
       }

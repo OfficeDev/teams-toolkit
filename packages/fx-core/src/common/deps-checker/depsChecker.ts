@@ -19,6 +19,7 @@ export type DependencyStatus = {
     installVersion?: string;
     binFolders?: string[];
   };
+  telemetryProperties?: { [key: string]: string };
   error?: DepsCheckerError;
 };
 

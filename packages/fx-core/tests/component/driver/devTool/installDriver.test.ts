@@ -174,12 +174,15 @@ describe("Tools Install Driver test", () => {
           isLinuxSupported: false,
           supportedVersions: [],
           installVersion: "4.0.0",
-          binFolders: ["/devTools/func"],
+          binFolders: ["/devTools/func1"],
+        },
+        telemetryProperties: {
+          "global-func-version": "3.0.0",
         },
         error: new DepsCheckerError("warning message", "test link"),
       });
       const res = await toolsInstallDriver.run(
-        { func: { version: "4", symlinkDir: "./devTools/func" } },
+        { func: { version: "4", symlinkDir: "./devTools/func1" } },
         mockedDriverContext
       );
       chai.assert.isTrue(res.isOk());

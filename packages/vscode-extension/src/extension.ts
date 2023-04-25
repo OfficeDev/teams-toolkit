@@ -1011,8 +1011,6 @@ async function runBackgroundAsyncTasks(
   await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
-  const preview = new PrereleasePage(context);
-  preview.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 

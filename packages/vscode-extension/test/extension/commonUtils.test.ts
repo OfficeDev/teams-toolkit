@@ -325,6 +325,15 @@ describe("CommonUtils", () => {
       expect(res).equal("appNameTest");
     });
 
+    it("empty yml file - v3", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").returns("");
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
+    });
+
     it("throw exception - v3", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").throws();

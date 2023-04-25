@@ -131,7 +131,7 @@ describe("Bot Feature", () => {
       [AzureSolutionQuestionNames.Features]: NotificationOptionItem().id,
       language: "typescript",
       "app-name": appName,
-      [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem.id],
+      [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem().id],
     };
     const teamsBotComponent = Container.get("teams-bot") as any;
     const addBotRes = await teamsBotComponent.add(context, inputs);

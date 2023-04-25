@@ -237,17 +237,25 @@ catch (ExceptionWithCode e)
 3. Send notification (called by your own controller or trigger)
 
    ```csharp
-   public async Task NotifyAsync(ConversationBot conversation, CancellationToken cancellationToken)
-   {
-       var installations = await conversation.Notification.GetInstallationsAsync(cancellationToken);
-       foreach (var installation in installations)
-       {
-           await installation.SendMessage("Hello.", cancellationToken);
-   
-           // Or, send adaptive card (need to build your own card object)
-           // await installation.SendAdaptiveCard(cardObject, cancellationToken);
-       }
-   }
+    public async Task NotifyAsync(ConversationBot conversation, CancellationToken cancellationToken)
+    {
+        var pageSize = 100;
+        string continuationToken = null;
+        do
+        {
+            var pagedInstallations = await conversation.Notification.GetPagedInstallationsAsync(pageSize, continuationToken, cancellationToken);
+            continuationToken = pagedInstallations.ContinuationToken;
+            var installations = pagedInstallations.Data;
+            foreach (var installation in installations)
+            {
+                await installation.SendMessage("Hello.", cancellationToken);
+
+                // Or, send adaptive card (need to build your own card object)
+                // await installation.SendAdaptiveCard(cardObject, cancellationToken);
+            }
+
+        } while (!string.IsNullOrEmpty(continuationToken));
+    }
    ```
 
 ### Using Conversation Bot for Adaptive Card Actions

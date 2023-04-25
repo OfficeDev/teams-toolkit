@@ -64,6 +64,10 @@ const config = {
           loader: "url-loader",
         },
       },
+      {
+        test: /node_modules[\\|/](yaml-language-server|vscode-languageserver|vscode-json-languageservice|prettier)/,
+        use: "umd-compat-loader",
+      },
     ],
   },
   plugins: [

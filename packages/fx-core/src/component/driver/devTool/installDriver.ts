@@ -252,7 +252,7 @@ export class ToolsInstallDriverImpl {
         func: {
           version: args.func?.version,
           symlinkDir: args.func?.symlinkDir
-            ? args.func.symlinkDir === "./devTools/func"
+            ? path.resolve(args.func.symlinkDir) === path.resolve("./devTools/func")
               ? "<default>"
               : "<unknown>"
             : "<undefined>",

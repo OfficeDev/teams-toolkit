@@ -53,8 +53,8 @@
                         "access": "public",
                         "writeToEnvironmentFile": {
                             // Keep consistency with upgraded configuration.
-                            "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
-                            "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
+                            "endpoint": "PROVISIONOUTPUT__BOTFUNCTIONOUTPUT__SITEENDPOINT",
+                            "domain": "PROVISIONOUTPUT__BOTFUNCTIONOUTPUT__DOMAIN"
                         }
                     }
                 ],

@@ -441,7 +441,7 @@ export class FxCoreV3Implement {
         return err(new InvalidProjectError());
       }
     }
-    return this.innerMigrationV3(inputs);
+    return await this.innerMigrationV3(inputs);
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3])

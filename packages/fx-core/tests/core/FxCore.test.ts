@@ -72,6 +72,7 @@ import { CollaborationUtil } from "../../src/core/collaborator";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
 import { Hub } from "../../src/common/m365/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -448,7 +449,47 @@ describe("Core basic APIs", () => {
     }
   });
 
+  it("phantomMigrationV3 return error for invalid project", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.stub(projectMigratorV3, "checkActiveResourcePlugins").resolves(false);
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV2Project();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), appName),
+        skipUserConfirm: true,
+      };
+      const res = await core.phantomMigrationV3(inputs);
+      assert.isTrue(res.isErr());
+      await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
   it("phantomMigrationV3 return error for V5 project", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const appName = await mockV3Project();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), appName),
+      };
+      const res = await core.phantomMigrationV3(inputs);
+      assert.isTrue(res.isErr());
+      await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
+  it("phantomMigrationV3 return error for invalid project", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });

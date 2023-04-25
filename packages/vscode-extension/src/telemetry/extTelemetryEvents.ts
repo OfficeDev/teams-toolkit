@@ -192,8 +192,6 @@ export enum TelemetryEvent {
   ShowWhatIsNewNotification = "show-what-is-new-notification",
   ShowWhatIsNewContext = "show-what-is-new-context",
 
-  ShowPreivewNotification = "show-preview-notification",
-
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",

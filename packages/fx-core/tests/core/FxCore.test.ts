@@ -434,13 +434,33 @@ describe("Core basic APIs", () => {
     });
     try {
       const core = new FxCore(tools);
+      const appName = await mockV2Project();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), appName),
+        skipUserConfirm: true,
+      };
+      const res = await core.phantomMigrationV3(inputs);
+      assert.isTrue(res.isOk());
+      await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
+  it("phantomMigrationV3 return error for V5 project", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
       const appName = await mockV3Project();
       const inputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: path.join(os.tmpdir(), appName),
       };
       const res = await core.phantomMigrationV3(inputs);
-      assert.isTrue(res.isOk());
+      assert.isTrue(res.isErr());
       await deleteTestProject(appName);
     } finally {
       restore();

@@ -44,5 +44,30 @@ namespace Microsoft.TeamsFx.Test.Conversation
             Assert.IsNotNull(list);
             Assert.AreEqual(0, list.Length);
         }
+
+        [TestMethod]
+        public async Task Add_NonExistingItem()
+        {
+            var storage = new LocalFileStorage(testDir);
+            await storage.Write("key-1", new ConversationReference { ActivityId = "activity-1" });
+
+            var list = await storage.List(CancellationToken.None);
+            Assert.IsNotNull(list);
+            Assert.AreEqual(1, list.Length);
+            Assert.AreEqual("activity-1", list[0].ActivityId);
+        }
+
+        [TestMethod]
+        public async Task Add_ExistingItem()
+        {
+            var storage = new LocalFileStorage(testDir);
+            await storage.Write("key-1", new ConversationReference { ActivityId = "activity-1" });
+            await storage.Write("key-1", new ConversationReference { ActivityId = "activity-2" });
+
+            var list = await storage.List(CancellationToken.None);
+            Assert.IsNotNull(list);
+            Assert.AreEqual(1, list.Length);
+            Assert.AreEqual("activity-2", list[0].ActivityId);
+        }
     }
 }

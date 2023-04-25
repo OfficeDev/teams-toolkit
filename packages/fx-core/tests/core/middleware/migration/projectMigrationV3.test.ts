@@ -41,6 +41,7 @@ import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
 import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
 import {
   Metadata,
+  MetadataV2,
   MetadataV3,
   VersionSource,
   VersionState,
@@ -66,8 +67,10 @@ import {
   getTestAssetsPath,
   readEnvUserFile,
   Constants,
+  getManifestPathV2,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -523,6 +526,130 @@ describe("manifestsMigration", () => {
         "templates/appPackage/manifest.template.json does not exist. You may be trying to upgrade a project created by Teams Toolkit for Visual Studio Code v3.x / Teams Toolkit CLI v0.x / Teams Toolkit for Visual Studio v17.3. Please install Teams Toolkit for Visual Studio Code v4.x / Teams Toolkit CLI v1.x / Teams Toolkit for Visual Studio v17.4 and run upgrade first."
       );
     }
+  });
+});
+
+describe("manifestsMigration valid domain", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("manifest without validDomain", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    const oldManifestPath = getManifestPathV2(projectPath);
+    const readRes = await manifestUtils._readAppManifest(oldManifestPath);
+    assert.isTrue(readRes.isOk());
+    const teamsManifest = readRes._unsafeUnwrap();
+    teamsManifest.validDomains = [];
+    const WriteRes = await manifestUtils._writeAppManifest(teamsManifest, oldManifestPath);
+    assert.isTrue(WriteRes.isOk());
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(manifest, manifestExpeceted);
+  });
+
+  it("manifest without validDomain", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    const oldManifestPath = getManifestPathV2(projectPath);
+    const readRes = await manifestUtils._readAppManifest(oldManifestPath);
+    assert.isTrue(readRes.isOk());
+    const teamsManifest = readRes._unsafeUnwrap();
+    teamsManifest.validDomains = [];
+    const WriteRes = await manifestUtils._writeAppManifest(teamsManifest, oldManifestPath);
+    assert.isTrue(WriteRes.isOk());
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(manifest, manifestExpeceted);
+  });
+
+  it("manifest with bot validDomain", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    const oldManifestPath = getManifestPathV2(projectPath);
+    const readRes = await manifestUtils._readAppManifest(oldManifestPath);
+    assert.isTrue(readRes.isOk());
+    const teamsManifest = readRes._unsafeUnwrap();
+    teamsManifest.validDomains = [
+      "{{state.fx-resource-frontend-hosting.domain}}",
+      "{{state.fx-resource-bot.validDomain}}",
+    ];
+    const WriteRes = await manifestUtils._writeAppManifest(teamsManifest, oldManifestPath);
+    assert.isTrue(WriteRes.isOk());
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "")
+      .replace(
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__VALIDDOMAIN"
+      );
+    assert.equal(manifest, manifestExpeceted);
   });
 });
 

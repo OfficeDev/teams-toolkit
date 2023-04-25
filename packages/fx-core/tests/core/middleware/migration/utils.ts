@@ -87,6 +87,10 @@ export async function readEnvUserFile(projectPath: string, env: string): Promise
   return await fs.readFileSync(path.join(projectPath, buildEnvUserFileName(env))).toString();
 }
 
+export function getManifestPathV2(projectPath: string): string {
+  return path.join(projectPath, "templates", "appPackage", "manifest.template.json");
+}
+
 export function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
   if (lifecycleDefinition) {
     return lifecycleDefinition.filter((item) => item.uses === actionName);

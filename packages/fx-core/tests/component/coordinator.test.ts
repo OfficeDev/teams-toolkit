@@ -39,6 +39,7 @@ import {
   M365SsoLaunchPageOptionItem,
   NewProjectTypeOutlookAddinOptionItem,
   SolutionSource,
+  TabNonSsoItem,
   TabOptionItem,
 } from "../../src/component/constants";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
@@ -498,7 +499,7 @@ describe("component coordinator test", () => {
 
   it("create project for app with no features from Developer Portal - failed expecting inputs", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
@@ -521,6 +522,37 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.createProject(inputs);
 
     assert.isTrue(res2.isErr());
+  });
+
+  it("create project for app from Developer Portal - not overwrite already set project type and capability", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [CoreQuestionNames.ProjectType]: "tab-type",
+      [CoreQuestionNames.Capabilities]: TabNonSsoItem().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    assert.isTrue(res2.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.Tab);
   });
 
   it("provision happy path from zero", async () => {

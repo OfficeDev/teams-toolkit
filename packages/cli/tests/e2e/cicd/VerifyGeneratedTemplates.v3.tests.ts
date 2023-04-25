@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ivan Jobs <ruhe@microsoft.com>
+ * @author Kai Yang <yang.kai@microsoft.com>
  */
 
 import path from "path";

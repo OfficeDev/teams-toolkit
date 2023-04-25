@@ -75,3 +75,19 @@ export class ConvertArmOutputError extends UserError {
     super(errorOptions);
   }
 }
+
+/**
+ * Failed to download to action output
+ */
+export class DownloadBicepCliError extends UserError {
+  constructor(url: string, error: Error) {
+    const key = "error.arm.DownloadBicepCliError";
+    const errorOptions: UserErrorOptions = {
+      source: "armDeploy",
+      name: "DownloadBicepCliError",
+      message: getDefaultString(key, url, error.message),
+      displayMessage: getLocalizedString(key, url, error.message),
+    };
+    super(errorOptions);
+  }
+}

@@ -41,7 +41,7 @@ class SampleProvider {
             url:
               (sample as any).relativePath && (sample as any).url
                 ? (sample as any).url
-                : sampleConfigV3.baseUrl,
+                : `${sampleConfigV3.baseUrl}${sample.id}`,
             relativePath: (sample as any).relativePath,
           } as SampleInfo;
         });

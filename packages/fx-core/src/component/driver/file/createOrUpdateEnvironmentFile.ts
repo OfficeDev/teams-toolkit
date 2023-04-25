@@ -17,9 +17,8 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
-import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
-import { InvalidActionInputError } from "../../../error/common";
+import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 
 const actionName = "file/createOrUpdateEnvironmentFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
@@ -96,7 +95,7 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, message);
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 

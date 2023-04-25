@@ -37,13 +37,13 @@ import {
 } from "../resource/appManifest/appStudio";
 import { DebugAction } from "./common";
 import {
-  AppManifestPackageNotExistError,
   DebugArgumentEmptyError,
   errorSource,
   InvalidAppManifestPackageFileFormatError,
 } from "./error";
 import { checkM365Tenant } from "./utils";
 import { v4 } from "uuid";
+import { FileNotFoundError } from "../../error/common";
 
 const appManifestDebugMessages = {
   buildingAndSavingAppManifest:
@@ -118,7 +118,7 @@ export class AppManifestDebugHandler {
       this.args.appPackagePath = this.args.appPackagePath.trim();
       if (this.args.appPackagePath.length > 0) {
         if (!(await fs.pathExists(this.args.appPackagePath))) {
-          return err(AppManifestPackageNotExistError(this.args.appPackagePath));
+          return err(new FileNotFoundError("AppManifestDebugHandler", this.args.appPackagePath));
         }
         if (path.extname(this.args.appPackagePath) != ".zip") {
           return err(InvalidAppManifestPackageFileFormatError());

@@ -85,7 +85,14 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                    "PATH": "${workspaceFolder}/devTools/func:${env:PATH}"
+                }
+            },
+            "windows": {
+                "options": {
+                    "env": {
+                        "PATH": "${workspaceFolder}/devTools/func;${env:PATH}"
+                    }
                 }
             },
             "problemMatcher": {

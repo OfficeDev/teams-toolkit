@@ -39,7 +39,8 @@ provision:
       botId: BOT_ID
       botPassword: SECRET_BOT_PASSWORD
 
-  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
     with:
       botId: $\{{BOT_ID}}
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -55,17 +56,11 @@ provision:
   {{#configureApp}}
   {{#tab}}
   - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabDomain}} for local launch
     with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}"
-  - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabEndpoint}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}"
-  - uses: script # Set env for local launch
-    name: Set {{../../../placeholderMappings.tabIndexPath}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#"
+      run:
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabDomain}}={{domain}}";
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabEndpoint}}={{endpoint}}";
+        echo "::set-teamsfx-env {{../../../placeholderMappings.tabIndexPath}}=/index.html#";
 
   {{/tab}}
   {{#if aad}}
@@ -98,10 +93,14 @@ provision:
 
   {{/teamsApp}}
   {{#if isM365}}
-  - uses: teamsApp/extendToM365 # Extend your Teams app to Outlook and the Microsoft 365 app
+  # Extend your Teams app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365
     with:
-      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to the built app package.
-    writeToEnvironmentFile: # Write the information of created resources into environment file for the specified environment variable(s).
+      # Relative path to the build app package.
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 
@@ -111,19 +110,24 @@ provision:
 {{#config.deploy}}
 deploy:
   {{#tools}}
-  - uses: devTool/install # Install development tool(s)
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       {{#devCert}}
       devCert:
         trust: {{trust}}
       {{/devCert}}
       {{#func}}
-      func: true
+      func:
+        version: {{version}}
+        symlinkDir: {{symlinkDir}}
       {{/func}}
       {{#dotnet}}
       dotnet: true
       {{/dotnet}}
-    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
       {{#devCert}}
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
@@ -147,7 +151,8 @@ deploy:
 
   {{/dotnetCommand}}
   {{#tab}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -159,7 +164,8 @@ deploy:
 
   {{/tab}}
   {{#if bot}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -168,7 +174,8 @@ deploy:
 
   {{/if}}
   {{#ssoTab}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -181,7 +188,8 @@ deploy:
 
   {{/ssoTab}}
   {{#if ssoBot}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.env.teamsfx.local
       envs:
@@ -201,7 +209,8 @@ deploy:
 
   {{/if}}
   {{#if ssoFunction}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./api/.env.teamsfx.local
       envs:
@@ -213,7 +222,8 @@ deploy:
 
   {{/if}}
   {{#npmCommands}}
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: {{args}}
       {{#if workingDirectory}}
@@ -222,7 +232,8 @@ deploy:
 
   {{/npmCommands}}
   {{#frontendStart}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.localConfigs
       envs:
@@ -243,7 +254,8 @@ deploy:
 
   {{/frontendStart}}
   {{#authStart}}
-  - uses: file/createOrUpdateJsonFile # Generate runtime environment variables
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
     with:
       target: {{appsettingsPath}}
       appsettings:
@@ -258,7 +270,8 @@ deploy:
 
   {{/authStart}}
   {{#botStart}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.localConfigs
       envs:
@@ -282,7 +295,8 @@ deploy:
 
   {{/botStart}}
   {{#if backendStart}}
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./api/.localConfigs
       envs:

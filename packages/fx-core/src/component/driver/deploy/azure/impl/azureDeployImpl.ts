@@ -9,7 +9,6 @@ import {
   DeployResult,
 } from "../../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../../utils/common";
-import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployImpl } from "./baseDeployImpl";
 import { Base64 } from "js-base64";
@@ -28,7 +27,12 @@ import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
-import { CheckDeploymentStatusTimeoutError } from "../../../../../error/deploy";
+import {
+  CheckDeploymentStatusError,
+  CheckDeploymentStatusTimeoutError,
+  DeployRemoteStartError,
+  GetPublishingCredentialsError,
+} from "../../../../../error/deploy";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -117,8 +121,17 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
               e.response?.status ?? "NA"
             }, message: ${JSON.stringify(e.response?.data)}`
           );
+          throw new CheckDeploymentStatusError(
+            location,
+            new Error(
+              `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+                e.response?.data
+              )}`
+            ),
+            this.helpLink
+          );
         }
-        throw DeployExternalApiCallError.deployStatusError(e, undefined, this.helpLink);
+        throw new CheckDeploymentStatusError(location, e as Error, this.helpLink);
       }
 
       if (res) {
@@ -129,14 +142,18 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
             await logger?.error(
               `Deployment is failed with error message: ${JSON.stringify(res.data)}`
             );
-            throw DeployExternalApiCallError.deployRemoteStatusError(res);
+            throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
           }
           return res.data;
         } else {
           if (res.status) {
             await logger?.error(`Deployment is failed with error code: ${res.status}.`);
           }
-          throw DeployExternalApiCallError.deployStatusError(res, res.status, this.helpLink);
+          throw new CheckDeploymentStatusError(
+            location,
+            new Error(`status code: ${res.status ?? "NA"}`),
+            this.helpLink
+          );
         }
       }
     }
@@ -148,9 +165,8 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * create azure deploy config for Azure Function and Azure App service
    * @param azureResource azure resource info
    * @param azureCredential user azure credential
-   * @protected
    */
-  protected async createAzureDeployConfig(
+  async createAzureDeployConfig(
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
@@ -164,8 +180,20 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           azureResource.resourceGroupName,
           azureResource.instanceId
         ),
-      (e) => DeployExternalApiCallError.listPublishingCredentialsRemoteError(e, this.helpLink),
-      (e) => DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink)
+      (e) =>
+        new GetPublishingCredentialsError(
+          azureResource.instanceId,
+          azureResource.resourceGroupName,
+          e as Error,
+          this.helpLink
+        ),
+      (e) =>
+        new GetPublishingCredentialsError(
+          azureResource.instanceId,
+          azureResource.resourceGroupName,
+          e as Error,
+          this.helpLink
+        )
     );
     const publishingUserName = listResponse.publishingUserName ?? "";
     const publishingPassword = listResponse.publishingPassword ?? "";

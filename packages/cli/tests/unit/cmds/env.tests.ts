@@ -77,6 +77,7 @@ function mockYargs(sandbox: SinonSandbox, vars: Reference<MockVars>) {
   sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
     throw err;
   });
+  sandbox.stub(process, "exit");
 }
 
 function mockCommonUtils(sandbox: SinonSandbox, vars: Reference<MockVars>) {
@@ -90,6 +91,18 @@ function mockCommonUtils(sandbox: SinonSandbox, vars: Reference<MockVars>) {
     });
 
   sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
+    vars.value.logs += message + "\n";
+  });
+
+  sandbox.stub(LogProvider, "outputInfo").callsFake((message: string) => {
+    vars.value.logs += message + "\n";
+  });
+
+  sandbox.stub(LogProvider, "outputSuccess").callsFake((message: string) => {
+    vars.value.logs += message + "\n";
+  });
+
+  sandbox.stub(LogProvider, "outputError").callsFake((message: string) => {
     vars.value.logs += message + "\n";
   });
 }
@@ -202,8 +215,8 @@ describe("Env Add Command Tests", function () {
       // Assert
       expect(error).instanceOf(UserError);
       expect(error.name).equals("ProjectEnvAlreadyExistError");
-      expect(vars.value.logs).to.equal(
-        "[Core.ProjectEnvAlreadyExistError]: Project environment dev already exists.\n"
+      expect(vars.value.logs).to.contain(
+        "Core.ProjectEnvAlreadyExistError: Project environment dev already exists.\n"
       );
     }
 
@@ -229,8 +242,8 @@ describe("Env Add Command Tests", function () {
       // Assert
       expect(error).instanceOf(UserError);
       expect(error.name).equals("InvalidEnvNameError");
-      expect(vars.value.logs).to.equal(
-        "[Core.InvalidEnvNameError]: Environment name can only contain letters, digits, _ and -.\n"
+      expect(vars.value.logs).to.contain(
+        "Core.InvalidEnvNameError: Environment name can only contain letters, digits, _ and -.\n"
       );
     }
 
@@ -258,7 +271,7 @@ describe("Env Add Command Tests", function () {
       // Assert
       expect(error).instanceOf(UserError);
       expect(error.name).equals("MockCreateEnvError");
-      expect(vars.value.logs).to.equal("[CLII.MockCreateEnvError]: mock createEnv error\n");
+      expect(vars.value.logs).to.contain("CLII.MockCreateEnvError: mock createEnv error\n");
     }
 
     expect(exceptionThrown).to.be.true;

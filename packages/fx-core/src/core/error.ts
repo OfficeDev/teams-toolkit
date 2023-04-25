@@ -103,16 +103,6 @@ export class InvalidProjectSettingsFileError extends UserError {
   }
 }
 
-export class TaskNotSupportError extends SystemError {
-  constructor(task: string) {
-    super({
-      message: getDefaultString("error.TaskNotSupportError", task),
-      displayMessage: getLocalizedString("error.TaskNotSupportError", task),
-      source: CoreSource,
-    });
-  }
-}
-
 export class FetchSampleError extends UserError {
   constructor(sampleId: string) {
     super({
@@ -130,52 +120,6 @@ export function InvalidInputError(reason: string, inputs?: Inputs): UserError {
     "InvalidInput",
     getDefaultString("error.InvalidInputError", txt),
     getLocalizedString("error.InvalidInputError", txt)
-  );
-}
-
-export function FunctionRouterError(func: Func): UserError {
-  const param = JSON.stringify(func);
-  return new UserError(
-    CoreSource,
-    "FunctionRouterError",
-    getDefaultString("error.FunctionRouterError", param),
-    getLocalizedString("error.FunctionRouterError", param)
-  );
-}
-
-export function ContextUpgradeError(error: any, isUserError = false): FxError {
-  if (isUserError) {
-    return new UserError({
-      name: "ContextUpgradeError",
-      message: getDefaultString("error.ContextUpgradeError", error.message),
-      displayMessage: getLocalizedString("error.ContextUpgradeError", error.message),
-      source: CoreSource,
-    });
-  } else {
-    return new SystemError({
-      name: "ContextUpgradeError",
-      message: getDefaultString("error.ContextUpgradeError", error.message),
-      displayMessage: getLocalizedString("error.ContextUpgradeError", error.message),
-      source: CoreSource,
-    });
-  }
-}
-
-export function InvalidStateError(pluginName: string, state: Json): SystemError {
-  return new SystemError(
-    CoreSource,
-    "InvalidProfileError",
-    getDefaultString("error.InvalidProfileError", pluginName, JSON.stringify(state)),
-    getLocalizedString("error.InvalidProfileError", pluginName, JSON.stringify(state))
-  );
-}
-
-export function PluginHasNoTaskImpl(pluginName: string, task: string): SystemError {
-  return new SystemError(
-    CoreSource,
-    "PluginHasNoTaskImpl",
-    getDefaultString("error.PluginHasNoTaskImpl", pluginName, task),
-    getLocalizedString("error.PluginHasNoTaskImpl", pluginName, task)
   );
 }
 
@@ -224,35 +168,6 @@ export function InvalidEnvConfigError(env: string, errorMsg: string): UserError 
     getDefaultString("error.InvalidEnvConfigError", param1, param2),
     getLocalizedString("error.InvalidEnvConfigError", param1, param2)
   );
-}
-
-export function NonExistEnvNameError(env: string): UserError {
-  return new UserError(
-    CoreSource,
-    "NonExistEnvNameError",
-    getDefaultString("error.NonExistEnvNameError", env),
-    getLocalizedString("error.NonExistEnvNameError", env)
-  );
-}
-
-export function ModifiedSecretError(): UserError {
-  return new UserError(
-    CoreSource,
-    "ModifiedSecretError",
-    getDefaultString("error.ModifiedSecretError"),
-    getLocalizedString("error.ModifiedSecretError")
-  );
-}
-
-export class LoadSolutionError extends SystemError {
-  constructor() {
-    super(
-      CoreSource,
-      new.target.name,
-      getDefaultString("error.LoadSolutionError"),
-      getLocalizedString("error.LoadSolutionError")
-    );
-  }
 }
 
 export class NotImplementedError extends SystemError {

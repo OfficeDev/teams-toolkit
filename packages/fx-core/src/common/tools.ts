@@ -416,6 +416,10 @@ export function isV3Enabled(): boolean {
   return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
 }
 
+export function isDownloadDirectoryEnabled(): boolean {
+  return process.env.DOWNLOAD_DIRECTORY === "true";
+}
+
 export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }

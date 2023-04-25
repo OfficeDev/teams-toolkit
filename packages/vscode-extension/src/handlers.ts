@@ -591,13 +591,6 @@ export async function createProjectFromWalkthroughHandler(
   return result;
 }
 
-export async function debugHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug, getTriggerFromProperty(args));
-  await vscode.commands.executeCommand("workbench.action.debug.start");
-
-  return ok(null);
-}
-
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
   const result = await selectAndDebug();
@@ -1062,6 +1055,10 @@ export async function runCommand(
       }
       case Stage.deployTeams: {
         result = await core.deployTeamsManifest(inputs);
+        break;
+      }
+      case Stage.buildAad: {
+        result = await core.buildAadManifest(inputs);
         break;
       }
       case Stage.publish: {
@@ -1602,23 +1599,11 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 }
 
 /**
- * Get func binary path to be referenced by task definition.
- * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ * Get path delimiter
+ * Usage like ${workspaceFolder}/devTools/func${command:...}${env:PATH}
  */
-export async function getFuncPathHandler(): Promise<string> {
-  try {
-    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
-    if (funcStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
-        path.delimiter
-      }`;
-    }
-  } catch (error: any) {
-    showError(assembleError(error));
-  }
-
-  return `${path.delimiter}`;
+export async function getPathDelimiterHandler(): Promise<string> {
+  return path.delimiter;
 }
 
 /**
@@ -2833,7 +2818,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.BuildAadManifestStart,
     getTriggerFromProperty(args)
   );
-  const res = await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
+  const inputs = getSystemInputs();
+  inputs.env = envName;
+  const res = isV3Enabled()
+    ? await runCommand(Stage.buildAad, inputs)
+    : await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);
@@ -3609,6 +3598,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                     detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
                     groupName: localize("teamstoolkit.guide.development"),
                     data: "https://aka.ms/teamsfx-add-cicd-new",
+                    buttons: [
+                      {
+                        iconPath: "file-symlink-file",
+                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                        command: "fx-extension.openTutorial",
+                      },
+                    ],
+                  },
+                  {
+                    id: "mobilePreview",
+                    label: `${localize("teamstoolkit.guides.mobilePreview.label")}`,
+                    detail: localize("teamstoolkit.guides.mobilePreview.detail"),
+                    groupName: localize("teamstoolkit.guide.development"),
+                    data: "https://aka.ms/teamsfx-mobile",
                     buttons: [
                       {
                         iconPath: "file-symlink-file",

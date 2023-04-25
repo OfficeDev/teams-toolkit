@@ -27,6 +27,7 @@ describe("M365", () => {
   beforeEach(() => {
     registeredCommands = [];
     logs = [];
+    sandbox.stub(process, "exit");
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {

@@ -1,15 +1,17 @@
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { LogLevel, ok, Platform } from "@microsoft/teamsfx-api";
+import { LogLevel, Platform } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import * as path from "path";
 import { createContextV3 } from "../../../src/component/utils";
 import { MockLogProvider, MockTelemetryReporter, MockTools } from "../../core/utils";
 import { setTools } from "../../../src/core/globalVars";
-import { MockAction, mockProgressHandler } from "./helper";
+import { MockAction, MockDriver, mockProgressHandler } from "./helper";
 import sinon from "sinon";
 import { TelemetryConstants } from "../../../src/component/constants";
+import { TeamsFxTelemetryReporter } from "../../../src/component/utils/teamsFxTelemetryReporter";
+import { performance } from "perf_hooks";
 
 chai.use(chaiAsPromised);
 
@@ -183,5 +185,20 @@ describe("Action Middleware", () => {
       TelemetryConstants.properties.errorMessage,
       "error telemetry error props is not expected"
     );
+  });
+
+  it("addStartAndEndTelemetry send correct cost time", async () => {
+    const perfStub = sandbox.stub(performance, "now");
+    perfStub.onFirstCall().returns(0);
+    perfStub.onSecondCall().returns(1000);
+    sandbox.stub(TeamsFxTelemetryReporter.prototype, "sendStartEvent");
+    const sendEndEventStub = sandbox.stub(TeamsFxTelemetryReporter.prototype, "sendEndEvent");
+    sendEndEventStub.callsFake((config) => {
+      chai.assert.equal(config.measurements?.[TelemetryConstants.properties.timeCost], 1000);
+    });
+
+    await new MockDriver().run(undefined, { telemetryReporter: {} as any } as any);
+
+    chai.assert.isTrue(sendEndEventStub.called);
   });
 });

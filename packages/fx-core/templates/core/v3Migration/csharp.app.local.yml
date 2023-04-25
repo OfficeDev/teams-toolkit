@@ -31,7 +31,8 @@ provision:
     writeToEnvironmentFile:
       botId: BOT_ID
       botPassword: SECRET_BOT_PASSWORD
-  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
     with:
       botId: $\{{BOT_ID}}
       name: {{appName}}
@@ -53,17 +54,11 @@ provision:
 {{/if}}
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.tabDomain}} for local launch
     with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.tabDomain}}=localhost:44302"
-  - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.tabEndpoint}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.tabEndpoint}}=https://localhost:44302"
-  - uses: script # Set env for local launch
-    name: Set {{placeholderMappings.tabIndexPath}} for local launch
-    with:
-      run: echo "::set-teamsfx-env {{placeholderMappings.tabIndexPath}}=#"
+      run:
+        echo "::set-teamsfx-env {{placeholderMappings.tabDomain}}=localhost:44302";
+        echo "::set-teamsfx-env {{placeholderMappings.tabEndpoint}}=https://localhost:44302";
+        echo "::set-teamsfx-env {{placeholderMappings.tabIndexPath}}=#";
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: file/createOrUpdateJsonFile
     with:

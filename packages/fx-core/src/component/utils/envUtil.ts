@@ -49,6 +49,10 @@ export class EnvUtil {
     const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
     if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
     const dotEnvFilePath = dotEnvFilePathRes.value;
+
+    //global var
+    globalVars.envFilePath = dotEnvFilePath;
+
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         // .env file does not exist, just ignore
@@ -58,9 +62,6 @@ export class EnvUtil {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
       }
     }
-
-    //global var
-    globalVars.envFilePath = dotEnvFilePath;
 
     // deserialize
     const parseResult = dotenvUtil.deserialize(
@@ -193,14 +194,13 @@ export class EnvUtil {
     const contentSecret = dotenvUtil.serialize(parsedDotenvSecret);
 
     //persist
-    if (!envFileExists) await fs.ensureFile(dotEnvFilePath);
-    if (!envSecretFileExists) await fs.ensureFile(dotEnvSecretFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
-    await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
+    if (Object.keys(parsedDotenvSecret.obj).length > 0)
+      await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
     if (!envFileExists) {
       TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
     }
-    if (!envSecretFileExists) {
+    if (!envSecretFileExists && Object.keys(parsedDotenvSecret.obj).length > 0) {
       TOOLS.logProvider.info(
         "  Created environment file (secret) at " + dotEnvSecretFilePath + EOL + EOL
       );

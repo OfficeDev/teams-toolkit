@@ -1,5 +1,6 @@
-import { loginAction } from "./login";
 import { ErrorWithCode } from "@microsoft/teamsfx";
+
+import { loginAction } from "./login";
 import { TeamsUserCredentialContext } from "./singletonContext";
 
 export async function addNewPermissionScope(addscopes: string[]) {

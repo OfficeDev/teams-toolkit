@@ -39,24 +39,26 @@
             ]
         },
         {
-            // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-            // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-            // as well as samples to:
-            //   - use your own ngrok command / configuration / binary
-            //   - use your own tunnel solution
-            //   - provide alternatives if ngrok does not work on your dev machine
+            // Start the local tunnel service to forward public URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
             "label": "Start local tunnel",
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
-                "type": "ngrok",
-                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-                "env": "local",
-                "writeToEnvironmentFile": {
-                    // Keep consistency with upgraded configuration.
-                    "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
-                    "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
-                }
+                "type": "dev-tunnel",
+                "ports": [
+                    {
+                        "portNumber": 3978,
+                        "protocol": "http",
+                        "access": "public",
+                        "writeToEnvironmentFile": {
+                            // Keep consistency with upgraded configuration.
+                            "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
+                            "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
+                        }
+                    }
+                ],
+                "env": "local"
             },
             "isBackground": true,
             "problemMatcher": "$teamsfx-local-tunnel-watch"
@@ -104,7 +106,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/bot",
                 "env": {
-                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                    "PATH": "${workspaceFolder}/devTools/func${command:fx-extension.get-path-delimiter}${env:PATH}"
                 }
             },
             "dependsOn": [

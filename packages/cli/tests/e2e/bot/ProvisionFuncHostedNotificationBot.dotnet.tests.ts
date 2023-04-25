@@ -11,9 +11,6 @@ describe("Provision for Dotnet", () => {
     "Provision Resource: func hosted notification",
     { testPlanCaseId: 15685880 },
     async function () {
-      if (isV3Enabled()) {
-        return this.skip();
-      }
       await happyPathTest(Runtime.Dotnet, "notification", ["http-functions"]);
     }
   );

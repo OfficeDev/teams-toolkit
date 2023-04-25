@@ -64,6 +64,7 @@ describe("Deploy Command Tests", function () {
       positionals.push(name);
       return yargs;
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });

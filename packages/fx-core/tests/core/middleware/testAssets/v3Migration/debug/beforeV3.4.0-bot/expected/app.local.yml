@@ -31,7 +31,8 @@ provision:
       botId: BOT_ID
       botPassword: SECRET_BOT_PASSWORD
 
-  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
     with:
       botId: ${{BOT_ID}}
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -60,12 +61,14 @@ provision:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
 deploy:
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install -D env-cmd
       workingDirectory: .
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.localConfigs
       envs:

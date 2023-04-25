@@ -2,19 +2,16 @@
     "name": "{{appName}}",
     "version": "0.1.0",
     "engines": {
-        "node": "14 || 16 || 18"
+        "node": "16 || 18"
     },
     "private": true,
     "dependencies": {
         "@fluentui/react-charting": "^5.14.10",
         "@fluentui/react-components": "^9.18.0",
         "@fluentui/react-icons": "^2.0.186",
-        "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.2.0",
-        "@microsoft/teamsfx-react": "^3.0.0-alpha",
-        "@react-hook/resize-observer": "^1.2.6",
-        "axios": "^0.21.1",
+        "@microsoft/teamsfx-react": "^3.0.0-beta",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.8.0",
@@ -25,7 +22,6 @@
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "@types/react-router-dom": "^5.3.3",
-        "cross-env": "^7.0.3",
         "env-cmd": "^10.1.0",
         "typescript": "^4.1.2"
     },

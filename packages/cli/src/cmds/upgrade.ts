@@ -37,6 +37,10 @@ export default class Upgrade extends YargsCommand {
 
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs["skipUserConfirm"] = args.force;
+    if (args.force) {
+      // as upgrade will block nonInteractive command, remove it to run upgrade when args.force is setting.
+      delete inputs["nonInteractive"];
+    }
 
     const result = await activate(rootFolder);
     if (result.isErr()) {

@@ -39,7 +39,7 @@ jobs:
             }
 
   npm-audit:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -124,18 +124,23 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
 
-      - name: Install Yaml lint
+      - name: Install Yaml lint and mustache
         run: |
           pip install yamllint
+          npm install mustache -g
+          echo "{}" > test.json
       
       - name: check yaml lint
         run: |
           TRAGET=origin/${{ github.event.pull_request.base.ref }}
-          VAR=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios | grep -E '.yml.tpl$|.yml$' | xargs)
-          echo $VAR
-          if [ ! -z "$VAR" ]
+          YMLTPL=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios | grep -E '.yml.tpl$'|xargs)
+          echo $YMLTPL
+          if [ ! -z "$YMLTPL" ]
           then
-              yamllint $VAR
+              for obj in "$YMLTPL"
+              do
+                mustache test.json $obj | yamllint -
+              done
           fi
 
   check-sensitive-content:
@@ -198,7 +203,7 @@ jobs:
         id: description
         shell: "/bin/bash {0}"
         run: |
-          head=$(git describe --first-parent --abbrev=0)
+          head="origin/$GIT_BRANCH_NAME_BASE"
           echo $head
           history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           echo $history_cli_feat

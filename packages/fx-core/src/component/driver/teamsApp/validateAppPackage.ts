@@ -37,6 +37,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { SummaryConstant } from "../../configManager/constant";
 import { updateProgress } from "../middleware/updateProgress";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -84,12 +85,7 @@ export class ValidateAppPackageDriver implements StepDriver {
       appPackagePath = path.join(context.projectPath, appPackagePath);
     }
     if (!(await fs.pathExists(appPackagePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(appPackagePath)
-        )
-      );
+      return err(new FileNotFoundError(actionName, appPackagePath));
     }
     const archivedFile = await fs.readFile(appPackagePath);
 
@@ -139,7 +135,7 @@ export class ValidateAppPackageDriver implements StepDriver {
               `${validationResult.warnings.length} warning` +
               (validationResult.warnings.length > 1 ? "s" : "") +
               ", ",
-            color: Colors.BRIGHT_RED,
+            color: Colors.BRIGHT_YELLOW,
           });
           merge(context.telemetryProperties, {
             [TelemetryPropertyKey.validationWarnings]: validationResult.warnings
@@ -181,6 +177,17 @@ export class ValidateAppPackageDriver implements StepDriver {
           });
         });
         context.ui?.showMessage("info", outputMessage, false);
+        if (validationResult.errors.length > 0) {
+          const message = `Teams Toolkit has completed checking your app package against validation rules. ${validationResult.errors.length} failed.`;
+          return err(
+            AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
+              message,
+              message,
+            ])
+          );
+        } else {
+          return ok(new Map());
+        }
       } else {
         // logs in output window
         const errors = validationResult.errors
@@ -244,12 +251,25 @@ export class ValidateAppPackageDriver implements StepDriver {
         context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
 
         if (args.showMessage) {
+          // For non-lifecycle commands, just show the message
           const message = getLocalizedString(
-            "driver.teamsApp.validate.result",
-            summaryStr.join(", "),
-            "command:fx-extension.showOutputChannel"
+            "driver.teamsApp.validate.result.display",
+            summaryStr.join(", ")
           );
           context.ui?.showMessage("info", message, false);
+        } else {
+          // For lifecycle like provision, stop-on-error
+          if (validationResult.errors.length > 0) {
+            return err(
+              AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
+                getDefaultString("driver.teamsApp.validate.result", summaryStr.join(", ")),
+                getLocalizedString(
+                  "driver.teamsApp.validate.result.display",
+                  summaryStr.join(", ")
+                ),
+              ])
+            );
+          }
         }
       }
     } catch (e: any) {
@@ -258,10 +278,7 @@ export class ValidateAppPackageDriver implements StepDriver {
       );
       context.ui?.showMessage(
         "warn",
-        getLocalizedString(
-          "error.teamsApp.validate.apiFailed.display",
-          "command:fx-extension.showOutputChannel"
-        ),
+        getLocalizedString("error.teamsApp.validate.apiFailed.display"),
         false
       );
     }
@@ -271,20 +288,9 @@ export class ValidateAppPackageDriver implements StepDriver {
   private validateArgs(args: ValidateAppPackageArgs): Result<any, FxError> {
     if (!args || !args.appPackagePath) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          [
-            getDefaultString(
-              "driver.teamsApp.validate.invalidParameter",
-              "appPackagePath",
-              actionName
-            ),
-            getLocalizedString(
-              "driver.teamsApp.validate.invalidParameter",
-              "appPackagePath",
-              actionName
-            ),
-          ],
+        new InvalidActionInputError(
+          actionName,
+          ["appPackagePath"],
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );

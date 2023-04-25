@@ -20,7 +20,10 @@ import { DeployConstant } from "../../../constant/deployConstant";
 import { ProgressMessages } from "../../../messages";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { wrapAzureOperation } from "../../../utils/azureSdkErrorHandler";
-import { DeployExternalApiCallError } from "../../../error/deployError";
+import {
+  AzureStorageGetContainerPropertiesError,
+  AzureStorageSetContainerPropertiesError,
+} from "../../../../error/deploy";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -94,8 +97,18 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
 
     await wrapAzureOperation(
       () => azureBlobClient.setProperties(properties),
-      (e) => DeployExternalApiCallError.enableContainerStaticWebsiteRemoteError(e),
-      (e) => DeployExternalApiCallError.enableContainerStaticWebsiteError(e)
+      (e) =>
+        new AzureStorageSetContainerPropertiesError(
+          azureInfo.instanceId,
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME,
+          e
+        ),
+      (e) =>
+        new AzureStorageSetContainerPropertiesError(
+          azureInfo.instanceId,
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME,
+          e
+        )
     );
     return Promise.resolve(AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE);
   }
@@ -110,8 +123,18 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     );
     return await wrapAzureOperation(
       async () => (await azureBlobClient.getProperties()).staticWebsite?.enabled === true,
-      (e) => DeployExternalApiCallError.checkContainerStaticWebsiteRemoteError(e),
-      (e) => DeployExternalApiCallError.checkContainerStaticWebsiteError(e)
+      (e) =>
+        new AzureStorageGetContainerPropertiesError(
+          azureInfo.instanceId,
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME,
+          e
+        ),
+      (e) =>
+        new AzureStorageGetContainerPropertiesError(
+          azureInfo.instanceId,
+          DeployConstant.AZURE_STORAGE_CONTAINER_NAME,
+          e
+        )
     );
   }
 }

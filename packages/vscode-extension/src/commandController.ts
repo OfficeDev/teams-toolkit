@@ -40,7 +40,6 @@ class CommandController {
       "fx-extension.addFeature",
       "fx-extension.build",
       "fx-extension.create",
-      "fx-extension.debug",
       "fx-extension.deploy",
       "fx-extension.manageCollaborator",
       "fx-extension.openFromTdp",

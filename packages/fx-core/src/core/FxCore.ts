@@ -64,7 +64,6 @@ import {
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
-  TaskNotSupportError,
   WriteFileError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
@@ -140,52 +139,23 @@ export class FxCore implements v3.ICore {
     return CallbackRegistry.set(event, callback);
   }
 
-  async createExistingTabApp(
-    inputs: Inputs,
-    folder: string,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
-    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.CreateStart, {
-      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
-      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem().id,
-    });
-
-    const appName = inputs[CoreQuestionNames.AppName] as string;
-    inputs.folder = path.join(folder, appName);
-    const result = await this._init(inputs, ctx, true);
-    if (result.isErr()) {
-      return err(
-        sendErrorTelemetryThenReturnError(
-          CoreTelemetryEvent.Create,
-          result.error,
-          TOOLS.telemetryReporter
-        )
-      );
-    }
-
-    TOOLS.ui.showMessage("info", getLocalizedString("core.create.successNotice"), false);
-    TOOLS.telemetryReporter?.sendTelemetryEvent(CoreTelemetryEvent.Create, {
-      [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
-      [CoreTelemetryProperty.Success]: CoreTelemetrySuccess.Yes,
-      [CoreTelemetryProperty.Capabilities]: ExistingTabOptionItem().id,
-    });
-    return result;
-  }
-
+  /**
+   * lifecycle command: create new project
+   */
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     if (isV3Enabled()) return this.v3Implement.dispatch(this.createProject, inputs);
     else return this.createProjectOld(inputs);
   }
 
   /**
-   * "teamsfx init infra" CLI command
+   * @deprecated  Not used any more but still referenced by CLI code
    */
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.initInfra, inputs);
   }
 
   /**
-   * "teamsfx init debug" CLI command
+   * @deprecated  Not used any more but still referenced by CLI code
    */
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.initDebug, inputs);
@@ -207,6 +177,9 @@ export class FxCore implements v3.ICore {
     return ok(context.projectPath!);
   }
 
+  /**
+   * lifecycle commands: provision
+   */
   async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.provisionResources, inputs);
@@ -251,8 +224,7 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * Only used to provision Teams app with user provided app package
-   * @param inputs
+   * Only used to provision Teams app with user provided app package in CLI
    * @returns teamsAppId on provision success
    */
   async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<string, FxError>> {
@@ -280,6 +252,9 @@ export class FxCore implements v3.ICore {
     );
   }
 
+  /**
+   * lifecycle commands: deploy
+   */
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.deployArtifacts, inputs);
@@ -320,14 +295,23 @@ export class FxCore implements v3.ICore {
     return this.provisionResources(inputs);
   }
 
+  /**
+   * none lifecycle command, v3 only
+   */
   async deployAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.deployAadManifest, inputs);
   }
 
+  /**
+   * none lifecycle command, v3 only
+   */
   async addWebpart(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.addWebpart, inputs);
   }
 
+  /**
+   * lifecycle command: publish
+   */
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.publishApplication, inputs);
@@ -366,6 +350,9 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
+  /**
+   * @deprecated not used in v3 any more
+   */
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -391,6 +378,10 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(res.value);
   }
+
+  /**
+   * most commands will be deprecated in V3
+   */
   async executeUserTask(
     func: Func,
     inputs: Inputs,
@@ -474,10 +465,23 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
+  /**
+   * v3 only none lifecycle command
+   */
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.buildAadManifest, inputs);
+  }
+
+  /**
+   * v3 only none lifecycle command
+   */
   async deployTeamsManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.deployTeamsManifest, inputs);
   }
 
+  /**
+   * v3 only none lifecycle command
+   */
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (inputs.validateMethod === "validateAgainstSchema") {
       return await this.validateManifest(inputs);
@@ -485,22 +489,28 @@ export class FxCore implements v3.ICore {
       return await this.validateAppPackage(inputs);
     }
   }
-
+  /**
+   * v3 only none lifecycle command
+   */
   async validateManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.validateManifest, inputs);
   }
-
+  /**
+   * v3 only none lifecycle command
+   */
   async validateAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.validateAppPackage, inputs);
   }
-
+  /**
+   * v3 only none lifecycle command
+   */
   async createAppPackage(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.createAppPackage, inputs);
   }
 
   /**
    * get url to preview the app, may prompt to select env, hub and Teams manifest
-   *
+   * v3 only none lifecycle command
    * @param {Inputs} inputs
    * @returns the url to preview the app
    */
@@ -535,6 +545,9 @@ export class FxCore implements v3.ICore {
     return ok(undefined);
   }
 
+  /**
+   * @deprecated
+   */
   async getQuestionsForAddFeature(
     featureId: FeatureId,
     inputs: Inputs
@@ -564,16 +577,25 @@ export class FxCore implements v3.ICore {
     return ok(undefined);
   }
 
+  /**
+   * v3 only API, not command
+   */
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
     return this.v3Implement.dispatch(this.getSettings, inputs);
   }
 
+  /**
+   * v3 only API, not command
+   */
   async getDotEnv(
     inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnv, inputs);
   }
 
+  /**
+   * @deprecated in V3
+   */
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -598,6 +620,9 @@ export class FxCore implements v3.ICore {
     });
   }
 
+  /**
+   * @deprecated in V3
+   */
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -664,6 +689,9 @@ export class FxCore implements v3.ICore {
     return grantPermissionFunc(inputs, ctx);
   }
 
+  /**
+   * none lifecycle command
+   */
   async checkPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.checkPermission, inputs);
@@ -688,6 +716,9 @@ export class FxCore implements v3.ICore {
     return checkPermissionFunc(inputs, ctx);
   }
 
+  /**
+   * none lifecycle command
+   */
   async listCollaborator(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3Enabled()) {
       return this.v3Implement.dispatch(this.listCollaborator, inputs);
@@ -746,10 +777,6 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
     if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
     return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
-  }
-
-  async buildArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw new TaskNotSupportError(Stage.build);
   }
 
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {

@@ -52,6 +52,7 @@
     "onCommand:fx-extension.signinM365",
     "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
+    "onCommand:workbench.action.debug.start",
     "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project",
@@ -166,19 +167,19 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3",
           "visibility": "visible"
         },
         {
           "id": "teamsfx-help",
           "name": "Help",
-          "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
+          "when": "false",
           "visibility": "collapsed"
         },
         {
           "id": "teamsfx-feedback",
           "name": "Feedback",
-          "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
+          "when": "false",
           "visibility": "visible"
         },
         {
@@ -386,10 +387,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.debug",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "false"
         },
@@ -593,12 +590,6 @@
         "enablement": "fx-extension.initialized"
       },
       {
-        "command": "fx-extension.debug",
-        "title": "%teamstoolkit.commands.debug.title%",
-        "enablement": "!fx-extension.commandLocked",
-        "category": "Teams"
-      },
-      {
         "command": "fx-extension.deploy",
         "title": "%teamstoolkit.commands.deploy.title%",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
@@ -707,7 +698,9 @@
       },
       {
         "command": "fx-extension.localdebug",
-        "title": "%teamstoolkit.commands.localDebug.title%"
+        "title": "%teamstoolkit.commands.localDebug.title%",
+        "enablement": "!fx-extension.commandLocked",
+        "category": "Teams"
       },
       {
         "command": "fx-extension.localdebugWithIcon",
@@ -903,73 +896,6 @@
                     "required": [
                       "portOccupancy"
                     ]
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "type": "object",
-                "required": [
-                  "type",
-                  "ngrokArgs"
-                ],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.type.title%",
-                    "const": "ngrok"
-                  },
-                  "ngrokArgs": {
-                    "oneOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      }
-                    ],
-                    "description": "%teamstoolkit.taskDefinitions.args.ngrokArgs.title%"
-                  },
-                  "ngrokPath": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.ngrokPath.title%"
-                  },
-                  "tunnelInspection": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.tunnelInspection.title%",
-                    "anyOf": [
-                      {
-                        "const": "http://127.0.0.1:4040/api/tunnels"
-                      },
-                      {}
-                    ]
-                  },
-                  "env": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.env.title%",
-                    "anyOf": [
-                      {
-                        "const": "local"
-                      },
-                      {}
-                    ]
-                  },
-                  "writeToEnvironmentFile": {
-                    "type": "object",
-                    "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.title%",
-                    "properties": {
-                      "domain": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.domain.title%"
-                      },
-                      "endpoint": {
-                        "type": "string",
-                        "description": "%teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.endpoint.title%"
-                      }
-                    }
                   }
                 },
                 "additionalProperties": false
@@ -1391,6 +1317,7 @@
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vscode/codicons": "0.0.21",
+    "@vscode/vsce": "^2.19.0",
     "adm-zip": "^0.5.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
@@ -1428,6 +1355,7 @@
     "sinon": "^9.2.2",
     "source-map-support": "^0.5.19",
     "style-loader": "^2.0.0",
+    "svgtofont": "^3.23.1",
     "terser-webpack-plugin": "^4.2.3",
     "tmp": "^0.2.1",
     "ts-loader": "^8.0.3",
@@ -1440,8 +1368,6 @@
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "verdaccio": "^5.18.0",
-    "vsce": "^2.7.0",
-    "webfont": "^11.2.26",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2",
     "winston": "^3.3.3"

@@ -12,17 +12,11 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   - uses: script # Set env for local launch
-    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN for local launch
     with:
-      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000"
-  - uses: script # Set env for local launch
-    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT for local launch
-    with:
-      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000"
-  - uses: script # Set env for local launch
-    name: Set PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH for local launch
-    with:
-      run: echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#"
+      run:
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000";
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#";
 
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:
@@ -39,15 +33,19 @@ provision:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
 deploy:
-  - uses: devTool/install # Install development tool(s)
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       devCert:
         trust: true
-    writeToEnvironmentFile: # Write the information of installed development tool(s) into environment file for the specified environment variable(s).
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
 
-  - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
@@ -57,7 +55,8 @@ deploy:
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
 
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
       workingDirectory: ./tabs

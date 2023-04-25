@@ -114,6 +114,7 @@ export class YamlParser implements IYamlParser {
   ): Promise<Result<RawProjectModel, FxError>> {
     let diagnostic: string | undefined = undefined;
     try {
+      globalVars.ymlFilePath = path;
       const str = await fs.readFile(path, "utf8");
       diagnostic = await yamlDiagnostic.doValidation(path, str);
       const content = load(str);
@@ -121,17 +122,13 @@ export class YamlParser implements IYamlParser {
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
         return err(new InvalidYamlSchemaError(path, diagnostic));
       }
-
       const value = content as unknown as Record<string, unknown>;
-
       if (validateSchema) {
         const valid = validator(value);
         if (!valid) {
           return err(new InvalidYamlSchemaError(path, diagnostic));
         }
       }
-
-      globalVars.ymlFilePath = path;
       return parseRawProjectModel(value);
     } catch (error) {
       return err(new InvalidYamlSchemaError(path, diagnostic));

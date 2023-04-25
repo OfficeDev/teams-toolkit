@@ -49,7 +49,9 @@ export async function getPlaceholderMappings(
     tabDomain: getName("state.fx-resource-frontend-hosting.domain"),
     tabEndpoint: getName("state.fx-resource-frontend-hosting.endpoint"),
     tabIndexPath: getName("state.fx-resource-frontend-hosting.indexPath"),
-    botDomain: getName("state.fx-resource-bot.domain"),
+    botDomain: context.isBotValidDomain
+      ? getName("state.fx-resource-bot.validDomain")
+      : getName("state.fx-resource-bot.domain"),
     botEndpoint: getName("state.fx-resource-bot.siteEndpoint"),
   };
 }
@@ -315,3 +317,6 @@ export function launchRemote(
     internalConsoleOptions: "neverOpen",
   };
 }
+
+export const defaultFuncSymlinkDir = "./devTools/func";
+export const ignoreDevToolsDir = "/devTools/";

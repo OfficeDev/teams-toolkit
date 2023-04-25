@@ -21,7 +21,7 @@
 /packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
 /packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
-/packages/cli @chagong @Alive-Fish
+/packages/cli @chagong @Alive-Fish @LongOddCode
 /packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
@@ -43,6 +43,7 @@
 /packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
 /packages/cli/tests/e2e/m365 @kimizhu @swatDong @kuojianlu
 /packages/cli/tests/e2e/debug @kimizhu @swatDong @kuojianlu
+/packages/cli/tests/e2e/template @ayachensiyuan
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu
@@ -54,7 +55,7 @@
 /packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
-/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn @jidddddd
+/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @blackchoey @wenytang-ms
 
@@ -172,7 +173,7 @@
 /packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms
-
+/.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
 /packages/server @chagong @Alive-Fish @jayzhang
 
 /Localize @HuihuiWu-Microsoft @tecton

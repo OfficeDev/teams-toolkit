@@ -22,6 +22,7 @@ import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { Constants } from "../../../../src/component/resource/appManifest/constants";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
+import { InvalidActionInputError } from "../../../../src/error/common";
 
 describe("teamsApp/validateManifest", async () => {
   const teamsAppDriver = new ValidateManifestDriver();
@@ -56,7 +57,7 @@ describe("teamsApp/validateManifest", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+      chai.assert.isTrue(result.error instanceof InvalidActionInputError);
     }
   });
 
@@ -283,7 +284,7 @@ describe("teamsApp/validateAppPackage", async () => {
     chai.assert(result.isOk());
   });
 
-  it("validate app package - no passed", async () => {
+  it("validate app package - stop-on-error", async () => {
     sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
       errors: [
         {
@@ -321,16 +322,16 @@ describe("teamsApp/validateAppPackage", async () => {
 
     const args: ValidateAppPackageArgs = {
       appPackagePath: "fakePath",
-      showMessage: true,
+      showMessage: false,
     };
     let result = await teamsAppDriver.run(args, mockedDriverContext);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
 
     result = await teamsAppDriver.run(args, contextWithoutUI);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
   });
 
-  it("happy path - cli", async () => {
+  it("errors - cli", async () => {
     sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
       errors: [
         {
@@ -343,6 +344,61 @@ describe("teamsApp/validateAppPackage", async () => {
           title: "tab name",
         },
       ],
+      status: "Rejected",
+      warnings: [
+        {
+          id: "fakeId",
+          content: "Valid domains cannot contain a hosting site with a wildcard.",
+          filePath: "",
+          helpUrl: "https://docs.microsoft.com",
+          shortCodeNumber: 123,
+          validationCategory: "domain",
+          title: "valid domain",
+        },
+      ],
+      notes: [
+        {
+          id: "fakeId",
+          content: "Schema URL is present.",
+          title: "schema",
+        },
+      ],
+      addInDetails: {
+        displayName: "fake name",
+        developerName: "fake name",
+        version: "1.14.1",
+        manifestVersion: "1.14.1",
+      },
+    });
+    sinon.stub(fs, "pathExists").resolves(true);
+    // sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    const args: ValidateAppPackageArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    chai.assert(result.isErr());
+  });
+
+  it("happy path - cli", async () => {
+    sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
+      errors: [],
       status: "Rejected",
       warnings: [
         {

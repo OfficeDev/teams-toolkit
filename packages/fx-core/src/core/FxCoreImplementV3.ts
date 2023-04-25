@@ -57,7 +57,7 @@ import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
-import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
@@ -239,9 +239,9 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     QuestionModelMW,
     EnvLoaderMW(true, true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -256,7 +256,11 @@ export class FxCoreV3Implement {
     let manifestOutputPath: string = manifestTemplatePath;
     if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
       await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+      manifestOutputPath = path.join(
+        inputs.projectPath!,
+        "build",
+        `aad.manifest.${inputs.env}.json`
+      );
     }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,
@@ -304,8 +308,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW(getQuestionsForUpdateTeamsApp),
-    ConcurrentLockerMW,
     EnvLoaderMW(true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -328,18 +332,12 @@ export class FxCoreV3Implement {
   ): Promise<Result<any, FxError>> {
     let res: Result<any, FxError> = ok(undefined);
     const context = createDriverContext(inputs);
-    if (func.method === "getManifestTemplatePath") {
-      const path = await manifestUtils.getTeamsAppManifestPath(
-        (inputs as InputsWithProjectPath).projectPath
-      );
-      res = ok(path);
-    } else if (func.method === "addSso") {
+    if (func.method === "addSso") {
+      // used in v3 only in VS
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "buildAadManifest") {
-      res = await this.previewAadManifest(inputs);
     }
     return res;
   }
@@ -451,6 +449,12 @@ export class FxCoreV3Implement {
         }
       } else {
         isSupport = getVersionState(versionInfo);
+        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+        if (isSupport === VersionState.upgradeable) {
+          if (!(await checkActiveResourcePlugins(projectPath))) {
+            return err(new InvalidProjectError());
+          }
+        }
       }
       return ok({
         currentVersion: versionInfo.version,
@@ -466,8 +470,8 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async preProvisionForVS(
@@ -538,12 +542,13 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new FileNotFoundError("previewAadManifest", manifestTemplatePath));
+      return err(new FileNotFoundError("buildAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
@@ -558,8 +563,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForValidateManifest),
+    ConcurrentLockerMW,
     EnvLoaderMW(true),
   ])
   async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -581,7 +586,7 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForValidateAppPackage), ConcurrentLockerMW])
   async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.validateApplication);
     inputs.stage = Stage.validateApplication;
@@ -598,9 +603,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForCreateAppPackage),
     EnvLoaderMW(true),
+    ConcurrentLockerMW,
   ])
   async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.createAppPackage);
@@ -645,9 +650,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForPreviewWithManifest),
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
   ])
   async previewWithManifest(
     inputs: Inputs,

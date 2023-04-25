@@ -200,7 +200,7 @@ class TreeViewManager {
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
-        "fx-extension.debug",
+        "fx-extension.localdebug",
         undefined,
         { name: "debug-alt", custom: false }
       ),
@@ -348,10 +348,7 @@ class TreeViewManager {
     ];
     const helpProvider = new CommandsTreeViewProvider(helpCommand);
     disposables.push(
-      vscode.window.registerTreeDataProvider(
-        isV3Enabled() ? "teamsfx-help" : "teamsfx-help-and-feedback",
-        helpProvider
-      )
+      vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)
     );
     this.storeCommandsIntoMap(helpCommand);
     this.treeviewMap.set("teamsfx-help-and-feedback", helpProvider);

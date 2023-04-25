@@ -39,8 +39,8 @@ import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper"
 import fs from "fs-extra";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import "../../../../src/component/resource/appManifest/appManifest";
-import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../src/error/common";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
   let mockedEnvRestore: RestoreFn;
@@ -554,7 +554,7 @@ describe("getManifest V3", () => {
     manifest.name.short = "${{MY_APP_NAME}}";
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     const res = await manifestUtils.getManifestV3("", envInfo, false);
-    chai.assert.isTrue(res.isErr() && res.error instanceof UnresolvedPlaceholderError);
+    chai.assert.isTrue(res.isErr() && res.error instanceof MissingEnvironmentVariablesError);
   });
 
   it("getManifestV3 teams app id resolved", async () => {

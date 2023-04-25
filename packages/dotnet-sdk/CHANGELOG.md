@@ -1,4 +1,13 @@
-# 2.0.0-rc
+# 2.1.0-rc
+
+- Add new interface `IConversationReferenceStore` to manage notification target references.
+- Support to get a paginated list of targets where the bot is installed in notification bot.
+- Support to get a paginated list of members of one-on-one, group, or team conversation in notification bot.
+- Support to build `TeamsBotInstallation` instance with conversation reference.
+- Deprecate the interface `INotificationTargetStorage` and the option `storage` in notification bot.
+- Deprecate the API `GetMembersAsync`in notification bot.
+
+# 2.0.0
 
 - Support Graph SDK v5.6.0
 - Remove `frameworkreference` and remove auth-start and auth-end html pages

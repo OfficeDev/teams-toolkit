@@ -8,6 +8,7 @@ import { RestError } from "@azure/storage-blob";
 import { DeployExternalApiCallError } from "../error/deployError";
 import { HttpStatusCode } from "../constant/commonConstant";
 import { BaseComponentInnerError } from "../error/componentError";
+import { FxError } from "@microsoft/teamsfx-api";
 
 export function isAzureRestError(error: any): error is RestError {
   return error instanceof RestError || error.hasOwnProperty("statusCode");
@@ -22,8 +23,8 @@ export function isAzureRemoteServerError(error: any): error is RestError {
 
 export async function wrapAzureOperation<T>(
   operation: () => Promise<T>,
-  remoteErrorHandler: (e: RestError) => DeployExternalApiCallError,
-  otherErrorHandler: (e: unknown) => BaseComponentInnerError
+  remoteErrorHandler: (e: RestError) => DeployExternalApiCallError | FxError,
+  otherErrorHandler: (e: unknown) => BaseComponentInnerError | FxError
 ): Promise<T> {
   try {
     return await operation();

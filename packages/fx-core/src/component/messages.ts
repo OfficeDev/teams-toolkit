@@ -30,9 +30,10 @@ export class ProgressMessages {
   static readonly packingCode = () => getLocalizedString("core.progress.packingCode");
   static readonly enableStaticWebsite = getLocalizedString("core.progress.enableStaticWebsite");
   static readonly provisionBot = getLocalizedString("core.progress.provisionBot");
-  static readonly generateTemplate = () =>
-    getLocalizedString("core.progress.generateTemplate.detail");
-  static readonly generateSample = () => getLocalizedString("core.progress.generateSample.detail");
+  static readonly generateTemplate = (templateName: string) =>
+    getLocalizedString("core.progress.generateTemplate.detail", templateName);
+  static readonly generateSample = (sampleName: string) =>
+    getLocalizedString("core.progress.generateSample.detail", sampleName);
   static readonly getDeploymentSrcAndDest = getLocalizedString(
     "core.progress.getDeploymentSrcAndDest"
   );
@@ -43,8 +44,8 @@ export class ProgressMessages {
   );
   static readonly runCommand = (command: string, directory: string) =>
     getLocalizedString("core.progress.runCommand", command, directory);
-  static readonly deployToAzure = (folder: string, target?: string) =>
-    getLocalizedString("core.progress.deployToAzure", folder, target);
+  static readonly deployToAzure = (location: string, dist: string) =>
+    getLocalizedString("core.progress.deployToAzure", location, dist);
 }
 
 export class LogMessages {

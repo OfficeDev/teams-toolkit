@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+// TODO: update the help link
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 export const validationSettingsHelpLink = `${defaultHelpLink}#teams-toolkit-validation-settings`;
 

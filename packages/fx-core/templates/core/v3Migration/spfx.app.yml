@@ -3,8 +3,11 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
+projectId: {{projectId}}
+
 environmentFolderPath: ./ {{~environmentFolder}}
 
+# Triggered when 'teamsfx provision' is executed
 provision:
   - uses: teamsApp/create # Creates a Teams app
     with:
@@ -24,6 +27,7 @@ provision:
     with:
       appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
 
+# Triggered when 'teamsfx deploy' is executed
 deploy:
   - uses: cli/runNpmCommand
     with:
@@ -42,6 +46,7 @@ deploy:
       createAppCatalogIfNotExist: false
       packageSolutionPath: ./SPFx/config/package-solution.json
 
+# Triggered when 'teamsfx publish' is executed
 publish:
   - uses: teamsApp/validateManifest # Validate using manifest schema
     with:

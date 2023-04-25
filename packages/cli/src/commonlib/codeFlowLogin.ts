@@ -1,36 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PublicClientApplication, AccountInfo, Configuration, TokenCache } from "@azure/msal-node";
-import express from "express";
-import * as http from "http";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { AccountInfo, Configuration, PublicClientApplication, TokenCache } from "@azure/msal-node";
+import { FxError, LogLevel, Result, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Mutex } from "async-mutex";
-import {
-  UserError,
-  LogLevel,
-  Colors,
-  SystemError,
-  Result,
-  FxError,
-  ok,
-  err,
-} from "@microsoft/teamsfx-api";
-
-import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
+import express from "express";
+import * as fs from "fs-extra";
+import * as http from "http";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
-import {
-  azureLoginMessage,
-  env,
-  m365LoginMessage,
-  MFACode,
-  sendFileTimeout,
-} from "./common/constant";
-import * as constants from "../constants";
+import os from "os";
+import * as path from "path";
+import { TextType, colorize } from "../colorize";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryErrorType,
@@ -38,8 +20,15 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getColorizedString } from "../utils";
-import os from "os";
+import { UTF8, loadAccountId, saveAccountId } from "./cacheAccess";
+import {
+  MFACode,
+  azureLoginMessage,
+  env,
+  m365LoginMessage,
+  sendFileTimeout,
+} from "./common/constant";
+import CliCodeLogInstance from "./log";
 
 export class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
@@ -203,20 +192,13 @@ export class CodeFlowLogin {
       this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         url += "#";
         if (this.accountName == "azure") {
-          const message = [
-            {
-              content: `[${constants.cliSource}] ${azureLoginMessage}`,
-              color: Colors.BRIGHT_WHITE,
-            },
-            { content: url, color: Colors.BRIGHT_CYAN },
-          ];
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
+          CliCodeLogInstance.outputInfo(
+            azureLoginMessage + colorize(url, TextType.Hyperlink) + os.EOL
+          );
         } else {
-          const message = [
-            { content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
-            { content: url, color: Colors.BRIGHT_CYAN },
-          ];
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
+          CliCodeLogInstance.outputInfo(
+            m365LoginMessage + colorize(url, TextType.Hyperlink) + os.EOL
+          );
         }
         open(url);
       });

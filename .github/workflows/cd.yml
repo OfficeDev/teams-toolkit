@@ -1,5 +1,5 @@
 name: CD
-
+run-name: CD-${{ github.run_id }}-${{ github.ref_name }}-${{ inputs.preid }}
 on:
   workflow_dispatch:
     inputs:
@@ -21,7 +21,8 @@ on:
 jobs:
   cd:
     runs-on: ubuntu-latest
-
+    env:
+      CI: true
     steps:
       - name: Validate CD branch
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/prerelease' }}
@@ -96,17 +97,17 @@ jobs:
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
+          npx lerna version prerelease --conventional-prerelease --preid=rc --no-changelog --yes
 
       - name: version rc npm packages to npmjs.org on hotfix
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
+          npx lerna version prerelease --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
         run: |
-          npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
+          npx lerna version --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version change
         id: version-change
@@ -126,7 +127,12 @@ jobs:
 
       - name: generate templates v3
         run: |
-          .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3
+          .github/scripts/template-zip-autogen-v3.sh $TEMPLATE_PATH
+          cd ./packages/fx-core
+          rm -rf ./templates/fallback
+          node ./scripts/download-templates-zip.js
+        env:
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: update templates prerelease tag
         uses: richardsimko/update-tag@v1
@@ -209,7 +215,7 @@ jobs:
       - name: commit change on local
         run: |
           git add packages/fx-core/src/common/m365/serviceConstant.ts
-          git commit -m "chore: replace sideloading placeholders"
+          git commit -m "build: replace sideloading placeholders"
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
@@ -231,7 +237,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         run: |
           git add ./packages/cli/package.json ./packages/vscode-extension/package.json
-          git commit -m "chore: update ai key"
+          git commit -m "build: update ai key"
 
       - name: publish alpha release to npm org
         if: ${{ github.ref == 'refs/heads/dev'}}

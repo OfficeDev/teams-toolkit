@@ -858,7 +858,6 @@ export function MessageExtensionNewUIItem(): OptionItem {
     label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
     cliName: "message-extension",
     detail: getLocalizedString("core.MessageExtensionOption.detail"),
-    description: getLocalizedString("core.createProjectQuestion.option.description.worksInOutlook"),
   };
 }
 export function TabSPFxItem(): OptionItem {
@@ -944,6 +943,7 @@ export function M365SearchAppOptionItem(): OptionItem {
     label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
     cliName: "search-app",
     detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+    description: getLocalizedString("core.createProjectQuestion.option.description.worksInOutlook"),
   };
 }
 

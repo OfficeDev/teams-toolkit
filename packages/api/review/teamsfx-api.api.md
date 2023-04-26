@@ -10,7 +10,7 @@ import { IConfigurableTab } from '@microsoft/teams-manifest';
 import { IStaticTab } from '@microsoft/teams-manifest';
 import { IWebApplicationInfo } from '@microsoft/teams-manifest';
 import { Result } from 'neverthrow';
-import { TokenCredential } from '@azure/core-http';
+import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
 interface AADApp extends AzureResource {

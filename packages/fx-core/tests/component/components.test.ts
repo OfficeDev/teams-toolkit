@@ -50,7 +50,7 @@ import * as armFunctions from "../../src/component/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/component/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-auth";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/question";
 import { provisionUtils } from "../../src/component/provisionUtils";

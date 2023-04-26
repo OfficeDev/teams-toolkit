@@ -12,7 +12,7 @@ import * as sinon from "sinon";
 // @ts-ignore
 import chaiAsPromised from "chai-as-promised";
 import { PreconditionError } from "../../../src/common/azure-hosting/hostingError";
-import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-auth";
 chai.use(chaiAsPromised);
 
 class MyTokenCredential implements TokenCredential {

@@ -312,8 +312,8 @@ describe("Capability Questions", () => {
         getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
       );
       chai.assert.deepEqual(question.staticOptions, [
-        MessageExtensionNewUIItem(),
         M365SearchAppOptionItem(),
+        MessageExtensionNewUIItem(),
       ]);
     });
 

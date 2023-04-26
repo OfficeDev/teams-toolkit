@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @owner Yuan Tian <tianyuan@microsoft.com>
+ * @author Yuan Tian <tianyuan@microsoft.com>
  */
 
 import * as fs from "fs-extra";

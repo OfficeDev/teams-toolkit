@@ -484,7 +484,7 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
 }
 
 export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
-  const staticOptions: StaticOptions = [MessageExtensionNewUIItem(), M365SearchAppOptionItem()];
+  const staticOptions: StaticOptions = [M365SearchAppOptionItem(), MessageExtensionNewUIItem()];
 
   return {
     name: CoreQuestionNames.Capabilities,

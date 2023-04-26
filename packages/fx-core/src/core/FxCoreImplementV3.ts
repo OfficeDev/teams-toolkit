@@ -97,6 +97,7 @@ import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
+import { NoNeedUpgradeError } from "../error/upgrade";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -426,8 +427,25 @@ export class FxCoreV3Implement {
     return ok(ctx?.envVars);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
   async phantomMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
+    // If the project is invalid or upgraded, the ProjectMigratorMWV3 will not take action.
+    // Check invaliad/upgraded project here before call ProjectMigratorMWV3
+    const projectPath = (inputs.projectPath as string) || "";
+    const version = await getProjectVersionFromPath(projectPath);
+
+    if (version.source === VersionSource.teamsapp) {
+      return err(new NoNeedUpgradeError());
+    } else if (version.source === VersionSource.projectSettings) {
+      const isValid = await checkActiveResourcePlugins(projectPath);
+      if (!isValid) {
+        return err(new InvalidProjectError());
+      }
+    }
+    return await this.innerMigrationV3(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
+  async innerMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 

@@ -9,39 +9,7 @@ on:
   schedule:
     - cron: "0 8 * * *"
 
-jobs:
-  check-unused-string:
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout branch
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Setup Project
-        run: |
-          npm run setup
-
-      - name: Run script check if there are unused strings in package.nls.json
-        working-directory: ./packages/fx-core
-        run: npm run checkUnusedStrings
-        shell: bash
-        env:
-          CI: true
-
-      - name: Check script exit status
-        run: echo $?
-        shell: bash
-        if: ${{ steps.check-unused-string.outcome }} != 'success'
-
+jobs: 
   pr-title:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -145,17 +113,13 @@ jobs:
             exit 1
           fi
 
-      # - name: Check if there are unused strings in package.nls.json
-      #   working-directory: ./packages/fx-core
-      #   run: npm run checkUnusedStrings
-      #   shell: bash
-      #   env:
-      #     CI: true
+      - name: Check unused strings
+        working-directory: ./packages/fx-core
+        run: npm run checkUnusedStrings
+        shell: bash
+        env:
+          CI: true
           
-      # - name: Check script exit status
-      #   run: echo $?
-      #   shell: bash
-      #   if: ${{ steps.check-format.outcome }} != 'success'
   check-yaml-lint:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest

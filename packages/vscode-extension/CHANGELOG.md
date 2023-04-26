@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.5 - Apr 27, 2023
+
+Incremental version for Teams Toolkit with an enhancement.
+
+- Added a note on pre-requisite checker for usage of [NGROK](https://ngrok.com/).
+
 ## 4.2.4 - Feb 28, 2023
 
 Incremental version for Teams Toolkit with an enhancement.

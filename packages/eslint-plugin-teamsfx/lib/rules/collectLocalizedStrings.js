@@ -18,7 +18,9 @@ const keyFilePath = path.resolve(os.tmpdir(), "localizedStrings.txt");
  
 function collectKey(key) {
   if (key) {
-    fs.appendFile(keyFilePath, '\n' + key);
+    fs.appendFile(keyFilePath, '\n' + key, (err) => {
+      if (err) throw err;
+    });
   }
 }
 

@@ -30,17 +30,18 @@ jobs:
         run: |
           npm run setup
 
-      - name: Run script
+      - name: Run script check if there are unused strings in package.nls.json
         working-directory: ./packages/fx-core
         run: npm run checkUnusedStrings
         shell: bash
         env:
           CI: true
-          
+
       - name: Check script exit status
         run: echo $?
         shell: bash
         if: ${{ steps.check-unused-string.outcome }} != 'success'
+
   pr-title:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -144,6 +145,17 @@ jobs:
             exit 1
           fi
 
+      # - name: Check if there are unused strings in package.nls.json
+      #   working-directory: ./packages/fx-core
+      #   run: npm run checkUnusedStrings
+      #   shell: bash
+      #   env:
+      #     CI: true
+          
+      # - name: Check script exit status
+      #   run: echo $?
+      #   shell: bash
+      #   if: ${{ steps.check-format.outcome }} != 'success'
   check-yaml-lint:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest

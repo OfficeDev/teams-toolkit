@@ -72,8 +72,9 @@ export class OldProjectSettingsHelper {
   public static includeFuncHostedBot(oldProjectSettings: ProjectSettings): boolean {
     return (
       this.includePlugin(oldProjectSettings, "fx-resource-bot") &&
-      (oldProjectSettings.pluginSettings?.["fx-resource-bot"]?.["host-type"] === "azure-function" ||
-        oldProjectSettings.pluginSettings?.["fx-resource-bot"]?.["host-type"] === "azure-functions")
+      ["azure-function", "azure-functions"].includes(
+        oldProjectSettings.pluginSettings?.["fx-resource-bot"]?.["host-type"] ?? ""
+      )
     );
   }
 

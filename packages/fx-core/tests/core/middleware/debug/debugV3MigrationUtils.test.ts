@@ -87,6 +87,20 @@ describe("debugV3MigrationUtils", () => {
   describe("includeFuncHostedBot", () => {
     const testDataArr = [
       {
+        message: "not bot",
+        projectSettings: {
+          solutionSettings: { activeResourcePlugins: [] },
+        } as unknown as ProjectSettings,
+        isFuncHostedBot: false,
+      },
+      {
+        message: "undefined pluginSettings",
+        projectSettings: {
+          solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
+        } as unknown as ProjectSettings,
+        isFuncHostedBot: false,
+      },
+      {
         message: "empty pluginSettings",
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },

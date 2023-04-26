@@ -576,13 +576,10 @@ export class FxCoreV3Implement {
     const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
+      showMessage: true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const result = await driver.run(args, context);
-    if (result.isOk() && context.platform !== Platform.VS) {
-      const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-      context.ui?.showMessage("info", validationSuccess, false);
-    }
     return result;
   }
 

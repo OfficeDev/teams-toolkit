@@ -174,7 +174,10 @@ export abstract class YargsCommand {
     } finally {
       await CliTelemetryInstance.flush();
       Progress.end(true);
-      process.exit();
+      if (this.commandHead !== "preview") {
+        /// TODO: consider to remove the hardcode
+        process.exit();
+      }
     }
   }
 }

@@ -36,7 +36,7 @@
 /packages/cli/tests/e2e/sql @xzf0587 @adashen @blackchoey
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @huimiu
-/packages/cli/tests/e2e/bot @JerryYangKai @eriolchan @siglud @Yukun-dong
+/packages/cli/tests/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/cli/tests/e2e/scaffold @hund030 @eriolchan @huimiu
 /packages/cli/tests/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
 /packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
@@ -171,7 +171,7 @@
 /packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
 /packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
-/.github/workflows/cd.yml @adashen @LongOddCode @siglud @qinezh @wenytang-ms
+/.github/workflows/cd.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
 /.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
 /packages/server @chagong @Alive-Fish @jayzhang
 
@@ -203,5 +203,5 @@
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
-/packages/fx-core/src/component/driver/deploy/azure @siglud @Yukun-dong @JerryYangKai @eriolchan
-/packages/fx-core/src/component/driver/script @siglud @Yukun-dong @JerryYangKai @eriolchan
+/packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
+/packages/fx-core/src/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan

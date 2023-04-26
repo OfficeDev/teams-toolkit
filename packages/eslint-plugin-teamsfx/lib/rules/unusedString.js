@@ -6,6 +6,10 @@
  */
 "use strict";
 
+const { getStringIfConstant} = require("eslint-utils");
+ 
+let allKeys;
+
 // ------------------------------------------------------------------------------
 // Rule Definition
 // ------------------------------------------------------------------------------
@@ -31,27 +35,68 @@ module.exports = {
         }
       ]
     },
-  
     create(context) {
-      const jsonFilePath = context.options[0].jsonFilePath;
-      const keys = require(jsonFilePath);
-  
-      function reportUnusedKeys() {
-        Object.keys(keys).forEach((key) => {
-          const variable = context.getScope().variables.find((v) => v.name === key);
-  
-          if (!variable) {
-            context.report({
-              loc: { line: 0, column: 0 },
-              message: `The key '${key}' in '${jsonFilePath}' is not used in any TypeScript code.`
-            });
+      if (/\.ts$/.test(context.getFilename())) {
+        console.log("Checking unused strings in " + context.getFilename());
+        const jsonFilePath = context.options[0].jsonFilePath;
+        const json = require(jsonFilePath);
+        const keys = Object.keys(json);
+        if (!allKeys) allKeys = new Set(keys.filter(k=>!k.startsWith("_")));
+        return {
+          CallExpression: function(node) {
+            if(node.arguments) {
+              const argNode = node.arguments[0];
+              if(argNode) {
+                if (argNode.type === "Literal") {
+                  const key = argNode.value;
+                  if (key) {
+                    if (allKeys.has(key)) {
+                      console.log("Found key:" + key);
+                      allKeys.delete(key);
+                    }
+                  }
+                } else if(argNode.type && argNode.type === "TemplateLiteral") {
+                  const key = getStringIfConstant(argNode, context);
+                  if (key) {
+                    if (allKeys.has(key)) {
+                      console.log("Found key:" + key);
+                      allKeys.delete(key);
+                    }
+                  }
+                }
+              }
+            }
+          },
+          Literal: function(node) {
+            const key = node.value;
+            if (key) {
+              if (allKeys.has(key)) {
+                console.log("Found key:" + key);
+                allKeys.delete(key);
+              }
+            }
+          },
+          TemplateLiteral: function(node) {
+            const key = getStringIfConstant(node, context);
+            if (key) {
+              if (allKeys.has(key)) {
+                console.log("Found key:" + key);
+                allKeys.delete(key);
+              }
+            }
+          },
+          "Program:exit": function (node) {
+            if (allKeys.size > 0) {
+              context.report({
+                node: node,
+                message: `The following message keys in '${jsonFilePath}' are not referenced:\n ${Array.from(allKeys).join('\n')}`,
+              });
+            }
           }
-        });
+        };
+      } else {
+        return {}
       }
-  
-      return {
-        "Program:exit": reportUnusedKeys
-      };
     }
   }
 };

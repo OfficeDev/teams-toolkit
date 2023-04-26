@@ -10,6 +10,23 @@ on:
     - cron: "0 8 * * *"
 
 jobs:
+  check-unused-string:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Run script
+        working-directory: ./packages/fx-core
+        run: npm run checkUnusedStrings
+        shell: bash
+        env:
+          CI: true
+      - name: Check script exit status
+        run: echo $?
+        shell: bash
+        if: ${{ steps.check-unused-string.outcome }} != 'success'
   pr-title:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest

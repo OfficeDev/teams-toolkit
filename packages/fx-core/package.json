@@ -61,7 +61,8 @@
     "precommit": "npm run check-sensitive && lint-staged",
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
-    "version": "bash ../../.github/scripts/pkg-version.sh api-connector-sync"
+    "version": "bash ../../.github/scripts/pkg-version.sh api-connector-sync",
+    "checkUnusedStrings": "node ./scripts/check-unused-strings.js ./resource/package.nls.json ./src || exit 1"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",
@@ -135,6 +136,7 @@
   "devDependencies": {
     "@azure/storage-blob": "^12.5.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -172,6 +174,7 @@
     "@types/xml2js": "^0.4.11",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "ahocorasick": "^1.0.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
@@ -181,7 +184,6 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "faker": "^5.5.2",
     "find-process": "^1.4.4",
     "lint-staged": "^10.5.4",

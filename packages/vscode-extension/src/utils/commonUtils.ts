@@ -132,7 +132,7 @@ export function getAppName(): string | undefined {
     const yamlFilPath = path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.yml");
     try {
       const settings = yaml.parse(fs.readFileSync(yamlFilPath, "utf-8"));
-      for (const action of settings?.registerApp) {
+      for (const action of settings?.provision) {
         if (action?.uses === "teamsApp/create") {
           const name = action?.with?.name;
           if (name) {

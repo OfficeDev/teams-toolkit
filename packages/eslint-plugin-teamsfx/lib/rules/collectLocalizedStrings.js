@@ -14,11 +14,14 @@ const fs = require("fs");
 
 const os = require("os");
 
-const keyFilePath = path.resolve(os.tmpdir(), "localizedStrings.txt");
+const keyFilePath = path.resolve(os.tmpdir(), "allLiterals.txt");
+
+fs.unlink(keyFilePath, (err) => {
+});
  
 function collectKey(key) {
-  if (key) {
-    fs.appendFile(keyFilePath, '\n' + key, (err) => {
+  if (key && key.trim()) {
+    fs.appendFile(keyFilePath, '\n' + key.trim(), (err) => {
       if (err) throw err;
       console.log(`The line "${key}" was appended to file "${keyFilePath}"`);
     });

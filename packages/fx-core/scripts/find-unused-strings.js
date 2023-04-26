@@ -16,17 +16,17 @@ const ac = new AhoCorasick(patterns);
 function traverseDirectory(dirPath) {
   fs.readdirSync(dirPath).forEach(function (file) {
     const filePath = path.join(dirPath, file);
-    const stats = fs.statSync(filePath);
-    if (stats.isDirectory()) {
-      traverseDirectory(filePath);
-    } else if (filePath.endsWith(".ts")) {
-      const fd = fs.openSync(filePath, fs.O_CREAT | fs.O_EXCL | fs.O_RDWR, 0o600);
-      const content = fs.readFileSync(fd, "utf8");
+    if (file.endsWith(".ts")) {
+      const content = fs.readFileSync(filePath, "utf8");
       const results = ac.search(content);
       for (const result of results) {
         const key = result[1][0];
         foundKeySet.add(key.substring(1, key.length - 1));
       }
+    }
+    const stats = fs.statSync(filePath);
+    if (stats.isDirectory()) {
+      traverseDirectory(filePath);
     }
   });
 }

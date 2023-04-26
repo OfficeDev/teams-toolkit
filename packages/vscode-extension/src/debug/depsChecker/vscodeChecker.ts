@@ -13,6 +13,7 @@ import {
   Messages,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as os from "os";
+import { localize } from "../../utils/localizeUtils";
 import { vscodeHelper } from "./vscodeHelper";
 
 export class VSCodeDepsChecker {
@@ -30,6 +31,10 @@ export class VSCodeDepsChecker {
 
   public async resolve(deps: DepsType[]): Promise<boolean> {
     const enabledDeps = await VSCodeDepsChecker.getEnabledDepsWithFolder(deps);
+    if (enabledDeps.includes(DepsType.Ngrok)) {
+      await this.logger.warning(localize("teamstoolkit.prerequisite.ngrok.warning"));
+    }
+
     const depsStatus = await this.ensure(enabledDeps);
 
     const shouldContinue = await this.handleLinux(depsStatus);

@@ -504,5 +504,6 @@
     "teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title": "What's next?",
     "teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__",
     "teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title": "Preview your Teams app locally",
-    "teamstoolkit.walkthroughs.title": "Get started with Teams Toolkit"
+    "teamstoolkit.walkthroughs.title": "Get started with Teams Toolkit",
+    "teamstoolkit.prerequisite.ngrok.warning": "This software downloads v2.3.40 from NGROK. Customer must have a valid license to use NGROK software. Microsoft does not license use of the NGROK v2.3.40."
 }

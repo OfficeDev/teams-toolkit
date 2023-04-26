@@ -1,4 +1,8 @@
-  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
+  # Apply the AAD manifest to an existing AAD app. Will use the object id in
+  # manifest file to determine which AAD app to update.
+  - uses: aadApp/update
     with:
-      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
+      # Relative path to this file. Environment variables in manifest will
+      # be replaced before apply to AAD app
+      manifestPath: ./aad.manifest.json
       outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json

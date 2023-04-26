@@ -1,7 +1,7 @@
 {
   "name": "teamsfx",
   "scripts": {
-    "setup": "npm install --verbose && npm run build --verbose",
+    "setup": "npm install && npm run build",
     "setup-failpoint": "npm run setup && npx lerna run build-failpoint",
     "setup-metrics": "npm run setup && npx lerna run build-metrics",
     "bootstrap": "lerna bootstrap",

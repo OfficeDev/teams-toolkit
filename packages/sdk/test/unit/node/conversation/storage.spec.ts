@@ -6,7 +6,10 @@ import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as fs from "fs";
 import * as sinon from "sinon";
-import { ConversationReferenceStore, LocalFileStorage } from "../../../../src/conversation/storage";
+import {
+  DefaultConversationReferenceStore,
+  LocalFileStorage,
+} from "../../../../src/conversation/storage";
 import { TestStorage } from "./testUtils";
 
 chaiUse(chaiPromises);
@@ -150,11 +153,11 @@ describe("Notification.Storage Tests - Node", () => {
     });
   });
 
-  describe("ConversationReferenceStore Tests - Node", () => {
+  describe("DefaultConversationReferenceStore Tests - Node", () => {
     const storage = new TestStorage();
-    const testStore = new ConversationReferenceStore(storage);
+    const testStore = new DefaultConversationReferenceStore(storage);
 
-    it("check should return true if exist", async () => {
+    it("list should return correct data", async () => {
       storage.items = {};
       storage.items["_a_1"] = {
         conversation: {
@@ -162,59 +165,7 @@ describe("Notification.Storage Tests - Node", () => {
           tenantId: "a",
         },
       };
-      const result = await testStore.check({
-        channelId: "foo:bar",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      } as ConversationReference);
-      assert.isTrue(result);
-      assert.deepStrictEqual(storage.items, {
-        _a_1: {
-          conversation: {
-            id: "1",
-            tenantId: "a",
-          },
-        },
-      });
-    });
-
-    it("check should return false if not exist", async () => {
-      storage.items = {};
-      storage.items["_a_1"] = {
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      };
-      const result = await testStore.check({
-        channelId: "foo:bar",
-        conversation: {
-          id: "2",
-          tenantId: "b",
-        },
-      } as ConversationReference);
-      assert.isFalse(result);
-      assert.deepStrictEqual(storage.items, {
-        _a_1: {
-          conversation: {
-            id: "1",
-            tenantId: "a",
-          },
-        },
-      });
-    });
-
-    it("getAll should return correct data", async () => {
-      storage.items = {};
-      storage.items["_a_1"] = {
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      };
-      const data = await testStore.getAll();
+      const { data } = await testStore.list();
       assert.deepStrictEqual(data, [
         {
           conversation: {
@@ -225,22 +176,92 @@ describe("Notification.Storage Tests - Node", () => {
       ]);
     });
 
-    it("getAll should return empty data if storage is empty", async () => {
+    it("list should return empty data if storage is empty", async () => {
       storage.items = {};
-      const data = await testStore.getAll();
+      const { data } = await testStore.list();
       assert.strictEqual(data.length, 0);
     });
 
-    it("set should persist correct data", async () => {
+    it("add should persist correct data", async () => {
       storage.items = {};
-      await testStore.set({
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      } as ConversationReference);
+      await testStore.add(
+        "_a_1",
+        {
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        } as ConversationReference,
+        { overwrite: true }
+      );
       assert.deepStrictEqual(storage.items, {
         _a_1: {
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      });
+    });
+
+    it("add with overwrite should update existing data", async () => {
+      storage.items = {
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      };
+      const added = await testStore.add(
+        "_a_1",
+        {
+          channelId: "2",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        } as ConversationReference,
+        { overwrite: true }
+      );
+      assert.isTrue(added);
+      assert.deepStrictEqual(storage.items, {
+        _a_1: {
+          channelId: "2",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      });
+    });
+
+    it("add without overwrite should skip updating existing data", async () => {
+      storage.items = {
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        },
+      };
+      const added = await testStore.add(
+        "_a_1",
+        {
+          channelId: "2",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
+        } as ConversationReference,
+        { overwrite: false }
+      );
+      assert.isFalse(added);
+      assert.deepStrictEqual(storage.items, {
+        _a_1: {
+          channelId: "1",
           conversation: {
             id: "1",
             tenantId: "a",
@@ -257,12 +278,25 @@ describe("Notification.Storage Tests - Node", () => {
           tenantId: "a",
         },
       };
-      await testStore.delete({
+      const removed = await testStore.remove("_a_1", {
         conversation: {
           id: "1",
           tenantId: "a",
         },
       } as ConversationReference);
+      assert.isTrue(removed);
+      assert.deepStrictEqual(storage.items, {});
+    });
+
+    it("delete non-existing data should return correct result", async () => {
+      storage.items = {};
+      const removed = await testStore.remove("_a_1", {
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      } as ConversationReference);
+      assert.isFalse(removed);
       assert.deepStrictEqual(storage.items, {});
     });
   });

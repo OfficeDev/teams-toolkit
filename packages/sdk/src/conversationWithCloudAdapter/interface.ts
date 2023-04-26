@@ -7,6 +7,7 @@ import {
   BotSsoConfig,
   CommandOptions,
   CardActionOptions,
+  ConversationReferenceStore,
 } from "../conversation/interface";
 
 /**
@@ -21,15 +22,29 @@ export interface NotificationOptions {
    */
   botAppId?: string;
   /**
-   * An optional storage to persist bot notification connections.
+   * An optional store to persist bot notification target references.
+   *
+   * @remarks
+   * If `store` is not provided, a default conversation reference store will be used,
+   * which stores notification target references into:
+   *  - `.notification.localstore.json` if running locally
+   *  - `${process.env.TEMP}/.notification.localstore.json` if `process.env.RUNNING_ON_AZURE` is set to "1"
+   *
+   * It's recommended to use your own store for production environment.
+   */
+  store?: ConversationReferenceStore;
+  /**
+   * An optional storage to persist bot notification target references.
    *
    * @remarks
    * If `storage` is not provided, a default local file storage will be used,
-   * which stores notification connections into:
+   * which stores notification target references into:
    *   - `.notification.localstore.json` if running locally
    *   - `${process.env.TEMP}/.notification.localstore.json` if `process.env.RUNNING_ON_AZURE` is set to "1"
    *
    * It's recommended to use your own shared storage for production environment.
+   *
+   * @deprecated Use `store` to customize the way to persist bot notification target references instead.
    */
   storage?: NotificationTargetStorage;
 }

@@ -299,6 +299,18 @@ interface ConversationOptions_2 {
 }
 
 // @public
+export interface ConversationReferenceStore {
+    add(key: string, reference: Partial<ConversationReference>, options: ConversationReferenceStoreAddOptions): Promise<boolean>;
+    list(pageSize?: number, continuationToken?: string): Promise<PagedData<Partial<ConversationReference>>>;
+    remove(key: string, reference: Partial<ConversationReference>): Promise<boolean>;
+}
+
+// @public
+export interface ConversationReferenceStoreAddOptions {
+    overwrite?: boolean;
+}
+
+// @public
 export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
@@ -466,10 +478,13 @@ export class NotificationBot {
 // @public
 class NotificationBot_2 {
     constructor(adapter: CloudAdapter, options?: NotificationOptions_3);
+    buildTeamsBotInstallation(conversationReference: Partial<ConversationReference>): TeamsBotInstallation_2 | null;
     findAllChannels(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2[]>;
     findAllMembers(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2[]>;
     findChannel(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2 | undefined>;
     findMember(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2 | undefined>;
+    getPagedInstallations(pageSize?: number, continuationToken?: string): Promise<PagedData<TeamsBotInstallation_2>>;
+    // @deprecated
     installations(): Promise<TeamsBotInstallation_2[]>;
 }
 
@@ -482,7 +497,9 @@ export { NotificationOptions_2 as NotificationOptions }
 // @public
 interface NotificationOptions_3 {
     botAppId?: string;
+    // @deprecated
     storage?: NotificationTargetStorage;
+    store?: ConversationReferenceStore;
 }
 
 // @public
@@ -492,7 +509,7 @@ export interface NotificationTarget {
     readonly type?: NotificationTargetType;
 }
 
-// @public
+// @public @deprecated
 export interface NotificationTargetStorage {
     delete(key: string): Promise<void>;
     list(): Promise<{
@@ -532,6 +549,12 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
+}
+
+// @public
+export interface PagedData<T> {
+    continuationToken: string;
+    data: T[];
 }
 
 // @public
@@ -591,7 +614,9 @@ class TeamsBotInstallation_2 implements NotificationTarget {
     readonly botAppId: string;
     channels(): Promise<Channel_2[]>;
     readonly conversationReference: Partial<ConversationReference>;
+    getPagedMembers(pageSize?: number, continuationToken?: string): Promise<PagedData<Member_2>>;
     getTeamDetails(): Promise<TeamDetails | undefined>;
+    // @deprecated
     members(): Promise<Member_2[]>;
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;

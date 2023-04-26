@@ -9,7 +9,7 @@ on:
   schedule:
     - cron: "0 8 * * *"
 
-jobs:
+jobs: 
   pr-title:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -113,6 +113,13 @@ jobs:
             exit 1
           fi
 
+      - name: Check unused strings
+        working-directory: ./packages/fx-core
+        run: npm run checkUnusedStrings
+        shell: bash
+        env:
+          CI: true
+          
   check-yaml-lint:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest

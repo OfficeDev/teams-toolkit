@@ -94,7 +94,7 @@ module.exports = {
               }
               context.report({
                 node: node,
-                message: `The following ${allKeys.size} message keys in '${jsonFilePath}' are not referenced:\n ${displayArray.join('\n')}`,
+                message: `The following ${allKeys.size} message keys in '${jsonFilePath}' are not referenced:\n ${displayArray.join(',')}`,
               });
             }
           }

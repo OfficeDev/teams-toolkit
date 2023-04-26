@@ -15,6 +15,8 @@ const fs = require("fs");
 const os = require("os");
 
 const keyFilePath = path.resolve(os.tmpdir(), "localizedStrings.txt");
+
+console.log(`keyFilePath: ${keyFilePath}`);
  
 function collectKey(key) {
   if (key) {

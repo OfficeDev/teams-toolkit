@@ -20,7 +20,8 @@ function traverseDirectory(dirPath) {
     if (stats.isDirectory()) {
       traverseDirectory(filePath);
     } else if (filePath.endsWith(".ts")) {
-      const content = fs.readFileSync(filePath, "utf8");
+      const fd = fs.openSync(filePath, fs.O_CREAT | fs.O_EXCL | fs.O_RDWR, 0o600);
+      const content = fs.readFileSync(fd, "utf8");
       const results = ac.search(content);
       for (const result of results) {
         const key = result[1][0];

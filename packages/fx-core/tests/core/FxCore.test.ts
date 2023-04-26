@@ -66,13 +66,14 @@ import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
-import { FileNotFoundError } from "../../src/error/common";
+import { FileNotFoundError, InvalidProjectError } from "../../src/error/common";
 import * as collaborator from "../../src/core/collaborator";
 import { CollaborationUtil } from "../../src/core/collaborator";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
 import { Hub } from "../../src/common/m365/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
+import { NoNeedUpgradeError } from "../../src/error/upgrade";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -464,6 +465,7 @@ describe("Core basic APIs", () => {
       };
       const res = await core.phantomMigrationV3(inputs);
       assert.isTrue(res.isErr());
+      assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
       await deleteTestProject(appName);
     } finally {
       restore();
@@ -483,25 +485,7 @@ describe("Core basic APIs", () => {
       };
       const res = await core.phantomMigrationV3(inputs);
       assert.isTrue(res.isErr());
-      await deleteTestProject(appName);
-    } finally {
-      restore();
-    }
-  });
-
-  it("phantomMigrationV3 return error for invalid project", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      const res = await core.phantomMigrationV3(inputs);
-      assert.isTrue(res.isErr());
+      assert.isTrue(res._unsafeUnwrapErr().message.includes(new NoNeedUpgradeError().message));
       await deleteTestProject(appName);
     } finally {
       restore();

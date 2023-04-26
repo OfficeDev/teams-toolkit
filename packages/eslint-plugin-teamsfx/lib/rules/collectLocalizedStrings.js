@@ -7,15 +7,18 @@
 "use strict";
 
 const { getStringIfConstant} = require("eslint-utils");
- 
-let allKeys;
 
-function matchKey(key) {
+const path = require("path");
+
+const fs = require("fs");
+
+const os = require("os");
+
+const keyFilePath = path.resolve(os.tmpdir(), "localizedStrings.txt");
+ 
+function collectKey(key) {
   if (key) {
-    if (allKeys.has(key)) {
-      console.log("Found key:" + key);
-      allKeys.delete(key);
-    }
+    fs.appendFile(keyFilePath, '\n' + key);
   }
 }
 
@@ -24,7 +27,7 @@ function matchKey(key) {
 // ------------------------------------------------------------------------------
 
 module.exports = {
-  "unused-string": {
+  "collect-localized-strings": {
     meta: {
       type: "problem",
       docs: {
@@ -47,10 +50,6 @@ module.exports = {
     create(context) {
       if (/\.ts$/.test(context.getFilename())) {
         console.log("Checking unused strings in " + context.getFilename());
-        const jsonFilePath = context.options[0].jsonFilePath;
-        const json = require(jsonFilePath);
-        const keys = Object.keys(json);
-        if (!allKeys) allKeys = new Set(keys.filter(k=>!k.startsWith("_")));
         return {
           CallExpression: function(node) {
             if(node.arguments) {
@@ -58,35 +57,22 @@ module.exports = {
               if(argNode) {
                 if (argNode.type === "Literal") {
                   const key = argNode.value;
-                  matchKey(key);
+                  collectKey(key);
                 } else if(argNode.type && argNode.type === "TemplateLiteral") {
                   const key = getStringIfConstant(argNode, context);
-                  matchKey(key);
+                  collectKey(key);
                 }
               }
             }
           },
           Literal: function(node) {
             const key = node.value;
-            matchKey(key);
+            collectKey(key);
           },
           TemplateLiteral: function(node) {
             const key = getStringIfConstant(node, context);
-            matchKey(key);
+            collectKey(key);
           },
-          "Program:exit": function (node) {
-            if (allKeys.size > 0) {
-              let displayArray = Array.from(allKeys);
-              if (displayArray.length > 10) {
-                displayArray = displayArray.slice(0, 10);
-                displayArray.push("...");
-              }
-              context.report({
-                node: node,
-                message: `The following ${allKeys.size} message keys in '${jsonFilePath}' are not referenced:\n ${displayArray.join(',')}`,
-              });
-            }
-          }
         };
       } else {
         return {}

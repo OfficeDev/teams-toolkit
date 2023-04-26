@@ -68,3 +68,8 @@ export function setUriEventHandler(uriHandler: UriHandler) {
 export function setCommandIsRunning(isRunning: boolean) {
   commandIsRunning = isRunning;
 }
+
+// Only used by checkProjectUpgradable() when error happens
+export function unsetIsTeamsFxProject() {
+  isTeamsFxProject = false;
+}

@@ -87,9 +87,14 @@ module.exports = {
           },
           "Program:exit": function (node) {
             if (allKeys.size > 0) {
+              let displayArray = Array.from(allKeys);
+              if (displayArray.length > 10) {
+                displayArray = displayArray.slice(0, 10);
+                displayArray.push("...");
+              }
               context.report({
                 node: node,
-                message: `The following message keys in '${jsonFilePath}' are not referenced:\n ${Array.from(allKeys).join('\n')}`,
+                message: `The following ${allKeys.size} message keys in '${jsonFilePath}' are not referenced:\n ${displayArray.join('\n')}`,
               });
             }
           }

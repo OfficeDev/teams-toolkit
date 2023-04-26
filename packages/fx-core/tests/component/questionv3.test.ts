@@ -445,6 +445,24 @@ describe("question for v3", () => {
     assert.isTrue(nodeRes.isOk());
   });
 
+  it("create app package question - cli help", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+    };
+    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
+    assert.isTrue(nodeRes.isOk());
+  });
+
+  it("create app package question - vs", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      projectPath: ".",
+    };
+    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
+    assert.isTrue(nodeRes.isOk());
+  });
+
   it("update Teams app question", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

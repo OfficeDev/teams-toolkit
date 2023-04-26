@@ -10,6 +10,15 @@ const { getStringIfConstant} = require("eslint-utils");
  
 let allKeys;
 
+function matchKey(key) {
+  if (key) {
+    if (allKeys.has(key)) {
+      console.log("Found key:" + key);
+      allKeys.delete(key);
+    }
+  }
+}
+
 // ------------------------------------------------------------------------------
 // Rule Definition
 // ------------------------------------------------------------------------------
@@ -49,41 +58,21 @@ module.exports = {
               if(argNode) {
                 if (argNode.type === "Literal") {
                   const key = argNode.value;
-                  if (key) {
-                    if (allKeys.has(key)) {
-                      console.log("Found key:" + key);
-                      allKeys.delete(key);
-                    }
-                  }
+                  matchKey(key);
                 } else if(argNode.type && argNode.type === "TemplateLiteral") {
                   const key = getStringIfConstant(argNode, context);
-                  if (key) {
-                    if (allKeys.has(key)) {
-                      console.log("Found key:" + key);
-                      allKeys.delete(key);
-                    }
-                  }
+                  matchKey(key);
                 }
               }
             }
           },
           Literal: function(node) {
             const key = node.value;
-            if (key) {
-              if (allKeys.has(key)) {
-                console.log("Found key:" + key);
-                allKeys.delete(key);
-              }
-            }
+            matchKey(key);
           },
           TemplateLiteral: function(node) {
             const key = getStringIfConstant(node, context);
-            if (key) {
-              if (allKeys.has(key)) {
-                console.log("Found key:" + key);
-                allKeys.delete(key);
-              }
-            }
+            matchKey(key);
           },
           "Program:exit": function (node) {
             if (allKeys.size > 0) {

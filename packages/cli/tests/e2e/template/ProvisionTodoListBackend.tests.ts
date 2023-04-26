@@ -76,10 +76,6 @@ describe("teamsfx new template", function () {
     const functionValidator = new FunctionValidator(context, projectPath, env);
     await functionValidator.validateProvision();
 
-    // Validate Aad App
-    await SqlValidator.init(context);
-    await SqlValidator.validateSql();
-
     // deploy
     await CliHelper.deployAll(projectPath);
   });

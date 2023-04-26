@@ -31,7 +31,6 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
       await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.TodoListSpfx);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be.true;
@@ -42,7 +41,7 @@ describe("teamsfx new template", function () {
     }
 
     // validation succeed without provision
-    await execAsync("teamsfx validate", {
+    await execAsync("teamsfx validate --env dev --interactive false", {
       cwd: path.join(testFolder, appName),
       env: process.env,
       timeout: 0,

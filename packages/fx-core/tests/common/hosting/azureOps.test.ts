@@ -17,7 +17,7 @@ import {
   ZipDeployError,
 } from "../../../src/common/azure-hosting/hostingError";
 import { ErrorNameConstant } from "../../../src/common/azure-hosting/hostingConstant";
-import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-auth";
 chai.use(chaiAsPromised);
 
 class MyTokenCredential implements TokenCredential {

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";

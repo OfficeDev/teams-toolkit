@@ -117,7 +117,7 @@ export const doctorResult = {
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
   NgrokWarning:
-    "This software downloads v2.3.40 from NGROK. Customer must have a valid license to use NGROK software. Microsoft does not license use of the NGROK v2.3.40.",
+    "This software downloads npm package ngrok@4.3.3 which contains NGROK(https://ngrok.com/) v2.3.40. Customer must have a valid license to use NGROK software. Microsoft does not license use of the NGROK.",
 };
 
 export const installApp = {

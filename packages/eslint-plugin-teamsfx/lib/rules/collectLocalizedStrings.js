@@ -20,7 +20,7 @@ fs.unlink(keyFilePath, (err) => {
 });
  
 function collectKey(key) {
-  if (key && key.trim()) {
+  if (key && typeof key === "string" && key.trim()) {
     fs.appendFile(keyFilePath, '\n' + key.trim(), (err) => {
       if (err) throw err;
       console.log(`The line "${key}" was appended to file "${keyFilePath}"`);

@@ -63,7 +63,7 @@ describe("Deploy V3 m365-tab template", () => {
     const result = await createResourceGroup(resourceGroupName, "eastus");
     chai.assert.isTrue(result);
 
-    await CliHelper.provisionProject(projectPath, "--interactive false --env dev", {
+    await CliHelper.provisionProject(projectPath, "--interactive false", "dev", {
       ...process.env,
       AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
     });

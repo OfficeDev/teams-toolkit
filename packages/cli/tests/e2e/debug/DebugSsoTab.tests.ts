@@ -56,7 +56,7 @@ describe("Debug V3 sso-tab template", () => {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await CliHelper.provisionProject(projectPath, "--env local");
+    await CliHelper.provisionProject(projectPath, "", "local");
     console.log(`[Successfully] provision for ${projectPath}`);
 
     let context = await readContextMultiEnvV3(projectPath, "local");

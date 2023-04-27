@@ -63,7 +63,7 @@ describe("Debug V3 m365-message-extension template", () => {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await CliHelper.provisionProject(projectPath, "--env local", {
+    await CliHelper.provisionProject(projectPath, "", "local", {
       ...process.env,
       BOT_DOMAIN: "test.ngrok.io",
       BOT_ENDPOINT: "https://test.ngrok.io",

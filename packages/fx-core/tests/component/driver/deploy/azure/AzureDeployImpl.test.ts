@@ -99,7 +99,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.notice.deployDryRunComplete"]
     );
     await chai
-      .expect(impl.checkDeployStatus("", config))
+      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
       .to.be.rejectedWith(CheckDeploymentStatusTimeoutError);
   });
 
@@ -147,7 +147,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.notice.deployDryRunComplete"]
     );
     await chai
-      .expect(impl.checkDeployStatus("", config))
+      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
       .to.be.rejectedWith(CheckDeploymentStatusError);
   });
   it("checkDeployStatus reject none AxiosError", async () => {
@@ -182,7 +182,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.notice.deployDryRunComplete"]
     );
     await chai
-      .expect(impl.checkDeployStatus("", config))
+      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
       .to.be.rejectedWith(CheckDeploymentStatusError);
   });
   it("checkDeployStatus DeployRemoteStartError", async () => {
@@ -223,7 +223,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.notice.deployDryRunComplete"]
     );
     await chai
-      .expect(impl.checkDeployStatus("", config))
+      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
       .to.be.rejectedWith(DeployRemoteStartError);
   });
   it("checkDeployStatus return status 400", async () => {
@@ -260,7 +260,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.notice.deployDryRunComplete"]
     );
     await chai
-      .expect(impl.checkDeployStatus("", config))
+      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
       .to.be.rejectedWith(CheckDeploymentStatusError);
   });
   it("createAzureDeployConfig GetPublishingCredentialsError", async () => {
@@ -353,7 +353,9 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       timeout: 200,
     };
     await chai
-      .expect(impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config))
+      .expect(
+        impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
+      )
       .to.be.rejectedWith(DeployZipPackageError);
   });
   it("zipDeployPackage DeployZipPackageError throw 404", async () => {
@@ -400,7 +402,9 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       timeout: 200,
     };
     await chai
-      .expect(impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config))
+      .expect(
+        impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
+      )
       .to.be.rejectedWith(DeployZipPackageError);
   });
   it("zipDeployPackage DeployZipPackageError return 500", async () => {
@@ -440,7 +444,9 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       timeout: 200,
     };
     await chai
-      .expect(impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config))
+      .expect(
+        impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
+      )
       .to.be.rejectedWith(DeployZipPackageError);
   });
 });

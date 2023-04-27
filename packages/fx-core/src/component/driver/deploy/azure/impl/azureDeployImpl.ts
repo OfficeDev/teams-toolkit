@@ -108,7 +108,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
   public async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
-    logger?: LogProvider
+    logger: LogProvider
   ): Promise<DeployResult | undefined> {
     let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
@@ -116,7 +116,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
         res = await AzureDeployImpl.AXIOS_INSTANCE.get(location, config);
       } catch (e) {
         if (axios.isAxiosError(e)) {
-          await logger?.error(
+          await logger.error(
             `Check deploy status failed with response status code: ${
               e.response?.status ?? "NA"
             }, message: ${JSON.stringify(e.response?.data)}`
@@ -139,7 +139,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
         } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
           if (res.data?.status === DeployStatus.Failed) {
-            await logger?.error(
+            await logger.error(
               `Deployment is failed with error message: ${JSON.stringify(res.data)}`
             );
             throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
@@ -147,7 +147,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           return res.data;
         } else {
           if (res.status) {
-            await logger?.error(`Deployment is failed with error code: ${res.status}.`);
+            await logger.error(`Deployment is failed with error code: ${res.status}.`);
           }
           throw new CheckDeploymentStatusError(
             location,
@@ -174,7 +174,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
       if (token) {
-        this.logger?.info("Get AAD token successfully. Upload zip package through AAD Auth mode.");
+        this.logger.info("Get AAD token successfully. Upload zip package through AAD Auth mode.");
         return {
           headers: {
             "Content-Type": "application/octet-stream",
@@ -186,12 +186,12 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
         };
       } else {
-        this.logger?.info(
+        this.logger.info(
           "Get AAD token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
         );
       }
     } catch (e) {
-      this.logger?.info(
+      this.logger.info(
         `Get AAD token failed with error: ${JSON.stringify(
           e
         )}. Upload zip package through basic auth mode.`
@@ -249,7 +249,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
         azureResource.instanceId
       );
     } catch (e) {
-      this.logger?.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
+      this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
     }
   }
 }

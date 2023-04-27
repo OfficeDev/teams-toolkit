@@ -20,7 +20,7 @@ import {
 } from "../commonUtils";
 import { AadValidator, FrontendValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
-import { CliHelper } from "../../commonlib/cliHelper";
+import { Executor } from "../../utils/executor";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
@@ -33,15 +33,11 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.OneProductivityHub}`, { testPlanCaseId: 15277463 }, async function () {
     if (isV3Enabled()) {
-      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.OneProductivityHub);
+      await Executor.openTemplateProject(appName, testFolder, TemplateProject.OneProductivityHub);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     } else {
-      await CliHelper.createTemplateProject(
-        appName,
-        testFolder,
-        TemplateProject.OneProductivityHub
-      );
+      await Executor.createTemplateProject(appName, testFolder, TemplateProject.OneProductivityHub);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
@@ -50,9 +46,9 @@ describe("teamsfx new template", function () {
     if (isV3Enabled()) {
     } else {
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-      await CliHelper.setSubscription(subscription, projectPath);
+      await Executor.setSubscription(subscription, projectPath);
     }
-    await CliHelper.provisionProject(projectPath);
+    await Executor.provision(projectPath);
 
     // Validate Provision
     const context = isV3Enabled()
@@ -68,7 +64,7 @@ describe("teamsfx new template", function () {
     await FrontendValidator.validateProvision(frontend);
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    await Executor.deploy(projectPath);
   });
 
   after(async () => {

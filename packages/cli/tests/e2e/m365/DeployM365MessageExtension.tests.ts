@@ -66,7 +66,7 @@ describe("Deploy V3 m365-message-extension template", () => {
     const result = await createResourceGroup(resourceGroupName, "eastus");
     chai.assert.isTrue(result);
 
-    await CliHelper.provisionProject(projectPath, "--interactive false", "dev", {
+    await CliHelper.provisionProject(projectPath, "", "dev", {
       ...process.env,
       AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
     });
@@ -93,7 +93,7 @@ describe("Deploy V3 m365-message-extension template", () => {
     chai.assert.isNotEmpty(context.M365_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--interactive false", "local");
+    await CliHelper.deployAll(projectPath, "", "local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "dev");

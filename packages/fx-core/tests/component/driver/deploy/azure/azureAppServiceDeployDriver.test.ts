@@ -24,7 +24,6 @@ import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/uti
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { ProgressMessages } from "../../../../../src/component/messages";
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 describe("Azure App Service Deploy Driver test", () => {
@@ -80,9 +79,9 @@ describe("Azure App Service Deploy Driver test", () => {
       telemetryReporter: new MockTelemetryReporter(),
       progressBar: progressHandler,
     } as DriverContext;
-    sandbox
-      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
+    const credential = new MyTokenCredential();
+    sandbox.stub(credential, "getToken").resolves(undefined);
+    sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -91,7 +90,7 @@ describe("Azure App Service Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    const client = new appService.WebSiteManagementClient(credential, "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
@@ -456,9 +455,11 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
     } as DriverContext;
-    sandbox
-      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
+    const credential = new MyTokenCredential();
+    credential.getToken = async () => {
+      return null;
+    };
+    sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -467,7 +468,7 @@ describe("Azure App Service Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    const client = new appService.WebSiteManagementClient(credential, "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox
       .stub(client.webApps, "beginListPublishingCredentialsAndWait")

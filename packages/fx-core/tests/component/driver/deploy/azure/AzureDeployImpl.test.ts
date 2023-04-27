@@ -21,10 +21,9 @@ import {
   DeployZipPackageError,
   GetPublishingCredentialsError,
 } from "../../../../../src/error/deploy";
-import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import * as chai from "chai";
-import chaiAsPromised from "chai-as-promised";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
+import chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 import * as appService from "@azure/arm-appservice";
 import { RestError } from "@azure/storage-blob";
@@ -32,7 +31,6 @@ import {
   WebAppsListPublishingCredentialsResponse,
   WebSiteManagementClient,
 } from "@azure/arm-appservice";
-import { default as axios } from "axios";
 import { HttpStatusCode } from "../../../../../src/component/constant/commonConstant";
 import { DeployStatus } from "../../../../../src/component/constant/deployConstant";
 
@@ -296,6 +294,8 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");
     mockWebSiteManagementClient.webApps = webApps as any;
     sandbox.stub(appService, "WebSiteManagementClient").returns(mockWebSiteManagementClient);
+    const token = new MyTokenCredential();
+    sandbox.stub(token, "getToken").throws(new Error("test message"));
     await chai
       .expect(
         impl.createAzureDeployConfig(
@@ -304,7 +304,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
             resourceGroupName: "mockGroupName",
             instanceId: "mockAppName",
           },
-          new MyTokenCredential()
+          token
         )
       )
       .to.be.rejectedWith(GetPublishingCredentialsError);

@@ -170,15 +170,11 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
-    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
-      azureCredential,
-      azureResource.subscriptionId
-    ));
     try {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
       if (token) {
-        this.logger?.info("Get AAD token successful. Upload zip package through AAD Auth mode.");
+        this.logger?.info("Get AAD token successfully. Upload zip package through AAD Auth mode.");
         return {
           headers: {
             "Content-Type": "application/octet-stream",
@@ -202,6 +198,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       );
     }
 
+    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
+      azureCredential,
+      azureResource.subscriptionId
+    ));
     const listResponse = await wrapAzureOperation(
       () =>
         managementClient.webApps.beginListPublishingCredentialsAndWait(

@@ -174,6 +174,34 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       azureCredential,
       azureResource.subscriptionId
     ));
+    try {
+      const defaultScope = "https://management.azure.com/.default";
+      const token = await azureCredential.getToken(defaultScope);
+      if (token) {
+        this.logger?.info("Get AAD token successful. Upload zip package through AAD Auth mode.");
+        return {
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Cache-Control": "no-cache",
+            Authorization: `Bearer ${token.token}`,
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
+        };
+      } else {
+        this.logger?.info(
+          "Get AAD token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
+        );
+      }
+    } catch (e) {
+      this.logger?.info(
+        `Get AAD token failed with error: ${JSON.stringify(
+          e
+        )}. Upload zip package through basic auth mode.`
+      );
+    }
+
     const listResponse = await wrapAzureOperation(
       () =>
         managementClient.webApps.beginListPublishingCredentialsAndWait(

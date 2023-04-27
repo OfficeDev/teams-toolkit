@@ -1078,10 +1078,6 @@ export class FxCore implements v3.ICore {
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const result = await this._init(inputs, ctx);
-    if (result.isOk()) {
-      TOOLS.ui.showMessage("info", getLocalizedString("core.init.successNotice"), false);
-    }
-
     return result;
   }
 

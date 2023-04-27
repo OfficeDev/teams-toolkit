@@ -10,7 +10,6 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
-  execAsync,
   getTestFolder,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
@@ -19,9 +18,9 @@ import {
   readContextMultiEnvV3,
   getUniqueAppName,
 } from "../commonUtils";
+import { Executor } from "../../utils/executor";
 import { BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
-import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("teamsfx new template", function () {
@@ -33,11 +32,11 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.NpmSearch}`, { testPlanCaseId: 15277471 }, async function () {
     if (isV3Enabled()) {
-      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.NpmSearch);
+      await Executor.openTemplateProject(appName, testFolder, TemplateProject.NpmSearch);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     } else {
-      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.NpmSearch);
+      await Executor.createTemplateProject(appName, testFolder, TemplateProject.NpmSearch);
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
@@ -46,9 +45,9 @@ describe("teamsfx new template", function () {
     if (isV3Enabled()) {
     } else {
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-      await CliHelper.setSubscription(subscription, projectPath);
+      await Executor.setSubscription(subscription, projectPath);
     }
-    await CliHelper.provisionProject(projectPath);
+    await Executor.provision(projectPath);
 
     // Validate Provision
     const context = isV3Enabled()
@@ -64,11 +63,10 @@ describe("teamsfx new template", function () {
     }
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    await Executor.deploy(projectPath);
 
     {
       // Validate deployment
-
       // Get context
       const context = isV3Enabled()
         ? await readContextMultiEnvV3(projectPath, env)
@@ -80,18 +78,10 @@ describe("teamsfx new template", function () {
     }
 
     // test (validate)
-    await execAsync(`teamsfx validate`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await Executor.validate(projectPath);
 
     // package
-    await execAsync(`teamsfx package`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await Executor.package(projectPath);
   });
 
   after(async () => {

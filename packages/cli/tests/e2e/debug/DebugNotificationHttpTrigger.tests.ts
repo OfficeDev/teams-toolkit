@@ -95,7 +95,7 @@ describe("Debug V3 notification-http-trigger template", () => {
     chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--env local");
+    await CliHelper.deployAll(projectPath, "", "local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "local");

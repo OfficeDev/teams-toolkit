@@ -94,7 +94,7 @@ describe("Deploy V3 m365-tab template", () => {
     chai.assert.isNotEmpty(context.M365_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--interactive false --env dev");
+    await CliHelper.deployAll(projectPath, "--interactive false", "local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "dev");

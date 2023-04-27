@@ -2,7 +2,7 @@
   - uses: botAadApp/create
     with:
       # The Azure Active Directory application's display name
-      name: testProjectbt${{RESOURCE_SUFFIX}}
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
     writeToEnvironmentFile:
       # The Azure Active Directory application's client id created for bot.
       botId: BOT_ID

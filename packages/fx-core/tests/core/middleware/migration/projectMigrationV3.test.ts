@@ -68,6 +68,9 @@ import {
   readEnvUserFile,
   Constants,
   getManifestPathV2,
+  loadExpectedYmlFile,
+  getYmlTemplates,
+  normalizeLineBreaks,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
@@ -1326,6 +1329,7 @@ describe("debugMigration", () => {
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
     sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
+    await getYmlTemplates();
   });
 
   afterEach(async () => {
@@ -1373,13 +1377,16 @@ describe("debugMigration", () => {
       await copyTestProject(path.join("debug", testCase), projectPath);
 
       await debugMigration(migrationContext);
-
+      const expectedYmlContent = await loadExpectedYmlFile(
+        path.join(projectPath, "expected", "app.local.yml")
+      );
+      const actualYmlContent = await fs.readFile(
+        path.join(projectPath, "teamsapp.local.yml"),
+        "utf-8"
+      );
       assert.equal(
-        await fs.readFile(path.join(projectPath, "teamsapp.local.yml"), "utf-8"),
-        (await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")).replace(
-          "SIMPLE_AUTH_APPSETTINGS_PATH",
-          simpleAuthAppsettingsPath
-        )
+        actualYmlContent,
+        expectedYmlContent.replace("SIMPLE_AUTH_APPSETTINGS_PATH", simpleAuthAppsettingsPath)
       );
       assert.equal(
         await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),

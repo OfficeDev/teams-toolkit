@@ -60,6 +60,7 @@ const imageMapping: { [p: string]: any } = {
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
+  "outlook-add-in-set-signature": TeamsTabAndOutlookAddin,
   "developer-assist-dashboard": DevAssistDashboard,
 };
 

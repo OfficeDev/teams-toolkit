@@ -1356,6 +1356,7 @@ describe("debugMigration", () => {
     "V3.5.0-V4.0.6-tab-bot-func-node18",
     "beforeV3.4.0-tab-bot-func-node18",
     "transparent-notification-node18",
+    "V4.0.2-notification-trigger",
   ];
 
   const simpleAuthPath = path.join(os.homedir(), ".fx", "localauth").replace(/\\/g, "\\\\");

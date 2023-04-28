@@ -30,6 +30,7 @@ import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
 import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-tab-and-outlook-add-in.png";
 import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
+import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif"
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -61,6 +62,7 @@ const imageMapping: { [p: string]: any } = {
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
   "developer-assist-dashboard": DevAssistDashboard,
+  "live-share-dice-roller": LiveShareDiceRoller,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

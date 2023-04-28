@@ -22,7 +22,6 @@
         "short": "Short description of {{appName}}",
         "full": "Full description of {{appName}}"
     },
-    "showLoadingIndicator": true,
     "accentColor": "#FFFFFF",
     "bots": [],
     "composeExtensions": [],
@@ -43,5 +42,6 @@
     ],
     "validDomains": [
         "${{TAB_DOMAIN}}"
-    ]
+    ],
+    "showLoadingIndicator": true
 }

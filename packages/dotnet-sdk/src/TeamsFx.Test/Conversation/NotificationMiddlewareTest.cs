@@ -10,6 +10,7 @@
     using System.Text.Json;
 
     [TestClass]
+    [Obsolete]
     public class NotificationMiddlewareTest
     {
         private readonly InMemoryStorage _storage;
@@ -18,7 +19,8 @@
         public NotificationMiddlewareTest()
         {
             _storage = new InMemoryStorage();
-            _middleware = new NotificationMiddleware(_storage);
+            var store = new DefaultConversationReferenceStore(_storage);
+            _middleware = new NotificationMiddleware(store);
         }
 
         [TestMethod]
@@ -185,12 +187,12 @@
             await _middleware.OnTurnAsync(mockContext.Object, (ctx) => Task.CompletedTask, CancellationToken.None);
 
             Assert.AreEqual(1, _storage.Items.Count);
-            var reference = _storage.Items.GetValueOrDefault($"_a_{teamId}", null);
+            var reference = _storage.Items.GetValueOrDefault($"_a_{conversationId}", null);
             Assert.IsNotNull(reference);
             Assert.AreEqual(activityId, reference.ActivityId);
             Assert.AreEqual("x", reference.ChannelId);
             Assert.AreEqual("a", reference.Conversation.TenantId);
-            Assert.AreEqual(teamId, reference.Conversation.Id);
+            Assert.AreEqual(conversationId, reference.Conversation.Id);
         }
 
         [TestMethod]

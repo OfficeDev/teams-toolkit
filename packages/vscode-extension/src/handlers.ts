@@ -1058,6 +1058,10 @@ export async function runCommand(
         result = await core.deployTeamsManifest(inputs);
         break;
       }
+      case Stage.buildAad: {
+        result = await core.buildAadManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -1596,16 +1600,11 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 }
 
 /**
- * Get func binary path to be referenced by task definition.
- * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ * Get path delimiter
+ * Usage like ${workspaceFolder}/devTools/func${command:...}${env:PATH}
  */
-export async function getFuncPathHandler(): Promise<string> {
-  // TODO: remove this command
-  return globalVariables.workspaceUri?.fsPath
-    ? `${path.delimiter}${path.resolve(globalVariables.workspaceUri.fsPath, "./devTools/func")}${
-        path.delimiter
-      }`
-    : path.delimiter;
+export async function getPathDelimiterHandler(): Promise<string> {
+  return path.delimiter;
 }
 
 /**
@@ -1792,7 +1791,7 @@ export async function checkUpgrade(args?: any[]) {
       });
       return;
     } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
-      input["confirmOnly"] = true;
+      input["skipUserConfirm"] = true;
     }
     const result = await core.phantomMigrationV3(input);
     if (result.isErr()) {
@@ -2844,7 +2843,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.BuildAadManifestStart,
     getTriggerFromProperty(args)
   );
-  const res = await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
+  const inputs = getSystemInputs();
+  inputs.env = envName;
+  const res = isV3Enabled()
+    ? await runCommand(Stage.buildAad, inputs)
+    : await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);

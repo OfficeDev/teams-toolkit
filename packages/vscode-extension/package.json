@@ -167,19 +167,19 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3",
           "visibility": "visible"
         },
         {
           "id": "teamsfx-help",
           "name": "Help",
-          "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
+          "when": "false",
           "visibility": "collapsed"
         },
         {
           "id": "teamsfx-feedback",
           "name": "Feedback",
-          "when": "fx-extension.isTeamsFx && fx-extension.isV3Enabled",
+          "when": "false",
           "visibility": "visible"
         },
         {
@@ -1260,7 +1260,7 @@
     "lint:staged": "lint-staged",
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
-    "copy-md-files": "copyfiles WHATISNEW.md PREVIEW.md out/resource",
+    "copy-md-files": "copyfiles WHATISNEW.md out/resource",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-md-files",
     "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
@@ -1364,6 +1364,7 @@
     "ttypescript": "^1.5.12",
     "typemoq": "^1.3.1",
     "typescript": "^4.2.4",
+    "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "verdaccio": "^5.18.0",

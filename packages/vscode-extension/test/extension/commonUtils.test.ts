@@ -308,7 +308,7 @@ describe("CommonUtils", () => {
 
     it("get app name successfully - v3", () => {
       const ymlData = `# Triggered when 'teamsfx provision' is executed
-      registerApp:
+      provision:
         - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
           with:
             name: appNameTest-aad
@@ -323,6 +323,15 @@ describe("CommonUtils", () => {
 
       const res = commonUtils.getAppName();
       expect(res).equal("appNameTest");
+    });
+
+    it("empty yml file - v3", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").returns("");
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
     });
 
     it("throw exception - v3", () => {

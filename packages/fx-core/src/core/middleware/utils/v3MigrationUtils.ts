@@ -32,6 +32,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
 import * as dotenv from "dotenv";
+import { manifestUtils } from "../../../component/resource/appManifest/utils/ManifestUtils";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -70,6 +71,12 @@ const skipList = [
   "state.fx-resource-apim.apimClientAADClientSecret",
   "state.fx-resource-azure-sql.adminPassword",
 ];
+
+export const validDomain = {
+  botWithValid: "{{state.teams-bot.validDomain}}",
+  tab: "{{state.teams-tab.domain}}",
+  bot: "{{state.teams-bot.domain}}",
+};
 
 // convert any obj names if can be converted (used in states and configs migration)
 export function jsonObjectNamesConvertV3(
@@ -246,17 +253,20 @@ export function getToolkitVersionLink(platform: Platform, projectVersion: string
   return Metadata.versionMatchLink;
 }
 
-export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {
+export function getCapabilityStatus(projectSettings: ProjectSettings): {
   TabSso: boolean;
   BotSso: boolean;
+  Tab: boolean;
 } {
   const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
   const tabSso = capabilities.includes("TabSSO");
   const botSso = capabilities.includes("BotSSO");
+  const tab = capabilities.includes("Tab");
 
   return {
     TabSso: tabSso,
     BotSso: botSso,
+    Tab: tab,
   };
 }
 
@@ -338,6 +348,27 @@ export async function updateAndSaveManifestForSpfx(
 
   await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
   await context.fsWriteFile(localTemplatePath, localTemplate);
+}
+
+export async function addMissingValidDomainForManifest(
+  manifestPath: string,
+  tab: boolean,
+  bot: boolean
+): Promise<void> {
+  const teamsAppManifest = (await manifestUtils._readAppManifest(manifestPath))._unsafeUnwrap();
+  teamsAppManifest.validDomains = teamsAppManifest.validDomains ?? [];
+  const shouldAddTabDomain = tab && !teamsAppManifest.validDomains?.includes(validDomain.tab);
+  if (shouldAddTabDomain) {
+    teamsAppManifest.validDomains.push(validDomain.tab);
+  }
+  const shouldAddBotDomain =
+    bot &&
+    !teamsAppManifest.validDomains?.includes(validDomain.bot) &&
+    !teamsAppManifest.validDomains?.includes(validDomain.botWithValid);
+  if (shouldAddBotDomain) {
+    teamsAppManifest.validDomains.push(validDomain.bot);
+  }
+  manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
 }
 
 export function tryExtractEnvFromUserdata(filename: string): string {

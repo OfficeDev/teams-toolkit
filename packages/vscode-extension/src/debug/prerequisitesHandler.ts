@@ -1429,31 +1429,7 @@ async function getOrderedCheckersForTask(
   if (prerequisites.includes(Prerequisite.m365Account)) {
     checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });
   }
-  if (prerequisites.includes(Prerequisite.devCert)) {
-    checkers.push({ info: { checker: Checker.LocalCertificate }, fastFail: false });
-  }
 
-  const deps: DepsType[] = [];
-  if (prerequisites.includes(Prerequisite.func)) {
-    deps.push(DepsType.FuncCoreTools);
-  }
-  if (prerequisites.includes(Prerequisite.ngrok)) {
-    deps.push(DepsType.Ngrok);
-  }
-  if (prerequisites.includes(Prerequisite.dotnet)) {
-    deps.push(DepsType.Dotnet);
-  }
-  const orderedDeps = DepsManager.sortBySequence(deps);
-
-  for (let i = 0; i < orderedDeps.length - 1; ++i) {
-    checkers.push({
-      info: { checker: orderedDeps[i] },
-      fastFail: false,
-    });
-  }
-  if (orderedDeps.length > 0) {
-    checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
-  }
   if (prerequisites.includes(Prerequisite.vxTestApp)) {
     checkers.push({
       info: { checker: DepsType.VxTestApp, vxTestApp: vxTestApp },

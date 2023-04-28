@@ -10,7 +10,7 @@ export interface InstallToolArgs {
   /**
    * Install Azure Functions Core Tools
    */
-  func?: boolean;
+  func?: FuncArgs;
 
   /**
    * Install Dotnet
@@ -20,4 +20,9 @@ export interface InstallToolArgs {
 
 interface DevCertArgs {
   trust: boolean;
+}
+
+interface FuncArgs {
+  version: string | number;
+  symlinkDir?: string;
 }

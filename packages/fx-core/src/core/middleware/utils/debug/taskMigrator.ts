@@ -21,6 +21,7 @@ import {
 } from "../../../../common/local";
 import {
   createResourcesTask,
+  defaultFuncSymlinkDir,
   generateLabel,
   isCommentArray,
   isCommentObject,
@@ -38,6 +39,7 @@ import { BuildArgs } from "../../../../component/driver/interface/buildAndDeploy
 import { LocalCrypto } from "../../../crypto";
 import * as os from "os";
 import * as path from "path";
+import { NodeChecker } from "../../../../common/deps-checker/internal/nodeChecker";
 
 export async function migrateTransparentPrerequisite(
   context: DebugMigrationContext
@@ -67,7 +69,10 @@ export async function migrateTransparentPrerequisite(
             `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`
           );
         } else if (prerequisite === Prerequisite.func) {
-          toolsArgs.func = true;
+          toolsArgs.func = {
+            version: await getFuncVersion(),
+            symlinkDir: defaultFuncSymlinkDir,
+          };
         } else if (prerequisite === Prerequisite.devCert) {
           toolsArgs.devCert = { trust: true };
         } else if (prerequisite === Prerequisite.dotnet) {
@@ -89,30 +94,68 @@ export async function migrateTransparentPrerequisite(
 }
 
 export async function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
-  for (const task of context.tasks) {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
     if (
       !isCommentObject(task) ||
       !(task["type"] === "teamsfx") ||
       !(task["command"] === TaskCommand.startLocalTunnel)
     ) {
+      ++index;
       continue;
     }
 
     if (isCommentObject(task["args"])) {
-      if (task["args"]["ngrokArgs"] === TaskDefaultValue.startLocalTunnel.ngrokArgs) {
-        task["args"] = generateLocalTunnelTaskArgs(context);
-        const comment = `{
-          // Start the local tunnel service to forward public URL to local port and inspect traffic.
-          // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
-        }`;
-        const comments = task[Symbol.for("before:label") as CommentSymbol];
-        comments?.splice(0, comments?.length ?? 0);
-        assign(task, parse(comment));
-      } else {
-        // TODO: use shell task and js script to start global ngrok
+      if (typeof task["args"]["ngrokArgs"] === "string") {
+        const portNumber = getNgrokPort(task["args"]["ngrokArgs"]);
+        if (portNumber) {
+          task["args"] = generateLocalTunnelTaskArgs(context, portNumber);
+          const comment = `{
+            // Start the local tunnel service to forward public URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+          }`;
+          const comments = task[Symbol.for("before:label") as CommentSymbol];
+          comments?.splice(0, comments?.length ?? 0);
+          assign(task, parse(comment));
+          ++index;
+          continue;
+        }
       }
     }
+
+    const comment = `{
+          // Teams Toolkit now uses Dev Tunnel as default tunnel solution.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for more details.
+          // If you still prefer to use ngrok, please refer to https://aka.ms/teamsfx-tasks/customize-tunnel-service to learn how to use your own tunnel service.
+        }`;
+    const newTask = assign(parse(comment), {
+      label: task["label"],
+      type: "shell",
+      command:
+        "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.' && exit 1",
+      windows: {
+        options: {
+          shell: {
+            executable: "cmd.exe",
+            args: ["/d", "/c"],
+          },
+        },
+      },
+    });
+    context.tasks.splice(index, 1, newTask);
+    ++index;
   }
+}
+
+function getNgrokPort(ngrokCommand: string): number | undefined {
+  const regex = /http\s+(?<port>\d+)\s+--log=stdout\s+--log-format=logfmt\s?/gm;
+  const match = regex.exec(ngrokCommand);
+  if (!match) {
+    return undefined;
+  }
+  const portNumber = Number.parseInt(match.groups?.port ?? "");
+  return Number.isInteger(portNumber) ? portNumber : undefined;
 }
 
 export async function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
@@ -416,7 +459,10 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
       }
     }
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      toolsArgs.func = true;
+      toolsArgs.func = {
+        version: await getFuncVersion(),
+        symlinkDir: defaultFuncSymlinkDir,
+      };
       toolsArgs.dotnet = true;
     }
     if (Object.keys(toolsArgs).length > 0) {
@@ -676,7 +722,10 @@ export async function migrateValidateLocalPrerequisites(
     }
 
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      toolsArgs.func = true;
+      toolsArgs.func = {
+        version: await getFuncVersion(),
+        symlinkDir: defaultFuncSymlinkDir,
+      };
       toolsArgs.dotnet = true;
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
@@ -691,7 +740,10 @@ export async function migrateValidateLocalPrerequisites(
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
       if (OldProjectSettingsHelper.includeFuncHostedBot(context.oldProjectSettings)) {
-        toolsArgs.func = true;
+        toolsArgs.func = {
+          version: await getFuncVersion(),
+          symlinkDir: defaultFuncSymlinkDir,
+        };
       }
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
@@ -839,6 +891,56 @@ export async function migrateNgrokStartCommand(context: DebugMigrationContext): 
   }
 }
 
+export async function migrateGetFuncPathCommand(context: DebugMigrationContext): Promise<void> {
+  const getFuncPathCommand = "${command:fx-extension.get-func-path}";
+  const getFuncPathDelimiterCommand = "${command:fx-extension.get-path-delimiter}";
+  for (const task of context.tasks) {
+    if (!isCommentObject(task)) {
+      continue;
+    }
+
+    const generateNewValue = (oldStr: string): string => {
+      const newStr = oldStr.startsWith(getFuncPathCommand)
+        ? oldStr.replace(
+            getFuncPathCommand,
+            `\${workspaceFolder}/devTools/func${getFuncPathDelimiterCommand}`
+          )
+        : oldStr;
+      return newStr.replace(
+        /\${command:fx-extension.get-func-path}/g,
+        `${getFuncPathDelimiterCommand}\${workspaceFolder}/devTools/func${getFuncPathDelimiterCommand}`
+      );
+    };
+
+    if (isCommentObject(task["options"]) && isCommentObject(task["options"]["env"])) {
+      for (const [key, value] of Object.entries(task["options"]["env"])) {
+        if (typeof value === "string") {
+          task["options"]["env"][key] = generateNewValue(value);
+        }
+      }
+    }
+
+    const platforms = ["windows", "linux", "osx"];
+    platforms.forEach((platform) => {
+      if (
+        isCommentObject(task[platform]) &&
+        isCommentObject((task[platform] as CommentObject)["options"]) &&
+        isCommentObject(((task[platform] as CommentObject)["options"] as CommentObject)["env"])
+      ) {
+        const envObj = ((task[platform] as CommentObject)["options"] as CommentObject)[
+          "env"
+        ] as CommentObject;
+
+        for (const [key, value] of Object.entries(envObj)) {
+          if (typeof value === "string") {
+            envObj[key] = generateNewValue(value);
+          }
+        }
+      }
+    });
+  }
+}
+
 function generatePrerequisiteTask(
   task: CommentObject,
   context: DebugMigrationContext
@@ -910,7 +1012,10 @@ function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentO
   return assign(parse(comment), newTask);
 }
 
-function generateLocalTunnelTaskArgs(context: DebugMigrationContext): CommentJSONValue {
+function generateLocalTunnelTaskArgs(
+  context: DebugMigrationContext,
+  portNumnber = TaskDefaultValue.startLocalTunnel.devTunnel.bot.port
+): CommentJSONValue {
   const placeholderComment = `
     {
       // Keep consistency with upgraded configuration.
@@ -920,7 +1025,7 @@ function generateLocalTunnelTaskArgs(context: DebugMigrationContext): CommentJSO
     type: TunnelType.devTunnel,
     ports: [
       {
-        portNumber: TaskDefaultValue.startLocalTunnel.devTunnel.bot.port,
+        portNumber: portNumnber,
         protocol: TaskDefaultValue.startLocalTunnel.devTunnel.bot.protocol,
         access: TaskDefaultValue.startLocalTunnel.devTunnel.bot.access,
         writeToEnvironmentFile: assign(parse(placeholderComment), {
@@ -1004,4 +1109,9 @@ function getLabels(tasks: CommentArray<CommentJSONValue>): string[] {
   }
 
   return labels;
+}
+
+async function getFuncVersion(): Promise<string> {
+  const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
+  return !nodeVersion || Number.parseInt(nodeVersion) >= 18 ? "~4.0.4670" : "4";
 }

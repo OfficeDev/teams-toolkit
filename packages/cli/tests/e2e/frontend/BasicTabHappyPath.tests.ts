@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Zhijie Huang <zhihuan@microsoft.com>
+ */
 
 import { assert } from "chai";
 import fs from "fs-extra";

@@ -15,7 +15,7 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
-  defaultHelpLink,
+  v3DefaultHelpLink,
   v3NodeNotFoundHelpLink,
 } from "../../../src/common/deps-checker/constant/helpLink";
 import { cpUtils, DebugLogger } from "../../../src/common/deps-checker/util/cpUtils";
@@ -104,6 +104,7 @@ describe("Func Tools Checker Test", () => {
         projectPath: mock.projectDir,
         symlinkDir: "./devTools/func",
       });
+      delete res["telemetryProperties"];
       chai.assert.deepEqual(res, {
         name: "Azure Functions Core Tools",
         type: "func-core-tools",
@@ -193,6 +194,7 @@ describe("Func Tools Checker Test", () => {
         projectPath: mock.projectDir,
         symlinkDir: "./devTools/func",
       });
+      delete res["telemetryProperties"];
       chai.assert.deepEqual(res, {
         name: "Azure Functions Core Tools",
         type: "func-core-tools",
@@ -251,6 +253,7 @@ describe("Func Tools Checker Test", () => {
         projectPath: mock.projectDir,
         symlinkDir: "./devTools/func",
       });
+      delete res["telemetryProperties"];
       chai.assert.deepEqual(res, {
         name: "Azure Functions Core Tools",
         type: "func-core-tools",
@@ -327,6 +330,7 @@ describe("Func Tools Checker Test", () => {
         projectPath: mock.projectDir,
         symlinkDir: "./devTools/func",
       });
+      delete res["telemetryProperties"];
       chai.assert.deepEqual(res, {
         name: "Azure Functions Core Tools",
         type: "func-core-tools",
@@ -414,6 +418,7 @@ describe("Func Tools Checker Test", () => {
         version: noSymlinkTestData.expectedVersion,
         projectPath: mock.projectDir,
       });
+      delete res["telemetryProperties"];
       chai.assert.deepEqual(res, {
         name: "Azure Functions Core Tools",
         type: "func-core-tools",
@@ -517,7 +522,7 @@ describe("Func Tools Checker Test", () => {
         projectPath: mock.projectDir,
         symlinkDir: "./devTools/func",
       });
-
+      delete res["telemetryProperties"];
       chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
       chai.assert.isFalse(await fs.pathExists(path.resolve(mock.projectDir, "./devTools/func")));
       // The data has been cleaned.
@@ -544,7 +549,7 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./devTools/func",
     });
-
+    delete res["telemetryProperties"];
     chai.assert.equal(
       JSON.stringify(res),
       JSON.stringify({
@@ -581,6 +586,7 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./devTools/func",
     });
+    delete res["telemetryProperties"];
 
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
@@ -593,6 +599,7 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./devTools/func",
     });
+    delete res["telemetryProperties"];
 
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
@@ -615,6 +622,7 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./dev tools/func",
     });
+    delete res["telemetryProperties"];
 
     chai.assert.deepEqual(res, {
       name: "Azure Functions Core Tools",
@@ -648,6 +656,7 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./devtools/func",
     });
+    delete res["telemetryProperties"];
 
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
@@ -705,6 +714,7 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./devtools/func",
     });
+    delete res["telemetryProperties"];
 
     chai.assert.deepEqual(res, {
       name: "Azure Functions Core Tools",
@@ -772,8 +782,121 @@ describe("Func Tools Checker Test", () => {
       projectPath: mock.projectDir,
       symlinkDir: "./devtools/func",
     });
+    delete res["telemetryProperties"];
 
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+  });
+
+  const nodeVersionValidationDataArr = [
+    // not match cases
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "12.0.0",
+      isSuccess: false,
+    },
+    {
+      funcVersion: "3.0.0",
+      nodeVersion: "16.0.0",
+      isSuccess: false,
+    },
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "18.0.0",
+      isSuccess: false,
+    },
+    // match cases
+    {
+      funcVersion: "3.0.0",
+      nodeVersion: "12.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "3.0.0",
+      nodeVersion: "14.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "16.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.4670",
+      nodeVersion: "18.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.5095",
+      nodeVersion: "18.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "5.0.0",
+      nodeVersion: "16.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "5.0.0",
+      nodeVersion: "18.0.0",
+      isSuccess: true,
+    },
+    // ignore validation cases
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "11.0.0",
+      isSuccess: true,
+    },
+    {
+      funcVersion: "4.0.0",
+      nodeVersion: "20.0.0",
+      isSuccess: true,
+    },
+  ];
+  nodeVersionValidationDataArr.forEach((nodeVersionValidationData) => {
+    it(`validate node and func version, func - ${nodeVersionValidationData.funcVersion}, node - ${nodeVersionValidationData.nodeVersion}`, async () => {
+      const mock = await prepareTestEnv(
+        nodeVersionValidationData.funcVersion,
+        undefined,
+        [],
+        undefined,
+        nodeVersionValidationData.nodeVersion,
+        "6",
+        "Windows_NT"
+      );
+      const funcToolChecker = new mock.module.FuncToolChecker();
+      const res = await funcToolChecker.resolve({
+        version: nodeVersionValidationData.funcVersion,
+        projectPath: mock.projectDir,
+        symlinkDir: "./devTools/func",
+      });
+      delete res["telemetryProperties"];
+
+      chai.assert.equal(
+        JSON.stringify(res),
+        JSON.stringify({
+          name: "Azure Functions Core Tools",
+          type: "func-core-tools",
+          isInstalled: true,
+          command: "func",
+          details: {
+            isLinuxSupported: false,
+            installVersion: nodeVersionValidationData.funcVersion,
+            supportedVersions: [],
+            binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
+          },
+          error: nodeVersionValidationData.isSuccess ? undefined : { helpLink: v3DefaultHelpLink },
+        })
+      );
+      const stat = await fs.lstat(res.details.binFolders[0]);
+      chai.assert.isTrue(stat.isSymbolicLink(), "isSymbolicLink");
+      const funcVersion = await mockGetVersion(res.details.binFolders[0]);
+      chai.assert.equal(funcVersion, nodeVersionValidationData.funcVersion);
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func.exe")));
+      chai.assert.isTrue(await fs.pathExists(path.join(res.details.binFolders[0], "func")));
+      chai.assert.isTrue(
+        await fs.pathExists(path.join(res.details.binFolders[0], "func-sentinel"))
+      );
+    });
   });
 
   const failedResult = {
@@ -788,7 +911,7 @@ describe("Func Tools Checker Test", () => {
       binFolders: undefined,
     },
     error: {
-      helpLink: defaultHelpLink,
+      helpLink: v3DefaultHelpLink,
     },
   };
   const prepareTestEnv = async (
@@ -868,15 +991,15 @@ describe("Func Tools Checker Test", () => {
               throw new Error("Mock node not installed.");
             }
             return `v${nodeVersion}`;
-          } else if (command === "func" && args.length == 1 && args[0] === "--version") {
-            if (!options?.env?.PATH) {
+          } else if (command.endsWith("func") && args.length == 1 && args[0] === "--version") {
+            if (command === "func") {
               // Mock query global func version
               if (!globalFuncVersion) {
                 throw new Error("Mock global func not installed.");
               }
               return globalFuncVersion;
             } else {
-              const funcBinPath = options.env.PATH.split(path.delimiter)[0];
+              const funcBinPath = path.dirname(command);
               return await mockGetVersion(funcBinPath);
             }
           } else if (command === "npm" && args.length == 1 && args[0] === "--version") {

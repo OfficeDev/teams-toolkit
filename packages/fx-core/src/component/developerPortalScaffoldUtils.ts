@@ -322,30 +322,32 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
-export function getTemplateId(teamsApp: AppDefinition): string | undefined {
+export function getTemplateId(
+  teamsApp: AppDefinition
+): { projectType: string; templateId: string } | undefined {
   // tab with bot, tab with message extension, tab with bot and message extension
   if (needTabAndBotCode(teamsApp)) {
-    return TabNonSsoAndDefaultBotItem().id;
+    return { projectType: "tab-bot-type", templateId: TabNonSsoAndDefaultBotItem().id };
   }
 
   // tab only
   if (needTabCode(teamsApp)) {
-    return TabNonSsoItem().id;
+    return { projectType: "tab-type", templateId: TabNonSsoItem().id };
   }
 
   // bot and message extension
   if (isBotAndMessageExtension(teamsApp)) {
-    return DefaultBotAndMessageExtensionItem().id;
+    return { projectType: "bot-me-type", templateId: DefaultBotAndMessageExtensionItem().id };
   }
 
   // message extension
   if (isMessageExtension(teamsApp)) {
-    return MessageExtensionNewUIItem().id;
+    return { projectType: "me-type", templateId: MessageExtensionNewUIItem().id };
   }
 
   // bot
   if (isBot(teamsApp)) {
-    return BotOptionItem().id;
+    return { projectType: "bot-type", templateId: BotOptionItem().id };
   }
 
   return undefined;

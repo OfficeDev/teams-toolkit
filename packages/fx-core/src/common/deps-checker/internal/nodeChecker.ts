@@ -253,7 +253,7 @@ export class AzureNodeChecker extends NodeChecker {
 }
 
 export class LtsNodeChecker extends NodeChecker {
-  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
+  protected readonly _nodeNotFoundHelpLink = v3NodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotLts;
   protected readonly _type = DepsType.LtsNode;
   protected readonly _minErrorVersion = Number.MIN_SAFE_INTEGER;

@@ -122,5 +122,12 @@ describe("Global Variables", () => {
       chai.expect(globalVariables.commandIsRunning).equals(true);
       sinon.restore();
     });
+
+    it("unsetIsTeamsFxProject()", async () => {
+      globalVariables.unsetIsTeamsFxProject();
+
+      chai.expect(globalVariables.isTeamsFxProject).equals(false);
+      sinon.restore();
+    });
   });
 });

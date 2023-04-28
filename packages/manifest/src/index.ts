@@ -54,7 +54,7 @@ export class ManifestUtil {
     manifest: T,
     schema: JSONSchemaType<T>
   ): Promise<string[]> {
-    const ajv = new Ajv({ formats: { uri: true } });
+    const ajv = new Ajv({ formats: { uri: true }, allErrors: true });
     const validate = ajv.compile(schema);
     const valid = validate(manifest);
     if (!valid && validate.errors) {

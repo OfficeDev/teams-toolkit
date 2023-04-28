@@ -1,61 +1,66 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import * as os from "os";
+import * as path from "path";
+
 /**
  * @author Huajie Zhang <zhjay23@qq.com>
  */
 import {
+  AppPackageFolderName,
+  BuildFolderName,
+  DynamicPlatforms,
   FolderQuestion,
-  OptionItem,
-  Platform,
-  SingleSelectQuestion,
-  TextInputQuestion,
   FuncQuestion,
+  FxError,
   Inputs,
   LocalEnvironmentName,
-  StaticOptions,
   MultiSelectQuestion,
-  SingleFileQuestion,
-  QTreeNode,
-  BuildFolderName,
-  AppPackageFolderName,
-  DynamicPlatforms,
-  Result,
-  FxError,
   ok,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  Result,
+  SingleFileQuestion,
+  SingleSelectQuestion,
+  StaticOptions,
+  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as os from "os";
-import { environmentManager } from "./environment";
+
 import { ConstantString } from "../common/constants";
-import { sampleProvider } from "../common/samples";
-import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
   isBotNotificationEnabled,
   isOfficeAddinEnabled,
   isPreviewFeaturesEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
+import { Hub } from "../common/m365/constants";
+import { sampleProvider } from "../common/samples";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
+  BotNewUIOptionItem,
   BotOptionItem,
+  CommandAndResponseOptionItem,
+  DashboardOptionItem,
+  ExistingTabOptionItem,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
+  MessageExtensionNewUIItem,
+  NewProjectTypeBotOptionItem,
+  NewProjectTypeMessageExtensionOptionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  NewProjectTypeTabOptionItem,
   NotificationOptionItem,
+  TabNewUIOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  M365SsoLaunchPageOptionItem,
-  M365SearchAppOptionItem,
-  CommandAndResponseOptionItem,
-  TabNonSsoItem,
-  ExistingTabOptionItem,
-  TabNewUIOptionItem,
   TabSPFxNewUIItem,
-  MessageExtensionNewUIItem,
-  BotNewUIOptionItem,
   WorkflowOptionItem,
-  DashboardOptionItem,
 } from "../component/constants";
-import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
@@ -64,7 +69,8 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
-import { Hub } from "../common/m365/constants";
+import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
+import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -72,6 +78,7 @@ export enum CoreQuestionNames {
   Folder = "folder",
   ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
+  ProjectType = "project-type",
   Capabilities = "capabilities",
   Features = "features",
   Solution = "solution",
@@ -406,6 +413,98 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
     type: "singleSelect",
     staticOptions: staticOptions,
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    NewProjectTypeBotOptionItem(),
+    NewProjectTypeTabOptionItem(),
+    NewProjectTypeMessageExtensionOptionItem(),
+    NewProjectTypeOutlookAddinOptionItem(),
+  ];
+
+  return {
+    name: CoreQuestionNames.ProjectType,
+    title: getLocalizedString("core.createProjectQuestion.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    BotNewUIOptionItem(),
+    NotificationOptionItem(),
+    CommandAndResponseOptionItem(),
+    WorkflowOptionItem(),
+  ];
+
+  // AB test for in product doc
+  if (inputs?.inProductDoc) {
+    staticOptions[3].data = "cardActionResponse";
+    staticOptions[3].buttons = [
+      {
+        iconPath: "file-code",
+        tooltip: getLocalizedString("core.option.inProduct"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+  }
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.bot.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    TabNonSsoItem(),
+    M365SsoLaunchPageOptionItem(),
+    DashboardOptionItem(),
+    TabSPFxNewUIItem(),
+  ];
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.tab.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [M365SearchAppOptionItem(), MessageExtensionNewUIItem()];
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [...OfficeAddinItems(), ImportAddinProjectItem()];
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     forgetLastValue: true,
   };
 }
@@ -924,7 +1023,11 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false):
   };
 
   const res = new QTreeNode(teamsAppManifestNode);
-  if (inputs.platform !== Platform.CLI_HELP && inputs.platform !== Platform.CLI) {
+  if (
+    inputs.platform !== Platform.CLI_HELP &&
+    inputs.platform !== Platform.CLI &&
+    inputs.platform !== Platform.VS
+  ) {
     const manifestPath = path.join(
       inputs.projectPath!,
       AppPackageFolderName,

@@ -37,6 +37,7 @@ import { isBicepEnvCheckerEnabled } from "../../../common/tools";
 import { DriverContext } from "../../driver/interface/commonArgs";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InstallSoftwareError } from "../../../error/common";
+import { DownloadBicepCliError } from "../../../error/arm";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
@@ -93,17 +94,6 @@ export async function ensureBicepForDriver(
       await bicepChecker.install();
     }
   } catch (err) {
-    ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
-    await displayLearnMore(
-      getLocalizedString(
-        "error.common.InstallSoftwareError",
-        bicepChecker.getBicepDisplayBicepName()
-      ),
-      bicepHelpLink,
-      ctx.ui,
-      ctx.telemetryReporter
-    );
-    outputErrorMessage(ctx as any, bicepChecker, platform ? { platform: platform } : undefined);
     throw err;
   }
   return bicepChecker.getBicepCommand();
@@ -166,7 +156,7 @@ class BicepChecker {
 
     await this.installBicep();
 
-    if (!this._version && !(await this.validate())) {
+    if (!(await this.validate())) {
       await this.handleInstallFailed();
     }
     await this.handleInstallCompleted();
@@ -213,12 +203,7 @@ class BicepChecker {
         err,
         this._telemetry
       );
-      await this._logger?.error(
-        `${getLocalizedString(
-          "error.common.InstallSoftwareError",
-          this.getBicepDisplayBicepName()
-        )}, error = '${err}'`
-      );
+      throw new DownloadBicepCliError(bicepReleaseApiUrl, err as Error);
     }
   }
 

@@ -28,7 +28,7 @@ import { PrerequisiteError } from "../../../../error/componentError";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import {
-  CheckDeployStatusError,
+  CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
   DeployRemoteStartError,
   GetPublishingCredentialsError,
@@ -121,7 +121,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
               e.response?.status ?? "NA"
             }, message: ${JSON.stringify(e.response?.data)}`
           );
-          throw new CheckDeployStatusError(
+          throw new CheckDeploymentStatusError(
             location,
             new Error(
               `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
@@ -131,7 +131,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
             this.helpLink
           );
         }
-        throw new CheckDeployStatusError(location, e as Error, this.helpLink);
+        throw new CheckDeploymentStatusError(location, e as Error, this.helpLink);
       }
 
       if (res) {
@@ -149,7 +149,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           if (res.status) {
             await logger?.error(`Deployment is failed with error code: ${res.status}.`);
           }
-          throw new CheckDeployStatusError(
+          throw new CheckDeploymentStatusError(
             location,
             new Error(`status code: ${res.status ?? "NA"}`),
             this.helpLink

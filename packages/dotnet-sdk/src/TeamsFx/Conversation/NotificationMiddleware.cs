@@ -9,11 +9,11 @@ namespace Microsoft.TeamsFx.Conversation
 
     internal class NotificationMiddleware : IMiddleware
     {
-        private readonly INotificationTargetStorage _storage;
+        private readonly IConversationReferenceStore _store;
 
-        public NotificationMiddleware(INotificationTargetStorage storage)
+        public NotificationMiddleware(IConversationReferenceStore store)
         {
-            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _store = store ?? throw new ArgumentNullException(nameof(store));
         }
 
         public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
@@ -25,7 +25,10 @@ namespace Microsoft.TeamsFx.Conversation
                 case ActivityType.TeamRestored:
                     {
                         var reference = turnContext.Activity.GetConversationReference();
-                        await _storage.Write(reference.GetKey(), reference, cancellationToken).ConfigureAwait(false);
+                        var options = new ConversationReferenceStoreAddOptions {
+                            Overwrite = true
+                        };
+                        await _store.Add(reference.GetKey(), reference, options, cancellationToken).ConfigureAwait(false);
                         break;
                     }
                 case ActivityType.CurrentBotMessaged:
@@ -37,7 +40,7 @@ namespace Microsoft.TeamsFx.Conversation
                 case ActivityType.TeamDeleted:
                     {
                         var reference = turnContext.Activity.GetConversationReference();
-                        await _storage.Delete(reference.GetKey(), cancellationToken).ConfigureAwait(false);
+                        await _store.Remove(reference.GetKey(), reference, cancellationToken).ConfigureAwait(false);
                         break;
                     }
                 default:
@@ -90,16 +93,11 @@ namespace Microsoft.TeamsFx.Conversation
             var conversationType = reference?.Conversation?.ConversationType;
             if ("personal".Equals(conversationType, StringComparison.OrdinalIgnoreCase) || "groupChat".Equals(conversationType, StringComparison.OrdinalIgnoreCase))
             {
-                var existingReference = await _storage.Read(reference.GetKey(), cancellationToken).ConfigureAwait(false);
-                if (existingReference != null)
-                {
-                    return false;
-                }
-                else
-                {
-                    await _storage.Write(reference.GetKey(), reference, cancellationToken).ConfigureAwait(false);
-                    return true;
-                }
+                var options = new ConversationReferenceStoreAddOptions {
+                    Overwrite = false
+                };
+                var isUpdated = await _store.Add(reference.GetKey(), reference, options, cancellationToken).ConfigureAwait(false);
+                return isUpdated;
             }
             else if ("channel".Equals(conversationType, StringComparison.OrdinalIgnoreCase))
             {
@@ -108,16 +106,12 @@ namespace Microsoft.TeamsFx.Conversation
                 {
                     var channelReference = reference.Clone();
                     channelReference.Conversation.Id = teamId;
-                    var existingReference = await _storage.Read(channelReference.GetKey(), cancellationToken).ConfigureAwait(false);
-                    if (existingReference != null)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        await _storage.Write(channelReference.GetKey(), channelReference, cancellationToken).ConfigureAwait(false);
-                        return true;
-                    }
+
+                    var options = new ConversationReferenceStoreAddOptions {
+                        Overwrite = false
+                    };
+                    var isUpdated = await _store.Add(reference.GetKey(), reference, options, cancellationToken).ConfigureAwait(false);
+                    return isUpdated;
                 }
                 else
                 {

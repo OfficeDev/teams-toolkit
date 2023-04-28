@@ -29,7 +29,7 @@ describe("upgrade", () => {
 
   it("upgrade project", { testPlanCaseId: 17184119 }, async function () {
     if (!isV3Enabled()) {
-      this.skip();
+      return;
     }
 
     {

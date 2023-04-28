@@ -46,6 +46,7 @@ import {
   isSPFxProject,
   isTeamsFxProject,
   setUriEventHandler,
+  unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -285,10 +286,11 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(backendExtensionsInstallCmd);
 
   // Referenced by tasks.json
-  const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
-    Correlator.run(handlers.getFuncPathHandler)
+  const getPathDelimiterCmd = vscode.commands.registerCommand(
+    "fx-extension.get-path-delimiter",
+    () => Correlator.run(handlers.getPathDelimiterHandler)
   );
-  context.subscriptions.push(getFuncPathCmd);
+  context.subscriptions.push(getPathDelimiterCmd);
 
   const getDotnetPathCmd = vscode.commands.registerCommand("fx-extension.get-dotnet-path", () =>
     Correlator.run(handlers.getDotnetPathHandler)
@@ -1010,8 +1012,6 @@ async function runBackgroundAsyncTasks(
   await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
-  const preview = new PrereleasePage(context);
-  preview.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 
@@ -1027,10 +1027,12 @@ async function runBackgroundAsyncTasks(
 
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = isV3Enabled() && (await checkProjectUpgradable());
-  await handlers.autoOpenProjectHandler();
-  await handlers.promptSPFxUpgrade();
-  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
-  await AzureAccountManager.updateSubscriptionInfo();
+  if (isTeamsFxProject) {
+    await handlers.autoOpenProjectHandler();
+    await handlers.promptSPFxUpgrade();
+    await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+    await AzureAccountManager.updateSubscriptionInfo();
+  }
 }
 
 function registerInCommandController(
@@ -1052,6 +1054,10 @@ function runCommand(commandName: string, args: unknown[]) {
 
 async function checkProjectUpgradable(): Promise<boolean> {
   const versionCheckResult = await handlers.projectVersionCheck();
+  if (versionCheckResult.isErr()) {
+    unsetIsTeamsFxProject();
+    return false;
+  }
   const upgradeable = versionCheckResult.isOk()
     ? versionCheckResult.value.isSupport == VersionState.upgradeable
     : false;
@@ -1076,6 +1082,8 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   }
 
   const upgradeable = await checkProjectUpgradable();
-  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
-  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+  if (isTeamsFxProject) {
+    await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+    await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+  }
 }

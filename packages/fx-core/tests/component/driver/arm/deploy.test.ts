@@ -67,7 +67,7 @@ describe("Arm driver deploy", () => {
         },
       });
       sandbox.stub(ArmDeployImpl.prototype, "executeDeployment").resolves(deployRes as any);
-      sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
+      sandbox.stub(bicepChecker, "ensureBicepForDriver").resolves("bicep");
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "get").resolves({

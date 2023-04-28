@@ -426,9 +426,22 @@ describe("Migration utils: addMissingValidDomainForManifest", () => {
     } as unknown as TeamsAppManifest;
     sandbox.stub(ManifestUtils.prototype, "_readAppManifest").resolves(ok(teamsAppManifest));
     const stub = sandbox.stub(ManifestUtils.prototype, "_writeAppManifest");
-    await v3MigrationUtils.addMissingValidDomainForManifest("", true, true);
+    await v3MigrationUtils.addMissingValidDomainForManifest("", true, true, false);
     const res = {
       validDomains: [validDomain.tab, validDomain.bot],
+    };
+    stub.calledOnceWith(res as TeamsAppManifest, "");
+  });
+
+  it("add tab and botWithValid", async () => {
+    const teamsAppManifest = {
+      validDomains: [],
+    } as unknown as TeamsAppManifest;
+    sandbox.stub(ManifestUtils.prototype, "_readAppManifest").resolves(ok(teamsAppManifest));
+    const stub = sandbox.stub(ManifestUtils.prototype, "_writeAppManifest");
+    await v3MigrationUtils.addMissingValidDomainForManifest("", true, true, true);
+    const res = {
+      validDomains: [validDomain.tab, validDomain.botWithValid],
     };
     stub.calledOnceWith(res as TeamsAppManifest, "");
   });

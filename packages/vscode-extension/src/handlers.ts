@@ -1790,7 +1790,7 @@ export async function checkUpgrade(args?: any[]) {
       });
       return;
     } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
-      input["confirmOnly"] = true;
+      input["skipUserConfirm"] = true;
     }
     const result = await core.phantomMigrationV3(input);
     if (result.isErr()) {

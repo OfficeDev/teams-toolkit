@@ -1269,7 +1269,7 @@ describe("handlers", () => {
       );
     });
 
-    it("calls phantomMigrationV3 with confirmOnly when button is clicked", async () => {
+    it("calls phantomMigrationV3 with skipUserConfirm when button is clicked", async () => {
       const phantomMigrationV3Stub = sandbox
         .stub(mockCore, "phantomMigrationV3")
         .resolves(ok(undefined));
@@ -1281,7 +1281,7 @@ describe("handlers", () => {
           platform: "vsc",
           projectPath: undefined,
           vscodeEnv: "local",
-          confirmOnly: true,
+          skipUserConfirm: true,
         } as Inputs)
       );
     });
@@ -1309,7 +1309,7 @@ describe("handlers", () => {
           platform: "vsc",
           projectPath: undefined,
           vscodeEnv: "local",
-          confirmOnly: true,
+          skipUserConfirm: true,
         } as Inputs)
       );
       chai.assert.isTrue(showErrorMessageStub.calledOnce);

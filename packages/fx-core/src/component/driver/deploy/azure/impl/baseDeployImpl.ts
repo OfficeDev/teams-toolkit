@@ -30,7 +30,7 @@ export abstract class BaseDeployImpl {
   distDirectory: string;
   dryRun = false;
   zipFilePath?: string;
-  protected logger?: LogProvider;
+  protected logger: LogProvider;
   protected ui?: UserInteraction;
   protected progressBar?: IProgressHandler;
   protected static readonly emptyMap = new Map<string, string>();

@@ -34,7 +34,7 @@
 }
 
 .Collapsible__trigger.is-open:hover {
-  background-color: var(--vscode-editorHoverWidget-background);
+  background-color: var(--vscode-sideBySideEditor-horizontalBorder);
 }
 
 .Collapsible__trigger__transition .Collapsible__trigger:hover {
@@ -82,5 +82,6 @@
     font-size: 20px;
     margin: 0 auto;
     border-bottom: none;
+    color: var(--vscode-pickerGroup-foreground);
   }
 }

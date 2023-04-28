@@ -233,6 +233,7 @@ export enum TelemetryEvent {
   InteractWithInProductDoc = "interact-with-in-product-doc",
   CopyCodeSnippet = "copy-code-snippet",
   ExpandGuideStep = "expand-guide-step",
+  CollapseGuideStep = "collapse-guide-step",
   OpenExternalLink = "open-external-link",
 
   // ITP account help in product documentation
@@ -421,6 +422,7 @@ export enum VSCodeWindowChoice {
 }
 
 export enum InProductGuideInteraction {
+  Open = "open",
   Close = "close",
   Show = "show",
   Hide = "hide",

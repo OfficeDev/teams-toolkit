@@ -174,7 +174,9 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
       if (token) {
-        this.logger.info("Get AAD token successfully. Upload zip package through AAD Auth mode.");
+        await this.logger.info(
+          "Get AAD token successfully. Upload zip package through AAD Auth mode."
+        );
         return {
           headers: {
             "Content-Type": "application/octet-stream",
@@ -186,15 +188,31 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
         };
       } else {
-        this.logger.info(
+        this.context.telemetryReporter.sendTelemetryErrorEvent("Get-Deploy-AAD-token-failed", {
+          error: "AAD token is empty.",
+        });
+        await this.logger.info(
           "Get AAD token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
         );
       }
     } catch (e) {
-      this.logger.info(
+      this.context.telemetryReporter.sendTelemetryErrorEvent("Get-Deploy-AAD-token-failed", {
+        error: (e as Error).toString(),
+      });
+      await this.logger.info(
         `Get AAD token failed with error: ${JSON.stringify(
           e
         )}. Upload zip package through basic auth mode.`
+      );
+    }
+
+    // IF only enable AAD deploy, throw error
+    if (process.env["TEAMSFX_AAD_DEPLOY_ONLY"] === "true") {
+      throw new GetPublishingCredentialsError(
+        azureResource.instanceId,
+        azureResource.resourceGroupName,
+        new Error("Get AAD token failed."),
+        this.helpLink
       );
     }
 

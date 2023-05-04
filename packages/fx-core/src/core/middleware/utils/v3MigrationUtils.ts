@@ -350,10 +350,30 @@ export async function updateAndSaveManifestForSpfx(
   await context.fsWriteFile(localTemplatePath, localTemplate);
 }
 
+export function isValidDomainForBotOutputKey(bicepContent: string): boolean {
+  // Match teams-bot or fx-resource-bot output obj
+  const pluginRegex = new RegExp(
+    "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
+      "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
+      "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+      "[^}]*" + // Mathches anything except '}'
+      "(validDomain|domain) *:" + // Matches domain key and tries not to mismatch key and value
+      "[^}]*}", // Matches until end of obj as '}'
+    "g"
+  );
+  const outputContents = pluginRegex.exec(bicepContent);
+  if (outputContents && outputContents[3] === "validDomain") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 export async function addMissingValidDomainForManifest(
   manifestPath: string,
   tab: boolean,
-  bot: boolean
+  bot: boolean,
+  isValidDomain: boolean
 ): Promise<void> {
   const teamsAppManifest = (await manifestUtils._readAppManifest(manifestPath))._unsafeUnwrap();
   teamsAppManifest.validDomains = teamsAppManifest.validDomains ?? [];
@@ -366,7 +386,7 @@ export async function addMissingValidDomainForManifest(
     !teamsAppManifest.validDomains?.includes(validDomain.bot) &&
     !teamsAppManifest.validDomains?.includes(validDomain.botWithValid);
   if (shouldAddBotDomain) {
-    teamsAppManifest.validDomains.push(validDomain.bot);
+    teamsAppManifest.validDomains.push(isValidDomain ? validDomain.botWithValid : validDomain.bot);
   }
   manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
 }

@@ -1285,6 +1285,9 @@ export default class Preview extends YargsCommand {
           const bar = CLIUIInstance.createProgressBar(DepsDisplayName[dep], 1);
           await bar.start(ProgressMessage[dep]);
           await bar.next(ProgressMessage[dep]);
+          if (dep === DepsType.Ngrok) {
+            cliLogger.necessaryLog(LogLevel.Warning, doctorResult.NgrokWarning);
+          }
           const depStatus = (
             await depsManager.ensureDependencies([dep], {
               fastFail: false,

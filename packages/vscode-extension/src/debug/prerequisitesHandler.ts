@@ -898,7 +898,6 @@ async function checkDependency(
 ): Promise<CheckResult> {
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nonNodeDep]} ...`);
-
     const dep = await localTelemetryReporter.runWithTelemetryGeneric(
       TelemetryEvent.DebugPrereqsCheckDependencies,
       async (ctx: TelemetryContext) => {
@@ -922,6 +921,24 @@ async function checkDependency(
       },
       additionalTelemetryProperties
     );
+
+    if (nonNodeDep === DepsType.Ngrok) {
+      const ngrokWarning = localize("teamstoolkit.prerequisite.ngrok.warning");
+      return {
+        checker: dep.name,
+        result: dep.isInstalled ? ResultStatus.warn : ResultStatus.failed,
+        warnMsg:
+          ngrokWarning +
+          " " +
+          (dep.details.binFolders
+            ? doctorConstant.DepsSuccess.replace("@depsName", dep.name).replace(
+                "@binFolder",
+                dep.details.binFolders?.[0]
+              )
+            : dep.name),
+        error: handleDepsCheckerError(dep.error, dep),
+      };
+    }
 
     return {
       checker: dep.name,

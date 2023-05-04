@@ -8,7 +8,7 @@ import "mocha";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
-import { MockUserInteraction } from "../../../../core/utils";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 import * as tools from "../../../../../src/common/tools";
@@ -274,6 +274,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     const impl = new AzureZipDeployImpl(
       args,
@@ -448,5 +449,54 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
         impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
       )
       .to.be.rejectedWith(DeployZipPackageError);
+  });
+
+  it("throws Error when no basic auth allowed and AAD request fail", async () => {
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+      telemetryReporter: new MockTelemetryReporter(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    process.env["TEAMSFX_AAD_DEPLOY_ONLY"] = "true";
+    const webApps = {
+      beginListPublishingCredentialsAndWait: async function (
+        resourceGroupName: string,
+        name: string
+      ): Promise<WebAppsListPublishingCredentialsResponse> {
+        throw new RestError("test message", "111", 500);
+      },
+    };
+    const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");
+    mockWebSiteManagementClient.webApps = webApps as any;
+    sandbox.stub(appService, "WebSiteManagementClient").returns(mockWebSiteManagementClient);
+    const token = new MyTokenCredential();
+    sandbox.stub(token, "getToken").throws(new Error("test message"));
+    await chai
+      .expect(
+        impl.createAzureDeployConfig(
+          {
+            subscriptionId: "e24d88be-bbbb-1234-ba25-11111111111",
+            resourceGroupName: "mockGroupName",
+            instanceId: "mockAppName",
+          },
+          token
+        )
+      )
+      .to.be.rejectedWith(GetPublishingCredentialsError);
   });
 });

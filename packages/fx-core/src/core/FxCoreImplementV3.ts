@@ -98,6 +98,7 @@ import { VSCodeExtensionCommand } from "../common/constants";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { NoNeedUpgradeError } from "../error/upgrade";
+import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -356,7 +357,7 @@ export class FxCoreV3Implement {
       localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
       spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
       webpartName: inputs[SPFxQuestionNames.WebPartName],
-      spfxPackage: inputs[SPFXQuestionNames.use_global_package_or_install_local],
+      spfxPackage: SPFxVersionOptionIds.installLocally,
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     return await driver.run(args, contextV3);

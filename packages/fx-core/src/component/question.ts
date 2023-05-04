@@ -846,18 +846,9 @@ export function spfxFolderQuestion(): FolderQuestion {
 
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
-  const loadPackage = new QTreeNode(loadPackageVersions);
-  const spfxPackage = new QTreeNode(spfxPackageSelectQuestion);
-
-  if (inputs.platform === Platform.CLI_HELP) {
-    addWebpart.addChild(spfxPackage);
-  } else {
-    addWebpart.addChild(loadPackage);
-    loadPackage.addChild(spfxPackage);
-  }
 
   const spfxFolder = new QTreeNode(spfxFolderQuestion());
-  spfxPackage.addChild(spfxFolder);
+  addWebpart.addChild(spfxFolder);
 
   const webpartName = new QTreeNode(webpartNameQuestion);
   spfxFolder.addChild(webpartName);

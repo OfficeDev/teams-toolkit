@@ -101,7 +101,7 @@ export enum CoreQuestionNames {
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "manifest-path",
   LocalTeamsAppManifestFilePath = "local-manifest-path",
-  AadAppManifestFilePath = "aadAppManifestFilePath",
+  AadAppManifestFilePath = "manifest-file-path",
   TeamsAppPackageFilePath = "app-package-file-path",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",

@@ -30,7 +30,7 @@ import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
 import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-tab-and-outlook-add-in.png";
 import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
-import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif"
+import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,

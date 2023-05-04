@@ -203,7 +203,7 @@
             "fullDescription": "Microsoft Live Share is a collaboration tool that enables you to share your experience with others in real time. Azure Fluid Relay is a part of this service. The diceroller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.",
             "tags": ["Live Share", "JS", "ReactJS", "Teams-JS 2.0"],
             "time": "5 min to run",
-            "configuration": "Manual configuration required",
+            "configuration": "Manual configurations required",
             "suggested": false
         }
     ]

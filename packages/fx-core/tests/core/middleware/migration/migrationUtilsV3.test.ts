@@ -446,3 +446,32 @@ describe("Migration utils: addMissingValidDomainForManifest", () => {
     stub.calledOnceWith(res as TeamsAppManifest, "");
   });
 });
+
+describe("Migration utils: isValidDomainForBotOutputKey", () => {
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    const tools = new MockTools();
+    setTools(tools);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("output key is validDomain", async () => {
+    const content = `
+    output botOutput object = {
+      teamsFxPluginId: 'fx-resource-bot'
+      skuName: botProvision.outputs.botWebAppSKU
+      siteName: botProvision.outputs.botWebAppName
+      validDomain: botProvision.outputs.botDomain
+      appServicePlanName: botProvision.outputs.appServicePlanName
+      botWebAppResourceId: botProvision.outputs.botWebAppResourceId
+      siteEndpoint: botProvision.outputs.botWebAppEndpoint
+    }
+    `;
+    const res = await v3MigrationUtils.isValidDomainForBotOutputKey(content);
+    assert.isTrue(res);
+  });
+});

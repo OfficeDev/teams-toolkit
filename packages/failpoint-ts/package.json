@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/failpoint-ts",
-  "version": "0.1.0",
+  "version": "0.1.1-rc.0",
   "description": "Fault Injection for TypeScript",
   "keywords": [
     "Fault Injection"
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.2-rc.0",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^8.2.3",
     "@types/node": "^16.0.0",
@@ -40,7 +41,6 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "lint-staged": "^10.5.4",
     "mocha": "^9.2.2",
     "nyc": "^15.1.0",

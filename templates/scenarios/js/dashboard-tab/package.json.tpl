@@ -11,7 +11,7 @@
         "@fluentui/react-icons": "^2.0.186",
         "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.2.0",
-        "@microsoft/teamsfx-react": "^3.0.0-beta",
+        "@microsoft/teamsfx-react": "^3.0.0-rc.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.8.0",

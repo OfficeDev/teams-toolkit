@@ -31,6 +31,8 @@ import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
+import * as dotenv from "dotenv";
+import { manifestUtils } from "../../../component/resource/appManifest/utils/ManifestUtils";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -70,6 +72,12 @@ const skipList = [
   "state.fx-resource-azure-sql.adminPassword",
 ];
 
+export const validDomain = {
+  botWithValid: "{{state.teams-bot.validDomain}}",
+  tab: "{{state.teams-tab.domain}}",
+  bot: "{{state.teams-bot.domain}}",
+};
+
 // convert any obj names if can be converted (used in states and configs migration)
 export function jsonObjectNamesConvertV3(
   obj: any,
@@ -94,7 +102,13 @@ export function jsonObjectNamesConvertV3(
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
-    if (res.isOk()) return res.value + "=" + obj + EOL;
+    if (res.isOk()) {
+      let stateValue = obj;
+      if (typeof obj === "string" && obj.includes("#")) {
+        stateValue = `"${obj}"`;
+      }
+      return res.value + "=" + stateValue + EOL;
+    }
   } else return "";
   return returnData;
 }
@@ -106,12 +120,9 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<VersionIn
 
 export function migrationNotificationMessage(versionForMigration: VersionForMigration): string {
   if (versionForMigration.platform === Platform.VS) {
-    return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
+    return getLocalizedString("core.migrationV3.VS.Message");
   }
-  const res = getLocalizedString(
-    "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform]
-  );
+  const res = getLocalizedString("core.migrationV3.Message");
   return res;
 }
 
@@ -126,28 +137,33 @@ export function getDownloadLinkByVersionAndPlatform(version: string, platform: P
 }
 
 export function outputCancelMessage(version: string, platform: Platform): void {
-  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`Upgrade cancelled.`);
   const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
+    );
+    TOOLS?.logProvider.warning(
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else if (platform === Platform.VS) {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
+    TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
     );
   } else {
     TOOLS?.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
     );
+    TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}, please find it in ${link} and install it.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit CLI ${MetadataV2.platformVersion[platform]}.`
     );
   }
 }
@@ -237,28 +253,20 @@ export function getToolkitVersionLink(platform: Platform, projectVersion: string
   return Metadata.versionMatchLink;
 }
 
-export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {
+export function getCapabilityStatus(projectSettings: ProjectSettings): {
   TabSso: boolean;
   BotSso: boolean;
+  Tab: boolean;
 } {
-  let tabSso, botSso;
-  if ((projectSettings as ProjectSettingsV3).components) {
-    tabSso = (projectSettings as ProjectSettingsV3).components.some((component, index, obj) => {
-      return component.name === "teams-tab" && component.sso == true;
-    });
-    botSso = (projectSettings as ProjectSettingsV3).components.some((component, index, obj) => {
-      return component.name === "teams-bot" && component.sso == true;
-    });
-  } else {
-    // For projects that does not componentize.
-    const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
-    tabSso = capabilities.includes("TabSso");
-    botSso = capabilities.includes("BotSso");
-  }
+  const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+  const tabSso = capabilities.includes("TabSSO");
+  const botSso = capabilities.includes("BotSSO");
+  const tab = capabilities.includes("Tab");
 
   return {
     TabSso: tabSso,
     BotSso: botSso,
+    Tab: tab,
   };
 }
 
@@ -290,15 +298,11 @@ export async function readAndConvertUserdata(
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
-  const lines = userdataContent.split(EOL);
-  for (const line of lines) {
-    if (line && line != "") {
-      // in case that there are "="s in secrets
-      const key_value = line.split("=");
-      const res = namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
-      if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
-    }
+  const userdataContent = fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const secretes = dotenv.parse(userdataContent);
+  for (const secreteKey of Object.keys(secretes)) {
+    const res = namingConverterV3("state." + secreteKey, FileType.USERDATA, bicepContent);
+    if (res.isOk()) returnAnswer += `${res.value}=${secretes[secreteKey]}${EOL}`;
   }
 
   return returnAnswer;
@@ -344,4 +348,65 @@ export async function updateAndSaveManifestForSpfx(
 
   await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
   await context.fsWriteFile(localTemplatePath, localTemplate);
+}
+
+export function isValidDomainForBotOutputKey(bicepContent: string): boolean {
+  // Match teams-bot or fx-resource-bot output obj
+  const pluginRegex = new RegExp(
+    "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
+      "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
+      "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+      "[^}]*" + // Mathches anything except '}'
+      "(validDomain|domain) *:" + // Matches domain key and tries not to mismatch key and value
+      "[^}]*}", // Matches until end of obj as '}'
+    "g"
+  );
+  const outputContents = pluginRegex.exec(bicepContent);
+  if (outputContents && outputContents[3] === "validDomain") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export async function addMissingValidDomainForManifest(
+  manifestPath: string,
+  tab: boolean,
+  bot: boolean,
+  isValidDomain: boolean
+): Promise<void> {
+  const teamsAppManifest = (await manifestUtils._readAppManifest(manifestPath))._unsafeUnwrap();
+  teamsAppManifest.validDomains = teamsAppManifest.validDomains ?? [];
+  const shouldAddTabDomain = tab && !teamsAppManifest.validDomains?.includes(validDomain.tab);
+  if (shouldAddTabDomain) {
+    teamsAppManifest.validDomains.push(validDomain.tab);
+  }
+  const shouldAddBotDomain =
+    bot &&
+    !teamsAppManifest.validDomains?.includes(validDomain.bot) &&
+    !teamsAppManifest.validDomains?.includes(validDomain.botWithValid);
+  if (shouldAddBotDomain) {
+    teamsAppManifest.validDomains.push(isValidDomain ? validDomain.botWithValid : validDomain.bot);
+  }
+  manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
+}
+
+export function tryExtractEnvFromUserdata(filename: string): string {
+  const userdataRegex = new RegExp(`([a-zA-Z0-9_-]*)\\.${MetadataV2.userdataSuffix}`, "g");
+  const regRes = userdataRegex.exec(filename);
+  if (regRes != null) {
+    return regRes[1];
+  }
+  return "";
+}
+
+export function buildFileName(...parts: string[]): string {
+  return parts.join(".");
+}
+export function buildEnvFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName);
+}
+
+export function buildEnvUserFileName(envName: string): string {
+  return buildFileName(MetadataV3.envFilePrefix, envName, MetadataV3.secretFileSuffix);
 }

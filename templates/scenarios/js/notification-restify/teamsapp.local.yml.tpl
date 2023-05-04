@@ -1,55 +1,76 @@
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
-  - uses: teamsApp/create # Creates a Teams app
-    with:
-      name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
-
 provision:
-  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
+  # Creates a Teams app
+  - uses: teamsApp/create
     with:
-      name: {%appName%}
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for bot
-    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
+      # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}}
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile: 
+      teamsAppId: TEAMS_APP_ID
 
-  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
+  # Create or reuse an existing Azure Active Directory application for bot.
+  - uses: botAadApp/create
+    with:
+      # The Azure Active Directory application's display name
+      name: {{appName}}-${{TEAMSFX_ENV}}
+    writeToEnvironmentFile:
+      # The Azure Active Directory application's client id created for bot.
+      botId: BOT_ID
+      # The Azure Active Directory application's client secret created for bot.
+      botPassword: SECRET_BOT_PASSWORD  
+
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
     with:
       botId: ${{BOT_ID}}
-      name: {%appName%}
+      name: {{appName}}
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
       channels:
         - name: msteams
 
-configureApp:
-  - uses: teamsApp/validate
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
     with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
+      outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+  # Validate app package using validation rules
+  - uses: teamsApp/validateAppPackage
+    with:
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
-  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
+  # Apply the Teams app manifest to an existing Teams app in
+  # Teams Developer Portal.
+  # Will use the app id in manifest file to determine which Teams app to update.
+  - uses: teamsApp/update
     with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
-      target: ./.localSettings
+      target: ./.localConfigs
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}

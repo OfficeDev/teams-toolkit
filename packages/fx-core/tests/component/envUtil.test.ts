@@ -14,14 +14,14 @@ import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
-import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
+import { DotenvOutput, dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
 import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
 import { MockTools } from "../core/utils";
-import { setTools } from "../../src/core/globalVars";
+import { globalVars, setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { EnvInfoLoaderMW_V3 } from "../../src/core/middleware/envInfoLoaderV3";
@@ -30,8 +30,8 @@ import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
 import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
-import { PathNotExistError } from "../../src";
 import { MetadataV3 } from "../../src/common/versionMetadata";
+import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../src/error/common";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -53,18 +53,18 @@ describe("env utils", () => {
   });
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
+    // mockedEnvRestore = mockedEnv({
+    //   TEAMSFX_V3: "true",
+    // });
   });
   it("pathUtils.getYmlFilePath case 1", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(true);
     process.env.TEAMSFX_ENV = "dev";
     const res1 = pathUtils.getYmlFilePath(".", "dev");
     assert.equal(res1, path.join(".", MetadataV3.configFile));
   });
   it("pathUtils.getYmlFilePath case 2", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(false);
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     process.env.TEAMSFX_ENV = "dev";
     const res1 = pathUtils.getYmlFilePath(".", "dev");
     assert.equal(res1, path.join(".", "teamsfx", YmlFileNameOld));
@@ -76,6 +76,7 @@ describe("env utils", () => {
     };
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     const res = await pathUtils.getEnvFolderPath(".");
     assert.isTrue(res.isOk());
     if (res.isOk()) {
@@ -84,6 +85,7 @@ describe("env utils", () => {
   });
   it("pathUtils.getEnvFolderPath returns undefined", async () => {
     const mockProjectModel: ProjectModel = {};
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
     const res = await pathUtils.getEnvFolderPath(".");
@@ -96,6 +98,7 @@ describe("env utils", () => {
     const mockProjectModel: ProjectModel = {
       environmentFolderPath: "/home/envs",
     };
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
     const res = await pathUtils.getEnvFilePath(".", "dev");
@@ -108,6 +111,7 @@ describe("env utils", () => {
     const mockProjectModel: ProjectModel = {};
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     const res = await pathUtils.getEnvFilePath(".", "dev");
     assert.isTrue(res.isOk());
     if (res.isOk()) {
@@ -119,7 +123,12 @@ describe("env utils", () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
-    sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
+    sandbox
+      .stub(fs, "readFile")
+      .onFirstCall()
+      .resolves("TEAMSFX_ENV=env\nTEAMS_APP_ID=testappid\nTAB_ENDPOINT=testendpoint" as any)
+      .onSecondCall()
+      .resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.readEnv(".", "dev");
@@ -135,6 +144,33 @@ describe("env utils", () => {
     if (res.isOk()) {
       assert.deepEqual(res.value, { TEAMSFX_ENV: "dev" });
     }
+  });
+  it("envUtil.readEnv not silent 1", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false, false);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof FileNotFoundError);
+    }
+  });
+  it("envUtil.readEnv not silent 2", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(""));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false, false);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof FileNotFoundError);
+    }
+  });
+  it("MissingEnvironmentVariablesError", async () => {
+    new MissingEnvironmentVariablesError("test", "ABC", "./abc.yml");
+    globalVars.ymlFilePath = "./abc.yml";
+    new MissingEnvironmentVariablesError("test", "ABC");
+    globalVars.ymlFilePath = "";
+    new MissingEnvironmentVariablesError("test", "ABC");
   });
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
@@ -176,9 +212,19 @@ describe("env utils", () => {
     assert.isTrue(decRes.isOk());
     assert.equal(decRes.value, decrypted);
   });
+  it("envUtil.writeEnv no variables", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+    sandbox.stub(fs, "readFile").resolves("" as any);
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.writeEnv(".", "dev", {});
+    assert.isTrue(res.isOk());
+  });
   it("envUtil.writeEnv to default path", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    sandbox.stub(fs, "writeFile").resolves();
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
     assert.isTrue(res.isOk());
   });
@@ -200,6 +246,43 @@ describe("env utils", () => {
       assert.deepEqual(res.value, ["dev", "prod"]);
     }
   });
+
+  it("envUtil.mergeEnv case 1", async () => {
+    const env: DotenvOutput = {};
+    mockedEnvRestore = mockedEnv({
+      mykey: "myvalue",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
+  it("envUtil.mergeEnv case 2", async () => {
+    const env: DotenvOutput = { mykey: "myvalue" };
+    mockedEnvRestore = mockedEnv({
+      mykey: "",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
+  it("envUtil.mergeEnv case 3", async () => {
+    const env: DotenvOutput = { mykey: "myvalue2" };
+    mockedEnvRestore = mockedEnv({
+      mykey: "myvalue",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
+  it("envUtil.mergeEnv case 4", async () => {
+    const env: DotenvOutput = { mykey: "" };
+    mockedEnvRestore = mockedEnv({
+      mykey: "myvalue",
+    });
+    envUtil.mergeEnv(process.env, env);
+    assert.equal(process.env.mykey, "myvalue");
+  });
+
   it("environmentManager.listAllEnvConfigs", async () => {
     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
@@ -230,6 +313,23 @@ describe("env utils", () => {
     if (process.env.SECRET_ABC || process.env.SECRET_ABC === undefined) {
       delete process.env.SECRET_ABC;
     }
+    sandbox
+      .stub(dotenvUtil, "deserialize")
+      .onFirstCall()
+      .returns({
+        lines: [],
+        obj: {},
+      })
+      .onSecondCall()
+      .returns({
+        lines: [],
+        obj: { SECRET_ABC: encrypted },
+      })
+      .onThirdCall()
+      .returns({
+        lines: [],
+        obj: {},
+      });
     process.env.ENV_VAR = "1";
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -252,10 +352,30 @@ describe("env utils", () => {
     assert.isUndefined(process.env.SECRET_ABC);
     assert.equal(process.env.ENV_VAR, "1", "process.env.ENV_VAR should be restored to 1");
 
-    const core = new FxCore(tools);
-    const getDotEnvRes = await core.getDotEnv(inputs);
-    assert.isTrue(getDotEnvRes.isOk());
+    // const core = new FxCore(tools);
+    // const getDotEnvRes = await core.getDotEnv(inputs);
+    // assert.isTrue(getDotEnvRes.isOk());
   });
+
+  it("EnvLoaderMW skip load", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW(true, true)],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isOk());
+  });
+
   it("EnvLoaderMW success for F5 (missing .env file)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExistsSync").returns(false);
@@ -278,6 +398,9 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
+    const core = new FxCore(tools);
+    const getDotEnvRes = await core.getDotEnv(inputs);
+    assert.isTrue(getDotEnvRes.isOk());
   });
   it("EnvLoaderMW failed for F5 (missing .env file and getEnvFilePath Error)", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserError({})));
@@ -441,6 +564,24 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    sandbox
+      .stub(dotenvUtil, "deserialize")
+      .onFirstCall()
+      .returns({
+        lines: [],
+        obj: {},
+      })
+      .onSecondCall()
+      .returns({
+        lines: [],
+        obj: { SECRET_ABC: encrypted },
+      })
+      .onThirdCall()
+      .returns({
+        lines: [],
+        obj: {},
+      });
+
     if (process.env.SECRET_ABC || process.env.SECRET_ABC === undefined) {
       delete process.env.SECRET_ABC;
     }
@@ -524,10 +665,11 @@ describe("env utils", () => {
 
   it("dotenvUtil deserialize & serialize", async () => {
     const original =
-      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"#COMMENT3';
     const expected =
-      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"\nKEY5="VALUE5#"';
+      '#COMMENT\n\n\nKEY1=VALUE1#COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"#COMMENT3\nKEY4="VALUE4"\nKEY5="VALUE5#"';
     const parsed = dotenvUtil.deserialize(original);
+    console.log(parsed);
     assert.deepEqual(parsed, {
       lines: [
         "#COMMENT",
@@ -536,7 +678,7 @@ describe("env utils", () => {
         { key: "KEY1", value: "VALUE1", comment: "#COMMENT2" },
         { key: "KEY2", value: "VALUE2", quote: "'" },
         { key: "KEY3", value: "VALUE3#", quote: '"' },
-        { key: "indexPath", value: "/index.html#", quote: '"' },
+        { key: "indexPath", value: "/index.html#", quote: '"', comment: "#COMMENT3" },
       ],
       obj: { KEY1: "VALUE1", KEY2: "VALUE2", KEY3: "VALUE3#", indexPath: "/index.html#" },
     });
@@ -595,7 +737,7 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr() instanceof PathNotExistError);
+    assert.isTrue(res._unsafeUnwrapErr() instanceof FileNotFoundError);
   });
 });
 
@@ -615,6 +757,7 @@ describe("environmentManager.listRemoteEnvConfigs", () => {
       TEAMSFX_V3: "true",
     });
     sandbox.stub(fs, "readdir").resolves([] as any);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
     const res = await environmentManager.listRemoteEnvConfigs(".", true);
     assert.isTrue(res.isErr());
   });

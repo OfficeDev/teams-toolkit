@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AppPackageFolderName,
   CLIPlatforms,
   ContextV3,
   DynamicPlatforms,
   err,
+  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -18,6 +20,7 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -71,6 +74,7 @@ import {
   BuiltInFeaturePluginNames,
   GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
+  SPFxQuestionNames,
 } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
@@ -81,7 +85,12 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import {
+  selectM365HostQuestion,
+  ProgrammingLanguageQuestion,
+  selectTeamsAppManifestQuestion,
+  selectTeamsAppPackageQuestion,
+} from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -90,7 +99,11 @@ import {
 } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
-import { webpartNameQuestion } from "./resource/spfx/utils/questions";
+import {
+  loadPackageVersions,
+  spfxPackageSelectQuestion,
+  webpartNameQuestion,
+} from "./resource/spfx/utils/questions";
 import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
@@ -248,24 +261,9 @@ export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  // AB test for notification/command/workflow bot template naming
   const notificationOptionItem = NotificationOptionItem();
   const commandAndResponseOptionItem = CommandAndResponseOptionItem();
   const workflowOptionItem = WorkflowOptionItem();
-  if (inputs?.taskOrientedTemplateNaming) {
-    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.NotificationOption.label.abTest"
-    )}`;
-    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.CommandAndResponseOption.label.abTest"
-    )}`;
-    commandAndResponseOptionItem.detail = getLocalizedString(
-      "core.CommandAndResponseOption.detail.abTest"
-    );
-    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-  }
 
   const question: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.Features,
@@ -831,5 +829,84 @@ export function getQuestionsForInit(
       new QTreeNode(type === "debug" ? InitDebugProceedQuestion() : InitInfraProceedQuestion())
     );
   }
+  return ok(group);
+}
+
+export function spfxFolderQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: SPFxQuestionNames.SPFxFolder,
+    title: getLocalizedString("core.spfxFolder.title"),
+    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, "src");
+    },
+  };
+}
+
+export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  const addWebpart = new QTreeNode({ type: "group" });
+
+  const spfxFolder = new QTreeNode(spfxFolderQuestion());
+  addWebpart.addChild(spfxFolder);
+
+  const webpartName = new QTreeNode(webpartNameQuestion);
+  spfxFolder.addChild(webpartName);
+
+  const manifestFile = selectTeamsAppManifestQuestion(inputs);
+  webpartName.addChild(manifestFile);
+
+  const localManifestFile = selectTeamsAppManifestQuestion(inputs, true);
+  manifestFile.addChild(localManifestFile);
+
+  return ok(addWebpart);
+}
+
+export async function getQuestionsForValidateManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForValidateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // App package path node
+  const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForCreateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForUpdateTeamsApp(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForPreviewWithManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  group.addChild(selectM365HostQuestion());
+  group.addChild(selectTeamsAppManifestQuestion(inputs));
   return ok(group);
 }

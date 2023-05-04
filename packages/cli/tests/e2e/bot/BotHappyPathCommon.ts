@@ -3,7 +3,6 @@
 
 /**
  * @author Siglud <fanhu@microsoft.com>
- * @owner Siglud <fanhu@microsoft.com>
  **/
 
 import * as path from "path";
@@ -54,7 +53,7 @@ export async function happyPathTest(
   console.log(`[Successfully] scaffold to ${projectPath}`);
 
   // set subscription
-  await CliHelper.setSubscription(subscription, projectPath, env);
+  // await CliHelper.setSubscription(subscription, projectPath, env);
 
   console.log(`[Successfully] set subscription for ${projectPath}`);
 
@@ -76,7 +75,7 @@ export async function happyPathTest(
 
     // Validate Bot Provision
     const bot = new BotValidator(context, projectPath, envName);
-    await bot.validateProvision(false);
+    await bot.validateProvisionV3(false);
   }
 
   // deploy

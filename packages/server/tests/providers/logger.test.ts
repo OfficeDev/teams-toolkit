@@ -5,10 +5,11 @@ import { assert, expect } from "chai";
 import "mocha";
 import { Duplex } from "stream";
 import sinon from "sinon";
+import fs from "fs-extra";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { Namespaces, NotificationTypes } from "../../src/apis";
 import ServerLogProvider from "../../src/providers/logger";
-import { Colors, LogLevel } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel, NotImplementedError } from "@microsoft/teamsfx-api";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -41,6 +42,17 @@ describe("ServerLogProvider", () => {
     res.then((data) => {
       assert.isTrue(data);
       expect(stub).is.called.with(NotificationTypes[Namespaces.Logger].show, 0, "test");
+    });
+  });
+
+  it("write to file", () => {
+    const logger = new ServerLogProvider(msgConn);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "mkdir").resolves();
+    sandbox.stub(fs, "appendFile").resolves();
+    const res = logger.log(LogLevel.Info, "test", true);
+    res.then((data) => {
+      assert.isTrue(data);
     });
   });
 
@@ -100,6 +112,11 @@ describe("ServerLogProvider", () => {
         assert.isTrue(data);
         expect(stub).is.called.with(LogLevel.Fatal, "test");
       });
+    });
+
+    it("getLogFilePath", () => {
+      const logFolderPath = logger.getLogFilePath();
+      assert.isTrue(logFolderPath !== "");
     });
   });
 });

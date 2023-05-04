@@ -7,10 +7,13 @@ const repoRoot = path.join(__dirname, "../..");
 function updateTemplatesDeps(templateDir, templateList) {
     let depPkgs = [];
     for (let subTempDir of templateList) {
-        const subTempPath = path.join(templateDir, subTempDir, "package.json")
-        if (fse.existsSync(subTempPath)) {
-            depPkgs.push(subTempPath)
-        }
+        packageFileCandidates = ["package.json", "package.json.tpl"];
+        packageFileCandidates.forEach((file) => {
+            const subTempPath = path.join(templateDir, subTempDir, file)
+            if (fse.existsSync(subTempPath)) {
+                depPkgs.push(subTempPath)
+            }
+        });
     }
     const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
     let templatesDeps = {};
@@ -45,7 +48,7 @@ function updateFileDeps(file, deps) {
                 continue;
             }
             fileChange = true;
-            if(semver.prerelease(value) && (semver.prerelease(value)[0] === "alpha" || semver.prerelease(value)[0] === "beta")){
+            if(semver.prerelease(value) && semver.prerelease(value)[0] === "alpha"){
                 dep_[key] = value;
             } else {
                 dep_[key] = `^${value}`;

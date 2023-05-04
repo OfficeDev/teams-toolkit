@@ -12,6 +12,7 @@ import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { assert } from "chai";
 import { MockUserInteraction } from "../../../core/utils";
+import { err, IProgressHandler, ok, UserError } from "@microsoft/teamsfx-api";
 
 describe("Dotnet Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -26,6 +27,12 @@ describe("Dotnet Build Driver test", () => {
 
   it("Dotnet build happy path", async () => {
     const driver = new DotnetBuildDriver();
+    const progressHandler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
     const args = {
       workingDirectory: "./",
       args: "build",
@@ -36,10 +43,12 @@ describe("Dotnet Build Driver test", () => {
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
+      progressBar: progressHandler,
     } as DriverContext;
-    sandbox.stub(utils, "execute").resolves();
+    sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.run(args, context);
     chai.expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    assert.equal(progressNextCaller.callCount, 1);
   });
 
   it("Dotnet build with summary happy path", async () => {
@@ -54,7 +63,7 @@ describe("Dotnet Build Driver test", () => {
       logProvider: new TestLogProvider(),
       projectPath: "./",
     } as DriverContext;
-    sandbox.stub(utils, "execute").resolves();
+    sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.execute(args, context);
     chai.expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
     // console.log(res.summaries);
@@ -71,7 +80,7 @@ describe("Dotnet Build Driver test", () => {
       logProvider: new TestLogProvider(),
       projectPath: "./",
     } as DriverContext;
-    sandbox.stub(utils, "execute").throws(new Error("error"));
+    sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
     const res = await driver.run(args, context);
     assert.equal(res.isErr(), true);
   });

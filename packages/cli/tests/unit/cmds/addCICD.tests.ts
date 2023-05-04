@@ -15,6 +15,7 @@ import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import mockedEnv from "mocked-env";
 
 describe("Add CICD Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -23,8 +24,13 @@ describe("Add CICD Command Tests", function () {
   const positionals: string[] = [];
   const telemetryEvents: string[] = [];
   const logs: string[] = [];
+  let mockedEnvRestore: () => void;
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
     });
@@ -72,6 +78,7 @@ describe("Add CICD Command Tests", function () {
   });
 
   afterEach(() => {
+    mockedEnvRestore();
     sandbox.restore();
   });
 

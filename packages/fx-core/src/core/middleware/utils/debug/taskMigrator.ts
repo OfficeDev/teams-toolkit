@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assign, CommentArray, CommentJSONValue, CommentObject, parse } from "comment-json";
+import {
+  assign,
+  CommentArray,
+  CommentJSONValue,
+  CommentObject,
+  CommentSymbol,
+  parse,
+} from "comment-json";
 import { DebugMigrationContext } from "./debugMigrationContext";
 import {
   defaultNpmInstallArg,
@@ -10,9 +17,11 @@ import {
   TaskCommand,
   TaskDefaultValue,
   TaskLabel,
+  TunnelType,
 } from "../../../../common/local";
 import {
   createResourcesTask,
+  defaultFuncSymlinkDir,
   generateLabel,
   isCommentArray,
   isCommentObject,
@@ -25,11 +34,12 @@ import {
   updateLocalEnv,
   watchBackendTask,
 } from "./debugV3MigrationUtils";
-import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
+import { InstallToolArgs } from "../../../../component/driver/devTool/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { LocalCrypto } from "../../../crypto";
 import * as os from "os";
 import * as path from "path";
+import { NodeChecker } from "../../../../common/deps-checker/internal/nodeChecker";
 
 export async function migrateTransparentPrerequisite(
   context: DebugMigrationContext
@@ -59,7 +69,10 @@ export async function migrateTransparentPrerequisite(
             `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`
           );
         } else if (prerequisite === Prerequisite.func) {
-          toolsArgs.func = true;
+          toolsArgs.func = {
+            version: await getFuncVersion(),
+            symlinkDir: defaultFuncSymlinkDir,
+          };
         } else if (prerequisite === Prerequisite.devCert) {
           toolsArgs.devCert = { trust: true };
         } else if (prerequisite === Prerequisite.dotnet) {
@@ -81,28 +94,68 @@ export async function migrateTransparentPrerequisite(
 }
 
 export async function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
-  for (const task of context.tasks) {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
     if (
       !isCommentObject(task) ||
       !(task["type"] === "teamsfx") ||
       !(task["command"] === TaskCommand.startLocalTunnel)
     ) {
+      ++index;
       continue;
     }
 
     if (isCommentObject(task["args"])) {
-      const comment = `
-        {
-          // Keep consistency with upgraded configuration.
+      if (typeof task["args"]["ngrokArgs"] === "string") {
+        const portNumber = getNgrokPort(task["args"]["ngrokArgs"]);
+        if (portNumber) {
+          task["args"] = generateLocalTunnelTaskArgs(context, portNumber);
+          const comment = `{
+            // Start the local tunnel service to forward public URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
+          }`;
+          const comments = task[Symbol.for("before:label") as CommentSymbol];
+          comments?.splice(0, comments?.length ?? 0);
+          assign(task, parse(comment));
+          ++index;
+          continue;
         }
-      `;
-      task["args"]["env"] = "local";
-      task["args"]["output"] = assign(parse(comment), {
-        endpoint: context.placeholderMapping.botEndpoint,
-        domain: context.placeholderMapping.botDomain,
-      });
+      }
     }
+
+    const comment = `{
+          // Teams Toolkit now uses Dev Tunnel as default tunnel solution.
+          // See https://aka.ms/teamsfx-tasks/local-tunnel for more details.
+          // If you still prefer to use ngrok, please refer to https://aka.ms/teamsfx-tasks/customize-tunnel-service to learn how to use your own tunnel service.
+        }`;
+    const newTask = assign(parse(comment), {
+      label: task["label"],
+      type: "shell",
+      command:
+        "echo 'Teams Toolkit now uses Dev Tunnel as default tunnel solution. For manual updates, see https://aka.ms/teamsfx-tasks/local-tunnel.' && exit 1",
+      windows: {
+        options: {
+          shell: {
+            executable: "cmd.exe",
+            args: ["/d", "/c"],
+          },
+        },
+      },
+    });
+    context.tasks.splice(index, 1, newTask);
+    ++index;
   }
+}
+
+function getNgrokPort(ngrokCommand: string): number | undefined {
+  const regex = /http\s+(?<port>\d+)\s+--log=stdout\s+--log-format=logfmt\s?/gm;
+  const match = regex.exec(ngrokCommand);
+  if (!match) {
+    return undefined;
+  }
+  const portNumber = Number.parseInt(match.groups?.port ?? "");
+  return Number.isInteger(portNumber) ? portNumber : undefined;
 }
 
 export async function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
@@ -166,11 +219,6 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let url = new URL("https://localhost:53000");
     if (isCommentObject(task["args"]) && typeof task["args"]["baseUrl"] === "string") {
       try {
@@ -178,14 +226,14 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
       } catch {}
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    if (!context.appYmlConfig.configureApp.tab) {
-      context.appYmlConfig.configureApp.tab = {};
+    if (!context.appYmlConfig.provision.configureApp.tab) {
+      context.appYmlConfig.provision.configureApp.tab = {};
     }
-    context.appYmlConfig.configureApp.tab.domain = url.host;
-    context.appYmlConfig.configureApp.tab.endpoint = url.origin;
+    context.appYmlConfig.provision.configureApp.tab.domain = url.host;
+    context.appYmlConfig.provision.configureApp.tab.endpoint = url.origin;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -195,7 +243,7 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
     }
     context.appYmlConfig.deploy.tab.port = parseInt(url.port);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -213,14 +261,6 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
-    if (!context.appYmlConfig.provision) {
-      context.appYmlConfig.provision = {};
-    }
     context.appYmlConfig.provision.bot = {
       messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
     };
@@ -261,7 +301,7 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -279,20 +319,15 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
+    context.appYmlConfig.provision.registerApp.aad = true;
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    context.appYmlConfig.registerApp.aad = true;
-
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
-    }
-    context.appYmlConfig.configureApp.aad = true;
+    context.appYmlConfig.provision.configureApp.aad = true;
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
@@ -330,7 +365,7 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
     }
     await updateLocalEnv(context.migrationContext, envs);
 
-    const label = task["label"];
+    const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
@@ -348,33 +383,50 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
       continue;
     }
 
-    if (typeof task["label"] !== "string") {
-      ++index;
-      continue;
-    }
-
     let appPackagePath: string | undefined = undefined;
     if (isCommentObject(task["args"]) && typeof task["args"]["appPackagePath"] === "string") {
       appPackagePath = task["args"]["appPackagePath"];
     }
 
     if (!appPackagePath) {
-      if (!context.appYmlConfig.registerApp) {
-        context.appYmlConfig.registerApp = {};
+      if (!context.appYmlConfig.provision.registerApp) {
+        context.appYmlConfig.provision.registerApp = {};
       }
-      context.appYmlConfig.registerApp.teamsApp = true;
+      context.appYmlConfig.provision.registerApp.teamsApp = true;
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
-    context.appYmlConfig.configureApp.teamsApp.appPackagePath = appPackagePath;
+    context.appYmlConfig.provision.configureApp.teamsApp.appPackagePath = appPackagePath;
+
+    const label = task["label"] as string;
+    index = handleProvisionAndDeploy(context, index, label);
+  }
+}
+
+export async function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.install-app-in-teams}")
+    ) {
+      ++index;
+      continue;
+    }
 
     const label = task["label"];
-    index = handleProvisionAndDeploy(context, index, label);
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
   }
 }
 
@@ -407,7 +459,10 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
       }
     }
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      toolsArgs.func = true;
+      toolsArgs.func = {
+        version: await getFuncVersion(),
+        symlinkDir: defaultFuncSymlinkDir,
+      };
       toolsArgs.dotnet = true;
     }
     if (Object.keys(toolsArgs).length > 0) {
@@ -442,7 +497,7 @@ export async function migrateBackendExtensionsInstall(
     }
     context.appYmlConfig.deploy.dotnetCommand = {
       args: "build extensions.csproj -o ./bin --ignore-failed-sources",
-      workingDirectory: `./${FolderName.Function}`,
+      workingDirectory: `${FolderName.Function}`,
       execPath: "${{DOTNET_PATH}}",
     };
 
@@ -662,31 +717,37 @@ export async function migrateValidateLocalPrerequisites(
       };
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Frontend}`,
+        workingDirectory: `${FolderName.Frontend}`,
       });
     }
 
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      toolsArgs.func = true;
+      toolsArgs.func = {
+        version: await getFuncVersion(),
+        symlinkDir: defaultFuncSymlinkDir,
+      };
       toolsArgs.dotnet = true;
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Function}`,
+        workingDirectory: `${FolderName.Function}`,
       });
       dotnetCommand = {
         args: "build extensions.csproj -o ./bin --ignore-failed-sources",
-        workingDirectory: `./${FolderName.Function}`,
+        workingDirectory: `${FolderName.Function}`,
         execPath: "${{DOTNET_PATH}}",
       };
     }
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
       if (OldProjectSettingsHelper.includeFuncHostedBot(context.oldProjectSettings)) {
-        toolsArgs.func = true;
+        toolsArgs.func = {
+          version: await getFuncVersion(),
+          symlinkDir: defaultFuncSymlinkDir,
+        };
       }
       npmCommands.push({
         args: `install ${defaultNpmInstallArg}`,
-        workingDirectory: `./${FolderName.Bot}`,
+        workingDirectory: `${FolderName.Bot}`,
       });
     }
 
@@ -721,37 +782,34 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
       continue;
     }
 
-    if (!context.appYmlConfig.registerApp) {
-      context.appYmlConfig.registerApp = {};
+    if (!context.appYmlConfig.provision.registerApp) {
+      context.appYmlConfig.provision.registerApp = {};
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.registerApp.aad = true;
+      context.appYmlConfig.provision.registerApp.aad = true;
     }
-    context.appYmlConfig.registerApp.teamsApp = true;
+    context.appYmlConfig.provision.registerApp.teamsApp = true;
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
-      if (!context.appYmlConfig.provision) {
-        context.appYmlConfig.provision = {};
-      }
       context.appYmlConfig.provision.bot = {
         messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
       };
     }
 
-    if (!context.appYmlConfig.configureApp) {
-      context.appYmlConfig.configureApp = {};
+    if (!context.appYmlConfig.provision.configureApp) {
+      context.appYmlConfig.provision.configureApp = {};
     }
     if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.tab = {
+      context.appYmlConfig.provision.configureApp.tab = {
         domain: "localhost:53000",
         endpoint: "https://localhost:53000",
       };
     }
     if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
-      context.appYmlConfig.configureApp.aad = true;
+      context.appYmlConfig.provision.configureApp.aad = true;
     }
-    if (!context.appYmlConfig.configureApp.teamsApp) {
-      context.appYmlConfig.configureApp.teamsApp = {};
+    if (!context.appYmlConfig.provision.configureApp.teamsApp) {
+      context.appYmlConfig.provision.configureApp.teamsApp = {};
     }
 
     const validateLocalPrerequisitesTask = context.tasks.find(
@@ -779,8 +837,8 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
     }
 
     const existingLabels = getLabels(context.tasks);
-    const createResourcesLabel = generateLabel("Create resources", existingLabels);
-    const setUpLocalProjectsLabel = generateLabel("Build project", existingLabels);
+    const createResourcesLabel = generateLabel("Provision", existingLabels);
+    const setUpLocalProjectsLabel = generateLabel("Deploy", existingLabels);
     task["dependsOn"] = new CommentArray(createResourcesLabel, setUpLocalProjectsLabel);
     task["dependsOrder"] = "sequence";
     const createResources = createResourcesTask(createResourcesLabel);
@@ -830,6 +888,56 @@ export async function migrateNgrokStartCommand(context: DebugMigrationContext): 
     const newTask = generateLocalTunnelTask(context, task);
     context.tasks.splice(index, 1, newTask);
     ++index;
+  }
+}
+
+export async function migrateGetFuncPathCommand(context: DebugMigrationContext): Promise<void> {
+  const getFuncPathCommand = "${command:fx-extension.get-func-path}";
+  const getFuncPathDelimiterCommand = "${command:fx-extension.get-path-delimiter}";
+  for (const task of context.tasks) {
+    if (!isCommentObject(task)) {
+      continue;
+    }
+
+    const generateNewValue = (oldStr: string): string => {
+      const newStr = oldStr.startsWith(getFuncPathCommand)
+        ? oldStr.replace(
+            getFuncPathCommand,
+            `\${workspaceFolder}/devTools/func${getFuncPathDelimiterCommand}`
+          )
+        : oldStr;
+      return newStr.replace(
+        /\${command:fx-extension.get-func-path}/g,
+        `${getFuncPathDelimiterCommand}\${workspaceFolder}/devTools/func${getFuncPathDelimiterCommand}`
+      );
+    };
+
+    if (isCommentObject(task["options"]) && isCommentObject(task["options"]["env"])) {
+      for (const [key, value] of Object.entries(task["options"]["env"])) {
+        if (typeof value === "string") {
+          task["options"]["env"][key] = generateNewValue(value);
+        }
+      }
+    }
+
+    const platforms = ["windows", "linux", "osx"];
+    platforms.forEach((platform) => {
+      if (
+        isCommentObject(task[platform]) &&
+        isCommentObject((task[platform] as CommentObject)["options"]) &&
+        isCommentObject(((task[platform] as CommentObject)["options"] as CommentObject)["env"])
+      ) {
+        const envObj = ((task[platform] as CommentObject)["options"] as CommentObject)[
+          "env"
+        ] as CommentObject;
+
+        for (const [key, value] of Object.entries(envObj)) {
+          if (typeof value === "string") {
+            envObj[key] = generateNewValue(value);
+          }
+        }
+      }
+    });
   }
 }
 
@@ -891,33 +999,43 @@ function generatePrerequisiteTask(
 
 function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentObject) {
   const comment = `{
-      // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-      // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-      // as well as samples to:
-      //   - use your own ngrok command / configuration / binary
-      //   - use your own tunnel solution
-      //   - provide alternatives if ngrok does not work on your dev machine
+        // Start the local tunnel service to forward public URL to local port and inspect traffic.
+        // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
     }`;
+  const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
+    type: "teamsfx",
+    command: TaskCommand.startLocalTunnel,
+    args: generateLocalTunnelTaskArgs(context),
+    isBackground: true,
+    problemMatcher: "$teamsfx-local-tunnel-watch",
+  });
+  return assign(parse(comment), newTask);
+}
+
+function generateLocalTunnelTaskArgs(
+  context: DebugMigrationContext,
+  portNumnber = TaskDefaultValue.startLocalTunnel.devTunnel.bot.port
+): CommentJSONValue {
   const placeholderComment = `
     {
       // Keep consistency with upgraded configuration.
     }
   `;
-  const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
-    type: "teamsfx",
-    command: TaskCommand.startLocalTunnel,
-    args: {
-      ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
-      env: "local",
-      output: assign(parse(placeholderComment), {
-        endpoint: context.placeholderMapping.botEndpoint,
-        domain: context.placeholderMapping.botDomain,
-      }),
-    },
-    isBackground: true,
-    problemMatcher: "$teamsfx-local-tunnel-watch",
+  return assign(parse("{}"), {
+    type: TunnelType.devTunnel,
+    ports: [
+      {
+        portNumber: portNumnber,
+        protocol: TaskDefaultValue.startLocalTunnel.devTunnel.bot.protocol,
+        access: TaskDefaultValue.startLocalTunnel.devTunnel.bot.access,
+        writeToEnvironmentFile: assign(parse(placeholderComment), {
+          endpoint: context.placeholderMapping.botEndpoint,
+          domain: context.placeholderMapping.botDomain,
+        }),
+      },
+    ],
+    env: "local",
   });
-  return assign(parse(comment), newTask);
 }
 
 function handleProvisionAndDeploy(
@@ -929,14 +1047,12 @@ function handleProvisionAndDeploy(
 
   const existingLabels = getLabels(context.tasks);
 
-  const generatedBefore = context.generatedLabels.find((value) =>
-    value.startsWith("Create resources")
-  );
-  const createResourcesLabel = generatedBefore || generateLabel("Create resources", existingLabels);
+  const generatedBefore = context.generatedLabels.find((value) => value.startsWith("Provision"));
+  const createResourcesLabel = generatedBefore || generateLabel("Provision", existingLabels);
 
   const setUpLocalProjectsLabel =
-    context.generatedLabels.find((value) => value.startsWith("Build project")) ||
-    generateLabel("Build project", existingLabels);
+    context.generatedLabels.find((value) => value.startsWith("Deploy")) ||
+    generateLabel("Deploy", existingLabels);
 
   if (!generatedBefore) {
     context.generatedLabels.push(createResourcesLabel);
@@ -993,4 +1109,9 @@ function getLabels(tasks: CommentArray<CommentJSONValue>): string[] {
   }
 
   return labels;
+}
+
+async function getFuncVersion(): Promise<string> {
+  const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
+  return !nodeVersion || Number.parseInt(nodeVersion) >= 18 ? "~4.0.4670" : "4";
 }

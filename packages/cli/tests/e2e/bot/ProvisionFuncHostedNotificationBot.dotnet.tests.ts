@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Siglud <Siglud@gmail.com>
+ */
 import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
@@ -11,9 +14,6 @@ describe("Provision for Dotnet", () => {
     "Provision Resource: func hosted notification",
     { testPlanCaseId: 15685880 },
     async function () {
-      if (isV3Enabled()) {
-        return this.skip();
-      }
       await happyPathTest(Runtime.Dotnet, "notification", ["http-functions"]);
     }
   );

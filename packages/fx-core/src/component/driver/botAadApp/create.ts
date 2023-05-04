@@ -7,9 +7,7 @@ import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
-import Timer from "@dbpiper/timer";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
-import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
+import { performance } from "perf_hooks";
 import axios from "axios";
 import { wrapRun } from "../../utils/common";
 import {
@@ -22,6 +20,10 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { logMessageKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { progressBarKeys } from "../../resource/botService/botRegistration/constants";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { updateProgress } from "../middleware/updateProgress";
+import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
+import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -30,6 +32,11 @@ const successRegisterBotAad = `${actionName}/success`;
 const propertyKeys = {
   reusingExistingBotAad: "reuse-existing-bot-aad",
   registerBotAadTime: "register-bot-aad-time",
+};
+
+const defaultOutputEnvVarNames = {
+  botId: "BOT_ID",
+  botPassword: "SECRET_BOT_PASSWORD",
 };
 
 @Service(actionName) // DO NOT MODIFY the service name
@@ -48,11 +55,18 @@ export class CreateBotAadAppDriver implements StepDriver {
     });
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
-  public async execute(args: CreateBotAadAppArgs, ctx: DriverContext): Promise<ExecutionResult> {
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString(progressBarKeys.creatingBotAadApp)),
+  ])
+  public async execute(
+    args: CreateBotAadAppArgs,
+    ctx: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
-      const result = await this.handler(args, ctx);
+      const result = await this.handler(args, ctx, outputEnvVarNames);
       summaries = result.summaries;
       return result.output;
     });
@@ -64,29 +78,33 @@ export class CreateBotAadAppDriver implements StepDriver {
 
   public async handler(
     args: CreateBotAadAppArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<{
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString(progressBarKeys.creatingBotAadApp),
-      1
-    );
-    await progressHandler?.start();
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       this.validateArgs(args);
-      const botAadAppState = this.loadCurrentState();
+      // TODO: Remove this logic when config manager forces schema validation
+      if (!outputEnvVarNames) {
+        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+      }
+      const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
+
+      // If it's the case of a valid bot id with an empty bot password, then throw an error
+      if (botAadAppState.botId && !botAadAppState.botPassword) {
+        throw new UnexpectedEmptyBotPasswordError(actionName, helpLink);
+      }
+
       const botConfig: BotAadCredentials = {
-        botId: botAadAppState.BOT_ID ?? "",
-        botPassword: botAadAppState.SECRET_BOT_PASSWORD ?? "",
+        botId: botAadAppState.botId ?? "",
+        botPassword: botAadAppState.botPassword ?? "",
       };
       const botRegistration: BotRegistration = new RemoteBotRegistration();
 
-      await progressHandler?.next(getLocalizedString(progressBarKeys.creatingBotAadApp));
-      const timer = new Timer();
-      timer.start();
+      const startTime = performance.now();
       const createRes = await botRegistration.createBotRegistration(
         context.m365TokenProvider,
         args.name,
@@ -94,12 +112,14 @@ export class CreateBotAadAppDriver implements StepDriver {
         botConfig,
         context.logProvider
       );
-      const timeResult = timer.stop();
+      const durationMilliSeconds = performance.now() - startTime;
       if (createRes.isErr()) {
         throw createRes.error;
       }
-
-      const isReusingExisting = botConfig.botId && botConfig.botPassword;
+      botAadAppState.botId = createRes.value.botId;
+      botAadAppState.botPassword = createRes.value.botPassword;
+      const outputs = mapStateToEnv(botAadAppState, outputEnvVarNames);
+      const isReusingExisting = !(!botConfig.botId || !botConfig.botPassword);
       const successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
         createRes.value.botId
@@ -110,23 +130,18 @@ export class CreateBotAadAppDriver implements StepDriver {
       );
       const summary = isReusingExisting ? useExistingBotAadLog : successCreateBotAadLog;
       context.logProvider?.info(summary);
-      await progressHandler?.end(true);
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
       context.telemetryReporter.sendTelemetryEvent(successRegisterBotAad, {
-        [propertyKeys.reusingExistingBotAad]: isReusingExisting,
-        [propertyKeys.registerBotAadTime]: timeResult.milliseconds.toString(),
+        [propertyKeys.reusingExistingBotAad]: isReusingExisting.toString(),
+        [propertyKeys.registerBotAadTime]: durationMilliSeconds.toString(),
       });
       return {
-        output: new Map([
-          ["BOT_ID", createRes.value.botId],
-          ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
-        ]),
+        output: outputs,
         summaries: [summary],
       };
     } catch (error) {
-      await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -140,9 +155,9 @@ export class CreateBotAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(actionName, JSON.stringify(error.response!.data), helpLink);
+          throw new UnhandledUserError(new Error(error.response!.data), actionName, helpLink);
         } else {
-          throw new UnhandledSystemError(actionName, JSON.stringify(error.response!.data));
+          throw new UnhandledError(new Error(error.response!.data), actionName);
         }
       }
 
@@ -150,7 +165,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, JSON.stringify(error));
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 
@@ -161,14 +176,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private loadCurrentState(): CreateBotAadAppOutput {
-    return {
-      BOT_ID: process.env.BOT_ID,
-      SECRET_BOT_PASSWORD: process.env.SECRET_BOT_PASSWORD,
-    };
   }
 }

@@ -4,22 +4,21 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
-import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
-import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
+import { SystemError, UserError, ok, err, FxError, Result, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
-
+const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app-v5";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
@@ -33,18 +32,14 @@ export class UpdateAadAppDriver implements StepDriver {
     return result.result;
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle")),
+  ])
   public async execute(args: UpdateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
-    const progressBarSettings = this.getProgressBarSetting();
-    const progressHandler = context.ui?.createProgressBar(
-      progressBarSettings.title,
-      progressBarSettings.stepMessages.length
-    );
     const summaries: string[] = [];
 
     try {
-      await progressHandler?.start();
-      await progressHandler?.next(progressBarSettings.stepMessages.shift());
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       const state = this.loadCurrentState();
 
@@ -81,6 +76,21 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
 
+      if (context.platform === Platform.CLI) {
+        const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
+        context.ui?.showMessage("info", msg, false);
+      } else {
+        const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+        context.ui
+          ?.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+              context.ui!.openUrl(ViewAadAppHelpLink);
+            }
+          });
+      }
+
       return {
         result: ok(
           new Map(
@@ -107,12 +117,12 @@ export class UpdateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new UnhandledUserError(actionName, message, helpLink)),
+            result: err(new UnhandledUserError(error as Error, actionName, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new UnhandledSystemError(actionName, message)),
+            result: err(new UnhandledError(error as Error, actionName)),
             summaries: summaries,
           };
         }
@@ -123,11 +133,10 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledSystemError(actionName, JSON.stringify(error))),
+        result: err(new UnhandledError(error as Error, actionName)),
         summaries: summaries,
       };
     } finally {
-      await progressHandler?.end(true);
     }
   }
 
@@ -142,17 +151,8 @@ export class UpdateAadAppDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private getProgressBarSetting(): ProgressBarSetting {
-    return {
-      title: getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle"),
-      stepMessages: [
-        getLocalizedString("driver.aadApp.progressBar.updateAadAppStepMessage"), // step 1
-      ],
-    };
   }
 
   private loadCurrentState(): UpdateAadAppOutput {

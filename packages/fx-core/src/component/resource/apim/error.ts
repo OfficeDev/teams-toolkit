@@ -186,15 +186,6 @@ export const ShortenToEmpty: IApimPluginError = {
   ],
 };
 
-export const UnhandledError: IApimPluginError = {
-  type: ErrorType.System,
-  code: "UnhandledError",
-  message: () => [
-    getDefaultString("plugins.apim.error.UnhandledError"),
-    getLocalizedString("plugins.apim.error.UnhandledError"),
-  ],
-};
-
 export const FailedToParseResourceIdError: IApimPluginError = {
   type: ErrorType.User,
   code: "FailedToParseResourceId",

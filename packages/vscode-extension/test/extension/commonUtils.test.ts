@@ -13,6 +13,7 @@ import path = require("path");
 import {
   ConfigFolderName,
   InputConfigsFolderName,
+  ok,
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../src/globalVariables";
@@ -20,6 +21,10 @@ import { Uri } from "vscode";
 import * as tmp from "tmp";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import { expect } from "chai";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -283,20 +288,108 @@ describe("CommonUtils", () => {
     afterEach(() => {
       sandbox.restore();
     });
-    it("get app name successfully", () => {
+    it("get app name successfully - v2", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").returns('{ "appName": "name"}');
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
 
       const res = commonUtils.getAppName();
       expect(res).equal("name");
     });
 
-    it("throw exception", () => {
+    it("throw exception - v2", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").throws();
+      sandbox.stub(commonTools, "isV3Enabled").returns(false);
 
       const res = commonUtils.getAppName();
       expect(res).equal(undefined);
+    });
+
+    it("get app name successfully - v3", () => {
+      const ymlData = `# Triggered when 'teamsfx provision' is executed
+      provision:
+        - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
+          with:
+            name: appNameTest-aad
+      
+        - uses: teamsApp/create # Creates a Teams app
+          with:
+            name: appNameTest-\${{TEAMSFX_ENV}} # Teams app name
+      `;
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").returns(ymlData);
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal("appNameTest");
+    });
+
+    it("empty yml file - v3", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").returns("");
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
+    });
+
+    it("throw exception - v3", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").throws();
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
+    });
+  });
+
+  describe("getProvisionSucceedFromEnv", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns false if teamsAppId is empty", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(
+        ok({
+          TEAMS_APP_ID: "",
+        })
+      );
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(false);
+    });
+
+    it("returns true if teamsAppId is not empty", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(
+        ok({
+          TEAMS_APP_ID: "xxx",
+        })
+      );
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(ok({} as any));
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(true);
+    });
+
+    it("returns false if teamsAppId has error", async () => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+
+      const result = await commonUtils.getProvisionSucceedFromEnv("test");
+
+      chai.expect(result).equals(false);
     });
   });
 });

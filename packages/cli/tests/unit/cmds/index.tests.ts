@@ -54,8 +54,9 @@ describe("Register Commands Tests", function () {
     expect(registeredCommands).includes("publish");
     expect(registeredCommands).includes("config");
     expect(registeredCommands).includes("preview");
-    expect(registeredCommands).includes("init");
+    // expect(registeredCommands).includes("init");
     expect(registeredCommands).includes("update");
+    expect(registeredCommands).includes("upgrade");
   });
 
   it("Register Commands Check", () => {

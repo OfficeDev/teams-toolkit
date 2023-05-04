@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
+ */
 import { MultiSelectQuestion, OptionItem, UserError } from "@microsoft/teamsfx-api";
 import { RestError } from "@azure/ms-rest-js";
 import path from "path";
@@ -487,6 +490,8 @@ export enum SolutionError {
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
+  InvalidManifestError = "InvalidManifestError",
+  FailedToLoadManifestFile = "FailedToLoadManifestFile",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -729,11 +734,12 @@ export function TabNewUIOptionItem(): OptionItem {
 export function DashboardOptionItem(): OptionItem {
   return {
     id: "dashboard-tab",
-    label: `$(browser) ${getLocalizedString("core.DashboardOption.label")}`,
-    description: getLocalizedString("core.Option.preview"),
+    label: `${getLocalizedString("core.DashboardOption.label")}`,
     cliName: "dashboard-tab",
     detail: getLocalizedString("core.DashboardOption.detail"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
     data: "https://aka.ms/teamsfx-dashboard-app",
     buttons: [
       {
@@ -758,10 +764,9 @@ export function BotOptionItem(): OptionItem {
 export function BotNewUIOptionItem(): OptionItem {
   return {
     id: "Bot",
-    label: `$(hubot) ${getLocalizedString("core.BotNewUIOption.label")}`,
+    label: `${getLocalizedString("core.BotNewUIOption.label")}`,
     cliName: "bot",
     detail: getLocalizedString("core.BotNewUIOption.detail"),
-    groupName: getLocalizedString("core.options.separator.basic"),
   };
 }
 
@@ -769,11 +774,9 @@ export function NotificationOptionItem(): OptionItem {
   return {
     // For default option, id and cliName must be the same
     id: "Notification",
-    label: `$(hubot) ${getLocalizedString("core.NotificationOption.label")}`,
-    description: getLocalizedString("core.Option.recommend"),
+    label: `${getLocalizedString("core.NotificationOption.label")}`,
     cliName: "notification",
     detail: getLocalizedString("core.NotificationOption.detail"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
     data: "https://aka.ms/teamsfx-send-notification",
     buttons: [
       {
@@ -789,11 +792,9 @@ export function CommandAndResponseOptionItem(): OptionItem {
   return {
     // id must match cli `yargsHelp`
     id: "command-bot",
-    label: `$(hubot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
-    description: getLocalizedString("core.Option.recommend"),
+    label: `${getLocalizedString("core.CommandAndResponseOption.label")}`,
     cliName: "command-bot",
     detail: getLocalizedString("core.CommandAndResponseOption.detail"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
     data: "https://aka.ms/teamsfx-create-command",
     buttons: [
       {
@@ -809,11 +810,9 @@ export function WorkflowOptionItem(): OptionItem {
   return {
     // id must match cli `yargsHelp`
     id: "workflow-bot",
-    label: `$(hubot) ${getLocalizedString("core.WorkflowOption.label")}`,
-    description: getLocalizedString("core.Option.recommend"),
+    label: `${getLocalizedString("core.WorkflowOption.label")}`,
     cliName: "workflow-bot",
     detail: getLocalizedString("core.WorkflowOption.detail"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
     data: "https://aka.ms/teamsfx-create-workflow",
     buttons: [
       {
@@ -856,10 +855,9 @@ export function MessageExtensionItem(): OptionItem {
 export function MessageExtensionNewUIItem(): OptionItem {
   return {
     id: "MessagingExtension",
-    label: `$(comment-discussion) ${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
+    label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
     cliName: "message-extension",
     detail: getLocalizedString("core.MessageExtensionOption.detail"),
-    groupName: getLocalizedString("core.options.separator.basic"),
   };
 }
 export function TabSPFxItem(): OptionItem {
@@ -875,10 +873,12 @@ export function TabSPFxItem(): OptionItem {
 export function TabSPFxNewUIItem(): OptionItem {
   return {
     id: "TabSPFx",
-    label: `$(browser) ${getLocalizedString("core.TabSPFxOption.labelNew")}`,
+    label: `${getLocalizedString("core.TabSPFxOption.labelNew")}`,
     cliName: "tab-spfx",
     detail: getLocalizedString("core.TabSPFxOption.detailNew"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
   };
 }
 
@@ -905,10 +905,12 @@ export function BotSsoItem(): OptionItem {
 export function TabNonSsoItem(): OptionItem {
   return {
     id: "TabNonSso",
-    label: `$(browser) ${getLocalizedString("core.TabNonSso.label")}`,
+    label: `${getLocalizedString("core.TabNonSso.label")}`,
     cliName: "tab-non-sso",
     detail: getLocalizedString("core.TabNonSso.detail"),
-    groupName: getLocalizedString("core.options.separator.basic"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
   };
 }
 export function TabNonSsoAndDefaultBotItem(): OptionItem {
@@ -927,19 +929,55 @@ export function DefaultBotAndMessageExtensionItem(): OptionItem {
 export function M365SsoLaunchPageOptionItem(): OptionItem {
   return {
     id: "M365SsoLaunchPage",
-    label: `$(browser) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
+    label: `${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,
     cliName: "sso-launch-page",
     detail: getLocalizedString("core.M365SsoLaunchPageOptionItem.detail"),
-    groupName: getLocalizedString("core.options.separator.m365"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.worksInOutlookM365"
+    ),
   };
 }
 export function M365SearchAppOptionItem(): OptionItem {
   return {
     id: "M365SearchApp",
-    label: `$(comment-discussion) ${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+    label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
     cliName: "search-app",
     detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
-    groupName: getLocalizedString("core.options.separator.m365"),
+    description: getLocalizedString("core.createProjectQuestion.option.description.worksInOutlook"),
+  };
+}
+
+export function NewProjectTypeTabOptionItem(): OptionItem {
+  return {
+    id: "tab-type",
+    label: `$(browser) ${getLocalizedString("core.TabOption.label")}`,
+    detail: getLocalizedString("core.createProjectQuestion.projectType.tab.detail"),
+  };
+}
+
+export function NewProjectTypeBotOptionItem(): OptionItem {
+  return {
+    id: "bot-type",
+    label: `$(hubot) ${getLocalizedString("core.createProjectQuestion.projectType.bot.label")}`,
+    detail: getLocalizedString("core.createProjectQuestion.projectType.bot.detail"),
+  };
+}
+
+export function NewProjectTypeMessageExtensionOptionItem(): OptionItem {
+  return {
+    id: "me-type",
+    label: `$(symbol-keyword) ${getLocalizedString("core.MessageExtensionOption.label")}`,
+    detail: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
+  };
+}
+
+export function NewProjectTypeOutlookAddinOptionItem(): OptionItem {
+  return {
+    id: "outlook-addin-type",
+    label: `$(mail) ${getLocalizedString(
+      "core.createProjectQuestion.projectType.outlookAddin.label"
+    )}`,
+    detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
   };
 }
 
@@ -956,6 +994,13 @@ export enum AzureSolutionQuestionNames {
   Solution = "solution",
   Scenarios = "scenarios",
   Features = "features",
+}
+
+export enum SPFxQuestionNames {
+  SPFxFolder = "spfx-folder",
+  WebPartName = "spfx-webpart-name",
+  ManifestPath = "manifest-path",
+  LocalManifestPath = "local-manifest-path",
 }
 
 export function HostTypeOptionAzure(): OptionItem {

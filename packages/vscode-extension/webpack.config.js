@@ -7,7 +7,6 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const terserWebpackPlugin = require("terser-webpack-plugin");
-const buildConfig = require("./config");
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -20,7 +19,6 @@ const config = {
   entry: {
     extension: "./src/extension.ts", // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
     client: "./src/controls/index.tsx",
-    tree: "./src/treeview/webViewProvider/tree.tsx",
   },
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
@@ -66,6 +64,10 @@ const config = {
           loader: "url-loader",
         },
       },
+      {
+        test: /node_modules[\\|/](yaml-language-server|vscode-languageserver|vscode-json-languageservice|prettier)/,
+        use: "umd-compat-loader",
+      },
     ],
   },
   plugins: [
@@ -88,7 +90,6 @@ const config = {
       /node-gyp[\/\\]bin[\/\\]node-gyp.js/,
       "@npmcli/node-gyp"
     ),
-    new webpack.DefinePlugin(buildConfig.preview.env),
     new CopyPlugin({
       patterns: [
         {
@@ -102,10 +103,6 @@ const config = {
         {
           from: "./WHATISNEW.md",
           to: "../resource/WHATISNEW.md",
-        },
-        {
-          from: "./PRERELEASE.md",
-          to: "../resource/PRERELEASE.md",
         },
         {
           from: "./node_modules/@vscode/codicons/dist/codicon.css",

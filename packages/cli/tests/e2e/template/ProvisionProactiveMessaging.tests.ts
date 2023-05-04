@@ -16,6 +16,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  readContextMultiEnvV3,
   getUniqueAppName,
 } from "../commonUtils";
 import { BotValidator } from "../../commonlib";
@@ -32,57 +33,57 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.ProactiveMessaging}`, { testPlanCaseId: 15277473 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
-    }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.ProactiveMessaging,
-      TemplateProject.ProactiveMessaging
-    );
+      console.log("ProactiveMessaging is not supported in v3");
+    } else {
+      await CliHelper.createTemplateProject(
+        appName,
+        testFolder,
+        TemplateProject.ProactiveMessaging
+      );
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+      // Provision
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+      // Validate Provision
+      const context = isV3Enabled()
+        ? await readContextMultiEnvV3(projectPath, env)
+        : await readContextMultiEnv(projectPath, env);
 
-    // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
-
-    // Validate Bot Provision
-    const bot = new BotValidator(context, projectPath, env);
-    await bot.validateProvision(false);
-
-    // deploy
-    await CliHelper.deployAll(projectPath);
-
-    {
-      // Validate deployment
-
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-      // Validate Bot Deploy
+      // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateDeploy();
+      await bot.validateProvision(false);
+
+      // deploy
+      await CliHelper.deployAll(projectPath);
+
+      {
+        // Validate deployment
+        // Get context
+        const context = await readContextMultiEnv(projectPath, env);
+
+        // Validate Bot Deploy
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateDeploy();
+      }
+
+      // test (validate)
+      await execAsync(`teamsfx validate`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
+
+      // package
+      await execAsync(`teamsfx package`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
     }
-
-    // test (validate)
-    await execAsync(`teamsfx validate`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    // package
-    await execAsync(`teamsfx package`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
   });
 
   after(async () => {

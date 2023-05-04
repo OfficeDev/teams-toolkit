@@ -9,8 +9,8 @@
             "dependsOn": [
                 "Validate & install prerequisites",
                 "Start local tunnel",
-                "Create resources",
-                "Build project",
+                "Provision",
+                "Deploy",
                 "Start services"
             ],
             "dependsOrder": "sequence"
@@ -34,42 +34,47 @@
             }
         },
         {
-            // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-            // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+            // Start the local tunnel service to forward public URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-tasks/local-tunnel for the detailed args definitions.
             "label": "Start local tunnel",
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
-                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-                "env": "local",
-                "output": {
-                    // Keep consistency with upgraded configuration.
-                    "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
-                    "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
-                }
+                "type": "dev-tunnel",
+                "ports": [
+                    {
+                        "portNumber": 3978,
+                        "protocol": "http",
+                        "access": "public",
+                        "writeToEnvironmentFile": {
+                            // Keep consistency with upgraded configuration.
+                            "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                            "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+                        }
+                    }
+                ],
+                "env": "local"
             },
             "isBackground": true,
             "problemMatcher": "$teamsfx-local-tunnel-watch"
         },
         {
             // Create the debug resources.
-            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
-            "label": "Create resources",
+            // See https://aka.ms/teamsfx-tasks/provision to know the details and how to customize the args.
+            "label": "Provision",
             "type": "teamsfx",
             "command": "provision",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },
         {
             // Build project.
-            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Build project",
+            // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
+            "label": "Deploy",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
-                "template": "${workspaceFolder}/teamsapp.local.yml",
                 "env": "local"
             }
         },

@@ -12,8 +12,7 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
-import { UnhandledSystemError } from "./error/unhandledError";
+import { updateProgress } from "../middleware/updateProgress";
 import {
   CreateOrUpdateBotFrameworkBotArgs,
   MicrosoftTeamsChannelSettings,
@@ -24,6 +23,7 @@ import {
   BotChannelType,
   IBotRegistration,
 } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
+import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -34,7 +34,10 @@ const botUrl = "https://dev.botframework.com/bots?id=";
 export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
   description = getLocalizedString("driver.botFramework.description");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")),
+  ])
   public async run(
     args: CreateOrUpdateBotFrameworkBotArgs,
     context: DriverContext
@@ -45,6 +48,10 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     });
   }
 
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")),
+  ])
   public async execute(
     args: CreateOrUpdateBotFrameworkBotArgs,
     ctx: DriverContext
@@ -68,18 +75,8 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     output: Map<string, string>;
     summaries: string[];
   }> {
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.botFramework.progressBar.title"),
-      1
-    );
     try {
-      await progressHandler?.start();
-
       this.validateArgs(args);
-
-      await progressHandler?.next(
-        getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")
-      );
 
       let callingEndpoint: string | undefined = undefined;
       let configuredChannels: BotChannelType[] | undefined = undefined;
@@ -89,8 +86,8 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
           if (channel.name === BotChannelType.MicrosoftTeams) {
             callingEndpoint = (channel as MicrosoftTeamsChannelSettings).callingWebhook;
             configuredChannels.push(BotChannelType.MicrosoftTeams);
-          } else if (channel.name === BotChannelType.Outlook) {
-            configuredChannels.push(BotChannelType.Outlook);
+          } else if (channel.name === BotChannelType.M365Extensions) {
+            configuredChannels.push(BotChannelType.M365Extensions);
           }
         }
       }
@@ -114,8 +111,6 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
         throw result.error;
       }
 
-      await progressHandler?.end(true);
-
       return {
         output: new Map<string, string>(),
         summaries: [
@@ -125,8 +120,6 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
         ],
       };
     } catch (error) {
-      await progressHandler?.end(false);
-
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -138,7 +131,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, message);
+      throw new UnhandledError(error as Error, actionName);
     }
   }
 
@@ -174,7 +167,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
             !channel.name ||
             typeof channel.name !== "string" ||
             (channel.name !== BotChannelType.MicrosoftTeams &&
-              channel.name !== BotChannelType.Outlook)
+              channel.name !== BotChannelType.M365Extensions)
           ) {
             invalidParameters.push("channels");
             break;
@@ -191,7 +184,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     }
 
     if (invalidParameters.length > 0) {
-      throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+      throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
   }
 }

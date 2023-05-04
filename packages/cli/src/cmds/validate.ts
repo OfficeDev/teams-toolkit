@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, AppPackageFolderName, ok, Func } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Func } from "@microsoft/teamsfx-api";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
@@ -9,8 +9,8 @@ import activate from "../activate";
 import {
   RootFolderOptions,
   EnvOptions,
-  ManifestFilePathParamName,
-  BuildPackageOptions,
+  ValidateApplicationOptions,
+  AppPackageFilePathParamName,
 } from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -18,19 +18,18 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { askTargetEnvironment, getSystemInputs } from "../utils";
+import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import CLIUIInstance from "../userInteraction";
+import { EnvNotSpecified } from "../error";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
   public readonly command = this.commandHead;
-  public readonly description = "Validate the Teams app manifest.";
+  public readonly description = "Validate the Teams app using manifest schema or validation rules.";
 
   public builder(yargs: Argv): Argv<any> {
-    if (isV3Enabled())
-      yargs.options(RootFolderOptions).options({
-        [ManifestFilePathParamName]: BuildPackageOptions[ManifestFilePathParamName],
-      });
+    if (isV3Enabled()) yargs.options(RootFolderOptions).options(ValidateApplicationOptions);
     else yargs.options(RootFolderOptions);
     return yargs.hide("interactive").version(false).options(RootFolderOptions).options(EnvOptions);
   }
@@ -50,34 +49,32 @@ export class ManifestValidate extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-      // TODO: remove when V3 is auto enabled
-      if (!inputs.env) {
-        // include local env in interactive question
-        const selectedEnv = await askTargetEnvironment(rootFolder);
-        if (selectedEnv.isErr()) {
-          CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-          return err(selectedEnv.error);
-        }
-        inputs.env = selectedEnv.value;
-      }
-
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "validateManifest",
-        params: {
-          type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-        },
-      };
+      let result;
 
       if (isV3Enabled()) {
-        func.params = {
-          manifestTemplatePath:
-            args[ManifestFilePathParamName] ??
-            `${rootFolder}/${AppPackageFolderName}/manifest.json`,
+        if (args[AppPackageFilePathParamName]) {
+          inputs.validateMethod = "validateAgainstAppPackage";
+        } else {
+          inputs.validateMethod = "validateAgainstSchema";
+          // Throw error if --env not specified
+          if (!args.env && !CLIUIInstance.interactive) {
+            const error = new EnvNotSpecified();
+            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+            return err(error);
+          }
+        }
+        result = await core.validateApplication(inputs);
+      } else {
+        const func: Func = {
+          namespace: "fx-solution-azure",
+          method: "validateManifest",
+          params: {
+            type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
+          },
         };
+        result = await core.executeUserTask!(func, inputs);
       }
 
-      const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.ValidateManifest,

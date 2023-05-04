@@ -1,10 +1,10 @@
-﻿using {%SafeProjectName%}.Models;
+﻿using {{SafeProjectName}}.Models;
 using AdaptiveCards.Templating;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.TeamsFx.Conversation;
 using Newtonsoft.Json;
 
-namespace {%SafeProjectName%}.Controllers
+namespace {{SafeProjectName}}.Controllers
 {
     [Route("api/notification")]
     [ApiController]
@@ -35,7 +35,7 @@ namespace {%SafeProjectName%}.Controllers
                         Title = "New Event Occurred!",
                         AppName = "Contoso App Notification",
                         Description = $"This is a sample http-triggered notification to {installation.Type}",
-                        NotificationUrl = "https://www.adaptivecards.io/",
+                        NotificationUrl = "https://aka.ms/teamsfx-notification-new",
                     }
                 );
                 await installation.SendAdaptiveCard(JsonConvert.DeserializeObject(cardContent), cancellationToken);

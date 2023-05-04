@@ -1,4 +1,4 @@
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
   v2,
@@ -138,6 +138,9 @@ export class MockedLogProvider implements LogProvider {
   async fatal(message: string): Promise<boolean> {
     return true;
   }
+  getLogFilePath(): string {
+    return "";
+  }
 }
 
 export class MockedTelemetryReporter implements TelemetryReporter {
@@ -232,6 +235,16 @@ export class MockedUserInteraction implements UserInteraction {
     ...args: any
   ): Promise<Result<T, FxError>> {
     return task.run(...args);
+  }
+
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string;
+    shell?: string;
+    timeout?: number;
+    env?: { [k: string]: string };
+  }): Promise<Result<string, FxError>> {
+    return ok("");
   }
 }
 

@@ -16,6 +16,7 @@ import * as commentJson from "comment-json";
 import { CommentObject, CommentArray } from "comment-json";
 import { generateLocalDebugSettings } from "../../../../src/component/debug";
 import { createContextV3 } from "../../../../src/component/utils";
+import mockedEnv from "mocked-env";
 
 chai.use(chaiAsPromised);
 
@@ -873,8 +874,8 @@ describe("solution.debug.scaffolding", () => {
       const launch = fs.readJSONSync(expectedLaunchFile);
       const configurations: [] = launch["configurations"];
       const compounds: [] = launch["compounds"];
-      chai.assert.equal(configurations.length, 4);
-      chai.assert.equal(compounds.length, 2);
+      chai.assert.equal(configurations.length, 8);
+      chai.assert.equal(compounds.length, 6);
 
       //assert output tasks.json
       const tasksAll = commentJson.parse(
@@ -882,7 +883,7 @@ describe("solution.debug.scaffolding", () => {
       ) as CommentObject;
       const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
       const tasksInput = tasksAll["inputs"] as CommentArray<CommentObject>;
-      chai.assert.equal(tasks.length, 7);
+      chai.assert.equal(tasks.length, 9);
       chai.assert.equal(tasksInput.length, 1);
 
       //assert output settings.json
@@ -1110,6 +1111,7 @@ describe("solution.debug.scaffolding", () => {
     });
 
     it("happy path: .vscode exists", async () => {
+      const restoreMockEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
       fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
       fs.writeJSONSync(expectedLaunchFile, {
         version: "0.2.0",
@@ -1178,6 +1180,7 @@ describe("solution.debug.scaffolding", () => {
       //assert output settings.json
       const settingsAll = fs.readJSONSync(expectedSettingsFile);
       chai.assert.equal(Object.keys(settingsAll).length, 2);
+      restoreMockEnvRestore();
     });
   });
 });

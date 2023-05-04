@@ -1,11 +1,18 @@
 // https://fluentsite.z22.web.core.windows.net/quick-start
-import { Provider, teamsTheme, Loader } from "@fluentui/react-northstar";
-import { HashRouter as Router, Redirect, Route } from "react-router-dom";
+import {
+  FluentProvider,
+  teamsLightTheme,
+  teamsDarkTheme,
+  teamsHighContrastTheme,
+  tokens,
+} from "@fluentui/react-components";
+import { useEffect } from "react";
+import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import { app } from "@microsoft/teams-js";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 import Privacy from "./Privacy";
 import TermsOfUse from "./TermsOfUse";
 import Tab from "./Tab";
-import "./App.css";
 import TabConfig from "./TabConfig";
 import { TeamsFxContext } from "./Context";
 import config from "./sample/lib/config";
@@ -19,25 +26,40 @@ export default function App() {
     initiateLoginEndpoint: config.initiateLoginEndpoint!,
     clientId: config.clientId!,
   });
+  useEffect(() => {
+    loading &&
+      app.initialize().then(() => {
+        // Hide the loading indicator.
+        app.notifySuccess();
+      });
+  }, [loading]);
   return (
     <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
-      <Provider theme={theme || teamsTheme} styles={{ backgroundColor: "#eeeeee" }}>
+      <FluentProvider
+        theme={
+          themeString === "dark"
+            ? teamsDarkTheme
+            : themeString === "contrast"
+            ? teamsHighContrastTheme
+            : {
+                ...teamsLightTheme,
+                colorNeutralBackground3: "#eeeeee",
+              }
+        }
+        style={{ background: tokens.colorNeutralBackground3 }}
+      >
         <Router>
-          <Route exact path="/">
-            <Redirect to="/tab" />
-          </Route>
-          {loading ? (
-            <Loader style={{ margin: 100 }} />
-          ) : (
-            <>
-              <Route exact path="/privacy" component={Privacy} />
-              <Route exact path="/termsofuse" component={TermsOfUse} />
-              <Route exact path="/tab" component={Tab} />
-              <Route exact path="/config" component={TabConfig} />
-            </>
+          {!loading && (
+            <Routes>
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/termsofuse" element={<TermsOfUse />} />
+              <Route path="/tab" element={<Tab />} />
+              <Route path="/config" element={<TabConfig />} />
+              <Route path="*" element={<Navigate to={"/tab"} />}></Route>
+            </Routes>
           )}
         </Router>
-      </Provider>
+      </FluentProvider>
     </TeamsFxContext.Provider>
   );
 }

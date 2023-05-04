@@ -1,0 +1,212 @@
+name: Test templates and samples upgrade with all versions of CLI
+
+on:
+  workflow_dispatch
+
+jobs:
+  download-bicep:
+    runs-on: ubuntu-latest
+    steps: 
+    - run: curl -Lo bicep https://github.com/Azure/bicep/releases/v0.4.613/download/bicep-linux-x64
+    - run: chmod +x ./bicep
+    - run: sudo mkdir $HOME/.fx/ && sudo mkdir $HOME/.fx/bin/
+    - run: sudo mv ./bicep $HOME/.fx/bin/bicep
+    - run: bicep --help
+
+  sampleTest:
+    runs-on: ubuntu-latest
+
+    needs: download-bicep
+
+    env:
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_MUSER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_MUSER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      SIDELOADING_SERVICE_ENDPOINT: "https://titles.prod.mos.microsoft.com"
+      SIDELOADING_SERVICE_SCOPE: "https://titles.prod.mos.microsoft.com/.default"
+
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        cli-version:
+        - 1.2.4
+        - 1.2.3
+        - 1.2.2
+        - 1.2.1
+        - 1.2.0
+        - 1.1.5 # 4.1.3
+        - 1.1.4
+        - 1.1.3 # 4.1.0
+        - 1.1.2 # 4.0.6
+        - 1.0.5 # 4.0.5
+        - 1.0.4
+        - 1.0.3
+        - 1.0.2
+        - 1.0.1
+        - 1.0.0
+        sample-capabilities:
+        # samples
+        - hello-world-tab
+        - hello-world-tab-with-backend
+        - hello-world-bot
+        - bot-sso
+        - hello-world-in-meeting
+        - adaptive-card-notification
+        - incoming-webhook-notification
+        - stocks-update-notification-bot
+        language: ['javascript', 'typescript']
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Setup legacy-peer-deps
+      run: |
+        npm config set legacy-peer-deps true
+    
+    - name: Setup project
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm run setup
+
+    # Test samples
+    - run: npm install -g @microsoft/teamsfx-cli@${{ matrix.cli-version }}
+    - run: teamsfx new template ${{ matrix.sample-capabilities }} --interactive false
+      working-directory: ./
+    - run: npm install -D @microsoft/teamsfx-cli@alpha
+      working-directory: ./${{ matrix.sample-capabilities }}
+    - run: npx teamsfx upgrade --force
+      working-directory: ./${{ matrix.sample-capabilities }}
+    - run: npx teamsfx provision --env dev --debug
+      working-directory: ./${{ matrix.sample-capabilities }} 
+      env: 
+        CI_ENABLED: "true"
+    - run: npx teamsfx deploy --env dev --debug
+      working-directory: ./${{ matrix.sample-capabilities }}
+      env: 
+        CI_ENABLED: "true"
+    - run: npx ts-node ./packages/cli/tests/utils/cleaner.ts ${{ matrix.sample-capabilities }}
+      working-directory: ./
+      if: ${{ always() }}
+
+  templateTest:
+    runs-on: ubuntu-latest
+
+    needs: download-bicep
+
+    env:
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_MUSER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_MUSER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      SIDELOADING_SERVICE_ENDPOINT: "https://titles.prod.mos.microsoft.com"
+      SIDELOADING_SERVICE_SCOPE: "https://titles.prod.mos.microsoft.com/.default"
+
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        cli-version:
+        - 1.2.4
+        - 1.2.3
+        - 1.2.2
+        - 1.2.1
+        - 1.2.0
+        - 1.1.5 # 4.1.3
+        - 1.1.4
+        - 1.1.3 # 4.1.0
+        - 1.1.2 # 4.0.6
+        - 1.0.5 # 4.0.5
+        - 1.0.4
+        - 1.0.3
+        - 1.0.2
+        - 1.0.1
+        - 1.0.0
+        template-capabilities:
+        # templates
+        - command-bot
+        - notification
+        - workflow-bot
+        - dashboard-tab
+        - tab
+        - tab-spfx
+        - tab-non-sso
+        - bot
+        - message-extension
+        - sso-launch-page
+        - search-app
+        language: ['javascript', 'typescript']
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Setup legacy-peer-deps
+      run: |
+        npm config set legacy-peer-deps true
+    
+    - name: Setup project
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm run setup
+
+    # Test templates
+    - run: npm install -g @microsoft/teamsfx-cli@${{ matrix.cli-version }}
+    - run: teamsfx new --app-name migrationtest --capabilities ${{ matrix.template-capabilities }} --programming-language ${{ matrix.language }} --interactive false
+      working-directory: ./
+    - run: npm install -D @microsoft/teamsfx-cli@alpha
+      working-directory: ./migrationtest
+    - run: npx teamsfx upgrade --force
+      working-directory: ./migrationtest
+    - run: npx teamsfx provision --env dev --debug
+      working-directory: ./migrationtest
+      env: 
+        CI_ENABLED: "true"
+    - run: npx teamsfx deploy --env dev --debug
+      working-directory: ./migrationtest
+      env: 
+        CI_ENABLED: "true"
+    - run: npx ts-node ./packages/cli/tests/utils/cleaner.ts migrationtest
+      working-directory: ./
+      if: ${{ always() }}
+
+  rerun:
+    needs:
+    - sampleTest
+    - templateTest
+    if: ${{ failure() && github.run_attempt < 3 }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: rerun
+        run: |
+          curl \
+           -X POST \
+           -H "Accept: application/vnd.github+json" \
+           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+           -H "X-GitHub-Api-Version: 2022-11-28" \
+           https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
+           -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"3"}}'

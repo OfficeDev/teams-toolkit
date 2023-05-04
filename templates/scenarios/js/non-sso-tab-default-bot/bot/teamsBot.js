@@ -134,12 +134,21 @@ class TeamsBot extends TeamsActivityHandler {
   handleTeamsAppBasedLinkQuery(context, query) {
     const attachment = CardFactory.thumbnailCard("Thumbnail Card", query.url, [query.url]);
 
+    // By default the link unfurling result is cached in Teams for 30 minutes.
+    // The code has set a cache policy and removed the cache for the app. Learn more here: https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet%2Cadvantages#remove-link-unfurling-cache
     const result = {
       attachmentLayout: "list",
       type: "result",
       attachments: [attachment],
+      suggestedActions: {
+        actions: [
+          {
+            type: "setCachePolicy",
+            value: '{"type":"no-cache"}',
+          },
+        ],
+      },
     };
-
     const response = {
       composeExtension: result,
     };

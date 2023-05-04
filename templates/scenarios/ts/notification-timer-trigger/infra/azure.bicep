@@ -78,7 +78,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~16' // Set NodeJS version to 16.x
+          value: '~18' // Set NodeJS version to 18.x
         }
         {
           name: 'BOT_ID'

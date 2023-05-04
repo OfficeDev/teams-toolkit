@@ -1,0 +1,30 @@
+{
+  "account.login.azure": "You have sucessfully logged into Azure.",
+  "account.login.m365": "You have sucessfully logged into Microsoft 365.",
+  "account.show.azure": "Your Azure account is: %s. Your subscriptions are: %s",
+  "account.show.m365": "Your Microsoft 365 account is: %s.",
+  "account.show.info": "Your %s account is: %s.",
+  "error.prefix": "(x) Error: ",
+  "error.NotAllowedMigrationErrorMessage": "Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run \"teamsfx upgrade\" to upgrade your project first.",
+  "error.NotFoundSubscriptionId": "Cannot find selected subscription. Ensure your signed-in account has access to this subscription.",
+  "success.prefix": "(✓) Success: ",
+  "warning.prefix": "(!) Warning: ",
+  "command": {
+    "provision": {
+      "description": "Run the provision stage in teamsapp.yml."
+    },
+    "deploy": {
+      "description": "Run the deploy stage in teamsapp.yml."
+    },
+    "publish": {
+      "description": "Run the publish stage in teamsapp.yml."
+    },
+    "upgrade": {
+      "description": "Upgrade the project to work with the latest version of Teams Toolkit.",
+      "options": {
+        "force": "Force upgrade the project to work with the latest version of Teams Toolkit."
+      },
+      "success": "Upgrade project successfully."
+    }
+  }
+}

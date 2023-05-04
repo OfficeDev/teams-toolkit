@@ -1,70 +1,106 @@
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-registerApp:
-  - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
+provision:
+  # Creates a new Azure Active Directory (AAD) app to authenticate users if
+  # the environment variable that stores clientId is empty
+  - uses: aadApp/create
     with:
-      name: {%appName%}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
-      generateClientSecret: true # If the value is false, the action will not generate client secret for you
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # AAD_APP_CLIENT_ID: the client id of AAD app
-    # AAD_APP_CLIENT_SECRET: the client secret of AAD app
-    # AAD_APP_OBJECT_ID: the object id of AAD app
-    # AAD_APP_TENANT_ID: the tenant id of AAD app
-    # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
-    # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
+      # Note: when you run aadApp/update, the AAD app name will be updated
+      # based on the definition in manifest. If you don't want to change the
+      # name, make sure the name in AAD manifest is the same with the name
+      # defined here.
+      name: {{appName}}-aad
+      # If the value is false, the action will not generate client secret for you
+      generateClientSecret: true
+      # Authenticate users with a Microsoft work or school account in your
+      # organization's Azure AD tenant (for example, single tenant).
+      signInAudience: AzureADMyOrg
+    # Write the information of created resources into environment file for the
+    # specified environment variable(s).
+    writeToEnvironmentFile:
+      clientId: AAD_APP_CLIENT_ID
+      # Environment variable that starts with `SECRET_` will be stored to the
+      # .env.{envName}.user environment file
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
 
-  - uses: teamsApp/create # Creates a Teams app
+  # Creates a Teams app
+  - uses: teamsApp/create
     with:
-      name: {%appName%}-${{TEAMSFX_ENV}} # Teams app name
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+      # Teams app name
+      name: {{appName}}-${{TEAMSFX_ENV}}
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile: 
+      teamsAppId: TEAMS_APP_ID
+  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  - uses: script
+    with:
+      run:
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
 
-configureApp:
-  - uses: file/updateEnv # Generate env to .env file
+  # Apply the AAD manifest to an existing AAD app. Will use the object id in
+  # manifest file to determine which AAD app to update.
+  - uses: aadApp/update
     with:
-      envs:
-        TAB_DOMAIN: localhost:53000
-        TAB_ENDPOINT: https://localhost:53000
-
-  - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
-    with:
-      manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
+      # Relative path to this file. Environment variables in manifest will
+      # be replaced before apply to AAD app
+      manifestPath: ./aad.manifest.json
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
-  - uses: teamsApp/validate
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
     with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
-  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
+      outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+  # Validate app package using validation rules
+  - uses: teamsApp/validateAppPackage
     with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # TEAMS_APP_ID: the id of Teams app
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+  # Apply the Teams app manifest to an existing Teams app in
+  # Teams Developer Portal.
+  # Will use the app id in manifest file to determine which Teams app to update.
+  - uses: teamsApp/update
+    with:
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  - uses: prerequisite/install # Install dependencies
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       devCert:
         trust: true
-    # Output: following environment variable will be persisted in current environment's .env file.
-    # SSL_CRT_FILE: certificate file
-    # SSL_KEY_FILE: certificate key
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
 
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
 
-  - uses: file/updateEnv # Generate runtime environment variables
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
-      target: ./.localSettings
+      target: ./.localConfigs
       envs:
         BROWSER: none
         HTTPS: true

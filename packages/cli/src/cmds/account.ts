@@ -1,25 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Argv, Options } from "yargs";
-
 import {
   Colors,
-  err,
   FxError,
   LogLevel,
-  ok,
   Question,
   Result,
   UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import {
-  AppStudioScopes,
-  isV3Enabled,
-  AuthSvcScopes,
-  setRegion,
-} from "@microsoft/teamsfx-core/build/common/tools";
-
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core";
+import chalk from "chalk";
+import { Argv, Options } from "yargs";
+import { TextType, colorize } from "../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
 import { checkIsOnline } from "../commonlib/codeFlowLogin";
@@ -33,14 +28,25 @@ import {
 import CLILogProvider from "../commonlib/log";
 import M365TokenProvider from "../commonlib/m365Login";
 import * as constants from "../constants";
-import { YargsCommand } from "../yargsCommand";
+import { strings } from "../resource";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
-import chalk from "chalk";
+import { YargsCommand } from "../yargsCommand";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
   const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
   if (result) {
+    const username = (result as any).upn;
+    if (isV3Enabled()) {
+      if (commandType === "login") {
+        CLILogProvider.outputSuccess(strings["account.login.m365"]);
+      }
+      CLILogProvider.outputInfo(
+        strings["account.show.m365"],
+        colorize(username, TextType.Important)
+      );
+      return Promise.resolve(true);
+    }
     if (commandType === "login") {
       const message = [
         {
@@ -48,7 +54,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
           color: Colors.BRIGHT_GREEN,
         },
         { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: (result as any).upn, color: Colors.BRIGHT_MAGENTA },
+        { content: username, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
     } else {
@@ -57,7 +63,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
           content: `[${constants.cliSource}] Your Microsoft 365 Account is: `,
           color: Colors.BRIGHT_GREEN,
         },
-        { content: (result as any).upn, color: Colors.BRIGHT_MAGENTA },
+        { content: username, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
     }
@@ -87,6 +93,18 @@ async function outputAzureInfo(
   const result = await azureProvider.getJsonObject(true);
   if (result) {
     const subscriptions = await azureProvider.listSubscriptions();
+    const username = (result as any).upn;
+    if (isV3Enabled()) {
+      if (commandType === "login") {
+        CLILogProvider.outputSuccess(strings["account.login.azure"]);
+      }
+      CLILogProvider.outputInfo(
+        strings["account.show.azure"],
+        colorize(username, TextType.Important),
+        JSON.stringify(subscriptions, null, 2)
+      );
+      return Promise.resolve(true);
+    }
     if (commandType === "login") {
       const message = [
         {
@@ -94,7 +112,7 @@ async function outputAzureInfo(
           color: Colors.BRIGHT_GREEN,
         },
         { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: (result as any).upn, color: Colors.BRIGHT_MAGENTA },
+        { content: username, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
       CLILogProvider.necessaryLog(
@@ -109,9 +127,7 @@ async function outputAzureInfo(
         if (subscriptionInfo) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(
-              (result as any).upn
-            )}` +
+            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(username)}` +
               ` and current active subscription id is: ${chalk.magentaBright(
                 subscriptionInfo.subscriptionId
               )}.`
@@ -119,9 +135,7 @@ async function outputAzureInfo(
         } else {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(
-              (result as any).upn
-            )}.`
+            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(username)}.`
           );
           CLILogProvider.necessaryLog(
             LogLevel.Info,
@@ -135,9 +149,7 @@ async function outputAzureInfo(
         if ((e as Error).name === "ConfigNotFound") {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(
-              (result as any).upn
-            )}.`
+            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(username)}.`
           );
           CLILogProvider.necessaryLog(
             LogLevel.Warning,
@@ -160,14 +172,11 @@ async function outputAzureInfo(
 }
 
 async function outputAccountInfoOffline(accountType: string, username: string): Promise<boolean> {
-  const message = [
-    {
-      content: `[${constants.cliSource}] Your ${accountType} Account is: `,
-      color: Colors.BRIGHT_WHITE,
-    },
-    { content: username, color: Colors.BRIGHT_MAGENTA },
-  ];
-  CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+  CLILogProvider.outputInfo(
+    strings["account.show.info"],
+    accountType,
+    colorize(username, TextType.Important)
+  );
   return true;
 }
 
@@ -196,7 +205,7 @@ class AccountShow extends YargsCommand {
     if (azureStatus.status === signedIn) {
       (await checkIsOnline())
         ? await outputAzureInfo("show")
-        : await outputAccountInfoOffline("AZURE", (azureStatus.accountInfo as any).upn);
+        : await outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {

@@ -28,10 +28,6 @@ export class MockCore implements Core {
     return ok("");
   }
 
-  async buildArtifacts(inputs: Inputs): Promise<Result<string, FxError>> {
-    return ok("");
-  }
-
   async deployAadManifest(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
   }
@@ -116,6 +112,25 @@ export class MockCore implements Core {
   }
 
   async projectVersionCheck(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async phantomMigrationV3(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async addWebpart(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+
+  async previewWithManifest(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok("");
   }
 }

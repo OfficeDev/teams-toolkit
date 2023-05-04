@@ -24,7 +24,7 @@ export let Locale: string | undefined;
 export const isVS = false;
 export function setTools(tools: Tools): void {
   TOOLS = tools;
-  Logger = tools.logProvider;
+  Logger = tools?.logProvider;
 }
 export function setLocale(locale?: string): void {
   Locale = locale;
@@ -37,5 +37,7 @@ export class GlobalVars {
   teamsAppId = "";
   m365TenantId = "";
   trackingId?: string;
+  ymlFilePath?: string;
+  envFilePath?: string;
 }
 export const globalVars = new GlobalVars();

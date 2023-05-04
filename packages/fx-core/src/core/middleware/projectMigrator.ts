@@ -25,7 +25,7 @@ import {
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { serializeDict, isSPFxProject, isMigrationV3Enabled } from "../../common/tools";
+import { serializeDict, isSPFxProject } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
@@ -100,8 +100,6 @@ import {
   hasSPFxTab,
 } from "../../common/projectSettingsHelperV3";
 import { APIMResource } from "../../component/resource/apim/apim";
-import { ProjectMigratorMWV3 } from "./projectMigratorV3";
-import { MetadataV3 } from "../../common/versionMetadata";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

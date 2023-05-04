@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Xiaofu Huang <xiaofhua@microsoft.com>
- * @owner Siglud <fanhu@microsoft.com>
+ * @author Siglud <fanhu@microsoft.com>
  */
 
 import * as path from "path";
@@ -40,6 +39,9 @@ export function happyPathTest(runtime: Runtime): void {
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
     if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
+      if (process.env["DOTNET_ROOT"]) {
+        env["PATH"] = `${process.env["DOTNET_ROOT"]}${path.delimiter}${process.env["PATH"]}`;
+      }
     }
 
     it("Provision Resource: command and response", async function () {
@@ -53,11 +55,6 @@ export function happyPathTest(runtime: Runtime): void {
         timeout: 0,
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
-
-      // set subscription
-      await CliHelper.setSubscription(subscription, projectPath, env);
-
-      console.log(`[Successfully] set subscription for ${projectPath}`);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {
@@ -128,16 +125,18 @@ export function happyPathTest(runtime: Runtime): void {
         timeout: 0,
       });
 
-      // publish
-      await execAsyncWithRetry(`teamsfx publish`, {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0,
-      });
+      // publish only run on node
+      if (runtime !== Runtime.Dotnet) {
+        await execAsyncWithRetry(`teamsfx publish`, {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        });
 
-      {
-        // Validate publish result
-        await AppStudioValidator.validatePublish(teamsAppId!);
+        {
+          // Validate publish result
+          await AppStudioValidator.validatePublish(teamsAppId!);
+        }
       }
     });
 

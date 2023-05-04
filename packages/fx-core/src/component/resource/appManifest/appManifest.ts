@@ -525,8 +525,11 @@ export class AppManifest implements CloudResource {
         return err(
           new UserError(
             Constants.PLUGIN_NAME,
-            "GetConfigError",
-            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
+            AppStudioError.ListCollaboratorFailedError.name,
+            getLocalizedString(
+              "core.collaboration.error.failedToGetTeamsAppId",
+              Constants.TEAMS_APP_ID_ENV
+            )
           )
         );
       }
@@ -539,7 +542,7 @@ export class AppManifest implements CloudResource {
           return ok([]);
         }
       } catch (error: any) {
-        if (error.name === 404) {
+        if (error.message.includes(404)) {
           error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
         }
         throw error;
@@ -600,13 +603,14 @@ export class AppManifest implements CloudResource {
         ? teamsAppIdV3
         : await this.getTeamsAppId(ctx, inputs, envInfo!);
       if (!teamsAppId) {
-        const msgs = ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name);
         return err(
           new UserError(
             Constants.PLUGIN_NAME,
             AppStudioError.GrantPermissionFailedError.name,
-            msgs[0],
-            msgs[1]
+            getLocalizedString(
+              "core.collaboration.error.failedToGetTeamsAppId",
+              Constants.TEAMS_APP_ID_ENV
+            )
           )
         );
       }
@@ -675,8 +679,11 @@ export class AppManifest implements CloudResource {
         return err(
           new UserError(
             Constants.PLUGIN_NAME,
-            "GetConfigError",
-            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
+            AppStudioError.CheckPermissionFailedError.name,
+            getLocalizedString(
+              "core.collaboration.error.failedToGetTeamsAppId",
+              Constants.TEAMS_APP_ID_ENV
+            )
           )
         );
       }

@@ -1,6 +1,6 @@
 {
     "appName": "bot120701",
-    "projectId": "b0773ebf-3172-4e13-ad59-c8b1b33bd1ae",
+    "projectId": "00000000-0000-0000-0000-000000000000",
     "version": "2.1.0",
     "components": [
         {
@@ -31,7 +31,6 @@
             "provision": true
         }
     ],
-    "isM365": true,
     "programmingLanguage": "typescript",
     "solutionSettings": {
         "name": "fx-solution-azure",

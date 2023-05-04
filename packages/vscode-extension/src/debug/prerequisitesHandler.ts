@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Qianhao Dong <qidon@microsoft.com>
+ */
 import {
   assembleError,
   err,
@@ -13,7 +16,7 @@ import {
   UserError,
   UserErrorOptions,
   Void,
-  PathNotExistError,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
@@ -47,7 +50,7 @@ import {
   isV3Enabled,
 } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
-
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -680,7 +683,8 @@ async function ensureM365Account(
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
-      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      const m365Login: M365TokenProvider = M365TokenInstance;
+      let loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
         return err(loginStatusRes.error);
@@ -698,7 +702,7 @@ async function ensureM365Account(
         if (tokenRes.isErr()) {
           return err(tokenRes.error);
         }
-        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+        loginStatusRes = await m365Login.getStatus({ scopes: AppStudioScopes });
         if (loginStatusRes.isErr()) {
           return err(loginStatusRes.error);
         }
@@ -1129,7 +1133,7 @@ function checkNpmInstall(
           result: ResultStatus.warn,
           successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
           failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
-          error: new PathNotExistError(ExtensionSource, folder),
+          error: new FileNotFoundError(ExtensionSource, folder),
         };
       }
 
@@ -1442,31 +1446,7 @@ async function getOrderedCheckersForTask(
   if (prerequisites.includes(Prerequisite.m365Account)) {
     checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });
   }
-  if (prerequisites.includes(Prerequisite.devCert)) {
-    checkers.push({ info: { checker: Checker.LocalCertificate }, fastFail: false });
-  }
 
-  const deps: DepsType[] = [];
-  if (prerequisites.includes(Prerequisite.func)) {
-    deps.push(DepsType.FuncCoreTools);
-  }
-  if (prerequisites.includes(Prerequisite.ngrok)) {
-    deps.push(DepsType.Ngrok);
-  }
-  if (prerequisites.includes(Prerequisite.dotnet)) {
-    deps.push(DepsType.Dotnet);
-  }
-  const orderedDeps = DepsManager.sortBySequence(deps);
-
-  for (let i = 0; i < orderedDeps.length - 1; ++i) {
-    checkers.push({
-      info: { checker: orderedDeps[i] },
-      fastFail: false,
-    });
-  }
-  if (orderedDeps.length > 0) {
-    checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
-  }
   if (prerequisites.includes(Prerequisite.vxTestApp)) {
     checkers.push({
       info: { checker: DepsType.VxTestApp, vxTestApp: vxTestApp },

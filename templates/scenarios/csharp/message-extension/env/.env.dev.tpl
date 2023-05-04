@@ -1,3 +1,5 @@
+# This file includes environment variables that will be committed to git by default.
+
 # Built-in environment variables
 TEAMSFX_ENV=dev
 
@@ -10,6 +12,3 @@ RESOURCE_SUFFIX=
 BOT_ID=
 TEAMS_APP_ID=
 BOT_AZURE_APP_SERVICE_RESOURCE_ID=
-
-# Secrets. You can add your own secret value, prefixed with SECRET_
-SECRET_BOT_PASSWORD=

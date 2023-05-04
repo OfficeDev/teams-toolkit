@@ -51,21 +51,24 @@ export enum Capability {
 export enum TemplateProject {
   HelloWorldTabBackEnd = "hello-world-tab-with-backend",
   ContactExporter = "graph-toolkit-contact-exporter",
-  OneProductivityHub = "graph-toolkit-one-productivity-hub",
   HelloWorldBotSSO = "bot-sso",
-  TodoListBackend = "todo-list-with-Azure-backend",
-  TodoListSpfx = "todo-list-spfx",
-  ShareNow = "share-now",
+  TodoListSpfx = "todo-list-SPFx",
   MyFirstMetting = "hello-world-in-meeting",
-  TodoListM365 = "todo-list-with-azure-backend-m365",
-  NpmSearch = "npm-search-connector-m365",
-  ProactiveMessaging = "bot-proactive-messaging-teamsfx",
+  TodoListM365 = "todo-list-with-Azure-backend-M365",
+  NpmSearch = "NPM-search-connector-M365",
   AdaptiveCard = "adaptive-card-notification",
   IncomingWebhook = "incoming-webhook-notification",
-  GraphConnector = "graph-connector-app",
   StockUpdate = "stocks-update-notification-bot",
   QueryOrg = "query-org-user-with-message-extension-sso",
-  DeepLink = "deep-linking-hello-world-tab-without-sso-m365",
+  Dashboard = "team-central-dashboard",
+  GraphConnector = "graph-connector-app",
+  OneProductivityHub = "graph-toolkit-one-productivity-hub",
+  TodoListBackend = "todo-list-with-Azure-backend",
+  ShareNow = "share-now",
+  OutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
+  AssistDashboard = "developer-assist-dashboard",
+  ProactiveMessaging = "bot-proactive-messaging-teamsfx",
+  Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
 
 export enum Resource {
@@ -186,5 +189,10 @@ export class EnvConstants {
   static readonly BOT_ID = "BOT_ID";
   static readonly BOT_PASSWORD = "SECRET_BOT_PASSWORD";
   static readonly BOT_AZURE_APP_SERVICE_RESOURCE_ID = "BOT_AZURE_APP_SERVICE_RESOURCE_ID";
+  static readonly BOT_AZURE_FUNCTION_RESOURCE_ID = "BOT_AZURE_FUNCTION_APP_RESOURCE_ID";
   static readonly BOT_DOMAIN = "BOT_DOMAIN";
+
+  // FUNCTION
+  static readonly FUNCTION_ID = "API_FUNCTION_RESOURCE_ID";
+  static readonly FUNCTION_ENDPOINT = "API_FUNCTION_ENDPOINT";
 }

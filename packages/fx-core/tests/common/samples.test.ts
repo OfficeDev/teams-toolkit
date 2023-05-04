@@ -33,4 +33,65 @@ describe("Samples", () => {
     restore();
     (sampleProvider as any).sampleCollection = undefined;
   });
+
+  it("External sample url can be retrieved correctly in v3", () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    const fakedExternalSample = {
+      id: "external-sample",
+      title: "Test external sample",
+      shortDescription: "short description for external sample",
+      fullDescription: "full description for external sample",
+      tags: ["External"],
+      time: "5min to run",
+      configuration: "Ready for debug",
+      suggested: false,
+      url: "https://faked-external-sample",
+      packageLink: "https://faked-external-sample/archive/refs/heads/main.zip",
+      relativePath: "faked-external-sample",
+    };
+    sampleConfigV3.samples.push(fakedExternalSample as any);
+
+    const samples = sampleProvider.SampleCollection.samples;
+    const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
+    chai.expect(faked).exist;
+    chai.expect(faked?.url).equals(fakedExternalSample.url);
+    chai.expect(faked?.link).equals(fakedExternalSample.packageLink);
+    chai.expect(faked?.relativePath).equals(fakedExternalSample.relativePath);
+
+    restore();
+    (sampleProvider as any).sampleCollection = undefined;
+    sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);
+  });
+
+  it("External sample url fallback to base url in v3", () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    const fakedExternalSample = {
+      id: "external-sample",
+      title: "Test external sample",
+      shortDescription: "short description for external sample",
+      fullDescription: "full description for external sample",
+      tags: ["External"],
+      time: "5min to run",
+      configuration: "Ready for debug",
+      suggested: false,
+      packageLink: "https://faked-external-sample/archive/refs/heads/main.zip",
+    };
+    sampleConfigV3.samples.push(fakedExternalSample as any);
+
+    const samples = sampleProvider.SampleCollection.samples;
+    const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
+    chai.expect(faked).exist;
+    chai.expect(faked?.url).equals(sampleConfigV3.baseUrl + fakedExternalSample.id);
+    chai.expect(faked?.link).equals(fakedExternalSample.packageLink);
+
+    restore();
+    (sampleProvider as any).sampleCollection = undefined;
+    sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);
+  });
 });

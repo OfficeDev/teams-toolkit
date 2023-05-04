@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { IProgressHandler } from "@microsoft/teamsfx-api";
 import figures from "figures";
-
-import { Colors, IProgressHandler } from "@microsoft/teamsfx-api";
-
-import { getColorizedString } from "../utils";
+import { TextType, colorize } from "../colorize";
 import ScreenManager, { Row } from "./screen";
 
 export default class Progress implements IProgressHandler {
@@ -105,14 +103,10 @@ export default class Progress implements IProgressHandler {
         : this.status === "error"
         ? this.errorMessage
         : this.message;
-    return getColorizedString([
-      {
-        content: `${this.barStatus}  ${Math.round(this.currentPercentage)}% ${
-          this.runningChar
-        } ${message}`,
-        color: Colors.BRIGHT_WHITE,
-      },
-    ]);
+    return colorize(
+      `${this.barStatus}  ${Math.round(this.currentPercentage)}% ${this.runningChar} ${message}`,
+      TextType.Info
+    );
   }
 
   get barStatus(): string {
@@ -126,35 +120,25 @@ export default class Progress implements IProgressHandler {
   }
 
   get doneMessage(): string {
-    return getColorizedString([
-      {
-        content: `[${this.totalSteps}/${this.totalSteps}] ${this.title} `,
-        color: Colors.BRIGHT_WHITE,
-      },
-      { content: `(${figures.tick}) Done.`, color: Colors.BRIGHT_GREEN },
-    ]);
+    return (
+      colorize(`[${this.totalSteps}/${this.totalSteps}] ${this.title} `, TextType.Info) +
+      colorize(` (${figures.cross}) Done.`, TextType.Success)
+    );
   }
 
   get errorMessage(): string {
-    return getColorizedString([
-      {
-        content: `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${
-          this.detail || "starting."
-        }`,
-        color: Colors.BRIGHT_WHITE,
-      },
-      { content: ` (${figures.cross}) Failed.`, color: Colors.BRIGHT_RED },
-    ]);
+    return (
+      colorize(
+        `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${this.detail || "starting."}`,
+        TextType.Info
+      ) + colorize(` (${figures.cross}) Failed.`, TextType.Error)
+    );
   }
 
   get message(): string {
-    return getColorizedString([
-      {
-        content: `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${
-          this.detail || "starting."
-        }`,
-        color: Colors.BRIGHT_WHITE,
-      },
-    ]);
+    return colorize(
+      `[${this.currentStep}/${this.totalSteps}] ${this.title}: ${this.detail || "starting."}`,
+      TextType.Info
+    );
   }
 }

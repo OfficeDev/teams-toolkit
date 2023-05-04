@@ -4,6 +4,8 @@
 import { FxError, Result, err, ok, Platform } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
+import isUUID from "validator/lib/isUUID";
+import { merge } from "lodash";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
@@ -12,18 +14,21 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
+import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/update";
 
-export const outputNames = {
-  TEAMS_APP_ID: "TEAMS_APP_ID",
-  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
-  TEAMS_APP_UPDATE_TIME: "TEAMS_APP_UPDATE_TIME",
+export const internalOutputNames = {
+  teamsAppUpdateTime: "TEAMS_APP_UPDATE_TIME",
+  teamsAppTenantId: "TEAMS_APP_TENANT_ID",
 };
 
 @Service(actionName)
@@ -41,20 +46,25 @@ export class ConfigureTeamsAppDriver implements StepDriver {
 
   public async execute(
     args: ConfigureTeamsAppArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.update(args, wrapContext);
+    const res = await this.update(args, wrapContext, outputEnvVarNames);
     return {
       result: res,
       summaries: wrapContext.summaries,
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage")),
+  ])
   async update(
     args: ConfigureTeamsAppArgs,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
 
@@ -73,25 +83,57 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
     if (!(await fs.pathExists(appPackagePath))) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath),
+        new FileNotFoundError(
+          actionName,
+          appPackagePath,
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
     }
     const archivedFile = await fs.readFile(appPackagePath);
 
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppTitle"),
-      1
-    );
-    progressHandler?.start();
+    // Add capabilities to telemetry properties
+    const manifest = manifestUtils.extractManifestFromArchivedFile(archivedFile);
+    if (manifest.isErr()) {
+      return err(manifest.error);
+    }
+    const capabilities = manifestUtils._getCapabilities(manifest.value).map((x) => {
+      if (x == "staticTab" || x == "configurableTab") {
+        return "Tab";
+      } else {
+        return x;
+      }
+    });
+    merge(context.telemetryProperties, {
+      [TelemetryProperty.Capabilities]: [...new Set(capabilities)].join(";"),
+    });
+
+    // Fail if Teams app not exists, as this action only update the Teams app, not create
+    // See work item 17187087
+    const teamsAppId = manifest.value.id;
+    if (!isUUID(teamsAppId)) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.InvalidTeamsAppIdError.name,
+          AppStudioError.InvalidTeamsAppIdError.message(teamsAppId),
+          "https://aka.ms/teamsfx-actions/teamsapp-update"
+        )
+      );
+    }
+    try {
+      await AppStudioClient.getApp(teamsAppId, appStudioToken, context.logProvider);
+    } catch (error) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppNotExistsError.name,
+          AppStudioError.TeamsAppNotExistsError.message(teamsAppId),
+          "https://aka.ms/teamsfx-actions/teamsapp-update"
+        )
+      );
+    }
 
     try {
       let message = getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage");
-      progressHandler?.next(message);
-      context.addSummary(message);
 
       const appDefinition = await AppStudioClient.importApp(
         archivedFile,
@@ -105,23 +147,17 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
       context.logProvider.info(message);
       context.addSummary(message);
-      if (context.platform === Platform.VSCode) {
-        context.ui?.showMessage("info", message, false);
-      }
-      progressHandler?.end(true);
       return ok(
         new Map([
-          [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],
-          [outputNames.TEAMS_APP_TENANT_ID, appDefinition.tenantId!],
-          [outputNames.TEAMS_APP_UPDATE_TIME, appDefinition.updatedAt!],
+          [internalOutputNames.teamsAppTenantId, appDefinition.tenantId!],
+          [internalOutputNames.teamsAppUpdateTime, appDefinition.updatedAt!],
         ])
       );
     } catch (e: any) {
-      progressHandler?.end(false);
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,
-          AppStudioError.TeamsAppUpdateFailedError.message(e),
+          AppStudioError.TeamsAppUpdateFailedError.message(teamsAppId),
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
@@ -135,9 +171,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     }
     if (invalidParams.length > 0) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+        new InvalidActionInputError(
+          actionName,
+          invalidParams,
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );

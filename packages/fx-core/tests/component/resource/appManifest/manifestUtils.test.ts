@@ -38,10 +38,14 @@ import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
-
+import "../../../../src/component/resource/appManifest/appManifest";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
+  let mockedEnvRestore: RestoreFn;
   it("Load and Save manifest template file", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const projectPath = getAzureProjectRoot();
     const loadedManifestTemplate = await manifestUtils.readAppManifest(projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
@@ -52,6 +56,7 @@ describe("Load and Save manifest template V3", () => {
       );
       chai.assert.isTrue(saveManifestResult.isOk());
     }
+    mockedEnvRestore();
   });
 });
 describe("Manifest provider", () => {
@@ -64,13 +69,16 @@ describe("Manifest provider", () => {
   };
   const sandbox = sinon.createSandbox();
   let manifest: TeamsAppManifest;
+  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     manifest = JSON.parse(TEAMS_APP_MANIFEST_TEMPLATE) as TeamsAppManifest;
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
   });
   afterEach(async () => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("addCapabilities", async () => {
     const capabilities = [{ name: "staticTab" as const }];
@@ -111,7 +119,9 @@ describe("Add capability V3", () => {
   let inputs: v2.InputsWithProjectPath;
   let manifest: TeamsAppManifest;
   const component = Container.get<AppManifest>(ComponentNames.AppManifest);
+  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -123,6 +133,7 @@ describe("Add capability V3", () => {
 
   afterEach(async () => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("Check capability exceed limit: should return false", async () => {
@@ -205,7 +216,7 @@ describe("Add capability V3", () => {
   it("Add notification bot capability failed, exceed limit", async () => {
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem().id];
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
@@ -218,7 +229,7 @@ describe("Add capability V3", () => {
   it("Add notification bot capability", async () => {
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem().id];
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
@@ -230,7 +241,7 @@ describe("Add capability V3", () => {
       { name: "Bot" as const, snippet: BOTS_TPL_FOR_NOTIFICATION_V3[0] },
     ];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem().id];
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
@@ -240,6 +251,7 @@ describe("Add capability V3", () => {
   it("Add command and response bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
+      TEAMSFX_V3: "false",
     });
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
@@ -252,6 +264,7 @@ describe("Add capability V3", () => {
   it("Add workflow bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
+      TEAMSFX_V3: "false",
     });
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.WorkflowBot];
@@ -533,5 +546,22 @@ describe("getManifest V3", () => {
     envInfo.envName = "local";
     const res1 = await manifestUtils.getManifest("", envInfo, true);
     chai.assert.isTrue(res1.isOk());
+  });
+
+  it("getManifestV3 unresolved placeholder Error", async () => {
+    const envInfo = newEnvInfoV3();
+    envInfo.envName = "dev";
+    manifest.name.short = "${{MY_APP_NAME}}";
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    const res = await manifestUtils.getManifestV3("", envInfo, false);
+    chai.assert.isTrue(res.isErr() && res.error instanceof MissingEnvironmentVariablesError);
+  });
+
+  it("getManifestV3 teams app id resolved", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.id = uuid.v4();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    const res = await manifestUtils.getManifestV3("", undefined, false);
+    chai.assert.isTrue(res.isOk());
   });
 });

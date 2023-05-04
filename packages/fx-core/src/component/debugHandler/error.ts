@@ -9,21 +9,6 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 
 export const errorSource = "debugHandler";
 
-export function AppManifestPackageNotExistError(appManifestPackagePath: string): UserError {
-  return new UserError(
-    errorSource,
-    "InvalidDebugArgsError",
-    util.format(
-      getDefaultString("error.debugHandler.AppManifestPackageNotExistError"),
-      appManifestPackagePath
-    ),
-    util.format(
-      getLocalizedString("error.debugHandler.AppManifestPackageNotExistError"),
-      appManifestPackagePath
-    )
-  );
-}
-
 export function InvalidAppManifestPackageFileFormatError(): UserError {
   return new UserError(
     errorSource,

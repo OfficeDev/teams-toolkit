@@ -1,51 +1,43 @@
-version: 1.0.0
-
-registerApp:
-  - uses: teamsApp/create
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
+{{header}}
 
 provision:
-  - uses: botAadApp/create
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+{{teamsAppCreate}}
 
+{{localBotAadAppCreate}}
+
+  # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
     with:
-      botId: ${{BOT_ID}}
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
-      messagingEndpoint: ${{PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT}}/api/messages
+      botId: $\{{BOT_ID}}
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+      messagingEndpoint: $\{{PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT}}/api/messages
       description: ""
       channels:
         - name: msteams
 
-configureApp:
-  - uses: teamsApp/validate
-    with:
-      manifestPath: ./appPackage/manifest.json
-
-  - uses: teamsApp/zipAppPackage
-    with:
-      manifestPath: ./appPackage/manifest.json
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
-
-  - uses: teamsApp/update
-    with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+{{localTeamsAppUpdate}}
 
 deploy:
-  - uses: prerequisite/install 
+  # Install development tool(s)
+  - uses: devTool/install
     with:
-      func: true
+      func:
+        version: 4
+        symlinkDir: ./devTools/func
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
+      funcPath: FUNC_PATH
 
-  - uses: file/updateEnv
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./bot/.env.teamsfx.local
       envs:
-        BOT_ID: ${{BOT_ID}}
-        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        BOT_ID: $\{{BOT_ID}}
+        BOT_PASSWORD: $\{{SECRET_BOT_PASSWORD}}
 
+  # Run npm command
   - uses: cli/runNpmCommand
     with:
       args: install --no-audit

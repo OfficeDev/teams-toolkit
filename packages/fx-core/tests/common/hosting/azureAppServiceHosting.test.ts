@@ -12,7 +12,7 @@ import { Platform, TokenProvider } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import * as lib from "../../../src/common/azure-hosting/utils";
 import * as appService from "@azure/arm-appservice";
-import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-auth";
 
 describe("azure app service hosting", () => {
   const context: BicepContext = {

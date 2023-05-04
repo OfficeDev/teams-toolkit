@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @owner fanhu <fanhu@microsoft.com>
+ */
 
 import { BaseBuildDriver } from "./baseBuildDriver";
 import { Service } from "typedi";
@@ -25,7 +28,7 @@ export class NpmBuildDriver extends BaseBuildStepDriver {
     );
   }
 
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return super.run(args, context);
   }

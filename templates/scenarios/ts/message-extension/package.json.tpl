@@ -1,15 +1,15 @@
 {
-    "name": "{%appName%}",
+    "name": "{{appName}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit message extension Bot sample",
     "engines": {
-        "node": ">=14 <=16"
+        "node": "16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run dev",
+        "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
         "build": "tsc --build",
         "start": "node ./lib/index.js",
@@ -27,7 +27,8 @@
         "restify": "^10.0.0"
     },
     "devDependencies": {
-        "@types/restify": "8.5.5",
+        "@types/restify": "^8.5.5",
+        "@types/node": "^14.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

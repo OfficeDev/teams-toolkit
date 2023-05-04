@@ -29,6 +29,14 @@ import {
 import { assert } from "console";
 import { setTools } from "../../src/core/globalVars";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import {
+  InvalidAzureCredentialError,
+  InvalidAzureSubscriptionError,
+  ResourceGroupNotExistError,
+  SelectSubscriptionError,
+} from "../../src/error/azure";
+import { getResourceManagementClientForArmDeployment } from "../../src/component/arm";
+import { M365TenantIdNotFoundInTokenError, M365TokenJSONNotFoundError } from "../../src/error/m365";
 
 const expect = chai.expect;
 
@@ -78,7 +86,66 @@ describe("provisionUtils", () => {
       }
       expect((envInfo.state.solution as any).subscriptionId).equal("cli-sub");
     });
+    it("provision getSelectedSubscription failed case 1", async () => {
+      const context = createContextV3();
+      const envInfo = {
+        envName: "test",
+        config: {},
+        state: { solution: {} },
+      };
+      mocker.stub(context.logProvider, "log").resolves(true);
+      mocker
+        .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
+        .resolves(undefined);
+      const res = await provisionUtils.checkProvisionSubscription(
+        context,
+        envInfo,
+        tools.tokenProvider.azureAccountProvider,
+        undefined,
+        "test",
+        false
+      );
 
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error instanceof SelectSubscriptionError).equal(true);
+      }
+    });
+    it("provision getSelectedSubscription failed case 2", async () => {
+      const context = createContextV3();
+      const envInfo = {
+        envName: "test",
+        config: {},
+        state: { solution: { subscriptionId: "sub-id-in-solution" } },
+      };
+      mocker.stub(context.logProvider, "log").resolves(true);
+      mocker
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(tools.tokenProvider.azureAccountProvider, "listSubscriptions").resolves([
+        {
+          subscriptionName: "mockSubName",
+          subscriptionId: "cli-sub-1",
+          tenantId: "mockTenantId",
+        },
+      ]);
+      mocker
+        .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
+        .resolves(undefined);
+      const res = await provisionUtils.checkProvisionSubscription(
+        context,
+        envInfo,
+        tools.tokenProvider.azureAccountProvider,
+        undefined,
+        "test",
+        false
+      );
+
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error instanceof InvalidAzureSubscriptionError).equal(true);
+      }
+    });
     it("provision with CLI parameters error", async () => {
       const context = createContextV3();
       const azureAccountProvider = new MockAzureAccountProvider();
@@ -110,7 +177,7 @@ describe("provisionUtils", () => {
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equals(SolutionError.SubscriptionNotFound);
+        expect(res.error instanceof InvalidAzureSubscriptionError).equal(true);
       }
     });
 
@@ -149,7 +216,7 @@ describe("provisionUtils", () => {
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equals(SolutionError.SubscriptionNotFound);
+        expect(res.error instanceof InvalidAzureSubscriptionError).equal(true);
       }
     });
 
@@ -245,7 +312,41 @@ describe("provisionUtils", () => {
     afterEach(() => {
       mocker.restore();
     });
+    it("fail with InvalidAzureCredentialError", async () => {
+      const context = createContextV3();
+      const azureAccountProvider = new MockAzureAccountProvider();
+      const envInfo = {
+        envName: "test",
+        config: {},
+        state: { solution: {} },
+      };
+      const inputs: v2.InputsWithProjectPath = {
+        platform: Platform.CLI,
+        projectPath: "path",
+        targetSubscriptionId: "cli-sub",
+        targetResourceGroupName: "cli-rg",
+      };
+      mocker.stub(context.logProvider, "log").resolves(true);
+      mocker.stub(azureAccountProvider, "getIdentityCredentialAsync").resolves(undefined);
+      mocker.stub(provisionUtils, "checkProvisionSubscription").resolves(
+        ok({
+          hasSwitchedSubscription: false,
+        })
+      );
 
+      const tokenProvider = { azureAccountProvider };
+
+      const res = await provisionUtils.fillInAzureConfigs(
+        context,
+        inputs,
+        envInfo,
+        tokenProvider as any
+      );
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error instanceof InvalidAzureCredentialError).equal(true);
+      }
+    });
     it("provision with CLI parameters succeeds", async () => {
       const context = createContextV3();
       const azureAccountProvider = new MockAzureAccountProvider();
@@ -379,7 +480,7 @@ describe("provisionUtils", () => {
       );
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equal(SolutionError.ResourceGroupNotFound);
+        expect(res.error instanceof ResourceGroupNotExistError).equal(true);
       }
     });
 
@@ -472,7 +573,7 @@ describe("provisionUtils", () => {
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.name).equal(SolutionError.ResourceGroupNotFound);
+        expect(res.error instanceof ResourceGroupNotExistError).equal(true);
       }
     });
 
@@ -1022,8 +1123,24 @@ describe("provisionUtils", () => {
       );
       assert(res.isOk());
     });
-
-    it("success: ask resource group", async () => {
+    it("failed: resource group not exist", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "setSubscription");
+      mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
+      const res = await provisionUtils.ensureResourceGroup(
+        azureAccountProvider,
+        "mockSubId",
+        "mockRG"
+      );
+      assert(res.isErr());
+      if (res.isErr()) {
+        assert(res.error instanceof ResourceGroupNotExistError);
+      }
+    });
+    it("success: ask resource group 1", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
@@ -1041,7 +1158,7 @@ describe("provisionUtils", () => {
       assert(res.isOk());
     });
 
-    it("success: ask resource group", async () => {
+    it("success: ask resource group 2", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
@@ -1315,6 +1432,61 @@ describe("provisionUtils", () => {
       if (res.isErr()) {
         chai.assert.isTrue(res.error.message.includes("AAD_APP_CLIENT_ID"));
         chai.assert.isFalse(res.error.message.includes("BOT_ID"));
+      }
+    });
+  });
+  describe("getM365TenantId", () => {
+    let mockedEnvRestore: RestoreFn | undefined;
+    const mocker = sinon.createSandbox();
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+      mocker.restore();
+    });
+    it("M365TokenJSONNotFoundError", async () => {
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok(""));
+      mocker
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(err(new UserError({})));
+      const res = await provisionUtils.getM365TenantId(tools.tokenProvider.m365TokenProvider);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof M365TokenJSONNotFoundError);
+      }
+    });
+
+    it("M365TenantIdNotFoundInTokenError", async () => {
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok(""));
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(ok({}));
+      const res = await provisionUtils.getM365TenantId(tools.tokenProvider.m365TokenProvider);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof M365TenantIdNotFoundInTokenError);
+      }
+    });
+  });
+  describe("arm", () => {
+    let mockedEnvRestore: RestoreFn | undefined;
+    const mocker = sinon.createSandbox();
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+      mocker.restore();
+    });
+    it("getResourceManagementClientForArmDeployment", async () => {
+      mocker
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(undefined);
+      try {
+        await getResourceManagementClientForArmDeployment(
+          tools.tokenProvider.azureAccountProvider,
+          "mksub"
+        );
+        chai.assert.fail("Should not reach here.");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof InvalidAzureCredentialError);
       }
     });
   });

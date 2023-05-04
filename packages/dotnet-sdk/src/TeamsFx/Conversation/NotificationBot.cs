@@ -5,6 +5,7 @@ namespace Microsoft.TeamsFx.Conversation
 {
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Teams;
+    using Microsoft.Bot.Schema;
     using Microsoft.Bot.Schema.Teams;
     using Microsoft.Rest;
     using System.Net;
@@ -16,7 +17,7 @@ namespace Microsoft.TeamsFx.Conversation
     {
         private readonly BotAdapter _adapter;
         private readonly string _botAppId;
-        private readonly INotificationTargetStorage _storage;
+        private readonly IConversationReferenceStore _store;
 
         /// <summary>
         /// Create new instance of the <see cref="NotificationBot"/>.
@@ -36,39 +37,68 @@ namespace Microsoft.TeamsFx.Conversation
 
             _botAppId = options.BotAppId;
 
-            if (options.Storage != null)
+            if (options.Store != null)
             {
-                _storage = options.Storage;
+                _store = options.Store;
+            }
+#pragma warning disable CS0618, CS0612 // Suppress warning for obsolete type or member
+            else if (options.Storage != null)
+            {
+                _store = new DefaultConversationReferenceStore(options.Storage);
             }
             else
             {
+                INotificationTargetStorage storage;
                 var onAzure = Environment.GetEnvironmentVariable("RUNNING_ON_AZURE");
                 if ("1".Equals(onAzure))
                 {
-                    _storage = new LocalFileStorage(Path.GetFullPath(Environment.GetEnvironmentVariable("TEMP") ?? Environment.CurrentDirectory));
+                    storage = new LocalFileStorage(Path.GetFullPath(Environment.GetEnvironmentVariable("TEMP") ?? Environment.CurrentDirectory));
                 }
                 else
                 {
-                    _storage = new LocalFileStorage(Path.GetFullPath(Environment.GetEnvironmentVariable("TEAMSFX_NOTIFICATION_LOCALSTORE_DIR") ?? Environment.CurrentDirectory));
+                    storage = new LocalFileStorage(Path.GetFullPath(Environment.GetEnvironmentVariable("TEAMSFX_NOTIFICATION_LOCALSTORE_DIR") ?? Environment.CurrentDirectory));
                 }
+                _store = new DefaultConversationReferenceStore(storage);
             }
-
-            _adapter.Use(new NotificationMiddleware(_storage));
+#pragma warning restore CS0618, CS0612 // Restore warning
+            _adapter.Use(new NotificationMiddleware(_store));
         }
 
         /// <summary>
-        /// Get all targets where the bot is installed.
+        /// Create a <see cref="TeamsBotInstallation"/> instance with conversation reference.
         /// </summary>
+        /// <param name="reference">The <see cref="ConversationReference"/> of the bot installation.</param>
+        /// <returns>The <see cref="TeamsBotInstallation"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">Throws if provided parameter is null.</exception>
+        public TeamsBotInstallation BuildTeamsBotInstallation(ConversationReference reference)
+        {
+            if (reference == null)
+            {
+                throw new ArgumentNullException(nameof(reference));
+            }
+
+            return new TeamsBotInstallation(_botAppId, _adapter, reference);
+        }
+
+        /// <summary>
+        /// Get a pagined list of targets where the bot is installed.
+        /// </summary>
+        /// <param name="pageSize">Suggested number of entries on a page.</param>
+        /// <param name="continuationToken">The continuation token.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>An array of <see cref="TeamsBotInstallation"/>.</returns>
+        /// <returns>A pagined list of <see cref="TeamsBotInstallation"/>.</returns>
         /// <remarks>
         /// The result is retrieving from the persisted storage.
         /// </remarks>
-        public async Task<TeamsBotInstallation[]> GetInstallationsAsync(CancellationToken cancellationToken = default)
+        public async Task<PagedData<TeamsBotInstallation>> GetPagedInstallationsAsync(
+            int? pageSize = default,
+            string continuationToken = default,
+            CancellationToken cancellationToken = default)
         {
-            var references = await _storage.List(cancellationToken).ConfigureAwait(false);
+            var pagedData = await _store.List(pageSize, continuationToken, cancellationToken).ConfigureAwait(false);
             var installations = new List<TeamsBotInstallation>();
-            foreach (var reference in references)
+
+            foreach (var reference in pagedData.Data)
             {
                 // validate connection
                 var valid = true;
@@ -108,9 +138,35 @@ namespace Microsoft.TeamsFx.Conversation
                 }
                 else
                 {
-                    await _storage.Delete(reference.GetKey(), cancellationToken).ConfigureAwait(false);
+                    await _store.Remove(reference.GetKey(), reference, cancellationToken).ConfigureAwait(false);
                 }
             }
+
+            return new PagedData<TeamsBotInstallation> {
+                Data = installations.ToArray(),
+                ContinuationToken = pagedData.ContinuationToken,
+            };
+        }
+
+        /// <summary>
+        /// Get all targets where the bot is installed.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>An array of <see cref="TeamsBotInstallation"/>.</returns>
+        /// <remarks>
+        /// The result is retrieving from the persisted storage.
+        /// </remarks>
+        [Obsolete($"Use {nameof(GetPagedInstallationsAsync)} instead.")]
+        public async Task<TeamsBotInstallation[]> GetInstallationsAsync(CancellationToken cancellationToken = default)
+        {
+            string continuationToken = null;
+            var installations = new List<TeamsBotInstallation>();
+            do
+            {
+                var pagedData = await GetPagedInstallationsAsync(null, continuationToken, cancellationToken).ConfigureAwait(false);
+                installations.AddRange(pagedData.Data);
+                continuationToken = pagedData.ContinuationToken;
+            } while (!string.IsNullOrEmpty(continuationToken));
 
             return installations.ToArray();
         }
@@ -139,21 +195,33 @@ namespace Microsoft.TeamsFx.Conversation
                 throw new ArgumentNullException(nameof(predicate));
             }
 
-            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
-            foreach (var target in installations)
+            string installationContinuationToken = null;
+            do
             {
-                if (MatchSearchScope(target, scope))
+                var pagedInstallations = await GetPagedInstallationsAsync(null, installationContinuationToken, cancellationToken).ConfigureAwait(false);
+                installationContinuationToken = pagedInstallations.ContinuationToken;
+                foreach (var target in pagedInstallations.Data)
                 {
-                    var members = await target.GetMembersAsync(cancellationToken).ConfigureAwait(false);
-                    foreach (var member in members)
+                    if (MatchSearchScope(target, scope))
                     {
-                        if (await predicate(member).ConfigureAwait(false))
+                        string memberContinuationToken = null;
+                        do
                         {
-                            return member;
-                        }
+                            var pagedMembers = await target.GetPagedMembersAsync(null, memberContinuationToken, cancellationToken).ConfigureAwait(false);
+                            memberContinuationToken = pagedMembers.ContinuationToken;
+                            foreach (var member in pagedMembers.Data)
+                            {
+                                if (await predicate(member).ConfigureAwait(false))
+                                {
+                                    return member;
+                                }
+                            }
+                        } while (!string.IsNullOrEmpty(memberContinuationToken));
+
                     }
                 }
-            }
+            } while (!string.IsNullOrEmpty(installationContinuationToken));
+
 
             return null;
         }
@@ -179,21 +247,31 @@ namespace Microsoft.TeamsFx.Conversation
             }
 
             var result = new List<Member>();
-            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
-            foreach (var target in installations)
+            string installationContinuationToken = null;
+            do
             {
-                if (MatchSearchScope(target, scope))
+                var pagedInstallations = await GetPagedInstallationsAsync(null, installationContinuationToken, cancellationToken).ConfigureAwait(false);
+                installationContinuationToken = pagedInstallations.ContinuationToken;
+                foreach (var target in pagedInstallations.Data)
                 {
-                    var members = await target.GetMembersAsync(cancellationToken).ConfigureAwait(false);
-                    foreach (var member in members)
+                    if (MatchSearchScope(target, scope))
                     {
-                        if (await predicate(member).ConfigureAwait(false))
+                        string memberContinuationToken = null;
+                        do
                         {
-                            result.Add(member);
-                        }
+                            var pagedMembers = await target.GetPagedMembersAsync(null, memberContinuationToken, cancellationToken).ConfigureAwait(false);
+                            memberContinuationToken = pagedMembers.ContinuationToken;
+                            foreach (var member in pagedMembers.Data)
+                            {
+                                if (await predicate(member).ConfigureAwait(false))
+                                {
+                                    result.Add(member);
+                                }
+                            }
+                        } while (!string.IsNullOrEmpty(memberContinuationToken));
                     }
                 }
-            }
+            } while (!string.IsNullOrEmpty(installationContinuationToken));
 
             return result.ToArray();
         }
@@ -219,22 +297,27 @@ namespace Microsoft.TeamsFx.Conversation
                 throw new ArgumentNullException(nameof(predicate));
             }
 
-            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
-            foreach (var target in installations)
+            string continuationToken = null;
+            do
             {
-                if (target.Type == NotificationTargetType.Channel)
+                var pagedInstallations = await GetPagedInstallationsAsync(null, continuationToken, cancellationToken).ConfigureAwait(false);
+                continuationToken = pagedInstallations.ContinuationToken;
+                foreach (var target in pagedInstallations.Data)
                 {
-                    var teamDetails = await target.GetTeamDetailsAsync(cancellationToken).ConfigureAwait(false);
-                    var channels = await target.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
-                    foreach (var channel in channels)
+                    if (target.Type == NotificationTargetType.Channel)
                     {
-                        if (await predicate(channel, teamDetails).ConfigureAwait(false))
+                        var teamDetails = await target.GetTeamDetailsAsync(cancellationToken).ConfigureAwait(false);
+                        var channels = await target.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+                        foreach (var channel in channels)
                         {
-                            return channel;
+                            if (await predicate(channel, teamDetails).ConfigureAwait(false))
+                            {
+                                return channel;
+                            }
                         }
                     }
                 }
-            }
+            } while (!string.IsNullOrEmpty(continuationToken));
 
             return null;
         }
@@ -257,22 +340,27 @@ namespace Microsoft.TeamsFx.Conversation
             }
 
             var result = new List<Channel>();
-            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
-            foreach (var target in installations)
+            string continuationToken = null;
+            do
             {
-                if (target.Type == NotificationTargetType.Channel)
+                var pagedInstallations = await GetPagedInstallationsAsync(null, continuationToken, cancellationToken).ConfigureAwait(false);
+                continuationToken = pagedInstallations.ContinuationToken;
+                foreach (var target in pagedInstallations.Data)
                 {
-                    var teamDetails = await target.GetTeamDetailsAsync(cancellationToken).ConfigureAwait(false);
-                    var channels = await target.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
-                    foreach (var channel in channels)
+                    if (target.Type == NotificationTargetType.Channel)
                     {
-                        if (await predicate(channel, teamDetails).ConfigureAwait(false))
+                        var teamDetails = await target.GetTeamDetailsAsync(cancellationToken).ConfigureAwait(false);
+                        var channels = await target.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+                        foreach (var channel in channels)
                         {
-                            result.Add(channel);
+                            if (await predicate(channel, teamDetails).ConfigureAwait(false))
+                            {
+                                result.Add(channel);
+                            }
                         }
                     }
                 }
-            }
+            } while (!string.IsNullOrEmpty(continuationToken));
 
             return result.ToArray();
         }

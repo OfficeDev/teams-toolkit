@@ -21,7 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
-import { PathNotExistError } from "@microsoft/teamsfx-core/build/core/error";
+import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import { EnvStateFiles } from "@microsoft/teamsfx-core/build/core/environment";
 import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -78,6 +78,7 @@ describe("Resource Command Tests", function () {
       positionals.push(name);
       return yargs;
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
@@ -127,7 +128,7 @@ describe("Resource Command Tests", function () {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(envs);
         } else {
-          return err(new PathNotExistError(projectPath));
+          return err(new FileNotFoundError("test", projectPath));
         }
       });
     sandbox
@@ -136,7 +137,7 @@ describe("Resource Command Tests", function () {
         if (path.normalize(projectPath).endsWith("real")) {
           return ok(allEnvs);
         } else {
-          return err(new PathNotExistError(projectPath));
+          return err(new FileNotFoundError("test", projectPath));
         }
       });
     sandbox

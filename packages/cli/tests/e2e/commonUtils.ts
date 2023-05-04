@@ -235,7 +235,7 @@ export async function setFrontendDomainToConfig(projectPath: string, envName: st
 }
 
 export async function setAadManifestIdentifierUrisV3(projectPath: string, identifierUri: string) {
-  const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+  const aadManifestPath = path.join(projectPath, "aad.manifest.json");
   const aadTemplate = await fs.readJson(aadManifestPath);
   aadTemplate.identifierUris = [identifierUri];
   await fs.writeJson(aadManifestPath, aadTemplate, { spaces: 4 });
@@ -323,6 +323,9 @@ export async function cleanUpResourceGroup(appName: string, envName?: string): P
 }
 
 export async function deleteResourceGroupByName(name: string): Promise<boolean> {
+  if (!name) {
+    return true;
+  }
   if (await ResourceGroupManager.hasResourceGroup(name)) {
     const result = await ResourceGroupManager.deleteResourceGroup(name);
     if (result) {
@@ -443,8 +446,6 @@ export async function readContextMultiEnv(projectPath: string, envName: string):
       }
     }
   }
-
-  return context;
 }
 
 export async function getActivePluginsFromProjectSetting(projectPath: string): Promise<any> {
@@ -563,7 +564,9 @@ export async function customizeBicepFilesToCustomizedRg(
 }
 
 export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
-  const context = await readContextMultiEnv(projectPath, env);
+  const context = isV3Enabled()
+    ? await readContextMultiEnvV3(projectPath, env)
+    : await readContextMultiEnv(projectPath, env);
   // Validate Aad App
   const aad = AadValidator.init(context, false, m365Login);
   await AadValidator.validate(aad);
@@ -574,7 +577,11 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
 
   // Validate Bot Provision
   const bot = new BotValidator(context, projectPath, env);
-  await bot.validateProvision();
+  if (isV3Enabled()) {
+    await bot.validateProvisionV3();
+  } else {
+    await bot.validateProvision();
+  }
 }
 
 export async function getRGAfterProvision(
@@ -657,4 +664,26 @@ export async function validateServicePlan(
 
 export function getKeyVaultSecretReference(vaultName: string, secretName: string): string {
   return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
+}
+
+export function editDotEnvFile(filePath: string, key: string, value: string): void {
+  try {
+    const envFileContent: string = fs.readFileSync(filePath, "utf-8");
+    const envVars: { [key: string]: string } = envFileContent
+      .split("\n")
+      .reduce((acc: { [key: string]: string }, line: string) => {
+        const [key, value] = line.split("=");
+        if (key && value) {
+          acc[key.trim()] = value.trim();
+        }
+        return acc;
+      }, {});
+    envVars[key] = value;
+    const newEnvFileContent: string = Object.entries(envVars)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
+    fs.writeFileSync(filePath, newEnvFileContent);
+  } catch (error) {
+    console.log('Failed to edit ".env" file.');
+  }
 }

@@ -33,6 +33,7 @@ import {
 import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
 import Container from "typedi";
 import { AppSettingConstants } from "../../../src/component/code/appSettingUtils";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -48,9 +49,10 @@ describe("Tab Feature", () => {
   };
   context.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
-
+  let mockedEnvRestore: RestoreFn;
   let writeFileStub: SinonStub;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
@@ -73,6 +75,7 @@ describe("Tab Feature", () => {
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("add react tab", async () => {

@@ -53,7 +53,6 @@ async function needToShowUpdateDialog(ctx: CoreHookContext, versionInfo: Version
   return false;
 }
 
-// TODO: add url for download proper toolkit version
 async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
@@ -71,7 +70,7 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
     TOOLS.logProvider.warning(getLocalizedString(messageKey));
     return IncompatibleProjectError(messageKey);
   } else {
-    const messageKey = "core.projectVersionChecker.incompatibleProject";
+    const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
     TOOLS.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
       if (res.isOk() && res.value === learnMoreText) {

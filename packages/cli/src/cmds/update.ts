@@ -11,7 +11,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, askManifestFilePath, askTeamsManifestFilePath } from "../utils";
+import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import {
   EnvOptions,
@@ -21,6 +21,9 @@ import {
   TeamsAppManifestOptions,
   TeamsAppManifestFilePathName,
 } from "../constants";
+import CLIUIInstance from "../userInteraction";
+import { EnvNotSpecified } from "../error";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;
@@ -46,20 +49,12 @@ export class UpdateAadApp extends YargsCommand {
     const core = resultFolder.value;
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
-
-    if (args[AadManifestFilePathName]) {
-      inputs.AAD_MANIFEST_FILE = args[AadManifestFilePathName];
-    } else {
-      const manifestPath = await askManifestFilePath();
-      if (manifestPath.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, manifestPath.error);
-        return err(manifestPath.error);
-      }
-      inputs.AAD_MANIFEST_FILE = path.isAbsolute(manifestPath.value)
-        ? manifestPath.value
-        : path.join(rootFolder, manifestPath.value);
+    // Throw error if --env not specified
+    if (!args.env && !CLIUIInstance.interactive) {
+      const error = new EnvNotSpecified();
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      return err(error);
     }
-
     // Update the aad manifest
     const result = await core.deployAadManifest(inputs);
     if (result.isErr()) {
@@ -106,24 +101,13 @@ export class UpdateTeamsApp extends YargsCommand {
     const core = resultFolder.value;
     const inputs = getSystemInputs(rootFolder, args.env);
 
-    let manifestTemplatePath;
-    if (args[TeamsAppManifestFilePathName]) {
-      manifestTemplatePath = args[TeamsAppManifestFilePathName];
-    } else {
-      const manifestTemplatePathRes = await askTeamsManifestFilePath();
-      if (manifestTemplatePathRes.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(
-          TelemetryEvent.UpdateTeamsApp,
-          manifestTemplatePathRes.error
-        );
-        return err(manifestTemplatePathRes.error);
-      }
-      manifestTemplatePath = manifestTemplatePathRes.value;
+    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[TeamsAppManifestFilePathName];
+    // Throw error if --env not specified
+    if (!args.env && !CLIUIInstance.interactive) {
+      const error = new EnvNotSpecified();
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      return err(error);
     }
-    if (!path.isAbsolute(manifestTemplatePath)) {
-      manifestTemplatePath = path.join(inputs.projectPath!, manifestTemplatePath);
-    }
-    inputs.manifestTemplatePath = manifestTemplatePath;
 
     const result = await core.deployTeamsManifest(inputs);
     if (result.isErr()) {

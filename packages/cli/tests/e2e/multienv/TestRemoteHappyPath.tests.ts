@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Aocheng Wang <aochengwang@microsoft.com>
- * @owner Yuan Tian <tianyuan@microsoft.com>
+ * @author Yuan Tian <tianyuan@microsoft.com>
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
@@ -12,14 +11,7 @@ import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
 import M365Login from "../../../src/commonlib/m365Login";
-import {
-  AadValidator,
-  AppStudioValidator,
-  BotValidator,
-  FrontendValidator,
-  FunctionValidator,
-  SqlValidator,
-} from "../../commonlib";
+import { AppStudioValidator, BotValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import {
   cleanUp,
@@ -28,29 +20,27 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
-  setBotSkuNameToB1Bicep,
-  setSimpleAuthSkuNameToB1Bicep,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { EnvConstants } from "../../commonlib/constants";
 
 describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
   let teamsAppId: string | undefined;
 
   it(
-    `Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`,
+    `Can create/provision/deploy/build/validate/launch remote a azure bot project`,
     { testPlanCaseId: 10308408 },
     async function () {
-      if (isV3Enabled()) {
+      if (!isV3Enabled()) {
         return this.skip();
       }
       try {
@@ -66,46 +56,8 @@ describe("Multi Env Happy Path for Azure", function () {
         console.log(
           `[Successfully] scaffold to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
         );
-
-        result = await execAsync(`teamsfx add tab`, {
-          cwd: projectPath,
-          env: processEnv,
-          timeout: 0,
-        });
-        console.log(
-          `[Successfully] Add "tab" to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
-        );
-
-        result = await execAsync(
-          `teamsfx add azure-function --interactive false --function-name getUserProfile`,
-          {
-            cwd: projectPath,
-            env: processEnv,
-            timeout: 0,
-          }
-        );
-        console.log(
-          `[Successfully] Add "function" to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
-        );
-
-        result = await execAsync(`teamsfx add azure-sql --interactive false`, {
-          cwd: projectPath,
-          env: processEnv,
-          timeout: 0,
-        });
-        console.log(
-          `[Successfully] Add "sql" to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
-        );
-
-        await CliHelper.setSubscription(subscription, projectPath, processEnv);
-
         // add env
         await CliHelper.addEnv(env, projectPath, processEnv);
-
-        // update SKU from free to B1 to prevent free SKU limit error
-        await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-        await setBotSkuNameToB1Bicep(projectPath, env);
-        console.log(`[Successfully] update simple auth sku to B1`);
 
         // list env
         result = await execAsync(`teamsfx env list`, {
@@ -121,47 +73,23 @@ describe("Multi Env Happy Path for Azure", function () {
         );
 
         // provision
-        result = await execAsyncWithRetry(
-          `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%' --env ${env}`,
-          {
-            cwd: projectPath,
-            env: processEnv,
-            timeout: 0,
-          }
-        );
+        result = await execAsyncWithRetry(`teamsfx provision --env ${env}`, {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        });
         console.log(
           `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
         );
 
-        let functionValidator: FunctionValidator;
         {
           // Validate provision
           // Get context
-          const contextResult = await loadContext(projectPath, env);
-          if (contextResult.isErr()) {
-            throw contextResult.error;
-          }
-          const context = contextResult.value;
-
-          // Validate Aad App
-          const aad = AadValidator.init(context, false, M365Login);
-          await AadValidator.validate(aad);
-
-          // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context);
-          await FrontendValidator.validateProvision(frontend);
-
-          // Validate Function App
-          functionValidator = new FunctionValidator(context, projectPath, env);
-          await functionValidator.validateProvision();
-
-          // Validate SQL
-          await SqlValidator.init(context);
-          await SqlValidator.validateSql();
+          const context = await readContextMultiEnvV3(projectPath, env);
 
           // Validate Bot Provision
           const bot = new BotValidator(context, projectPath, env);
-          await bot.validateProvision();
+          await bot.validateProvisionV3(false);
         }
 
         // deploy
@@ -174,22 +102,10 @@ describe("Multi Env Happy Path for Azure", function () {
         {
           // Validate deployment
           // Get context
-          const contextResult = await loadContext(projectPath, env);
-          if (contextResult.isErr()) {
-            throw contextResult.error;
-          }
-          const context = contextResult.value;
-
-          // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context);
-          await FrontendValidator.validateDeploy(frontend);
-
-          // Validate Function App
-          await functionValidator.validateDeploy();
-
+          const context = await readContextMultiEnvV3(projectPath, env);
           // Validate Bot Deploy
           const bot = new BotValidator(context, projectPath, env);
-          await bot.validateProvision();
+          await bot.validateDeploy();
         }
 
         // validate manifest
@@ -205,7 +121,7 @@ describe("Multi Env Happy Path for Azure", function () {
         }
 
         // update manifest
-        const updateManifestCmd = `teamsfx deploy manifest --env ${env} --include-app-manifest yes`;
+        const updateManifestCmd = `teamsfx update teams-app --env ${env}`;
         result = await execAsyncWithRetry(updateManifestCmd, {
           cwd: projectPath,
           env: processEnv,
@@ -226,7 +142,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
         {
           // Validate package
-          const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
+          const file = `${projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${env}.zip`;
           chai.expect(await fs.pathExists(file)).to.be.true;
         }
 
@@ -239,14 +155,10 @@ describe("Multi Env Happy Path for Azure", function () {
 
         {
           // Validate publish result
-          const contextResult = await loadContext(projectPath, env);
-          if (contextResult.isErr()) {
-            throw contextResult.error;
-          }
-          const context = contextResult.value;
-          const appStudioObject = AppStudioValidator.init(context);
-          teamsAppId = appStudioObject.teamsAppId;
+          const context = await readContextMultiEnvV3(projectPath, env);
+          teamsAppId = context[EnvConstants.TEAMS_APP_ID];
           chai.assert.isNotNull(teamsAppId);
+          AppStudioValidator.provider = M365Login;
           await AppStudioValidator.validatePublish(teamsAppId!);
         }
       } catch (e) {

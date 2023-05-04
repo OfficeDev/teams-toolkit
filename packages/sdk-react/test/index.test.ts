@@ -23,4 +23,12 @@ describe("index", () => {
   it("Should export useGraph", () => {
     expect(sdkReact.useGraph).toBeDefined();
   });
+
+  it("Should export BaseDashboard", () => {
+    expect(sdkReact.BaseDashboard).toBeDefined();
+  });
+
+  it("Should export BaseWidget", () => {
+    expect(sdkReact.BaseWidget).toBeDefined();
+  });
 });

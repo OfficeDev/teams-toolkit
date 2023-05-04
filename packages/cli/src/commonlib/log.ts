@@ -1,20 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { Colors, ConfigFolderName, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
-import figures from "figures";
-import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
-
-import { CLILogLevel } from "../constants";
-import { getColorizedString } from "../utils";
+import * as os from "os";
+import * as path from "path";
+import { SuccessText, TextType, WarningText, colorize, replaceTemplateString } from "../colorize";
 import ScreenManager from "../console/screen";
+import { CLILogLevel } from "../constants";
+import { strings } from "../resource";
+import { getColorizedString } from "../utils";
 
 export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
 
   private static logLevel: CLILogLevel = CLILogLevel.error;
+
+  private logFileName: string;
+
+  constructor() {
+    this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
+  }
 
   public getLogLevel() {
     return CLILogProvider.logLevel;
@@ -34,6 +40,10 @@ export class CLILogProvider implements LogProvider {
     }
 
     return CLILogProvider.instance;
+  }
+
+  getLogFilePath(): string {
+    return path.join(os.tmpdir(), `.${ConfigFolderName}`, "cli-log", this.logFileName);
   }
 
   trace(message: string): Promise<boolean> {
@@ -80,13 +90,9 @@ export class CLILogProvider implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
     switch (logLevel) {
       case LogLevel.Trace:
-        if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          ScreenManager.writeLine(chalk.whiteBright(message), true);
-        }
-        break;
       case LogLevel.Debug:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          ScreenManager.writeLine(chalk.whiteBright(message));
+          this.outputDetails(message);
         }
         break;
       case LogLevel.Info:
@@ -94,39 +100,69 @@ export class CLILogProvider implements LogProvider {
           CLILogProvider.logLevel === CLILogLevel.debug ||
           CLILogProvider.logLevel === CLILogLevel.verbose
         ) {
-          ScreenManager.writeLine(message);
+          this.outputDetails(message);
         }
         break;
       case LogLevel.Warning:
         if (CLILogProvider.logLevel !== CLILogLevel.error) {
-          ScreenManager.writeLine(chalk.yellowBright(message), true);
+          this.outputWarning(message);
         }
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        ScreenManager.writeLine(chalk.redBright(`(${figures.cross}) ${message}`), true);
+        this.outputError(message);
         break;
     }
     return true;
+  }
+
+  outputSuccess(template: string, ...args: string[]): void {
+    ScreenManager.writeLine(
+      SuccessText + colorize(replaceTemplateString(template, ...args), TextType.Info)
+    );
+  }
+
+  outputInfo(template: string, ...args: string[]): void {
+    ScreenManager.writeLine(colorize(replaceTemplateString(template, ...args), TextType.Info));
+  }
+
+  outputDetails(template: string, ...args: string[]): void {
+    ScreenManager.writeLine(colorize(replaceTemplateString(template, ...args), TextType.Details));
+  }
+
+  outputWarning(template: string, ...args: string[]): void {
+    ScreenManager.writeLine(
+      WarningText + colorize(replaceTemplateString(template, ...args), TextType.Info),
+      true
+    );
+  }
+
+  outputError(template: string, ...args: string[]): void {
+    ScreenManager.writeLine(
+      colorize(strings["error.prefix"] + replaceTemplateString(template, ...args), TextType.Error),
+      true
+    );
   }
 
   necessaryLog(logLevel: LogLevel, message: string, white = false) {
     switch (logLevel) {
       case LogLevel.Trace:
       case LogLevel.Debug:
+        this.outputDetails(message);
+        break;
       case LogLevel.Info:
         if (white) {
-          ScreenManager.writeLine(chalk.whiteBright(message));
+          this.outputInfo(message);
         } else {
           ScreenManager.writeLine(chalk.greenBright(message));
         }
         break;
       case LogLevel.Warning:
-        ScreenManager.writeLine(chalk.yellowBright(message), true);
+        this.outputWarning(message);
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        ScreenManager.writeLine(chalk.redBright(`(${figures.cross}) ${message}`), true);
+        this.outputError(message);
         break;
     }
   }

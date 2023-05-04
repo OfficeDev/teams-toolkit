@@ -297,6 +297,11 @@ If you want to call a Graph API from the front-end tab, you can refer to the fol
 
 You can call [`addNewPermissionScope(scopes: string[])`](src/internal/addNewScopes.js) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`TeamsUserCredentialContextInstance`](src/internal/singletonContext.js).
 
+```js
+const scope = ["User.Read"]; // User.Read is one of the scopes in Graph
+await addNewPermissionScope(scope);
+```
+
 You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0) to get the `scope name of the permission` related to the Graph API you want to call.
 
 #### Step 2: Create a graph client by adding the scope related to the Graph API you want to call
@@ -316,6 +321,7 @@ You can refer to the following code snippet:
 try {
   const graphApiResult = await graphClient.api("<GRAPH_API_PATH>").get();
   // Parse the graphApiResult into a Model you defined, used by the front-end.
+  // For example, `graphClient.api("/me").get()` is a valid api call.
 } catch (e) {}
 ```
 

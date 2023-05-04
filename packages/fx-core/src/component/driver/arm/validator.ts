@@ -20,27 +20,7 @@ export async function validateArgs(args: deployArgs): Promise<string[]> {
   const res = await validateTemplates(args.templates);
   invalidParameters.push(...res);
 
-  const needBicepCli = hasBicepTemplate(args.templates);
-  if (!(await validateBicep(args.bicepCliVersion, needBicepCli))) {
-    invalidParameters.push("bicepCliVersion is invalid");
-  }
-
   return invalidParameters;
-}
-
-async function validateBicep(
-  bicepCliVersion: string | undefined,
-  needBicepCli: boolean
-): Promise<boolean> {
-  if (!needBicepCli) {
-    return true;
-  }
-
-  if (bicepCliVersion) {
-    const versions = await getAvailableBicepVersions();
-    return versions.includes(bicepCliVersion);
-  }
-  return true;
 }
 
 function validateTemplates(templates: templateArgs[]): string[] {

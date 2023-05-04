@@ -3,6 +3,7 @@ import { DriverDefinition, ExecutionResult, ILifecycle } from "../configManager/
 import { EOL } from "os";
 import { SummaryConstant } from "../configManager/constant";
 import _ from "lodash";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const indent = "  ";
 
@@ -16,7 +17,11 @@ function getDriverDescription(log: LogProvider, lifecycle: ILifecycle): Result<s
     return instances.map((instance, i) => {
       const actionName = getActionName(instance);
       const desc = instance.instance.description ? `: ${instance.instance.description}` : "";
-      return `(${i + 1}/${n}) Action ${actionName}${desc}`;
+      return `(${i + 1}/${n}) ${getLocalizedString(
+        "core.summary.actionDescription",
+        actionName,
+        desc
+      )}`;
     });
   });
 }
@@ -27,10 +32,12 @@ export function getLifecycleDescription(
 ): Result<string, FxError> {
   const n = lifecycle.driverDefs.length;
   return getDriverDescription(log, lifecycle).map((descriptions) => {
-    const s = `Running lifecycle stage: ${
-      lifecycle.name
-    }(${n} step(s) in total) The following actions will be executed${EOL}${descriptions.join(EOL)}`;
-    return s;
+    return getLocalizedString(
+      "core.summary.lifecycleDescription",
+      lifecycle.name,
+      n,
+      `${EOL}${descriptions.join(EOL)}`
+    );
   });
 }
 
@@ -109,24 +116,51 @@ function stringifyLifecycleState(lifecycleState: LifecycleState): string[] {
 
   if (lifecycleState.status === "notExecuted") {
     result.push(
-      `${SummaryConstant.NotExecuted} Lifecycle stage ${lifecycleState.name} not executed.`
+      getLocalizedString(
+        "core.summary.lifecycleNotExecuted",
+        SummaryConstant.NotExecuted,
+        lifecycleState.name
+      )
     );
   } else if (lifecycleState.status === "succeeded") {
     result.push(
-      `${SummaryConstant.Succeeded} Lifecycle stage ${lifecycleState.name} executed successfully`
+      getLocalizedString(
+        "core.summary.lifecycleSucceeded",
+        SummaryConstant.Succeeded,
+        lifecycleState.name
+      )
     );
   } else if (lifecycleState.status === "failed") {
-    result.push(`${SummaryConstant.Failed} Lifecycle stage ${lifecycleState.name} failed.`);
+    result.push(
+      getLocalizedString(
+        "core.summary.lifecycleFailed",
+        SummaryConstant.Failed,
+        lifecycleState.name
+      )
+    );
   }
 
   for (const actionState of lifecycleState.actionStates) {
     if (actionState.status === "notExecuted") {
-      result.push(`${indent}${SummaryConstant.NotExecuted} ${actionState.name} not executed.`);
+      result.push(
+        getLocalizedString(
+          "core.summary.actionNotExecuted",
+          `${indent}${SummaryConstant.NotExecuted} ${actionState.name}`
+        )
+      );
     } else if (actionState.status === "failed") {
-      result.push(`${indent}${SummaryConstant.Failed} ${actionState.name} failed.`);
+      result.push(
+        getLocalizedString(
+          "core.summary.actionFailed",
+          `${indent}${SummaryConstant.Failed} ${actionState.name}`
+        )
+      );
     } else if (actionState.status === "succeeded") {
       result.push(
-        `${indent}${SummaryConstant.Succeeded} ${actionState.name} executed successfully.`
+        getLocalizedString(
+          "core.summary.actionSucceeded",
+          `${indent}${SummaryConstant.Succeeded} ${actionState.name}`
+        )
       );
     }
     for (const summary of actionState.summaries) {
@@ -170,7 +204,9 @@ export class SummaryReporter {
 
     const flattened = _.flatten(summaries);
     return `Summary:${EOL}${
-      createdEnvFile ? "  Created environment file at " + createdEnvFile + EOL + EOL : ""
+      createdEnvFile
+        ? `  ${getLocalizedString("core.summary.createdEnvFile")} ` + createdEnvFile + EOL + EOL
+        : ""
     }${flattened.join(EOL)}`;
   }
 }

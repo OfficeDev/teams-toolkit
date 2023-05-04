@@ -6,6 +6,7 @@ import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-e
 import path from "path";
 import { MetadataV2 } from "../../../common/versionMetadata";
 import { CoreHookContext } from "../../types";
+import { TelemetryPropertyKey, TelemetryPropertyValue } from "../projectMigratorV3";
 import { getParameterFromCxt } from "./v3MigrationUtils";
 
 export const backupFolder = ".backup";
@@ -29,10 +30,14 @@ export class MigrationContext {
   telemetryProperties: Record<string, string> = {};
   backupPath = "";
   projectPath = "";
+  isBotValidDomain = false;
 
   static async create(ctx: CoreHookContext): Promise<MigrationContext> {
     const context = new MigrationContext(ctx);
     await fs.ensureDir(context.backupPath);
+    context.addTelemetryProperties({
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    });
     return context;
   }
 

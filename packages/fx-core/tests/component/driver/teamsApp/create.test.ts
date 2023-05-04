@@ -4,7 +4,7 @@
 import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
-import { ok, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { ok, TeamsAppManifest, err, UserError } from "@microsoft/teamsfx-api";
 import { v4 as uuid } from "uuid";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
@@ -48,7 +48,7 @@ describe("teamsApp/create", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+      chai.assert.equal("InvalidActionInputError", result.error.name);
     }
   });
 
@@ -108,6 +108,15 @@ describe("teamsApp/create", async () => {
     sinon.stub(AppStudioClient, "importApp").throws(new Error("409"));
     sinon.stub(fs, "pathExists").resolves(true);
 
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert.isTrue(result.isErr());
+  });
+
+  it("Token error", async () => {
+    const args: CreateTeamsAppArgs = {
+      name: appDef.appName!,
+    };
+    sinon.stub(MockedM365Provider.prototype, "getAccessToken").resolves(err(new UserError({})));
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert.isTrue(result.isErr());
   });

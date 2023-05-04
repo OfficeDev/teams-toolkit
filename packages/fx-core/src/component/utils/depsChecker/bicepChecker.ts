@@ -35,6 +35,9 @@ import { performance } from "perf_hooks";
 import { sendErrorTelemetryThenReturnError } from "../../utils";
 import { isBicepEnvCheckerEnabled } from "../../../common/tools";
 import { DriverContext } from "../../driver/interface/commonArgs";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { InstallSoftwareError } from "../../../error/common";
+import { DownloadBicepCliError } from "../../../error/arm";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
@@ -59,9 +62,10 @@ export async function ensureBicep(
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     if (!(await bicepChecker.isGlobalBicepInstalled())) {
       await displayLearnMore(
-        Messages.failToInstallBicepDialog()
-          .split("@NameVersion")
-          .join(bicepChecker.getBicepDisplayBicepName()),
+        getLocalizedString(
+          "error.common.InstallSoftwareError",
+          bicepChecker.getBicepDisplayBicepName()
+        ),
         bicepHelpLink,
         (ctx as SolutionContext).ui || (ctx as v2.Context).userInteraction,
         ctx.telemetryReporter
@@ -90,16 +94,6 @@ export async function ensureBicepForDriver(
       await bicepChecker.install();
     }
   } catch (err) {
-    ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
-    await displayLearnMore(
-      Messages.failToInstallBicepDialog()
-        .split("@NameVersion")
-        .join(bicepChecker.getBicepDisplayBicepName()),
-      bicepHelpLink,
-      ctx.ui,
-      ctx.telemetryReporter
-    );
-    outputErrorMessage(ctx as any, bicepChecker, platform ? { platform: platform } : undefined);
     throw err;
   }
   return bicepChecker.getBicepCommand();
@@ -110,17 +104,11 @@ function outputErrorMessage(
   bicepChecker: BicepChecker,
   inputs?: Inputs
 ) {
-  const message =
-    inputs?.platform === Platform.VSCode
-      ? Messages.failToInstallBicepOutputVSC()
-      : Messages.failToInstallBicepOutputCLI();
-  ctx.logProvider?.warning(
-    message
-      .split("@NameVersion")
-      .join(bicepChecker.getBicepDisplayBicepName())
-      .split("@HelpLink")
-      .join(bicepHelpLink)
+  const message = getLocalizedString(
+    "error.common.InstallSoftwareError",
+    bicepChecker.getBicepDisplayBicepName()
   );
+  ctx.logProvider?.warning(message);
 }
 
 class BicepChecker {
@@ -135,6 +123,8 @@ class BicepChecker {
     this._version = version;
     this._axios = axios.create({
       headers: { "content-type": "application/json" },
+      timeout: timeout,
+      timeoutErrorMessage: "Failed to download bicep by http request timeout",
     });
   }
 
@@ -166,7 +156,7 @@ class BicepChecker {
 
     await this.installBicep();
 
-    if (!this._version && !(await this.validate())) {
+    if (!(await this.validate())) {
       await this.handleInstallFailed();
     }
     await this.handleInstallCompleted();
@@ -213,11 +203,7 @@ class BicepChecker {
         err,
         this._telemetry
       );
-      await this._logger?.error(
-        `${Messages.failToInstallBicep()
-          .split("@NameVersion")
-          .join(this.getBicepDisplayBicepName())}, error = '${err}'`
-      );
+      throw new DownloadBicepCliError(bicepReleaseApiUrl, err as Error);
     }
   }
 
@@ -261,8 +247,6 @@ class BicepChecker {
     const axiosResponse = await this._axios.get(
       `https://github.com/Azure/bicep/releases/download/${selectedVersion}/${this.getBicepBitSuffixName()}`,
       {
-        timeout: timeout,
-        timeoutErrorMessage: "Failed to download bicep by http request timeout",
         responseType: "stream",
       }
     );
@@ -278,8 +262,19 @@ class BicepChecker {
 
   private async writeBicepBits(writer: Writable, reader: Readable): Promise<void> {
     return new Promise((resolve: (value: void) => void, reject: (e: Error) => void): void => {
+      reader.on("error", (err) => {
+        // Handles reader error.
+        writer.end();
+        reject(err);
+      });
+
+      // https://nodejs.org/api/stream.html#readablepipedestination-options
+      // If the Readable stream emits an error during processing, the Writable destination is **NOT** closed.
       reader.pipe(writer);
       finished(writer, (err?: NodeJS.ErrnoException | null) => {
+        // Handles writer end and writer error.
+        // By handling writer end, it implicitly handles reader end because of reader.pipe(writer).
+        // But reader error is not handled here.
         if (err) reject(err);
         else resolve();
       });
@@ -322,11 +317,7 @@ class BicepChecker {
   private async handleInstallFailed(): Promise<void> {
     await this.cleanup();
     this._telemetry?.sendTelemetryErrorEvent(DepsCheckerEvent.bicepInstallError);
-    throw new SystemError(
-      source,
-      DepsCheckerEvent.bicepInstallError,
-      Messages.failToInstallBicep().split("@NameVersion").join(this.getBicepDisplayBicepName())
-    );
+    throw new InstallSoftwareError(source, this.getBicepDisplayBicepName());
   }
 
   private isVersionSupported(version: string): boolean {

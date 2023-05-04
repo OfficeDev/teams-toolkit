@@ -1,3 +1,5 @@
+# This file includes environment variables that will be committed to git by default.
+
 # Built-in environment variables
 TEAMSFX_ENV=dev
 
@@ -16,6 +18,3 @@ AAD_APP_OAUTH_AUTHORITY_HOST=
 AAD_APP_OAUTH_AUTHORITY=
 TAB_AZURE_STORAGE_RESOURCE_ID=
 TAB_ENDPOINT=
-
-# Secrets. You can add your own secret value, prefixed with SECRET_
-SECRET_AAD_APP_CLIENT_SECRET=

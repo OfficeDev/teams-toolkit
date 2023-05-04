@@ -38,7 +38,7 @@ import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { performance } from "perf_hooks";
-import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
+import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -54,6 +54,7 @@ class NpmInstallTaskInfo {
 
 export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
+
 const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
 
 /**
@@ -505,7 +506,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
     }
   }
   allRunningTeamsfxTasks.clear();
-  LocalTunnelTaskTerminal.stopAll();
+  BaseTunnelTaskTerminal.stopAll();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {

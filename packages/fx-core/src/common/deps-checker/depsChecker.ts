@@ -19,6 +19,7 @@ export type DependencyStatus = {
     installVersion?: string;
     binFolders?: string[];
   };
+  telemetryProperties?: { [key: string]: string };
   error?: DepsCheckerError;
 };
 
@@ -48,7 +49,9 @@ export interface BaseInstallOptions {
 }
 
 export interface FuncInstallOptions {
-  nodeVersion?: string;
+  symlinkDir?: string;
+  projectPath: string;
+  version: string;
 }
 
 export type InstallOptions = BaseInstallOptions | FuncInstallOptions;

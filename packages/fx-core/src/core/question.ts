@@ -1,52 +1,66 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import * as os from "os";
+import * as path from "path";
+
+/**
+ * @author Huajie Zhang <zhjay23@qq.com>
+ */
 import {
+  AppPackageFolderName,
+  BuildFolderName,
+  DynamicPlatforms,
   FolderQuestion,
-  OptionItem,
-  Platform,
-  SingleSelectQuestion,
-  TextInputQuestion,
   FuncQuestion,
+  FxError,
   Inputs,
   LocalEnvironmentName,
-  StaticOptions,
   MultiSelectQuestion,
+  ok,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  Result,
+  SingleFileQuestion,
+  SingleSelectQuestion,
+  StaticOptions,
+  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as os from "os";
-import { environmentManager } from "./environment";
+
 import { ConstantString } from "../common/constants";
-import { sampleProvider } from "../common/samples";
-import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
   isBotNotificationEnabled,
   isOfficeAddinEnabled,
   isPreviewFeaturesEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
+import { Hub } from "../common/m365/constants";
+import { sampleProvider } from "../common/samples";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
+  BotNewUIOptionItem,
   BotOptionItem,
+  CommandAndResponseOptionItem,
+  DashboardOptionItem,
+  ExistingTabOptionItem,
+  M365SearchAppOptionItem,
+  M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
+  MessageExtensionNewUIItem,
+  NewProjectTypeBotOptionItem,
+  NewProjectTypeMessageExtensionOptionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  NewProjectTypeTabOptionItem,
   NotificationOptionItem,
+  TabNewUIOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  M365SsoLaunchPageOptionItem,
-  M365SearchAppOptionItem,
-  CommandAndResponseOptionItem,
-  TabNonSsoItem,
-  ExistingTabOptionItem,
-  TabNewUIOptionItem,
   TabSPFxNewUIItem,
-  MessageExtensionNewUIItem,
-  BotNewUIOptionItem,
   WorkflowOptionItem,
-  DashboardOptionItem,
 } from "../component/constants";
-import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
-import { ResourceManagementClient } from "@azure/arm-resources";
-import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
@@ -55,6 +69,8 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
+import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
+import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -62,6 +78,7 @@ export enum CoreQuestionNames {
   Folder = "folder",
   ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
+  ProjectType = "project-type",
   Capabilities = "capabilities",
   Features = "features",
   Solution = "solution",
@@ -82,6 +99,15 @@ export enum CoreQuestionNames {
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
   AppPackagePath = "appPackagePath",
   ReplaceBotIds = "replaceBotIds",
+  TeamsAppManifestFilePath = "manifest-path",
+  LocalTeamsAppManifestFilePath = "local-manifest-path",
+  AadAppManifestFilePath = "manifest-file-path",
+  TeamsAppPackageFilePath = "app-package-file-path",
+  ConfirmManifest = "confirmManifest",
+  ConfirmLocalManifest = "confirmLocalManifest",
+  OutputZipPathParamName = "output-zip-path",
+  OutputManifestParamName = "output-manifest-path",
+  M365Host = "m365-host",
 }
 
 export const ProjectNamePattern =
@@ -347,24 +373,6 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const commandAndResponseOptionItem = CommandAndResponseOptionItem();
   const workflowOptionItem = WorkflowOptionItem();
   const dashboardOptionItem = DashboardOptionItem();
-  if (inputs?.taskOrientedTemplateNaming) {
-    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.NotificationOption.label.abTest"
-    )}`;
-    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
-      "core.CommandAndResponseOption.label.abTest"
-    )}`;
-    commandAndResponseOptionItem.detail = getLocalizedString(
-      "core.CommandAndResponseOption.detail.abTest"
-    );
-    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-    dashboardOptionItem.label = `$(browser) ${getLocalizedString(
-      "core.DashboardOption.label.abTest"
-    )}`;
-    dashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
-  }
 
   // AB test for in product doc
   if (inputs?.inProductDoc) {
@@ -405,6 +413,98 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
     type: "singleSelect",
     staticOptions: staticOptions,
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    NewProjectTypeBotOptionItem(),
+    NewProjectTypeTabOptionItem(),
+    NewProjectTypeMessageExtensionOptionItem(),
+    NewProjectTypeOutlookAddinOptionItem(),
+  ];
+
+  return {
+    name: CoreQuestionNames.ProjectType,
+    title: getLocalizedString("core.createProjectQuestion.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    BotNewUIOptionItem(),
+    NotificationOptionItem(),
+    CommandAndResponseOptionItem(),
+    WorkflowOptionItem(),
+  ];
+
+  // AB test for in product doc
+  if (inputs?.inProductDoc) {
+    staticOptions[3].data = "cardActionResponse";
+    staticOptions[3].buttons = [
+      {
+        iconPath: "file-code",
+        tooltip: getLocalizedString("core.option.inProduct"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+  }
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.bot.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    TabNonSsoItem(),
+    M365SsoLaunchPageOptionItem(),
+    DashboardOptionItem(),
+    TabSPFxNewUIItem(),
+  ];
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.tab.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [M365SearchAppOptionItem(), MessageExtensionNewUIItem()];
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+}
+
+export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [...OfficeAddinItems(), ImportAddinProjectItem()];
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     forgetLastValue: true,
   };
 }
@@ -827,11 +927,11 @@ export const BotIdsQuestion = (
   const options: OptionItem[] = [];
   if (botId) {
     defaultIds.push(answerToRepaceBotId);
-    options.push(botOptionItem(false));
+    options.push(botOptionItem(false, botId));
   }
   if (messageExtensionBotId) {
     defaultIds.push(answerToReplaceMessageExtensionBotId);
-    options.push(botOptionItem(true));
+    options.push(botOptionItem(true, messageExtensionBotId));
   }
   return {
     type: "multiSelect",
@@ -844,10 +944,15 @@ export const BotIdsQuestion = (
   };
 };
 
-export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
+export const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
-    label: isMessageExtension ? "Message extension" : "Bot",
+    label: isMessageExtension
+      ? getLocalizedString("core.updateBotIdForMessageExtension.label")
+      : getLocalizedString("core.updateBotIdForBot.label"),
+    detail: isMessageExtension
+      ? getLocalizedString("core.updateBotIdForMessageExtension.description", botId)
+      : getLocalizedString("core.updateBotIdForBot.description", botId),
   };
 };
 
@@ -868,4 +973,220 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     skipSingleOption: true,
   };
+}
+
+export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
+  const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
+
+  const aadAppManifestNode: SingleFileQuestion = {
+    name: CoreQuestionNames.AadAppManifestFilePath,
+    title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      if (fs.pathExistsSync(manifestPath)) {
+        return manifestPath;
+      } else {
+        return undefined;
+      }
+    },
+  };
+
+  const res = new QTreeNode(aadAppManifestNode);
+  const confirmNode = confirmManifestNode(manifestPath, false);
+  res.addChild(confirmNode);
+  return res;
+}
+
+export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false): QTreeNode {
+  const teamsAppManifestNode: SingleFileQuestion = {
+    name: isLocal
+      ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+      : CoreQuestionNames.TeamsAppManifestFilePath,
+    title: getLocalizedString(
+      isLocal
+        ? "core.selectLocalTeamsAppManifestQuestion.title"
+        : "core.selectTeamsAppManifestQuestion.title"
+    ),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const manifestPath = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        isLocal ? "manifest.local.json" : "manifest.json"
+      );
+      if (fs.pathExistsSync(manifestPath)) {
+        return manifestPath;
+      } else {
+        return undefined;
+      }
+    },
+  };
+
+  const res = new QTreeNode(teamsAppManifestNode);
+  if (
+    inputs.platform !== Platform.CLI_HELP &&
+    inputs.platform !== Platform.CLI &&
+    inputs.platform !== Platform.VS
+  ) {
+    const manifestPath = path.join(
+      inputs.projectPath!,
+      AppPackageFolderName,
+      isLocal ? "manifest.local.json" : "manifest.json"
+    );
+    const confirmNode = confirmManifestNode(manifestPath, true, isLocal);
+    res.addChild(confirmNode);
+  }
+  return res;
+}
+
+export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
+  return {
+    name: CoreQuestionNames.TeamsAppPackageFilePath,
+    title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const appPackagePath: string = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        BuildFolderName,
+        "appPackage.dev.zip"
+      );
+      if (fs.pathExistsSync(appPackagePath)) {
+        return appPackagePath;
+      } else {
+        return undefined;
+      }
+    },
+  };
+}
+
+export async function selectEnvNode(
+  inputs: Inputs,
+  isRemote = true
+): Promise<QTreeNode | undefined> {
+  const envProfilesResult = isRemote
+    ? await environmentManager.listRemoteEnvConfigs(inputs.projectPath!, true)
+    : await environmentManager.listAllEnvConfigs(inputs.projectPath!);
+  if (envProfilesResult.isErr()) {
+    // If failed to load env, return undefined
+    return undefined;
+  }
+
+  const envList = envProfilesResult.value;
+  const selectEnv = QuestionSelectTargetEnvironment();
+  selectEnv.staticOptions = envList;
+
+  const envNode = new QTreeNode(selectEnv);
+  return envNode;
+}
+
+export function confirmManifestNode(
+  defaultManifestFilePath: string,
+  isTeamsApp = true,
+  isLocal = false
+): QTreeNode {
+  const confirmManifestQuestion: SingleSelectQuestion = {
+    name: isLocal ? CoreQuestionNames.ConfirmLocalManifest : CoreQuestionNames.ConfirmManifest,
+    title: isTeamsApp
+      ? getLocalizedString(
+          isLocal
+            ? "core.selectLocalTeamsAppManifestQuestion.title"
+            : "core.selectTeamsAppManifestQuestion.title"
+        )
+      : getLocalizedString("core.selectAadAppManifestQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [],
+    skipSingleOption: false,
+    placeholder: getLocalizedString("core.confirmManifestQuestion.placeholder"),
+  };
+
+  confirmManifestQuestion.dynamicOptions = (inputs: Inputs): StaticOptions => {
+    return [
+      {
+        id: "manifest",
+        label: `$(file) ${path.basename(
+          isTeamsApp
+            ? inputs[
+                isLocal
+                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                  : CoreQuestionNames.TeamsAppManifestFilePath
+              ]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        )}`,
+        description: path.dirname(
+          isTeamsApp
+            ? inputs[
+                isLocal
+                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
+                  : CoreQuestionNames.TeamsAppManifestFilePath
+              ]
+            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+        ),
+      },
+    ];
+  };
+  const confirmManifestNode = new QTreeNode(confirmManifestQuestion);
+  confirmManifestNode.condition = {
+    notEquals: defaultManifestFilePath,
+  };
+  return confirmManifestNode;
+}
+
+export async function getQuestionForDeployAadManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  if (isDynamicQuestion) {
+    const root = await getUpdateAadManifestQuestion(inputs);
+    return ok(root);
+  }
+  return ok(undefined);
+}
+
+async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> {
+  // Teams app manifest select node
+  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
+
+  // Env select node
+  const envNode = await selectEnvNode(inputs, false);
+  if (!envNode) {
+    return aadAppSelectNode;
+  }
+  envNode.data.name = "env";
+  aadAppSelectNode.addChild(envNode);
+  envNode.condition = {
+    validFunc: validateAadManifestContainsPlaceholder,
+  };
+  return aadAppSelectNode;
+}
+
+export async function validateAadManifestContainsPlaceholder(
+  input: any,
+  inputs?: Inputs
+): Promise<string | undefined> {
+  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
+  const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
+  const regexObj = new RegExp(placeholderRegex);
+  try {
+    if (!aadManifestPath || !(await fs.pathExists(aadManifestPath))) {
+      return "Skip Current Question";
+    }
+    const manifest = await fs.readFile(aadManifestPath, ConstantString.UTF8Encoding);
+    if (regexObj.test(manifest)) {
+      return undefined;
+    }
+  } catch (e) {
+    return "Skip Current Question";
+  }
+  return "Skip Current Question";
+}
+
+export function selectM365HostQuestion(): QTreeNode {
+  return new QTreeNode({
+    name: CoreQuestionNames.M365Host,
+    title: getLocalizedString("core.M365HostQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [Hub.teams, Hub.outlook, Hub.office],
+    placeholder: getLocalizedString("core.M365HostQuestion.placeholder"),
+  });
 }

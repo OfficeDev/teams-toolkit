@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   globalStateGet,
   globalStateUpdate,
@@ -8,8 +9,10 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "./localizeUtils";
+import * as extensionPackage from "../../package.json";
 
 const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
+const SURVEY_URL_V3 = "https://aka.ms/ttk-feedback";
 
 enum ExtensionSurveyStateKeys {
   DoNotShowAgain = "survey/doNotShowAgain",
@@ -21,6 +24,9 @@ const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 12 weeks
 const TIME_TO_REMIND_ME_LATER = 1000 * 60 * 60 * 24 * 7 * 2; // 2 weeks
 const TIME_TO_SHOW_SURVEY = 1000 * 60 * 15; // 15 minutes
 const SAMPLE_PERCENTAGE = 25; // 25 percent for public preview
+const V3PREVIEW_SAMPLE_PERCENTAGE = 100; // always pop up survey
+const V3PREVIEW_TIME_TO_DISABLE_SURVEY = -1; // negtive value stands for never show again
+const V3PREVIEW_TIME_TO_REMIND_ME_LATER = 1000 * 60 * 60 * 1; // 1 hour
 
 export class ExtensionSurvey {
   private timeToShowSurvey: number;
@@ -33,7 +39,14 @@ export class ExtensionSurvey {
 
   public static getInstance(): ExtensionSurvey {
     if (!ExtensionSurvey.instance) {
-      ExtensionSurvey.instance = new ExtensionSurvey();
+      ExtensionSurvey.instance = isV3Enabled()
+        ? new ExtensionSurvey(
+            TIME_TO_SHOW_SURVEY,
+            V3PREVIEW_SAMPLE_PERCENTAGE,
+            V3PREVIEW_TIME_TO_DISABLE_SURVEY,
+            V3PREVIEW_TIME_TO_REMIND_ME_LATER
+          )
+        : new ExtensionSurvey();
     }
 
     return ExtensionSurvey.instance;
@@ -62,7 +75,7 @@ export class ExtensionSurvey {
           return;
         }
 
-        if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri!.fsPath)) {
+        if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri?.fsPath)) {
           this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
         }
       }, 2000);
@@ -85,24 +98,32 @@ export class ExtensionSurvey {
       ExtensionSurveyStateKeys.DisableSurveyForTime,
       0
     );
-    if (disableSurveyForTime > currentTime) {
+    if (disableSurveyForTime < 0 || disableSurveyForTime > currentTime) {
       return false;
     }
 
     return true;
   }
 
-  private async showWebviewSurvey(): Promise<void> {
-    vscode.commands.executeCommand("fx-extension.openSurvey");
+  public async openSurveyLink() {
+    const link = isV3Enabled() ? SURVEY_URL_V3 : SURVEY_URL;
+    vscode.commands.executeCommand(
+      "vscode.open",
+      vscode.Uri.parse(
+        `${link}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(
+          extensionPackage.version
+        )}`
+      )
+    );
+
+    const disableSurveyForTime =
+      this.timeToDisableSurvey < 0
+        ? this.timeToDisableSurvey
+        : Date.now() + this.timeToDisableSurvey;
+    await globalStateUpdate(ExtensionSurveyStateKeys.DisableSurveyForTime, disableSurveyForTime);
   }
 
   private async showSurvey(): Promise<void> {
-    const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");
-    if (!extension) {
-      return;
-    }
-
-    const extensionVersion = extension.packageJSON.version || "unknown";
     const take = {
       title: localize("teamstoolkit.survey.takeSurvey.title"),
       run: async (): Promise<void> => {
@@ -110,20 +131,7 @@ export class ExtensionSurvey {
           message: getDefaultString("teamstoolkit.survey.takeSurvey.message"),
         });
 
-        vscode.commands.executeCommand(
-          "vscode.open",
-          vscode.Uri.parse(
-            `${SURVEY_URL}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(
-              extensionVersion
-            )}`
-          )
-        );
-
-        const disableSurveyForTime = Date.now() + this.timeToDisableSurvey;
-        await globalStateUpdate(
-          ExtensionSurveyStateKeys.DisableSurveyForTime,
-          disableSurveyForTime
-        );
+        await this.openSurveyLink();
       },
     };
 
@@ -173,7 +181,11 @@ export class ExtensionSurvey {
       await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);
     }
 
-    // only pop out once in one session
-    this.needToShow = false;
+    if (isV3Enabled()) {
+      this.timeToShowSurvey = V3PREVIEW_TIME_TO_REMIND_ME_LATER;
+    } else {
+      // only pop out once in one session
+      this.needToShow = false;
+    }
   }
 }

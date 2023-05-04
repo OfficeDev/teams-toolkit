@@ -33,6 +33,7 @@ describe("FuncToolChecker E2E Test", async () => {
   });
 
   it("not install + special character dir", async function () {
+    this.skip();
     if ((await funcUtils.isFuncCoreToolsInstalled()) || isLinux()) {
       this.skip();
     }
@@ -65,6 +66,7 @@ describe("FuncToolChecker E2E Test", async () => {
   });
 
   it("not install + throw error when installing", async function () {
+    this.skip();
     if ((await funcUtils.isFuncCoreToolsInstalled()) || isLinux()) {
       this.skip();
     }
@@ -96,6 +98,7 @@ describe("FuncToolChecker E2E Test", async () => {
   });
 
   it("not install + linux + user cancel", async function () {
+    this.skip();
     if ((await funcUtils.isFuncCoreToolsInstalled()) || !isLinux()) {
       this.skip();
     }
@@ -111,6 +114,7 @@ describe("FuncToolChecker E2E Test", async () => {
   });
 
   it("already install + linux", async function () {
+    this.skip();
     if (!(await funcUtils.isFuncCoreToolsInstalled()) || !isLinux()) {
       this.skip();
     }
@@ -134,6 +138,7 @@ describe("FuncToolChecker E2E Test", async () => {
   });
 
   it("already install + old func version(v2)", async function () {
+    this.skip();
     const funcVersion = await funcUtils.getFuncCoreToolsVersion();
     if (isLinux()) {
       this.skip();

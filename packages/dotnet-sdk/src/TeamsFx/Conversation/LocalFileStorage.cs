@@ -7,6 +7,7 @@ namespace Microsoft.TeamsFx.Conversation
 
     using Microsoft.Bot.Schema;
 
+    [Obsolete]
     internal sealed class LocalFileStorage : INotificationTargetStorage
     {
         private const string LocalFileName = ".notification.localstore.json";
@@ -55,7 +56,7 @@ namespace Microsoft.TeamsFx.Conversation
             else
             {
                 var allData = await ReadFromFile(cancellationToken).ConfigureAwait(false);
-                allData.Add(key, reference);
+                allData[key] = reference;
                 await WriteToFile(allData, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -75,6 +76,13 @@ namespace Microsoft.TeamsFx.Conversation
 
         private async Task<Dictionary<string, ConversationReference>> ReadFromFile(CancellationToken cancellationToken = default)
         {
+            var fileInfo = new FileInfo(_filePath);
+            if (!fileInfo.Exists || fileInfo.Length == 0)
+            {
+                // return empty map
+                return new Dictionary<string, ConversationReference>();
+            }
+
             using var file = File.OpenRead(_filePath);
             return await JsonSerializer.DeserializeAsync<Dictionary<string, ConversationReference>>(file, cancellationToken: cancellationToken).ConfigureAwait(false);
         }

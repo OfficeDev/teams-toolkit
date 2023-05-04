@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { ConfigFolderName, StatesFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
+import { strings } from "./resource";
 
 export function NotSupportedProjectType(): UserError {
   return new UserError(
@@ -38,8 +37,7 @@ export function NotFoundSubscriptionId(): UserError {
   return new UserError(
     constants.cliSource,
     "NotFoundSubscriptionId",
-    "Cannot find selected subscription. Ensure your signed-in account has access to this subscription. " +
-      "You can also select another subscription using 'teamsfx account set`."
+    strings["error.NotFoundSubscriptionId"]
   );
 }
 
@@ -166,6 +164,15 @@ export class InvalidTemplateName extends UserError {
     super({
       source: constants.cliSource,
       message: `Invalid template name: ${name}`,
+    });
+  }
+}
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: constants.cliSource,
+      message: strings["error.NotAllowedMigrationErrorMessage"],
     });
   }
 }

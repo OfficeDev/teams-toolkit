@@ -122,21 +122,23 @@ export const doctorResult = {
 
 export const installApp = {
   description:
-    "To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.",
+    "To continue to preview your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.",
   finish: "Once you have finished the installation, please come back and click 'Continue'.",
   guide: "Click 'Install in Teams' will pop up Teams web client for you to install the app.",
   installInTeams: "Install in Teams",
   installInTeamsDescription: "Pop up Teams web client for you to install the app.",
   continue: "Continue",
-  continueDescription: "Continue to preview in Outlook or Office.",
+  continueDescription: "Continue to preview in Outlook or the Microsoft 365 app.",
   cancel: "Cancel",
   cancelDescription: "Stop preview.",
-  installAppTitle: "Install app in Teams or continue to Outlook or Office",
+  installAppTitle: "Install app in Teams or continue to Outlook or the Microsoft 365 app",
   nonInteractive: {
     notInstalled:
       "We detected that you have not yet installed the app in Teams first, please run 'teamsfx preview %s --m365-host teams' to install app.",
     manifestChanges:
       "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
+    manifestChangesV3:
+      "If you changed the manifest file, please run 'teamsfx provision %s' to install app again.",
   },
   bot: {
     description:
@@ -166,3 +168,5 @@ export const m365TenantHintMessage =
   "WARN: Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect. Please click https://aka.ms/teamsfx-m365-apps-prerequisites for more information about setting up dev environment for extending Teams apps across Microsoft 365.";
 export const m365SwitchedMessage =
   "WARN: You are now using a different Microsoft 365 tenant from what you previously used. Please visit https://aka.ms/teamsfx-switch-tenant-or-subscription-help to learn more.";
+
+export const defaultExecPath = "devTools/func";

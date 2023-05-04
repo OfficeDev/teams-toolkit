@@ -27,50 +27,25 @@ export class ProgressMessages {
   static readonly buildingTab = getLocalizedString("core.progress.buildingTab.detail");
   static readonly buildingBot = getLocalizedString("core.progress.buildingBot.detail");
   static readonly buildingApi = getLocalizedString("core.progress.buildingApi.detail");
-  static readonly packingCode = getLocalizedString("core.progress.packingCode");
+  static readonly packingCode = () => getLocalizedString("core.progress.packingCode");
   static readonly enableStaticWebsite = getLocalizedString("core.progress.enableStaticWebsite");
   static readonly provisionBot = getLocalizedString("core.progress.provisionBot");
-  static readonly generateTemplate = () =>
-    getLocalizedString("core.progress.generateTemplate.detail");
-  static readonly generateSample = () => getLocalizedString("core.progress.generateSample.detail");
+  static readonly generateTemplate = (templateName: string) =>
+    getLocalizedString("core.progress.generateTemplate.detail", templateName);
+  static readonly generateSample = (sampleName: string) =>
+    getLocalizedString("core.progress.generateSample.detail", sampleName);
   static readonly getDeploymentSrcAndDest = getLocalizedString(
     "core.progress.getDeploymentSrcAndDest"
   );
   static readonly clearStorageAccount = getLocalizedString("core.progress.clearStorageAccount");
   static readonly uploadTabToStorage = getLocalizedString("core.progress.uploadTabToStorage");
-  static readonly getAzureAccountInfoForDeploy = getLocalizedString(
-    "core.progress.getAzureAccountInfoForDeploy"
-  );
-  static readonly getAzureUploadEndpoint = getLocalizedString(
-    "core.progress.getAzureUploadEndpoint"
-  );
-  static readonly uploadZipFileToAzure = getLocalizedString("core.progress.uploadZipFileToAzure");
-  static readonly checkAzureDeployStatus = getLocalizedString(
-    "core.progress.checkAzureDeployStatus"
-  );
-  static readonly restartAzureFunctionApp = getLocalizedString(
-    "core.progress.restartAzureFunctionApp"
-  );
-  static readonly restartAzureService = getLocalizedString("core.progress.restartAzureFunctionApp");
   static readonly configureAzureStorageEnableStaticWebsite = getLocalizedString(
     "core.progress.configureAzureStorage"
   );
-  static readonly checkAzureStorageEnableStaticWebsite = getLocalizedString(
-    "core.progress.checkAzureStorageStaticWebsite"
-  );
-  static readonly azureStorageStaticWebsiteAlreadyEnabled = getLocalizedString(
-    "core.progress.azureStorageStaticWebsiteEnabled"
-  );
-  static readonly enableAzureStorageStaticWebsite = getLocalizedString(
-    "core.progress.enableAzureStorageStaticWebsite"
-  );
-  static readonly getAzureStorageAccountInfo = getLocalizedString(
-    "core.progress.getAzureStorageDeployCredential"
-  );
-  static readonly clearStorageExistsBlobs = getLocalizedString(
-    "core.progress.clearStorageExistsBlobs"
-  );
-  static readonly uploadFilesToStorage = getLocalizedString("core.progress.uploadFilesToStorage");
+  static readonly runCommand = (command: string, directory: string) =>
+    getLocalizedString("core.progress.runCommand", command, directory);
+  static readonly deployToAzure = (location: string, dist: string) =>
+    getLocalizedString("core.progress.deployToAzure", location, dist);
 }
 
 export class LogMessages {
@@ -85,8 +60,7 @@ export class LogMessages {
   );
   public static readonly projectScaffoldAt = (basePath: string): string =>
     getLocalizedString("plugins.function.projectScaffoldAt", basePath);
-  public static readonly failedToInstallDotnet = (error: Error): string =>
-    getLocalizedString("plugins.function.failedToInstallDotnet", error);
+
   public static readonly askFunctionName: string = getLocalizedString(
     "plugins.function.askFunctionName"
   );

@@ -75,8 +75,8 @@ export const UpdateApplicationSettingsError: PluginError = {
 export const UnhandledError: PluginError = {
   name: "UnhandledError",
   message: (message) => [
-    getDefaultString("error.sa.UnhandledError", message),
-    getLocalizedString("error.sa.UnhandledError", message),
+    getDefaultString("error.common.UnhandledError", message),
+    getLocalizedString("error.common.UnhandledError", message),
   ],
 };
 

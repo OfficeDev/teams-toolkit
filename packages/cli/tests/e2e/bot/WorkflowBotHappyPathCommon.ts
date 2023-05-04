@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Dooriya Li <dol@microsoft.com>
- * @owner Siglud <fanhu@microsoft.com>
+ * @author Siglud <fanhu@microsoft.com>
  */
 
 import * as fs from "fs-extra";
@@ -19,11 +18,11 @@ import {
   getUniqueAppName,
   cleanUp,
   readContextMultiEnv,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { it } from "../../commonlib/it";
 import { Runtime } from "../../commonlib/constants";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {
@@ -42,9 +41,6 @@ export function happyPathTest(runtime: Runtime): void {
     }
 
     it("Provision Resource: workflow bot", async function () {
-      if (isV3Enabled()) {
-        return this.skip();
-      }
       const cmd =
         runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities workflow-bot --programming-language typescript`
@@ -55,15 +51,6 @@ export function happyPathTest(runtime: Runtime): void {
         timeout: 0,
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
-
-      // set subscription
-      await execAsync(`teamsfx account set --subscription ${subscription}`, {
-        cwd: projectPath,
-        env: env,
-        timeout: 0,
-      });
-
-      console.log(`[Successfully] set subscription for ${projectPath}`);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {
@@ -77,15 +64,15 @@ export function happyPathTest(runtime: Runtime): void {
       {
         // Validate provision
         // Get context
-        const context = await readContextMultiEnv(projectPath, envName);
+        const context = await readContextMultiEnvV3(projectPath, envName);
 
         // Validate Bot Provision
         const bot = new BotValidator(context, projectPath, envName);
-        await bot.validateProvision(false);
+        await bot.validateProvisionV3(false);
       }
 
       // deploy
-      await execAsyncWithRetry(`teamsfx deploy bot`, {
+      await execAsyncWithRetry(`teamsfx deploy`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
@@ -96,7 +83,7 @@ export function happyPathTest(runtime: Runtime): void {
         // Validate deployment
 
         // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+        const context = await readContextMultiEnvV3(projectPath, envName);
 
         // Validate Bot Deploy
         const bot = new BotValidator(context, projectPath, envName);
@@ -104,14 +91,14 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // test (validate)
-      await execAsyncWithRetry(`teamsfx validate`, {
+      await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
       });
 
       // package
-      await execAsyncWithRetry(`teamsfx package`, {
+      await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,

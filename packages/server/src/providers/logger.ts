@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 
 import { MessageConnection } from "vscode-jsonrpc";
+import * as os from "os";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 
@@ -9,13 +12,27 @@ import { Namespaces, NotificationTypes } from "../apis";
 
 export default class ServerLogProvider implements LogProvider {
   private readonly connection: MessageConnection;
+  private logFileName: string;
+  private logFolderPath: string = path.join(os.tmpdir(), "VSTeamsToolkitExtension");
 
   constructor(connection: MessageConnection) {
     this.connection = connection;
+    this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
   }
 
-  async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    this.connection.sendNotification(NotificationTypes[Namespaces.Logger].show, logLevel, message);
+  async log(logLevel: LogLevel, message: string, logToFile?: boolean): Promise<boolean> {
+    if (logToFile) {
+      if (!(await fs.pathExists(this.logFolderPath))) {
+        await fs.mkdir(this.logFolderPath);
+      }
+      await fs.appendFile(this.getLogFilePath(), message + "\n");
+    } else {
+      this.connection.sendNotification(
+        NotificationTypes[Namespaces.Logger].show,
+        logLevel,
+        message
+      );
+    }
     return true;
   }
 
@@ -27,15 +44,16 @@ export default class ServerLogProvider implements LogProvider {
     return this.log(LogLevel.Debug, message);
   }
 
-  async info(message: string): Promise<boolean>;
-  async info(message: { content: string; color: Colors }[]): Promise<boolean>;
-  async info(message: any): Promise<boolean> {
+  async info(message: string, logToFile?: boolean): Promise<boolean>;
+  async info(message: { content: string; color: Colors }[], logToFile?: boolean): Promise<boolean>;
+  async info(message: any, logToFile?: boolean): Promise<boolean> {
     if (typeof message === "string") {
-      return this.log(LogLevel.Info, message);
+      return this.log(LogLevel.Info, message, logToFile);
     }
     return this.log(
       LogLevel.Info,
-      (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join("")
+      (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join(""),
+      logToFile
     );
   }
 
@@ -49,5 +67,9 @@ export default class ServerLogProvider implements LogProvider {
 
   async fatal(message: string): Promise<boolean> {
     return this.log(LogLevel.Fatal, message);
+  }
+
+  getLogFilePath(): string {
+    return path.join(this.logFolderPath, this.logFileName);
   }
 }

@@ -11,7 +11,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 >
 > To run the notification bot template in your local dev machine, you will need:
 >
-> - [Node.js](https://nodejs.org/en/), supported versions: 14, 16, 18 (preview)
+> - [Node.js](https://nodejs.org/), supported versions: 14, 16, 18 (preview)
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
@@ -46,6 +46,7 @@ The following files can be customized and demonstrate an example implementation 
 | - | - |
 | `*Trigger/function.json` | Azure Function bindings for the notification trigger |
 | `src/*Trigger.js` | Notification trigger implementation |
+| `src/teamsBot.js`| An empty teams activity handler for bot customization |
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
 
 The following files implement the core notification on the Bot Framework. You generally will not need to customize these files.

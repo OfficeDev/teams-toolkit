@@ -32,11 +32,15 @@ export enum TelemetryEvent {
   AddFeatureStart = "add-feature-start",
   AddFeature = "add-feature",
 
+  AddWebpartStart = "add-web-part-start",
+  AddWebpart = "add-web-part",
+
   OpenManifestEditorStart = "open-manifest-editor-start",
   OpenManifestEditor = "open-manifest-editor",
 
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
+  ValidateApplication = "validate-application",
 
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
@@ -96,7 +100,7 @@ export enum TelemetryEvent {
 
   NextStep = "next-step",
 
-  ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
+  ClickOpenLifecycleTreeview = "click-open-lifecycle-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
   ViewGuidedTutorials = "view-guided-tutorials",
@@ -139,6 +143,9 @@ export enum TelemetryEvent {
   DebugSetUpSSOTask = "debug-set-up-sso-task",
   DebugPrepareManifestTask = "debug-prepare-manifest-task",
   DebugLifecycleTask = "debug-lifecycle-task",
+  LaunchWebClientTask = "launch-web-client",
+  DebugDevTunnelCleanNotificationStart = "debug-dev-tunnel-clean-notification-start",
+  DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -288,6 +295,7 @@ export enum TelemetryProperty {
   DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
+  DebugDevTunnelNum = "debug-dev-tunnel-num",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
@@ -331,6 +339,7 @@ export enum TelemetryProperty {
   // Used with InteractWithInProductDoc
   Interaction = "interaction",
   Identifier = "identifier",
+  ValidateMethod = "validate-method",
 }
 
 export enum TelemetryMeasurements {

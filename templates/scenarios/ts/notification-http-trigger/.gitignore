@@ -1,5 +1,7 @@
 # TeamsFx files
-env/.env.*
+env/.env.*.user
+env/.env.local
+appPackage/build
 
 # Dependency directories
 node_modules
@@ -17,12 +19,18 @@ appsettings.json
 .deployment
 .env
 
+# build
+/dist
+
 # Azurite emulator
 _storage_emulator
 
 # Local data
-.localSettings
+.localConfigs
 .notification.localstore.json
 
 # production
 /build
+
+# Dev tool directories
+/devTools/

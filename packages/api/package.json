@@ -47,6 +47,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",
     "mocha": "^9.2.0",
@@ -59,7 +60,7 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@azure/core-http": "^1.2.2",
+    "@azure/core-auth": "^1.4.0",
     "@microsoft/teams-manifest": "^0.0.9",
     "axios": "^0.21.2",
     "chai": "^4.3.4",

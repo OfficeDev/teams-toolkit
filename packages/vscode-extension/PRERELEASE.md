@@ -1,17 +1,159 @@
 # Teams Toolkit v5.0 Pre-release
 
-### What does pre-release mean?
-Pre-release is meant for those who are eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be major.
+## Changelog
 
-We've addressed a number of reported bugs and added major changes in this release based on your feedback to make Teams Toolkit more flexible. Some of the key highlights to these changes include:
+### Apr 18, 2023
 
-- Use existing infrastructure, resource groups, and more when provisioning
-- Use an existing Teams app ID
-- Use an existing Azure AD app registration ID
-- Use a different tunneling solution or customize the defaults
+New features:
+
+- Run and debug Teams bot and message extension applications with dev tunnels in Visual Studio Code. Refer to [this doc](https://aka.ms/teamsfx-switch-tunnel) if you want to switch back to use ngrok.
+  ![devtunnel](https://user-images.githubusercontent.com/11220663/230364699-ed108641-4196-4318-949b-17ff56a6593f.png)
+
+- `Validate Application` now helps catch errors and warnings that would prevent a successful publish to Teams in addition to schema checks.
+  ![validate](https://user-images.githubusercontent.com/11220663/230363745-50bb8b6b-06a1-40df-b6ae-5601a71b193e.png)
+
+- Auto-complete suggestions and descriptions when editing `teamsapp.yml` files.
+
+  > Note: Teams Toolkit for Visual Studio Code takes a new dependency on [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) which will be installed together with Teams Toolkit.
+
+New getting started experience with GitHub Codespaces:
+
+Start developing Teams applications instantly by opening Teams Toolkit samples in GitHub Codespaces. Try these samples today：
+
+- [Hello World Tab Sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/hello-world-tab-codespaces)
+- [Notification Sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/notification-codespaces)
+- [NPM Search Message Extension Sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/NPM-search-message-extension-codespaces)
+
+SharePoint Framework developer experience update:
+
+- Automated the process to add multiple SPFx web parts as Teams Tab pages and configure the new web parts with Teams app.
+- Choose which SharePoint Framework (SPFx) package version to use when creating a SPFx-based Teams tab app, either from a globally installed version or let Teams Toolkit install the latest version for you.
+- Streamlined full stack debugging for SPFx based tab apps on Teams, Outlook and the Microsoft 365 app.
+  ![SPFx](https://user-images.githubusercontent.com/11220663/230363218-98e16312-17b0-49cf-8617-333ca961c4b0.png)
+
+Teams Toolkit generated project file change:
+
+- Simplified the default lifecycle steps in `teamsapp.yml` to be Provision, Deploy, and Publish. The ConfigureApp and RegisterApp steps are removed, and their actions are defaulted to the Provision step.
+- Added support for a new action, `uses: script`, that can be used to run any script command.
+- Some actions now support a `writeToEnvironmentFile` parameter to define generated environment variable names.
+- `.env.{envName}` files now only contain non-sensitive information and are removed from `.gitignore`.
+- Added `.env.{envName}.user` files to store sensitive information like password and are added to `.gitignore`.
+  ![project](https://user-images.githubusercontent.com/11220663/230363542-c0e8db66-8b6f-4c0e-92d0-b184c34e4824.png)
+
+Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.0@beta`:
+
+- Updated `teamsfx validate` command to validate your app package against validation rules.
+- Updated `teamsfx new` command to include a new parameter `--spfx-install-latest-package`  to specify whether to use the latest SPFx package or not.
+- Added `teamsfx add spfx-web-part` command to add multiple web parts.
+
+TeamsFx-React SDK ([`@microsoft/teamsfx-react`](https://www.npmjs.com/package/@microsoft/teamsfx-react)) `v3.0.0@beta`:
+
+- Added `BaseDashboard` class: A base component that provides basic functionality to create a dashboard.
+- Added `BaseWidget` class: A base component that provides basic functionality to create a widget.
+- Added `IWidgetClassNames` Interface: A Interface for defining the class names of widget elements.
+
+Enhancements:
+
+- Updated Teams Toolkit tree view user interface to streamline the development workflow:
+
+  - Added the `ENVIRONMENT` section back.
+  - Renamed the `DEPLOYMENT` section to `LIFECYCLE`.
+  - Renamed `Provision in the cloud` to `Provision`, `Deploy to the cloud` to `Deploy` and `Publish to Teams` to `Publish`. Now `Provision`, `Deploy` and `Publish` command will trigger the corresponding actions defined in the `teamsapp.yml` file.
+  - Moved `Zip Teams App Package`, `Validate Application`, and `Open Developer Portal to Publish` commands to `UTILITY` section.
+    ![treeview](https://user-images.githubusercontent.com/11220663/230364045-510c7bd6-5c5a-4b32-ae61-bb069b31c016.png)
+
+- `Zip Teams App Package`, `Validate Application`, `Update Azure Active Directory App`, `Update Teams App` commands will now ask for additional inputs like `manifest.json` file path and environment name so that you have the flexibility to arrange hose files.
+
+- Simplified multiple progress notifications into a single one for provision, deploy and publish.
+
+- Sample: enabled [app caching](https://learn.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/build-tabs-for-meeting?tabs=desktop%2Cmeeting-chat-view-desktop%2Cmeeting-stage-view-desktop%2Cchannel-meeting-desktop#app-caching) in "My First Meeting App" sample that improves subsequent launch time of the apps that are loaded in the meeting side panel.
+
+- Template: updated templates and samples to use Fluent UI V9 and React 18.
+
+Bug fixes:
+
+- Fixed an issue where we will only display relevant how-to guide for SPFx project. ([#8083](https://github.com/OfficeDev/TeamsFx/pull/8083))
+- Fixed an issue where the hyperlink is highlighted multiple colors from output channel. ([#8239](https://github.com/OfficeDev/TeamsFx/pull/8239))
+- Fixed an issue where you might see duplicate error messages. ([#8213](https://github.com/OfficeDev/TeamsFx/pull/8213))
+- Fixed an issue where you might see `Upload failed due to an invalid BotId in your manifest` after migrating your project with prerelease version. ([#8127](https://github.com/OfficeDev/TeamsFx/pull/8127))
+- Fixed an issue where `teamsApp/update` action will not create a new Teams app registration when `TEAMS_APP_ID` doesn't exist. ([#8021](https://github.com/OfficeDev/TeamsFx/pull/8021))
+
+### Mar 23, 2023
+
+Enhancement:
+
+- Updated instruction for minimum required version of Outlook in Outlook add-in project template.
+
+### Mar 14, 2023
+
+New features:
+
+- Create, debug, and deploy an [Outlook add-in](https://learn.microsoft.com/office/dev/add-ins/outlook/outlook-add-ins-overview) project.
+- Improved debug experience for personal tab and search-based message extension across Microsoft 365 that allows you to automatically run and debug your app in Outlook and the Microsoft 365 app.
+- Disabled commands from tree view that doesn't allow concurrent executions. For example, when you execute `Provision in the cloud` command, other commands in the `Deployment` section will be disabled to prevent concurrent execution error.
+
+SDK updates:
+
+- [TeamsFx](https://www.npmjs.com/package/@microsoft/teamsfx) `v2.2.1@beta`: Updated package dependency.
+- [TeamsFx-React](https://www.npmjs.com/package/@microsoft/teamsfx-react) `v3.0.0@beta`: Updated package to support React 18 and `useTeams`, `useTeamsFx` and `useTeamsUserCredential` hooks to use `@fluentui/react-components` from Fluent UI v9.
+
+Sample additions:
+
+- `Developer Assist Dashboard`: A dashboard that integrates with Azure DevOps, Github issues and Planner tasks and accelerates developer productivity.
+  
+  ![devdashboard](https://user-images.githubusercontent.com/11220663/223749194-c83c6788-8138-45ca-a97c-7027a7beafab.png)
+
+- `Hello World Teams Tab and Outlook add-in`: A hello world project that contains both Teams Tab and Outlook add-in capability
+  
+  ![outlookaddin](https://user-images.githubusercontent.com/11220663/223749477-7dce433b-f569-49ec-b676-9a384e5ad0f1.png)
+
+Bug fixes:
+
+- Fixed an issue where you might see runtime errors on the Teams Toolkit extension page. ([#7887](https://github.com/OfficeDev/TeamsFx/pull/7887))
+- Fixed an issue where the app name is not shown properly on the scaffolding success message. ([#7839](https://github.com/OfficeDev/TeamsFx/pull/7839))
+- Fixed an issue for several how-to guides that don't point to pre-release compatible versions. ([#7830](https://github.com/OfficeDev/TeamsFx/pull/7830))
+- Fixed an [issue 7410](https://github.com/OfficeDev/TeamsFx/issues/7410) where the `Deploy Teams app manifest` option is missing. ([#7755](https://github.com/OfficeDev/TeamsFx/pull/7755))
+
+### Feb 22, 2023
+
+New features:
+
+Updated the fundamental design of Teams Toolkit to make it configurable and transparent as much as possible. The new design allows you to:
+
+- Use existing infrastructure, resource groups, and more when provisioning.
+- Use an existing Teams app ID.
+- Use an existing Azure Active Directory app registration ID.
+- Customizable tunneling solution.
 - Add custom steps to debugging, provisioning, deploying, publishing, etc.
 
-### What about my existing Teams Toolkit projects?
-The changes in this pre-release require upgrades to the TeamsFx configuration files. We recommend that you create a new app using this version. In the future, we'll provide a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
+Enhancements:
+
+- Removed subscriptions from the sidebar's "ACCOUNTS" section.
+- Removed the "ENVIRONMENT" section from the sidebar.
+- Removed the "Edit manifest file" button from the sidebar's "DEVELOPMENT" section.
+- Added a "Add environment" button to the sidebar's "DEVELOPMENT" section.
+- Added a "Manage collaborator" button to the sidebar's "DEVELOPMENT" section.
+- Removed `.fx` folder from Teams Toolkit scaffolded templates.
+- Moved `template/appPackage` to the root folder for templates.
+- Added an `env` folder to manage all `.env` files in template root folders.
+- Added an `infra` folder to organize bicep files in template root folders.
+- Added `teamsapp.yml` and `teamsapp.local.yml` files to manage configuration and lifecycles in template root folders.
+- Flattened the source code file structure for templates. Application code is no longer organized by capability.
+
+Sample addition:
+
+- `Team Central Dashboard`: A dashboard displaying data chats and content from Microsoft Graph to accelerate team collaboration and personal productivity.
+
+  ![dashboard](https://user-images.githubusercontent.com/11220663/223746585-49799058-71ed-4c92-bce0-5aefd26ea3e4.png)
+
+## Frequently asked questions
+
+### What does pre-release mean
+
+Pre-release is meant for those eager to try the latest Teams Toolkit features and fixes. Even though pre-releases are not intended for use in production, they are at a sufficient quality level for you to generally use and [provide feedback](https://aka.ms/ttk-feedback). However, pre-release versions can and probably will change, and those changes could be significant.
+
+### What about my existing Teams Toolkit projects
+
+The changes in this pre-release require upgrades to the TeamsFx configuration files. You can migrate by creating a new project and move your exiting code, or Teams Toolkit have also provided a way to automatically upgrade existing Teams apps that were created with a previous version of Teams Toolkit.
 
 Learn more about the changes in this pre-release at [https://aka.ms/teamsfx-v5.0-guide](https://aka.ms/teamsfx-v5.0-guide).

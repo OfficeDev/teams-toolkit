@@ -26,10 +26,13 @@ import {
 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import * as extensionPackage from "../../package.json";
-import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants";
+import { CONFIGURATION_PREFIX, ConfigurationKey, YmlEnvNamePlaceholder } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
+import * as yaml from "yaml";
+import { getV3TeamsAppId } from "../debug/commonUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -125,18 +128,35 @@ export function getProjectId(): string | undefined {
 }
 
 export function getAppName(): string | undefined {
-  const ws = globalVariables.workspaceUri!.fsPath;
-  const settingsJsonPathNew = path.join(
-    ws,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
-  try {
-    const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
-    return settingsJson.appName;
-  } catch (e) {}
-  return undefined;
+  if (isV3Enabled()) {
+    const yamlFilPath = path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.yml");
+    try {
+      const settings = yaml.parse(fs.readFileSync(yamlFilPath, "utf-8"));
+      for (const action of settings?.provision) {
+        if (action?.uses === "teamsApp/create") {
+          const name = action?.with?.name;
+          if (name) {
+            return name.replace(YmlEnvNamePlaceholder, "");
+          }
+        }
+      }
+      return undefined;
+    } catch (e) {}
+    return undefined;
+  } else {
+    const ws = globalVariables.workspaceUri!.fsPath;
+    const settingsJsonPathNew = path.join(
+      ws,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+    try {
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
+      return settingsJson.appName;
+    } catch (e) {}
+    return undefined;
+  }
 }
 
 export function openFolderInExplorer(folderPath: string): void {
@@ -253,21 +273,13 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.YoEnvCheckerEnable
-  ).toString();
-  process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.generatorEnvCheckerEnable
-  ).toString();
-
   initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
-  static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
-  static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
 }
 
@@ -363,6 +375,15 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  if (isV3Enabled()) {
+    // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
+    try {
+      const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+      return teamsAppId !== "";
+    } catch (error) {
+      return false;
+    }
+  }
   let provisionResult: Json | undefined;
 
   try {

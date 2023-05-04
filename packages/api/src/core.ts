@@ -8,13 +8,12 @@ import { Func, FunctionRouter, QTreeNode } from "./qm";
 import { Inputs, Void } from "./types";
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
 export interface Core {
   version?: string;
   createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
   provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-  buildArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
   publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;

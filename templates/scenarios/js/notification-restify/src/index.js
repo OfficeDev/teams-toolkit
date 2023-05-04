@@ -1,10 +1,12 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { notificationApp } = require("./internal/initialize");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { TeamsBot } = require("./teamsBot");
 const restify = require("restify");
 
 // Create HTTP server.
 const server = restify.createServer();
+server.use(restify.plugins.bodyParser());
 server.listen(process.env.port || process.env.PORT || 3978, () => {
   console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
 });
@@ -21,7 +23,7 @@ server.post(
           title: "New Event Occurred!",
           appName: "Contoso App Notification",
           description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://www.adaptivecards.io/",
+          notificationUrl: "https://aka.ms/teamsfx-notification-new",
         })
       );
     }
@@ -87,6 +89,9 @@ server.post(
 );
 
 // Bot Framework message handler.
+const teamsBot = new TeamsBot();
 server.post("/api/messages", async (req, res) => {
-  await notificationApp.requestHandler(req, res);
+  await notificationApp.requestHandler(req, res, async (context) => {
+    await teamsBot.run(context);
+  });
 });

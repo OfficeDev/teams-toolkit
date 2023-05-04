@@ -49,7 +49,9 @@ export async function getPlaceholderMappings(
     tabDomain: getName("state.fx-resource-frontend-hosting.domain"),
     tabEndpoint: getName("state.fx-resource-frontend-hosting.endpoint"),
     tabIndexPath: getName("state.fx-resource-frontend-hosting.indexPath"),
-    botDomain: getName("state.fx-resource-bot.domain"),
+    botDomain: context.isBotValidDomain
+      ? getName("state.fx-resource-bot.validDomain")
+      : getName("state.fx-resource-bot.domain"),
     botEndpoint: getName("state.fx-resource-bot.siteEndpoint"),
   };
 }
@@ -70,7 +72,9 @@ export class OldProjectSettingsHelper {
   public static includeFuncHostedBot(oldProjectSettings: ProjectSettings): boolean {
     return (
       this.includePlugin(oldProjectSettings, "fx-resource-bot") &&
-      oldProjectSettings.pluginSettings?.["fx-resource-bot"]?.["host-type"] === "azure-function"
+      ["azure-function", "azure-functions"].includes(
+        oldProjectSettings.pluginSettings?.["fx-resource-bot"]?.["host-type"] ?? ""
+      )
     );
   }
 
@@ -125,14 +129,13 @@ export function generateLabel(base: string, existingLabels: string[]): string {
 export function createResourcesTask(label: string): CommentJSONValue {
   const comment = `{
     // Create the debug resources.
-    // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-tasks/provision to know the details and how to customize the args.
   }`;
   const task = {
     label,
     type: "teamsfx",
     command: "provision",
     args: {
-      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -142,14 +145,13 @@ export function createResourcesTask(label: string): CommentJSONValue {
 export function setUpLocalProjectsTask(label: string): CommentJSONValue {
   const comment = `{
     // Build project.
-    // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
   }`;
   const task = {
     label,
     type: "teamsfx",
     command: "deploy",
     args: {
-      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -160,7 +162,7 @@ export function startFrontendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "npx env-cmd --silent -f .localSettings react-scripts start",
+    command: "npx env-cmd --silent -f .localConfigs react-scripts start",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/tabs",
@@ -233,7 +235,7 @@ export function watchBackendTask(label: string): CommentJSONValue {
 
 export function startBackendTask(label: string, programmingLanguage?: string): CommentJSONValue {
   programmingLanguage = programmingLanguage || "javascript";
-  const command = `npx env-cmd --silent -f .localSettings func start --${programmingLanguage} --language-worker="--inspect=9229" --port "7071" --cors "*"`;
+  const command = `npx env-cmd --silent -f .localConfigs func start --${programmingLanguage} --language-worker="--inspect=9229" --port "7071" --cors "*"`;
   const task = {
     label,
     type: "shell",
@@ -269,8 +271,8 @@ export function startBackendTask(label: string, programmingLanguage?: string): C
 export function startBotTask(label: string, programmingLanguage?: string): CommentJSONValue {
   const command =
     programmingLanguage === "typescript"
-      ? "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
-      : "npx env-cmd --silent -f .localSettings nodemon --inspect=9239 --signal SIGINT index.js";
+      ? "npx env-cmd --silent -f .localConfigs nodemon --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
+      : "npx env-cmd --silent -f .localConfigs nodemon --inspect=9239 --signal SIGINT index.js";
   const task = {
     label,
     type: "shell",
@@ -297,3 +299,26 @@ export function startBotTask(label: string, programmingLanguage?: string): Comme
   };
   return assign(parse("{}"), task);
 }
+
+export function launchRemote(
+  hubName: string,
+  browserType: string,
+  browserName: string,
+  url: string,
+  order: number
+): Record<string, unknown> {
+  return {
+    name: `Launch Remote in ${hubName} (${browserName})`,
+    type: browserType,
+    request: "launch",
+    url,
+    presentation: {
+      group: `group ${order}: ${hubName}`,
+      order: 3,
+    },
+    internalConsoleOptions: "neverOpen",
+  };
+}
+
+export const defaultFuncSymlinkDir = "./devTools/func";
+export const ignoreDevToolsDir = "/devTools/";

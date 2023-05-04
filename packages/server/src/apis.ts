@@ -132,6 +132,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<boolean, FxError>>;
+  publishInDeveloperPortalRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
 }
 
 /**

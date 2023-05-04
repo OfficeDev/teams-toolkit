@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { getDefaultString, getLocalizedString } from "../../localizeUtils";
+import { nodeInstallationLink } from "./helpLink";
 
 export const Messages = {
   // learnMoreButtonText: getLocalizedString("depChecker.learnMoreButtonText"),
@@ -9,20 +10,21 @@ export const Messages = {
     getDefaultString("error.depChecker.DefaultErrorMessage"),
     getLocalizedString("error.depChecker.DefaultErrorMessage"),
   ],
-  startInstallFunctionCoreTool: () => getLocalizedString("depChecker.startInstallFunctionCoreTool"),
-  finishInstallFunctionCoreTool: () =>
-    getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
-  // needReplaceWithFuncCoreToolV3: () => getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
-  needInstallFuncCoreTool: () => getLocalizedString("depChecker.needInstallFuncCoreTool"),
-  failToInstallFuncCoreTool: () => getLocalizedString("depChecker.failToInstallFuncCoreTool"),
+  needInstallNpm: () => getLocalizedString("depChecker.needInstallNpm"),
   failToValidateFuncCoreTool: () => getLocalizedString("depChecker.failToValidateFuncCoreTool"),
-  globalFuncNodeNotMatched: () => getLocalizedString("depChecker.globalFuncNodeNotMatched"),
-  portableFuncNodeNotMatched: () => getLocalizedString("depChecker.portableFuncNodeNotMatched"),
-
+  portableFuncNodeNotMatched: (nodeVersion: string, funcVersion: string) =>
+    getLocalizedString("depChecker.portableFuncNodeNotMatched")
+      .replace("@NodeVersion", nodeVersion)
+      .replace("@FuncVersion", funcVersion),
+  symlinkDirAlreadyExist: () => getLocalizedString("depChecker.symlinkDirAlreadyExist"),
+  invalidFuncVersion: (version: string) =>
+    getLocalizedString("depChecker.invalidFuncVersion", version),
+  noSentinelFile: () => getLocalizedString("depChecker.noSentinelFile"),
+  funcVersionNotMatch: (funcVersion: string, expectedFuncVersion: string) =>
+    getLocalizedString("depChecker.funcVersionNotMatch", funcVersion, expectedFuncVersion),
   startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),
   finishInstallNgrok: () => getLocalizedString("depChecker.finishInstallNgrok"),
   needInstallNgrok: () => getLocalizedString("depChecker.needInstallNgrok"),
-  failToInstallNgrok: () => getLocalizedString("depChecker.failToInstallNgrok"),
   failToValidateNgrok: () => getLocalizedString("depChecker.failToValidateNgrok"),
 
   downloadDotnet: () => getLocalizedString("depChecker.downloadDotnet"),
@@ -30,17 +32,27 @@ export const Messages = {
   useGlobalDotnet: () => getLocalizedString("depChecker.useGlobalDotnet"),
   dotnetInstallStderr: () => getLocalizedString("depChecker.dotnetInstallStderr"),
   dotnetInstallErrorCode: () => getLocalizedString("depChecker.dotnetInstallErrorCode"),
-  failToInstallDotnet: () => getLocalizedString("depChecker.failToInstallDotnet"),
 
-  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound"),
+  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound", nodeInstallationLink),
+  // TODO: remove this message after clean useless code
   NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),
 
   // In v3, the message will be displayed in the output.
   // TODO: add localized string to FxError.displayMessage
   V3NodeNotSupported: (currentVersion: string, supportedVersions: string) =>
-    getDefaultString("depChecker.V3NodeNotSupported", currentVersion, supportedVersions),
+    getDefaultString(
+      "depChecker.V3NodeNotSupported",
+      currentVersion,
+      supportedVersions,
+      nodeInstallationLink
+    ),
   NodeNotLts: (currentVersion: string, supportedVersions: string) =>
-    getDefaultString("depChecker.NodeNotLts", currentVersion, supportedVersions),
+    getDefaultString(
+      "depChecker.NodeNotLts",
+      currentVersion,
+      supportedVersions,
+      nodeInstallationLink
+    ),
 
   dotnetNotFound: () => getLocalizedString("depChecker.dotnetNotFound"),
   // depsNotFound: () => getLocalizedString("depChecker.depsNotFound"),

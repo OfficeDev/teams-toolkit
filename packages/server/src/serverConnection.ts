@@ -1,34 +1,39 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
 import {
+  AppPackageFolderName,
+  BuildFolderName,
+  Func,
   FxError,
   Inputs,
-  Void,
-  Tools,
-  Result,
-  Func,
-  ok,
-  Stage,
   QTreeNode,
-  BuildFolderName,
-  AppPackageFolderName,
+  Result,
+  Stage,
+  Tools,
+  Void,
   err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import {
+  Correlator,
+  FxCore,
+  environmentManager,
+  getSideloadingStatus,
+  isV3Enabled,
+} from "@microsoft/teamsfx-core";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
-import { IServerConnection, Namespaces } from "./apis";
-import LogProvider from "./providers/logger";
-import TokenProvider from "./providers/tokenProvider";
-import TelemetryReporter from "./providers/telemetry";
-import UserInteraction from "./providers/userInteraction";
-import { callFunc } from "./customizedFuncAdapter";
-import { standardizeResult } from "./utils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import path from "path";
+import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
+import { IServerConnection, Namespaces } from "./apis";
+import { callFunc } from "./customizedFuncAdapter";
+import LogProvider from "./providers/logger";
+import TelemetryReporter from "./providers/telemetry";
+import TokenProvider from "./providers/tokenProvider";
+import UserInteraction from "./providers/userInteraction";
+import { standardizeResult } from "./utils";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -65,6 +70,7 @@ export default class ServerConnection implements IServerConnection {
       this.getProjectComponents.bind(this),
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
+      this.publishInDeveloperPortalRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -171,18 +177,28 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
+    let res: Result<Void, FxError>;
     if (isV3Enabled()) {
-      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.template.json`;
-      func = {
-        namespace: "fx-solution-azure",
-        method: "buildPackage",
-        params: {
-          manifestTemplatePath: manifestTemplatePath,
-          outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
-          outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
-          env: inputs.env,
-        },
-      };
+      inputs[CoreQuestionNames.OutputZipPathParamName] = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        BuildFolderName,
+        `appPackage.${inputs.env}.zip`
+      );
+      inputs[CoreQuestionNames.OutputManifestParamName] = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        BuildFolderName,
+        `manifest.${inputs.env}.json`
+      );
+      res = await Correlator.runWithId(
+        corrId,
+        (inputs) => this.core.createAppPackage(inputs),
+        inputs
+      );
+      if (res.isOk()) {
+        return ok(undefined);
+      }
     } else {
       func = {
         namespace: "fx-solution-azure",
@@ -192,19 +208,14 @@ export default class ServerConnection implements IServerConnection {
           env: inputs.env,
         },
       };
+      res = await Correlator.runWithId(
+        corrId,
+        (func, inputs) => this.core.executeUserTask(func, inputs),
+        func,
+        inputs
+      );
     }
-
-    const res = await Correlator.runWithId(
-      corrId,
-      (func, inputs) => this.core.executeUserTask(func, inputs),
-      func,
-      inputs
-    );
-    if (isV3Enabled() && res.isOk()) {
-      return ok(undefined);
-    } else {
-      return standardizeResult(res);
-    }
+    return standardizeResult(res);
   }
 
   public async publishApplicationRequest(
@@ -353,5 +364,18 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return res.isErr() ? standardizeResult(err(res.error)) : ok(res.value === Void);
+  }
+
+  public async publishInDeveloperPortalRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.publishInDeveloperPortal(inputs),
+      inputs
+    );
+    return standardizeResult(res);
   }
 }

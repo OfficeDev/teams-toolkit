@@ -1,3 +1,5 @@
+import path from "path";
+
 import {
   FolderQuestion,
   Inputs,
@@ -6,7 +8,7 @@ import {
   SingleFileQuestion,
   SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
-import path from "path";
+
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { AzureSolutionQuestionNames } from "../../constants";
 import projectsJsonData from "./config/projectsJsonData";
@@ -16,29 +18,25 @@ const jsonData = new projectsJsonData();
 export const OfficeAddinItems: () => OptionItem[] = () =>
   jsonData.getProjectTemplateNames().map((template) => ({
     id: template,
-    label: jsonData.getProjectDisplayName(template),
-    detail: jsonData.getProjectDetails(template),
-    groupName: getLocalizedString("core.options.separator.addin"),
+    label: getLocalizedString(jsonData.getProjectDisplayName(template)),
+    detail: getLocalizedString(jsonData.getProjectDetails(template)),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.previewOnWindow"
+    ),
   }));
 
 // TODO: add localization strings
 export function ImportAddinProjectItem(): OptionItem {
   return {
     id: "import-addin-project",
-    label: "Import Add-in",
+    label: getLocalizedString("core.importAddin.label"),
     cliName: "import",
-    detail: "Import an office independent add-in project",
-    groupName: getLocalizedString("core.options.separator.addin"),
+    detail: getLocalizedString("core.importAddin.detail"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.previewOnWindow"
+    ),
   };
 }
-
-export const OfficeAddinItem: OptionItem = {
-  id: "office-addin",
-  label: "office addin label",
-  cliName: "tab",
-  description: "Office Addin description",
-  detail: "Office Addin detail",
-};
 
 export enum QuestionName {
   AddinLanguageQuestion = "addin-language",

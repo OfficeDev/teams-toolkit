@@ -1,27 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PublicClientApplication, AccountInfo, Configuration, TokenCache } from "@azure/msal-node";
-import express from "express";
-import * as http from "http";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { AccountInfo, Configuration, PublicClientApplication, TokenCache } from "@azure/msal-node";
+import { LogLevel, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Mutex } from "async-mutex";
-import { LogLevel, UserError, Colors, SystemError } from "@microsoft/teamsfx-api";
-import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
+import express from "express";
+import * as fs from "fs-extra";
+import * as http from "http";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
-import {
-  azureLoginMessage,
-  changeLoginTenantMessage,
-  env,
-  m365LoginMessage,
-  MFACode,
-} from "./common/constant";
-import * as constants from "../constants";
-import { getColorizedString } from "../utils";
+import os from "os";
+import * as path from "path";
+import { TextType, colorize } from "../colorize";
+import { UTF8, loadAccountId, saveAccountId } from "./cacheAccess";
+import { azureLoginMessage, m365LoginMessage } from "./common/constant";
+import CliCodeLogInstance from "./log";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -156,20 +150,13 @@ export class CodeFlowTenantLogin {
       this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
         response += "#";
         if (this.accountName == "azure") {
-          const message = [
-            {
-              content: `[${constants.cliSource}] ${azureLoginMessage}`,
-              color: Colors.BRIGHT_WHITE,
-            },
-            { content: response, color: Colors.BRIGHT_CYAN },
-          ];
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
+          CliCodeLogInstance.outputInfo(
+            azureLoginMessage + colorize(response, TextType.Hyperlink) + os.EOL
+          );
         } else {
-          const message = [
-            { content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
-            { content: response, color: Colors.BRIGHT_CYAN },
-          ];
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
+          CliCodeLogInstance.outputInfo(
+            m365LoginMessage + colorize(response, TextType.Hyperlink) + os.EOL
+          );
         }
         open(response);
       });

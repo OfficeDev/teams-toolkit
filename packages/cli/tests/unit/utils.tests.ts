@@ -342,14 +342,16 @@ describe("Utils Tests", function () {
         if (path.includes("realbuterror")) {
           throw Error("realbuterror");
         } else {
-          if (isV3Enabled()) {
-            return {
-              trackingId: "trackingId",
-              version: "3.0.0",
-            };
-          } else {
-            return {};
-          }
+          return {};
+        }
+      });
+      sandbox.stub(fs, "readFileSync").callsFake((path: any) => {
+        if (path.includes("realbuterror")) {
+          throw Error("realbuterror");
+        } else {
+          return `
+version: 1.0.0
+projectId: 00000000-0000-0000-0000-000000000000`;
         }
       });
     });
@@ -359,8 +361,12 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "false",
+      });
       const result = readSettingsFileSync("real");
       expect(result.isOk() ? result.value : result.error).deep.equals({});
+      restore();
     });
 
     it("Real Path in V3", () => {
@@ -370,8 +376,8 @@ describe("Utils Tests", function () {
       try {
         const result = readSettingsFileSync("real");
         expect(result.isOk() ? result.value : result.error).deep.equals({
-          projectId: "trackingId",
-          version: "3.0.0",
+          projectId: "00000000-0000-0000-0000-000000000000",
+          version: "1.0.0",
         });
       } finally {
         restore();
@@ -688,17 +694,21 @@ describe("Utils Tests", function () {
     });
 
     it("Multi env enabled and both new files and old files exist", async () => {
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       oldExist = true;
       newExist = true;
       const result = getProjectId("real");
       expect(result).equals("new");
+      restore();
     });
 
     it("Multi env enabled and only new files exist", async () => {
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       oldExist = false;
       newExist = true;
       const result = getProjectId("real");
       expect(result).equals("new");
+      restore();
     });
 
     it("Multi env enabled and only old files exist", async () => {
@@ -799,13 +809,17 @@ describe("Utils Tests", function () {
     });
 
     it("isM365 == true", async () => {
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       const result = getIsM365("real.isM365=true");
       expect(result).equals("true");
+      restore();
     });
 
     it("isM365 == false", async () => {
+      const restore = mockedEnv({ TEAMSFX_V3: "false" });
       const result = getIsM365("real.isM365=false");
       expect(result).equals("false");
+      restore();
     });
 
     it("isM365 == undefined", async () => {

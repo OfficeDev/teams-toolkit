@@ -24,11 +24,16 @@ import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector"
 import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";
 import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Middleware - ProjectSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn;
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({});
+  });
   afterEach(function () {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("ignore write", async () => {
     const spy = sandbox.spy(fs, "writeFile");
@@ -65,6 +70,7 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
   });
 
   it("write success", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const appName = randomAppName();
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);

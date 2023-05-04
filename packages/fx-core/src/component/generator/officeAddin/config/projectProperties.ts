@@ -1,8 +1,8 @@
 export const projectProperties = {
   projectTypes: {
     taskpane: {
-      displayname: "Outlook Taskpane Add-in (preview)",
-      detail: "A ribbon button and taskpane for use with Outlook",
+      displayname: "core.newTaskpaneAddin.label",
+      detail: "core.newTaskpaneAddin.detail",
       manifestPath: "manifest.json",
       templates: {
         typescript: {

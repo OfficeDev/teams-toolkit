@@ -16,7 +16,6 @@ import {
   AppManifestDebugHandler,
 } from "../../../src/component/debugHandler/appManifest";
 import {
-  AppManifestPackageNotExistError,
   DebugArgumentEmptyError,
   InvalidAppManifestPackageFileFormatError,
 } from "../../../src/component/debugHandler/error";
@@ -28,6 +27,7 @@ import { AppDefinition } from "../../../src/component/resource/appManifest/inter
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
+import { FileNotFoundError } from "../../../src/error/common";
 
 describe("AppManifestDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -89,10 +89,7 @@ describe("AppManifestDebugHandler", () => {
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
-        chai.assert(result.error instanceof UserError);
-        const error = AppManifestPackageNotExistError(appPackagePath);
-        chai.assert.equal(result.error.name, error.name);
-        chai.assert.equal(result.error.message, error.message);
+        chai.assert(result.error instanceof FileNotFoundError);
       }
       sinon.restore();
     });

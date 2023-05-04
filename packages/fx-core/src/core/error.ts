@@ -3,7 +3,6 @@
 "use strict";
 
 import {
-  assembleError,
   Func,
   FxError,
   Inputs,
@@ -18,7 +17,7 @@ import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
-export const MigrationSource = "Migration";
+export const UpgradeSource = "Upgrade";
 
 export class ProjectFolderExistError extends UserError {
   constructor(path: string) {
@@ -59,7 +58,7 @@ export function ReadFileError(e: Error): SystemError {
 export function MigrationError(e: Error, name: string, helpLink?: string): UserError {
   return new UserError({
     name: name,
-    source: MigrationSource,
+    source: UpgradeSource,
     error: e,
     // the link show to user will be helpLink+ # + source + name
     helpLink: helpLink,
@@ -94,41 +93,11 @@ export class NoProjectOpenedError extends UserError {
   }
 }
 
-export class PathNotExistError extends UserError {
-  constructor(path: string) {
-    super({
-      message: getDefaultString("error.PathNotExistError", path),
-      displayMessage: getLocalizedString("error.PathNotExistError", path),
-      source: CoreSource,
-    });
-  }
-}
-
-export class InvalidProjectError extends UserError {
-  constructor(msg?: string) {
-    super({
-      message: getDefaultString("error.InvalidProjectError", msg || ""),
-      displayMessage: getLocalizedString("error.InvalidProjectError", msg || ""),
-      source: CoreSource,
-    });
-  }
-}
-
 export class InvalidProjectSettingsFileError extends UserError {
   constructor(msg?: string) {
     super({
       message: getDefaultString("error.InvalidProjectSettingsFileError", msg || ""),
       displayMessage: getLocalizedString("error.InvalidProjectSettingsFileError", msg || ""),
-      source: CoreSource,
-    });
-  }
-}
-
-export class TaskNotSupportError extends SystemError {
-  constructor(task: string) {
-    super({
-      message: getDefaultString("error.TaskNotSupportError", task),
-      displayMessage: getLocalizedString("error.TaskNotSupportError", task),
       source: CoreSource,
     });
   }
@@ -154,52 +123,6 @@ export function InvalidInputError(reason: string, inputs?: Inputs): UserError {
   );
 }
 
-export function FunctionRouterError(func: Func): UserError {
-  const param = JSON.stringify(func);
-  return new UserError(
-    CoreSource,
-    "FunctionRouterError",
-    getDefaultString("error.FunctionRouterError", param),
-    getLocalizedString("error.FunctionRouterError", param)
-  );
-}
-
-export function ContextUpgradeError(error: any, isUserError = false): FxError {
-  if (isUserError) {
-    return new UserError({
-      name: "ContextUpgradeError",
-      message: getDefaultString("error.ContextUpgradeError", error.message),
-      displayMessage: getLocalizedString("error.ContextUpgradeError", error.message),
-      source: CoreSource,
-    });
-  } else {
-    return new SystemError({
-      name: "ContextUpgradeError",
-      message: getDefaultString("error.ContextUpgradeError", error.message),
-      displayMessage: getLocalizedString("error.ContextUpgradeError", error.message),
-      source: CoreSource,
-    });
-  }
-}
-
-export function InvalidStateError(pluginName: string, state: Json): SystemError {
-  return new SystemError(
-    CoreSource,
-    "InvalidProfileError",
-    getDefaultString("error.InvalidProfileError", pluginName, JSON.stringify(state)),
-    getLocalizedString("error.InvalidProfileError", pluginName, JSON.stringify(state))
-  );
-}
-
-export function PluginHasNoTaskImpl(pluginName: string, task: string): SystemError {
-  return new SystemError(
-    CoreSource,
-    "PluginHasNoTaskImpl",
-    getDefaultString("error.PluginHasNoTaskImpl", pluginName, task),
-    getLocalizedString("error.PluginHasNoTaskImpl", pluginName, task)
-  );
-}
-
 export function ProjectSettingsUndefinedError(): SystemError {
   return new SystemError(
     CoreSource,
@@ -215,15 +138,6 @@ export function MultipleEnvNotEnabledError(): SystemError {
     "MultipleEnvNotEnabledError",
     getDefaultString("error.MultipleEnvNotEnabledError"),
     getLocalizedString("error.MultipleEnvNotEnabledError")
-  );
-}
-
-export function ProjectEnvNotExistError(env: string): UserError {
-  return new UserError(
-    CoreSource,
-    "ProjectEnvNotExistError",
-    getDefaultString("error.ProjectEnvNotExistError", env, env),
-    getLocalizedString("error.ProjectEnvNotExistError", env, env)
   );
 }
 
@@ -254,35 +168,6 @@ export function InvalidEnvConfigError(env: string, errorMsg: string): UserError 
     getDefaultString("error.InvalidEnvConfigError", param1, param2),
     getLocalizedString("error.InvalidEnvConfigError", param1, param2)
   );
-}
-
-export function NonExistEnvNameError(env: string): UserError {
-  return new UserError(
-    CoreSource,
-    "NonExistEnvNameError",
-    getDefaultString("error.NonExistEnvNameError", env),
-    getLocalizedString("error.NonExistEnvNameError", env)
-  );
-}
-
-export function ModifiedSecretError(): UserError {
-  return new UserError(
-    CoreSource,
-    "ModifiedSecretError",
-    getDefaultString("error.ModifiedSecretError"),
-    getLocalizedString("error.ModifiedSecretError")
-  );
-}
-
-export class LoadSolutionError extends SystemError {
-  constructor() {
-    super(
-      CoreSource,
-      new.target.name,
-      getDefaultString("error.LoadSolutionError"),
-      getLocalizedString("error.LoadSolutionError")
-    );
-  }
 }
 
 export class NotImplementedError extends SystemError {
@@ -334,12 +219,12 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
-export function UpgradeV3CanceledError(link: string, version: string): UserError {
+export function UpgradeV3CanceledError(): UserError {
   return new UserError(
     CoreSource,
     "UserCancel", // @see tools.isUserCancelError()
-    getDefaultString("error.UpgradeV3CanceledError", link, version),
-    getLocalizedString("error.UpgradeV3CanceledError", link, version)
+    getDefaultString("error.UpgradeV3CanceledError"),
+    getLocalizedString("error.UpgradeV3CanceledError")
   );
 }
 
@@ -432,17 +317,6 @@ export class NoCapabilityFoundError extends UserError {
       source: CoreSource,
       message: getDefaultString("core.deploy.noCapabilityFound", operation),
       displayMessage: getLocalizedString("core.deploy.noCapabilityFound", operation),
-      helpLink: HelpLinks.HowToAddCapability,
-    });
-  }
-}
-
-export class NoAadManifestExistError extends UserError {
-  constructor(filePath: string) {
-    super({
-      source: CoreSource,
-      message: getDefaultString("error.aad.AadManifestNotExistError", filePath),
-      displayMessage: getLocalizedString("error.aad.AadManifestNotExistError", filePath),
     });
   }
 }
@@ -454,6 +328,17 @@ export class VideoFilterAppRemoteNotSupportedError extends UserError {
       name: VideoFilterAppRemoteNotSupportedError.name,
       message: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
       displayMessage: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+    });
+  }
+}
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: CoreSource,
+      name: NotAllowedMigrationError.name,
+      message: getLocalizedString("core.migrationV3.notAllowedMigration"),
+      displayMessage: getLocalizedString("core.migrationV3.notAllowedMigration"),
     });
   }
 }

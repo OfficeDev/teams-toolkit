@@ -19,6 +19,7 @@ import { NotSupportedProjectType } from "../../../src/error";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import CLIUIInstance from "../../../src/userInteraction";
 
 describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
@@ -56,6 +57,7 @@ describe("teamsfx validate", () => {
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
+    sandbox.stub(process, "exit");
     sandbox
       .stub(CliTelemetry, "sendTelemetryEvent")
       .callsFake((eventName: string, options?: { [_: string]: string }) => {
@@ -94,7 +96,62 @@ describe("teamsfx validate", () => {
     cmd.builder(yargs);
   });
 
+  it("Validate Command Running Check - app package", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.AppPackageFilePathParamName]: "./app.zip",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ValidateManifestStart,
+      TelemetryEvent.ValidateManifest,
+    ]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Validate Command Running Check - manifest", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.ManifestFilePathParamName]: "./manifest.json",
+      env: "dev",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ValidateManifestStart,
+      TelemetryEvent.ValidateManifest,
+    ]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Validate Command Running Check - Run command failed without env", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.ManifestFilePathParamName]: "./manifest.json",
+    };
+    CLIUIInstance.interactive = false;
+    const res = await cmd.runCommand(args);
+    expect(res.isErr()).to.be.true;
+    if (res.isErr()) {
+      expect(res.error.message).equal("The --env argument is not specified");
+    }
+  });
+
   it("Validate Command Running Check", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
@@ -122,6 +179,9 @@ describe("teamsfx validate", () => {
   });
 
   it("Validate Command Running Check with Error", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {

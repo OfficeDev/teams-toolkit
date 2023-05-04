@@ -10,12 +10,12 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
-  execAsync,
   getTestFolder,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  readContextMultiEnvV3,
   getUniqueAppName,
 } from "../commonUtils";
 import { BotValidator } from "../../commonlib";
@@ -29,32 +29,39 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
+  let teamsAppId: string | undefined;
 
   it(`${TemplateProject.AdaptiveCard}`, { testPlanCaseId: 15277474 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.AdaptiveCard,
-      TemplateProject.AdaptiveCard
-    );
-
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
+    if (isV3Enabled()) {
+    } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+    }
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, env)
+      : await readContextMultiEnv(projectPath, env);
 
     // Validate Bot Provision
     const bot = new BotValidator(context, projectPath, env);
-    await bot.validateProvision(false);
+    if (isV3Enabled()) {
+      await bot.validateProvisionV3(false);
+    } else {
+      await bot.validateProvision(false);
+    }
 
     // deploy
     await CliHelper.deployAll(projectPath);
@@ -63,29 +70,18 @@ describe("teamsfx new template", function () {
       // Validate deployment
 
       // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      const context = isV3Enabled()
+        ? await readContextMultiEnvV3(projectPath, env)
+        : await readContextMultiEnv(projectPath, env);
 
       // Validate Bot Deploy
       const bot = new BotValidator(context, projectPath, env);
       await bot.validateDeploy();
     }
-
-    // test (validate)
-    await execAsync(`teamsfx validate`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    // package
-    await execAsync(`teamsfx package`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
   });
 
-  after(async () => {
-    await cleanUp(appName, projectPath, false, true, false);
+  afterEach(async () => {
+    console.log(`[Successfully] start to clean up for ${projectPath}`);
+    await cleanUp(appName, projectPath, false, true, false, teamsAppId);
   });
 });

@@ -3,13 +3,12 @@
 
 import AdmZip from "adm-zip";
 import path from "path";
-import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder } from "./utils";
+import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder, downloadDirectory } from "./utils";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 import { FeatureFlagName } from "../../common/constants";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 
 export interface GeneratorContext {
   name: string;
@@ -18,9 +17,10 @@ export interface GeneratorContext {
   tryLimits?: number;
   timeoutInMs?: number;
   relativePath?: string;
-  zipUrl?: string;
+  url?: string;
   zip?: AdmZip;
-  fallbackZipPath?: string;
+  fallback?: boolean;
+  cancelDownloading?: boolean;
 
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
   fileDataReplaceFn?: (name: string, data: Buffer) => Buffer | string;
@@ -44,6 +44,7 @@ export enum GeneratorActionName {
   FetchTemplateUrlWithTag = "FetchTemplatesUrlWithTag",
   FetchZipFromUrl = "FetchZipFromUrl",
   FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
+  DownloadDirectory = "DownloadDirectory",
   Unzip = "Unzip",
 }
 
@@ -77,32 +78,38 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
   },
 };
 
+export const downloadDirectoryAction: GeneratorAction = {
+  name: GeneratorActionName.DownloadDirectory,
+  run: async (context: GeneratorContext) => {
+    if (!context.url) {
+      throw new MissKeyError("url");
+    }
+    await downloadDirectory(context.url, context.destination);
+  },
+};
+
 export const fetchTemplateUrlWithTagAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateUrlWithTag,
   run: async (context: GeneratorContext) => {
-    if (context.zip || context.zipUrl) {
+    if (context.zip || context.url || context.cancelDownloading) {
       return;
     }
 
-    context.zipUrl = await fetchTemplateZipUrl(
-      context.name,
-      context.tryLimits,
-      context.timeoutInMs
-    );
+    context.url = await fetchTemplateZipUrl(context.name, context.tryLimits, context.timeoutInMs);
   },
 };
 
 export const fetchZipFromUrlAction: GeneratorAction = {
   name: GeneratorActionName.FetchZipFromUrl,
   run: async (context: GeneratorContext) => {
-    if (context.zip) {
+    if (context.zip || context.cancelDownloading) {
       return;
     }
 
-    if (!context.zipUrl) {
-      throw new MissKeyError("zipUrl");
+    if (!context.url) {
+      throw new MissKeyError("url");
     }
-    context.zip = await fetchZipFromUrl(context.zipUrl, context.tryLimits, context.timeoutInMs);
+    context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
   },
 };
 
@@ -112,13 +119,10 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
     if (context.zip) {
       return;
     }
-
-    if (!context.fallbackZipPath) {
-      context.fallbackZipPath = path.join(getTemplatesFolder(), "fallback");
-    }
-
+    context.fallback = true;
+    const fallbackPath = path.join(getTemplatesFolder(), "fallback");
     const fileName = `${context.name}.zip`;
-    const zipPath: string = path.join(context.fallbackZipPath, fileName);
+    const zipPath: string = path.join(fallbackPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
     context.zip = new AdmZip(data);
@@ -150,3 +154,4 @@ export const TemplateActionSeq: GeneratorAction[] = [
 ];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];
+export const DownloadDirectoryActionSeq: GeneratorAction[] = [downloadDirectoryAction];

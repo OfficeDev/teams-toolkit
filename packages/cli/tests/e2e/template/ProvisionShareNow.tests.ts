@@ -17,6 +17,7 @@ import {
   getSubscriptionId,
   validateTabAndBotProjectProvision,
   getUniqueAppName,
+  editDotEnvFile,
 } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
@@ -36,28 +37,35 @@ describe("teamsfx new template", function () {
 
   it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
     if (isV3Enabled()) {
-      this.skip();
+      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.ShareNow);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    } else {
+      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.ShareNow);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
     }
-    await CliHelper.createTemplateProject(
-      appName,
-      testFolder,
-      TemplateProject.ShareNow,
-      TemplateProject.ShareNow
-    );
-
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(
-      projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
-    );
+    if (isV3Enabled()) {
+      const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
+      editDotEnvFile(envFilePath, "SQL_PASSWORD", "Cab232332" + getUuid().substring(0, 6));
+      await CliHelper.provisionProject(projectPath);
+    } else {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(
+        projectPath,
+        `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
+      );
+    }
 
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
+
+    // Deploy
+    await CliHelper.deployAll(projectPath);
   });
 
   after(async () => {

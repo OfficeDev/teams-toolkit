@@ -50,6 +50,7 @@ describe("Manifest Command Tests", function () {
       }
       return yargs;
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });

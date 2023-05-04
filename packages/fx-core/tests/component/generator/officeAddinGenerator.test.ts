@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yefuwang@microsoft.com
+ */
+
 import {
   ContextV3,
   devPreview,
@@ -14,7 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs";
-import fse from "fs-extra";
+import * as fse from "fs-extra";
 import axios from "axios";
 import "mocha";
 import mockfs from "mock-fs";
@@ -45,13 +49,17 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import EventEmitter from "events";
+import proxyquire from "proxyquire";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: ContextV3;
+  let mockedEnvRestore: RestoreFn;
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3(newProjectSettingsV3());
@@ -71,6 +79,19 @@ describe("OfficeAddinGenerator", function () {
     sinon.stub(fse, "readJson").resolves({});
     sinon.stub(fse, "ensureFile").resolves();
     sinon.stub(fse, "writeJSON").resolves();
+  });
+
+  it("should run childProcessExec command success", async function () {
+    sinon.stub(childProcess, "exec").yields(`echo 'test'`, "test");
+    chai.assert(await OfficeAddinGenerator.childProcessExec(`echo 'test'`), "test");
+  });
+
+  it("should throw error once command fail", async function () {
+    try {
+      await OfficeAddinGenerator.childProcessExec("exit -1");
+    } catch (err) {
+      chai.assert(err.message, "Command failed: exit -1");
+    }
   });
 
   it("should call both doScaffolding and template generator", async function () {
@@ -129,18 +150,15 @@ describe("OfficeAddinGenerator", function () {
     inputs[AddinProjectFolderQuestion.name] = undefined;
     inputs[AddinLanguageQuestion.name] = "TypeScript";
 
-    sinon.stub<any, any>(childProcess, "exec").callsFake(() => {
-      return;
-    });
+    sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
   });
 
-  it("should copy addin files and updateManifest if addin folder is specified", async () => {
+  it("should copy addin files and updateManifest if addin folder is specified with json manifest", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -180,8 +198,61 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
   });
 
+  it("should copy addin files and convert manifest if addin folder is specified with xml manifest", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    inputs["capabilities"] = ["taskpane"];
+    inputs[AddinProjectFolderQuestion.name] = "somepath";
+    inputs[AddinLanguageQuestion.name] = "TypeScript";
+    inputs[AddinProjectManifestQuestion.name] = "manifest.xml";
+
+    const copyAddinFilesStub = sinon
+      .stub(HelperMethods, "copyAddinFiles")
+      .callsFake((from: string, to: string) => {
+        return;
+      });
+    const updateManifestStub = sinon
+      .stub(HelperMethods, "updateManifest")
+      .callsFake(async (destination: string, manifestPath: string) => {
+        return;
+      });
+    const convertProjectStub = sinon
+      .stub()
+      .callsFake(async (manifestPath?: string, backupPath?: string) => {
+        return;
+      });
+
+    const generator = proxyquire("../../../src/component/generator/officeAddin/generator", {
+      "office-addin-project": {
+        convertProject: convertProjectStub,
+      },
+    });
+
+    sinon.stub<any, any>(ManifestUtil, "loadFromPath").resolves({
+      extensions: [
+        {
+          requirements: {
+            scopes: ["mail"],
+          },
+        },
+      ],
+    });
+
+    const result = await generator.OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+    chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
+    chai.expect(updateManifestStub.calledOnce).to.be.true;
+    chai.expect(convertProjectStub.calledOnce).to.be.true;
+    chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
+  });
+
   afterEach(async () => {
     sinon.restore();
+    mockedEnvRestore();
   });
 });
 
@@ -399,6 +470,82 @@ describe("helperMethods", async () => {
       } catch (err) {
         chai.assert.fail(err);
       }
+    });
+  });
+
+  describe("moveManifestLocation", () => {
+    const projectRoot = "/home/user/addin";
+
+    beforeEach(() => {
+      mockfs({
+        "/home/user/addin/manifest.json": "{}",
+        "/home/user/addin/assets": {
+          file1: "xxx",
+        },
+        "/home/user/addin/webpack.config.js": JSON.stringify([
+          {
+            from: "assets/*",
+            to: "assets/[name][ext][query]",
+          },
+          {
+            from: "manifest*.json",
+            to: "[name]" + "[ext]",
+          },
+        ]),
+        "/home/user/addin/package.json": JSON.stringify({
+          scripts: {
+            start: "office-addin-debugging start manifest.json",
+            stop: "office-addin-debugging stop manifest.json",
+            validate: "office-addin-manifest validate manifest.json",
+          },
+        }),
+        "/home/user/addin/src/taskpane/taskpane.html": `<img width="90" height="90" src="../../assets/logo-filled.png" alt="Contoso" title="Contoso" />`,
+      });
+    });
+
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("should move manifest.json into appPackage folder", async () => {
+      await HelperMethods.moveManifestLocation(projectRoot, "manifest.json");
+      chai.assert.isFalse(await fse.pathExists(path.join(projectRoot, "manifest.json")));
+      chai.assert.isFalse(await fse.pathExists(path.join(projectRoot, "assets")));
+
+      chai.assert.isTrue(
+        await fse.pathExists(path.join(projectRoot, "appPackage", "manifest.json"))
+      );
+      chai.assert.isTrue(
+        await fse.pathExists(path.join(projectRoot, "appPackage", "assets", "file1"))
+      );
+
+      const webpackConfigPath = path.join(projectRoot, "webpack.config.js");
+      const webpackConfigJson = JSON.parse(await fse.readFile(webpackConfigPath, "utf8"));
+      chai.assert.equal(webpackConfigJson[0].from, "appPackage/assets/*");
+      chai.assert.equal(webpackConfigJson[1].from, "appPackage/manifest*.json");
+
+      const packageJsonPath = path.join(projectRoot, "package.json");
+      const packageJson = JSON.parse(await fse.readFile(packageJsonPath, "utf8"));
+      chai.assert.equal(
+        packageJson.scripts.start,
+        "office-addin-debugging start appPackage/manifest.json"
+      );
+
+      chai.assert.equal(
+        packageJson.scripts.stop,
+        "office-addin-debugging stop appPackage/manifest.json"
+      );
+      chai.assert.equal(
+        packageJson.scripts.validate,
+        "office-addin-manifest validate appPackage/manifest.json"
+      );
+
+      const htmlPath = path.join(projectRoot, "src", "taskpane", "taskpane.html");
+      const html = await fse.readFile(htmlPath, "utf8");
+      chai.assert.equal(
+        html,
+        `<img width="90" height="90" src="../../appPackage/assets/logo-filled.png" alt="Contoso" title="Contoso" />`
+      );
     });
   });
 });

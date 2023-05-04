@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
+import { merge } from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
@@ -20,18 +21,18 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { Constants } from "../../resource/appManifest/constants";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
-import { AppStudioError } from "../../resource/appManifest/errors";
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/publishAppPackage";
 
-const outputKeys = {
+const defaultOutputNames = {
   publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",
 };
 
@@ -53,20 +54,25 @@ export class PublishAppPackageDriver implements StepDriver {
 
   public async execute(
     args: PublishAppPackageArgs,
-    context: DriverContext
+    context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.publish(args, wrapContext);
+    const res = await this.publish(args, wrapContext, outputEnvVarNames);
     return {
       result: res,
       summaries: wrapContext.summaries,
     };
   }
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([
+    addStartAndEndTelemetry(actionName, actionName),
+    updateProgress(getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2")),
+  ])
   public async publish(
     args: PublishAppPackageArgs,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
 
@@ -75,18 +81,16 @@ export class PublishAppPackageDriver implements StepDriver {
       return err(argsValidationResult.error);
     }
 
-    const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppTitle"),
-      2
-    );
-    progressHandler?.start();
+    if (!outputEnvVarNames) {
+      outputEnvVarNames = new Map(Object.entries(defaultOutputNames));
+    }
 
     const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
     if (!(await fs.pathExists(appPackagePath))) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath),
+        new FileNotFoundError(
+          actionName,
+          appPackagePath,
           "https://aka.ms/teamsfx-actions/teamsapp-publish"
         )
       );
@@ -98,9 +102,9 @@ export class PublishAppPackageDriver implements StepDriver {
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
     if (!manifestFile) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE),
+        new FileNotFoundError(
+          actionName,
+          Constants.MANIFEST_FILE,
           "https://aka.ms/teamsfx-actions/teamsapp-publish"
         )
       );
@@ -117,69 +121,74 @@ export class PublishAppPackageDriver implements StepDriver {
     }
 
     let result;
-    const telemetryProps: { [key: string]: string } = {};
 
     const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1");
-    progressHandler?.next(message);
     context.addSummary(message);
 
-    const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
-    if (existApp) {
-      context.addSummary(
-        getLocalizedString("driver.teamsApp.summary.publishTeamsAppExists", manifest.id)
+    try {
+      const existApp = await AppStudioClient.getAppByTeamsAppId(
+        manifest.id,
+        appStudioTokenRes.value
       );
-      let executePublishUpdate = false;
-      let description = getLocalizedString(
-        "plugins.appstudio.pubWarn",
-        existApp.displayName,
-        existApp.publishingState
-      );
-      if (existApp.lastModifiedDateTime) {
+      if (existApp) {
+        context.addSummary(
+          getLocalizedString("driver.teamsApp.summary.publishTeamsAppExists", manifest.id)
+        );
+        let executePublishUpdate = false;
+        let description = getLocalizedString(
+          "plugins.appstudio.pubWarn",
+          existApp.displayName,
+          existApp.publishingState
+        );
+        if (existApp.lastModifiedDateTime) {
+          description =
+            description +
+            getLocalizedString(
+              "plugins.appstudio.lastModified",
+              existApp.lastModifiedDateTime?.toLocaleString()
+            );
+        }
         description =
-          description +
-          getLocalizedString(
-            "plugins.appstudio.lastModified",
-            existApp.lastModifiedDateTime?.toLocaleString()
-          );
-      }
-      description = description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
-      const confirm = getLocalizedString("core.option.confirm");
-      const res = await context.ui?.showMessage("warn", description, true, confirm);
-      if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
+          description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
+        const confirm = getLocalizedString("core.option.confirm");
+        const res = await context.ui?.showMessage("warn", description, true, confirm);
+        if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
 
-      if (executePublishUpdate) {
-        const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
-        progressHandler?.next(message);
+        if (executePublishUpdate) {
+          const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
+          context.addSummary(message);
+          const appId = await AppStudioClient.publishTeamsAppUpdate(
+            manifest.id,
+            archivedFile,
+            appStudioTokenRes.value
+          );
+          result = new Map([[outputEnvVarNames.get("publishedAppId") as string, appId]]);
+          merge(context.telemetryProperties, {
+            [TelemetryPropertyKey.updateExistingApp]: "true",
+            [TelemetryPropertyKey.publishedAppId]: appId,
+          });
+        } else {
+          return err(UserCancelError);
+        }
+      } else {
+        context.addSummary(
+          getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
+        );
+        const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
         context.addSummary(message);
-        const appId = await AppStudioClient.publishTeamsAppUpdate(
+        const appId = await AppStudioClient.publishTeamsApp(
           manifest.id,
           archivedFile,
           appStudioTokenRes.value
         );
-        result = new Map([[outputKeys.publishedAppId, appId]]);
-        // TODO: how to send telemetry with own properties
-        telemetryProps[TelemetryPropertyKey.updateExistingApp] = "true";
-      } else {
-        progressHandler?.end(true);
-        return err(UserCancelError);
+        result = new Map([[outputEnvVarNames.get("publishedAppId") as string, appId]]);
+        merge(context.telemetryProperties, {
+          [TelemetryPropertyKey.updateExistingApp]: "false",
+        });
       }
-    } else {
-      context.addSummary(
-        getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
-      );
-      const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
-      progressHandler?.next(message);
-      context.addSummary(message);
-      const appId = await AppStudioClient.publishTeamsApp(
-        manifest.id,
-        archivedFile,
-        appStudioTokenRes.value
-      );
-      result = new Map([[outputKeys.publishedAppId, appId]]);
-      telemetryProps[TelemetryPropertyKey.updateExistingApp] = "false";
+    } catch (e: any) {
+      return err(e);
     }
-
-    progressHandler?.end(true);
 
     context.logProvider.info(`Publish success!`);
     context.addSummary(
@@ -193,18 +202,6 @@ export class PublishAppPackageDriver implements StepDriver {
         Constants.TEAMS_MANAGE_APP_DOC
       );
       context.ui?.showMessage("info", msg, false);
-    } else {
-      const msg = getLocalizedString(
-        "plugins.appstudio.publishSucceedNotice",
-        manifest.name.short,
-        Constants.TEAMS_MANAGE_APP_DOC
-      );
-      const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
-      context.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
-        if (value.isOk() && value.value === adminPortal) {
-          context.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-        }
-      });
     }
     return ok(result);
   }
@@ -216,9 +213,9 @@ export class PublishAppPackageDriver implements StepDriver {
     }
     if (invalidParams.length > 0) {
       return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.InvalidParameterError.name,
-          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+        new InvalidActionInputError(
+          actionName,
+          invalidParams,
           "https://aka.ms/teamsfx-actions/teamsapp-publish"
         )
       );

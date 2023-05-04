@@ -22,7 +22,10 @@ describe("featureFlags", () => {
     let mockedEnvRestore: RestoreFn;
 
     it("return true if env variable is set", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.BotNotification]: "true" });
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.BotNotification]: "true",
+        TEAMSFX_V3: "false",
+      });
 
       const result = isBotNotificationEnabled();
 
@@ -73,7 +76,7 @@ describe("featureFlags", () => {
     });
 
     it("return false if env variable is not set", async () => {
-      mockedEnvRestore = mockedEnv({});
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
 
       const result = isTDPIntegrationEnabled();
 

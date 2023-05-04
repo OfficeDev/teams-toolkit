@@ -30,12 +30,14 @@ describe("Config Command Tests", function () {
   let telemetryEvents: string[] = [];
   let logs: string[] = [];
   let decrypted: string[] = [];
+  let mockedEnvRestore: RestoreFn;
   const config = {
     telemetry: "on",
     envCheckerValidateDotnetSdk: "true",
   };
 
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {
@@ -96,6 +98,13 @@ describe("Config Command Tests", function () {
     telemetryEvents = [];
     logs = [];
     decrypted = [];
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
+  });
+
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   it("has configured proper parameters", () => {
@@ -136,6 +145,7 @@ describe("Config Get Command Check", () => {
   let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
       telemetryEvents.push(eventName);
     });
@@ -251,6 +261,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("prints all global config and project config when running 'config get' in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[0].handler({
       [constants.RootFolderNode.data.name as string]: "testProjectFolder",
       [constants.EnvNodeNoCreate.data.name as string]: "dev",
@@ -268,6 +281,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints specific global config when running 'config get telemetry' and not in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[0].handler({
       [constants.EnvNodeNoCreate.data.name as string]: "dev",
       option: "telemetry",
@@ -293,6 +309,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints specific project config that doesn't need decryption when running 'config get test' in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[0].handler({
       option: "test",
       [constants.RootFolderNode.data.name as string]: "testProjectFolder",
@@ -306,6 +325,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("throw error when the project is not TTK project", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await expect(
       cmd.subCommands[0].handler({
         option: "test",
@@ -316,6 +338,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints specific project config that needs decryption when running 'config get test' in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[0].handler({
       option: "fx-resource-bot.botPassword",
       [constants.RootFolderNode.data.name as string]: "testProjectFolder",
@@ -350,6 +375,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("successfully print global config when running 'config get xxx' and xxx is a global option", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[0].handler({
       option: "telemetry",
     });
@@ -359,6 +387,9 @@ describe("Config Get Command Check", () => {
   });
 
   it("successfully print global config when running 'config get xxx --env' and xxx is a global option", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[0].handler({
       option: "telemetry",
       env: "dev",
@@ -384,6 +415,7 @@ describe("Config Set Command Check", () => {
   let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
       telemetryEvents.push(eventName);
     });
@@ -485,6 +517,9 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully sets global config when running 'config set xx xx' and not in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[1].handler({
       option: "telemetry",
       value: "off",
@@ -545,6 +580,9 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully set non-secret project config when running 'config set test off' in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     await cmd.subCommands[1].handler({
       option: "test",
       value: "off",
@@ -573,6 +611,7 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully set secret project config when running 'config set fx-resource-bot.botPassword pwd' in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     await cmd.subCommands[1].handler({
       option: "fx-resource-bot.botPassword",
       value: "pwd",
@@ -610,6 +649,7 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfullly set global config when running 'config set a b' when 'a' is a global option and in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     await cmd.subCommands[1].handler({
       option: CliConfigOptions.Telemetry,
       value: "off",
@@ -622,6 +662,7 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfullly set global config when running 'config set a b --env dev' when 'a' is a global option and in a project folder", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     await cmd.subCommands[1].handler({
       option: CliConfigOptions.Telemetry,
       value: "off",

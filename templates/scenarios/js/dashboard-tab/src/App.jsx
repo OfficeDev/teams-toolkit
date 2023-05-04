@@ -1,21 +1,22 @@
-import { HashRouter as Router, Redirect, Route } from "react-router-dom";
+import "./App.css";
 
-// https://fluentsite.z22.web.core.windows.net/quick-start
+import { useEffect } from "react";
+import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+
 import {
   FluentProvider,
-  Spinner,
   teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
-  tokens,
 } from "@fluentui/react-components";
+import { app } from "@microsoft/teams-js";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
-import SampleDashboard from "./views/dashboards/SampleDashboard";
-import Privacy from "./views/Privacy";
-import TabConfig from "./views/TabConfig";
-import TermsOfUse from "./views/TermsOfUse";
+import SampleDashboard from "./dashboards/SampleDashboard";
 import { TeamsFxContext } from "./internal/context";
+import Privacy from "./Privacy";
+import TabConfig from "./TabConfig";
+import TermsOfUse from "./TermsOfUse";
 
 /**
  * The main app which handles the initialization and routing
@@ -26,9 +27,17 @@ export default function App() {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     clientId: process.env.REACT_APP_CLIENT_ID,
   });
+  useEffect(() => {
+    loading &&
+      app.initialize().then(() => {
+        // Hide the loading indicator.
+        app.notifySuccess();
+      });
+  }, [loading]);
   return (
     <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>
       <FluentProvider
+        id="fluent-provider"
         theme={
           themeString === "dark"
             ? teamsDarkTheme
@@ -36,24 +45,16 @@ export default function App() {
             ? teamsHighContrastTheme
             : teamsLightTheme
         }
-        style={{
-          height: "100vh",
-          background: tokens.colorNeutralBackground3,
-        }}
       >
         <Router>
-          <Route exact path="/">
-            <Redirect to="/tab" />
-          </Route>
-          {loading ? (
-            <Spinner style={{ margin: 100 }} />
-          ) : (
-            <>
-              <Route exact path="/privacy" component={Privacy} />
-              <Route exact path="/termsofuse" component={TermsOfUse} />
-              <Route exact path="/tab" component={SampleDashboard} />
-              <Route exact path="/config" component={TabConfig} />
-            </>
+          {!loading && (
+            <Routes>
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/termsofuse" element={<TermsOfUse />} />
+              <Route path="/tab" element={<SampleDashboard />} />
+              <Route path="/config" element={<TabConfig />} />
+              <Route path="*" element={<Navigate to={"/tab"} />} />
+            </Routes>
           )}
         </Router>
       </FluentProvider>

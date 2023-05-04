@@ -10,6 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { DeployConstant } from "../constant/deployConstant";
+import { HttpStatusCode } from "../constant/commonConstant";
 
 /**
  * component error
@@ -103,7 +104,7 @@ export class BaseComponentInnerError extends Error {
       source,
       "SystemError",
       "UnknownError",
-      "driver.deploy.error.unknownError",
+      "error.common.UnhandledError",
       [JSON.stringify(error)]
     );
   }
@@ -142,6 +143,18 @@ export class ExternalApiCallError extends BaseComponentInnerError {
     );
   }
 
+  static getAzureCredentialRemoteError(source: string, error?: unknown): ExternalApiCallError {
+    return new ExternalApiCallError(
+      source,
+      "GetAzureCredentialRemoteError",
+      "driver.common.FailRetrieveAzureCredentialsRemoteError",
+      HttpStatusCode.INTERNAL_SERVER_ERROR,
+      undefined,
+      ["driver.common.suggestion.retryLater"],
+      typeof error === "string" ? error : JSON.stringify(error)
+    );
+  }
+
   static getSasTokenError(source: string, detail?: string): ExternalApiCallError {
     return new ExternalApiCallError(
       source,
@@ -150,6 +163,24 @@ export class ExternalApiCallError extends BaseComponentInnerError {
       -1,
       [DeployConstant.AZURE_STORAGE_CONTAINER_NAME],
       [
+        "plugins.frontend.checkSystemTimeTip",
+        // eslint-disable-next-line no-secrets/no-secrets
+        "plugins.frontend.checkStoragePermissionsTip",
+        "plugins.frontend.checkNetworkTip",
+      ],
+      detail
+    );
+  }
+
+  static getSasTokenRemoteError(source: string, detail?: string): ExternalApiCallError {
+    return new ExternalApiCallError(
+      source,
+      "AzureStorageSASToeknEmpty",
+      "driver.common.GetContainerRemoteError",
+      HttpStatusCode.INTERNAL_SERVER_ERROR,
+      [DeployConstant.AZURE_STORAGE_CONTAINER_NAME],
+      [
+        "driver.common.suggestion.retryLater",
         "plugins.frontend.checkSystemTimeTip",
         // eslint-disable-next-line no-secrets/no-secrets
         "plugins.frontend.checkStoragePermissionsTip",
@@ -237,7 +268,7 @@ export class PrerequisiteError extends BaseComponentInnerError {
     return new PrerequisiteError(
       source,
       "FolderNotExists",
-      "driver.env.error.folderNotExist",
+      "error.common.FileNotFoundError",
       [name],
       undefined,
       helpLink

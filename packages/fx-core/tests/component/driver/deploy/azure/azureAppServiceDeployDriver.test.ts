@@ -1,27 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as sinon from "sinon";
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
-import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import * as appService from "@azure/arm-appservice";
+import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/tools";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
+import * as appService from "@azure/arm-appservice";
+import * as Models from "@azure/arm-appservice/src/models";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { expect, assert } from "chai";
 import * as fs from "fs-extra";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
-import * as Models from "@azure/arm-appservice/src/models";
-import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
-import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { MockUserInteraction } from "../../../../core/utils";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -49,25 +52,36 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
     await fs.close(fh);
-    await fs.writeFile(path.join(sysTmp, folder, "ignore"), "ignore", {
+    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
       encoding: "utf8",
       flag: "a",
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      outputZipFile: ".deployment/deployment.zip",
     } as DeployArgs;
+    const progressHandler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    const ui = new MockUserInteraction();
+    const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
+      telemetryReporter: new MockTelemetryReporter(),
+      progressBar: progressHandler,
     } as DriverContext;
-    sandbox
-      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
+    const credential = new MyTokenCredential();
+    sandbox.stub(credential, "getToken").resolves(undefined);
+    sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -76,7 +90,7 @@ describe("Azure App Service Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    const client = new appService.WebSiteManagementClient(credential, "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
@@ -94,10 +108,24 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
+      data: {
+        status: 4,
+        message: "success",
+        received_time: 123,
+        start_time: 111,
+        end_time: 123,
+        last_success_end_time: 100,
+        complete: true,
+        active: 1,
+        is_readonly: true,
+        site_name: "new_name",
+      },
     });
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
@@ -106,7 +134,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/",
-      distributionPath: "/",
+      artifactFolder: "/",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
@@ -124,7 +152,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
     } as DeployArgs;
     const context = {
@@ -139,7 +167,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -185,7 +213,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -223,33 +251,11 @@ describe("Azure App Service Deploy Driver test", () => {
     assert.equal(res.isErr(), true);
   });
 
-  it("zip deploy need acceleration", async () => {
-    const args = {
-      workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
-      ignoreFile: "./ignore",
-      resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
-    } as DeployArgs;
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-    } as DriverContext;
-    context.logProvider.info = async (msg: string | Array<any>) => {
-      console.log(msg);
-      return Promise.resolve(true);
-    };
-    const deploy = new AzureZipDeployImpl(args, context, "", "", [], []);
-    sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
-    await deploy.run();
-  });
-
   it("should thrown when deploy remote 500 error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -296,7 +302,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -343,7 +349,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       workingDirectory: "/aaaa",
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -366,16 +372,26 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
       dryRun: true,
     } as DeployArgs;
+
+    const progressHandler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    const ui = new MockUserInteraction();
+    const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
+      progressBar: progressHandler,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -410,7 +426,13 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.execute(args, context);
     assert.equal(res.result.isOk(), true);
-    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+    const tmpFile = path.join(sysTmp, "./.deployment/deployment.zip");
+    assert.equal(
+      res.summaries[0],
+      `Deployment preparations are completed. You can find the package in \`${tmpFile}\``
+    );
+    // dry run will have only one progress step
+    assert.equal(progressNextCaller.callCount, 1);
   });
 
   it("list credential error", async () => {
@@ -423,7 +445,7 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const args = {
       workingDirectory: sysTmp,
-      distributionPath: `./${folder}`,
+      artifactFolder: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -433,9 +455,11 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
     } as DriverContext;
-    sandbox
-      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
+    const credential = new MyTokenCredential();
+    credential.getToken = async () => {
+      return null;
+    };
+    sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -444,7 +468,7 @@ describe("Azure App Service Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    const client = new appService.WebSiteManagementClient(credential, "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox
       .stub(client.webApps, "beginListPublishingCredentialsAndWait")

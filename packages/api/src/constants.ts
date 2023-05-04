@@ -64,14 +64,19 @@ export enum Stage {
   getProjectConfig = "getProjectConfig",
   init = "init",
   addFeature = "addFeature",
+  addWebpart = "addWebpart",
   addResource = "addResource",
   addCapability = "addCapability",
   addCiCdFlow = "addCiCdFlow",
   deployAad = "deployAad",
+  buildAad = "buildAad",
   deployTeams = "deployTeams",
   initDebug = "initDebug",
   initInfra = "initInfra",
   publishInDeveloperPortal = "publishInDeveloperPortal",
+  validateApplication = "validateApplication",
+  createAppPackage = "createAppPackage",
+  previewWithManifest = "previewWithManifest",
 }
 
 export enum TelemetryEvent {

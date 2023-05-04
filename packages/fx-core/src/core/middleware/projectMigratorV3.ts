@@ -1,41 +1,42 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author xzf0587 <zhaofengxu@microsoft.com>
+ */
 import {
   AppPackageFolderName,
   err,
   FxError,
   ok,
   ProjectSettings,
-  SettingsFolderName,
   SystemError,
   UserError,
   InputConfigsFolderName,
   Platform,
-  Inputs,
-  Stage,
+  AzureSolutionSettings,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
-import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
+import { upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
   Component,
-  ProjectMigratorStatus,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
-  TelemetryProperty,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
-import { TOOLS } from "../globalVars";
+import { globalVars, TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,
   AbandonedProjectError,
   ToolkitNotSupportError,
+  NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -47,7 +48,7 @@ import {
   generateAppIdUri,
   getProjectVersion,
   jsonObjectNamesConvertV3,
-  getCapabilitySsoStatus,
+  getCapabilityStatus,
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
@@ -56,14 +57,22 @@ import {
   getParameterFromCxt,
   migrationNotificationMessage,
   outputCancelMessage,
-  getDownloadLinkByVersionAndPlatform,
   getVersionState,
+  getTrackingIdFromPath,
+  buildEnvUserFileName,
+  tryExtractEnvFromUserdata,
+  buildEnvFileName,
+  addMissingValidDomainForManifest,
+  isValidDomainForBotOutputKey,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
   getPlaceholderMappings,
+  ignoreDevToolsDir,
   isCommentObject,
+  launchRemote,
+  OldProjectSettingsHelper,
   readJsonCommentFile,
 } from "./utils/debug/debugV3MigrationUtils";
 import {
@@ -85,21 +94,25 @@ import {
   migrateBackendWatch,
   migrateBackendStart,
   migratePreDebugCheck,
+  migrateInstallAppInTeams,
+  migrateGetFuncPathCommand,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
+import { isSPFxProject, isV3Enabled } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
+import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
 
 export const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
-  reportName: "migrationReport.md",
+  reportName: "upgradeReport.md",
   envWriteOption: {
     // .env.{env} file might be already exist, use append mode (flag: a+)
     encoding: "utf8",
@@ -108,12 +121,40 @@ export const Constants = {
   envFilePrefix: ".env.",
 };
 
-export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
-export const errorNames = {
-  appPackageNotExist: "AppPackageNotExist",
-  manifestTemplateNotExist: "ManifestTemplateNotExist",
+export const Parameters = {
+  skipUserConfirm: "skipUserConfirm",
+  isNonmodalMessage: "isNonmodalMessage",
+  confirmOnly: "confirmOnly",
 };
-const migrationMessageButtons = [learnMoreText, upgradeButton];
+
+export const TelemetryPropertyKey = {
+  button: "button",
+  mode: "mode",
+  upgradeVersion: "upgrade-version",
+  reason: "reason",
+};
+
+export const TelemetryPropertyValue = {
+  ok: "ok",
+  learnMore: "learn-more",
+  cancel: "cancel",
+  modal: "modal",
+  nonmodal: "nonmodal",
+  confirmOnly: "confirm-only",
+  skipUserConfirm: "skip-user-confirm",
+  upgradeVersion: "5.0",
+};
+
+export const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+
+// MigrationError provides learnMoreLink as helplink for user. Remember add related error message in learnMoreLink when adding new error.
+export const errorNames = {
+  manifestTemplateNotExist: "ManifestTemplateNotExist",
+  manifestTemplateInvalid: "ManifestTemplateInvalid",
+  aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
+};
+export const moreInfoButton = getLocalizedString("core.option.moreInfo");
+const migrationMessageButtons = [upgradeButton, moreInfoButton];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -132,6 +173,7 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  await ensureTrackingIdInGlobal(ctx);
   const versionForMigration = await checkVersionForMigration(ctx);
   // abandoned v3 project which will not be supported. Show user the message to create new project.
   if (versionForMigration.source === VersionSource.settings) {
@@ -141,12 +183,13 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       true
     );
     ctx.result = err(AbandonedProjectError());
-  } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
-    if (!checkUserTasks(ctx)) {
-      ctx.result = ok(undefined);
-      return;
-    }
-    if (!isMigrationV3Enabled()) {
+    return;
+  }
+  const projectPath = getParameterFromCxt(ctx, "projectPath", "");
+  const isValid = await checkActiveResourcePlugins(projectPath);
+  const isUpgradeable = isValid && versionForMigration.state === VersionState.upgradeable;
+  if (isUpgradeable) {
+    if (!isV3Enabled()) {
       await TOOLS?.ui.showMessage(
         "warn",
         getLocalizedString("core.migrationV3.CreateNewProject"),
@@ -156,13 +199,28 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       return false;
     }
 
-    const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
-    if (!skipUserConfirm && !(await askUserConfirm(ctx, versionForMigration))) {
+    // in cli non interactive scenario, migration will return an error instead of popup dialog.
+    const nonInteractive = getParameterFromCxt(ctx, "nonInteractive");
+    if (nonInteractive) {
+      ctx.result = err(new NotAllowedMigrationError());
       return;
     }
-    const migrationContext = await MigrationContext.create(ctx);
-    await wrapRunMigration(migrationContext, migrate);
-    ctx.result = ok(undefined);
+
+    const isRunMigration = await showNotification(ctx, versionForMigration);
+    if (isRunMigration) {
+      const isNonmodalMessage = getParameterFromCxt(ctx, Parameters.isNonmodalMessage);
+      if (isNonmodalMessage) {
+        const versionForMigration = await checkVersionForMigration(ctx);
+        if (versionForMigration.state !== VersionState.upgradeable) {
+          ctx.result = ok(undefined);
+          return;
+        }
+      }
+      const migrationContext = await MigrationContext.create(ctx);
+      await wrapRunMigration(migrationContext, migrate);
+      ctx.result = ok(undefined);
+    }
+    return;
   } else {
     // continue next step only when:
     // 1. no need to upgrade the project;
@@ -176,12 +234,14 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStartV3);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart, {
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    });
     await exec(context);
     await showSummaryReport(context);
     sendTelemetryEvent(
       Component.core,
-      TelemetryEvent.ProjectMigratorMigrateV3,
+      TelemetryEvent.ProjectMigratorMigrate,
       context.telemetryProperties
     );
   } catch (error: any) {
@@ -202,7 +262,7 @@ export async function wrapRunMigration(
     }
     sendTelemetryErrorEvent(
       Component.core,
-      TelemetryEvent.ProjectMigratorV3Error,
+      TelemetryEvent.ProjectMigratorError,
       fxError,
       context.telemetryProperties
     );
@@ -273,11 +333,56 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
   if (await fs.pathExists(launchJsonPath)) {
     await context.backup(Constants.launchJsonPath);
-    const launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    let launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    const oldProjectSettings = await loadProjectSettings(context.projectPath);
+    if (oldProjectSettings.isM365) {
+      const jsonObject = JSON.parse(launchJsonContent);
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.edge, "Edge", LaunchUrl.teamsRemote, 1)
+      );
+      jsonObject.configurations.push(
+        launchRemote(HubName.teams, LaunchBrowser.chrome, "Chrome", LaunchUrl.teamsRemote, 1)
+      );
+      if (OldProjectSettingsHelper.includeTab(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteTab, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteTab,
+            2
+          )
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.edge, "Edge", LaunchUrl.officeRemoteTab, 3)
+        );
+        jsonObject.configurations.push(
+          launchRemote(HubName.office, LaunchBrowser.chrome, "Chrome", LaunchUrl.officeRemoteTab, 3)
+        );
+      } else if (OldProjectSettingsHelper.includeBot(oldProjectSettings)) {
+        jsonObject.configurations.push(
+          launchRemote(HubName.outlook, LaunchBrowser.edge, "Edge", LaunchUrl.outlookRemoteBot, 2)
+        );
+        jsonObject.configurations.push(
+          launchRemote(
+            HubName.outlook,
+            LaunchBrowser.chrome,
+            "Chrome",
+            LaunchUrl.outlookRemoteBot,
+            2
+          )
+        );
+      }
+      launchJsonContent = JSON.stringify(jsonObject, null, 4);
+    }
     const result = launchJsonContent
-      .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
-      .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
-      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
+      .replace(/\${teamsAppId}/g, "${{TEAMS_APP_ID}}")
+      .replace(/\${teamsAppInternalId}/g, "${{M365_APP_ID}}") // For M365 apps
+      .replace(/\${localTeamsAppId}/g, "${{local:TEAMS_APP_ID}}")
+      .replace(/\${localTeamsAppInternalId}/g, "${{local:M365_APP_ID}}"); // For M365 apps
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }
@@ -292,18 +397,39 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
 }
 
 export async function manifestsMigration(context: MigrationContext): Promise<void> {
-  // Backup templates/appPackage
+  // Check manifest existing
   const oldAppPackageFolderPath = path.join(getTemplateFolderPath(context), AppPackageFolderName);
-  const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
-
-  if (!oldAppPackageFolderBackupRes) {
-    // templates/appPackage does not exists
-    // invalid teamsfx project
+  const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const oldManifestAbsolutePath = path.join(context.projectPath, oldManifestPath);
+  const oldManifestExists = await fs.pathExists(oldManifestAbsolutePath);
+  if (!oldManifestExists) {
+    // templates/appPackage/manifest.template.json does not exist
     throw MigrationError(
-      new Error("templates/appPackage does not exist"),
-      errorNames.appPackageNotExist,
+      new Error(getLocalizedString("core.migrationV3.manifestNotExist")),
+      errorNames.manifestTemplateNotExist,
       learnMoreLink
     );
+  }
+  // Backup templates/appPackage
+  await context.backup(oldAppPackageFolderPath);
+
+  // Validate manifest template
+  {
+    const res = await manifestUtils._readAppManifest(
+      path.join(context.projectPath, oldManifestPath)
+    );
+    if (res.isErr()) {
+      throw MigrationError(
+        new Error(getLocalizedString("core.migrationV3.manifestInvalid")),
+        errorNames.manifestTemplateInvalid
+      );
+    }
+  }
+
+  // Read Bicep
+  const bicepContent = await readBicepContent(context);
+  if (isValidDomainForBotOutputKey(bicepContent)) {
+    context.isBotValidDomain = true;
   }
 
   // Ensure appPackage
@@ -319,50 +445,61 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     await context.fsCopy(oldResourceFolderPath, resourceFolderPath);
   }
 
-  // Read Bicep
-  const bicepContent = await readBicepContent(context);
-
   // Read capability project settings
   const projectSettings = await loadProjectSettings(context.projectPath);
-  const capabilities = getCapabilitySsoStatus(projectSettings);
+  const capabilities = getCapabilityStatus(projectSettings);
   const appIdUri = generateAppIdUri(capabilities);
   const isSpfx = isSPFxProject(projectSettings);
 
-  // Read Teams app manifest and save to templates/appPackage/manifest.json
-  const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
-  if (oldManifestExists) {
-    const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
-    let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
-    oldManifest = replaceAppIdUri(oldManifest, appIdUri);
-    const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    if (isSpfx) {
-      await updateAndSaveManifestForSpfx(context, manifest);
-    } else {
-      await context.fsWriteFile(manifestPath, manifest);
-    }
-  } else {
-    // templates/appPackage/manifest.template.json does not exist
-    throw MigrationError(
-      new Error("templates/appPackage/manifest.template.json does not exist"),
-      errorNames.manifestTemplateNotExist,
-      learnMoreLink
+  if (!isSpfx) {
+    await addMissingValidDomainForManifest(
+      path.join(context.projectPath, oldManifestPath),
+      capabilities.Tab,
+      capabilities.BotSso,
+      context.isBotValidDomain
     );
   }
+  // Read Teams app manifest and save to templates/appPackage/manifest.json
+  const manifestPath = path.join(AppPackageFolderName, MetadataV3.teamsManifestFileName);
+  let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+  oldManifest = replaceAppIdUri(oldManifest, appIdUri);
+  const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
+  if (isSpfx) {
+    await updateAndSaveManifestForSpfx(context, manifest);
+  } else {
+    await context.fsWriteFile(manifestPath, manifest);
+  }
 
-  // Read AAD app manifest and save to ./aad.manifest.template.json
+  // Read AAD app manifest and save to ./aad.manifest.json
   const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );
-  if (oldAadManifestExists) {
+
+  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
+    .activeResourcePlugins;
+  const component = (projectSettings as ProjectSettingsV3).components;
+  const aadRequired =
+    (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
+    (component &&
+      component.findIndex((component, index, obj) => {
+        return component.name == "aad-app";
+      }) >= 0);
+
+  if (oldAadManifestExists && aadRequired) {
     let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
     );
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    await context.fsWriteFile("aad.manifest.template.json", aadManifest);
+    await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
+  } else if (aadRequired && !oldAadManifestExists) {
+    throw MigrationError(
+      new Error(getLocalizedString("core.migrationV3.aadManifestNotExist")),
+      errorNames.aadManifestTemplateNotExist,
+      learnMoreLink
+    );
   }
 
   await context.fsRemove(oldAppPackageFolderPath);
@@ -397,43 +534,141 @@ export async function azureParameterMigration(context: MigrationContext): Promis
   }
 }
 
+export async function showNotification(
+  ctx: CoreHookContext,
+  versionForMigration: VersionForMigration
+): Promise<boolean> {
+  const isNonmodalMessage = getParameterFromCxt(ctx, Parameters.isNonmodalMessage);
+  if (isNonmodalMessage) {
+    return await showNonmodalNotification(ctx, versionForMigration);
+  }
+  const confirmOnly = getParameterFromCxt(ctx, Parameters.confirmOnly);
+  if (confirmOnly) {
+    return await showConfirmOnlyNotification(ctx);
+  }
+  const skipUserConfirm = getParameterFromCxt(ctx, Parameters.skipUserConfirm);
+  if (skipUserConfirm) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.skipUserConfirm,
+    });
+    return true;
+  }
+  return await askUserConfirm(ctx, versionForMigration);
+}
+
 export async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
   let answer;
   do {
-    answer = await popupMessage(versionForMigration);
-    if (answer === learnMoreText) {
+    answer = await popupMessageModal(versionForMigration);
+    if (answer === moreInfoButton) {
       TOOLS?.ui!.openUrl(learnMoreLink);
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+        [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
+        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+        [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
+      });
     }
-  } while (answer === learnMoreText);
+  } while (answer === moreInfoButton);
   if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
-    const link = getDownloadLinkByVersionAndPlatform(
-      versionForMigration.currentVersion,
-      versionForMigration.platform
-    );
-    ctx.result = err(UpgradeV3CanceledError(link, versionForMigration.currentVersion));
+    ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
-    [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+    [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
   });
   return true;
 }
 
-export async function popupMessage(
+export async function showNonmodalNotification(
+  ctx: CoreHookContext,
   versionForMigration: VersionForMigration
+): Promise<boolean> {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
+  const answer = await popupMessageNonmodal(versionForMigration);
+  if (answer === moreInfoButton) {
+    TOOLS?.ui!.openUrl(learnMoreLink);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
+    });
+    return false;
+  } else if (answer === upgradeButton) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
+    });
+    return true;
+  }
+  return false;
+}
+
+export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
+    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+  });
+  const res = await TOOLS?.ui.showMessage(
+    "info",
+    getLocalizedString("core.migrationV3.confirmOnly.Message"),
+    true,
+    "OK"
+  );
+  if (res?.isOk() && res.value === "OK") {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
+    });
+    return true;
+  } else {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
+    });
+    return false;
+  }
+}
+
+export async function popupMessageModal(
+  versionForMigration: VersionForMigration
+): Promise<string | undefined> {
+  return await popupMessage(versionForMigration, true);
+}
+
+export async function popupMessageNonmodal(
+  versionForMigration: VersionForMigration
+): Promise<string | undefined> {
+  return await popupMessage(versionForMigration, false);
+}
+
+export async function popupMessage(
+  versionForMigration: VersionForMigration,
+  isModal: boolean
 ): Promise<string | undefined> {
   const res = await TOOLS?.ui.showMessage(
     "warn",
     migrationNotificationMessage(versionForMigration),
-    true,
+    isModal,
     ...migrationMessageButtons
   );
   return res?.isOk() ? res.value : undefined;
@@ -444,6 +679,12 @@ export async function generateLocalConfig(context: MigrationContext): Promise<vo
     const oldProjectSettings = await loadProjectSettings(context.projectPath);
     await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
   }
+}
+
+export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
+  const projectPath = getParameterFromCxt(context, "projectPath", "");
+  const projectId = await getTrackingIdFromPath(projectPath);
+  globalVars.trackingId = projectId; // set trackingId to globalVars
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {
@@ -464,10 +705,18 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             !(await context.fsPathExists(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
-          )
+          ) {
+            // create env file
             await context.fsCreateFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
+            // add first line of comment
+            await context.fsWriteFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
+              envName === "local" ? MetadataV3.envFileLocalComment : MetadataV3.envFileDevComment,
+              Constants.envWriteOption
+            );
+          }
           const obj = await readJsonFile(
             context,
             path.join(".fx", "configs", "config." + envName + ".json")
@@ -525,10 +774,18 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             !(await context.fsPathExists(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
-          )
+          ) {
+            // create env file
             await context.fsCreateFile(
               path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
+            // add first line of comment
+            await context.fsWriteFile(
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
+              envName === "local" ? MetadataV3.envFileLocalComment : MetadataV3.envFileDevComment,
+              Constants.envWriteOption
+            );
+          }
           const obj = await readJsonFile(
             context,
             path.join(".fx", "states", "state." + envName + ".json")
@@ -555,40 +812,29 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
 }
 
 export async function userdataMigration(context: MigrationContext): Promise<void> {
-  // general
-  if (await context.fsPathExists(path.join(".fx", "states"))) {
-    // if ./fx/states/ exists
-    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
-    for (const fileName of fileNames)
-      if (fileName.endsWith(".userdata")) {
-        const fileRegex = new RegExp("([a-zA-Z0-9_-]*)(\\.userdata)", "g"); // state.*.json
-        const fileNamesArray = fileRegex.exec(fileName);
-        if (fileNamesArray != null) {
-          // get envName
-          const envName = fileNamesArray[1];
-          // create .env.{env} file if not exist
-          await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
-          if (
-            !(await context.fsPathExists(
-              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
-            ))
-          )
-            await context.fsCreateFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
-            );
-          const bicepContent = await readBicepContent(context);
-          const envData = await readAndConvertUserdata(
-            context,
-            path.join(".fx", "states", fileName),
-            bicepContent
-          );
-          await context.fsWriteFile(
-            path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
-            envData,
-            Constants.envWriteOption
-          );
-        }
-      }
+  const stateFolder = path.join(MetadataV2.configFolder, MetadataV2.stateFolder);
+  if (!(await context.fsPathExists(stateFolder))) {
+    return;
+  }
+  await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
+  const stateFiles = fsReadDirSync(context, stateFolder); // search all files, get file names
+  for (const stateFile of stateFiles) {
+    const envName = tryExtractEnvFromUserdata(stateFile);
+    if (envName) {
+      // get envName
+      const envFileName = buildEnvUserFileName(envName);
+      const bicepContent = await readBicepContent(context);
+      const envData =
+        MetadataV3.secretFileComment +
+        EOL +
+        MetadataV3.secretComment +
+        (await readAndConvertUserdata(context, path.join(stateFolder, stateFile), bicepContent));
+      await context.fsWriteFile(
+        path.join(MetadataV3.defaultEnvironmentFolder, envFileName),
+        envData,
+        Constants.envWriteOption
+      );
+    }
   }
 }
 
@@ -614,6 +860,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateSetUpBot,
     migrateSetUpSSO,
     migratePrepareManifest,
+    migrateInstallAppInTeams,
     migrateValidateDependencies,
     migrateBackendExtensionsInstall,
     migrateFrontendStart,
@@ -625,6 +872,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,
     migrateNgrokStartCommand,
+    migrateGetFuncPathCommand,
   ];
 
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
@@ -710,6 +958,28 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
   }
 }
 
+export async function checkActiveResourcePlugins(projectPath: string): Promise<boolean> {
+  try {
+    const projectSettings = await loadProjectSettings(projectPath);
+    const solutionSettings = projectSettings.solutionSettings;
+    if (projectSettings && solutionSettings && solutionSettings.activeResourcePlugins) {
+      return true;
+    } else {
+      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
+        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+        [TelemetryPropertyKey.reason]: "solutionSettings invalid",
+      });
+      return false;
+    }
+  } catch (error: any) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
+      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      [TelemetryPropertyKey.reason]: error.message,
+    });
+    return false;
+  }
+}
+
 export async function updateGitignore(context: MigrationContext): Promise<void> {
   const gitignoreFile = ".gitignore";
   const ignoreFileExist: boolean = await context.backup(gitignoreFile);
@@ -721,9 +991,10 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
     path.join(context.projectPath, gitignoreFile),
     "utf8"
   );
-  ignoreFileContent +=
-    EOL + path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + "*");
+  ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvUserFileName("*")}`;
+  ignoreFileContent += EOL + `${MetadataV3.defaultEnvironmentFolder}/${buildEnvFileName("local")}`;
   ignoreFileContent += EOL + `${backupFolder}/*`;
+  ignoreFileContent += EOL + ignoreDevToolsDir;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);
 }

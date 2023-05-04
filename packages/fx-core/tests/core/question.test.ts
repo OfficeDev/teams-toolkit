@@ -1,25 +1,36 @@
 import "mocha";
-import * as sinon from "sinon";
+
 import chai from "chai";
+import * as fs from "fs-extra";
+import os from "os";
+import path from "path";
+import * as sinon from "sinon";
+
 import {
-  createCapabilityQuestion,
-  createCapabilityQuestionPreview,
-  createAppNameQuestion,
-  handleSelectionConflict,
-  ProgrammingLanguageQuestion,
-  ScratchOptionYesVSC,
-} from "../../src/core/question";
-import { FuncValidation, Inputs, Platform, QTreeNode } from "@microsoft/teamsfx-api";
+  FuncValidation,
+  Inputs,
+  ok,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  v2,
+} from "@microsoft/teamsfx-api";
+
+import * as featureFlags from "../../src/common/featureFlags";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 import {
   BotNewUIOptionItem,
   BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
-  ExistingTabOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
+  NewProjectTypeBotOptionItem,
+  NewProjectTypeMessageExtensionOptionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  NewProjectTypeTabOptionItem,
   NotificationOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
@@ -28,9 +39,29 @@ import {
   TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../../src/component/constants";
-import { getLocalizedString } from "../../src/common/localizeUtils";
+import {
+  ImportAddinProjectItem,
+  OfficeAddinItems,
+} from "../../src/component/generator/officeAddin/question";
+import { environmentManager } from "../../src/core/environment";
 import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel";
-import * as featureFlags from "../../src/common/featureFlags";
+import {
+  CoreQuestionNames,
+  createAppNameQuestion,
+  createCapabilityQuestion,
+  createCapabilityQuestionPreview,
+  createNewProjectQuestionWith2Layers,
+  getBotProjectQuestionNode,
+  getMessageExtensionTypeProjectQuestionNode,
+  getOutlookAddinTypeProjectQuestionNode,
+  getQuestionForDeployAadManifest,
+  getTabTypeProjectQuestionNode,
+  handleSelectionConflict,
+  ProgrammingLanguageQuestion,
+  ScratchOptionYesVSC,
+  validateAadManifestContainsPlaceholder,
+} from "../../src/core/question";
+import { randomAppName } from "./utils";
 
 describe("Programming Language Questions", async () => {
   it("should return csharp on VS platform", async () => {
@@ -196,6 +227,112 @@ describe("Capability Questions", () => {
       ]);
     });
   });
+
+  describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => {
+    const sandbox = sinon.createSandbox();
+
+    beforeEach(() => {});
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should return 4 type options in first layer question", () => {
+      // Act
+      const question = createNewProjectQuestionWith2Layers();
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "project-type");
+      chai.assert.equal(question.title, getLocalizedString("core.createProjectQuestion.title"));
+      chai.assert.deepEqual(question.staticOptions, [
+        NewProjectTypeBotOptionItem(),
+        NewProjectTypeTabOptionItem(),
+        NewProjectTypeMessageExtensionOptionItem(),
+        NewProjectTypeOutlookAddinOptionItem(),
+      ]);
+    });
+
+    it("should return 4 bot type options in second layer question", () => {
+      // Act
+      const question = getBotProjectQuestionNode({} as Inputs);
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "capabilities");
+      chai.assert.equal(
+        question.title,
+        getLocalizedString("core.createProjectQuestion.projectType.bot.title")
+      );
+      chai.assert.deepEqual(question.staticOptions, [
+        BotNewUIOptionItem(),
+        NotificationOptionItem(),
+        CommandAndResponseOptionItem(),
+        WorkflowOptionItem(),
+      ]);
+    });
+
+    it("should return 4 bot type options in second layer question with in-product AB test", () => {
+      // Act
+      const question = getBotProjectQuestionNode({ inProductDoc: true } as Inputs);
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "capabilities");
+      chai.assert.equal(
+        question.title,
+        getLocalizedString("core.createProjectQuestion.projectType.bot.title")
+      );
+      chai.assert.equal((question.staticOptions[3] as OptionItem).data, "cardActionResponse");
+    });
+
+    it("should return 4 tab type options in second layer question", () => {
+      // Act
+      const question = getTabTypeProjectQuestionNode({} as Inputs);
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "capabilities");
+      chai.assert.equal(
+        question.title,
+        getLocalizedString("core.createProjectQuestion.projectType.tab.title")
+      );
+      chai.assert.deepEqual(question.staticOptions, [
+        TabNonSsoItem(),
+        M365SsoLaunchPageOptionItem(),
+        DashboardOptionItem(),
+        TabSPFxNewUIItem(),
+      ]);
+    });
+
+    it("should return 2 message extension type options in second layer question", () => {
+      // Act
+      const question = getMessageExtensionTypeProjectQuestionNode({} as Inputs);
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "capabilities");
+      chai.assert.equal(
+        question.title,
+        getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
+      );
+      chai.assert.deepEqual(question.staticOptions, [
+        M365SearchAppOptionItem(),
+        MessageExtensionNewUIItem(),
+      ]);
+    });
+
+    it("should return 2 outlook type options in second layer question", () => {
+      // Act
+      const question = getOutlookAddinTypeProjectQuestionNode({} as Inputs);
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "capabilities");
+      chai.assert.equal(
+        question.title,
+        getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
+      );
+      chai.assert.deepEqual(question.staticOptions, [
+        ...OfficeAddinItems(),
+        ImportAddinProjectItem(),
+      ]);
+    });
+  });
 });
 
 describe("App name question", async () => {
@@ -324,5 +461,76 @@ describe("addOfficeAddinQuestions()", () => {
       originOption.label,
       `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`
     );
+  });
+});
+
+describe("updateAadManifestQeustion()", async () => {
+  const inputs: v2.InputsWithProjectPath = {
+    platform: Platform.VSCode,
+    projectPath: path.join(os.tmpdir(), randomAppName()),
+  };
+
+  afterEach(async () => {
+    sinon.restore();
+  });
+  it("if getQuestionForDeployAadManifest not dynamic", async () => {
+    inputs.platform = Platform.CLI_HELP;
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
+  });
+
+  it("getQuestionForDeployAadManifest happy path", async () => {
+    inputs.platform = Platform.VSCode;
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs.env = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(true);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 2);
+      const aadAppManifestQuestion = node?.children?.[0];
+      const envQuestion = node?.children?.[1];
+      chai.assert.isNotNull(aadAppManifestQuestion);
+      chai.assert.isNotNull(envQuestion);
+    }
+  });
+  it("getQuestionForDeployAadManifest without env", async () => {
+    inputs.platform = Platform.VSCode;
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    inputs.env = "dev";
+    sinon.stub(fs, "pathExistsSync").returns(false);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const nodeRes = await getQuestionForDeployAadManifest(inputs);
+    chai.assert.isTrue(nodeRes.isOk());
+    if (nodeRes.isOk()) {
+      const node = nodeRes.value;
+      chai.assert.isTrue(node != undefined && node?.children?.length == 1);
+    }
+  });
+  it("validateAadManifestContainsPlaceholder return undefined", async () => {
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = path.join(
+      __dirname,
+      "..",
+      "samples",
+      "sampleV3",
+      "aad.manifest.json"
+    );
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
+    chai.assert.isUndefined(res);
+  });
+  it("validateAadManifestContainsPlaceholder skip", async () => {
+    inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
+    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
+    const expectRes = "Skip Current Question";
+    chai.expect(res).to.equal(expectRes);
   });
 });

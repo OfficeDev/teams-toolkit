@@ -1,16 +1,16 @@
 name: publish to VSCode marketplace
-
+run-name: Publish-${{ inputs.run_id }}-${{ github.ref_name }}-isPreview-${{ inputs.isPreview }}
 on:
   workflow_dispatch:
     inputs:
-      URL:
-        description: 'input the URL of the VSIX.'
+      run_id:
+        description: "Input the CD pipeline run ID to fetch the artifact"
         required: true
-        default: ''
+        default: ""
       isPreview:
-        description: 'publish VSIX as a preview version(yes or no)'
+        description: "Publish VSIX as a preview version(yes or no)"
         required: true
-        default: 'no'
+        default: "no"
 
 jobs:
   publish-to-vscode-marketplace:
@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
           node-version: 14
 
@@ -27,11 +27,16 @@ jobs:
         run: |
           npm install vsce -g
 
-      - name: Download VISX fils
-        run: |
-          wget --tries=5 --waitretry=5 ${{ github.event.inputs.URL }} 
-      
-      - name: release preview 
+      - name: Download release artifacts
+        uses: Legit-Labs/action-download-artifact@v2
+        with:
+          run_id: ${{ github.event.inputs.run_id }}
+          name: release
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: cd.yml
+          path: .
+
+      - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}
         env:
           PAT: ${{ secrets.VSCE_PAT }}

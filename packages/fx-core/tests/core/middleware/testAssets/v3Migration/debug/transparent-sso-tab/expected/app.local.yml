@@ -1,65 +1,53 @@
-version: 1.0.0
+{{header}}
 
-registerApp:
-  - uses: aadApp/create
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
-      generateClientSecret: true
+provision:
+{{aadAppCreate}}
 
-  - uses: teamsApp/create
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
+{{teamsAppCreate}}
 
-configureApp:
-  - uses: file/updateEnv
+  - uses: script # Set env for local launch
     with:
-      envs:
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
+      run:
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000";
+        echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#";
 
-  - uses: aadApp/update
-    with:
-      manifestPath: ./aad.manifest.template.json
-      outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
+{{aadAppUpdate}}
 
-  - uses: teamsApp/validate
-    with:
-      manifestPath: ./appPackage/manifest.json
-
-  - uses: teamsApp/zipAppPackage
-    with:
-      manifestPath: ./appPackage/manifest.json
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
-
-  - uses: teamsApp/update
-    with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+{{localTeamsAppUpdate}}
 
 deploy:
-  - uses: prerequisite/install 
+  # Install development tool(s)
+  - uses: devTool/install
     with:
       devCert:
         trust: true
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
 
-  - uses: file/updateEnv
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
         BROWSER: none
         HTTPS: true
         PORT: 53000
-        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
-        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+        SSL_CRT_FILE: $\{{SSL_CRT_FILE}}
+        SSL_KEY_FILE: $\{{SSL_KEY_FILE}}
 
-  - uses: file/updateEnv
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
-        REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
-        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        REACT_APP_START_LOGIN_PAGE_URL: $\{{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
+        REACT_APP_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
 
+  # Run npm command
   - uses: cli/runNpmCommand
     with:
       args: install --no-audit

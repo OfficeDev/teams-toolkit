@@ -4,6 +4,8 @@ import * as queryString from "query-string";
 import { localize } from "./utils/localizeUtils";
 import * as util from "util";
 import { SwitchToPreReleaseVersionLink } from "./constants";
+import { EventEmitter, Uri } from "vscode";
+import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 
 enum Referrer {
   DeveloperPortal = "developerportal",
@@ -15,8 +17,12 @@ interface QueryParams {
 }
 
 let isRunning = false;
-export class UriHandler implements vscode.UriHandler {
+export class UriHandler extends EventEmitter<Uri> implements vscode.UriHandler {
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
+    if (uri.path === "/" + codeSpacesAuthComplete) {
+      this.fire(uri);
+      return;
+    }
     if (isRunning) {
       vscode.window.showWarningMessage(
         localize("teamstoolkit.devPortalIntegration.blockingMessage")

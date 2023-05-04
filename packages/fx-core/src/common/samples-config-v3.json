@@ -187,6 +187,19 @@
           "suggested": false
         },
         {
+          "id": "outlook-add-in-set-signature",
+          "title": "Set signature using Outlook add-in",
+          "shortDescription": "An Outlook add-in that sets signature for the user",
+          "fullDescription": "An Outlook add-in that sets signature for the user",
+          "tags": ["Outlook add-in"],
+          "time": "5min to run",
+          "configuration": "Ready for debug",
+          "suggested": false,
+          "url": "https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature",
+          "packageLink": "https://github.com/OfficeDev/Office-Add-in-samples/archive/refs/heads/main.zip",
+          "relativePath": "Office-Add-in-samples-main/Samples/outlook-set-signature"
+        },
+        {
             "id": "developer-assist-dashboard",
             "title": "Developer Assist Dashboard",
             "shortDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",

@@ -17,7 +17,6 @@ import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azur
 import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
-  DeployRemoteStartError,
   DeployZipPackageError,
   GetPublishingCredentialsError,
 } from "../../../../../src/error/deploy";
@@ -222,9 +221,9 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       ["driver.deploy.azureAppServiceDeployDetailSummary"],
       ["driver.deploy.notice.deployDryRunComplete"]
     );
-    await chai
-      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
-      .to.be.rejectedWith(DeployRemoteStartError);
+    const res = await impl.checkDeployStatus("", config, new TestLogProvider());
+    chai.assert.equal(res?.status, DeployStatus.Failed);
+    chai.assert.equal(res?.message, "fail to start app due to some reasons.");
   });
   it("checkDeployStatus return status 400", async () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({

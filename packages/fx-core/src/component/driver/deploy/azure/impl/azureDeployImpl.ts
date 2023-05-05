@@ -26,11 +26,10 @@ import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
-import { getLocalizedString } from "../../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../../common/localizeUtils";
 import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
-  DeployRemoteStartError,
   GetPublishingCredentialsError,
 } from "../../../../../error/deploy";
 
@@ -139,10 +138,14 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
         } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
           if (res.data?.status === DeployStatus.Failed) {
-            await logger.error(
-              `Deployment is failed with error message: ${JSON.stringify(res.data)}`
+            await this.logger.warning(
+              getDefaultString(
+                "error.deploy.DeployRemoteStartError",
+                location,
+                JSON.stringify(res.data)
+              )
             );
-            throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
+            // throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
           }
           return res.data;
         } else {
@@ -267,7 +270,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
         azureResource.instanceId
       );
     } catch (e) {
-      this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
+      await this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
     }
   }
 }

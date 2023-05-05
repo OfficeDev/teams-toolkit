@@ -24,7 +24,6 @@ import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
 import { AxiosError } from "axios";
-import { DeployRemoteStartError } from "../../../../../src/error/deploy";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -332,10 +331,7 @@ describe("Azure Function Deploy Driver test", () => {
       data: { status: 3 },
     });
     const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
-    if (res.isErr()) {
-      assert.isTrue(res.error instanceof DeployRemoteStartError);
-    }
+    expect(res.isOk()).to.equal(true);
   });
 
   it("Check deploy throws", async () => {

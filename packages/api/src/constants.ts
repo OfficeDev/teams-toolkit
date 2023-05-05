@@ -62,7 +62,6 @@ export enum Stage {
   listCollaborator = "listCollaborator",
   getQuestions = "getQuestions",
   getProjectConfig = "getProjectConfig",
-  init = "init",
   addFeature = "addFeature",
   addWebpart = "addWebpart",
   addResource = "addResource",

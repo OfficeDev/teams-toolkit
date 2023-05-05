@@ -1031,16 +1031,6 @@ export async function runCommand(
         }
         break;
       }
-      case Stage.init: {
-        const initResult = await core.init(inputs);
-        if (initResult.isErr()) {
-          result = err(initResult.error);
-        } else {
-          const uri = Uri.file(initResult.value);
-          result = ok(uri);
-        }
-        break;
-      }
       case Stage.provision: {
         result = await core.provisionResources(inputs);
         break;

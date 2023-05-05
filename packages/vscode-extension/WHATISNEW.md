@@ -1,5 +1,6 @@
 
 - [Changelog](#changelog)
+  - [5.0.0 - May 15, 2023](#500---may-15-2023)
   - [4.2.4 - Feb 28, 2023](#424---feb-28-2023)
   - [4.2.2 - Feb 7, 2023](#422---feb-7-2023)
   - [4.2.0 - Dec 20, 2022](#420---dec-20-2022)
@@ -29,6 +30,43 @@
   - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 5.0.0 - May 15, 2023
+
+Major version for Teams Toolkit. In this version, we have updated the fundamental design of Teams Toolkit to make it configurable and transparent as much as possible.
+
+Teams Toolkit 5.0.0 includes features that were out on prerelease versions, some highlights:
+
+- [On February Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-v5-0-prerelease/): Update the fundmental new design for Teams Toolkit that allows you to use existing cloud resources, integrate Teams Toolkit with existing projects and customize Teams Toolkit to fit your needs.
+- [On March Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-march-2023/): Create, debug and deploy an Outlook Add-in project with Teams Toolkit.
+- [On April Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-april-2023/): Switch to an integrated and secure tunneling for bot and message extension apps. Introduced GitHub Codespaces for a new getting started experience.
+
+In addtion, we have these new features, enahcements and bug fixes since last prerelease.
+
+New features:
+
+- Added a How-to Guide for instructions of run and debug apps on mobile clients.
+- Simplifed basic tab template to a simple vanilla Node.js web application that does not require any web frameworks or single sign-on.
+- Added support to define verison of `Azure Functions Core Tools` with `devTool/install` action. The defautl version from scaffold is `4.0.4670` which [supports Node.js 18](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=v4&pivots=programming-language-typescript#languages).
+- Sreamlined the `Create New App` user interface and flow.
+    ![create-new-app](https://user-images.githubusercontent.com/11220663/236434436-a3ad7917-64c1-4e5b-a152-5f98ededd897.png)
+
+Enhancements:
+
+- Removed SPFx version selection when adding additional web parts.
+- Updated `Tab App with Azure Backend` sample to use On-behalf-of flow for authentication.
+- Prerequisite checker will now print warnings for users on Node.js 14 as it's [no longer actively supported](https://nodejs.dev/en/about/releases/).
+
+Sample additions:
+
+- `Dice Roller in meeting`: The diceroller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.
+- `Set signature using Outlook add-in`: An Outlook add-in that helps user to set their email signature.
+
+Bug fixes:
+
+- Fixed an issue with `xml2js` pacakge versions that may cause security vulnerabilities. ([#8390](https://github.com/OfficeDev/TeamsFx/pull/8390))
+- Fixed an issue where the `Validate Application` continues with errors. ([#8467](https://github.com/OfficeDev/TeamsFx/pull/8467))
+- Fixed an issue where `teamsfx validate` command will default to `dev` environment even for mult-environment projects in non-interactive cli mode when not specifying `--env` parameters. ([#8499](https://github.com/OfficeDev/TeamsFx/pull/8499))
 
 ## 4.2.4 - Feb 28, 2023
 

@@ -6,18 +6,18 @@ Major version for Teams Toolkit. In this version, we have updated the fundamenta
 
 Teams Toolkit 5.0.0 includes features that were out on prerelease versions, some highlights:
 
-- [On February Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-v5-0-prerelease/): Update the fundmental new design for Teams Toolkit that allows you to use existing cloud resources, integrate Teams Toolkit with existing projects and customize Teams Toolkit to fit your needs.
+- [On February Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-v5-0-prerelease/): Update the fundamental new design for Teams Toolkit that allows you to use existing cloud resources, integrate Teams Toolkit with existing projects and customize Teams Toolkit to fit your needs.
 - [On March Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-march-2023/): Create, debug and deploy an Outlook Add-in project with Teams Toolkit.
 - [On April Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-april-2023/): Switch to an integrated and secure tunneling for bot and message extension apps. Introduced GitHub Codespaces for a new getting started experience.
 
-In addtion, we have these new features, enahcements and bug fixes since last prerelease.
+In addition, we have these new features, enhancements and bug fixes since last prerelease.
 
 New features:
 
 - Added a How-to Guide for instructions of run and debug apps on mobile clients.
-- Simplifed basic tab template to a simple vanilla Node.js web application that does not require any web frameworks or single sign-on.
+- Simplified basic tab template to a simple vanilla Node.js web application that does not require any web frameworks or single sign-on.
 - Added support to define verison of `Azure Functions Core Tools` with `devTool/install` action. The defautl version from scaffold is `4.0.4670` which [supports Node.js 18](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=v4&pivots=programming-language-typescript#languages).
-- Sreamlined the `Create New App` user interface and flow.
+- Streamlined the `Create New App` user interface and flow.
     ![create-new-app](https://user-images.githubusercontent.com/11220663/236434436-a3ad7917-64c1-4e5b-a152-5f98ededd897.png)
 
 Enhancements:
@@ -28,7 +28,7 @@ Enhancements:
 
 Sample additions:
 
-- `Dice Roller in meeting`: The diceroller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.
+- `Dice Roller in meeting`: The dice roller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.
 - `Set signature using Outlook add-in`: An Outlook add-in that helps user to set their email signature.
 
 Bug fixes:

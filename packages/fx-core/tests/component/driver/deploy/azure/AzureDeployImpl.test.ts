@@ -102,6 +102,48 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       .to.be.rejectedWith(CheckDeploymentStatusTimeoutError);
   });
 
+  it("checkDeployStatus 500 response", async () => {
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
+      status: HttpStatusCode.INTERNAL_SERVER_ERROR,
+      data: {
+        status: DeployStatus.Failed,
+        message: "fail to start app due to some reasons.",
+      },
+    });
+    const config = {
+      headers: {
+        "Content-Type": "text",
+        "Cache-Control": "no-cache",
+        Authorization: "no",
+      },
+      maxContentLength: 200,
+      maxBodyLength: 200,
+      timeout: 200,
+    };
+    const args = {
+      workingDirectory: "/",
+      artifactFolder: "/",
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-11111111111/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
+    } as DeployArgs;
+    const context = {
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    const impl = new AzureZipDeployImpl(
+      args,
+      context,
+      "Azure App Service",
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
+      ["driver.deploy.azureAppServiceDeployDetailSummary"],
+      ["driver.deploy.notice.deployDryRunComplete"]
+    );
+    await chai
+      .expect(impl.checkDeployStatus("", config, new TestLogProvider()))
+      .to.be.rejectedWith(CheckDeploymentStatusError);
+  });
+
   it("checkDeployStatus reject AxiosError", async () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").rejects({
       isAxiosError: true,

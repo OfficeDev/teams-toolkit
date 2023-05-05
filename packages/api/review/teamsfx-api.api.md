@@ -932,9 +932,6 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
 // @public (undocumented)
 interface ICore extends Core {
     addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    init: (inputs: InputsWithProjectPath & {
-        solution?: string;
-    }) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

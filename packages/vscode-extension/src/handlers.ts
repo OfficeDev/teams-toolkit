@@ -534,15 +534,6 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
-export async function initProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.init);
-  if (result.isOk()) {
-    await openFolder(result.value, false, true, args);
-  }
-  return result;
-}
-
 export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,

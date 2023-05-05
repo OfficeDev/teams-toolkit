@@ -546,7 +546,7 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * @deprecated
+   * @deprecated for V3
    */
   async getQuestionsForAddFeature(
     featureId: FeatureId,
@@ -556,6 +556,9 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
+  /**
+   * @deprecated for V3
+   */
   @hooks([ErrorHandlerMW])
   async getQuestionsForUserTask(
     func: FunctionRouter,
@@ -578,14 +581,14 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * v3 only API, not command
+   * @deprecated
    */
   async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
     return this.v3Implement.dispatch(this.getSettings, inputs);
   }
 
   /**
-   * v3 only API, not command
+   * @deprecated
    */
   async getDotEnv(
     inputs: InputsWithProjectPath
@@ -757,6 +760,9 @@ export class FxCore implements v3.ICore {
     return ok(inputs.env); //work for both v2 and v3
   }
 
+  /**
+   * only for vs code extension
+   */
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async encrypt(
     plaintext: string,
@@ -767,7 +773,9 @@ export class FxCore implements v3.ICore {
     if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
     return ctx.contextV2.cryptoProvider.encrypt(plaintext);
   }
-
+  /**
+   * only for vs code extension
+   */
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async decrypt(
     ciphertext: string,
@@ -966,6 +974,9 @@ export class FxCore implements v3.ICore {
     }
   }
 
+  /**
+   * @deprecated
+   */
   async _init(
     inputs: Inputs,
     ctx?: CoreHookContext,
@@ -1075,6 +1086,9 @@ export class FxCore implements v3.ICore {
     return ok(inputs.projectPath!);
   }
 
+  /**
+   * @deprecated
+   */
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const result = await this._init(inputs, ctx);

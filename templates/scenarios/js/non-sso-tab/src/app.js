@@ -34,3 +34,11 @@ server.get("/", (req, res, next) => {
 server.get("/tab", (req, res, next) => {
   send(req, __dirname + "/views/hello.html").pipe(res);
 });
+
+server.get("/privacy", (req, res, next) => {
+  send(req, __dirname + "/views/privacy.html").pipe(res);
+});
+
+server.get("/termsofuse", (req, res, next) => {
+  send(req, __dirname + "/views/termsofuse.html").pipe(res);
+});

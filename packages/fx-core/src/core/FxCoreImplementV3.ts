@@ -99,6 +99,7 @@ import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
+import { deprecate } from "util";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -420,12 +421,37 @@ export class FxCoreV3Implement {
     return settingsUtil.readSettings(inputs.projectPath);
   }
 
+  /**
+   * @deprecated
+   */
   @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
   async getDotEnv(
     inputs: InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
     return ok(ctx?.envVars);
+  }
+
+  /**
+   * get all dot envs
+   */
+  @hooks([ErrorHandlerMW])
+  async getDotEnvs(
+    inputs: InputsWithProjectPath
+  ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
+    const envListRes = await envUtil.listEnv(inputs.projectPath);
+    if (envListRes.isErr()) {
+      return err(envListRes.error);
+    }
+    const res: { [name: string]: DotenvParseOutput } = {};
+    for (const env of envListRes.value) {
+      const envRes = await envUtil.readEnv(inputs.projectPath, env, false, false);
+      if (envRes.isErr()) {
+        return err(envRes.error);
+      }
+      res[env] = envRes.value as DotenvParseOutput;
+    }
+    return ok(res);
   }
 
   async phantomMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {

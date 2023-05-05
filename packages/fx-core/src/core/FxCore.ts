@@ -597,6 +597,15 @@ export class FxCore implements v3.ICore {
   }
 
   /**
+   * get all dot envs
+   */
+  async getDotEnvs(
+    inputs: InputsWithProjectPath
+  ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
+    return this.v3Implement.dispatch(this.getDotEnvs, inputs);
+  }
+
+  /**
    * @deprecated in V3
    */
   @hooks([

@@ -104,6 +104,7 @@ jobs:
       TEAMSFX_V3: "true"
       TEAMSFX_DEBUG_TEMPLATE: "true"
       NODE_ENV: "development"
+      TEAMSFX_AAD_DEPLOY_ONLY: "true"
       SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
       SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
     needs: setup

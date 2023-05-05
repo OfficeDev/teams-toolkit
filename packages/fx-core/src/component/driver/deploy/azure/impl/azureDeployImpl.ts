@@ -173,6 +173,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
+    this.managementClient = new appService.WebSiteManagementClient(
+      azureCredential,
+      azureResource.subscriptionId
+    );
     try {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
@@ -219,10 +223,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       );
     }
 
-    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
-      azureCredential,
-      azureResource.subscriptionId
-    ));
+    const managementClient = this.managementClient;
     const listResponse = await wrapAzureOperation(
       () =>
         managementClient.webApps.beginListPublishingCredentialsAndWait(

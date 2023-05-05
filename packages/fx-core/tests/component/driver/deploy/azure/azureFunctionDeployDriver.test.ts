@@ -154,9 +154,11 @@ describe("Azure Function Deploy Driver test", () => {
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
+    const logger = new TestLogProvider();
+    const caller = sandbox.stub(logger, "warning").resolves();
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
+      logProvider: logger,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -190,6 +192,8 @@ describe("Azure Function Deploy Driver test", () => {
     });
     const res = await deploy.run(args, context);
     expect(res.isErr()).to.equal(false);
+    // log warning will print
+    sinon.assert.calledOnce(caller);
   });
 
   it("Zip deploy throws when upload", async () => {

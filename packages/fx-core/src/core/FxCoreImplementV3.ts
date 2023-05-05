@@ -99,7 +99,6 @@ import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
-import { deprecate } from "util";
 
 export class FxCoreV3Implement {
   tools: Tools;

@@ -3284,6 +3284,41 @@ describe("component coordinator test", () => {
     );
     assert.isTrue(res4.isOk());
   });
+  it("getDotEnvs success", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ k1: "v1" }));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(Object.keys(res.value), ["dev1", "dev2"]);
+    }
+  });
+  it("getDotEnvs error 1", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("getDotEnvs error 2", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    sandbox.stub(envUtil, "readEnv").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isErr());
+  });
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {
       sandbox.restore();

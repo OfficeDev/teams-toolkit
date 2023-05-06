@@ -210,7 +210,7 @@ jobs:
         id: description
         shell: "/bin/bash {0}"
         run: |
-          head="origin/$GIT_BRANCH_NAME_BASE"
+          head=${{ github.event.pull_request.base.ref }}
           echo $head
           history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           echo $history_cli_feat

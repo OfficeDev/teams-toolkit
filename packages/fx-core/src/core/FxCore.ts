@@ -583,13 +583,6 @@ export class FxCore implements v3.ICore {
   /**
    * @deprecated
    */
-  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
-    return this.v3Implement.dispatch(this.getSettings, inputs);
-  }
-
-  /**
-   * @deprecated
-   */
   async getDotEnv(
     inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput | undefined, FxError>> {

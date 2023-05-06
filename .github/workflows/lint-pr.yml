@@ -137,9 +137,19 @@ jobs:
           npm install mustache -g
           echo "{}" > test.json
       
-      - name: check yaml lint
+      - name: check origin or remote
+        id: remote
         run: |
-          TRAGET=origin/${{ github.event.pull_request.base.ref }}
+          if [ ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }} ]
+          then
+            echo "target=origin" >> $GITHUB_OUTPUT
+          else
+            echo "target=remote" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: check yaml lint origin
+        run: |
+          TRAGET=${{steps.remote.outputs.target}}/${{ github.event.pull_request.base.ref }}
           YMLTPL=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios | grep -E '.yml.tpl$'|xargs)
           echo $YMLTPL
           if [ ! -z "$YMLTPL" ]
@@ -206,11 +216,20 @@ jobs:
         with: 
           reviewers: "MuyangAmigo"
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: check feature and fix history
+      - name: check origin or remote
+        id: remote
+        run: |
+          if [ ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }} ]
+          then
+            echo "target=origin" >> $GITHUB_OUTPUT
+          else
+            echo "target=remote" >> $GITHUB_OUTPUT
+          fi
+      - name: check feature history
         id: description
         shell: "/bin/bash {0}"
         run: |
-          head=${{ github.event.pull_request.base.ref }}
+          head=${{steps.remote.outputs.target}}/${{ github.event.pull_request.base.ref }}
           echo $head
           history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           echo $history_cli_feat

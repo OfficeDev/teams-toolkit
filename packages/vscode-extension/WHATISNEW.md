@@ -33,34 +33,32 @@
 
 ## 5.0.0 - May 15, 2023
 
-Major version for Teams Toolkit. In this version, we have updated the fundamental design of Teams Toolkit to make it configurable and transparent as much as possible.
+This major version update of Teams Toolkit addresses your top feedback requests with new features and bug fixes, including a new way to customize the automation with composable actions, integrated tunneling support for debugging using Dev Tunnels, simpler project structure and template options, and much more. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
 
-Teams Toolkit 5.0.0 includes features that were out on prerelease versions, some highlights:
+- [February Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-v5-0-prerelease/): Update the fundamental new design for Teams Toolkit that allows you to use existing cloud resources, integrate Teams Toolkit with existing projects and customize Teams Toolkit to fit your needs.
+- [March Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-march-2023/): Create, debug and deploy an Outlook Add-in project with Teams Toolkit.
+- [April Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-april-2023/): Switch to an integrated and secure tunneling for bot and message extension apps. Introduced GitHub Codespaces for a new getting started experience.
 
-- [On February Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-v5-0-prerelease/): Update the fundamental new design for Teams Toolkit that allows you to use existing cloud resources, integrate Teams Toolkit with existing projects and customize Teams Toolkit to fit your needs.
-- [On March Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-march-2023/): Create, debug and deploy an Outlook Add-in project with Teams Toolkit.
-- [On April Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-april-2023/): Switch to an integrated and secure tunneling for bot and message extension apps. Introduced GitHub Codespaces for a new getting started experience.
-
-In addition, we have these new features, enhancements and bug fixes since last prerelease.
+We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
 
 New features:
 
-- Added a How-to Guide for instructions of run and debug apps on mobile clients.
-- Simplified basic tab template to a simple vanilla Node.js web application that does not require any web frameworks or single sign-on.
-- Added support to define verison of `Azure Functions Core Tools` with `devTool/install` action. The defautl version from scaffold is `4.0.4670` which [supports Node.js 18](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=v4&pivots=programming-language-typescript#languages).
-- Streamlined the `Create New App` user interface and flow.
-    ![create-new-app](https://user-images.githubusercontent.com/11220663/236434436-a3ad7917-64c1-4e5b-a152-5f98ededd897.png)
+- Added a how-to guide with instructions for running and debugging apps on mobile clients.
+- Simplified the Basic Tab project template by removing the dependency on React, single sign-on, and complicated example code. Use this template like an empty starting point for Tab apps.
+- You can customize which version of Azure Functions Core Tools is used with the `devTool/install` action. If not specified, the default version used is `4.0.4670` and [supports Node.js 18](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=v4&pivots=programming-language-typescript#languages).
+- We've re-categorized the project templates to use familiar terminology that matches the documentation and platform.
+    ![create-new-app](https://user-images.githubusercontent.com/11220663/236613829-e3fde62f-0c7d-4298-8f18-595d464c3994.png)
 
 Enhancements:
 
 - Removed SPFx version selection when adding additional web parts.
-- Updated `Tab App with Azure Backend` sample to use On-behalf-of flow for authentication.
-- Prerequisite checker will now print warnings for users on Node.js 14 as it's [no longer actively supported](https://nodejs.dev/en/about/releases/).
+- Updated the `Tab App with Azure Backend` sample to use an on-behalf-of flow for authentication.
+- Added a warning message if you're using Node.js 14 because it's [no longer actively supported](https://nodejs.dev/en/about/releases/).
 
 Sample additions:
 
 - `Dice Roller in meeting`: The dice roller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.
-- `Set signature using Outlook add-in`: An Outlook add-in that helps user to set their email signature.
+- `Set signature using Outlook add-in`: An Outlook add-in that demonstrates how to set an email signature.
 
 Bug fixes:
 

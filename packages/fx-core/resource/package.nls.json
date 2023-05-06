@@ -1,5 +1,4 @@
 {
-  "core.init.successNotice": "Your project has been successfully initialized to operate with TeamsFx.\n\nSome next steps:\nteamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.\n\nPro tip:\nRead on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.",
   "core.provision.provision": "Provision",
   "core.provision.learnMore": "Learn more",
   "core.provision.switchedM365AccountNotice": "You are now using a different Microsoft 365 tenant from what you previously used.",

@@ -32,6 +32,7 @@ import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-
 import OutlookSetSignatureAddin from "../../img/webview/sample/outlook-set-signature-overview.png";
 import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
 import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif";
+import TeamsChef from "../../img/webview/sample/teams-chef.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -65,6 +66,7 @@ const imageMapping: { [p: string]: any } = {
   "outlook-add-in-set-signature": OutlookSetSignatureAddin,
   "developer-assist-dashboard": DevAssistDashboard,
   "live-share-dice-roller": LiveShareDiceRoller,
+  "teams-chef-bot": TeamsChef,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

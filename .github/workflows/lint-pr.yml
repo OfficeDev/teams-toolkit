@@ -264,12 +264,12 @@ jobs:
       - name: lerna expect pre version
         if: ${{ github.event.pull_request.base.ref == 'prerelease' }}
         run: |
-          npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --ignore-scripts --yes
+          npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --no-git-tag-version --allow-branch ${GITHUB_REF#refs/*/} --ignore-scripts --yes
           npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
       - name: lerna expect rc version
         if: ${{ github.event.pull_request.base.ref == 'main' }}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${GITHUB_REF#refs/*/} --yes
           npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
       - uses: edwardgeorge/file-outputs-action@main
         id: test

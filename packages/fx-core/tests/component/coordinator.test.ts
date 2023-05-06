@@ -3099,18 +3099,6 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("getSettings", async () => {
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.getSettings(inputs);
-    assert.isTrue(res.isOk());
-  });
   it("preProvisionForVS", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {

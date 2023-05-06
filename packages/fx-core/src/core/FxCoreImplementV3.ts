@@ -416,10 +416,6 @@ export class FxCoreV3Implement {
     return listCollaboratorFunc(inputs, ctx);
   }
 
-  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
-    return settingsUtil.readSettings(inputs.projectPath);
-  }
-
   /**
    * @deprecated
    */

@@ -145,7 +145,6 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
                 JSON.stringify(res.data)
               )
             );
-            // throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
           }
           return res.data;
         } else {

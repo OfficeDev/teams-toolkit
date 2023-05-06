@@ -8,22 +8,24 @@ module.exports = {
   },
   parserOptions: {
     ecmaFeatures: {
-      jsx: true,
+      jsx: true
     },
     ecmaVersion: 12,
-    sourceType: 'module',
+    sourceType: 'module'
+  },
+  plugins: ['@typescript-eslint', 'prettier'],
+  rules: {
+    'prettier/prettier': ['error', { endOfLine: 'auto' }]
   },
   overrides: [
     {
       files: ['src/**/*.ts'],
-      plugins: [
-        '@typescript-eslint',
-      ],
+      plugins: ['@typescript-eslint'],
       extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
-        project: ['./tsconfig.json'],
-      },
-    },
-  ],
+        project: ['./tsconfig.json']
+      }
+    }
+  ]
 };

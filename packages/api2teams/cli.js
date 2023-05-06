@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-const cli = require("./lib");
+const cli = require('./lib');
 cli.start();

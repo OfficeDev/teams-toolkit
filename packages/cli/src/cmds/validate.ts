@@ -11,6 +11,7 @@ import {
   EnvOptions,
   ValidateApplicationOptions,
   AppPackageFilePathParamName,
+  ManifestFilePathParamName,
 } from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -21,7 +22,7 @@ import {
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CLIUIInstance from "../userInteraction";
-import { EnvNotSpecified } from "../error";
+import { EnvNotSpecified, NotValidInputValue } from "../error";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -52,16 +53,14 @@ export class ManifestValidate extends YargsCommand {
       let result;
 
       if (isV3Enabled()) {
+        const validateArgsResult = this.validateArgs(args);
+        if (validateArgsResult.isErr()) {
+          return err(validateArgsResult.error);
+        }
         if (args[AppPackageFilePathParamName]) {
           inputs.validateMethod = "validateAgainstAppPackage";
         } else {
           inputs.validateMethod = "validateAgainstSchema";
-          // Throw error if --env not specified
-          if (!args.env && !CLIUIInstance.interactive) {
-            const error = new EnvNotSpecified();
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
-            return err(error);
-          }
         }
         result = await core.validateApplication(inputs);
       } else {
@@ -91,5 +90,25 @@ export class ManifestValidate extends YargsCommand {
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
+  }
+
+  private validateArgs(args: { [argName: string]: string }): Result<any, FxError> {
+    // Throw error when --manifest-path and --app-package-file-path are both provided
+    if (args[AppPackageFilePathParamName] && args[ManifestFilePathParamName]) {
+      const error = NotValidInputValue(
+        "teamsfx validate",
+        `Do not provide both --${AppPackageFilePathParamName} and --${ManifestFilePathParamName} options`
+      );
+      return err(error);
+    }
+
+    // Throw error if --env not specified
+    if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
+      const error = new EnvNotSpecified();
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      return err(error);
+    }
+
+    return ok(undefined);
   }
 }

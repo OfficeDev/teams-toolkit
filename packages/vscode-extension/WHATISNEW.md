@@ -1,6 +1,6 @@
 
 - [Changelog](#changelog)
-  - [5.0.0 - May 15, 2023](#500---may-15-2023)
+  - [5.0.0 - May 16, 2023](#500---may-16-2023)
   - [4.2.4 - Feb 28, 2023](#424---feb-28-2023)
   - [4.2.2 - Feb 7, 2023](#422---feb-7-2023)
   - [4.2.0 - Dec 20, 2022](#420---dec-20-2022)
@@ -31,7 +31,7 @@
 
 # Changelog
 
-## 5.0.0 - May 15, 2023
+## 5.0.0 - May 16, 2023
 
 This major version update of Teams Toolkit addresses your top feedback requests with new features and bug fixes, including a new way to customize the automation with composable actions, integrated tunneling support for debugging using Dev Tunnels, simpler project structure and template options, and much more. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
 

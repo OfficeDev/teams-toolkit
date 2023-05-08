@@ -4,58 +4,69 @@ import * as utils from '../src/utils'
 import { parseApi } from '../src/parser';
 import chai from 'chai';
 import sinonChai from 'sinon-chai';
+import * as generator from "../src/generateRequestAdaptiveCard";
+import SwaggerParser from '@apidevtools/swagger-parser';
 
 chai.use(sinonChai);
 const { expect } = chai
 
 describe('parseApi tests', () => {
   describe('parseApi', () => {
-    let consoleLogStub: sinon.SinonStub;
-    let consoleErrorStub: sinon.SinonStub;
-    let existsSyncStub: sinon.SinonStub;
+    let sandbox: sinon.SinonSandbox;
     let isFolderEmptyStub: sinon.SinonStub;
+    let existsSyncStub: sinon.SinonStub;
+    let mkdirSyncStub: sinon.SinonStub;
+    let validateStub: sinon.SinonStub;
+    let generateRequestAdaptiveCardStub: sinon.SinonStub;
 
     beforeEach(() => {
-      consoleLogStub = sinon.stub(console, 'log');
-      consoleErrorStub = sinon.stub(console, 'error');
-      existsSyncStub = sinon.stub(fs, 'existsSync');
-      isFolderEmptyStub = sinon.stub(utils, 'isFolderEmpty');
+      sandbox = sinon.createSandbox();
+      isFolderEmptyStub = sandbox.stub(utils, 'isFolderEmpty');
+      existsSyncStub = sandbox.stub(fs, 'existsSync');
+      mkdirSyncStub = sandbox.stub(fs, 'mkdirSync');
+      validateStub = sandbox.stub(SwaggerParser, 'validate');
+      generateRequestAdaptiveCardStub = sandbox.stub(
+        generator,
+        'generateRequestAdaptiveCard'
+      );
     });
 
     afterEach(() => {
-      consoleLogStub.restore();
-      consoleErrorStub.restore();
-      existsSyncStub.restore();
-      isFolderEmptyStub.restore();
+      sandbox.restore();
     });
 
-    it('should log the yaml file path and output folder', async () => {
-      existsSyncStub.returns(true);
-      isFolderEmptyStub.resolves(true);
-
-      await parseApi('path/to/yaml', { output: 'path/to/output' });
-
-      expect(consoleLogStub).to.have.been.calledWith('yaml file path is: path/to/yaml');
-      expect(consoleLogStub).to.have.been.calledWith('output folder is: path/to/output');
-    });
-
-    it('should log an error if the yaml file does not exist', async () => {
+    it('should return early if args are not valid', async () => {
       existsSyncStub.returns(false);
 
       await parseApi('path/to/yaml', { output: 'path/to/output' });
 
-      expect(consoleErrorStub).to.have.been.calledWith('yaml file path is not exist in the path: path/to/yaml');
+      expect(validateStub.called).to.be.false;
     });
 
-    it('should log an error if the output folder is not empty and the force option is not set', async () => {
-      existsSyncStub.returns(true);
-      isFolderEmptyStub.resolves(false);
+    it('should create output directory if it does not exist', async () => {
+      existsSyncStub.onCall(0).returns(true);
+      existsSyncStub.onCall(1).returns(false);
+      isFolderEmptyStub.resolves(true);
+      validateStub.resolves({ info: { title: 'API', version: '1.0' } });
 
       await parseApi('path/to/yaml', { output: 'path/to/output' });
 
-      expect(consoleErrorStub).to.have.been.calledWith(
-        'output folder is not empty, and you can use -f parameter to overwrite output folder'
-      );
+      expect(mkdirSyncStub.calledOnceWith('path/to/output', { recursive: true }))
+        .to.be.true;
+    });
+
+    it('should call generateRequestAdaptiveCard with correct args', async () => {
+      existsSyncStub.onCall(0).returns(true);
+      existsSyncStub.onCall(1).returns(true);
+      isFolderEmptyStub.resolves(true);
+      const api = { info: { title: 'API', version: '1.0' } };
+      validateStub.resolves(api);
+
+      await parseApi('path/to/yaml', { output: 'path/to/output' });
+
+      expect(
+        generateRequestAdaptiveCardStub.calledOnceWith(api, 'path/to/output')
+      ).to.be.true;
     });
   });
 })

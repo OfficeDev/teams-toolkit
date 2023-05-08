@@ -283,8 +283,15 @@ describe("Core basic APIs", () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });
+    const promtionOnVSC =
+      'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
     try {
       const core = new FxCore(tools);
+      const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
+        ["info" | "warn" | "error", string, boolean, ...string[]],
+        Promise<Result<string | undefined, FxError>>
+      >;
+      const openUrl = sandbox.spy(tools.ui, "openUrl");
       const appName = await mockV3Project();
       sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
@@ -307,9 +314,79 @@ describe("Core basic APIs", () => {
       assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
       await deleteTestProject(appName);
       assert.isTrue(res.isOk());
+      assert.isTrue(showMessage.called);
+      assert.equal(showMessage.getCall(0).args[0], "info");
+      assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
+      assert.isFalse(showMessage.getCall(0).args[2]);
+      assert.equal(showMessage.getCall(0).args[3], "Learn more");
+      assert.isFalse(openUrl.called);
     } finally {
       restore();
     }
+  });
+  it("deploy aad manifest happy path with click learn more", async () => {
+    const core = new FxCore(tools);
+    const openUrl = sandbox.spy(tools.ui, "openUrl");
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Learn more"));
+    const appName = await mockV3Project();
+    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+        os.tmpdir(),
+        appName,
+        "aad.manifest.json"
+      ),
+      env: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
+    assert.isTrue(openUrl.called);
+    assert.equal(openUrl.getCall(0).args[0], "https://aka.ms/teamsfx-view-aad-app-v5");
+    await deleteTestProject(appName);
+    assert.isTrue(res.isOk());
+  });
+  it("deploy aad manifest happy path on cli", async () => {
+    const core = new FxCore(tools);
+    const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
+      ["info" | "warn" | "error", string, boolean, ...string[]],
+      Promise<Result<string | undefined, FxError>>
+    >;
+    const appName = await mockV3Project();
+    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+        os.tmpdir(),
+        appName,
+        "aad.manifest.json"
+      ),
+      env: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const res = await core.deployAadManifest(inputs);
+    await deleteTestProject(appName);
+    assert.isTrue(showMessage.calledOnce);
+    assert.equal(showMessage.getCall(0).args[0], "info");
+    assert.equal(
+      showMessage.getCall(0).args[1],
+      "Your Azure Active Directory application has been successfully updated."
+    );
+    assert.isFalse(showMessage.getCall(0).args[2]);
+    assert.isTrue(res.isOk());
   });
 
   it("deploy aad manifest return err", async () => {

@@ -281,11 +281,11 @@ export class FxCoreV3Implement {
     }
     if (contextV3.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
-      contextV3.ui?.showMessage("info", msg, false);
+      contextV3.ui!.showMessage("info", msg, false);
     } else {
       const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-      contextV3.ui
-        ?.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+      contextV3
+        .ui!.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
         .then((result) => {
           const userSelected = result.isOk() ? result.value : undefined;
           if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {

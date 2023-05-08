@@ -291,6 +291,7 @@ describe("Core basic APIs", () => {
         ["info" | "warn" | "error", string, boolean, ...string[]],
         Promise<Result<string | undefined, FxError>>
       >;
+      const openUrl = sandbox.spy(tools.ui, "openUrl");
       const appName = await mockV3Project();
       sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
@@ -318,6 +319,7 @@ describe("Core basic APIs", () => {
       assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
       assert.isFalse(showMessage.getCall(0).args[2]);
       assert.equal(showMessage.getCall(0).args[3], "Learn more");
+      assert.isFalse(openUrl.called);
     } finally {
       restore();
     }

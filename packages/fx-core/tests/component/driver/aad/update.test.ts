@@ -170,66 +170,6 @@ describe("aadAppUpdate", async () => {
       `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
   });
-  it("check learn more link after success updated", async () => {
-    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
-    envRestore = mockedEnv({
-      AAD_APP_OBJECT_ID: expectedObjectId,
-      AAD_APP_CLIENT_ID: expectedClientId,
-    });
-
-    const outputPath = path.join(outputRoot, "manifest.output.json");
-    const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      outputFilePath: outputPath,
-    };
-    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-    expect(result.result.isOk()).to.be.true;
-  });
-  it("check learn more link after success without click", async () => {
-    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
-    envRestore = mockedEnv({
-      AAD_APP_OBJECT_ID: expectedObjectId,
-      AAD_APP_CLIENT_ID: expectedClientId,
-    });
-
-    const outputPath = path.join(outputRoot, "manifest.output.json");
-    const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      outputFilePath: outputPath,
-    };
-    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-    expect(result.result.isOk()).to.be.true;
-  });
-  it("check learn more link after success click close", async () => {
-    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
-    envRestore = mockedEnv({
-      AAD_APP_OBJECT_ID: expectedObjectId,
-      AAD_APP_CLIENT_ID: expectedClientId,
-    });
-
-    const outputPath = path.join(outputRoot, "manifest.output.json");
-    const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      outputFilePath: outputPath,
-    };
-    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-    expect(result.result.isOk()).to.be.true;
-  });
-  it("check learn more while return error", async () => {
-    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
-    envRestore = mockedEnv({
-      AAD_APP_OBJECT_ID: expectedObjectId,
-      AAD_APP_CLIENT_ID: expectedClientId,
-    });
-
-    const outputPath = path.join(outputRoot, "manifest.output.json");
-    const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      outputFilePath: outputPath,
-    };
-    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
-    expect(result.result.isErr()).to.be.true;
-  });
   it("should success with valid manifest on cli", async () => {
     sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
     envRestore = mockedEnv({

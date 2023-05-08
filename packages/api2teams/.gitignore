@@ -44,3 +44,5 @@ resource
 !src/cmds/preview/depsChecker/resource/
 templates
 *.tgz
+
+generated-teams-app

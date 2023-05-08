@@ -17,7 +17,7 @@ import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../
 import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
-
+const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {

@@ -11,6 +11,7 @@ import { err } from "@microsoft/teamsfx-api";
 describe("Samples", () => {
   afterEach(() => {
     sinon.restore();
+    sampleProvider["sampleConfigs"] = undefined;
   });
 
   it("Get v2 samples", () => {

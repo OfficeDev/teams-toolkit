@@ -311,7 +311,7 @@ jobs:
           failed_lists=""
           skipped_lists=""
 
-          emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;"
+          emails="teamsfxqa@microsoft.com;"
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then

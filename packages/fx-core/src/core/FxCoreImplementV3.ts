@@ -30,6 +30,7 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
   SPFxQuestionNames,
+  ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
@@ -55,7 +56,6 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { envUtil } from "../component/utils/envUtil";
-import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import {
@@ -88,7 +88,6 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
-import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
@@ -279,6 +278,20 @@ export class FxCoreV3Implement {
         }
       }
       return err(res.error);
+    }
+    if (contextV3.platform === Platform.CLI) {
+      const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
+      contextV3.ui?.showMessage("info", msg, false);
+    } else {
+      const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+      contextV3.ui
+        ?.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+            contextV3.ui!.openUrl(ViewAadAppHelpLinkV5);
+          }
+        });
     }
     return ok(Void);
   }

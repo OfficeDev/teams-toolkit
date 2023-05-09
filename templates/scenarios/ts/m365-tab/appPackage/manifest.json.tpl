@@ -48,5 +48,5 @@
         "id": "${{AAD_APP_CLIENT_ID}}",
         "resource": "api://${{TAB_DOMAIN}}/${{AAD_APP_CLIENT_ID}}"
     },
-    "showLoadingIndicator": true
+    "showLoadingIndicator": false
 }

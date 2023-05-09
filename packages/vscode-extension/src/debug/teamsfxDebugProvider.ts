@@ -103,6 +103,9 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
       }
 
+      // NOTE: handle the case that msedge/chrome will be resolved twice
+      env = env || debugConfiguration.teamsfxEnv;
+
       const isLocal =
         env === environmentManager.getLocalEnvName() ||
         !debugConfiguration.name.startsWith("Launch Remote");
@@ -146,7 +149,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
             );
           }
 
-          // Put env and appId in `debugConfiguration` so debug handlers can retrieve it and send telemetry
+          // Put env and hub in `debugConfiguration` so debug handlers can retrieve it and send telemetry
           debugConfiguration.teamsfxIsRemote = !isLocal;
           debugConfiguration.teamsfxEnv = env;
           if (host === Host.teams) {
@@ -166,18 +169,24 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
       debugConfiguration.url = result;
 
-      VsCodeLogInstance.info(sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub!));
-      VsCodeLogInstance.outputChannel.appendLine("");
-      VsCodeLogInstance.outputChannel.appendLine(
-        sideloadingDisplayMessages.sideloadingUrlMessage(
-          debugConfiguration.teamsfxHub!,
-          debugConfiguration.url
-        )
-      );
-      if (isLocal) {
+      // NOTE: handle the case that msedge/chrome will be resolved twice
+      if (!debugConfiguration.teamsfxResolved) {
+        VsCodeLogInstance.info(sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub!));
         VsCodeLogInstance.outputChannel.appendLine("");
-        VsCodeLogInstance.outputChannel.appendLine(sideloadingDisplayMessages.hotReloadingMessage);
+        VsCodeLogInstance.outputChannel.appendLine(
+          sideloadingDisplayMessages.sideloadingUrlMessage(
+            debugConfiguration.teamsfxHub!,
+            debugConfiguration.url
+          )
+        );
+        if (isLocal) {
+          VsCodeLogInstance.outputChannel.appendLine("");
+          VsCodeLogInstance.outputChannel.appendLine(
+            sideloadingDisplayMessages.hotReloadingMessage
+          );
+        }
       }
+      debugConfiguration.teamsfxResolved = true;
     } catch (error: any) {
       showError(error);
       terminateAllRunningTeamsfxTasks();

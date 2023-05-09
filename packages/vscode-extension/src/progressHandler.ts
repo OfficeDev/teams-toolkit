@@ -9,7 +9,6 @@ import { ProgressLocation, window } from "vscode";
 
 import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
 
-import { sleep } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 
 export class ProgressHandler implements IProgressHandler {
@@ -65,10 +64,6 @@ export class ProgressHandler implements IProgressHandler {
     this.ended = false;
 
     this.detail = detail;
-    const _this = this;
-    const promise = new Promise((resolve) => {
-      _this.resolve = resolve;
-    });
 
     window.withProgress(
       {
@@ -76,25 +71,21 @@ export class ProgressHandler implements IProgressHandler {
         cancellable: false,
       },
       async (progress) => {
-        await sleep(10);
-        let resolve = _this.resolve;
         do {
           const status = { message: this.generateWholeMessage() };
           progress.report(status);
-          await sleep(10);
-          resolve = await new Promise((_resolve) => resolve?.(_resolve));
+          await new Promise((_resolve) => (this.resolve = _resolve));
         } while (!this.ended);
         return ok(null);
       }
     );
-
-    this.resolve = await promise;
   }
 
   public async end(success: boolean) {
     this.ended = true;
-    this.resolve?.(undefined);
-    await sleep(10);
+    if (this.resolve) {
+      this.resolve();
+    }
   }
 
   public async next(detail?: string) {
@@ -102,7 +93,9 @@ export class ProgressHandler implements IProgressHandler {
       this.detail = detail;
       this.currentStep++;
       this.totalSteps = Math.max(this.currentStep, this.totalSteps);
-      this.resolve = await new Promise((resolve) => this.resolve?.(resolve));
+      if (this.resolve) {
+        this.resolve();
+      }
     });
   }
 }

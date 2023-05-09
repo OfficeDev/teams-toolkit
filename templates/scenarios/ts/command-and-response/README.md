@@ -176,7 +176,7 @@ Congratulations, you've just created your own command! To learn more about the c
 - [Customize the Adaptive Card with dynamic content](https://aka.ms/teamsfx-command-new#how-to-build-command-response-using-adaptive-card-with-dynamic-content)
 - [Change the way to initialize the bot](https://aka.ms/teamsfx-command-new#customize-initialization)
 - [Connect to an existing API](https://aka.ms/teamsfx-command-new#connect-to-existing-api)
-- [Access Microsoft Graph](https://aka.ms/teamsfx-add-sso)
+- [Access Microsoft Graph](https://aka.ms/teamsfx-add-sso-new)
 
 ## Extend command bot with other bot scenarios
 

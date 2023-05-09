@@ -252,7 +252,6 @@ describe("Capability Questions", () => {
     });
 
     it("should return 3 type options in first layer question if from TDP", () => {
-      // TODO: fix
       // Act
       const question = createNewProjectQuestionWith2Layers({
         teamsAppFromTdp: { id: "1" },

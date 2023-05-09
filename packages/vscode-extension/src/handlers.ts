@@ -1789,7 +1789,10 @@ export async function checkUpgrade(args?: any[]) {
         }
       });
       return;
-    } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
+    } else if (
+      triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar ||
+      triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.CommandPalette
+    ) {
       input["skipUserConfirm"] = true;
     }
     const result = await core.phantomMigrationV3(input);

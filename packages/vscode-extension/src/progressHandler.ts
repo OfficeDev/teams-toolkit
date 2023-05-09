@@ -83,7 +83,9 @@ export class ProgressHandler implements IProgressHandler {
 
   public async end(success: boolean) {
     this.ended = true;
-    this.resolve?.();
+    if (this.resolve) {
+      this.resolve();
+    }
   }
 
   public async next(detail?: string) {
@@ -91,7 +93,9 @@ export class ProgressHandler implements IProgressHandler {
       this.detail = detail;
       this.currentStep++;
       this.totalSteps = Math.max(this.currentStep, this.totalSteps);
-      this.resolve?.();
+      if (this.resolve) {
+        this.resolve();
+      }
     });
   }
 }

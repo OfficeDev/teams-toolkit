@@ -314,6 +314,12 @@ export const DEFAULT_DEVELOPER = {
   termsOfUseUrl: "https://www.example.com/privacy",
 };
 
+// Default values for the description fields in manifest.
+export const DEFAULT_DESCRIPTION = {
+  short: "Short description",
+  full: "Full description",
+};
+
 export const BOTS_TPL_EXISTING_APP: IBot[] = [
   {
     botId: "{{config.manifest.botId}}",

@@ -217,7 +217,6 @@ describe("Capability Questions", () => {
         CommandAndResponseOptionItem(),
         WorkflowOptionItem(),
         DashboardOptionItem(),
-        TabNewUIOptionItem(),
         TabSPFxNewUIItem(),
         TabNonSsoItem(),
         BotNewUIOptionItem(),

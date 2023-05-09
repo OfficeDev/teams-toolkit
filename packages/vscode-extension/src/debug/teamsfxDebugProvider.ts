@@ -170,7 +170,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       debugConfiguration.url = result;
 
       // NOTE: handle the case that msedge/chrome will be resolved twice
-      if (!debugConfiguration.resolved) {
+      if (!debugConfiguration.teamsfxResolved) {
         VsCodeLogInstance.info(sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub!));
         VsCodeLogInstance.outputChannel.appendLine("");
         VsCodeLogInstance.outputChannel.appendLine(
@@ -186,7 +186,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           );
         }
       }
-      debugConfiguration.resolved = true;
+      debugConfiguration.teamsfxResolved = true;
     } catch (error: any) {
       showError(error);
       terminateAllRunningTeamsfxTasks();

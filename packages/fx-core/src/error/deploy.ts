@@ -82,20 +82,6 @@ export class CheckDeploymentStatusError extends UserError {
   }
 }
 
-export class DeployRemoteStartError extends UserError {
-  constructor(location: string, errorMessage: string, helpLink?: string) {
-    super({
-      source: "azureDeploy",
-      message: getDefaultString("error.deploy.DeployRemoteStartError", location, errorMessage),
-      displayMessage: getLocalizedString(
-        "error.deploy.DeployRemoteStartError.Notification",
-        location
-      ),
-      helpLink: helpLink,
-    });
-  }
-}
-
 export class AzureStorageClearBlobsError extends UserError {
   constructor(storageName: string, errorResponse: BlobDeleteResponse, helpLink?: string) {
     super({

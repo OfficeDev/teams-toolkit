@@ -196,7 +196,7 @@ describe("FuncToolChecker E2E Test", async () => {
 });
 
 async function assertFuncStart(binFolder?: string): Promise<void> {
-  const funcStartResult = await funcStart(binFolder);
+  const funcStartResult = await funcUtils.funcStart(binFolder);
   // func start can work: "Unable to find project root. Expecting to find one of host.json, local.settings.json in project root."
   expect(funcStartResult.cmdOutputIncludingStderr).to.includes(
     "Unable to find project root",

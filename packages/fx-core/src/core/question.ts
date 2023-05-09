@@ -394,7 +394,6 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabNewUIOptionItem(),
     TabSPFxNewUIItem(),
     TabNonSsoItem(),
     BotNewUIOptionItem(),

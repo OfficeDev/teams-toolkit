@@ -388,7 +388,7 @@ export async function addMissingValidDomainForManifest(
   if (shouldAddBotDomain) {
     teamsAppManifest.validDomains.push(isValidDomain ? validDomain.botWithValid : validDomain.bot);
   }
-  manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
+  await manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
 }
 
 export function tryExtractEnvFromUserdata(filename: string): string {

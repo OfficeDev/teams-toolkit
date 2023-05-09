@@ -70,7 +70,7 @@ To check that your manifest file is valid:
 - From Visual Studio Code: open the Teams Toolkit and click `Zip Teams App Package` or open the command palette and select `Teams: Zip Teams App Package`.
 - Alternatively, from the command line run `teamsfx package` in the project directory.
 
-## Publish
+## Publish to Teams
 
 Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
 

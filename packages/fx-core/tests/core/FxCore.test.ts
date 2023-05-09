@@ -1053,7 +1053,7 @@ describe("Teams app APIs", async () => {
       platform: Platform.VSCode,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.TeamsAppPackageFilePath]: ".\\build\\appPackage\\appPackage.dev.zip",
-      validateMethod: "validateAgainstAppPackage",
+      [CoreQuestionNames.ValidateMethod]: "validateAgainstAppPackage",
       projectPath: path.join(os.tmpdir(), appName),
     };
 
@@ -1071,7 +1071,7 @@ describe("Teams app APIs", async () => {
       platform: Platform.VSCode,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
-      validateMethod: "validateAgainstSchema",
+      [CoreQuestionNames.ValidateMethod]: "validateAgainstSchema",
       projectPath: path.join(os.tmpdir(), appName),
     };
 

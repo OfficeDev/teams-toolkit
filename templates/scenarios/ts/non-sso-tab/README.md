@@ -12,7 +12,7 @@ Microsoft Teams supports the ability to run web-based UI inside "custom tabs" th
 
 - From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
-- From TeamsFx CLI: 
+- From TeamsFx CLI:
   - Executing the command `teamsfx provision --env local` in your project directory.
   - Executing the command `teamsfx deploy --env local` in your project directory.
   - Executing the command `teamsfx preview --env local` in your project directory.
@@ -69,4 +69,4 @@ Once deployed, you may want to distribute your application to your organization'
 
 Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high-level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
 
-Please follow this [document](https://aka.ms/teamsfx-add-sso) to add single sign on for your project.
+Please follow this [document](https://aka.ms/teamsfx-add-sso-new) to add single sign on for your project.

@@ -4,7 +4,7 @@ import * as utils from '../src/utils'
 import { parseApi } from '../src/parser';
 import chai from 'chai';
 import sinonChai from 'sinon-chai';
-import * as generator from "../src/generateRequestAdaptiveCard";
+import * as generator from "../src/generateRequestCard";
 import SwaggerParser from '@apidevtools/swagger-parser';
 
 chai.use(sinonChai);
@@ -17,7 +17,7 @@ describe('parseApi tests', () => {
     let existsSyncStub: sinon.SinonStub;
     let mkdirSyncStub: sinon.SinonStub;
     let validateStub: sinon.SinonStub;
-    let generateRequestAdaptiveCardStub: sinon.SinonStub;
+    let generateRequestCardStub: sinon.SinonStub;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
@@ -25,10 +25,10 @@ describe('parseApi tests', () => {
       existsSyncStub = sandbox.stub(fs, 'existsSync');
       mkdirSyncStub = sandbox.stub(fs, 'mkdirSync');
       validateStub = sandbox.stub(SwaggerParser, 'validate');
-      generateRequestAdaptiveCardStub = sandbox.stub(
+      generateRequestCardStub = sandbox.stub(
         generator,
-        'generateRequestAdaptiveCard'
-      );
+        'generateRequestCard'
+      ).resolves([]);
     });
 
     afterEach(() => {
@@ -55,7 +55,7 @@ describe('parseApi tests', () => {
         .to.be.true;
     });
 
-    it('should call generateRequestAdaptiveCard with correct args', async () => {
+    it('should call generateRequestCard with correct args', async () => {
       existsSyncStub.onCall(0).returns(true);
       existsSyncStub.onCall(1).returns(true);
       isFolderEmptyStub.resolves(true);
@@ -65,7 +65,7 @@ describe('parseApi tests', () => {
       await parseApi('path/to/yaml', { output: 'path/to/output' });
 
       expect(
-        generateRequestAdaptiveCardStub.calledOnceWith(api, 'path/to/output')
+        generateRequestCardStub.calledOnceWith(api)
       ).to.be.true;
     });
   });

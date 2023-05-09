@@ -2,8 +2,10 @@ import fs from 'fs-extra';
 import { CliOptions } from './interfaces';
 import { isFolderEmpty } from './utils';
 import SwaggerParser from '@apidevtools/swagger-parser';
-import { generateRequestAdaptiveCard } from './generateRequestAdaptiveCard';
+import { generateRequestCard } from './generateRequestCard';
 import { OpenAPIV3 } from 'openapi-types';
+import { AdaptiveCardResult } from './interfaces';
+import path from 'path';
 
 export async function parseApi(yaml: string, options: CliOptions) {
   if (!(await isArgsValid(yaml, options))) {
@@ -41,7 +43,12 @@ export async function parseApi(yaml: string, options: CliOptions) {
 
   console.log('start analyze swagger files\n');
 
-  await generateRequestAdaptiveCard(apis, options.output);
+  const requestCards: AdaptiveCardResult[] = await generateRequestCard(apis);
+
+  for (const card of requestCards) {
+    const cardPath = path.join(options.output, `${card.name}RequestCard.json`);
+    await fs.outputJSON(cardPath, card.content, { spaces: 2 });
+  }
 }
 
 async function isArgsValid(

@@ -1,28 +1,27 @@
 import { OpenAPIV3 } from 'openapi-types';
-import { getSafeAdaptiveCardName } from './utils';
-import fs from 'fs-extra';
-import path from 'path';
+import { getCardTitle, getSafeCardName, wrapperCard } from './utils';
+import { AdaptiveCardResult } from './interfaces';
 
-export async function generateRequestAdaptiveCard(
-  apis: OpenAPIV3.Document,
-  outputFolder: string
-) {
+export async function generateRequestCard(
+  apis: OpenAPIV3.Document
+): Promise<AdaptiveCardResult[]> {
   console.log('Generate adaptive cards');
+  const result: AdaptiveCardResult[] = [];
   for (const url in apis.paths) {
     for (const operation in apis.paths[url]) {
       if (operation === 'get') {
         console.log(`API: ${operation} ${url}`);
         try {
-          parseGetRequest(
+          const card = parseGetRequest(
             apis.paths[url]![operation]!,
             url,
-            operation,
-            outputFolder
+            operation
           );
+          result.push(card);
           console.log(`\tsuccessfully generated request card for this api\n`);
         } catch (error) {
           console.error(
-            `\tfailed to generate code due to error: ${(
+            `\tfailed to generate adaptive card for ${operation} ${url} due to error: ${(
               error as Error
             ).toString()}\n`
           );
@@ -31,12 +30,13 @@ export async function generateRequestAdaptiveCard(
       }
     }
   }
+  return result;
 }
 
-function generateRequestAdaptiveCardFromParameters(
+function generateCardFromParams(
   schema: OpenAPIV3.SchemaObject,
   name: string,
-  paramIn: string | undefined
+  paramIn: string | undefined = undefined
 ): any {
   if (!schema) {
     return [];
@@ -83,6 +83,7 @@ function generateRequestAdaptiveCardFromParameters(
         }
       ];
     }
+
     return [
       {
         type: 'Input.Text',
@@ -96,10 +97,9 @@ function generateRequestAdaptiveCardFromParameters(
     const { properties } = schema;
     const result = [];
     for (const property in properties) {
-      const obj = generateRequestAdaptiveCardFromParameters(
+      const obj = generateCardFromParams(
         properties[property] as OpenAPIV3.SchemaObject,
-        name ? `${name}.${property}` : property,
-        undefined
+        name ? `${name}.${property}` : property
       );
       result.push(...obj);
     }
@@ -120,10 +120,9 @@ function generateRequestAdaptiveCardFromParameters(
     const result = [];
     for (let i = 0; i < schema.allOf.length; i++) {
       result.push(
-        ...generateRequestAdaptiveCardFromParameters(
+        ...generateCardFromParams(
           schema.allOf[i] as OpenAPIV3.SchemaObject,
-          name,
-          undefined
+          name
         )
       );
     }
@@ -139,70 +138,32 @@ function generateRequestAdaptiveCardFromParameters(
   throw new Error(`Unknown schema: ${JSON.stringify(schema)}`);
 }
 
-function generateFullAdaptiveCard(
-  body: any,
-  adaptiveCardName: string,
-  operation: string
-): string {
-  const fullCard = {
-    type: 'AdaptiveCard',
-    body,
-    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
-    version: '1.5'
-  } as any;
-  if (adaptiveCardName && operation) {
-    fullCard.actions = [
-      {
-        type: 'Action.Execute',
-        verb: adaptiveCardName,
-        title: `${operation.toUpperCase()}`
-      }
-    ];
-  }
-
-  return fullCard;
-}
-
 function parseGetRequest(
   api: OpenAPIV3.OperationObject,
   url: string,
-  operation: string,
-  outputFolder: string
-) {
+  operation: string
+): AdaptiveCardResult {
   const cardBody = [];
 
   if (api.parameters) {
     for (const index in api.parameters) {
       const param = api.parameters[index] as OpenAPIV3.ParameterObject;
       const schema = param.schema as OpenAPIV3.SchemaObject;
-      const paramResult = generateRequestAdaptiveCardFromParameters(
-        schema,
-        param.name,
-        param.in
-      );
+      const paramResult = generateCardFromParams(schema, param.name, param.in);
 
       cardBody.unshift(...paramResult);
     }
   }
 
-  const requestCommand = `${operation.toUpperCase()} ${url}`;
+  const cardTitle = getCardTitle(operation, url, api.summary);
+  cardBody.unshift(cardTitle);
 
-  const titleTextBlock = {
-    type: 'TextBlock',
-    text: `${requestCommand}: ${api.summary ?? ''}`,
-    wrap: true
+  const adaptiveCardName = getSafeCardName(api, url, operation);
+
+  const fullCard = wrapperCard(cardBody, adaptiveCardName, operation);
+
+  return {
+    name: adaptiveCardName,
+    content: fullCard
   };
-
-  const adaptiveCardName = getSafeAdaptiveCardName(api, url, operation);
-
-  cardBody.unshift(titleTextBlock);
-
-  const fullCard = generateFullAdaptiveCard(
-    cardBody,
-    adaptiveCardName,
-    operation
-  );
-
-  const cardName = `${adaptiveCardName}RequestCard.json`;
-  fs.outputJSONSync(path.join(outputFolder, cardName), fullCard, { spaces: 2 });
 }

@@ -13,7 +13,7 @@ export async function isFolderEmpty(folderPath: string): Promise<boolean> {
   return files.length === 0;
 }
 
-export function getSafeAdaptiveCardName(
+export function getSafeCardName(
   api: OpenAPIV3.OperationObject,
   url: string,
   operation: string
@@ -21,13 +21,50 @@ export function getSafeAdaptiveCardName(
   let name = api.operationId || api.summary || operation + url;
   name = name.replace(/[{}]/g, '');
   const wordArr = name.split(/[ /.-]/g);
-  let newStr = wordArr[0];
+  let safeName = wordArr[0];
   for (let i = 1; i < wordArr.length; i++) {
-    newStr += wordArr[i].charAt(0).toUpperCase() + wordArr[i].slice(1);
+    safeName += wordArr[i].charAt(0).toUpperCase() + wordArr[i].slice(1);
   }
-  newStr = newStr.charAt(0).toLowerCase() + newStr.slice(1);
-  if (newStr.match(/^\d+/)) {
-    newStr = `_${newStr}`;
+  safeName = safeName.charAt(0).toLowerCase() + safeName.slice(1);
+  if (safeName.match(/^\d+/)) {
+    safeName = `_${safeName}`;
   }
-  return newStr;
+  return safeName;
+}
+
+export function wrapperCard(
+  body: any,
+  adaptiveCardName: string,
+  operation: string | undefined = undefined
+): any {
+  const fullCard = {
+    type: 'AdaptiveCard',
+    body,
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    version: '1.5'
+  } as any;
+
+  if (operation) {
+    fullCard.actions = [
+      {
+        type: 'Action.Execute',
+        verb: adaptiveCardName,
+        title: `${operation.toUpperCase()}`
+      }
+    ];
+  }
+
+  return fullCard;
+}
+
+export function getCardTitle(
+  operation: string,
+  url: string,
+  summary: string | undefined = undefined
+) {
+  return {
+    type: 'TextBlock',
+    text: `${operation.toUpperCase()} ${url}: ${summary ?? ''}`,
+    wrap: true
+  };
 }

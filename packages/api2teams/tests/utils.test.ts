@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getVersion, isFolderEmpty, getSafeAdaptiveCardName } from "../src/utils";
+import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard } from "../src/utils";
 import path from "path";
 import sinon from 'sinon';
 import fs from 'fs-extra';
@@ -30,13 +30,13 @@ describe('utils tests', () => {
     });
   });
 
-  describe('getSafeAdaptiveCardName', () => {
+  describe('getSafeCardName', () => {
     it('should generate a safe adaptive card name from operationId', () => {
       const api = { operationId: 'getUsers' };
       const url = '/users';
       const operation = 'get';
 
-      const result = getSafeAdaptiveCardName(api, url, operation);
+      const result = getSafeCardName(api, url, operation);
 
       expect(result).to.equal('getUsers');
     });
@@ -46,7 +46,7 @@ describe('utils tests', () => {
       const url = '/users';
       const operation = 'get';
 
-      const result = getSafeAdaptiveCardName(api, url, operation);
+      const result = getSafeCardName(api, url, operation);
 
       expect(result).to.equal('getAllUsers');
     });
@@ -56,7 +56,7 @@ describe('utils tests', () => {
       const url = '/users';
       const operation = 'get';
 
-      const result = getSafeAdaptiveCardName(api, url, operation);
+      const result = getSafeCardName(api, url, operation);
 
       expect(result).to.equal('getUsers');
     });
@@ -66,7 +66,7 @@ describe('utils tests', () => {
       const url = '/users/{userId}';
       const operation = 'get';
 
-      const result = getSafeAdaptiveCardName(api, url, operation);
+      const result = getSafeCardName(api, url, operation);
 
       expect(result).to.equal('getUserDetails');
     });
@@ -76,9 +76,33 @@ describe('utils tests', () => {
       const url = '/users/{userId}';
       const operation = 'get';
 
-      const result = getSafeAdaptiveCardName(api, url, operation);
+      const result = getSafeCardName(api, url, operation);
 
       expect(result).to.equal('_123getUserDetails');
+    });
+  });
+
+  describe('wrapperCard', () => {
+    it('should return an AdaptiveCard object with the given body and version 1.5', () => {
+      const body = [{ type: 'TextBlock', text: 'Hello World' }];
+      const result = wrapperCard(body, 'test', '');
+      expect(result.type).to.equal('AdaptiveCard');
+      expect(result.body).to.deep.equal(body);
+      expect(result.version).to.equal('1.5');
+    });
+
+    it('should include an Action.Execute action if an operation is provided', () => {
+      const body = [{ type: 'TextBlock', text: 'Hello World' }];
+      const result = wrapperCard(body, 'test', 'get');
+      expect(result.actions).to.deep.equal([
+        { type: 'Action.Execute', verb: 'test', title: 'GET' }
+      ]);
+    });
+
+    it('should not include an actions property if no operation is provided', () => {
+      const body = [{ type: 'TextBlock', text: 'Hello World' }];
+      const result = wrapperCard(body, 'test');
+      expect(result.actions).to.be.undefined;
     });
   });
 })

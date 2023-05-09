@@ -38,20 +38,16 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-
-import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
-import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context, isV3Enabled } from "../common/tools";
-import { getTemplatesFolder } from "../folder";
+import { isV3Enabled } from "../common/tools";
 import {
   ApiConnectionOptionItem,
   AzureSolutionQuestionNames,
   CicdOptionItem,
-  ExistingTabOptionItem,
   SingleSignOnOptionItem,
   ComponentNames,
+  validateSchemaOption,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -62,8 +58,6 @@ import {
   InvalidInputError,
   NotImplementedError,
   ObjectIsUndefinedError,
-  OperationNotPermittedError,
-  ProjectFolderExistError,
   WriteFileError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
@@ -78,7 +72,7 @@ import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
-import { CoreQuestionNames, ProjectNamePattern } from "./question";
+import { CoreQuestionNames } from "./question";
 import {
   CoreTelemetryComponentName,
   CoreTelemetryEvent,
@@ -88,7 +82,6 @@ import {
 } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3 } from "../component/utils";
-import { preCheck } from "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -97,13 +90,12 @@ import {
   getQuestionsForDeployV3,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
+  getQuestionsForValidateMethod,
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
-import { createEnvWithName } from "../component/envManager";
-import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
@@ -117,6 +109,7 @@ import { ILifecycle, LifecycleName } from "../component/configManager/interface"
 import { DotenvParseOutput } from "dotenv";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
+import { QuestionMW } from "../component/middleware/questionMW";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -482,8 +475,9 @@ export class FxCore implements v3.ICore {
   /**
    * v3 only none lifecycle command
    */
+  @hooks([QuestionMW(getQuestionsForValidateMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs.validateMethod === "validateAgainstSchema") {
+    if (inputs[CoreQuestionNames.ValidateMethod] === validateSchemaOption.id) {
       return await this.validateManifest(inputs);
     } else {
       return await this.validateAppPackage(inputs);

@@ -23,6 +23,11 @@ import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CLIUIInstance from "../userInteraction";
 import { EnvNotSpecified, NotValidInputValue } from "../error";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import {
+  validateSchemaOption,
+  validateAppPackageOption,
+} from "@microsoft/teamsfx-core/build/component/constants";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -57,10 +62,12 @@ export class ManifestValidate extends YargsCommand {
         if (validateArgsResult.isErr()) {
           return err(validateArgsResult.error);
         }
-        if (args[AppPackageFilePathParamName]) {
-          inputs.validateMethod = "validateAgainstAppPackage";
-        } else {
-          inputs.validateMethod = "validateAgainstSchema";
+        if (!CLIUIInstance.interactive) {
+          if (args[AppPackageFilePathParamName]) {
+            inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
+          } else {
+            inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
+          }
         }
         result = await core.validateApplication(inputs);
       } else {

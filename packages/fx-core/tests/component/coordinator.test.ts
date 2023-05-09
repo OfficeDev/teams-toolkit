@@ -2642,6 +2642,66 @@ describe("component coordinator test", () => {
     assert.isTrue(progressStartStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(false));
   });
+  it("publish failed - CLI", async () => {
+    const mockProjectModel: ProjectModel = {
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return {
+            result: err({
+              kind: "Failure",
+              error: { source: "test", timestamp: new Date() },
+            } as ExecutionError),
+            summaries: [],
+          };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.publishApplication(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error.message.indexOf("test") !== -1);
+    }
+    assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
+  });
   it("publish without progress bar", async () => {
     const mockProjectModel: ProjectModel = {
       publish: {

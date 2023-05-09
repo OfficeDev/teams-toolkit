@@ -236,7 +236,7 @@ describe("Capability Questions", () => {
       sandbox.restore();
     });
 
-    it("should return 4 type options in first layer question", () => {
+    it("should return 4 type options in first layer question if not from TDP", () => {
       // Act
       const question = createNewProjectQuestionWith2Layers();
       // Assert
@@ -248,6 +248,23 @@ describe("Capability Questions", () => {
         NewProjectTypeTabOptionItem(),
         NewProjectTypeMessageExtensionOptionItem(),
         NewProjectTypeOutlookAddinOptionItem(),
+      ]);
+    });
+
+    it("should return 3 type options in first layer question if from TDP", () => {
+      // Act
+      const question = createNewProjectQuestionWith2Layers({
+        teamsAppFromTdp: { id: "1" },
+        platform: Platform.VSCode,
+      });
+      // Assert
+      chai.assert.equal(question.type, "singleSelect");
+      chai.assert.equal(question.name, "project-type");
+      chai.assert.equal(question.title, getLocalizedString("core.createProjectQuestion.title"));
+      chai.assert.deepEqual(question.staticOptions, [
+        NewProjectTypeBotOptionItem(),
+        NewProjectTypeTabOptionItem(),
+        NewProjectTypeMessageExtensionOptionItem(),
       ]);
     });
 

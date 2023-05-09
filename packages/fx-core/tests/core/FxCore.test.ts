@@ -450,7 +450,7 @@ describe("Core basic APIs", () => {
     }
   });
 
-  it("phantomMigrationV3 return error for invalid project", async () => {
+  it("phantomMigrationV3 return error for invalid V2 project", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });
@@ -467,6 +467,25 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr());
       assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
       await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
+  it("phantomMigrationV3 return error for non-project", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir()),
+        skipUserConfirm: true,
+      };
+      const res = await core.phantomMigrationV3(inputs);
+      assert.isTrue(res.isErr());
+      assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
     } finally {
       restore();
     }

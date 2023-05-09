@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ */
 
+import "mocha";
 import chai from "chai";
 import spies from "chai-spies";
-import * as funcUtils from "../utils/funcTool";
-import { logger } from "../adapters/testLogger";
-import { TestTelemetry } from "../adapters/testTelemetry";
-import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/funcToolChecker";
-import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
-import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
-import * as path from "path";
+import * as fs from "fs-extra";
 import * as os from "os";
-import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
-import { isLinux } from "../../../../src/common/deps-checker/util/system";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import "mocha";
+import * as path from "path";
+import semver from "semver";
 import * as sinon from "sinon";
+import * as uuid from "uuid";
+import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/funcToolChecker";
+import { isLinux } from "../../../../src/common/deps-checker/util/system";
+import * as funcUtils from "../utils/funcTool";
 
 chai.use(spies);
 const expect = chai.expect;
@@ -23,155 +23,180 @@ const assert = chai.assert;
 
 describe("FuncToolChecker E2E Test", async () => {
   const sandbox = sinon.createSandbox();
+  let baseFolder: string | undefined = undefined;
   beforeEach(async function () {
-    await funcUtils.cleanup();
-    console.error("cleanup portable func and sandbox");
+    sandbox.restore();
+    baseFolder = path.join(os.homedir(), "func-e2e", uuid.v4().substring(0, 6));
   });
 
   afterEach(async function () {
-    sandbox.restore();
+    if (baseFolder) {
+      await fs.remove(baseFolder);
+    }
   });
 
+  const mockFunc = (homeDir: string): FuncToolChecker => {
+    sandbox
+      .stub(FuncToolChecker, <any>"getDefaultInstallPath")
+      .returns(path.join(homeDir, "./.fx/bin/azfunc")) as unknown as FuncToolChecker;
+    return new FuncToolChecker();
+  };
+
   it("not install + special character dir", async function () {
-    this.skip();
-    if ((await funcUtils.isFuncCoreToolsInstalled()) || isLinux()) {
+    if ((await funcUtils.getGlobalFunc()) || isLinux()) {
       this.skip();
     }
 
-    const funcToolChecker = CheckerFactory.createChecker(
-      DepsType.FuncCoreTools,
-      logger,
-      new TestTelemetry()
-    ) as FuncToolChecker;
-    sandbox
-      .stub(FuncToolChecker, <any>"getDefaultInstallPath")
-      .returns(
-        path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
-      );
-
+    const projectPath = path.join(baseFolder!, "project path");
+    const symlinkPath = path.join(projectPath, "./devTools/func");
+    const homePath = path.join(baseFolder!, "Aarón García", "for test");
+    await fs.ensureDir(homePath);
+    const funcToolChecker = mockFunc(homePath);
     const spyChecker = sandbox.spy(funcToolChecker);
-    const res = await spyChecker.resolve();
-    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+
+    const installOptions = {
+      projectPath: projectPath,
+      symlinkDir: "./devTools/func",
+      version: "~4.0.4670",
+    };
+    const res = await spyChecker.resolve(installOptions);
+    if (res.error) {
+      console.log(res.error);
+    }
+    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
 
     expect(res.isInstalled).to.be.equal(true);
-    expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
-    expect(res.details.binFolders).to.to.have.all.members(
-      funcToolChecker.getPortableFuncBinFolders()
-    );
-    assert.isTrue(
-      /node "[^"]*"$/g.test(res.command),
-      `should use portable func, and func command = ${res.command}`
-    );
-    await assertFuncStart(funcToolChecker);
+    expect(res.details.binFolders?.length).to.be.equal(1);
+    expect(res.details.binFolders?.[0]).to.be.equal(symlinkPath);
+
+    const installationInfo = await funcToolChecker.getInstallationInfo(installOptions);
+    expect(installationInfo.isInstalled).to.be.equal(true);
+    expect(installationInfo.details.binFolders?.length).to.be.equal(1);
+    expect(installationInfo.details.binFolders?.[0]).to.be.equal(symlinkPath);
+    expect(res.command).to.be.equal("func");
+    await assertFuncStart(symlinkPath);
   });
 
   it("not install + throw error when installing", async function () {
-    this.skip();
-    if ((await funcUtils.isFuncCoreToolsInstalled()) || isLinux()) {
+    if ((await funcUtils.getGlobalFunc()) || isLinux()) {
       this.skip();
     }
 
-    // first: throw timeout error
-    const funcToolChecker = CheckerFactory.createChecker(
-      DepsType.FuncCoreTools,
-      logger,
-      new TestTelemetry()
-    ) as FuncToolChecker;
-    sandbox.stub(FuncToolChecker.prototype, <any>"doInstallPortableFunc");
+    const projectPath = path.join(baseFolder!, "projectDir");
+    const symlinkPath = path.join(projectPath, "./devTools/func");
+    const homePath = path.join(baseFolder!, "homeDir");
+    const funcToolChecker = mockFunc(homePath);
+    await fs.ensureFile(path.join(homePath, ".fx/bin/azfunc"));
+    const spyChecker = sandbox.spy(funcToolChecker);
 
-    const res = await funcToolChecker.resolve();
+    const installOptions = {
+      projectPath: projectPath,
+      symlinkDir: "./devTools/func",
+      version: "~4.0.4670",
+    };
+    const res = await spyChecker.resolve(installOptions);
     assert.isFalse(res.isInstalled);
-    assert.isFalse((await funcToolChecker.getInstallationInfo()).isInstalled);
+    const installationInfo = await funcToolChecker.getInstallationInfo(installOptions);
+    assert.isFalse(installationInfo.isInstalled);
 
     // second: still works well
-    sandbox.restore();
-    const spyChecker = sandbox.spy(funcToolChecker);
-    const retryRes = await spyChecker.resolve();
-    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
-
+    await fs.remove(path.join(homePath, ".fx/bin/azfunc"));
+    const retryRes = await spyChecker.resolve(installOptions);
+    if (retryRes.error) {
+      console.log(retryRes.error);
+    }
     assert.isTrue(retryRes.isInstalled);
-    assert.isTrue(
-      (await funcToolChecker.getInstallationInfo()).isInstalled,
-      "second run, should success"
-    );
-    await assertFuncStart(funcToolChecker);
+    const retryInstallationInfo = await funcToolChecker.getInstallationInfo(installOptions);
+    assert.isTrue(retryInstallationInfo.isInstalled, "second run, should success");
+    await assertFuncStart(symlinkPath);
   });
 
   it("not install + linux + user cancel", async function () {
-    this.skip();
-    if ((await funcUtils.isFuncCoreToolsInstalled()) || !isLinux()) {
+    if ((await funcUtils.getGlobalFunc()) || !isLinux()) {
       this.skip();
     }
-    const funcToolChecker = CheckerFactory.createChecker(
-      DepsType.FuncCoreTools,
-      logger,
-      new TestTelemetry()
-    ) as FuncToolChecker;
-    const depsInfo = await funcToolChecker.getInstallationInfo();
+    const projectPath = path.join(baseFolder!, "projectDir");
+    const homePath = path.join(baseFolder!, "homeDir");
+    const funcToolChecker = mockFunc(homePath);
+
+    const installOptions = {
+      projectPath: projectPath,
+      symlinkDir: "./devTools/func",
+      version: "~4.0.4670",
+    };
+    const depsInfo = await funcToolChecker.resolve(installOptions);
 
     expect(depsInfo.details.isLinuxSupported).to.be.equal(false);
-    expect(depsInfo.command).to.be.equal("npx azure-functions-core-tools@3");
+    expect(depsInfo.command).to.be.equal("func");
+    expect(depsInfo.details.binFolders).to.be.equal(undefined);
+    expect(depsInfo.error?.message).to.contains(
+      "Cannot find Azure Functions Core Tools.",
+      `Expect error message contains 'Cannot find Azure Functions Core Tools.'. Actual error message: ${depsInfo.error?.message}`
+    );
   });
 
   it("already install + linux", async function () {
-    this.skip();
-    if (!(await funcUtils.isFuncCoreToolsInstalled()) || !isLinux()) {
+    if (!(await funcUtils.getGlobalFunc()) || !isLinux()) {
       this.skip();
     }
 
-    const funcToolChecker = CheckerFactory.createChecker(
-      DepsType.FuncCoreTools,
-      logger,
-      new TestTelemetry()
-    ) as FuncToolChecker;
+    const projectPath = path.join(baseFolder!, "projectDir");
+    const homePath = path.join(baseFolder!, "homeDir");
+    const funcToolChecker = mockFunc(homePath);
 
-    const depsInfo = await funcToolChecker.getInstallationInfo();
+    const installOptions = {
+      projectPath: projectPath,
+      symlinkDir: "./devTools/func",
+      version: "~4.0.4670",
+    };
+    const depsInfo = await funcToolChecker.resolve(installOptions);
+    if (depsInfo.error) {
+      console.log(depsInfo.error);
+    }
     expect(depsInfo.isInstalled).to.be.equal(true);
-    expect(depsInfo.command).to.be.equal("func", `should use global func`);
-
-    const spyChecker = sandbox.spy(funcToolChecker);
-    const retryRes = await spyChecker.resolve();
-    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
-    expect(retryRes.isInstalled).to.be.equal(true);
-
-    await assertFuncStart(funcToolChecker);
+    expect(depsInfo.command).to.be.equal("func");
+    await assertFuncStart();
   });
 
-  it("already install + old func version(v2)", async function () {
-    this.skip();
-    const funcVersion = await funcUtils.getFuncCoreToolsVersion();
+  // TODO: already installed + func
+  it("already install + old func version", async function () {
+    const funcVersion = await funcUtils.getGlobalFunc();
     if (isLinux()) {
       this.skip();
     }
-    if (funcVersion == null || (await funcUtils.isFuncCoreToolsInstalled())) {
+    if (!funcVersion || semver.satisfies(funcVersion, "~4.0.4670")) {
       this.skip();
     }
 
-    const funcToolChecker = CheckerFactory.createChecker(
-      DepsType.FuncCoreTools,
-      logger,
-      new TestTelemetry()
-    ) as FuncToolChecker;
+    const projectPath = path.join(baseFolder!, "projectDir");
+    const symlinkPath = path.join(projectPath, "./devTools/func");
+    const homePath = path.join(baseFolder!, "homeDir");
+    const funcToolChecker = mockFunc(homePath);
 
     const spyChecker = sandbox.spy(funcToolChecker);
-    const res = await spyChecker.resolve();
-    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
-
+    const installOptions = {
+      projectPath: projectPath,
+      symlinkDir: "./devTools/func",
+      version: "~4.0.4670",
+    };
+    const res = await spyChecker.resolve(installOptions);
+    if (res.error) {
+      console.log(res.error);
+    }
+    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
     assert.isTrue(res.isInstalled);
-    expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
-    assert.isTrue(/node "[^"]*"$/g.test(res.command), `should use portable func`);
-    await assertFuncStart(funcToolChecker);
+    assert.equal(res.details.binFolders?.length, 1);
+    assert.equal(res.details.binFolders?.[0], symlinkPath);
+
+    const installationInfo = await funcToolChecker.resolve(installOptions);
+    expect(installationInfo.isInstalled).to.be.equal(true);
+    assert.equal(installationInfo.command, "func");
+    await assertFuncStart(symlinkPath);
   });
 });
 
-async function assertFuncStart(funcToolChecker: FuncToolChecker): Promise<void> {
-  const funcExecCommand = (await funcToolChecker.getInstallationInfo()).command;
-  const funcStartResult: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
-    undefined,
-    logger,
-    { shell: true },
-    `${funcExecCommand} start`
-  );
+async function assertFuncStart(binFolder?: string): Promise<void> {
+  const funcStartResult = await funcStart(binFolder);
   // func start can work: "Unable to find project root. Expecting to find one of host.json, local.settings.json in project root."
   expect(funcStartResult.cmdOutputIncludingStderr).to.includes(
     "Unable to find project root",

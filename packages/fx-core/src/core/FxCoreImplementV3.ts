@@ -441,7 +441,8 @@ export class FxCoreV3Implement {
       if (!isValid) {
         return err(new InvalidProjectError());
       }
-    } else if (version.source === VersionSource.unknown) {
+    }
+    if (version.source === VersionSource.unknown) {
       return err(new InvalidProjectError());
     }
     return await this.innerMigrationV3(inputs);

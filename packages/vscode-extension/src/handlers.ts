@@ -1790,8 +1790,9 @@ export async function checkUpgrade(args?: any[]) {
       });
       return;
     } else if (
-      triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar ||
-      triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.CommandPalette
+      triggerFrom[TelemetryProperty.TriggerFrom] &&
+      (triggerFrom[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar ||
+        triggerFrom[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.CommandPalette)
     ) {
       input["skipUserConfirm"] = true;
     }

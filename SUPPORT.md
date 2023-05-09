@@ -50,7 +50,7 @@ Teams Toolkit CLI/SDK will not be guaranteed to work on platforms and other depe
 |Public Preview|v3.8.x|v17.2|v0.14.x|v0.7.x|v1.11.x, v1.12.x|v1.11|
 |GA|v4.0.0|v17.3|v1.0.0|v1.0.0|v1.12.x|v1.11|
 |Latest*|v5.x.x|v17.6|v2.x.x|v2.x.x|v2.x.x|v1.16|
-|Beta**|Prerelease|v17.7 Preview x|v2.x.x-beta|v2.x.x-beta|v2.x.x-beta|devPreview|
+|Beta**|Prerelease|v17.7 Preview|v2.x.x-beta|v2.x.x-beta|v2.x.x-beta|devPreview|
 
 - **Latest is aligned on the major version*.
 - ***Means this is on developer preview*.

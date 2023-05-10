@@ -704,34 +704,8 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   );
 
   if (isV3Enabled()) {
-    const schemaOption: OptionItem = {
-      id: "validateAgainstSchema",
-      label: localize("teamstoolkit.handlers.validate.schemaOption"),
-      description: localize("teamstoolkit.handlers.validate.schemaOptionDescription"),
-    };
-    const appPackageOption: OptionItem = {
-      id: "validateAgainstPackage",
-      label: localize("teamstoolkit.handlers.validate.appPackageOption"),
-      description: localize("teamstoolkit.handlers.validate.appPackageOptionDescription"),
-    };
-    const config: SingleSelectConfig = {
-      name: "validateMethod",
-      title: localize("teamstoolkit.handlers.validate.selectTitle"),
-      options: [schemaOption, appPackageOption],
-    };
-    const result = await VS_CODE_UI.selectOption(config);
-    if (result.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error, {
-        ...getTriggerFromProperty(args),
-      });
-      return err(result.error);
-    } else {
-      const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
-      telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
-      const inputs = getSystemInputs();
-      inputs.validateMethod = result.value.result;
-      return await runCommand(Stage.validateApplication, inputs, telemetryProperties);
-    }
+    const inputs = getSystemInputs();
+    return await runCommand(Stage.validateApplication, inputs);
   } else {
     const func: Func = {
       namespace: "fx-solution-azure",

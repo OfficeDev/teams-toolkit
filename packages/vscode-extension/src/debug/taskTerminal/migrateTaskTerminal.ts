@@ -6,7 +6,6 @@
 import * as vscode from "vscode";
 
 import { FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { showError } from "../../handlers";
 import * as commonUtils from "../commonUtils";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
@@ -16,12 +15,7 @@ export class MigrateTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
-    try {
-      await commonUtils.triggerV3Migration();
-      return ok(Void);
-    } catch (error: any) {
-      showError(error);
-      throw error;
-    }
+    await commonUtils.triggerV3Migration();
+    return ok(Void);
   }
 }

@@ -19,7 +19,7 @@ This is a simple hello world application with Bot capabilities.
   - In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your ngrok URL.
     ```
     BOT_DOMAIN=sample-id.ngrok.io
-    BOT_ENDPOINT=http://sample-id.ngrok.io
+    BOT_ENDPOINT=https://sample-id.ngrok.io
     ```
   - Executing the command `teamsfx provision --env local` in your project directory.
   - Executing the command `teamsfx deploy --env local` in your project directory.

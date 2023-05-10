@@ -1,7 +1,7 @@
 # Link Unfurling app
 
 ## Introduction
-This is an Link Unfurling app that can unfurl an adaptive card after user pastes a link. This app also enables Zero Install Link Unfurling which helps you unfurl a card for your links even before you discovered or installed your app in Teams.
+This is an Link Unfurling app that can unfurl an adaptive card when URLs with a particular domain are pasted into the compose message area. This app also enables Zero Install Link Unfurling which helps you unfurl a card for your links even before you discovered or installed your app in Teams.
 
 Teams:
 
@@ -19,7 +19,7 @@ Outlook:
 
 ## Debug
 - From Visual Studio Code: Click `Run and Debug` panel.
-- Select a target Microsoft application where the link unfurling runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
+- Select a target Microsoft application where the link unfurling app runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
 - From TeamsFx CLI: 
   - Install [ngrok](https://ngrok.com/download) and start your local tunnel service by running the command `ngrok http 3978`.
   - In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your ngrok URL.
@@ -44,7 +44,7 @@ Deploy your project to Azure by following these steps:
 
 | From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                    |
 | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision in the cloud` from DEPLOYMENT section or open the command palette and select: `Teams: Provision in the cloud`.</li><li>Open the Teams Toolkit and click `Deploy to the cloud` or open the command palette and select: `Teams: Deploy to the cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx provision --env dev`.</li> <li>Run command: `teamsfx deploy --env dev`. </li></ul> |
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision` from DEPLOYMENT section or open the command palette and select: `Teams: Provision`.</li><li>Open the Teams Toolkit and click `Deploy` or open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx provision --env dev`.</li> <li>Run command: `teamsfx deploy --env dev`. </li></ul> |
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.
 
@@ -58,7 +58,7 @@ Once the provisioning and deployment steps are finished, you can preview your ap
   1. Select `Launch Remote in Teams` or `Launch Remote in Outlook` from the launch configuration drop-down.
   1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
-- From TeamsFx CLI: execute `teamsfx preview --env dev` in your project directory to launch your application.
+- From TeamsFx CLI: execute `teamsfx preview --env dev    --m365-host <m365-host>` in your project directory to launch your application, where options for m365-host are `teams` or `outlook`.
 ## How to add link unfurling cache in Teams
 This template removes cache by default to provide convenience for debug. To add cache, remove following JSON part from adaptive card in `linkUnfurlingBot.ts`:
 ```ts
@@ -139,8 +139,10 @@ server.get("/tab", async (req, res) => {
   res.end();
 });
 ```
-### Step 3: Update teamsapp.local.yml
-In action `file/createOrUpdateEnvironmentFile`, add `TEAMS_APP_ID` and `BOT_DOMAIN` to env.
+### Step 3: Set `BOT_DOMAIN` and `TEAMS_APP_ID` in environment variables
+For local debug:
+
+Update action `file/createOrUpdateEnvironmentFile` in `teamsapp.local.yml`, add `TEAMS_APP_ID` and `BOT_DOMAIN` to env.
 ```yaml
   - uses: file/createOrUpdateEnvironmentFile # Generate runtime environment variables
     with:
@@ -152,6 +154,31 @@ In action `file/createOrUpdateEnvironmentFile`, add `TEAMS_APP_ID` and `BOT_DOMA
         BOT_DOMAIN: ${{BOT_DOMAIN}}
 ```
 
+For remote:
+
+Update `infra/azure.parameters.json`. Add following to `parameters`:
+```json
+    "teamsAppId":{
+      "value": "${{TEAMS_APP_ID}}"
+    }
+```
+
+Update `infra/azure.bicep`. Add following resource after resource `webApp`:
+```bicep
+resource webAppSettings 'Microsoft.Web/sites/config@2022-09-01' = {
+  parent: webApp
+  name: 'appsettings'
+  properties: {
+    BOT_DOMAIN: webApp.properties.defaultHostName
+    BOT_ID: botAadAppClientId
+    BOT_PASSWORD: botAadAppClientSecret
+    RUNNING_ON_AZURE: '1'
+    TEAMS_APP_ID: teamsAppId
+    WEBSITE_NODE_DEFAULT_VERSION: '~18'
+    WEBSITE_RUN_FROM_PACKAGE: '1'
+  }
+}
+```
 ### Step 4: Update unfurled adaptive card
 In `card.json`, update `actions` to be following.
 ```json

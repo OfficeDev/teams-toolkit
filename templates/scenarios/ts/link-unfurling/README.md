@@ -1,6 +1,5 @@
-# Link Unfurling app
+# Overview of the Link Unfurling app template
 
-## Introduction
 This is an Link Unfurling app that can unfurl an adaptive card when URLs with a particular domain are pasted into the compose message area. This app also enables Zero Install Link Unfurling which helps you unfurl a card for your links even before you discovered or installed your app in Teams.
 
 Teams:
@@ -11,13 +10,15 @@ Outlook:
 
 ![Outlook](./images/outlook.png)
 
-## Prerequisites
+## Get Started
+
+**Prerequisites**
 
 - [Node.js](https://nodejs.org/), supported versions: 16, 18
 - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
-## Debug
+**Debug**
 - From Visual Studio Code: Click `Run and Debug` panel.
 - Select a target Microsoft application where the link unfurling app runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
 - From TeamsFx CLI: 
@@ -31,14 +32,14 @@ Outlook:
   - Executing the command `teamsfx deploy --env local` in your project directory.
   - Executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for m365-host are `teams` or `outlook`.
 
-## Edit the manifest
+**Edit the manifest**
 
 You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
 * `manifest.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
 This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
-## Deploy to Azure
+**Deploy to Azure**
 
 Deploy your project to Azure by following these steps:
 
@@ -48,7 +49,7 @@ Deploy your project to Azure by following these steps:
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.
 
-## Preview
+**Preview**
 
 Once the provisioning and deployment steps are finished, you can preview your app:
 
@@ -59,8 +60,41 @@ Once the provisioning and deployment steps are finished, you can preview your ap
   1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
 - From TeamsFx CLI: execute `teamsfx preview --env dev    --m365-host <m365-host>` in your project directory to launch your application, where options for m365-host are `teams` or `outlook`.
-## How to add link unfurling cache in Teams
-This template removes cache by default to provide convenience for debug. To add cache, remove following JSON part from adaptive card in `linkUnfurlingBot.ts`:
+
+## What's included in the template
+| Folder / File | Contents |
+| - | - |
+| `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
+| `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `.vscode/` | VSCode files for local debug |
+| `src/` | The source code for the link unfurling application |
+| `appPackage/` | Templates for the Teams application manifest |
+| `infra/` | Templates for provisioning Azure resources |
+
+The following files can be customized and demonstrate an example implementation to get you started.
+
+| File | Contents |
+| - | - |
+| `src/index.ts` | Application entry point and `restify` handlers |
+| `src/linkUnfurlingApp.ts`| The teams activity handler |
+| `src/adaptiveCards/helloWorldLinkUnfurlingCard.json` | The unfurled adaptive card |
+
+## Extend this template
+
+### How to use Zero Install Link Unfurling
+
+Zero Install Link Unfurling requires link unfurling app to be published. You need an admin account to publish an app into your org.
+
+Login your admin account in Teams. Go to `Manage your apps` -> `Upload an app`. Click `Upload an app to your org's app catalog` to upload your app's zip file.
+
+![upload](./images/upload.png)
+
+Switch to another user account. Without installing this app, paste the link "https://www.botframework.com" into chatbox, and you should see the adaptive card like below.
+
+![zeroInstall](./images/zeroInstall.png)
+### How to add link unfurling cache in Teams
+
+This template removes cache by default to provide convenience for debug. To add cache, remove following JSON part from adaptive card in `linkUnfurlingApp.ts`:
 ```ts
 suggestedActions: {
           actions: [
@@ -74,31 +108,24 @@ suggestedActions: {
 ```
 After removing this, the link unfurling result will be cached in Teams for 30 minutes. 
 
-Please refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=desktop%2Cjson%2Cadvantages#remove-link-unfurling-cache) for more details.
+Please refer to [link unfurling document](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=desktop%2Cjson%2Cadvantages#remove-link-unfurling-cache) for more details.
 
-## How to use Zero Install Link Unfurling
-Zero Install Link Unfurling requires link unfurling app to be published. You need an admin account to publish an app into your org.
+### How to customize Zero Install Link Unfurling's adaptive cards
 
-Login your admin account in Teams. Go to `Manage your apps` -> `Upload an app`. Click `Upload an app to your org's app catalog` to upload your app's zip file.
-
-![upload](./images/upload.png)
-
-Switch to another user account. Without installing this app, paste the link "https://www.botframework.com" into chatbox, and you should see the adaptive card like below.
-
-![zeroInstall](./images/zeroInstall.png)
-
-## Zero Install Link Unfurling's type
 The supported types for Zero Install Link Unfurling are "result" and "auth" and this template uses "result" as default. By changing it to "auth", the unfurled card will be:
 
 ![zeroInstallAuth](./images/zeroInstallAuth.png)
 
 For card with type "auth", the Teams client strips away any action buttons from the card, and adds a sign in action button. 
 
-Please refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=desktop%2Cjson%2Climitations#zero-install-for-link-unfurling) for more details.
+Please refer to [zero install link unfurling document](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=desktop%2Cjson%2Climitations#zero-install-for-link-unfurling) for more details.
   
-## How to add stage view
+### How to add stage view
+
 You can use the following steps to add stage view in the adaptive card.
-### Step 1: Update `staticTabs` in manifest
+
+**Step 1: Update `staticTabs` in manifest**
+
 In `appPackage/manifest.json`, update `staticTabs` section.
 ```json
     "staticTabs": [
@@ -119,8 +146,9 @@ In `appPackage/manifest.json`, update `staticTabs` section.
     ],
 ```
 
-### Step 2: Update `index.ts`
-In `index.ts`, add following code.
+**Step 2: Update `index.ts`**
+
+In `src/index.ts`, add following code.
 ```ts
 server.get("/tab", async (req, res) => {
   const body = `<!DOCTYPE html>
@@ -139,7 +167,8 @@ server.get("/tab", async (req, res) => {
   res.end();
 });
 ```
-### Step 3: Set `BOT_DOMAIN` and `TEAMS_APP_ID` in environment variables
+**Step 3: Set `BOT_DOMAIN` and `TEAMS_APP_ID` in environment variables**
+
 For local debug:
 
 Update action `file/createOrUpdateEnvironmentFile` in `teamsapp.local.yml`, add `TEAMS_APP_ID` and `BOT_DOMAIN` to env.
@@ -179,8 +208,9 @@ resource webAppSettings 'Microsoft.Web/sites/config@2022-09-01' = {
   }
 }
 ```
-### Step 4: Update unfurled adaptive card
-In `card.json`, update `actions` to be following.
+**Step 4: Update unfurled adaptive card**
+
+In `src/adaptiveCards/helloWorldLinkUnfurlingCard.json`, update `actions` to be following.
 ```json
 "actions": [
         {
@@ -208,7 +238,7 @@ In `card.json`, update `actions` to be following.
 ```
 Run `npm install @microsoft/adaptivecards-tools`. This package helps render placeholders such as `${url}` in adative card to be real values.
 
-In `linkUnfurlingBot.ts`, update `attachment` to be following.
+In `linkUnfurlingApp.ts`, update variable `attachment` to be following.
 ```ts
     const data = { url: process.env.BOT_DOMAIN, appId: process.env.TEAMS_APP_ID };
 
@@ -229,4 +259,4 @@ Opening stage view from Adative card via deep link:
 
 ![viaDeepLink](./images/viaDeepLink.png)
 
-Please refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/tabs-link-unfurling) for more details.
+Please refer to [Stage view document](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/tabs-link-unfurling) for more details.

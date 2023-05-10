@@ -131,7 +131,6 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       }
       if (needsMigration) {
         // migrate to v3
-        // const migrateTask = Object.entries(customTasks).find(([k]) => k === TaskCommand.migrate)?.[1];
         const newTask = new vscode.Task(
           task.definition,
           vscode.TaskScope.Workspace,

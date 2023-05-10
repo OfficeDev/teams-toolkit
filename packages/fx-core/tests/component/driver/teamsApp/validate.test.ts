@@ -129,6 +129,26 @@ describe("teamsApp/validateManifest", async () => {
     }
   });
 
+  it("validation error - cli", async () => {
+    const args: ValidateManifestArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.invalid.manifest.json",
+    };
+
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
+    }
+  });
+
   it("validation error - download failed", async () => {
     sinon
       .stub(ManifestUtil, "validateManifest")

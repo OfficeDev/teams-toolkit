@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, Platform, ManifestUtil } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform, ManifestUtil, Colors } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { EOL } from "os";
@@ -107,16 +107,38 @@ export class ValidateManifestDriver implements StepDriver {
         "driver.teamsApp.summary.validate.failed",
         validationResult.length
       );
-      // logs in output window
-      const errors = validationResult
-        .map((error: string) => {
-          return `${SummaryConstant.Failed} ${error}`;
-        })
-        .join(EOL);
-      const outputMessage =
-        EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, errors);
 
-      context.logProvider?.info(outputMessage);
+      if (context.platform === Platform.CLI) {
+        const outputMessage: Array<{ content: string; color: Colors }> = [
+          {
+            content: "Teams Toolkit has checked manifest with its schema:\n\nSummary: \n",
+            color: Colors.BRIGHT_WHITE,
+          },
+          {
+            content: `${validationResult.length} failed.\n`,
+            color: Colors.BRIGHT_RED,
+          },
+        ];
+        validationResult.map((error: string) => {
+          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+          outputMessage.push({
+            content: `${error}\n`,
+            color: Colors.BRIGHT_WHITE,
+          });
+        });
+        context.ui?.showMessage("info", outputMessage, false);
+      } else {
+        // logs in output window
+        const errors = validationResult
+          .map((error: string) => {
+            return `${SummaryConstant.Failed} ${error}`;
+          })
+          .join(EOL);
+        const outputMessage =
+          EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, errors);
+
+        context.logProvider?.info(outputMessage);
+      }
 
       return err(
         AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [

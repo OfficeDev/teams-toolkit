@@ -158,7 +158,6 @@ describe("FuncToolChecker E2E Test", async () => {
     await assertFuncStart();
   });
 
-  // TODO: already installed + func
   it("already install + old func version", async function () {
     const funcVersion = await funcUtils.getGlobalFunc();
     if (isLinux()) {
@@ -192,6 +191,39 @@ describe("FuncToolChecker E2E Test", async () => {
     expect(installationInfo.isInstalled).to.be.equal(true);
     assert.equal(installationInfo.command, "func");
     await assertFuncStart(symlinkPath);
+  });
+
+  it("already install", async function () {
+    const funcVersion = await funcUtils.getGlobalFunc();
+    if (isLinux()) {
+      this.skip();
+    }
+    if (!funcVersion || !semver.satisfies(funcVersion, "~4.0.4670")) {
+      this.skip();
+    }
+
+    const projectPath = path.join(baseFolder!, "projectDir");
+    const homePath = path.join(baseFolder!, "homeDir");
+    const funcToolChecker = mockFunc(homePath);
+
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const installOptions = {
+      projectPath: projectPath,
+      symlinkDir: "./devTools/func",
+      version: "~4.0.4670",
+    };
+    const res = await spyChecker.resolve(installOptions);
+    if (res.error) {
+      console.log(res.error);
+    }
+    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+    assert.isTrue(res.isInstalled);
+    assert.equal(res.details.binFolders, undefined);
+
+    const installationInfo = await funcToolChecker.resolve(installOptions);
+    expect(installationInfo.isInstalled).to.be.equal(true);
+    assert.equal(installationInfo.command, "func");
+    await assertFuncStart();
   });
 });
 

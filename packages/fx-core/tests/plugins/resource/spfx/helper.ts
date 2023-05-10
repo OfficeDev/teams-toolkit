@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  PluginContext,
+  Colors,
+  FxError,
+  IProgressHandler,
   InputTextConfig,
   InputTextResult,
-  IProgressHandler,
+  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
-  ok,
+  PluginContext,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -18,15 +19,12 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  TaskConfig,
   UserInteraction,
-  FxError,
-  Colors,
-  M365TokenProvider,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { SPFXQuestionNames } from "../../../../src/component/resource/spfx/utils/questions";
 import faker from "faker";
 import sinon from "sinon";
+import { SPFXQuestionNames } from "../../../../src/component/resource/spfx/utils/questions";
 import { newEnvInfo } from "../../../../src/core/environment";
 
 export class TestHelper {

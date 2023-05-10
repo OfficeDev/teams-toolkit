@@ -1,21 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ok } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import "mocha";
-import { Duplex } from "stream";
 import sinon from "sinon";
-import ServerUserInteraction from "../../src/providers/userInteraction";
+import { Duplex } from "stream";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { RequestTypes } from "../../src/apis";
-import {
-  ok,
-  IProgressHandler,
-  RunnableTask,
-  TaskConfig,
-  Result,
-  FxError,
-} from "@microsoft/teamsfx-api";
+import ServerUserInteraction from "../../src/providers/userInteraction";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -24,12 +17,6 @@ class TestStream extends Duplex {
   }
 
   _read(_size: number) {}
-}
-
-class MockRunnableTask implements RunnableTask<string> {
-  run(...args: any): Promise<Result<string, FxError>> {
-    return Promise.resolve(ok("test"));
-  }
 }
 
 describe("userInteraction", () => {

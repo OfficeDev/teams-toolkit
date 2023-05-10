@@ -17,6 +17,7 @@ export class LinkUnfurlingBot extends TeamsActivityHandler {
     context: TurnContext,
     query: AppBasedLinkQuery
   ): Promise<MessagingExtensionResponse> {
+    // When the returned card is an adaptive card, the previewCard property of the attachment is required.
     const previewCard = CardFactory.thumbnailCard("Preview Card", query.url, [
       "https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png",
     ]);
@@ -46,6 +47,7 @@ export class LinkUnfurlingBot extends TeamsActivityHandler {
     context: TurnContext,
     query: AppBasedLinkQuery
   ): Promise<MessagingExtensionResponse> {
+    // When the returned card is an adaptive card, the previewCard property of the attachment is required.
     const previewCard = CardFactory.thumbnailCard("Preview Card", query.url, [
       "https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png",
     ]);

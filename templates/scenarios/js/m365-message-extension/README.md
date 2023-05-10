@@ -26,7 +26,7 @@ Follow below instructions to get started with this application template for loca
 1. In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your ngrok URL.
    ```
    BOT_DOMAIN=sample-id.ngrok.io
-   BOT_ENDPOINT=http://sample-id.ngrok.io
+   BOT_ENDPOINT=https://sample-id.ngrok.io
    ```
 1. Executing the command `teamsfx provision --env local` in your project directory.
 1. Executing the command `teamsfx deploy --env local` in your project directory.

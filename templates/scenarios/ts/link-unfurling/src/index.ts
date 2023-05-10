@@ -6,7 +6,7 @@ import {
   ConfigurationBotFrameworkAuthentication,
   TurnContext,
 } from "botbuilder";
-import { LinkUnfurlingBot } from "./linkUnfurlingBot";
+import { LinkUnfurlingApp } from "./linkUnfurlingApp";
 import config from "./config";
 
 // Create adapter.
@@ -48,7 +48,7 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
 adapter.onTurnError = onTurnErrorHandler;
 
 // Create the bot that will handle user pasted links.
-const bot = new LinkUnfurlingBot();
+const linkUnfurlingApp = new LinkUnfurlingApp();
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -60,6 +60,6 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 // Listen for incoming requests.
 server.post("/api/messages", async (req, res) => {
   await adapter.process(req, res, async (context) => {
-    await bot.run(context);
+    await linkUnfurlingApp.run(context);
   });
 });

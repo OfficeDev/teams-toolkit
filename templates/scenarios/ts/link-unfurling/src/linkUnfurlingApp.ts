@@ -5,9 +5,9 @@ import {
   MessagingExtensionResponse,
   AppBasedLinkQuery,
 } from "botbuilder";
-import card from "./card.json";
+import linkUnfurlingCard from "./adaptiveCards/helloWorldLinkUnfurlingCard.json";
 
-export class LinkUnfurlingBot extends TeamsActivityHandler {
+export class LinkUnfurlingApp extends TeamsActivityHandler {
   constructor() {
     super();
   }
@@ -22,7 +22,7 @@ export class LinkUnfurlingBot extends TeamsActivityHandler {
       "https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png",
     ]);
 
-    const attachment = { ...CardFactory.adaptiveCard(card), preview: previewCard };
+    const attachment = { ...CardFactory.adaptiveCard(linkUnfurlingCard), preview: previewCard };
 
     return {
       composeExtension: {
@@ -52,7 +52,7 @@ export class LinkUnfurlingBot extends TeamsActivityHandler {
       "https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png",
     ]);
 
-    const attachment = { ...CardFactory.adaptiveCard(card), preview: previewCard };
+    const attachment = { ...CardFactory.adaptiveCard(linkUnfurlingCard), preview: previewCard };
 
     return {
       composeExtension: {

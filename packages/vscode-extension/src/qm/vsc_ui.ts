@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { remove, find } from "lodash";
+import { find, remove } from "lodash";
 import * as path from "path";
 import {
   commands,
@@ -10,7 +10,6 @@ import {
   ExtensionContext,
   extensions,
   InputBox,
-  ProgressLocation,
   QuickInputButton,
   QuickInputButtons,
   QuickPick,
@@ -38,7 +37,6 @@ import {
   ok,
   OptionItem,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -49,21 +47,20 @@ import {
   SingleSelectResult,
   StaticOptions,
   SystemError,
-  TaskConfig,
   UIConfig,
   UserCancelError,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 
 import * as packageJson from "../../package.json";
+import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
+import { showOutputChannel } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { TerminalName } from "../constants";
-import { showOutputChannel } from "../handlers";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -747,82 +744,6 @@ export class VsCodeUI implements UserInteraction {
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {
     return new ProgressHandler(title, totalSteps);
-  }
-
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return new Promise(async (resolve) => {
-      window.withProgress(
-        {
-          location: ProgressLocation.Notification,
-          cancellable: config.cancellable,
-        },
-        async (progress, token): Promise<any> => {
-          if (config.cancellable === true) {
-            token.onCancellationRequested(() => {
-              if (task.cancel) task.cancel();
-              resolve(err(UserCancelError));
-            });
-          }
-          let lastReport = 0;
-          const showProgress = config.showProgress === true;
-          const total = task.total ? task.total : 1;
-          const head = task.name ? task.name : "";
-          const report = (task: RunnableTask<T>) => {
-            const current = task.current ? task.current : 0;
-            const body = showProgress
-              ? `: ${Math.round((current * 100) / total)} %`
-              : `: [${current + 1}/${total}]`;
-            const tail = task.message
-              ? ` ${task.message}`
-              : localize("teamstoolkit.progressHandler.prepareTask");
-            const message = `${head}${body}${tail}`;
-            if (showProgress)
-              progress.report({
-                increment: ((current - lastReport) * 100) / total,
-                message: message,
-              });
-            else progress.report({ message: message });
-          };
-          task
-            .run(args)
-            .then(async (v) => {
-              report(task);
-              await sleep(100);
-              resolve(v);
-            })
-            .catch((e) => {
-              resolve(err(assembleError(e)));
-            });
-          let current;
-          if (showProgress) {
-            report(task);
-            do {
-              current = task.current ? task.current : 0;
-              const inc = ((current - lastReport) * 100) / total;
-              const delta = current - lastReport;
-              if (inc > 0) {
-                report(task);
-                lastReport += delta;
-              }
-              await sleep(100);
-            } while (current < total && !task.isCanceled);
-            report(task);
-            await sleep(100);
-          } else {
-            do {
-              report(task);
-              await sleep(100);
-              current = task.current ? task.current : 0;
-            } while (current < total && !task.isCanceled);
-          }
-          if (task.isCanceled) resolve(err(UserCancelError));
-        }
-      );
-    });
   }
 
   async reload(): Promise<Result<boolean, FxError>> {

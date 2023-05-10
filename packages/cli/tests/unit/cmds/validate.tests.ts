@@ -96,6 +96,19 @@ describe("teamsfx validate", () => {
     cmd.builder(yargs);
   });
 
+  it("Throw error for multiple options", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.AppPackageFilePathParamName]: "./app.zip",
+      [constants.ManifestFilePathParamName]: "./manifest.json",
+    };
+    const res = await cmd.runCommand(args);
+    expect(res.isErr()).to.be.true;
+  });
+
   it("Validate Command Running Check - app package", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",

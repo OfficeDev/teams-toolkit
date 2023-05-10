@@ -103,6 +103,7 @@ export enum CoreQuestionNames {
   LocalTeamsAppManifestFilePath = "local-manifest-path",
   AadAppManifestFilePath = "manifest-file-path",
   TeamsAppPackageFilePath = "app-package-file-path",
+  ValidateMethod = "validate-method",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
   OutputZipPathParamName = "output-zip-path",

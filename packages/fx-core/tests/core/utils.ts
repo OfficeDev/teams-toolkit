@@ -26,21 +26,17 @@ import {
   ProjectSettings,
   QTreeNode,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
-  Settings,
   SingleSelectConfig,
   SingleSelectResult,
-  Solution,
   SolutionContext,
   Stage,
   SubscriptionInfo,
-  TaskConfig,
   TelemetryReporter,
   TokenProvider,
   TokenRequest,
@@ -51,9 +47,9 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import sinon from "sinon";
 import * as uuid from "uuid";
 import { DEFAULT_PERMISSION_REQUEST, PluginNames } from "../../src/component/constants";
-import sinon from "sinon";
 import { MyTokenCredential } from "../plugins/solution/util";
 
 function solutionSettings(): AzureSolutionSettings {
@@ -66,7 +62,7 @@ function solutionSettings(): AzureSolutionSettings {
     activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
   } as AzureSolutionSettings;
 }
-export class MockSolution implements Solution {
+export class MockSolution {
   name = "fx-solution-azure";
 
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -129,7 +125,7 @@ export class MockSolution implements Solution {
   }
 }
 
-export class MockSolutionV2 implements v2.SolutionPlugin {
+export class MockSolutionV2 {
   name = "fx-solution-azure";
   displayName = "Azure Solution V2 Mock";
   async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {

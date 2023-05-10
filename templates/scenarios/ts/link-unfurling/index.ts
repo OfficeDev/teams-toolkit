@@ -1,16 +1,11 @@
 // Import required packages
 import * as restify from "restify";
-
-// Import required bot services.
-// See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
   CloudAdapter,
   ConfigurationServiceClientCredentialFactory,
   ConfigurationBotFrameworkAuthentication,
   TurnContext,
 } from "botbuilder";
-
-// This bot's main dialog.
 import { LinkUnfurlingBot } from "./linkUnfurlingBot";
 import config from "./config";
 
@@ -52,7 +47,7 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
 // Set the onTurnError for the singleton CloudAdapter.
 adapter.onTurnError = onTurnErrorHandler;
 
-// Create the bot that will handle incoming messages.
+// Create the bot that will handle user pasted links.
 const bot = new LinkUnfurlingBot();
 
 // Create HTTP server.

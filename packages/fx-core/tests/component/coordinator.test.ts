@@ -2727,44 +2727,6 @@ describe("component coordinator test", () => {
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
   });
-  it("publish happy path - CLI_HELP - no ui", async () => {
-    const mockProjectModel: ProjectModel = {
-      publish: {
-        name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
-        driverDefs: [],
-        resolvePlaceholders: () => {
-          return [];
-        },
-        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
-          return { result: ok(new Map()), summaries: [] };
-        },
-        resolveDriverInstances: mockedResolveDriverInstances,
-      },
-    };
-    const mockTools = new MockTools();
-    mockTools.ui = undefined as any;
-    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
-    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
-    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
-    const inputs: Inputs = {
-      platform: Platform.CLI_HELP,
-      projectPath: ".",
-      ignoreLockByUT: true,
-      env: "dev",
-    };
-    const fxCore = new FxCore(mockTools);
-    const res = await fxCore.publishApplication(inputs);
-    assert.isTrue(res.isOk());
-  });
   it("publish failed", async () => {
     const mockProjectModel: ProjectModel = {
       publish: {

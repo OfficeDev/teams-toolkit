@@ -1002,7 +1002,7 @@ export class Coordinator {
           if (ctx.platform !== Platform.CLI) {
             ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
               if (value.isOk() && value.value === adminPortal) {
-                ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+                ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
               }
             });
           } else {

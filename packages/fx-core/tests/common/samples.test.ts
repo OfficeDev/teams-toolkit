@@ -106,7 +106,8 @@ describe("Samples", () => {
   it("fetchSampleConfig - online sample config returns undefined when failed to fetch", async () => {
     sinon.stub(axios, "get").callsFake(async (url: string, config) => {
       if (
-        url === "https://api.github.com/repos/OfficeDev/TeamsFx-Samples/git/trees/v3?recursive=1"
+        url ===
+        "https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v3/.config/samples-config-v3.json"
       ) {
         throw err(undefined);
       }
@@ -140,13 +141,8 @@ describe("Samples", () => {
     };
     sinon.stub(axios, "get").callsFake(async (url: string, config) => {
       if (
-        url === "https://api.github.com/repos/OfficeDev/TeamsFx-Samples/git/trees/v3?recursive=1"
-      ) {
-        return { data: { sha: sha }, status: 200 };
-      }
-      if (
         url ===
-        `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${sha}/.config/samples-config-v3.json`
+        `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v3/.config/samples-config-v3.json`
       ) {
         return { data: fakedSampleConfig, status: 200 };
       }

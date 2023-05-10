@@ -1,26 +1,23 @@
 import { TokenCredential } from "@azure/core-auth";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
-  v2,
-  FxError,
-  ok,
-  PluginContext,
-  Result,
-  Void,
-  Plugin,
-  CryptoProvider,
-  LogProvider,
-  ProjectSettings,
-  TelemetryReporter,
-  UserInteraction,
+  AzureAccountProvider,
   Colors,
-  LogLevel,
+  CryptoProvider,
+  FxError,
+  IProgressHandler,
   InputTextConfig,
   InputTextResult,
-  IProgressHandler,
+  LogLevel,
+  LogProvider,
+  LoginStatus,
+  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
-  RunnableTask,
+  PermissionRequestProvider,
+  PluginContext,
+  ProjectSettings,
+  Result,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -29,13 +26,13 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  TaskConfig,
-  AzureAccountProvider,
   SubscriptionInfo,
-  PermissionRequestProvider,
-  M365TokenProvider,
+  TelemetryReporter,
   TokenRequest,
-  LoginStatus,
+  UserInteraction,
+  Void,
+  ok,
+  v2,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
 
@@ -89,19 +86,19 @@ export const validManifest = {
   },
 };
 
-export function mockPublishThatAlwaysSucceed(plugin: Plugin) {
+export function mockPublishThatAlwaysSucceed(plugin: any) {
   plugin.publish = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
     return ok(Void);
   };
 }
 
-export function mockV2PublishThatAlwaysSucceed(plugin: v2.ResourcePlugin): void {
+export function mockV2PublishThatAlwaysSucceed(plugin: any): void {
   plugin.publishApplication = async function (): Promise<Result<Void, FxError>> {
     return ok(Void);
   };
 }
 
-export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
+export function mockScaffoldCodeThatAlwaysSucceeds(plugin: any): void {
   plugin.scaffoldSourceCode = async function (): Promise<
     Result<{ output: Record<string, string> }, FxError>
   > {
@@ -109,7 +106,7 @@ export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): v
   };
 }
 
-export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
+export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: any): void {
   plugin.executeUserTask = async function (): Promise<Result<unknown, FxError>> {
     return ok(Void);
   };

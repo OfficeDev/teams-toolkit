@@ -36,31 +36,19 @@ class SampleProvider {
   public async fetchSampleConfig() {
     this.sampleConfigs = undefined;
     try {
-      const fileInfoUrl = `https://api.github.com/repos/${configInfo.owner}/${configInfo.repo}/git/trees/${configInfo.tree}?recursive=1`;
-      const fileInfoResponse = await sendRequestWithTimeout(
+      const fileResponse = await sendRequestWithTimeout(
         async () => {
-          return await axios.get(fileInfoUrl);
+          return await axios.get(
+            `https://raw.githubusercontent.com/${configInfo.owner}/${configInfo.repo}/${configInfo.tree}/${configInfo.file}`,
+            { responseType: "json" }
+          );
         },
         1000,
-        2
+        3
       );
-      if (fileInfoResponse && fileInfoResponse.data) {
-        const fileInfo = fileInfoResponse.data as any;
 
-        const fileResponse = await sendRequestWithTimeout(
-          async () => {
-            return await axios.get(
-              `https://raw.githubusercontent.com/${configInfo.owner}/${configInfo.repo}/${fileInfo.sha}/${configInfo.file}`,
-              { responseType: "json" }
-            );
-          },
-          1000,
-          2
-        );
-
-        if (fileResponse && fileResponse.data) {
-          this.sampleConfigs = fileResponse.data;
-        }
+      if (fileResponse && fileResponse.data) {
+        this.sampleConfigs = fileResponse.data;
       }
     } catch (e) {
       this.sampleConfigs = undefined;

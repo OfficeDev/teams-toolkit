@@ -228,15 +228,6 @@ export class MockedUserInteraction implements UserInteraction {
       },
     };
   }
-
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return task.run(...args);
-  }
-
   async runCommand(args: {
     cmd: string;
     workingDirectory?: string;

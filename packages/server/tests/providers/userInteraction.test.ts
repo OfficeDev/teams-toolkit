@@ -171,9 +171,5 @@ describe("userInteraction", () => {
       await a.next();
       await a.end(true);
     });
-
-    it("runWithProgress", () => {
-      expect(ui.runWithProgress(new MockRunnableTask(), {})).to.throw;
-    });
   });
 });

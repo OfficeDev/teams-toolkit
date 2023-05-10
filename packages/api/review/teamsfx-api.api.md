@@ -72,12 +72,6 @@ export interface ActionContext {
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
 // @public (undocumented)
-interface AddFeatureInputs extends InputsWithProjectPath {
-    // (undocumented)
-    allPluginsAfterAdd: string[];
-}
-
-// @public (undocumented)
 interface APIM extends AzureResource {
     // (undocumented)
     apimClientAADClientId: string;
@@ -193,23 +187,6 @@ interface AzureIdentity extends AzureResource {
 // @public (undocumented)
 type AzureResource = CloudResource_2;
 
-// @public (undocumented)
-interface AzureResourcePlugin {
-    addInstance?: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<string[], FxError>>;
-    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    description?: string;
-    displayName?: string;
-    generateBicep?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<BicepTemplate[], FxError>>;
-    generateCode?: (ctx: ContextWithManifestProvider, inputs: AddFeatureInputs) => Promise<Result<Void, FxError>>;
-    getQuestionsForAddInstance?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    name: string;
-    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    updateBicep?: (ctx: ContextWithManifestProvider, inputs: UpdateInputs) => Promise<Result<BicepTemplate[], FxError>>;
-}
-
 // @public
 interface AzureSolutionConfig extends Json {
     // (undocumented)
@@ -296,28 +273,6 @@ export interface Bicep {
     Provision?: ProvisionBicep;
     // (undocumented)
     type: "bicep";
-}
-
-// @public (undocumented)
-interface BicepTemplate extends Record<any, unknown> {
-    // (undocumented)
-    Configuration?: {
-        Orchestration?: string;
-        Modules?: {
-            [moduleFileName: string]: string;
-        };
-    };
-    // (undocumented)
-    Parameters?: Record<string, string>;
-    // (undocumented)
-    Provision?: {
-        Orchestration?: string;
-        Modules?: {
-            [moduleFileName: string]: string;
-        };
-    };
-    // (undocumented)
-    Reference?: Record<string, unknown>;
 }
 
 // @public (undocumented)
@@ -527,12 +482,6 @@ export interface ContextV3 extends Context_2 {
     };
     // (undocumented)
     tokenProvider?: TokenProvider;
-}
-
-// @public (undocumented)
-interface ContextWithManifestProvider extends Context_2 {
-    // (undocumented)
-    appManifestProvider: AppManifestProvider;
 }
 
 // @public (undocumented)
@@ -897,29 +846,6 @@ export interface GroupAction extends ActionBase {
     type: "group";
 }
 
-// @public
-export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
-    constructor(tasks: RunnableTask<T>[], config?: TaskGroupConfig);
-    // (undocumented)
-    cancel(): void;
-    // (undocumented)
-    config?: TaskGroupConfig;
-    // (undocumented)
-    current: number;
-    // (undocumented)
-    isCanceled: boolean;
-    // (undocumented)
-    message?: string;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    run(...args: any): Promise<Result<Result<T, FxError>[], FxError>>;
-    // (undocumented)
-    tasks: RunnableTask<T>[];
-    // (undocumented)
-    readonly total: number;
-}
-
 // @public (undocumented)
 interface ICore extends Core {
     addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
@@ -1274,9 +1200,6 @@ export interface PluginContext extends Context {
 export type PluginIdentity = string;
 
 // @public (undocumented)
-type PluginV3 = AzureResourcePlugin;
-
-// @public (undocumented)
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
@@ -1428,17 +1351,6 @@ export type ResourceTemplate = Record<string, ConfigValue>;
 export type ResourceTemplates = {
     [k: string]: ResourceTemplate | undefined;
 };
-
-// @public
-export interface RunnableTask<T> {
-    cancel?(): void;
-    current?: number;
-    isCanceled?: boolean;
-    message?: string;
-    name?: string;
-    run(...args: any): Promise<Result<T, FxError>>;
-    readonly total?: number;
-}
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -1699,18 +1611,6 @@ export interface SystemErrorOptions extends ErrorOptionBase {
     issueLink?: string;
 }
 
-// @public
-export interface TaskConfig {
-    cancellable?: boolean;
-    showProgress?: boolean;
-}
-
-// @public
-export interface TaskGroupConfig {
-    fastFail?: boolean;
-    sequential?: boolean;
-}
-
 // @public (undocumented)
 interface TeamsAppResource extends AzureResource {
     teamsAppId: string;
@@ -1894,11 +1794,6 @@ export class UnknownError extends SystemError {
 }
 
 // @public (undocumented)
-interface UpdateInputs extends AddFeatureInputs {
-    newPlugins: string[];
-}
-
-// @public (undocumented)
 export const UserCancelError: UserError;
 
 // @public
@@ -1947,7 +1842,6 @@ export interface UserInteraction {
             [k: string]: string;
         };
     }): Promise<Result<string, FxError>>;
-    runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
@@ -1987,12 +1881,6 @@ declare namespace v3 {
         TeamsAppResource,
         TeamsFxAzureResourceStates,
         AppManifestProvider,
-        ContextWithManifestProvider,
-        AddFeatureInputs,
-        BicepTemplate,
-        UpdateInputs,
-        AzureResourcePlugin,
-        PluginV3,
         SolutionAddFeatureInputs,
         ISolution,
         ICore,

@@ -193,7 +193,8 @@ export class EnvConstants {
   static readonly BOT_DOMAIN = "BOT_DOMAIN";
 
   // FUNCTION
-  static readonly FUNCTION_ID = "API_FUNCTION_RESOURCE_ID";
-  static readonly FUNCTION_ID_2 = "FUNCTION_RESOURCE_ID";
-  static readonly FUNCTION_ENDPOINT = "API_FUNCTION_ENDPOINT";
+  static readonly FUNCTION_ID = "FUNCTION_RESOURCE_ID";
+  static readonly FUNCTION_ID_2 = "API_FUNCTION_RESOURCE_ID";
+  static readonly FUNCTION_ENDPOINT = "FUNCTION_ENDPOINT";
+  static readonly FUNCTION_ENDPOINT_2 = "API_FUNCTION_ENDPOINT";
 }

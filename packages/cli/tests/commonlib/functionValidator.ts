@@ -110,11 +110,11 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
+    const endpoint =
+      (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
+      (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
     if (isV3Enabled()) {
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.API_ENDPOINT],
-        this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string
-      );
+      chai.assert.equal(webappSettingsResponse[BaseConfig.API_ENDPOINT], endpoint);
       // TODO: add v3 validation
     } else {
       chai.assert.equal(

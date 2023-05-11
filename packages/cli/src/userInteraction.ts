@@ -6,51 +6,41 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import inquirer, { DistinctQuestion } from "inquirer";
-import path from "path";
 import open from "open";
+import path from "path";
 
 import {
-  SingleSelectResult,
-  MultiSelectResult,
+  Colors,
+  FxError,
+  IProgressHandler,
+  InputTextConfig,
   InputTextResult,
+  LogLevel,
+  MultiSelectConfig,
+  MultiSelectResult,
+  OptionItem,
+  Result,
+  SelectFileConfig,
   SelectFileResult,
+  SelectFilesConfig,
   SelectFilesResult,
+  SelectFolderConfig,
   SelectFolderResult,
   SingleSelectConfig,
-  MultiSelectConfig,
-  InputTextConfig,
-  SelectFileConfig,
-  SelectFilesConfig,
-  SelectFolderConfig,
-  RunnableTask,
-  Result,
-  FxError,
-  ok,
-  err,
+  SingleSelectResult,
   StaticOptions,
-  OptionItem,
-  LogLevel,
-  UserCancelError,
-  TaskConfig,
-  assembleError,
   UserInteraction,
-  Colors,
-  IProgressHandler,
-  Json,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
-import {
-  EmptySubConfigOptions,
-  NotAllowedMigrationError,
-  NotValidInputValue,
-  UnknownError,
-} from "./error";
-import { sleep, getColorizedString, toLocaleLowerCase } from "./utils";
-import { ChoiceOptions } from "./prompts";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
+import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
+import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
+import { getColorizedString, toLocaleLowerCase } from "./utils";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -590,61 +580,6 @@ export class CLIUserInteraction implements UserInteraction {
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {
     return new Progress(title, totalSteps);
-  }
-
-  public async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return new Promise(async (resolve) => {
-      let lastReport = 0;
-      const showProgress = config.showProgress === true;
-      const total = task.total ? task.total : 1;
-      const head = `[Teams Toolkit] ${task.name ? task.name : ""}`;
-      const report = async (task: RunnableTask<T>) => {
-        const current = task.current ? task.current : 0;
-        const body = showProgress
-          ? `: ${Math.round((current * 100) / total)} %`
-          : `: [${current + 1}/${total}]`;
-        const tail = task.message ? ` ${task.message}` : "Prepare task.";
-        const message = `${head}${body}${tail}`;
-        if (showProgress) CLILogProvider.necessaryLog(LogLevel.Info, message);
-      };
-      task
-        .run(args)
-        .then(async (v) => {
-          report(task);
-          await sleep(100);
-          resolve(v);
-        })
-        .catch((e) => {
-          resolve(err(assembleError(e)));
-        });
-      let current;
-      if (showProgress) {
-        report(task);
-        do {
-          current = task.current ? task.current : 0;
-          const inc = ((current - lastReport) * 100) / total;
-          const delta = current - lastReport;
-          if (inc > 0) {
-            report(task);
-            lastReport += delta;
-          }
-          await sleep(100);
-        } while (current < total && !task.isCanceled);
-        report(task);
-        await sleep(100);
-      } else {
-        do {
-          report(task);
-          await sleep(100);
-          current = task.current ? task.current : 0;
-        } while (current < total && !task.isCanceled);
-      }
-      if (task.isCanceled) resolve(err(UserCancelError));
-    });
   }
 }
 

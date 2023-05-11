@@ -1,12 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Plugin } from "@microsoft/teamsfx-api";
-
-export type ArmResourcePlugin = Pick<Plugin, "generateArmTemplates" | "updateArmTemplates">;
-
-export type NamedArmResourcePlugin = { name: string } & ArmResourcePlugin;
-
 export interface ArmTemplateResult extends Record<any, unknown> {
   Provision?: {
     /*

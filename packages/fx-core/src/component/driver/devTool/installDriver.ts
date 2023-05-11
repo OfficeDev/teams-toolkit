@@ -175,7 +175,7 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 
     if (!funcStatus.isInstalled && funcStatus.error) {
-      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
+      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error, funcStatus.error.helpLink);
     } else if (funcStatus.error) {
       this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
@@ -203,7 +203,11 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.dotnetStatus, dotnetStatus);
 
     if (!dotnetStatus.isInstalled && dotnetStatus.error) {
-      throw new DotnetInstallationUserError(ACTION_NAME, dotnetStatus.error);
+      throw new DotnetInstallationUserError(
+        ACTION_NAME,
+        dotnetStatus.error,
+        dotnetStatus.error.helpLink
+      );
     } else if (dotnetStatus.error) {
       this.context.logProvider.warning(dotnetStatus.error?.message);
       this.context.addSummary(dotnetStatus.error?.message);

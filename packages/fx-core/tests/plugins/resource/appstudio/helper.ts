@@ -14,7 +14,6 @@ import {
   MultiSelectResult,
   ok,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -23,7 +22,6 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  TaskConfig,
   TokenRequest,
   UserError,
   UserInteraction,
@@ -81,13 +79,6 @@ export class MockUserInteraction implements UserInteraction {
       end: async (): Promise<void> => {},
     };
     return handler;
-  }
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return task.run(args);
   }
 }
 

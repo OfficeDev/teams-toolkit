@@ -347,14 +347,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
-  // Initialize an existing application
-  registerInCommandController(
-    context,
-    "fx-extension.init",
-    handlers.initProjectHandler,
-    "initProject"
-  );
-
   if (!isV3Enabled()) {
     // Add features
     registerInCommandController(

@@ -38,20 +38,16 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-
-import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
-import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context, isV3Enabled } from "../common/tools";
-import { getTemplatesFolder } from "../folder";
+import { isV3Enabled } from "../common/tools";
 import {
   ApiConnectionOptionItem,
   AzureSolutionQuestionNames,
   CicdOptionItem,
-  ExistingTabOptionItem,
   SingleSignOnOptionItem,
   ComponentNames,
+  validateSchemaOption,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -62,8 +58,6 @@ import {
   InvalidInputError,
   NotImplementedError,
   ObjectIsUndefinedError,
-  OperationNotPermittedError,
-  ProjectFolderExistError,
   WriteFileError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
@@ -78,7 +72,7 @@ import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
-import { CoreQuestionNames, ProjectNamePattern } from "./question";
+import { CoreQuestionNames } from "./question";
 import {
   CoreTelemetryComponentName,
   CoreTelemetryEvent,
@@ -88,7 +82,6 @@ import {
 } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3 } from "../component/utils";
-import { preCheck } from "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -97,13 +90,12 @@ import {
   getQuestionsForDeployV3,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
+  getQuestionsForValidateMethod,
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
-import { createEnvWithName } from "../component/envManager";
-import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
@@ -117,6 +109,7 @@ import { ILifecycle, LifecycleName } from "../component/configManager/interface"
 import { DotenvParseOutput } from "dotenv";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
+import { QuestionMW } from "../component/middleware/questionMW";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -143,8 +136,7 @@ export class FxCore implements v3.ICore {
    * lifecycle command: create new project
    */
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (isV3Enabled()) return this.v3Implement.dispatch(this.createProject, inputs);
-    else return this.createProjectOld(inputs);
+    return this.v3Implement.dispatch(this.createProject, inputs);
   }
 
   /**
@@ -159,22 +151,6 @@ export class FxCore implements v3.ICore {
    */
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.initDebug, inputs);
-  }
-
-  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    setCurrentStage(Stage.create);
-    inputs.stage = Stage.create;
-    const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx.projectSettings = context.projectSetting;
-    inputs.projectPath = context.projectPath;
-    return ok(context.projectPath!);
   }
 
   /**
@@ -482,8 +458,9 @@ export class FxCore implements v3.ICore {
   /**
    * v3 only none lifecycle command
    */
+  @hooks([QuestionMW(getQuestionsForValidateMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs.validateMethod === "validateAgainstSchema") {
+    if (inputs[CoreQuestionNames.ValidateMethod] === validateSchemaOption.id) {
       return await this.validateManifest(inputs);
     } else {
       return await this.validateAppPackage(inputs);
@@ -546,7 +523,7 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * @deprecated
+   * @deprecated for V3
    */
   async getQuestionsForAddFeature(
     featureId: FeatureId,
@@ -556,6 +533,9 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
+  /**
+   * @deprecated for V3
+   */
   @hooks([ErrorHandlerMW])
   async getQuestionsForUserTask(
     func: FunctionRouter,
@@ -578,19 +558,21 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * v3 only API, not command
-   */
-  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
-    return this.v3Implement.dispatch(this.getSettings, inputs);
-  }
-
-  /**
-   * v3 only API, not command
+   * @deprecated
    */
   async getDotEnv(
     inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnv, inputs);
+  }
+
+  /**
+   * get all dot envs
+   */
+  async getDotEnvs(
+    inputs: InputsWithProjectPath
+  ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
+    return this.v3Implement.dispatch(this.getDotEnvs, inputs);
   }
 
   /**
@@ -757,6 +739,9 @@ export class FxCore implements v3.ICore {
     return ok(inputs.env); //work for both v2 and v3
   }
 
+  /**
+   * only for vs code extension
+   */
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async encrypt(
     plaintext: string,
@@ -767,7 +752,9 @@ export class FxCore implements v3.ICore {
     if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
     return ctx.contextV2.cryptoProvider.encrypt(plaintext);
   }
-
+  /**
+   * only for vs code extension
+   */
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async decrypt(
     ciphertext: string,
@@ -964,125 +951,6 @@ export class FxCore implements v3.ICore {
         }
       }
     }
-  }
-
-  async _init(
-    inputs: Inputs,
-    ctx?: CoreHookContext,
-    isInitExistingApp = false
-  ): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    // validate app name
-    const appName = inputs[CoreQuestionNames.AppName] as string;
-    const validateResult = jsonschema.validate(appName, {
-      pattern: ProjectNamePattern,
-    });
-    if (validateResult.errors && validateResult.errors.length > 0) {
-      return err(InvalidInputError("invalid app-name", inputs));
-    }
-
-    const projectPath = inputs.folder;
-    if (!projectPath) {
-      return err(InvalidInputError("projectPath is empty", inputs));
-    }
-
-    if (isInitExistingApp) {
-      const folderExist = await fs.pathExists(projectPath);
-      if (folderExist) {
-        return err(new ProjectFolderExistError(projectPath));
-      }
-    } else {
-      const isValid = isValidProject(projectPath);
-      if (isValid) {
-        return err(
-          new OperationNotPermittedError("initialize a project in existing teamsfx project")
-        );
-      }
-    }
-
-    await fs.ensureDir(projectPath);
-    inputs.projectPath = projectPath;
-
-    // create ProjectSettings
-    const projectSettings = newProjectSettings();
-    projectSettings.appName = appName;
-    (projectSettings as ProjectSettingsV3).components = [];
-    ctx.projectSettings = projectSettings;
-
-    // create folder structure
-    await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(
-      path.join(await getProjectTemplatesFolderPath(projectPath), `${AppPackageFolderName}`)
-    );
-    const basicFolderRes = await ensureBasicFolderStructure(inputs, false);
-    if (basicFolderRes.isErr()) {
-      return err(basicFolderRes.error);
-    }
-
-    // create contextV2
-    const context = createV2Context(projectSettings);
-    ctx.contextV2 = context;
-
-    const appStudioComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
-
-    // pre-check before initialize
-    const preCheckResult = await preCheck(projectPath);
-    if (preCheckResult.isErr()) {
-      return err(preCheckResult.error);
-    }
-
-    // init manifest
-    const manifestInitRes = await appStudioComponent.init(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      isInitExistingApp
-    );
-    if (manifestInitRes.isErr()) return err(manifestInitRes.error);
-
-    const manifestAddcapRes = await appStudioComponent.addCapability(
-      inputs as v2.InputsWithProjectPath,
-      [{ name: "staticTab", existingApp: true }]
-    );
-    if (manifestAddcapRes.isErr()) return err(manifestAddcapRes.error);
-
-    // create env config with existing tab's endpoint
-    const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
-    const createEnvResult = await createEnvWithName(
-      environmentManager.getDefaultEnvName(),
-      projectSettings.appName,
-      inputs as InputsWithProjectPath,
-      isInitExistingApp ? endpoint : undefined
-    );
-    if (createEnvResult.isErr()) {
-      return err(createEnvResult.error);
-    }
-    const createLocalEnvResult = await createEnvWithName(
-      environmentManager.getLocalEnvName(),
-      projectSettings.appName,
-      inputs as InputsWithProjectPath,
-      isInitExistingApp ? endpoint : undefined
-    );
-    if (createLocalEnvResult.isErr()) {
-      return err(createLocalEnvResult.error);
-    }
-    const sourceReadmePath = path.join(getTemplatesFolder(), "core", DefaultReadme);
-    if (await fs.pathExists(sourceReadmePath)) {
-      const targetReadmePath = path.join(projectPath, DefaultReadme);
-      await fs.copy(sourceReadmePath, targetReadmePath);
-    }
-    return ok(inputs.projectPath!);
-  }
-
-  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    const result = await this._init(inputs, ctx);
-    if (result.isOk()) {
-      TOOLS.ui.showMessage("info", getLocalizedString("core.init.successNotice"), false);
-    }
-
-    return result;
   }
 
   async preProvisionForVS(inputs: Inputs): Promise<Result<PreProvisionResForVS, FxError>> {

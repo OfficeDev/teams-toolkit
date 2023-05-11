@@ -539,8 +539,6 @@ export class ManifestUtils {
 
   async getManifestV3(
     manifestTemplatePath: string,
-    state: any,
-    withEmptyCapabilities?: boolean,
     generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -548,15 +546,6 @@ export class ManifestUtils {
       return err(manifestRes.error);
     }
     let manifest: TeamsAppManifest = manifestRes.value;
-
-    if (withEmptyCapabilities) {
-      manifest.bots = [];
-      manifest.composeExtensions = [];
-      manifest.configurableTabs = [];
-      manifest.staticTabs = [];
-      manifest.webApplicationInfo = undefined;
-      manifest.validDomains = [];
-    }
 
     let teamsAppId = "";
     if (generateIdIfNotResolved) {

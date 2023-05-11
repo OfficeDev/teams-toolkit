@@ -40,7 +40,6 @@ describe("Core basic APIs - create from sample", () => {
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
-    mockedEnvRestore();
   });
 
   it("downloadSample", async () => {

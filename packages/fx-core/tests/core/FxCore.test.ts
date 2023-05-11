@@ -89,7 +89,6 @@ describe("Core basic APIs", () => {
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
-    mockedEnvRestore();
   });
 
   it("deploy aad manifest happy path with param", async () => {

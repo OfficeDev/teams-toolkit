@@ -61,10 +61,8 @@ export class ValidateManifestDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
-    const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath!, context.projectPath),
-      state
+      getAbsolutePath(args.manifestPath!, context.projectPath)
     );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
@@ -168,12 +166,6 @@ export class ValidateManifestDriver implements StepDriver {
       }
       return ok(new Map());
     }
-  }
-
-  private loadCurrentState() {
-    return {
-      ENV_NAME: process.env.TEAMSFX_ENV,
-    };
   }
 
   private validateArgs(args: ValidateManifestArgs): Result<any, FxError> {

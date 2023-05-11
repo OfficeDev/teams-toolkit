@@ -714,7 +714,7 @@ export class FxCoreV3Implement {
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const manifestFilePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, {}, false, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

@@ -81,7 +81,7 @@ The following files can be customized and demonstrate an example implementation 
 
 ## Extend this template
 
-### How to use Zero Install Link Unfurling
+### How to use Zero Install Link Unfurling in Teams
 
 Zero Install Link Unfurling requires link unfurling app to be published. You need an admin account to publish an app into your org.
 
@@ -120,7 +120,7 @@ For card with type "auth", the Teams client strips away any action buttons from 
 
 Please refer to [zero install link unfurling document](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=desktop%2Cjson%2Climitations#zero-install-for-link-unfurling) for more details.
   
-### How to add stage view in Teams
+### How to add stage view (Teams)
 
 You can use the following steps to add stage view in the adaptive card.
 
@@ -192,8 +192,10 @@ Update `infra/azure.parameters.json`. Add following to `parameters`:
     }
 ```
 
-Update `infra/azure.bicep`. Add following resource after resource `webApp`:
+Add following to `infra/azure.bicep`:
 ```bicep
+param teamsAppId string 
+
 resource webAppSettings 'Microsoft.Web/sites/config@2022-09-01' = {
   parent: webApp
   name: 'appsettings'
@@ -261,9 +263,10 @@ Opening stage view from Adative card via deep link:
 
 Please refer to [Stage view document](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/tabs-link-unfurling) for more details.
 
-### How to add task module in Teams
+### How to add task module (Teams)
 
 **Step 1: Update unfurled adaptive card**
+
 In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
 ```json
     "actions": [
@@ -281,6 +284,7 @@ In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
 ```
 
 **Step 2: Add `handleTeamsTaskModuleFetch` function in handler**
+
 In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
 ```ts
   public async handleTeamsTaskModuleFetch(context: TurnContext, taskModuleRequest: TaskModuleRequest): Promise<TaskModuleResponse> {
@@ -320,6 +324,8 @@ In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
 ```
 
 **Step 3: Add `handleTeamsTaskModuleSubmit` function in handler**
+
+In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
 ```ts
   public async handleTeamsTaskModuleSubmit(context: TurnContext, taskModuleRequest: TaskModuleRequest): Promise<TaskModuleResponse> {
     return {
@@ -331,14 +337,17 @@ In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
   }
 ```
 In Teams, the unfurled adaptive card will be like:
+
 ![taskModule](./images/taskModule.png)
 
 Click "Task module" button:
 
 ![taskModuleFetch](./images/taskModuleFetch.png)
 
-Click "Submit" button::
+Click "Submit" button:
 
 ![taskModuleSubmit](./images/taskModuleSubmit.png)
 
 Please refer to [Task module document](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots?tabs=nodejs) for more details.
+
+### How to add adaptive card action

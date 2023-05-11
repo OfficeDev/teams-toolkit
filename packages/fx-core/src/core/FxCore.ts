@@ -136,8 +136,7 @@ export class FxCore implements v3.ICore {
    * lifecycle command: create new project
    */
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (isV3Enabled()) return this.v3Implement.dispatch(this.createProject, inputs);
-    else return this.createProjectOld(inputs);
+    return this.v3Implement.dispatch(this.createProject, inputs);
   }
 
   /**
@@ -152,22 +151,6 @@ export class FxCore implements v3.ICore {
    */
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.initDebug, inputs);
-  }
-
-  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    setCurrentStage(Stage.create);
-    inputs.stage = Stage.create;
-    const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx.projectSettings = context.projectSetting;
-    inputs.projectPath = context.projectPath;
-    return ok(context.projectPath!);
   }
 
   /**

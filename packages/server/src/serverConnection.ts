@@ -62,6 +62,7 @@ export default class ServerConnection implements IServerConnection {
       this.publishApplicationRequest.bind(this),
       this.deployTeamsAppManifestRequest.bind(this),
       this.getSideloadingStatusRequest.bind(this),
+      this.getLaunchUrlRequest.bind(this),
 
       this.customizeLocalFuncRequest.bind(this),
       this.customizeValidateFuncRequest.bind(this),
@@ -267,6 +268,20 @@ export default class ServerConnection implements IServerConnection {
     );
   }
 
+  public async getLaunchUrlRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<string, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    inputs[CoreQuestionNames.M365Host] = "Teams";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.previewWithManifest(params),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
   public async customizeLocalFuncRequest(
     funcId: number,
     params: Inputs,
@@ -349,7 +364,6 @@ export default class ServerConnection implements IServerConnection {
       (inputs) => this.core.projectVersionCheck(inputs),
       inputs
     );
-    console.log(res);
     return standardizeResult(res);
   }
 

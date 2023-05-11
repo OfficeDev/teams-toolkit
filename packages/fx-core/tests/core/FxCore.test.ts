@@ -78,7 +78,7 @@ import { NoNeedUpgradeError } from "../../src/error/upgrade";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let appName = randomAppName();
+  const appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
@@ -90,124 +90,6 @@ describe("Core basic APIs", () => {
     sandbox.restore();
     deleteFolder(projectPath);
     mockedEnvRestore();
-  });
-  describe("create from new", async () => {
-    it("CLI with folder input", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-      appName = randomAppName();
-      const core = new FxCore(tools);
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
-        stage: Stage.create,
-      };
-      const res = await core.createProject(inputs);
-      projectPath = path.resolve(os.tmpdir(), appName);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-    });
-
-    it("VSCode without customized default root directory", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-      appName = randomAppName();
-      const core = new FxCore(tools);
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        stage: Stage.create,
-      };
-      const res = await core.createProject(inputs);
-      projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      const projectSettingsResult = await loadProjectSettings(inputs, true);
-      assert.isTrue(projectSettingsResult.isOk());
-      if (projectSettingsResult.isOk()) {
-        const projectSettings = projectSettingsResult.value;
-        const validSettingsResult = validateProjectSettings(projectSettings);
-        assert.isTrue(validSettingsResult === undefined);
-        assert.isTrue(projectSettings.version === "2.1.0");
-      }
-    });
-
-    it("VSCode without customized default root directory - new UI", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-      appName = randomAppName();
-      const core = new FxCore(tools);
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: "Tab",
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        stage: Stage.create,
-      };
-      const res = await core.createProject(inputs);
-      projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      const projectSettingsResult = await loadProjectSettings(inputs, true);
-      assert.isTrue(projectSettingsResult.isOk());
-      if (projectSettingsResult.isOk()) {
-        const projectSettings = projectSettingsResult.value;
-        const validSettingsResult = validateProjectSettings(projectSettings);
-        assert.isTrue(validSettingsResult === undefined);
-        assert.isTrue(projectSettings.version === "2.1.0");
-      }
-    });
-  });
-
-  it("scaffold and createEnv, activateEnv", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    appName = randomAppName();
-    const core = new FxCore(tools);
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: "Tab",
-      stage: Stage.create,
-    };
-    const createRes = await core.createProject(inputs);
-    assert.isTrue(createRes.isOk());
-    projectPath = inputs.projectPath!;
-    await fs.writeFile(
-      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
-      "{}"
-    );
-    const newEnvName = "newEnv";
-    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
-    if (envListResult.isErr()) {
-      assert.fail("failed to list env names");
-    }
-    assert.isTrue(envListResult.value.length === 1);
-    assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
-    inputs[CoreQuestionNames.NewTargetEnvName] = newEnvName;
-    const createEnvRes = await core.createEnv(inputs);
-    if (createEnvRes.isErr()) {
-      console.error(createEnvRes.error);
-    }
-    assert.isTrue(createEnvRes.isOk());
-
-    const newEnvListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
-    if (newEnvListResult.isErr()) {
-      assert.fail("failed to list env names");
-    }
-    assert.isTrue(newEnvListResult.value.length === 2);
-    assert.isTrue(newEnvListResult.value[0] === environmentManager.getDefaultEnvName());
-    assert.isTrue(newEnvListResult.value[1] === newEnvName);
-
-    inputs.env = "newEnv";
-    const activateEnvRes = await core.activateEnv(inputs);
-    assert.isTrue(activateEnvRes.isOk());
   });
 
   it("deploy aad manifest happy path with param", async () => {

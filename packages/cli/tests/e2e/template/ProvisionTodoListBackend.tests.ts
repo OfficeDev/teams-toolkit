@@ -12,9 +12,6 @@ import { it } from "@microsoft/extra-shot-mocha";
 import {
   getTestFolder,
   cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
-  getSubscriptionId,
-  readContextMultiEnv,
   readContextMultiEnvV3,
   getUniqueAppName,
   editDotEnvFile,
@@ -22,47 +19,29 @@ import {
 import { AadValidator, FrontendValidator, FunctionValidator, SqlValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
-import { CliHelper } from "../../commonlib/cliHelper";
+import { Executor } from "../../utils/executor";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
-  const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.TodoListBackend}`, { testPlanCaseId: 15277465 }, async function () {
-    if (isV3Enabled()) {
-      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.TodoListBackend);
-      expect(fs.pathExistsSync(projectPath)).to.be.true;
-      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
-    } else {
-      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.TodoListBackend);
-      expect(fs.pathExistsSync(projectPath)).to.be.true;
-      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
-    }
+    await Executor.openTemplateProject(appName, testFolder, TemplateProject.TodoListBackend);
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
-    if (isV3Enabled()) {
-      const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
-      editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
-      editDotEnvFile(envFilePath, "SQL_PASSWORD", "Cab232332" + getUuid().substring(0, 6));
-      await CliHelper.provisionProject(projectPath);
-    } else {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-      await CliHelper.setSubscription(subscription, projectPath);
-      await CliHelper.provisionProject(
-        projectPath,
-        `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
-      );
-    }
+    const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
+    editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
+    editDotEnvFile(envFilePath, "SQL_PASSWORD", "Cab232332" + getUuid().substring(0, 6));
+    await Executor.provision(projectPath);
 
     // Validate Provision
-    const context = isV3Enabled()
-      ? await readContextMultiEnvV3(projectPath, env)
-      : await readContextMultiEnv(projectPath, env);
+    const context = await readContextMultiEnvV3(projectPath, env);
 
     // Validate Aad App
     const aad = AadValidator.init(context, false, m365Login);
@@ -81,7 +60,7 @@ describe("teamsfx new template", function () {
     await SqlValidator.validateSql();
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    await Executor.deploy(projectPath);
   });
 
   after(async () => {

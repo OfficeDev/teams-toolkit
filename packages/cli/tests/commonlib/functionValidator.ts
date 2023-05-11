@@ -59,7 +59,9 @@ export class FunctionValidator {
     this.env = env;
 
     const resourceId =
-      ctx[EnvConstants.FUNCTION_ID] ?? ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+      ctx[EnvConstants.FUNCTION_ID] ??
+      ctx[EnvConstants.FUNCTION_ID_2] ??
+      ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);

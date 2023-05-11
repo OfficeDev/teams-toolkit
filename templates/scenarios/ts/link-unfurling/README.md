@@ -120,7 +120,7 @@ For card with type "auth", the Teams client strips away any action buttons from 
 
 Please refer to [zero install link unfurling document](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=desktop%2Cjson%2Climitations#zero-install-for-link-unfurling) for more details.
   
-### How to add stage view
+### How to add stage view in Teams
 
 You can use the following steps to add stage view in the adaptive card.
 
@@ -247,7 +247,7 @@ In `linkUnfurlingApp.ts`, update variable `attachment` to be following.
     const attachment = { ...CardFactory.adaptiveCard(renderedCard), preview: previewCard };
 
 ```
-The unfurled adaptive card will be like:
+In Teams, the unfurled adaptive card will be like:
 
 ![stageView](./images/stageView.png)
 
@@ -260,3 +260,85 @@ Opening stage view from Adative card via deep link:
 ![viaDeepLink](./images/viaDeepLink.png)
 
 Please refer to [Stage view document](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/tabs-link-unfurling) for more details.
+
+### How to add task module in Teams
+
+**Step 1: Update unfurled adaptive card**
+In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
+```json
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "Task module",
+            "data": {
+                "msteams": {
+                    "type": "task/fetch",
+                    "data": "task module"
+                }
+            }
+        }
+      ],
+```
+
+**Step 2: Add `handleTeamsTaskModuleFetch` function in handler**
+In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
+```ts
+  public async handleTeamsTaskModuleFetch(context: TurnContext, taskModuleRequest: TaskModuleRequest): Promise<TaskModuleResponse> {
+    return {
+      task: {
+        type: "continue",
+        value: {
+          title: "Task Module Fetch",
+          height: 200,
+          width: 400,
+          card: CardFactory.adaptiveCard({
+            version: '1.0.0',
+            type: 'AdaptiveCard',
+            body: [
+              {
+                type: 'TextBlock',
+                text: 'Enter Text Here'
+              },
+              {
+                type: 'Input.Text',
+                id: 'usertext',
+                placeholder: 'add some text and submit',
+                IsMultiline: true
+              }
+            ],
+            actions: [
+              {
+                type: 'Action.Submit',
+                title: 'Submit'
+              }
+            ]
+          })
+        },
+      },
+    };
+  }
+```
+
+**Step 3: Add `handleTeamsTaskModuleSubmit` function in handler**
+```ts
+  public async handleTeamsTaskModuleSubmit(context: TurnContext, taskModuleRequest: TaskModuleRequest): Promise<TaskModuleResponse> {
+    return {
+      task: {
+        type: 'message',
+        value: 'Thanks!'
+      }
+    };
+  }
+```
+In Teams, the unfurled adaptive card will be like:
+![taskModule](./images/taskModule.png)
+
+Click "Task module" button:
+
+![taskModuleFetch](./images/taskModuleFetch.png)
+
+Click "Submit" button::
+
+![taskModuleSubmit](./images/taskModuleSubmit.png)
+
+Please refer to [Task module document](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots?tabs=nodejs) for more details.

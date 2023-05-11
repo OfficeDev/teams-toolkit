@@ -10,6 +10,7 @@ import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
 import { FileNotFoundError } from "../../error/common";
+import { internalOutputNames as UpdateTeamsAppOutputNames } from "../driver/teamsApp/configure";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -166,6 +167,10 @@ export class EnvUtil {
         if (res.isErr()) return err(res.error);
         value = res.value;
         // envs[key] = value;
+        secretEnv[key] = value;
+      } else if (key === UpdateTeamsAppOutputNames.teamsAppUpdateTime) {
+        // Corner case: Avoid TEAMS_APP_UPDATE_TIME to be committed and cause merge conflict
+        // Bug: 21970450
         secretEnv[key] = value;
       } else {
         noneSecretEnv[key] = value;

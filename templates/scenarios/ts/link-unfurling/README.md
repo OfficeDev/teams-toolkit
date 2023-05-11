@@ -77,7 +77,7 @@ The following files can be customized and demonstrate an example implementation 
 | - | - |
 | `src/index.ts` | Application entry point and `restify` handlers |
 | `src/linkUnfurlingApp.ts`| The teams activity handler |
-| `src/adaptiveCards/helloWorldLinkUnfurlingCard.json` | The unfurled adaptive card |
+| `src/adaptiveCards/helloWorldCard.json` | The unfurled adaptive card |
 
 ## Extend this template
 
@@ -210,7 +210,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2022-09-01' = {
 ```
 **Step 4: Update unfurled adaptive card**
 
-In `src/adaptiveCards/helloWorldLinkUnfurlingCard.json`, update `actions` to be following.
+In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
 ```json
 "actions": [
         {

@@ -14,8 +14,6 @@ import {
 import { EnvInfo } from "../context";
 import { FxError } from "../error";
 
-export type PluginName = string;
-
 export interface Context {
   userInteraction: UserInteraction;
   logProvider: LogProvider;
@@ -36,25 +34,7 @@ export interface LocalSettings extends Json {
 
 export type LocalSetting = { key: keyof LocalSettings; value: Record<string, string> };
 
-export type SolutionInputs = {
-  resourceNameSuffix: string;
-  resourceGroupName: string;
-  // default to East US for now
-  location: string;
-  teamsAppTenantId: string;
-  subscriptionId: string;
-  // Azure tenantId
-  tenantId: string;
-  remoteTeamsAppId?: string;
-  // Used to track whether at least one successful provision has been made.
-  // Useful for fail fast when deploying in a fresh project.
-  provisionSucceeded?: boolean;
-};
-
 export type InputsWithProjectPath = Inputs & { projectPath: string };
-
-export type ProvisionInputs = InputsWithProjectPath & SolutionInputs;
-export type DeploymentInputs = InputsWithProjectPath & SolutionInputs;
 
 export class FxSuccess<T> {
   kind: "success";

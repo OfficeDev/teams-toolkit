@@ -101,8 +101,9 @@ export enum CoreQuestionNames {
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "manifest-path",
   LocalTeamsAppManifestFilePath = "local-manifest-path",
-  AadAppManifestFilePath = "aadAppManifestFilePath",
+  AadAppManifestFilePath = "manifest-file-path",
   TeamsAppPackageFilePath = "app-package-file-path",
+  ValidateMethod = "validate-method",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
   OutputZipPathParamName = "output-zip-path",
@@ -484,7 +485,7 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
 }
 
 export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
-  const staticOptions: StaticOptions = [MessageExtensionNewUIItem(), M365SearchAppOptionItem()];
+  const staticOptions: StaticOptions = [M365SearchAppOptionItem(), MessageExtensionNewUIItem()];
 
   return {
     name: CoreQuestionNames.Capabilities,
@@ -1023,7 +1024,11 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false):
   };
 
   const res = new QTreeNode(teamsAppManifestNode);
-  if (inputs.platform !== Platform.CLI_HELP && inputs.platform !== Platform.CLI) {
+  if (
+    inputs.platform !== Platform.CLI_HELP &&
+    inputs.platform !== Platform.CLI &&
+    inputs.platform !== Platform.VS
+  ) {
     const manifestPath = path.join(
       inputs.projectPath!,
       AppPackageFolderName,

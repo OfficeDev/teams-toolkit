@@ -280,6 +280,49 @@ describe("component coordinator test", () => {
       assert.isTrue(res.error instanceof MissingRequiredInputError);
     }
   });
+
+  it("create project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "csharp",
+      [CoreQuestionNames.SafeProjectName]: "safeprojectname",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+
+  it("create project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "csharp",
+      [CoreQuestionNames.SafeProjectName]: "safeprojectname",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+
   it("create m365 project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -3056,18 +3099,6 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("getSettings", async () => {
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.getSettings(inputs);
-    assert.isTrue(res.isOk());
-  });
   it("preProvisionForVS", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
@@ -3240,6 +3271,41 @@ describe("component coordinator test", () => {
       inputs
     );
     assert.isTrue(res4.isOk());
+  });
+  it("getDotEnvs success", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ k1: "v1" }));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(Object.keys(res.value), ["dev1", "dev2"]);
+    }
+  });
+  it("getDotEnvs error 1", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("getDotEnvs error 2", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    sandbox.stub(envUtil, "readEnv").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isErr());
   });
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {

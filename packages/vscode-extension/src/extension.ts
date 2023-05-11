@@ -46,6 +46,7 @@ import {
   isSPFxProject,
   isTeamsFxProject,
   setUriEventHandler,
+  unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -346,14 +347,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
-  // Initialize an existing application
-  registerInCommandController(
-    context,
-    "fx-extension.init",
-    handlers.initProjectHandler,
-    "initProject"
-  );
-
   if (!isV3Enabled()) {
     // Add features
     registerInCommandController(
@@ -1026,10 +1019,12 @@ async function runBackgroundAsyncTasks(
 
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = isV3Enabled() && (await checkProjectUpgradable());
-  await handlers.autoOpenProjectHandler();
-  await handlers.promptSPFxUpgrade();
-  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
-  await AzureAccountManager.updateSubscriptionInfo();
+  if (isTeamsFxProject) {
+    await handlers.autoOpenProjectHandler();
+    await handlers.promptSPFxUpgrade();
+    await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+    await AzureAccountManager.updateSubscriptionInfo();
+  }
 }
 
 function registerInCommandController(
@@ -1051,6 +1046,10 @@ function runCommand(commandName: string, args: unknown[]) {
 
 async function checkProjectUpgradable(): Promise<boolean> {
   const versionCheckResult = await handlers.projectVersionCheck();
+  if (versionCheckResult.isErr()) {
+    unsetIsTeamsFxProject();
+    return false;
+  }
   const upgradeable = versionCheckResult.isOk()
     ? versionCheckResult.value.isSupport == VersionState.upgradeable
     : false;
@@ -1075,6 +1074,8 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   }
 
   const upgradeable = await checkProjectUpgradable();
-  await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
-  await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+  if (isTeamsFxProject) {
+    await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
+    await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+  }
 }

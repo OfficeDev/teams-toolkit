@@ -214,10 +214,19 @@ describe("v3 yaml parser", () => {
     it("should return YamlFieldTypeError", async () => {
       const parser = new YamlParser();
       let result = await parser.parse(
-        path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_array.yml"),
+        path.resolve(
+          __dirname,
+          "testing_data",
+          "invalid_write_to_environment_file_array_teamsapp.yml"
+        ),
         true
       );
       assert(result.isErr() && result.error.name === "InvalidYamlSchemaError");
+      const errorMsg = result._unsafeUnwrapErr().message;
+      chai
+        .expect(errorMsg)
+        .includes(`Incorrect type. Expected "object"`)
+        .and.includes(`Value must be "teamsApp/create" | "botAadApp/create"`);
 
       result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml"),

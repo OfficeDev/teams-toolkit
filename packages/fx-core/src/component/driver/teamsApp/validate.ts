@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, Platform, ManifestUtil } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform, ManifestUtil, Colors } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
+import { EOL } from "os";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
@@ -16,6 +17,7 @@ import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
+import { SummaryConstant } from "../../configManager/constant";
 import { updateProgress } from "../middleware/updateProgress";
 import { InvalidActionInputError } from "../../../error/common";
 
@@ -59,10 +61,8 @@ export class ValidateManifestDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
-    const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath!, context.projectPath),
-      state
+      getAbsolutePath(args.manifestPath!, context.projectPath)
     );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
@@ -101,26 +101,71 @@ export class ValidateManifestDriver implements StepDriver {
     }
 
     if (validationResult.length > 0) {
-      const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
-      context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
-      const validationFailed = AppStudioResultFactory.UserError(
-        AppStudioError.ValidationFailedError.name,
-        errMessage,
-        "https://aka.ms/teamsfx-actions/teamsapp-validate"
+      const summaryStr = getLocalizedString(
+        "driver.teamsApp.summary.validate.failed",
+        validationResult.length
       );
-      return err(validationFailed);
-    }
-    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-    if (context.platform === Platform.VS) {
-      context.logProvider.info(validationSuccess);
-    }
-    return ok(new Map());
-  }
 
-  private loadCurrentState() {
-    return {
-      ENV_NAME: process.env.TEAMSFX_ENV,
-    };
+      if (context.platform === Platform.CLI) {
+        const outputMessage: Array<{ content: string; color: Colors }> = [
+          {
+            content: "Teams Toolkit has checked manifest with its schema:\n\nSummary: \n",
+            color: Colors.BRIGHT_WHITE,
+          },
+          {
+            content: `${validationResult.length} failed.\n`,
+            color: Colors.BRIGHT_RED,
+          },
+        ];
+        validationResult.map((error: string) => {
+          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+          outputMessage.push({
+            content: `${error}\n`,
+            color: Colors.BRIGHT_WHITE,
+          });
+        });
+        context.ui?.showMessage("info", outputMessage, false);
+      } else {
+        // logs in output window
+        const errors = validationResult
+          .map((error: string) => {
+            return `${SummaryConstant.Failed} ${error}`;
+          })
+          .join(EOL);
+        const outputMessage =
+          EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, errors);
+
+        context.logProvider?.info(outputMessage);
+      }
+
+      return err(
+        AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
+          getDefaultString("driver.teamsApp.validate.result", summaryStr),
+          getLocalizedString("driver.teamsApp.validate.result.display", summaryStr),
+        ])
+      );
+    } else {
+      // logs in output window
+      const summaryStr = getLocalizedString(
+        "driver.teamsApp.summary.validate.succeed",
+        getLocalizedString("driver.teamsApp.summary.validate.all")
+      );
+      const outputMessage =
+        EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, "");
+      context.logProvider?.info(outputMessage);
+
+      const validationSuccess = getLocalizedString(
+        "driver.teamsApp.validate.result.display",
+        summaryStr
+      );
+      if (context.platform === Platform.VS) {
+        context.logProvider.info(validationSuccess);
+      }
+      if (args.showMessage) {
+        context.ui?.showMessage("info", validationSuccess, false);
+      }
+      return ok(new Map());
+    }
   }
 
   private validateArgs(args: ValidateManifestArgs): Result<any, FxError> {

@@ -15,6 +15,7 @@ There's no immediate action required from you. This part illustrates what's chan
 2. You need to take some manual steps when creating or provisioning new environments for your old project. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 3. You need to manually update `.vscode/launch.json` when launching your app for a certain environment if your current project contains it. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
 4. You need to provide values to `APIM__PUBLISHEREMAIL` and `APIM__PUBLISHERNAME` environment variable if your current project uses APIM. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)
+5. You need to manually update `Start local tunnel` task in `.vscode/task.json` if you have customized this task. Teams Toolkit now uses Dev Tunnel as default tunnel solution. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#start-tunnel-service)
 
 You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-changes-that-impact-your-development-flow) to learn more changes to Teams Toolkit.
 
@@ -38,6 +39,7 @@ For more detailed changes, please refer to this [wiki](https://aka.ms/teams-tool
 2. If your project is created with Visual Studio version < 17.4, you may see error `InvalidParameter: Following parameter is missing or invalid for aadApp/create action: name` when executing commands. Please follow [the steps](#how-to-roll-back) to roll back, install VS 17.4 and run upgrade first.
 
 3. If your tab app is created with Teams Toolkit 3.2.0 or earlier version, you may see error `simpleAuthEndpoint in configuration is invalid` when remote debugging your app. Please follow this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#simpleauthendpoint-in-configuration-is-invalid) to learn how to mitigate this error.
+4. If your project can be provisioned successfully before, but after upgrade it cannot be provisioned or published by `teamsApp/validateAppPackage` actione, please use the [validation](https://dev.teams.microsoft.com/validation) to check your appPackage zip file and fix the error. [Learn More](https://aka.ms/teams-toolkit-5.0-upgrade#teamsappvalidateapppackage-failed-error)
 
 ## How to roll back
 

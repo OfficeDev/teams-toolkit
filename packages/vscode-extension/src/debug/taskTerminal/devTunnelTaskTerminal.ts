@@ -35,9 +35,12 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
+import { FeatureFlags, isFeatureFlagEnabled } from "../../utils/commonUtils";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
+const TunnelManagementTestUserAgent = { name: "Teams-Toolkit-Test" };
+
 const DevTunnelTimeout = 2147483647; // 2^31-1, max timeout ms
 
 const DevTunnelTag = "TeamsToolkitCreatedTag";
@@ -90,7 +93,9 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     this.args = taskDefinition.args as IDevTunnelArgs;
     this.isOutputSummary = false;
     this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
-      TunnelManagementUserAgent,
+      isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
+        ? TunnelManagementTestUserAgent
+        : TunnelManagementUserAgent,
       async () => {
         const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
           scopes: DevTunnelScopes,

@@ -156,7 +156,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
-    logger?: LogProvider
+    logger: LogProvider
   ): Promise<string> {
     let res: AxiosZipDeployResult;
     let retryCount = 0;
@@ -170,14 +170,14 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           if ((e.response?.status ?? HttpStatusCode.OK) >= HttpStatusCode.INTERNAL_SERVER_ERROR) {
             retryCount += 1;
             if (retryCount < DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
-              await logger?.warning(
+              await logger.warning(
                 `Upload zip file failed with response status code: ${
                   e.response?.status ?? "NA"
                 }. Retrying...`
               );
             } else {
               // if retry times exceed, throw error
-              await logger?.warning(
+              await logger.warning(
                 `Retry times exceeded. Upload zip file failed with remote server error. Message: ${JSON.stringify(
                   e.response?.data
                 )}`
@@ -194,7 +194,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
             }
           } else {
             // None server error, throw
-            await logger?.error(
+            await logger.error(
               `Upload zip file failed with response status code: ${
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
@@ -211,7 +211,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           }
         } else {
           // if the error is not axios error, throw
-          await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
+          await logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
           throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
@@ -219,7 +219,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
 
     if (res?.status !== HttpStatusCode.OK && res?.status !== HttpStatusCode.ACCEPTED) {
       if (res?.status) {
-        await logger?.error(`Deployment is failed with error code: ${res.status}.`);
+        await logger.error(`Deployment is failed with error code: ${res.status}.`);
       }
       throw new DeployZipPackageError(
         zipDeployEndpoint,

@@ -281,7 +281,7 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
 
   const fileInfoTree = fileInfo.tree as any[];
   const samplePaths = fileInfoTree
-    .filter((node) => node.path.startsWith(urlInfo.dir) && node.type !== "tree")
+    .filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
     .map((node) => node.path);
   const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
   return { samplePaths, fileUrlPrefix };

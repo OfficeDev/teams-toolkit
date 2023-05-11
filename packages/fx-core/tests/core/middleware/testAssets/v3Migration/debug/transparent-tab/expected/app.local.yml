@@ -1,15 +1,7 @@
-# yaml-language-server: $schema=https://developer.microsoft.com/json-schemas/teams-toolkit/teamsapp-yaml/1.0.0/yaml.schema.json
-# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
-# Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.0.0
+{{header}}
 
 provision:
-  - uses: teamsApp/create # Creates a Teams app
-    with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
-    writeToEnvironmentFile:
-      # Write the information of created resources into environment file for the specified environment variable(s).
-      teamsAppId: TEAMS_APP_ID
+{{teamsAppCreate}}
 
   - uses: script # Set env for local launch
     with:
@@ -18,19 +10,7 @@ provision:
         echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT=https://localhost:53000";
         echo "::set-teamsfx-env PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH=/index.html#";
 
-  - uses: teamsApp/validateManifest # Validate using manifest schema
-    with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-
-  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
-    with:
-      manifestPath: ./appPackage/manifest.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
-
-  - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app in Teams Developer Portal. Will use the app id in manifest file to determine which Teams app to update.
-    with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+{{localTeamsAppUpdate}}
 
 deploy:
   # Install development tool(s)
@@ -52,8 +32,8 @@ deploy:
         BROWSER: none
         HTTPS: true
         PORT: 53000
-        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
-        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+        SSL_CRT_FILE: $\{{SSL_CRT_FILE}}
+        SSL_KEY_FILE: $\{{SSL_KEY_FILE}}
 
   # Run npm command
   - uses: cli/runNpmCommand

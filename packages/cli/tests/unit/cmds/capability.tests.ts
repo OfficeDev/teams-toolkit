@@ -185,14 +185,7 @@ describe("Capability Command Tests", function () {
     await cmd.builder(yargs);
 
     expect(options).deep.equals(
-      [
-        "spfx-install-latest-package",
-        "spfx-folder",
-        "spfx-webpart-name",
-        "manifest-path",
-        "local-manifest-path",
-        "folder",
-      ],
+      ["spfx-folder", "spfx-webpart-name", "manifest-path", "local-manifest-path", "folder"],
       JSON.stringify(options)
     );
   });

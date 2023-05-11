@@ -187,6 +187,19 @@
           "suggested": false
         },
         {
+          "id": "outlook-add-in-set-signature",
+          "title": "Set signature using Outlook add-in",
+          "shortDescription": "An Outlook add-in that sets signature for the user",
+          "fullDescription": "An Outlook add-in that sets signature for the user",
+          "tags": ["Outlook add-in"],
+          "time": "5min to run",
+          "configuration": "Ready for debug",
+          "suggested": false,
+          "url": "https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature",
+          "packageLink": "https://github.com/OfficeDev/Office-Add-in-samples/archive/refs/heads/main.zip",
+          "relativePath": "Office-Add-in-samples-main/Samples/outlook-set-signature"
+        },
+        {
             "id": "developer-assist-dashboard",
             "title": "Developer Assist Dashboard",
             "shortDescription": "A dashboard that integrates with Azure DevOps, Github issues and Planner tasks that accelerates developer productivity.",
@@ -195,6 +208,16 @@
             "time": "15min to run",
             "configuration": "Manual configurations required",
             "suggested": false
-          }
+        },
+        {
+            "id": "live-share-dice-roller",
+            "title": "Dice Roller in meeting",
+            "shortDescription": "This sample introduces Microsoft Live Share and Azure Fluid Relay to enable a shared experience between multiple users.",
+            "fullDescription": "Microsoft Live Share is a collaboration tool that enables you to share your experience with others in real time. Azure Fluid Relay is a part of this service. The diceroller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.",
+            "tags": ["Live Share", "JS", "ReactJS", "Teams-JS 2.0"],
+            "time": "5 min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+        }
     ]
 }

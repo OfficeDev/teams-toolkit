@@ -62,12 +62,20 @@ export class CliHelper {
     }
   }
 
-  static async provisionProject(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
-    const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-      timeout: 0,
-    });
+  static async provisionProject(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx provision --env ${env} --interactive false --verbose ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      }
+    );
 
     if (result.stderr) {
       console.error(`[Failed] provision ${projectPath}. Error message: ${result.stderr}`);
@@ -155,12 +163,13 @@ export class CliHelper {
   static async deployAll(
     projectPath: string,
     option = "",
+    env: "dev" | "local" = "dev",
     processEnv?: NodeJS.ProcessEnv,
     retries?: number,
     newCommand?: string
   ) {
     const result = await execAsyncWithRetry(
-      `teamsfx deploy ${option}`,
+      `teamsfx deploy --env ${env} --interactive false --verbose ${option}`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,

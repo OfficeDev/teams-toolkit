@@ -48,12 +48,6 @@ const customTasks = Object.freeze({
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
-  [TaskCommand.npmInstall]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Never,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
-  },
   [TaskCommand.startLocalTunnel]: {
     createTerminal: async (d: vscode.TaskDefinition) => {
       return new DevTunnelTaskTerminal(d);
@@ -61,30 +55,6 @@ const customTasks = Object.freeze({
     presentationReveal: vscode.TaskRevealKind.Silent,
     presentationEcho: true,
     presentationshowReuseMessage: true,
-  },
-  [TaskCommand.setUpTab]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Never,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
-  },
-  [TaskCommand.setUpBot]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Never,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
-  },
-  [TaskCommand.setUpSSO]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Never,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
-  },
-  [TaskCommand.prepareManifest]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Never,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
   },
   [TaskCommand.launchWebClient]: {
     createTerminal: async (d: vscode.TaskDefinition) => new LaunchTeamsClientTerminal(d),

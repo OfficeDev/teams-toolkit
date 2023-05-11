@@ -3,7 +3,7 @@
 
 import { ArmTemplateResult } from "../armInterface";
 import { IProgressHandler, TokenProvider } from "@microsoft/teamsfx-api";
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import * as appService from "@azure/arm-appservice";
 import {
   AzureUploadConfig,

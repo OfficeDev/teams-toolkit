@@ -350,4 +350,67 @@ Click "Submit" button:
 
 Please refer to [Task module document](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots?tabs=nodejs) for more details.
 
-### How to add adaptive card action
+### How to add adaptive card action (Teams)
+**Step 1: Update `bots` section in manifest**
+
+The card action requires bot capability. In `appPackage/manifest.json`, update `bots` section to be following.
+```json
+    "bots": [
+        {
+            "botId": "${{BOT_ID}}",
+            "scopes": [
+                "team",
+                "personal",
+                "groupchat"
+            ],
+            "supportsFiles": false,
+            "isNotificationOnly": false
+        }
+    ]
+```
+**Step 2: Update adaptive card**
+
+In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
+```json
+    "actions": [
+        {
+            "type": "Action.Execute",
+            "title": "card action",
+            "verb": "cardAction",
+            "id": "cardAction"
+        }
+    ],
+```
+**Step 3: Add `onAdaptiveCardInvoke` function in handler**
+
+In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
+```ts
+  public async onAdaptiveCardInvoke(context: TurnContext, invokeValue: AdaptiveCardInvokeValue): Promise<AdaptiveCardInvokeResponse> {
+    const card = {
+      "type": "AdaptiveCard",
+      "body": [
+        {
+          "type": "TextBlock",
+          "text": "Your reponse was sent to the app",
+          "size": "Medium",
+          "weight": "Bolder",
+          "wrap": true
+        },
+      ],
+      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+      "version": "1.4"
+    };
+    const res = { statusCode: 200, type: "application/vnd.microsoft.card.adaptive", value: card };
+    return res;
+  }
+```
+
+In Teams, the unfurled adaptive card will be like:
+
+![taskModule](./images/cardAction.png)
+
+Click "card action" button, the adaptive card will be updated to be following:
+
+![taskModuleFetch](./images/cardActionClick.png)
+
+Please refer to [Universal actions document](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview) for more details.

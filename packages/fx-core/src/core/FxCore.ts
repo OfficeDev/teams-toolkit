@@ -194,35 +194,6 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * @deprecated not used in v3 any more
-   */
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async addFeature(
-    inputs: v2.InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
-    inputs.stage = Stage.addFeature;
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const fx = Container.get("fx") as any;
-    const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    return ok(res.value);
-  }
-
-  /**
    * most commands will be deprecated in V3
    */
   async executeUserTask(

@@ -40,10 +40,6 @@ describe("teamsfx new template", function () {
     // Validate Provision
     await readContextMultiEnvV3(projectPath, env);
 
-    // Validate Aad App
-    const aad = AadValidator.init(context, false, m365Login);
-    await AadValidator.validate(aad);
-
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);

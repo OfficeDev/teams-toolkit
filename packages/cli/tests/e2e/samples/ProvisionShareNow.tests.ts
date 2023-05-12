@@ -34,9 +34,6 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
-    // [BUG] CI enabled will force eslint warning to error. workaround: disable CI
-    process.env["CI"] = "false";
-
     await Executor.openTemplateProject(appName, testFolder, TemplateProject.ShareNow);
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

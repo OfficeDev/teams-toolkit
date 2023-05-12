@@ -7,7 +7,7 @@ import axios from "axios";
 class configInfo {
   static readonly owner = "OfficeDev";
   static readonly repo = "TeamsFx-Samples";
-  static readonly tree = "v3";
+  static readonly tree = "v2.2.0";
   static readonly file = ".config/samples-config-v3.json";
 }
 

@@ -27,7 +27,7 @@ You can visit this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#feature-chang
 4. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
 5. If your project contains file `templates/appPackage/aad.template.json`, it will be moved and renamed as `aad.manifest.json` and placeholders in it will be updated per the latest Teams Toolkit requirement.
 6. If your project contains file `.vscode/tasks.json` and `.vscode/launch.json`, they will be updated.
-7. Updated `.gitignore` to ignore new environment user files.8. Removed `.fx` folder.
+7. Updated `.gitignore` to ignore new environment user files.
 8. Removed `.fx` folder.
 
 For more detailed changes, please refer to this [wiki](https://aka.ms/teams-toolkit-5.0-upgrade#file-changes).

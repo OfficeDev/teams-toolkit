@@ -9,51 +9,33 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
-import {
-  getTestFolder,
-  cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
-  getSubscriptionId,
-  readContextMultiEnv,
-  readContextMultiEnvV3,
-  getUniqueAppName,
-} from "../commonUtils";
+import { getTestFolder, readContextMultiEnvV3, getUniqueAppName } from "../commonUtils";
 import { AadValidator, FunctionValidator, FrontendValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
-import { CliHelper } from "../../commonlib/cliHelper";
+import { Executor } from "../../utils/executor";
+import { Cleaner } from "../../utils/cleaner";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
-  const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.TodoListM365}`, { testPlanCaseId: 15277470 }, async function () {
-    if (isV3Enabled()) {
-      await CliHelper.openTemplateProject(appName, testFolder, TemplateProject.TodoListM365);
-      expect(fs.pathExistsSync(projectPath)).to.be.true;
-      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
-    } else {
-      await CliHelper.createTemplateProject(appName, testFolder, TemplateProject.TodoListM365);
-      expect(fs.pathExistsSync(projectPath)).to.be.true;
-      expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
-    }
+    await Executor.openTemplateProject(appName, testFolder, TemplateProject.TodoListM365);
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
-    if (isV3Enabled()) {
-    } else {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-      await CliHelper.setSubscription(subscription, projectPath);
+    {
+      const { success } = await Executor.provision(projectPath);
+      expect(success).to.be.true;
     }
-    await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    const context = isV3Enabled()
-      ? await readContextMultiEnvV3(projectPath, env)
-      : await readContextMultiEnv(projectPath, env);
+    const context = await readContextMultiEnvV3(projectPath, env);
 
     // Validate Aad App
     const aad = AadValidator.init(context, false, m365Login);
@@ -68,10 +50,13 @@ describe("teamsfx new template", function () {
     await FrontendValidator.validateProvision(frontend);
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    {
+      const { success } = await Executor.deploy(projectPath);
+      expect(success).to.be.true;
+    }
   });
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false);
+    await Cleaner.clean(projectPath);
   });
 });

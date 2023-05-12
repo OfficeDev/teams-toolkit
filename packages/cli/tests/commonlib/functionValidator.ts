@@ -59,7 +59,9 @@ export class FunctionValidator {
     this.env = env;
 
     const resourceId =
-      ctx[EnvConstants.FUNCTION_ID] ?? ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+      ctx[EnvConstants.FUNCTION_ID] ??
+      ctx[EnvConstants.FUNCTION_ID_2] ??
+      ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);
@@ -108,11 +110,11 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
+    const endpoint =
+      (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
+      (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
     if (isV3Enabled()) {
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.API_ENDPOINT],
-        this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string
-      );
+      chai.assert.equal(webappSettingsResponse[BaseConfig.API_ENDPOINT], endpoint);
       // TODO: add v3 validation
     } else {
       chai.assert.equal(

@@ -7,6 +7,7 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   CoreCallbackFunc,
+  CryptoProvider,
   err,
   Func,
   FunctionRouter,
@@ -81,6 +82,7 @@ import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { settingsUtil } from "../component/utils/settingsUtil";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -442,31 +444,37 @@ export class FxCore implements v3.ICore {
     return ok(inputs.env); //work for both v2 and v3
   }
 
+  async createLocalCrypto(projectPath: string): Promise<Result<CryptoProvider, FxError>> {
+    const settingsRes = await settingsUtil.readSettings(projectPath);
+    if (settingsRes.isErr()) {
+      return err(settingsRes.error);
+    }
+    const projectId = settingsRes.value.trackingId;
+    const cryptoProvider = new LocalCrypto(projectId);
+    return ok(cryptoProvider);
+  }
+
   /**
    * only for vs code extension
    */
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
-  async encrypt(
-    plaintext: string,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
-    if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
-    return ctx.contextV2.cryptoProvider.encrypt(plaintext);
+  @hooks([ErrorHandlerMW])
+  async encrypt(plaintext: string, inputs: Inputs): Promise<Result<string, FxError>> {
+    const res = await this.createLocalCrypto(inputs.projectPath!);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return res.value.encrypt(plaintext);
   }
   /**
    * only for vs code extension
    */
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
-  async decrypt(
-    ciphertext: string,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
-    if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
-    return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
+  @hooks([ErrorHandlerMW])
+  async decrypt(ciphertext: string, inputs: Inputs): Promise<Result<string, FxError>> {
+    const res = await this.createLocalCrypto(inputs.projectPath!);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return res.value.decrypt(ciphertext);
   }
 
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {

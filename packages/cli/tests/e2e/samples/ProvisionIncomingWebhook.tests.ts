@@ -12,6 +12,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, cleanUp, getUniqueAppName } from "../commonUtils";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
+
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();

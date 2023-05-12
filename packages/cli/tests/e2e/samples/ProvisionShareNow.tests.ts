@@ -21,6 +21,8 @@ import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { Executor } from "../../utils/executor";
+import { assert } from "chai";
+
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();

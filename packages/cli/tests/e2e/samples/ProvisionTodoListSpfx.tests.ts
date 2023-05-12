@@ -12,6 +12,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, cleanUpLocalProject, getUniqueAppName } from "../commonUtils";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
+import { assert } from "chai";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

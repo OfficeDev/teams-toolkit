@@ -15,6 +15,7 @@ import { TemplateProject } from "../../commonlib/constants";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { Executor } from "../../utils/executor";
+import { assert } from "chai";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

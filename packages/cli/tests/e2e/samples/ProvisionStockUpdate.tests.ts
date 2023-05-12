@@ -14,7 +14,6 @@ import { BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { assert } from "chai";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -29,11 +28,8 @@ describe("teamsfx new template", function () {
 
     // Provision
     {
-      const { success, stderr } = await Executor.provision(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Provision failed");
-      }
+      const { success } = await Executor.provision(projectPath);
+      expect(success).to.be.true;
     }
 
     // Validate Provision
@@ -45,11 +41,8 @@ describe("teamsfx new template", function () {
 
     // deploy
     {
-      const { success, stderr } = await Executor.deploy(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Deploy failed");
-      }
+      const { success } = await Executor.deploy(projectPath);
+      expect(success).to.be.true;
     }
 
     // Validate deployment
@@ -64,20 +57,14 @@ describe("teamsfx new template", function () {
 
     // validate
     {
-      const { success, stderr } = await Executor.validate(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Validate failed");
-      }
+      const { success } = await Executor.validate(projectPath);
+      expect(success).to.be.true;
     }
 
     // package
     {
-      const { success, stderr } = await Executor.package(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Package failed");
-      }
+      const { success } = await Executor.package(projectPath);
+      expect(success).to.be.true;
     }
   });
 

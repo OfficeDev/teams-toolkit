@@ -12,7 +12,6 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, cleanUpLocalProject, getUniqueAppName } from "../commonUtils";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
-import { assert } from "chai";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -27,22 +26,16 @@ describe("teamsfx new template", function () {
     // validate
     await Executor.validate(projectPath);
 
-    // provision
+    // Provision
     {
-      const { success, stderr } = await Executor.provision(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Provision failed");
-      }
+      const { success } = await Executor.provision(projectPath);
+      expect(success).to.be.true;
     }
 
     // deploy
     {
-      const { success, stderr } = await Executor.deploy(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Deploy failed");
-      }
+      const { success } = await Executor.deploy(projectPath);
+      expect(success).to.be.true;
     }
   });
 

@@ -22,7 +22,6 @@ import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { assert } from "chai";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -39,12 +38,10 @@ describe("teamsfx new template", function () {
     const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
     editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
     editDotEnvFile(envFilePath, "SQL_PASSWORD", "Cab232332" + getUuid().substring(0, 6));
+    // Provision
     {
-      const { success, stderr } = await Executor.provision(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Provision failed");
-      }
+      const { success } = await Executor.provision(projectPath);
+      expect(success).to.be.true;
     }
 
     // Validate Provision
@@ -64,11 +61,8 @@ describe("teamsfx new template", function () {
 
     // deploy
     {
-      const { success, stderr } = await Executor.deploy(projectPath);
-      if (!success) {
-        console.log(stderr);
-        assert.fail("Deploy failed");
-      }
+      const { success } = await Executor.deploy(projectPath);
+      expect(success).to.be.true;
     }
   });
 

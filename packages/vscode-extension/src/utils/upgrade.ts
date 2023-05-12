@@ -25,8 +25,8 @@ export class ExtensionUpgrade {
     const syncedVersion = this.context.globalState.get<string>(SyncedState.Version);
 
     if (
-      !isV3Enabled() &&
-      (syncedVersion === undefined || versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1)
+      syncedVersion === undefined ||
+      versionUtil.compare(teamsToolkitVersion, syncedVersion) === 1
     ) {
       // if syncedVersion is undefined, then it is not existinig user
       this.context.globalState.update(

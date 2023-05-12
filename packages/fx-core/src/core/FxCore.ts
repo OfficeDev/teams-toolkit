@@ -7,6 +7,7 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   CoreCallbackFunc,
+  CryptoProvider,
   err,
   Func,
   FunctionRouter,
@@ -444,7 +445,7 @@ export class FxCore implements v3.ICore {
   }
 
   async createLocalCrypto(projectPath: string): Promise<Result<CryptoProvider, FxError>> {
-    const settingsRes = await settingsUtil.readSettings(inputs.projectPath!);
+    const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) {
       return err(settingsRes.error);
     }

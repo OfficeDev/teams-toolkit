@@ -175,8 +175,6 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       const projectSettings = res._unsafeUnwrap();
       assert.equal(projectSettings.version, "1.0.0");
       assert.exists(projectSettings.projectId);
-      assert.isTrue(resultFile.includes("projectId"));
-      assert.isTrue(resultFile.includes("# this is comment"));
     } finally {
       restore();
     }

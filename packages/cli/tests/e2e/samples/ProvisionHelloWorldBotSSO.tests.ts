@@ -33,7 +33,7 @@ describe("teamsfx new template", function () {
       const { success, stderr } = await Executor.provision(projectPath);
       if (!success) {
         console.log(stderr);
-        chai.assert.fail("Provision failed");
+        assert.fail("Provision failed");
       }
     }
 
@@ -49,7 +49,7 @@ describe("teamsfx new template", function () {
       const { success, stderr } = await Executor.deploy(projectPath);
       if (!success) {
         console.log(stderr);
-        chai.assert.fail("Deploy failed");
+        assert.fail("Deploy failed");
       }
     }
 
@@ -72,7 +72,7 @@ describe("teamsfx new template", function () {
       const { success, stderr } = await Executor.validate(projectPath);
       if (!success) {
         console.log(stderr);
-        chai.assert.fail("Validate failed");
+        assert.fail("Validate failed");
       }
     }
 
@@ -81,7 +81,7 @@ describe("teamsfx new template", function () {
       const { success, stderr } = await Executor.package(projectPath);
       if (!success) {
         console.log(stderr);
-        chai.assert.fail("Package failed");
+        assert.fail("Package failed");
       }
     }
   });

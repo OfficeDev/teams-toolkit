@@ -11,7 +11,6 @@ import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
   getTestFolder,
-  cleanUp,
   readContextMultiEnvV3,
   getUniqueAppName,
   editDotEnvFile,
@@ -20,6 +19,7 @@ import { AadValidator, FrontendValidator, FunctionValidator, SqlValidator } from
 import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
+import { Cleaner } from "../../utils/cleaner";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
@@ -67,6 +67,6 @@ describe("teamsfx new template", function () {
   });
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false);
+    await Cleaner.clean(projectPath);
   });
 });

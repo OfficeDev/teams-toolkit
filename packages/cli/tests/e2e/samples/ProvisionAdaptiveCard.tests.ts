@@ -9,10 +9,11 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
-import { getTestFolder, cleanUp, readContextMultiEnvV3, getUniqueAppName } from "../commonUtils";
+import { getTestFolder, readContextMultiEnvV3, getUniqueAppName } from "../commonUtils";
 import { BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
+import { Cleaner } from "../../utils/cleaner";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -20,7 +21,6 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
-  let teamsAppId: string | undefined;
 
   it(`${TemplateProject.AdaptiveCard}`, { testPlanCaseId: 15277474 }, async function () {
     await Executor.openTemplateProject(appName, testFolder, TemplateProject.AdaptiveCard);
@@ -59,6 +59,6 @@ describe("teamsfx new template", function () {
 
   afterEach(async () => {
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath, false, true, false, teamsAppId);
+    await Cleaner.clean(projectPath);
   });
 });

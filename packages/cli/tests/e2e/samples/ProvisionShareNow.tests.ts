@@ -12,7 +12,6 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { cleanUpResourceGroup } from "../clean";
 import {
   getTestFolder,
-  cleanUp,
   validateTabAndBotProjectProvision,
   getUniqueAppName,
   editDotEnvFile,
@@ -21,6 +20,7 @@ import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { Executor } from "../../utils/executor";
+import { Cleaner } from "../../utils/cleaner";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -58,6 +58,6 @@ describe("teamsfx new template", function () {
   });
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await Cleaner.clean(projectPath);
   });
 });

@@ -9,10 +9,11 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
-import { getTestFolder, cleanUp, readContextMultiEnvV3, getUniqueAppName } from "../commonUtils";
+import { getTestFolder, readContextMultiEnvV3, getUniqueAppName } from "../commonUtils";
 import { FrontendValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
+import { Cleaner } from "../../utils/cleaner";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -45,6 +46,6 @@ describe("teamsfx new template", function () {
   });
 
   after(async () => {
-    await cleanUp(appName, projectPath, false, false, false);
+    await Cleaner.clean(projectPath);
   });
 });

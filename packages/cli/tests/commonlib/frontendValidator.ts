@@ -210,11 +210,7 @@ export class FrontendValidator {
   }
 
   private static getResourceIdFromCtx(ctx: any): string {
-    if (isV3Enabled()) {
-      return ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID];
-    } else {
-      return ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
-    }
+    return ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID];
   }
 
   private static async getSasToken(

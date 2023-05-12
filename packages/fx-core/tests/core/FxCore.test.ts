@@ -484,48 +484,6 @@ describe("Core basic APIs", () => {
     }
   });
 
-  it("permission v2", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    try {
-      let res;
-      const core = new FxCore(tools);
-      const appName = await mockV2Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        stage: Stage.listCollaborator,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
-      sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "listCollaboratorFunc").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "checkPermissionFunc").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "grantPermissionFunc").resolves(ok(undefined));
-      sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
-        tenantId: "fake_tid",
-        aadId: "fake_oid",
-        userPrincipalName: "fake_unique_name",
-        displayName: "displayName",
-        isAdministrator: true,
-      });
-
-      res = await core.listCollaborator(inputs);
-      assert.isTrue(res.isOk());
-      res = await core.checkPermission(inputs);
-      assert.isTrue(res.isOk());
-      res = await core.grantPermission(inputs);
-      assert.isTrue(res.isOk());
-    } finally {
-      restore();
-    }
-  });
-
   it("not implement method", async () => {
     const implement = new FxCoreV3Implement(tools);
     const inputs: Inputs = {

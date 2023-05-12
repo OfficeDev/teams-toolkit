@@ -14,5 +14,5 @@ export interface ICore extends Core {
    * 2. generate/update arm templates
    * 3. update teams app manifest file
    */
-  addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  addFeature?: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 }

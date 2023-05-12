@@ -848,7 +848,7 @@ export interface GroupAction extends ActionBase {
 
 // @public (undocumented)
 interface ICore extends Core {
-    addFeature: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    addFeature?: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

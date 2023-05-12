@@ -65,6 +65,7 @@ import { BuiltInFeaturePluginNames } from "../../src/component/constants";
 import { Constants } from "../../src/component/resource/aadApp/constants";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage/azureStorage";
 import { FrontendDeployment } from "../../src/component/code/tab/deploy";
+import { settingsUtil } from "../../src/component/utils/settingsUtil";
 
 class MyTokenCredential implements TokenCredential {
   async getToken(
@@ -88,6 +89,9 @@ describe("Core component test for v3", () => {
   const fx = Container.get<TeamsfxCore>("fx");
   afterEach(() => {
     sandbox.restore();
+  });
+  beforeEach(() => {
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
   });
   after(async () => {
     deleteFolder(projectPath);

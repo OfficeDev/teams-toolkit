@@ -5,6 +5,7 @@
   "version": "5.0.0-alpha",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
+  "private": true,
   "icon": "media/teams.png",
   "main": "./out/src/extension.js",
   "repository": {

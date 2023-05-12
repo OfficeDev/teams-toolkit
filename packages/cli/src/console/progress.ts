@@ -122,7 +122,7 @@ export default class Progress implements IProgressHandler {
   get doneMessage(): string {
     return (
       colorize(`[${this.totalSteps}/${this.totalSteps}] ${this.title} `, TextType.Info) +
-      colorize(` (${figures.cross}) Done.`, TextType.Success)
+      colorize(` (${figures.tick}) Done.`, TextType.Success)
     );
   }
 

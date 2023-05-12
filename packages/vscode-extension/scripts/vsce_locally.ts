@@ -96,12 +96,13 @@ async function publishLocally(
       maxBuffer: 1024 * 1024 * 50,
     });
 
-    await execAsync(`npm publish`, {
-      cwd: folder,
-      maxBuffer: 1024 * 1024 * 50,
-    });
-
-    output([`[ DONE ] ${name} ${json.version} published.\n`]);
+    if (!vsce) {
+      await execAsync(`npm publish`, {
+        cwd: folder,
+        maxBuffer: 1024 * 1024 * 50,
+      });
+      output([`[ DONE ] ${name} ${json.version} published.\n`]);
+    }
 
     if (vsce) {
       output(name, [`vsce packaging...`]);

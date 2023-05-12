@@ -184,6 +184,7 @@ export class EnvConstants {
   static readonly TAB_ENDPOINT = "TAB_ENDPOINT";
   static readonly TAB_DOMAIN = "TAB_DOMAIN";
   static readonly TAB_AZURE_APP_SERVICE_RESOURCE_ID = "TAB_AZURE_APP_SERVICE_RESOURCE_ID";
+  static readonly TAB_AZURE_APP_SERVICE_RESOURCE_ID_2 = "TAB_AZURE_STORAGE_RESOURCE_ID";
 
   // BOT
   static readonly BOT_ID = "BOT_ID";

@@ -59,7 +59,7 @@ Once the provisioning and deployment steps are finished, you can preview your ap
   1. Select `Launch Remote in Teams` or `Launch Remote in Outlook` from the launch configuration drop-down.
   1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
-- From TeamsFx CLI: execute `teamsfx preview --env dev    --m365-host <m365-host>` in your project directory to launch your application, where options for m365-host are `teams` or `outlook`.
+- From TeamsFx CLI: execute `teamsfx preview --env dev --m365-host <m365-host>` in your project directory to launch your application, where options for m365-host are `teams` or `outlook`.
 
 ## What's included in the template
 | Folder / File | Contents |
@@ -77,7 +77,7 @@ The following files can be customized and demonstrate an example implementation 
 | - | - |
 | `src/index.ts` | Application entry point and `restify` handlers |
 | `src/linkUnfurlingApp.ts`| The teams activity handler |
-| `src/adaptiveCards/helloWorldCard.json` | The unfurled adaptive card |
+| `src/adaptiveCards/helloWorldCard.json` | The adaptive card |
 
 ## Extend this template
 
@@ -94,7 +94,7 @@ Switch to another user account. Without installing this app, paste the link "htt
 ![zeroInstall](./images/zeroInstall.png)
 ### How to add link unfurling cache in Teams
 
-This template removes cache by default to provide convenience for debug. To add cache, remove following JSON part from adaptive card in `linkUnfurlingApp.ts`:
+This template removes cache by default to provide convenience for debug. To add cache, ***REMOVE*** following JSON part from adaptive card in `linkUnfurlingApp.ts`:
 ```ts
 suggestedActions: {
           actions: [
@@ -112,7 +112,7 @@ Please refer to [link unfurling document](https://learn.microsoft.com/en-us/micr
 
 ### How to customize Zero Install Link Unfurling's adaptive cards
 
-The supported types for Zero Install Link Unfurling are "result" and "auth" and this template uses "result" as default. By changing it to "auth", the unfurled card will be:
+The supported types for Zero Install Link Unfurling are "result" and "auth" and this template uses "result" as default. By changing it to "auth", the adaptive card will be:
 
 ![zeroInstallAuth](./images/zeroInstallAuth.png)
 
@@ -210,7 +210,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2022-09-01' = {
   }
 }
 ```
-**Step 4: Update unfurled adaptive card**
+**Step 4: Update adaptive card**
 
 In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
 ```json
@@ -238,7 +238,7 @@ In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
         }
       ],
 ```
-Run `npm install @microsoft/adaptivecards-tools`. This package helps render placeholders such as `${url}` in adative card to be real values.
+Run `npm install @microsoft/adaptivecards-tools`. This package helps render placeholders such as `${url}` in adaptive card to be real values.
 
 In `linkUnfurlingApp.ts`, update variable `attachment` to be following.
 ```ts
@@ -249,7 +249,7 @@ In `linkUnfurlingApp.ts`, update variable `attachment` to be following.
     const attachment = { ...CardFactory.adaptiveCard(renderedCard), preview: previewCard };
 
 ```
-In Teams, the unfurled adaptive card will be like:
+In Teams, the adaptive card will be like:
 
 ![stageView](./images/stageView.png)
 
@@ -265,7 +265,7 @@ Please refer to [Stage view document](https://learn.microsoft.com/en-us/microsof
 
 ### How to add task module (Teams)
 
-**Step 1: Update unfurled adaptive card**
+**Step 1: Update adaptive card**
 
 In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
 ```json
@@ -336,7 +336,7 @@ In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
     };
   }
 ```
-In Teams, the unfurled adaptive card will be like:
+In Teams, the adaptive card will be like:
 
 ![taskModule](./images/taskModule.png)
 
@@ -405,7 +405,7 @@ In `src/linkUnfurlingApp.ts`, add following method to `LinkUnfurlingApp` class.
   }
 ```
 
-In Teams, the unfurled adaptive card will be like:
+In Teams, the adaptive card will be like:
 
 ![taskModule](./images/cardAction.png)
 

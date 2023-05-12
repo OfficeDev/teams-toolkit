@@ -28,7 +28,13 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
-    await Executor.provision(projectPath);
+    {
+      const { success, stderr } = await Executor.provision(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Provision failed");
+      }
+    }
 
     // Validate Provision
     await readContextMultiEnvV3(projectPath, env);
@@ -46,7 +52,13 @@ describe("teamsfx new template", function () {
     await functionValidator.validateProvision();
 
     // deploy
-    await Executor.deploy(projectPath);
+    {
+      const { success, stderr } = await Executor.deploy(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Deploy failed");
+      }
+    }
   });
 
   after(async () => {

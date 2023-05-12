@@ -15,6 +15,7 @@ import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -27,7 +28,13 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
-    await Executor.provision(projectPath);
+    {
+      const { success, stderr } = await Executor.provision(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Provision failed");
+      }
+    }
 
     // Validate Provision
     const context = await readContextMultiEnvV3(projectPath, env);
@@ -41,7 +48,13 @@ describe("teamsfx new template", function () {
     await FrontendValidator.validateProvision(frontend);
 
     // deploy
-    await Executor.deploy(projectPath);
+    {
+      const { success, stderr } = await Executor.deploy(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Deploy failed");
+      }
+    }
   });
 
   after(async () => {

@@ -38,7 +38,13 @@ describe("teamsfx new template", function () {
     const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
     editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
     editDotEnvFile(envFilePath, "SQL_PASSWORD", "Cab232332" + getUuid().substring(0, 6));
-    await Executor.provision(projectPath);
+    {
+      const { success, stderr } = await Executor.provision(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Provision failed");
+      }
+    }
 
     // Validate Provision
     const context = await readContextMultiEnvV3(projectPath, env);
@@ -56,7 +62,13 @@ describe("teamsfx new template", function () {
     await functionValidator.validateProvision();
 
     // deploy
-    await Executor.deploy(projectPath);
+    {
+      const { success, stderr } = await Executor.deploy(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Deploy failed");
+      }
+    }
   });
 
   after(async () => {

@@ -23,14 +23,26 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be.true;
 
-    // test (validate)
+    // validate
     await Executor.validate(projectPath);
 
     // provision
-    await Executor.provision(projectPath);
+    {
+      const { success, stderr } = await Executor.provision(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Provision failed");
+      }
+    }
 
     // deploy
-    await Executor.deploy(projectPath);
+    {
+      const { success, stderr } = await Executor.deploy(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Deploy failed");
+      }
+    }
   });
 
   afterEach(async () => {

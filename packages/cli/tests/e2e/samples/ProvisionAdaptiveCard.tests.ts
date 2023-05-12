@@ -14,7 +14,7 @@ import { BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -28,21 +28,29 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
-    await Executor.provision(projectPath);
+    {
+      const { success, stderr } = await Executor.provision(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Provision failed");
+      }
+    }
 
     // Validate Provision
     const context = await readContextMultiEnvV3(projectPath, env);
 
     // Validate Bot Provision
     const bot = new BotValidator(context, projectPath, env);
-    if (isV3Enabled()) {
-      await bot.validateProvisionV3(false);
-    } else {
-      await bot.validateProvision(false);
-    }
+    await bot.validateProvisionV3(false);
 
     // deploy
-    await Executor.deploy(projectPath);
+    {
+      const { success, stderr } = await Executor.deploy(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Deploy failed");
+      }
+    }
 
     // Validate deployment
     {

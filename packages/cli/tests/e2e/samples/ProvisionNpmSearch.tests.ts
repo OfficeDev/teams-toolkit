@@ -27,7 +27,13 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
-    await Executor.provision(projectPath);
+    {
+      const { success, stderr } = await Executor.provision(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Provision failed");
+      }
+    }
 
     // Validate Provision
     const context = await readContextMultiEnvV3(projectPath, env);
@@ -37,7 +43,13 @@ describe("teamsfx new template", function () {
     await bot.validateProvisionV3(false);
 
     // deploy
-    await Executor.deploy(projectPath);
+    {
+      const { success, stderr } = await Executor.deploy(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Deploy failed");
+      }
+    }
 
     // Validate deployment
     {
@@ -48,12 +60,23 @@ describe("teamsfx new template", function () {
       const bot = new BotValidator(context, projectPath, env);
       await bot.validateDeploy();
     }
-
-    // test (validate)
-    await Executor.validate(projectPath);
+    // validate
+    {
+      const { success, stderr } = await Executor.validate(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Validate failed");
+      }
+    }
 
     // package
-    await Executor.package(projectPath);
+    {
+      const { success, stderr } = await Executor.package(projectPath);
+      if (!success) {
+        console.log(stderr);
+        chai.assert.fail("Package failed");
+      }
+    }
   });
 
   after(async () => {

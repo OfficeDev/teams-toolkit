@@ -34,7 +34,7 @@ describe("teamsfx new template", function () {
     }
 
     // Validate Provision
-    await readContextMultiEnvV3(projectPath, env);
+    const context = await readContextMultiEnvV3(projectPath, env);
 
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context);

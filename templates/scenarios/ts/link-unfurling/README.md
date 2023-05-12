@@ -81,6 +81,19 @@ The following files can be customized and demonstrate an example implementation 
 
 ## Extend this template
 
+This section introduces how to customize or extend this template, including:
+
+[How to use Zero Install Link Unfurling in Teams](#how-to-use-zero-install-link-unfurling-in-teams)
+
+[How to add link unfurling cache in Teams](#how-to-add-link-unfurling-cache-in-teams)
+
+[How to customize Zero Install Link Unfurling's adaptive cards](#how-to-customize-zero-install-link-unfurlings-adaptive-cards)
+
+[How to add stage view (Teams)](#how-to-add-stage-view-teams)
+
+[How to add task module (Teams)](#how-to-add-task-module-teams)
+
+[How to add adaptive card action (Teams)](#how-to-add-adaptive-card-action-teams)
 ### How to use Zero Install Link Unfurling in Teams
 
 Zero Install Link Unfurling requires link unfurling app to be published. You need an admin account to publish an app into your org.
@@ -351,6 +364,7 @@ Click "Submit" button:
 Please refer to [Task module document](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/task-modules/task-modules-bots?tabs=nodejs) for more details.
 
 ### How to add adaptive card action (Teams)
+
 **Step 1: Update `bots` section in manifest**
 
 The card action requires bot capability. In `appPackage/manifest.json`, update `bots` section to be following.

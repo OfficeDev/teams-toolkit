@@ -62,6 +62,7 @@ import {
   RuntimeOptionNodeJs,
   SampleSelect,
   ScratchOptionNo,
+  ScratchOptionNoVSC,
   ScratchOptionYes,
   ScratchOptionYesVSC,
   tabsContentUrlQuestion,
@@ -128,7 +129,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
     inputs[CoreQuestionNames.Capabilities] =
-      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp);
+      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp)?.templateId;
   }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
@@ -262,11 +263,21 @@ async function getQuestionsForCreateProjectWithDotNet(
 async function getQuestionsForCreateProjectInVSC(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionNoVSC().id) {
+    // Create from sample flow
+    const sampleNode = new QTreeNode(SampleSelect());
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
+
+    return ok(sampleNode.trim());
+  }
+
   // We will always create a project from scratch in VSC.
   inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
   if (isFromDevPortal(inputs)) {
+    inputs[CoreQuestionNames.ProjectType] =
+      inputs[CoreQuestionNames.ProjectType] ?? getTemplateId(inputs.teamsAppFromTdp)?.projectType;
     inputs[CoreQuestionNames.Capabilities] =
-      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp);
+      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp)?.templateId;
   }
 
   // create new project root

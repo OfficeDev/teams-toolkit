@@ -1,24 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { assert } from "chai";
+import "mocha";
+import sinon from "sinon";
 import {
   Colors,
-  err,
   FuncQuestion,
   FxError,
-  Inputs,
+  IProgressHandler,
   InputTextConfig,
   InputTextResult,
-  IProgressHandler,
+  Inputs,
   MultiSelectConfig,
   MultiSelectQuestion,
   MultiSelectResult,
-  ok,
   OptionItem,
   Platform,
   QTreeNode,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -29,16 +29,14 @@ import {
   SingleSelectQuestion,
   SingleSelectResult,
   StaticOptions,
-  TaskConfig,
-  TextInputQuestion,
   StringValidation,
-  traverse,
+  TextInputQuestion,
   UserCancelError,
   UserInteraction,
+  err,
+  ok,
+  traverse,
 } from "../src/index";
-import "mocha";
-import { assert } from "chai";
-import sinon from "sinon";
 
 function createInputs(): Inputs {
   return {
@@ -128,13 +126,6 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new Error("Method not implemented.");
-  }
-  runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
     throw new Error("Method not implemented.");
   }
 }

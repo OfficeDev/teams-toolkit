@@ -360,28 +360,6 @@ describe("handlers", () => {
       sinon.assert.calledOnce(validateApplication);
     });
 
-    it("validateManifestHandler() - user cancel", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(localizeUtils, "localize").returns("");
-
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          return Promise.resolve(err(new Error("User cancel")));
-        },
-      });
-
-      const res = await handlers.validateManifestHandler();
-
-      chai.assert(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.message, "User cancel");
-      }
-      sinon.restore();
-    });
-
     it("treeViewPreviewHandler() - previewWithManifest error", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -1269,7 +1247,7 @@ describe("handlers", () => {
       );
     });
 
-    it("calls phantomMigrationV3 with confirmOnly when button is clicked", async () => {
+    it("calls phantomMigrationV3 with skipUserConfirm when button is clicked", async () => {
       const phantomMigrationV3Stub = sandbox
         .stub(mockCore, "phantomMigrationV3")
         .resolves(ok(undefined));
@@ -1281,7 +1259,7 @@ describe("handlers", () => {
           platform: "vsc",
           projectPath: undefined,
           vscodeEnv: "local",
-          confirmOnly: true,
+          skipUserConfirm: true,
         } as Inputs)
       );
     });
@@ -1309,7 +1287,7 @@ describe("handlers", () => {
           platform: "vsc",
           projectPath: undefined,
           vscodeEnv: "local",
-          confirmOnly: true,
+          skipUserConfirm: true,
         } as Inputs)
       );
       chai.assert.isTrue(showErrorMessageStub.calledOnce);

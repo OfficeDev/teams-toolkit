@@ -520,7 +520,7 @@ export const AzureRoleAssignmentsHelpLink =
   "https://aka.ms/teamsfx-azure-role-assignments-help-link";
 export const SharePointManageSiteAdminHelpLink =
   "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
-
+export const ViewAadAppHelpLinkV5 = "https://aka.ms/teamsfx-view-aad-app-v5";
 export const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
 
 export const DoProvisionFirstError = new UserError(
@@ -858,7 +858,6 @@ export function MessageExtensionNewUIItem(): OptionItem {
     label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
     cliName: "message-extension",
     detail: getLocalizedString("core.MessageExtensionOption.detail"),
-    description: getLocalizedString("core.createProjectQuestion.option.description.worksInOutlook"),
   };
 }
 export function TabSPFxItem(): OptionItem {
@@ -944,6 +943,7 @@ export function M365SearchAppOptionItem(): OptionItem {
     label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
     cliName: "search-app",
     detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+    description: getLocalizedString("core.createProjectQuestion.option.description.worksInOutlook"),
   };
 }
 
@@ -1164,4 +1164,20 @@ export const TabFeatureIds = () => [
 
 export const AadConstants = {
   DefaultTemplateFileName: "aad.manifest.json",
+};
+
+export const validateSchemaOption: OptionItem = {
+  id: "validateAgainstSchema",
+  label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
+  description: getLocalizedString(
+    "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
+  ),
+};
+
+export const validateAppPackageOption: OptionItem = {
+  id: "validateAgainstPackage",
+  label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
+  description: getLocalizedString(
+    "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
+  ),
 };

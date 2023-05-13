@@ -29,7 +29,9 @@ import VideoFilterApp from "../../img/webview/sample/video-filter-app-sample-in-
 import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
 import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-tab-and-outlook-add-in.png";
+import OutlookSetSignatureAddin from "../../img/webview/sample/outlook-set-signature-overview.png";
 import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
+import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -60,7 +62,9 @@ const imageMapping: { [p: string]: any } = {
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
+  "outlook-add-in-set-signature": OutlookSetSignatureAddin,
   "developer-assist-dashboard": DevAssistDashboard,
+  "live-share-dice-roller": LiveShareDiceRoller,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

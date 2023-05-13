@@ -4,7 +4,7 @@
 "use strict";
 
 import { Subscription, SubscriptionClient, TenantIdDescription } from "@azure/arm-subscriptions";
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
 import dotenv from "dotenv";
 

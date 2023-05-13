@@ -165,7 +165,7 @@ export class ToolsInstallDriverImpl {
     outputEnvVarNames?: Map<string, string>
   ): Promise<Map<string, string>> {
     const res = new Map<string, string>();
-    const funcToolChecker = new FuncToolChecker(new EmptyLogger(), new EmptyTelemetry());
+    const funcToolChecker = new FuncToolChecker();
     const funcStatus = await funcToolChecker.resolve({
       version: version,
       symlinkDir: symlinkDir,
@@ -175,7 +175,7 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 
     if (!funcStatus.isInstalled && funcStatus.error) {
-      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
+      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error, funcStatus.error.helpLink);
     } else if (funcStatus.error) {
       this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
@@ -203,7 +203,11 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.dotnetStatus, dotnetStatus);
 
     if (!dotnetStatus.isInstalled && dotnetStatus.error) {
-      throw new DotnetInstallationUserError(ACTION_NAME, dotnetStatus.error);
+      throw new DotnetInstallationUserError(
+        ACTION_NAME,
+        dotnetStatus.error,
+        dotnetStatus.error.helpLink
+      );
     } else if (dotnetStatus.error) {
       this.context.logProvider.warning(dotnetStatus.error?.message);
       this.context.addSummary(dotnetStatus.error?.message);
@@ -249,7 +253,14 @@ export class ToolsInstallDriverImpl {
     this.context.addTelemetryProperties({
       [TelemetryProperties.driverArgs]: JSON.stringify({
         devCert: args.devCert,
-        func: args.func,
+        func: {
+          version: args.func?.version,
+          symlinkDir: args.func?.symlinkDir
+            ? path.resolve(args.func.symlinkDir) === path.resolve("./devTools/func")
+              ? "<default>"
+              : "<unknown>"
+            : "<undefined>",
+        },
         dotnet: args.dotnet,
       }),
     });
@@ -278,5 +289,8 @@ export class ToolsInstallDriverImpl {
           : TelemetryDepsCheckStatus.success
         : TelemetryDepsCheckStatus.failed,
     });
+    if (depStatus.telemetryProperties) {
+      this.context.addTelemetryProperties(depStatus.telemetryProperties);
+    }
   }
 }

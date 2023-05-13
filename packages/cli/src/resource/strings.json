@@ -11,10 +11,10 @@
   "warning.prefix": "(!) Warning: ",
   "command": {
     "provision": {
-      "description": "Run the provision stage in teamsapp.yml."
+      "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml."
     },
     "deploy": {
-      "description": "Run the deploy stage in teamsapp.yml."
+      "description": "Run the deploy stage in teamsapp.yml or teamsapp.local.yml."
     },
     "publish": {
       "description": "Run the publish stage in teamsapp.yml."

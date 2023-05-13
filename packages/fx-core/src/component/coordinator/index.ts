@@ -130,14 +130,15 @@ export enum TemplateNames {
 }
 
 export const Feature2TemplateName: any = {
-  [`${NotificationOptionItem().id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
-  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS.id}`]:
+  [`${NotificationOptionItem().id}:${AppServiceOptionItem().id}`]:
+    TemplateNames.NotificationRestify,
+  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS().id}`]:
     TemplateNames.NotificationWebApi,
-  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem().id}`]:
     TemplateNames.NotificationHttpTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem().id}`]:
     TemplateNames.NotificationTimerTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem().id}`]:
     TemplateNames.NotificationHttpTimerTrigger,
   [`${CommandAndResponseOptionItem().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${WorkflowOptionItem().id}:undefined`]: TemplateNames.Workflow,
@@ -273,7 +274,9 @@ export class Coordinator {
         const templateName = Feature2TemplateName[`${feature}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
-          context.templateVariables = Generator.getDefaultVariables(appName);
+          const safeProjectNameFromVS =
+            language === "csharp" ? inputs[CoreQuestionNames.SafeProjectName] : undefined;
+          context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
         }

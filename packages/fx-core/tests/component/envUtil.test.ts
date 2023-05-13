@@ -706,12 +706,14 @@ describe("env utils", () => {
   });
 
   it("settingsUtil read not exist", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("."));
     const res = await settingsUtil.readSettings("abc");
     assert.isTrue(res.isErr());
   });
 
   it("settingsUtil read and ensure trackingId", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("."));
     sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
       return "version: 1.0.0";
     });
@@ -723,7 +725,8 @@ describe("env utils", () => {
     }
   });
 
-  it("settingsUtil write", async () => {
+  it("settingsUtil write success", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("."));
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
@@ -732,8 +735,8 @@ describe("env utils", () => {
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isOk());
   });
-
-  it("settingsUtil write", async () => {
+  it("settingsUtil write failed", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("."));
     sandbox.stub(fs, "pathExists").resolves(false);
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isErr());

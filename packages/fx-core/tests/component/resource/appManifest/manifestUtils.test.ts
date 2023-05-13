@@ -216,7 +216,7 @@ describe("Add capability V3", () => {
   it("Add notification bot capability failed, exceed limit", async () => {
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem().id];
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
@@ -229,7 +229,7 @@ describe("Add capability V3", () => {
   it("Add notification bot capability", async () => {
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem().id];
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
@@ -241,7 +241,7 @@ describe("Add capability V3", () => {
       { name: "Bot" as const, snippet: BOTS_TPL_FOR_NOTIFICATION_V3[0] },
     ];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem().id];
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
@@ -553,7 +553,7 @@ describe("getManifest V3", () => {
     envInfo.envName = "dev";
     manifest.name.short = "${{MY_APP_NAME}}";
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    const res = await manifestUtils.getManifestV3("", envInfo, false);
+    const res = await manifestUtils.getManifestV3("");
     chai.assert.isTrue(res.isErr() && res.error instanceof MissingEnvironmentVariablesError);
   });
 
@@ -561,7 +561,7 @@ describe("getManifest V3", () => {
     const manifest = new TeamsAppManifest();
     manifest.id = uuid.v4();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    const res = await manifestUtils.getManifestV3("", undefined, false);
+    const res = await manifestUtils.getManifestV3("");
     chai.assert.isTrue(res.isOk());
   });
 });

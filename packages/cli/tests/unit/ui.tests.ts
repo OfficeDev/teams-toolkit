@@ -1,29 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
 import inquirer, { DistinctQuestion } from "inquirer";
+import sinon from "sinon";
 
 import {
   Colors,
-  FxError,
-  GroupOfTasks,
   LogLevel,
   MultiSelectConfig,
-  ok,
-  Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
   SingleSelectConfig,
 } from "@microsoft/teamsfx-api";
 
-import UI from "../../src/userInteraction";
-import { EmptySubConfigOptions } from "../../src/error";
 import LogProvider from "../../src/commonlib/log";
-import { expect } from "./utils";
+import { EmptySubConfigOptions } from "../../src/error";
+import UI from "../../src/userInteraction";
 import { getColorizedString } from "../../src/utils";
+import { expect } from "./utils";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -295,24 +290,5 @@ describe("User Interaction Tests", function () {
 
   it("Create Progress Bar", async () => {
     UI.createProgressBar("title", 3);
-  });
-
-  it("Run With Progress", async () => {
-    const task: RunnableTask<string> = {
-      name: "task",
-      message: "task started",
-      run: async (...args: any): Promise<Result<string, FxError>> => {
-        return ok("finished");
-      },
-    };
-    const group = new GroupOfTasks<string>([task], {
-      sequential: true,
-      fastFail: true,
-    });
-    const result = await UI.runWithProgress(group, {
-      showProgress: true,
-      cancellable: false,
-    });
-    expect(result.isOk()).equals(true);
   });
 });

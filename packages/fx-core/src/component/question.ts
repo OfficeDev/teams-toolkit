@@ -20,7 +20,6 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
-  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -75,6 +74,8 @@ import {
   GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
   SPFxQuestionNames,
+  validateSchemaOption,
+  validateAppPackageOption,
 } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
@@ -90,6 +91,7 @@ import {
   ProgrammingLanguageQuestion,
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
+  CoreQuestionNames,
 } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
@@ -99,11 +101,7 @@ import {
 } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
-import {
-  loadPackageVersions,
-  spfxPackageSelectQuestion,
-  webpartNameQuestion,
-} from "./resource/spfx/utils/questions";
+import { webpartNameQuestion } from "./resource/spfx/utils/questions";
 import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
@@ -846,18 +844,9 @@ export function spfxFolderQuestion(): FolderQuestion {
 
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
-  const loadPackage = new QTreeNode(loadPackageVersions);
-  const spfxPackage = new QTreeNode(spfxPackageSelectQuestion);
-
-  if (inputs.platform === Platform.CLI_HELP) {
-    addWebpart.addChild(spfxPackage);
-  } else {
-    addWebpart.addChild(loadPackage);
-    loadPackage.addChild(spfxPackage);
-  }
 
   const spfxFolder = new QTreeNode(spfxFolderQuestion());
-  spfxPackage.addChild(spfxFolder);
+  addWebpart.addChild(spfxFolder);
 
   const webpartName = new QTreeNode(webpartNameQuestion);
   spfxFolder.addChild(webpartName);
@@ -869,6 +858,21 @@ export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | un
   manifestFile.addChild(localManifestFile);
 
   return ok(addWebpart);
+}
+
+export async function getQuestionsForValidateMethod(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  const question: SingleSelectQuestion = {
+    name: CoreQuestionNames.ValidateMethod,
+    title: getLocalizedString("core.selectValidateMethodQuestion.validate.selectTitle"),
+    staticOptions: [validateSchemaOption, validateAppPackageOption],
+    type: "singleSelect",
+  };
+  const node = new QTreeNode(question);
+  group.addChild(node);
+  return ok(group);
 }
 
 export async function getQuestionsForValidateManifest(

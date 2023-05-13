@@ -60,6 +60,17 @@ export enum TelemetryProperties {
   NgrokNpmInstallNpmVersion = "ngrok-npm-install-npm-version",
   NgrokNpmInstallExitCode = "ngrok-npm-install-exit-code",
   NgrokNpmInstallLog = "ngrok-npm-install-log",
+  SymlinkFuncVersion = "symlink-func-version",
+  SelectedPortableFuncVersion = "selected-portable-func-version",
+  HistoryFuncVersion = "history-func-version",
+  VersioningFuncVersions = "versioning-func-versions",
+  GlobalFuncVersion = "global-func-version",
+  InstalledFuncVersion = "installed-func-version",
+  SymlinkFuncVersionError = "symlink-func-version-error",
+  HistoryFuncVersionError = "history-func-version-error",
+  VersioningFuncVersionError = "versioning-func-version-error",
+  GlobalFuncVersionError = "global-func-version-error",
+  InstallFuncError = "install-func-error",
 }
 
 export enum TelemetryMessurement {

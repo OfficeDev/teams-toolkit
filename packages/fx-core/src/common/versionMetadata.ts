@@ -20,6 +20,7 @@ export const MetadataV3 = {
   envFilePrefix: ".env",
   secretFileSuffix: "user",
   projectId: "projectId",
+  teamsManifestFolder: "appPackage",
   teamsManifestFileName: "manifest.json",
   aadManifestFileName: "aad.manifest.json",
   v3UpgradeWikiLink: "https://aka.ms/teams-toolkit-5.0-upgrade",

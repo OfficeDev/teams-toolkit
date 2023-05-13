@@ -50,7 +50,7 @@ import * as armFunctions from "../../src/component/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/component/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-auth";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/question";
 import { provisionUtils } from "../../src/component/provisionUtils";
@@ -65,6 +65,7 @@ import { BuiltInFeaturePluginNames } from "../../src/component/constants";
 import { Constants } from "../../src/component/resource/aadApp/constants";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage/azureStorage";
 import { FrontendDeployment } from "../../src/component/code/tab/deploy";
+import { settingsUtil } from "../../src/component/utils/settingsUtil";
 
 class MyTokenCredential implements TokenCredential {
   async getToken(
@@ -88,6 +89,9 @@ describe("Core component test for v3", () => {
   const fx = Container.get<TeamsfxCore>("fx");
   afterEach(() => {
     sandbox.restore();
+  });
+  beforeEach(() => {
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
   });
   after(async () => {
     deleteFolder(projectPath);

@@ -692,7 +692,7 @@ export async function updateManifestV3(
 
   // render manifest
   let manifest: any;
-  const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath, state, false);
+  const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath);
   if (manifestResult.isErr()) {
     return err(manifestResult.error);
   } else {

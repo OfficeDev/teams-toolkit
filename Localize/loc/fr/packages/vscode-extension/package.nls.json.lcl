@@ -1212,10 +1212,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.deployDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Deploy your Teams app to the provisioned resources in Azure]]></Val>
+          <Val><![CDATA[Execute the 'deploy' lifecycle stage in teamsapp.yml]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Déployer votre application Teams sur les ressources provisionnées dans Azure]]></Val>
+            <Val><![CDATA[Exécuter l’étape de cycle de vie « déployer » dans teamsapp.yml]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Deploy your Teams app to the provisioned resources in Azure]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1509,10 +1512,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.provisionDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Provision the Teams app resources in Azure]]></Val>
+          <Val><![CDATA[Execute the 'provision' lifecycle stage in teamsapp.yml]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Provisionner les ressources de l’application Teams dans Azure]]></Val>
+            <Val><![CDATA[Exécuter l’étape de cycle de vie « provisionner » dans teamsapp.yml]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Provision the Teams app resources in Azure]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1548,10 +1554,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Publish to Teams]]></Val>
+          <Val><![CDATA[Execute the 'publish' lifecycle stage in teamsapp.yml]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Publier dans Teams]]></Val>
+            <Val><![CDATA[Exécuter l’étape de cycle de vie « publier » dans teamsapp.yml]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Publish to Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2242,6 +2251,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.guides.mobilePreview.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Run and debug your Teams application on iOS or Android client.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Exécutez et déboguez votre application Teams sur le client iOS ou Android.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.guides.mobilePreview.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Run and Debug on Mobile Client]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Exécuter et déboguer sur le client mobile]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.guides.sendNotification.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Send notifications to Teams from your web services with Bot or incoming webhook.]]></Val>
@@ -2320,15 +2347,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.decryptFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to decrypt secret.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de déchiffrer le secret.]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2982,10 +3000,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.ngrokInstallationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to install Ngrok. %s]]></Val>
+          <Val><![CDATA[Unable to install Ngrok.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’installation de Ngrok. %s]]></Val>
+            <Val><![CDATA[Impossible d’installer Ngrok.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to install Ngrok. %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3000,12 +3021,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.ngrokProcessError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to start ngrok. %s]]></Val>
+          <Val><![CDATA[Unable to start ngrok.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec du démarrage de ngrok. %s]]></Val>
+            <Val><![CDATA[Impossible de démarrer ngrok.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to start ngrok. %s Please check the [terminal]5D;(%s) for detailed error information.]]></Val>
+            <Val><![CDATA[Failed to start ngrok. %s]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3103,6 +3124,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.deleteDevTunnelMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deleted dev tunnel '%s'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Suppression du '%s' de tunnel de développement.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceeded.cancel" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Annuler]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceeded.deleteAllTunnels" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Delete All Tunnels]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Supprimer tous les tunnels]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceededMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Exceeded dev tunnel limit. Close other debugging sessions, clean up unused dev tunnels and retry. Check [output channel]5D;(%s) for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Limite de tunnel de développement dépassée. Fermez d’autres sessions de débogage, nettoyez les tunnels de développement inutilisés et réessayez. Pour plus d’informations, consultez [canal de sortie]5D;(%s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.output.tunnel.devTunnelListMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You have reached maximum number of tunnels created with your Microsoft 365 account. The dev tunnels in your account:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous avez atteint le nombre maximal de tunnels créés avec votre compte Microsoft 365. Tunnels de développement dans votre compte :]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.output.tunnel.duration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Started local tunneling service in %s seconds.]]></Val>
@@ -3186,10 +3252,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.outputPanel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[output panel]]></Val>
+          <Val><![CDATA[Output panel]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Panneau de sortie]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[output panel]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3306,10 +3375,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.startTunnelError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Task to start local tunneling service failed. %s]]></Val>
+          <Val><![CDATA[Unable to start local tunneling service task.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la tâche de démarrage du service de tunneling local. %s]]></Val>
+            <Val><![CDATA[Impossible de démarrer la tâche de service de tunneling local.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Task to start local tunneling service failed. %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3351,22 +3423,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.tunnelEndpointNotFoundError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit tried to get the first HTTPS URL from %s and failed.]]></Val>
+          <Val><![CDATA[Unable to find the tunnel endpoint. Teams toolkit tried to get the first HTTPS URL from %s and failed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Point de terminaison de tunnel introuvable. Le kit de ressources Teams a tenté d’obtenir la première URL HTTPS à partir de %s et a échoué.]]></Val>
+            <Val><![CDATA[Le point de terminaison de tunnel est introuvable. Le kit de ressources Teams a essayé d’obtenir la première URL HTTPS à partir de %s et a échoué.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.]]></Val>
+            <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit tried to get the first HTTPS URL from %s and failed.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.tunnelEnvError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to save environment variables. %s]]></Val>
+          <Val><![CDATA[Unable to save environment variables.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’enregistrement des variables d’environnement. %s]]></Val>
+            <Val><![CDATA[Impossible d’enregistrer les variables d’environnement.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to save environment variables. %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3561,12 +3636,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsTabApp.updateCodesErrorMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
+          <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [Output panel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la mise à jour de %d fichiers : %s, etc. Pour plus d’informations, consultez [canal de sortie]5D;(command:fx-extension.showOutputChannel).]]></Val>
+            <Val><![CDATA[Échec de la mise à jour de %d fichiers : %s, etc. Pour plus d’informations, consultez [Panneau de sortie]5D;(command:fx-extension.showOutputChannel).]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to output channel for more details.]]></Val>
+            <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3700,15 +3775,39 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.preview.progressTitle" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.preview.progressHandler.getM365Title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview Teams App]]></Val>
+          <Val><![CDATA[Getting Microsoft 365 Title by Teams app id...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aperçu de l’application Teams]]></Val>
+            <Val><![CDATA[Obtention du titre Microsoft 365 par ID d’application Teams...]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Preview Teams app]]></Val>
-          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.progressHandler.getTeamsAppId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Getting Teams app id from manifest...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Obtention de l’ID d’application Teams à partir du manifeste...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.progressHandler.openWebClient" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Opening %s web client...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouverture du client web %s...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.progressHandler.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview App]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Version d’évaluation de l’application]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3735,10 +3834,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.progressHandler.showOutputLink" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Check [output window]5D;(%s) for details.]]></Val>
+          <Val><![CDATA[Check [Output panel]5D;(%s) for details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pour plus d’informations, consultez [output window]5D;(%s).]]></Val>
+            <Val><![CDATA[Pour plus d’informations, consultez [Output panel]5D;(%s).]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Check [output window]5D;(%s) for details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3747,6 +3849,15 @@
           <Val><![CDATA[Check [terminal window]5D;(%s) for details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Pour plus d’informations, consultez [fenêtre de terminal]5D;(%s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.publishInDevPortal.confirmFile.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Confirm zip file is correctly selected]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Confirmer que le fichier zip est correctement sélectionné]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3762,12 +3873,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.publishInDevPortal.selectFile.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams App Package]]></Val>
+          <Val><![CDATA[Select Your Teams App Package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Package de l’application Teams]]></Val>
+            <Val><![CDATA[Sélectionner votre package d’application Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams app package]]></Val>
+            <Val><![CDATA[Teams App Package]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3904,15 +4015,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.access.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Access control for the tunnel.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Contrôle d’accès pour le tunnel.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.env.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The environment name.]]></Val>
@@ -3922,67 +4024,25 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.ngrokArgs.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.portOccupancy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The arguments passed to the ngrok install command.]]></Val>
+          <Val><![CDATA[The port numbers to validate]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Arguments passés à la commande d’installation ngrok.]]></Val>
+            <Val><![CDATA[Numéros de port à valider]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.ngrokPath.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.ports.access.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The ngrok path.]A;If undefined, use Teams Toolkit ngrok, otherwise use provided ngrok.]A;e.g."ngrokPath": "ngrok" | "C:/sample/path/ngrok" | "./bot/node_modules/ngrok/bin/ngrok"]]></Val>
+          <Val><![CDATA[Access control for the tunnel.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Chemin ngrok.]A;Si ce n’est pas défini, utilisez le kit de ressources Teams ngrok, sinon utilisez ngrok fourni.]A;par exemple "ngrokPath": "ngrok" | "C:/sample/path/ngrok" | "./bot/node_modules/ngrok/bin/ngrok"]]></Val>
+            <Val><![CDATA[Contrôle d’accès pour le tunnel.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.domain.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The key of the environment variable for tunnel domain.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Clé de la variable d’environnement du domaine de tunnel.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[The key of the environment variable of tunnel domain.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.endpoint.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The key of the environment variable for tunnel endpoint.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Clé de la variable d’environnement du point de terminaison de tunnel.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[The key of the environment variable of tunnel endpoint.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.id.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The key of the environment variable for dev tunnel id.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Clé de la variable d’environnement de l’ID du tunnel de développement.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.output.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The keys of the environment variables of tunnel domain and tunnel endpoint.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Clés des variables d’environnement du domaine de tunnel et du point de terminaison de tunnel.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.port.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.ports.portNumber.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Local server port number.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3991,11 +4051,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.portOccupancy.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.ports.protocol.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The port numbers to validate]]></Val>
+          <Val><![CDATA[Protocol for the port.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numéros de port à valider]]></Val>
+            <Val><![CDATA[Protocole du port.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.ports.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The port configurations of the tunnel.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurations de port du tunnel.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4045,38 +4114,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.protocol.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Protocol for the port.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Protocole du port.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.template.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The path to yml template.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Chemin du modèle yml.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.tunnelInspection.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Tunnel inspection.]A;If undefined, get endpoint from log first, then the first PublicURL from default inspection "http://127.0.0.1:4040/api/tunnels"]A;Otherwise, use provided inspection (the first PublicURL).]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inspection du tunnel.]A;Si ce n’est pas défini, récupérez d’abord le point de terminaison à partir du journal, puis le premier PublicURL de l’inspection par défaut « http://127.0.0.1:4040/api/tunnels »]A;Sinon, utilisez l’inspection fournie (la première url publique).]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.type.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The type of the local tunneling service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Type du service de tunneling local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.domain.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The key of the environment variable for tunnel domain.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clé de la variable d’environnement du domaine de tunnel.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.endpoint.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The key of the environment variable for tunnel endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clé de la variable d’environnement du point de terminaison de tunnel.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The keys of the environment variables of tunnel domain and tunnel endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clés des variables d’environnement du domaine de tunnel et du point de terminaison de tunnel.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

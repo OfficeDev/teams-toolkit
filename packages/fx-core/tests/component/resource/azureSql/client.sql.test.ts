@@ -12,7 +12,7 @@ import sinon from "sinon";
 import { ErrorMessage } from "../../../../src/component/resource/azureSql/errors";
 import { SqlConfig } from "../../../../src/component/resource/azureSql/types";
 import { getLocalizedString } from "../../../../src/common/localizeUtils";
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import faker from "faker";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
 import { reject } from "lodash";

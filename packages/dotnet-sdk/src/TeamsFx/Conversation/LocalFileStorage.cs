@@ -56,7 +56,7 @@ namespace Microsoft.TeamsFx.Conversation
             else
             {
                 var allData = await ReadFromFile(cancellationToken).ConfigureAwait(false);
-                allData.Add(key, reference);
+                allData[key] = reference;
                 await WriteToFile(allData, cancellationToken).ConfigureAwait(false);
             }
         }

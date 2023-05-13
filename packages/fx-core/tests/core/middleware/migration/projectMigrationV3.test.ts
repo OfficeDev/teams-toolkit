@@ -53,11 +53,12 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
+import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil, SettingsUtils } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -66,8 +67,12 @@ import {
   getTestAssetsPath,
   readEnvUserFile,
   Constants,
+  getManifestPathV2,
+  loadExpectedYmlFile,
+  getYmlTemplates,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -526,6 +531,135 @@ describe("manifestsMigration", () => {
   });
 });
 
+describe("manifestsMigration valid domain", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("manifest without validDomain", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    const oldManifestPath = getManifestPathV2(projectPath);
+    const readRes = await manifestUtils._readAppManifest(oldManifestPath);
+    assert.isTrue(readRes.isOk());
+    const teamsManifest = readRes._unsafeUnwrap();
+    teamsManifest.validDomains = [];
+    const WriteRes = await manifestUtils._writeAppManifest(teamsManifest, oldManifestPath);
+    assert.isTrue(WriteRes.isOk());
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(manifest, manifestExpeceted);
+  });
+
+  it("manifest without validDomain and bicep has output key validDomain", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    sandbox.stub(v3MigrationUtils, "isValidDomainForBotOutputKey").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    const oldManifestPath = getManifestPathV2(projectPath);
+    const readRes = await manifestUtils._readAppManifest(oldManifestPath);
+    assert.isTrue(readRes.isOk());
+    const teamsManifest = readRes._unsafeUnwrap();
+    teamsManifest.validDomains = [];
+    const WriteRes = await manifestUtils._writeAppManifest(teamsManifest, oldManifestPath);
+    assert.isTrue(WriteRes.isOk());
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "")
+      .replace(
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__VALIDDOMAIN"
+      );
+    assert.equal(manifest, manifestExpeceted);
+  });
+
+  it("manifest with bot validDomain", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    const oldManifestPath = getManifestPathV2(projectPath);
+    const readRes = await manifestUtils._readAppManifest(oldManifestPath);
+    assert.isTrue(readRes.isOk());
+    const teamsManifest = readRes._unsafeUnwrap();
+    teamsManifest.validDomains = [
+      "{{state.fx-resource-frontend-hosting.domain}}",
+      "{{state.fx-resource-bot.validDomain}}",
+    ];
+    const WriteRes = await manifestUtils._writeAppManifest(teamsManifest, oldManifestPath);
+    assert.isTrue(WriteRes.isOk());
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    const manifestPath = path.join(appPackageFolderPath, "manifest.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "")
+      .replace(
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__VALIDDOMAIN"
+      );
+    assert.equal(manifest, manifestExpeceted);
+  });
+});
+
 describe("azureParameterMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
@@ -978,6 +1112,9 @@ describe("Migration utils", () => {
   it("checkVersionForMigration V3", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: "1.0.0" }));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
@@ -1199,6 +1336,7 @@ describe("debugMigration", () => {
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
     sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
+    await getYmlTemplates();
   });
 
   afterEach(async () => {
@@ -1225,6 +1363,7 @@ describe("debugMigration", () => {
     "V3.5.0-V4.0.6-tab-bot-func-node18",
     "beforeV3.4.0-tab-bot-func-node18",
     "transparent-notification-node18",
+    "V4.0.2-notification-trigger",
   ];
 
   const simpleAuthPath = path.join(os.homedir(), ".fx", "localauth").replace(/\\/g, "\\\\");
@@ -1246,13 +1385,16 @@ describe("debugMigration", () => {
       await copyTestProject(path.join("debug", testCase), projectPath);
 
       await debugMigration(migrationContext);
-
+      const expectedYmlContent = await loadExpectedYmlFile(
+        path.join(projectPath, "expected", "app.local.yml")
+      );
+      const actualYmlContent = await fs.readFile(
+        path.join(projectPath, "teamsapp.local.yml"),
+        "utf-8"
+      );
       assert.equal(
-        await fs.readFile(path.join(projectPath, "teamsapp.local.yml"), "utf-8"),
-        (await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")).replace(
-          "SIMPLE_AUTH_APPSETTINGS_PATH",
-          simpleAuthAppsettingsPath
-        )
+        actualYmlContent,
+        expectedYmlContent.replace("SIMPLE_AUTH_APPSETTINGS_PATH", simpleAuthAppsettingsPath)
       );
       assert.equal(
         await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),

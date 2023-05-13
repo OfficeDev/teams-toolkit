@@ -36,10 +36,9 @@ You can [view these changes on GitHub](https://aka.ms/teams-toolkit-5.0-upgrade#
 ## Known issues
 
 1. If your project only contains a bot, you might get an error about `STATE__FX_RESOURCE_FRONTEND_HOSTING__ENDPOINT` missing when running Provision or using Start Debugging. Find this placeholder variable in `appPackage/manifest.json` and replace it with a valid URL to resolve this issue. [More Info](https://aka.ms/teams-toolkit-5.0-upgrade#state__fx_resource_frontend_hosting__endpoint-missing-error-in-some-projects)
-
 2. If your project is created with Visual Studio version < 17.4, you might get an error like `InvalidParameter: Following parameter is missing or invalid for aadApp/create action: name` when running commands. [Try these steps](#how-to-roll-back-after-the-upgrade) to roll back the changes, install VS 17.4, and run the upgrade again.
-
 3. If your tab app is created with Teams Toolkit 3.2.0 or an earlier version, you may get an error like `simpleAuthEndpoint in configuration is invalid` when remote debugging your app. [Try these steps](https://aka.ms/teams-toolkit-5.0-upgrade#simpleauthendpoint-in-configuration-is-invalid) to learn how to mitigate this error.
+4. If your project was successfully provisioned before, but after upgrading it cannot be provisioned or published using the `teamsApp/validateAppPackage` action, try using the [validation report in Teams Developer Portal](https://dev.teams.microsoft.com/validation) to check the manifest for errors. [More Info](https://aka.ms/teams-toolkit-5.0-upgrade#teamsappvalidateapppackage-failed-error)
 
 ## How to roll back after the upgrade
 

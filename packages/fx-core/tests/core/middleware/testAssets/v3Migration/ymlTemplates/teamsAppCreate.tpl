@@ -1,6 +1,9 @@
-  - uses: teamsApp/create # Creates a Teams app
+  # Creates a Teams app
+  - uses: teamsApp/create
     with:
-      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}} # Teams app name
+      # Teams app name
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
     writeToEnvironmentFile:
-      # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID

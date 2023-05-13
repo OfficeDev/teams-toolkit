@@ -9,7 +9,7 @@ import fs from "fs-extra";
 import "mocha";
 
 const ymlHeader =
-  "# yaml-language-server: $schema=https://developer.microsoft.com/json-schemas/teams-toolkit/teamsapp-yaml/1.0.0/yaml.schema.json";
+  "# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json";
 
 export async function checkYmlHeader(ymlPath: string) {
   assert.isTrue(await fs.pathExists(ymlPath));

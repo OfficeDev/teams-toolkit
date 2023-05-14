@@ -1,20 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  FxError,
-  Inputs,
-  ProjectSettings,
-  QTreeNode,
-  Result,
-  err,
-  ok,
-  traverse,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
-import { LocalCrypto } from "../crypto";
-import { environmentManager, newEnvInfoV3 } from "../environment";
+import { FxError, Inputs, QTreeNode, Result, err, ok, traverse } from "@microsoft/teamsfx-api";
+import { environmentManager } from "../environment";
 import { NoProjectOpenedError } from "../error";
 import { TOOLS } from "../globalVars";
 import { QuestionSelectSourceEnvironment, getQuestionNewTargetEnvironmentName } from "../question";
@@ -27,38 +15,6 @@ export type CreateEnvCopyInput = {
   targetEnvName: string;
   sourceEnvName: string;
 };
-
-export async function loadEnvInfoV3(
-  inputs: v2.InputsWithProjectPath,
-  projectSettings: ProjectSettings,
-  targetEnvName?: string,
-  ignoreEnvInfo = false
-): Promise<Result<v3.EnvInfoV3, FxError>> {
-  const cryptoProvider = new LocalCrypto(projectSettings.projectId);
-
-  let envInfo: v3.EnvInfoV3;
-  // in pre-multi-env case, envInfo is always loaded.
-  if (ignoreEnvInfo) {
-    envInfo = newEnvInfoV3();
-    envInfo.envName = "";
-  } else {
-    // ensure backwards compatibility:
-    // project id will be generated for previous TeamsFx project.
-    // Decrypting the secrets in *.userdata with generated project id works because secrets doesn't have prefix.
-    const envDataResult = await environmentManager.loadEnvInfo(
-      inputs.projectPath,
-      cryptoProvider,
-      targetEnvName,
-      true
-    );
-
-    if (envDataResult.isErr()) {
-      return err(envDataResult.error);
-    }
-    envInfo = envDataResult.value as v3.EnvInfoV3;
-  }
-  return ok(envInfo);
-}
 
 export async function askNewEnvironment(
   ctx: CoreHookContext,

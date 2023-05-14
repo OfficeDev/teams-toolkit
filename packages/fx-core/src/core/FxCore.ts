@@ -354,46 +354,11 @@ export class FxCore implements v3.ICore {
   /**
    * @deprecated in V3
    */
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    ContextInjectorMW,
-  ])
   async getProjectConfigV3(
     inputs: Inputs,
     ctx?: CoreHookContext
-  ): Promise<Result<ProjectConfigV3 | undefined, FxError>> {
-    if (!ctx || !ctx.projectSettings)
-      return err(new ObjectIsUndefinedError("getProjectConfigV3 input stuff"));
-    if (!inputs.projectPath) return ok(undefined);
-    inputs.stage = Stage.getProjectConfig;
-    setCurrentStage(Stage.getProjectConfig);
-    const config: ProjectConfigV3 = {
-      projectSettings: ctx.projectSettings,
-      envInfos: {},
-    };
-    const envNamesRes = await environmentManager.listAllEnvConfigs(inputs.projectPath);
-    if (envNamesRes.isErr()) {
-      return err(envNamesRes.error);
-    }
-    for (const env of envNamesRes.value) {
-      const result = await loadEnvInfoV3(
-        inputs as v2.InputsWithProjectPath,
-        ctx.projectSettings,
-        env,
-        false
-      );
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      config.envInfos[env] = result.value;
-    }
-    return ok(config);
+  ): Promise<Result<any | undefined, FxError>> {
+    return ok({});
   }
 
   async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {

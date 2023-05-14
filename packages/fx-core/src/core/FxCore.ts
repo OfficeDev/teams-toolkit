@@ -17,7 +17,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectConfig,
   ProjectConfigV3,
   ProjectSettings,
   ProjectSettingsV3,
@@ -47,6 +46,7 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
+import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
   FeatureId,
@@ -61,6 +61,7 @@ import {
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
+import { settingsUtil } from "../component/utils/settingsUtil";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -72,17 +73,14 @@ import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
-import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
+import { loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { settingsUtil } from "../component/utils/settingsUtil";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -343,27 +341,13 @@ export class FxCore implements v3.ICore {
   /**
    * @deprecated in V3
    */
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-  ])
   async getProjectConfig(
     inputs: Inputs,
     ctx?: CoreHookContext
-  ): Promise<Result<ProjectConfig | undefined, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
-    inputs.stage = Stage.getProjectConfig;
-    setCurrentStage(Stage.getProjectConfig);
+  ): Promise<Result<any | undefined, FxError>> {
     return ok({
-      settings: ctx.projectSettings,
-      config: ctx.envInfoV3?.state,
+      settings: {},
+      config: {},
     });
   }
 
@@ -434,7 +418,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvLoaderMW(false),
     ContextInjectorMW,
   ])
   async getSelectedEnv(

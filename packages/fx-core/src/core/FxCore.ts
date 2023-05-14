@@ -17,7 +17,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectConfigV3,
   ProjectSettings,
   ProjectSettingsV3,
   QTreeNode,
@@ -69,15 +68,10 @@ import { environmentManager, newEnvInfoV3 } from "./environment";
 import { CopyFileError, InvalidInputError, ObjectIsUndefinedError, WriteFileError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
-import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";

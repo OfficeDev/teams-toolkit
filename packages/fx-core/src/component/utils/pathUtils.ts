@@ -41,11 +41,11 @@ export class PathUtils {
     const parseRes = await yamlParser.parse(ymlFilePath);
     if (parseRes.isErr()) return err(parseRes.error);
     const projectModel = parseRes.value;
-    if (!projectModel.environmentFolderPath) return ok(undefined); //err(new InvalidEnvFolderPath("missing field: environmentFolderPath"));
+    if (!projectModel.environmentFolderPath) projectModel.environmentFolderPath = "./env";
     const envFolderPath = path.isAbsolute(projectModel.environmentFolderPath)
       ? projectModel.environmentFolderPath
       : path.join(projectPath, projectModel.environmentFolderPath);
-    if (!(await fs.pathExists(envFolderPath))) return ok(undefined); //err(new InvalidEnvFolderPath("environment folder not exist: " + envFolderPath));
+    if (!(await fs.pathExists(envFolderPath))) return ok(undefined);
     return ok(envFolderPath);
   }
   async getEnvFilePath(

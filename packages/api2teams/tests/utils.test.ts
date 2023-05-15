@@ -1,8 +1,9 @@
 import { expect } from "chai";
-import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard } from "../src/utils";
+import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, componentRefToName } from "../src/utils";
 import path from "path";
 import sinon from 'sinon';
 import fs from 'fs-extra';
+import { OpenAPIV3 } from "openapi-types";
 
 describe('utils tests', () => {
   describe('getVersion', () => {
@@ -103,6 +104,78 @@ describe('utils tests', () => {
       const body = [{ type: 'TextBlock', text: 'Hello World' }];
       const result = wrapperCard(body, 'test');
       expect(result.actions).to.be.undefined;
+    });
+  });
+  
+  describe('getCardTitle', () => {
+    it('should return a TextBlock object with the given operation, url, and summary', () => {
+      const result = getCardTitle('get', '/users', 'Get user list');
+      expect(result.type).to.equal('TextBlock');
+      expect(result.text).to.equal('GET /users: Get user list');
+      expect(result.wrap).to.be.true;
+    });
+  
+    it('should include an empty summary if none is provided', () => {
+      const result = getCardTitle('get', '/users');
+      expect(result.text).to.equal('GET /users: ');
+    });
+  });
+
+  describe('getResponseJsonResult', () => {
+    it('should return the JSON result for a 200 response', () => {
+      const operationObject = {
+        responses: {
+          '200': {
+            content: {
+              'application/json': { schema: { type: 'string' } },
+            },
+          },
+        },
+      };
+      const result = getResponseJsonResult(operationObject as any);
+      expect(result).to.deep.equal({ schema: { type: 'string' } });
+    });
+  
+    it('should return the JSON result for a 201 response', () => {
+      const operationObject = {
+        responses: {
+          '201': {
+            content: {
+              'application/json': { schema: { type: 'number' } },
+            },
+          },
+        },
+      };
+      const result = getResponseJsonResult(operationObject as any);
+      expect(result).to.deep.equal({ schema: { type: 'number' } });
+    });
+  
+    it('should return the JSON result for a default response', () => {
+      const operationObject = {
+        responses: {
+          default: {
+            content: {
+              'application/json': { schema: { type: 'boolean' } },
+            },
+          },
+        },
+      };
+      const result = getResponseJsonResult(operationObject as any);
+      expect(result).to.deep.equal({ schema: { type: 'boolean' } });
+    });
+  
+    it('should return an empty object if no JSON result is found', () => {
+      const operationObject = {};
+      const result = getResponseJsonResult(operationObject);
+      expect(result).to.deep.equal({});
+    });
+  });
+  
+  describe('componentRefToName', () => {
+    it('should return the last part of the ref string', () => {
+      const ref = '#/components/schemas/Pet';
+      const result = componentRefToName(ref);
+      expect(result).to.equal('Pet');
     });
   });
 })

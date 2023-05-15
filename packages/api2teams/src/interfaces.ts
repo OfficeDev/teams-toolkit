@@ -5,5 +5,8 @@ export interface CliOptions {
 
 export interface AdaptiveCardResult {
   name: string;
+  url: string;
+  operation: string;
+  isArray: boolean;
   content: any;
 }

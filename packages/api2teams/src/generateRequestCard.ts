@@ -21,7 +21,7 @@ export async function generateRequestCard(
           console.log(`\tsuccessfully generated request card for this api\n`);
         } catch (error) {
           console.error(
-            `\tfailed to generate adaptive card for ${operation} ${url} due to error: ${(
+            `\tfailed to generate request card for ${operation} ${url} due to error: ${(
               error as Error
             ).toString()}\n`
           );
@@ -129,9 +129,9 @@ function generateCardFromParams(
     return result;
   }
 
-  if (schema.oneOf || schema.anyOf) {
+  if (schema.oneOf || schema.anyOf || schema.not) {
     throw new Error(
-      `oneOf or anyOf schema is not supported: ${JSON.stringify(schema)}`
+      `oneOf, anyOf, and not schema is not supported: ${JSON.stringify(schema)}`
     );
   }
 
@@ -164,6 +164,9 @@ function parseGetRequest(
 
   return {
     name: adaptiveCardName,
-    content: fullCard
+    content: fullCard,
+    url,
+    operation,
+    isArray: false
   };
 }

@@ -1,0 +1,21 @@
+[
+  {
+    "type": "Table",
+    "columns": [
+      {
+        "width": 1
+      }
+    ],
+    "rows": [
+      {
+        "type": "TableRow",
+        "cells": [
+          {
+            "type": "TableCell",
+            "items": []
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -4,7 +4,8 @@ import * as utils from '../src/utils'
 import { parseApi } from '../src/parser';
 import chai from 'chai';
 import sinonChai from 'sinon-chai';
-import * as generator from "../src/generateRequestCard";
+import * as requestCardGenerator from "../src/generateRequestCard";
+import * as responseCardGenerator from "../src/generateResponseCard";
 import SwaggerParser from '@apidevtools/swagger-parser';
 
 chai.use(sinonChai);
@@ -17,17 +18,23 @@ describe('parseApi tests', () => {
     let existsSyncStub: sinon.SinonStub;
     let mkdirSyncStub: sinon.SinonStub;
     let validateStub: sinon.SinonStub;
+    let parseStub: sinon.SinonStub;
     let generateRequestCardStub: sinon.SinonStub;
-
+    let generateResponseCardStub: sinon.SinonStub;
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       isFolderEmptyStub = sandbox.stub(utils, 'isFolderEmpty');
       existsSyncStub = sandbox.stub(fs, 'existsSync');
       mkdirSyncStub = sandbox.stub(fs, 'mkdirSync');
       validateStub = sandbox.stub(SwaggerParser, 'validate');
+      parseStub = sandbox.stub(SwaggerParser, "parse");
       generateRequestCardStub = sandbox.stub(
-        generator,
+        requestCardGenerator,
         'generateRequestCard'
+      ).resolves([]);
+      generateResponseCardStub = sandbox.stub(
+        responseCardGenerator,
+        'generateResponseCard'
       ).resolves([]);
     });
 

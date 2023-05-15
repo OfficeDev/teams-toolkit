@@ -68,3 +68,26 @@ export function getCardTitle(
     wrap: true
   };
 }
+
+export function getResponseJsonResult(
+  operationObject: OpenAPIV3.OperationObject
+): OpenAPIV3.MediaTypeObject {
+  let jsonResult =
+    (operationObject?.responses?.['200'] as OpenAPIV3.ResponseObject)
+      ?.content?.['application/json'] ??
+    (operationObject?.responses?.['201'] as OpenAPIV3.ResponseObject)
+      ?.content?.['application/json'] ??
+    (operationObject?.responses?.default as OpenAPIV3.ResponseObject)
+      ?.content?.['application/json'];
+
+  if (!jsonResult) {
+    jsonResult = {};
+  }
+
+  return jsonResult;
+}
+
+export function componentRefToName(ref: string): string {
+  const refArr = ref.split('/');
+  return refArr[refArr.length - 1];
+}

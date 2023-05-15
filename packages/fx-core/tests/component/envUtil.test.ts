@@ -85,6 +85,17 @@ describe("env utils", () => {
       assert.equal(res.value, path.join("", "./env"));
     }
   });
+  it("pathUtils.getEnvFolderPath returns undefined value", async () => {
+    const mockProjectModel: ProjectModel = {};
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
+    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const res = await pathUtils.getEnvFolderPath("");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isUndefined(res.value);
+    }
+  });
   it("pathUtils.getEnvFilePath", async () => {
     const mockProjectModel: ProjectModel = {
       environmentFolderPath: "/home/envs",

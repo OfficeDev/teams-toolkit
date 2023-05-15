@@ -36,7 +36,7 @@ import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";

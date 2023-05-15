@@ -411,12 +411,9 @@ export class FuncToolChecker implements DepsChecker {
     } catch (error: any) {
       await this.cleanup(tmpVersion);
       // ${funcPackageName}@${expectedFuncVersion} is incorrectly identified as an email format.
-      this.telemetryProperties[TelemetryProperties.InstallFuncError] = (
-        error.message as string
-      )?.replace(
-        `${funcPackageName}@${expectedFuncVersion}`,
-        `${funcPackageName}{at}${expectedFuncVersion}`
-      );
+      this.telemetryProperties[TelemetryProperties.InstallFuncError] = (error.message as string)
+        ?.split(`${funcPackageName}@${expectedFuncVersion}`)
+        ?.join(`${funcPackageName}{at}${expectedFuncVersion}`);
       throw new DepsCheckerError(
         getLocalizedString("error.common.InstallSoftwareError", funcToolName),
         v3DefaultHelpLink

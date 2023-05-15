@@ -69,20 +69,24 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: Setup git
+        run: |
+          git config --global user.name 'MSFT-yiz'
+          git config --global user.email 'yiz@microsoft.com'
+
       - name: manage pkgs to release
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pkgs }}
         run: bash .github/scripts/lerna.sh ${{github.event.inputs.pkgs}}
+
+      - name: update vsc version to meet release policy
+        run: |
+          bash .github/scripts/vsc-ver.sh
 
       - name: Setup project
         run: |
           npm run setup
         env:
           REQUEST_TOKEN: ${{ secrets.CD_PAT }}
-
-      - name: Setup git
-        run: |
-          git config --global user.name 'MSFT-yiz'
-          git config --global user.email 'yiz@microsoft.com'
 
       - name: release alpha npm packages to npmjs.org
         if: ${{ github.ref == 'refs/heads/dev' }}

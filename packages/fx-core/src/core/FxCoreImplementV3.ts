@@ -30,12 +30,13 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
   SPFxQuestionNames,
+  ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
@@ -55,7 +56,6 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { envUtil } from "../component/utils/envUtil";
-import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import {
@@ -88,7 +88,6 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
-import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
@@ -98,6 +97,7 @@ import { VSCodeExtensionCommand } from "../common/constants";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { NoNeedUpgradeError } from "../error/upgrade";
+import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -279,6 +279,20 @@ export class FxCoreV3Implement {
       }
       return err(res.error);
     }
+    if (contextV3.platform === Platform.CLI) {
+      const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
+      contextV3.ui!.showMessage("info", msg, false);
+    } else {
+      const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+      contextV3
+        .ui!.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+            contextV3.ui!.openUrl(ViewAadAppHelpLinkV5);
+          }
+        });
+    }
     return ok(Void);
   }
 
@@ -356,7 +370,7 @@ export class FxCoreV3Implement {
       localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
       spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
       webpartName: inputs[SPFxQuestionNames.WebPartName],
-      spfxPackage: inputs[SPFXQuestionNames.use_global_package_or_install_local],
+      spfxPackage: SPFxVersionOptionIds.installLocally,
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     return await driver.run(args, contextV3);
@@ -415,16 +429,37 @@ export class FxCoreV3Implement {
     return listCollaboratorFunc(inputs, ctx);
   }
 
-  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
-    return settingsUtil.readSettings(inputs.projectPath);
-  }
-
+  /**
+   * @deprecated
+   */
   @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
   async getDotEnv(
     inputs: InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
     return ok(ctx?.envVars);
+  }
+
+  /**
+   * get all dot envs
+   */
+  @hooks([ErrorHandlerMW])
+  async getDotEnvs(
+    inputs: InputsWithProjectPath
+  ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
+    const envListRes = await envUtil.listEnv(inputs.projectPath);
+    if (envListRes.isErr()) {
+      return err(envListRes.error);
+    }
+    const res: { [name: string]: DotenvParseOutput } = {};
+    for (const env of envListRes.value) {
+      const envRes = await envUtil.readEnv(inputs.projectPath, env, false, false);
+      if (envRes.isErr()) {
+        return err(envRes.error);
+      }
+      res[env] = envRes.value as DotenvParseOutput;
+    }
+    return ok(res);
   }
 
   async phantomMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -679,7 +714,7 @@ export class FxCoreV3Implement {
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const manifestFilePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, {}, false, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

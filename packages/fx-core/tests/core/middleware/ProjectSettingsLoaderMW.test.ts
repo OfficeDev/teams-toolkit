@@ -28,6 +28,7 @@ import { NoProjectOpenedError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FileNotFoundError } from "../../../src/error/common";
+import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -130,6 +131,10 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       return undefined;
     });
 
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "00000000-0000-0000-0000-000000000000", version: "1.0.0" }));
+
     try {
       const my = new MyClass();
       const res = await my.other(inputs);
@@ -151,6 +156,10 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     version: 1.0.0 # this is comment
     `;
     let resultFile = "";
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "00000000-0000-0000-0000-000000000000", version: "1.0.0" }));
+
     sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
       if (file.includes("teamsapp.yml")) return mockedYamlFile;
       return undefined;
@@ -166,8 +175,6 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       const projectSettings = res._unsafeUnwrap();
       assert.equal(projectSettings.version, "1.0.0");
       assert.exists(projectSettings.projectId);
-      assert.isTrue(resultFile.includes("projectId"));
-      assert.isTrue(resultFile.includes("# this is comment"));
     } finally {
       restore();
     }

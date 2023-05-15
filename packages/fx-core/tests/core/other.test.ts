@@ -35,10 +35,6 @@ import {
   ReadFileError,
   WriteFileError,
 } from "../../src/core/error";
-import {
-  upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
-} from "../../src/core/middleware/envInfoLoaderV3";
 import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
@@ -388,27 +384,5 @@ describe("Other test case", () => {
       mockRmClient
     );
     assert.isTrue(node !== undefined);
-  });
-  it("upgradeProgrammingLanguage", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state: Json = { solution: { programmingLanguage: "javascript" } };
-    upgradeProgrammingLanguage(state, projectSettings);
-    assert.equal(projectSettings.programmingLanguage, "javascript");
-    assert.isUndefined(state.solution.programmingLanguage);
-  });
-  it("upgradeDefaultFunctionName", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state = { solution: { defaultFunctionName: "getUserProfile" } };
-    upgradeDefaultFunctionName(state, projectSettings);
-    assert.equal(projectSettings.defaultFunctionName, "getUserProfile");
-    assert.isUndefined(state.solution.defaultFunctionName);
   });
 });

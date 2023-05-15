@@ -63,7 +63,7 @@ import {
   tryExtractEnvFromUserdata,
   buildEnvFileName,
   addMissingValidDomainForManifest,
-  validDomain,
+  isValidDomainForBotOutputKey,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -424,10 +424,12 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
         errorNames.manifestTemplateInvalid
       );
     }
-    const teamsAppManifest = res.value;
-    if (teamsAppManifest.validDomains?.includes(validDomain.botWithValid)) {
-      context.isBotValidDomain = true;
-    }
+  }
+
+  // Read Bicep
+  const bicepContent = await readBicepContent(context);
+  if (isValidDomainForBotOutputKey(bicepContent)) {
+    context.isBotValidDomain = true;
   }
 
   // Ensure appPackage
@@ -443,9 +445,6 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     await context.fsCopy(oldResourceFolderPath, resourceFolderPath);
   }
 
-  // Read Bicep
-  const bicepContent = await readBicepContent(context);
-
   // Read capability project settings
   const projectSettings = await loadProjectSettings(context.projectPath);
   const capabilities = getCapabilityStatus(projectSettings);
@@ -456,7 +455,8 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     await addMissingValidDomainForManifest(
       path.join(context.projectPath, oldManifestPath),
       capabilities.Tab,
-      capabilities.BotSso
+      capabilities.BotSso,
+      context.isBotValidDomain
     );
   }
   // Read Teams app manifest and save to templates/appPackage/manifest.json

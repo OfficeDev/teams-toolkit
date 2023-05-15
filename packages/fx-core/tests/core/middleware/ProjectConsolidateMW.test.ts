@@ -33,7 +33,7 @@ import * as projectMigrator from "../../../src/core/middleware/projectMigrator";
 import { setTools } from "../../../src/core/globalVars";
 import { environmentManager } from "../../../src/core/environment";
 
-describe("Middleware - ProjectSettingsWriterMW", () => {
+describe("Middleware - ProjectConsolidateMW", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {

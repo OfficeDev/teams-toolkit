@@ -2,7 +2,6 @@ import {
   ContextV3,
   FxError,
   ok,
-  Plugin,
   PluginContext,
   Result,
   SubscriptionInfo,
@@ -93,7 +92,7 @@ export class TestHelper {
     );
   }
 
-  static mockScaffoldThatAlwaysSucceed(plugin: Plugin) {
+  static mockScaffoldThatAlwaysSucceed(plugin: any) {
     plugin.preScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
       return ok(Void);
     };

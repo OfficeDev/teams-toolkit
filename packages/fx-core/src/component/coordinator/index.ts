@@ -1,3 +1,13 @@
+import { DotenvParseOutput } from "dotenv";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { camelCase, merge } from "lodash";
+import { EOL } from "os";
+import * as path from "path";
+import { Container } from "typedi";
+import * as uuid from "uuid";
+import * as xml2js from "xml2js";
+
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
@@ -13,20 +23,33 @@ import {
   ResourceContextV3,
   Result,
   UserCancelError,
-  UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import { camelCase, merge } from "lodash";
-import { Container } from "typedi";
+
+import { globalStateUpdate } from "../../common/globalState";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
+import { getResourceGroupInPortal } from "../../common/tools";
+import { MetadataV3 } from "../../common/versionMetadata";
+import { downloadSampleHook } from "../../core/downloadSample";
 import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
+import { globalVars } from "../../core/globalVars";
 import {
   CoreQuestionNames,
-  CreateNewOfficeAddinOption,
   ProjectNamePattern,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../../core/question";
+import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
+import {
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
+} from "../../error/common";
+import { LifeCycleUndefinedError } from "../../error/yml";
+import { convertToLangKey } from "../code/utils";
+import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
+import { Lifecycle } from "../configManager/lifecycle";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -35,37 +58,30 @@ import {
   AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
   BotFeatureIds,
+  BotOptionItem,
   CicdOptionItem,
+  CommandAndResponseOptionItem,
+  ComponentNames,
+  CoordinatorSource,
+  DashboardOptionItem,
+  DefaultBotAndMessageExtensionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
+  MessageExtensionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  NotificationOptionItem,
   SingleSignOnOptionItem,
   TabFeatureIds,
-  TabSPFxNewUIItem,
-  ComponentNames,
-  WorkflowOptionItem,
-  NotificationOptionItem,
-  CommandAndResponseOptionItem,
-  TabOptionItem,
-  TabNonSsoItem,
-  MessageExtensionItem,
-  CoordinatorSource,
-  BotOptionItem,
   TabNonSsoAndDefaultBotItem,
-  DefaultBotAndMessageExtensionItem,
-  DashboardOptionItem,
+  TabNonSsoItem,
+  TabOptionItem,
+  TabSPFxNewUIItem,
+  WorkflowOptionItem,
 } from "../constants";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import {
-  getQuestionsForAddFeatureV3,
-  InitOptionNo,
-  InitEditorVSCode,
-  InitEditorVS,
-} from "../question";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import { globalVars } from "../../core/globalVars";
-import fs from "fs-extra";
-import { globalStateUpdate } from "../../common/globalState";
+import { getBotTroubleShootMessage } from "../core";
+import { deployUtils } from "../deployUtils";
+import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
+import { DriverContext } from "../driver/interface/commonArgs";
 import { QuestionNames } from "../feature/bot/constants";
 import {
   AppServiceOptionItem,
@@ -75,35 +91,24 @@ import {
   FunctionsTimerTriggerOptionItem,
 } from "../feature/bot/question";
 import { Generator } from "../generator/generator";
-import { convertToLangKey } from "../code/utils";
-import { downloadSampleHook } from "../../core/downloadSample";
-import * as uuid from "uuid";
-import { settingsUtil } from "../utils/settingsUtil";
-import { DriverContext } from "../driver/interface/commonArgs";
-import { DotenvParseOutput } from "dotenv";
-import { provisionUtils } from "../provisionUtils";
-import { envUtil } from "../utils/envUtil";
+import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfxGenerator";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
-import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { getBotTroubleShootMessage } from "../core";
-import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { provisionUtils } from "../provisionUtils";
+import {
+  getQuestionsForAddFeatureV3,
+  InitEditorVS,
+  InitEditorVSCode,
+  InitOptionNo,
+} from "../question";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
-import * as xml2js from "xml2js";
-import { Lifecycle } from "../configManager/lifecycle";
-import { SummaryReporter } from "./summary";
-import { EOL } from "os";
-import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { deployUtils } from "../deployUtils";
-import { pathUtils } from "../utils/pathUtils";
-import { MetadataV3 } from "../../common/versionMetadata";
+import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
-import { LifeCycleUndefinedError } from "../../error/yml";
-import { UnresolvedPlaceholderError } from "../../error/common";
-import { SelectSubscriptionError } from "../../error/azure";
+import { pathUtils } from "../utils/pathUtils";
+import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
+import { settingsUtil } from "../utils/settingsUtil";
+import { SummaryReporter } from "./summary";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -125,14 +130,15 @@ export enum TemplateNames {
 }
 
 export const Feature2TemplateName: any = {
-  [`${NotificationOptionItem().id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
-  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS.id}`]:
+  [`${NotificationOptionItem().id}:${AppServiceOptionItem().id}`]:
+    TemplateNames.NotificationRestify,
+  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS().id}`]:
     TemplateNames.NotificationWebApi,
-  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem().id}`]:
     TemplateNames.NotificationHttpTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem().id}`]:
     TemplateNames.NotificationTimerTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem().id}`]:
     TemplateNames.NotificationHttpTimerTrigger,
   [`${CommandAndResponseOptionItem().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${WorkflowOptionItem().id}:undefined`]: TemplateNames.Workflow,
@@ -167,7 +173,7 @@ const M365Actions = [
   "aadApp/create",
   "aadApp/update",
   "botFramework/create",
-  "m365Title/acquire",
+  "teamsApp/extendToM365",
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [
@@ -193,7 +199,7 @@ export class Coordinator {
   ): Promise<Result<string, FxError>> {
     const folder = inputs["folder"] as string;
     if (!folder) {
-      return err(InvalidInputError("folder is undefined"));
+      return err(new MissingRequiredInputError("folder"));
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
@@ -202,7 +208,7 @@ export class Coordinator {
       // create from sample
       const sampleId = inputs[CoreQuestionNames.Samples] as string;
       if (!sampleId) {
-        throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
+        throw new MissingRequiredInputError(CoreQuestionNames.Samples);
       }
       projectPath = path.join(folder, sampleId);
       let suffix = 1;
@@ -220,12 +226,15 @@ export class Coordinator {
     } else if (!scratch || scratch === ScratchOptionYes().id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+      if (undefined === appName)
+        return err(new MissingRequiredInputError(CoreQuestionNames.AppName));
       const validateResult = jsonschema.validate(appName, {
         pattern: ProjectNamePattern,
       });
       if (validateResult.errors && validateResult.errors.length > 0) {
-        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+        return err(
+          new InputValidationError(CoreQuestionNames.AppName, validateResult.errors[0].message)
+        );
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
@@ -246,6 +255,13 @@ export class Coordinator {
       if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+      } else if (
+        inputs[CoreQuestionNames.ProjectType] === NewProjectTypeOutlookAddinOptionItem().id
+      ) {
+        const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        }
       } else {
         if (
           feature === M365SsoLaunchPageOptionItem().id ||
@@ -258,28 +274,12 @@ export class Coordinator {
         const templateName = Feature2TemplateName[`${feature}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
-          context.templateVariables = Generator.getDefaultVariables(appName);
+          const safeProjectNameFromVS =
+            language === "csharp" ? inputs[CoreQuestionNames.SafeProjectName] : undefined;
+          context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
         }
-      }
-    } else if (scratch === CreateNewOfficeAddinOption().id) {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
-      const validateResult = jsonschema.validate(appName, {
-        pattern: ProjectNamePattern,
-      });
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
-      }
-      projectPath = path.join(folder, appName);
-      inputs.projectPath = projectPath;
-
-      await fs.ensureDir(projectPath);
-
-      const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-      if (res.isErr()) {
-        return err(res.error);
       }
     }
 
@@ -695,12 +695,6 @@ export class Coordinator {
         }
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
-
-      // will not happen
-      // if (!resolvedSubscriptionId) {
-      //   return err(new UnresolvedPlaceholderError("coordinator", "AZURE_SUBSCRIPTION_ID"));
-      // }
-
       // ensure resource group
       if (resourceGroupUnresolved) {
         const inputRG = inputs["targetResourceGroupName"];
@@ -757,7 +751,7 @@ export class Coordinator {
         );
         if (createRgRes.isErr()) {
           const error = createRgRes.error;
-          if (error.name !== "ResourceGroupExists") {
+          if (!(error instanceof ResourceGroupConflictError)) {
             return err(error);
           }
         }
@@ -864,7 +858,7 @@ export class Coordinator {
           error = reason.error;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
-          error = new UnresolvedPlaceholderError(
+          error = new MissingEnvironmentVariablesError(
             camelCase(reason.failedDriver.uses),
             placeholders,
             templatePath

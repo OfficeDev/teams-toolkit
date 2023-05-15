@@ -37,6 +37,7 @@ describe("Config Command Tests", function () {
   };
 
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {
@@ -144,6 +145,7 @@ describe("Config Get Command Check", () => {
   let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
       telemetryEvents.push(eventName);
     });
@@ -413,6 +415,7 @@ describe("Config Set Command Check", () => {
   let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
       telemetryEvents.push(eventName);
     });

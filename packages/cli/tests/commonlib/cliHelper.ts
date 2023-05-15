@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
-
-import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
+import { execAsync, execAsyncWithRetry, editDotEnvFile } from "../e2e/commonUtils";
 import { TemplateProject, Resource, ResourceToDeploy, Capability } from "./constants";
 import path from "path";
+import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
+import fs from "fs-extra";
 
 export class CliHelper {
   static async setSubscription(
@@ -61,12 +62,20 @@ export class CliHelper {
     }
   }
 
-  static async provisionProject(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
-    const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-      timeout: 0,
-    });
+  static async provisionProject(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx provision --env ${env} --interactive false --verbose ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      }
+    );
 
     if (result.stderr) {
       console.error(`[Failed] provision ${projectPath}. Error message: ${result.stderr}`);
@@ -154,12 +163,13 @@ export class CliHelper {
   static async deployAll(
     projectPath: string,
     option = "",
+    env: "dev" | "local" = "dev",
     processEnv?: NodeJS.ProcessEnv,
     retries?: number,
     newCommand?: string
   ) {
     const result = await execAsyncWithRetry(
-      `teamsfx deploy ${option}`,
+      `teamsfx deploy --env ${env} --interactive false --verbose ${option}`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -265,12 +275,45 @@ export class CliHelper {
       }
     }
   }
+  static async openTemplateProject(
+    appName: string,
+    testFolder: string,
+    template: TemplateProject,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const timeout = 100000;
+    const oldPath = path.resolve("./resource", template);
+    const newPath = path.resolve(testFolder, appName);
+    try {
+      await execAsync(`mv ${oldPath} ${newPath}`, {
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Failed to open project: ${newPath}`);
+    }
+    if (isV3Enabled()) {
+      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    } else {
+      await execAsync(
+        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
+        {
+          cwd: testFolder,
+          env: processEnv ? processEnv : process.env,
+          timeout: timeout,
+        }
+      );
+    }
+  }
 
   static async createTemplateProject(
     appName: string,
     testFolder: string,
     template: TemplateProject,
-    templateFolderName: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const command = `teamsfx new template ${template} --interactive false `;
@@ -283,20 +326,26 @@ export class CliHelper {
       });
 
       //  change original template name to appName
-      await execAsync(`mv ./${templateFolderName} ./${appName}`, {
+      await execAsync(`mv ./${template} ./${appName}`, {
         cwd: testFolder,
         env: processEnv ? processEnv : process.env,
         timeout: timeout,
       });
-
-      await execAsync(
-        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
-        {
-          cwd: testFolder,
-          env: processEnv ? processEnv : process.env,
-          timeout: timeout,
-        }
-      );
+      if (isV3Enabled()) {
+        const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+        const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+        editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+        editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+      } else {
+        await execAsync(
+          `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
+          {
+            cwd: testFolder,
+            env: processEnv ? processEnv : process.env,
+            timeout: timeout,
+          }
+        );
+      }
 
       const message = `scaffold project to ${path.resolve(
         testFolder,

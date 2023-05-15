@@ -665,20 +665,15 @@ export async function updateManifestV3(
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
   const state = {
-    TAB_ENDPOINT: process.env.TAB_ENDPOINT,
-    TAB_DOMAIN: process.env.TAB_DOMAIN,
-    BOT_ID: process.env.BOT_ID,
-    BOT_DOMAIN: process.env.BOT_DOMAIN,
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
-  const teamsAppId = process.env.TEAMS_APP_ID;
   const manifestTemplatePath =
     inputs.manifestTemplatePath ??
     (await manifestUtils.getTeamsAppManifestPath(inputs.projectPath));
   const manifestFileName = path.join(
     inputs.projectPath,
-    BuildFolderName,
     AppPackageFolderName,
+    BuildFolderName,
     `manifest.${state.ENV_NAME}.json`
   );
 
@@ -697,7 +692,7 @@ export async function updateManifestV3(
 
   // render manifest
   let manifest: any;
-  const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath, state, false);
+  const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath);
   if (manifestResult.isErr()) {
     return err(manifestResult.error);
   } else {
@@ -705,13 +700,17 @@ export async function updateManifestV3(
   }
 
   // read built manifest file
-  if (!(await fs.pathExists(manifestFileName))) {
+  if (
+    !(await fs.pathExists(manifestFileName)) ||
+    !(await fs.pathExists(createAppPackageArgs.outputZipPath))
+  ) {
     const res = await buildDriver.run(createAppPackageArgs, driverContext);
     if (res.isErr()) {
       return err(res.error);
     }
   }
   const existingManifest = await fs.readJSON(manifestFileName);
+  const teamsAppId = manifest.id;
   delete manifest.id;
   delete existingManifest.id;
   if (!_.isEqual(manifest, existingManifest)) {
@@ -767,8 +766,6 @@ export async function updateManifestV3(
       return err(result.error);
     }
 
-    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
-
     let loginHint = "";
     const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
       scopes: AppStudioScopes,
@@ -777,11 +774,7 @@ export async function updateManifestV3(
       loginHint = accountRes.value.unique_name as string;
     }
 
-    const url = util.format(
-      Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL,
-      result.value.get("TEAMS_APP_ID"),
-      loginHint
-    );
+    const url = util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, teamsAppId, loginHint);
     if (inputs.platform === Platform.CLI) {
       const message = [
         {
@@ -974,8 +967,8 @@ function generateCreateAppPackageArgs(
 ): CreateAppPackageArgs {
   const manifestFileName = path.join(
     projectPath,
-    BuildFolderName,
     AppPackageFolderName,
+    BuildFolderName,
     `manifest.${envName}.json`
   );
 

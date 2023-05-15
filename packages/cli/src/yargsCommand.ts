@@ -1,26 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
-import { Argv, exit, Options } from "yargs";
-
-import { FxError, Result, SystemError, UserError, LogLevel, Colors } from "@microsoft/teamsfx-api";
-
+import { FxError, LogLevel, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { IncompatibleProjectError, isUserCancelError } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { readFileSync } from "fs";
+import path from "path";
+import { Argv, Options, exit } from "yargs";
+import activate from "./activate";
+import { TextType, colorize } from "./colorize";
 import CLILogProvider from "./commonlib/log";
+import { CliTelemetryReporter } from "./commonlib/telemetry";
+import Progress from "./console/progress";
 import * as constants from "./constants";
 import { UnknownError } from "./error";
 import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
-import { CliTelemetryReporter } from "./commonlib/telemetry";
-import { readFileSync } from "fs";
-import path from "path";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import Progress from "./console/progress";
-import { getColorizedString, getSystemInputs } from "./utils";
 import UI from "./userInteraction";
-import activate from "./activate";
-import { IncompatibleProjectError, isUserCancelError } from "@microsoft/teamsfx-core";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { getSystemInputs } from "./utils";
 
 export abstract class YargsCommand {
   /**
@@ -117,14 +114,8 @@ export abstract class YargsCommand {
         if (result.isOk()) {
           const inputs = getSystemInputs(args.folder as string);
           inputs.ignoreEnvInfo = true;
-          if (
-            this.commandHead !== "new" &&
-            this.commandHead !== "template" &&
-            this.commandHead !== "infra" &&
-            this.commandHead !== "debug" &&
-            args.folder &&
-            !args.global
-          ) {
+          const skipCommands = ["new", "template", "infra", "debug", "upgrade"];
+          if (!skipCommands.includes(this.commandHead) && args.folder && !args.global) {
             const res = await result.value.projectVersionCheck(inputs);
             if (res.isErr()) {
               throw res.error;
@@ -162,43 +153,31 @@ export abstract class YargsCommand {
         return;
       }
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
-      CLILogProvider.necessaryLog(
-        LogLevel.Error,
-        `[${FxError.source}.${FxError.name}]: ${FxError.message}`
-      );
+      CLILogProvider.outputError(`${FxError.source}.${FxError.name}: ${FxError.message}`);
       if ("helpLink" in FxError && FxError.helpLink) {
-        CLILogProvider.necessaryLog(
-          LogLevel.Error,
-          getColorizedString([
-            { content: "Get help from ", color: Colors.BRIGHT_RED },
-            {
-              content: `${FxError.helpLink}#${FxError.source}${FxError.name}`,
-              color: Colors.BRIGHT_CYAN,
-            },
-          ])
+        CLILogProvider.outputError(
+          `Get help from `,
+          colorize(`${FxError.helpLink}#${FxError.source}${FxError.name}`, TextType.Hyperlink)
         );
       }
       if ("issueLink" in FxError && FxError.issueLink) {
-        CLILogProvider.necessaryLog(
-          LogLevel.Error,
-          getColorizedString([
-            { content: "Report this issue at ", color: Colors.BRIGHT_RED },
-            {
-              content: `${FxError.issueLink}`,
-              color: Colors.BRIGHT_CYAN,
-            },
-          ])
+        CLILogProvider.outputError(
+          `Report this issue at `,
+          colorize(FxError.issueLink, TextType.Hyperlink)
         );
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        CLILogProvider.necessaryLog(LogLevel.Error, "Call stack:");
-        CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
+        CLILogProvider.outputError(`Call stack: ${FxError.stack || "undefined"}`);
       }
 
       exit(-1, FxError);
     } finally {
       await CliTelemetryInstance.flush();
       Progress.end(true);
+      if (this.commandHead !== "preview") {
+        /// TODO: consider to remove the hardcode
+        process.exit();
+      }
     }
   }
 }

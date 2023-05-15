@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ */
 import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
@@ -11,9 +14,6 @@ describe("Provision for Node", () => {
     "Provision Resource: func hosted notification",
     { testPlanCaseId: 15685881 },
     async function () {
-      if (isV3Enabled()) {
-        return this.skip();
-      }
       await happyPathTest(Runtime.Node, "notification", ["http-functions"]);
     }
   );

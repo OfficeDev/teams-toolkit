@@ -3,6 +3,7 @@
     using Microsoft.Bot.Schema;
     using Microsoft.TeamsFx.Conversation;
 
+    [Obsolete]
     public sealed class InMemoryStorage : INotificationTargetStorage
     {
         public InMemoryStorage()

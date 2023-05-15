@@ -104,6 +104,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<any, FxError>>;
+  getLaunchUrlRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<string, FxError>>;
 
   customizeLocalFuncRequest: (
     funcId: number,

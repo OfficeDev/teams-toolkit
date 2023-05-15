@@ -14,15 +14,15 @@ import {
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { getLocalizedMessage } from "../../../../messages";
+import { getLocalizedMessage, ProgressMessages } from "../../../../messages";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
-import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { HttpStatusCode } from "../../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
+import { DeployZipPackageError } from "../../../../../error/deploy";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -152,11 +152,11 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param logger log provider
    * @protected
    */
-  protected async zipDeployPackage(
+  async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
-    logger?: LogProvider
+    logger: LogProvider
   ): Promise<string> {
     let res: AxiosZipDeployResult;
     let retryCount = 0;
@@ -170,50 +170,62 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           if ((e.response?.status ?? HttpStatusCode.OK) >= HttpStatusCode.INTERNAL_SERVER_ERROR) {
             retryCount += 1;
             if (retryCount < DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
-              await logger?.warning(
+              await logger.warning(
                 `Upload zip file failed with response status code: ${
                   e.response?.status ?? "NA"
                 }. Retrying...`
               );
             } else {
               // if retry times exceed, throw error
-              await logger?.warning(
+              await logger.warning(
                 `Retry times exceeded. Upload zip file failed with remote server error. Message: ${JSON.stringify(
                   e.response?.data
                 )}`
               );
-              throw DeployExternalApiCallError.zipDeployWithRemoteError(
-                e,
-                undefined,
+              throw new DeployZipPackageError(
+                zipDeployEndpoint,
+                new Error(
+                  `remote server error with status code: ${
+                    e.response?.status ?? "NA"
+                  }, message: ${JSON.stringify(e.response?.data)}`
+                ),
                 this.helpLink
               );
             }
           } else {
             // None server error, throw
-            await logger?.error(
+            await logger.error(
               `Upload zip file failed with response status code: ${
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw DeployExternalApiCallError.zipDeployError(
-              e,
-              e.response?.status ?? -1,
+            throw new DeployZipPackageError(
+              zipDeployEndpoint,
+              new Error(
+                `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+                  e.response?.data
+                )}`
+              ),
               this.helpLink
             );
           }
         } else {
           // if the error is not axios error, throw
-          await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-          throw DeployExternalApiCallError.zipDeployError(e, -1, this.helpLink);
+          await logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
+          throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
     }
 
     if (res?.status !== HttpStatusCode.OK && res?.status !== HttpStatusCode.ACCEPTED) {
       if (res?.status) {
-        await logger?.error(`Deployment is failed with error code: ${res.status}.`);
+        await logger.error(`Deployment is failed with error code: ${res.status}.`);
       }
-      throw DeployExternalApiCallError.zipDeployError(res, res.status, this.helpLink);
+      throw new DeployZipPackageError(
+        zipDeployEndpoint,
+        new Error(`status code: ${res?.status ?? "NA"}`),
+        this.helpLink
+      );
     }
 
     return res.headers.location;
@@ -229,6 +241,6 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   }
 
   updateProgressbar() {
-    this.progressBar?.next(`Deploying ${this.workingDirectory ?? ""} to ${this.serviceName}`);
+    this.progressBar?.next(ProgressMessages.deployToAzure(this.workingDirectory, this.serviceName));
   }
 }

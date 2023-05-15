@@ -1,3 +1,5 @@
+import path from "path";
+
 import {
   FolderQuestion,
   Inputs,
@@ -6,7 +8,7 @@ import {
   SingleFileQuestion,
   SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
-import path from "path";
+
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { AzureSolutionQuestionNames } from "../../constants";
 import projectsJsonData from "./config/projectsJsonData";
@@ -18,7 +20,9 @@ export const OfficeAddinItems: () => OptionItem[] = () =>
     id: template,
     label: getLocalizedString(jsonData.getProjectDisplayName(template)),
     detail: getLocalizedString(jsonData.getProjectDetails(template)),
-    groupName: getLocalizedString("core.options.separator.addin"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.previewOnWindow"
+    ),
   }));
 
 // TODO: add localization strings
@@ -28,7 +32,9 @@ export function ImportAddinProjectItem(): OptionItem {
     label: getLocalizedString("core.importAddin.label"),
     cliName: "import",
     detail: getLocalizedString("core.importAddin.detail"),
-    groupName: getLocalizedString("core.options.separator.addin"),
+    description: getLocalizedString(
+      "core.createProjectQuestion.option.description.previewOnWindow"
+    ),
   };
 }
 

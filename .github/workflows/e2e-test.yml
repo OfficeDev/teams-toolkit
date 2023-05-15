@@ -6,72 +6,12 @@ on:
       cases:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
+
   schedule:
     - cron: "0 22 * * *"
-  pull_request:
-    branches:
-      - main
-      - dev
-      - prerelease
-      - hotfix/**/*
-    types:
-      - assigned
-      - opened
-      - synchronize
-      - reopened
-      - edited
 
 jobs:
-  check-pr:
-    if: ${{  github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Install parser cli
-        run: |
-          npm install --global conventional-commits-parser
-
-      - name: Check PR
-        id: check_title
-        run: |
-          declare -a types=("fix" "feat" "refactor")
-          type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
-          if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            if (cat <<- 'EOF_HEREDOC' |
-              ${{ github.event.pull_request.body }}
-          EOF_HEREDOC
-              grep -q 'E2E TEST:'
-            ); then
-              echo "passed=true" >> $GITHUB_OUTPUT
-            else
-              echo "passed=false" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "passed=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Search comment
-        if: ${{ steps.check_title.outputs.passed == 'false' }}
-        uses: peter-evans/find-comment@v1
-        id: comments
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-includes: "E2E TEST:"
-
-      - name: Check if test is included in comments
-        if: ${{ steps.check_title.outputs.passed == 'false' }}
-        run: |
-          if [ -z "${{ steps.comments.outputs.comment-id }}" ]; then
-            echo "E2E TEST not found."
-            exit 1
-          fi
-
   setup:
-    if: ${{  github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
@@ -164,6 +104,7 @@ jobs:
       TEAMSFX_V3: "true"
       TEAMSFX_DEBUG_TEMPLATE: "true"
       NODE_ENV: "development"
+      TEAMSFX_AAD_DEPLOY_ONLY: "true"
       SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
       SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
     needs: setup
@@ -185,7 +126,13 @@ jobs:
 
       - name: Setup Azure Functions Core Tools For Linux
         run: |
-          sudo npm install --unsafe-perm -g azure-functions-core-tools@4
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
+          sudo apt-get update
+          sudo apt-get install azure-functions-core-tools-4
+          which func
+          func --version
 
       - name: Setup legacy-peer-deps
         run: |
@@ -211,6 +158,22 @@ jobs:
       - name: print system info
         run: |
           lscpu
+
+      - name: Download samples(daily)
+        if: ${{ github.event_name == 'schedule' && startsWith(matrix.cases, './samples/') }}
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: dev
+          path: packages/cli/tests/e2e/resource
+
+      - name: Download samples(rc)
+        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') }}
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: v3
+          path: packages/cli/tests/e2e/resource
 
       - name: run test
         working-directory: packages/cli/tests/e2e
@@ -348,7 +311,7 @@ jobs:
           failed_lists=""
           skipped_lists=""
 
-          emails="vsciotadt@microsoft.com;teamsfxqa@microsoft.com;"
+          emails="teamsfxqa@microsoft.com;"
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then

@@ -62,7 +62,7 @@ describe("Debug V3 command-and-response template", () => {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await CliHelper.provisionProject(projectPath, "--env local", {
+    await CliHelper.provisionProject(projectPath, "", "local", {
       ...process.env,
       BOT_DOMAIN: "test.ngrok.io",
       BOT_ENDPOINT: "https://test.ngrok.io",
@@ -88,13 +88,13 @@ describe("Debug V3 command-and-response template", () => {
     chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--env local");
+    await CliHelper.deployAll(projectPath, "", "local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "local");
     chai.assert.isDefined(context);
 
-    // validate .localSettings
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));
+    // validate .localConfigs
+    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
   });
 });

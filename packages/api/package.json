@@ -60,7 +60,7 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@azure/core-http": "^1.2.2",
+    "@azure/core-auth": "^1.4.0",
     "@microsoft/teams-manifest": "^0.0.9",
     "axios": "^0.21.2",
     "chai": "^4.3.4",

@@ -49,6 +49,7 @@ describe("Update Aad Manifest Command Tests", function () {
       }
       return yargs;
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
@@ -175,6 +176,7 @@ describe("Update Teams app manifest Command Tests", function () {
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
+    sandbox.stub(process, "exit");
     sandbox
       .stub(CliTelemetry, "sendTelemetryEvent")
       .callsFake((eventName: string, options?: { [_: string]: string }) => {
@@ -245,6 +247,21 @@ describe("Update Teams app manifest Command Tests", function () {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("Fake_Err_name");
       expect(e.message).equals("Fake_Err_msg");
+    }
+  });
+
+  it("Update Teams app - Run command failed without env", async () => {
+    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(""));
+    const cmd = new Update();
+    const updateTeamsAppManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
+    const args = {
+      folder: "fake_test",
+      "manifest-file-path": "./appPackage/manifest.json",
+    };
+    const res = await updateTeamsAppManifest!.runCommand(args);
+    expect(res.isErr()).to.be.true;
+    if (res.isErr()) {
+      expect(res.error.message).equal("The --env argument is not specified");
     }
   });
 });

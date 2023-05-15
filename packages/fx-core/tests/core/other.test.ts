@@ -30,17 +30,11 @@ import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import {
-  ContextUpgradeError,
   FetchSampleError,
   ProjectFolderExistError,
   ReadFileError,
-  TaskNotSupportError,
   WriteFileError,
 } from "../../src/core/error";
-import {
-  upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
-} from "../../src/core/middleware/envInfoLoaderV3";
 import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
@@ -169,11 +163,6 @@ describe("Other test case", () => {
     assert.isTrue(error.message === msg);
   });
 
-  it("error: TaskNotSupportError", async () => {
-    const error = new TaskNotSupportError(Stage.createEnv);
-    assert.isTrue(error.name === "TaskNotSupportError");
-  });
-
   it("error: FetchSampleError", async () => {
     const error = new FetchSampleError("hello world app");
     assert.isTrue(error.name === "FetchSampleError");
@@ -230,13 +219,6 @@ describe("Other test case", () => {
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
     restore();
-  });
-
-  it("ContextUpgradeError", async () => {
-    const userError = ContextUpgradeError(new Error("11"), true);
-    assert.isTrue(userError instanceof UserError);
-    const sysError = ContextUpgradeError(new Error("11"), false);
-    assert.isTrue(sysError instanceof SystemError);
   });
 
   it("parseTeamsAppTenantId", async () => {
@@ -402,27 +384,5 @@ describe("Other test case", () => {
       mockRmClient
     );
     assert.isTrue(node !== undefined);
-  });
-  it("upgradeProgrammingLanguage", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state: Json = { solution: { programmingLanguage: "javascript" } };
-    upgradeProgrammingLanguage(state, projectSettings);
-    assert.equal(projectSettings.programmingLanguage, "javascript");
-    assert.isUndefined(state.solution.programmingLanguage);
-  });
-  it("upgradeDefaultFunctionName", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state = { solution: { defaultFunctionName: "getUserProfile" } };
-    upgradeDefaultFunctionName(state, projectSettings);
-    assert.equal(projectSettings.defaultFunctionName, "getUserProfile");
-    assert.isUndefined(state.solution.defaultFunctionName);
   });
 });

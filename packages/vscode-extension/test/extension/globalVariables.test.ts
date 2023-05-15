@@ -115,5 +115,19 @@ describe("Global Variables", () => {
       chai.expect(globalVariables.defaultExtensionLogPath).equals("fakePath");
       sinon.restore();
     });
+
+    it("set commandIsRunning", async () => {
+      globalVariables.setCommandIsRunning(true);
+
+      chai.expect(globalVariables.commandIsRunning).equals(true);
+      sinon.restore();
+    });
+
+    it("unsetIsTeamsFxProject()", async () => {
+      globalVariables.unsetIsTeamsFxProject();
+
+      chai.expect(globalVariables.isTeamsFxProject).equals(false);
+      sinon.restore();
+    });
   });
 });

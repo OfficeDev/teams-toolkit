@@ -30,12 +30,13 @@ import {
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
   SPFxQuestionNames,
+  ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
@@ -55,9 +56,8 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { envUtil } from "../component/utils/envUtil";
-import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
-import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
@@ -88,7 +88,6 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { isV3Enabled } from "../common/tools";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
-import { SPFXQuestionNames } from "../component/resource/spfx/utils/questions";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { YamlFieldMissingError } from "../error/yml";
@@ -97,6 +96,8 @@ import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
+import { NoNeedUpgradeError } from "../error/upgrade";
+import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -239,9 +240,9 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     QuestionModelMW,
     EnvLoaderMW(true, true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -256,7 +257,11 @@ export class FxCoreV3Implement {
     let manifestOutputPath: string = manifestTemplatePath;
     if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
       await fs.ensureDir(path.join(inputs.projectPath!, "build"));
-      manifestOutputPath = path.join(inputs.projectPath!, "build", `aad.${inputs.env}.json`);
+      manifestOutputPath = path.join(
+        inputs.projectPath!,
+        "build",
+        `aad.manifest.${inputs.env}.json`
+      );
     }
     const inputArgs: UpdateAadAppArgs = {
       manifestPath: manifestTemplatePath,
@@ -273,6 +278,20 @@ export class FxCoreV3Implement {
         }
       }
       return err(res.error);
+    }
+    if (contextV3.platform === Platform.CLI) {
+      const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
+      contextV3.ui!.showMessage("info", msg, false);
+    } else {
+      const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+      contextV3
+        .ui!.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+            contextV3.ui!.openUrl(ViewAadAppHelpLinkV5);
+          }
+        });
     }
     return ok(Void);
   }
@@ -304,8 +323,8 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW(getQuestionsForUpdateTeamsApp),
-    ConcurrentLockerMW,
     EnvLoaderMW(true),
+    ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
   ])
@@ -328,18 +347,12 @@ export class FxCoreV3Implement {
   ): Promise<Result<any, FxError>> {
     let res: Result<any, FxError> = ok(undefined);
     const context = createDriverContext(inputs);
-    if (func.method === "getManifestTemplatePath") {
-      const path = await manifestUtils.getTeamsAppManifestPath(
-        (inputs as InputsWithProjectPath).projectPath
-      );
-      res = ok(path);
-    } else if (func.method === "addSso") {
+    if (func.method === "addSso") {
+      // used in v3 only in VS
       inputs.stage = Stage.addFeature;
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "buildAadManifest") {
-      res = await this.previewAadManifest(inputs);
     }
     return res;
   }
@@ -357,7 +370,7 @@ export class FxCoreV3Implement {
       localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
       spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
       webpartName: inputs[SPFxQuestionNames.WebPartName],
-      spfxPackage: inputs[SPFXQuestionNames.use_global_package_or_install_local],
+      spfxPackage: SPFxVersionOptionIds.installLocally,
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     return await driver.run(args, contextV3);
@@ -416,10 +429,9 @@ export class FxCoreV3Implement {
     return listCollaboratorFunc(inputs, ctx);
   }
 
-  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
-    return settingsUtil.readSettings(inputs.projectPath);
-  }
-
+  /**
+   * @deprecated
+   */
   @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
   async getDotEnv(
     inputs: InputsWithProjectPath,
@@ -428,8 +440,47 @@ export class FxCoreV3Implement {
     return ok(ctx?.envVars);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
+  /**
+   * get all dot envs
+   */
+  @hooks([ErrorHandlerMW])
+  async getDotEnvs(
+    inputs: InputsWithProjectPath
+  ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
+    const envListRes = await envUtil.listEnv(inputs.projectPath);
+    if (envListRes.isErr()) {
+      return err(envListRes.error);
+    }
+    const res: { [name: string]: DotenvParseOutput } = {};
+    for (const env of envListRes.value) {
+      const envRes = await envUtil.readEnv(inputs.projectPath, env, false, false);
+      if (envRes.isErr()) {
+        return err(envRes.error);
+      }
+      res[env] = envRes.value as DotenvParseOutput;
+    }
+    return ok(res);
+  }
+
   async phantomMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
+    // If the project is invalid or upgraded, the ProjectMigratorMWV3 will not take action.
+    // Check invaliad/upgraded project here before call ProjectMigratorMWV3
+    const projectPath = (inputs.projectPath as string) || "";
+    const version = await getProjectVersionFromPath(projectPath);
+
+    if (version.source === VersionSource.teamsapp) {
+      return err(new NoNeedUpgradeError());
+    } else if (version.source === VersionSource.projectSettings) {
+      const isValid = await checkActiveResourcePlugins(projectPath);
+      if (!isValid) {
+        return err(new InvalidProjectError());
+      }
+    }
+    return await this.innerMigrationV3(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
+  async innerMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 
@@ -451,6 +502,12 @@ export class FxCoreV3Implement {
         }
       } else {
         isSupport = getVersionState(versionInfo);
+        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+        if (isSupport === VersionState.upgradeable) {
+          if (!(await checkActiveResourcePlugins(projectPath))) {
+            return err(new InvalidProjectError());
+          }
+        }
       }
       return ok({
         currentVersion: versionInfo.version,
@@ -466,8 +523,8 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    ConcurrentLockerMW,
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
     ContextInjectorMW,
   ])
   async preProvisionForVS(
@@ -538,12 +595,13 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
+  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
-      return err(new FileNotFoundError("previewAadManifest", manifestTemplatePath));
+      return err(new FileNotFoundError("buildAadManifest", manifestTemplatePath));
     }
     await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
@@ -558,8 +616,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForValidateManifest),
+    ConcurrentLockerMW,
     EnvLoaderMW(true),
   ])
   async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -571,17 +629,14 @@ export class FxCoreV3Implement {
     const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
+      showMessage: true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const result = await driver.run(args, context);
-    if (result.isOk() && context.platform !== Platform.VS) {
-      const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-      context.ui?.showMessage("info", validationSuccess, false);
-    }
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, QuestionMW(getQuestionsForValidateAppPackage)])
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForValidateAppPackage), ConcurrentLockerMW])
   async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.validateApplication);
     inputs.stage = Stage.validateApplication;
@@ -598,9 +653,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForCreateAppPackage),
     EnvLoaderMW(true),
+    ConcurrentLockerMW,
   ])
   async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.createAppPackage);
@@ -645,9 +700,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     QuestionMW(getQuestionsForPreviewWithManifest),
     EnvLoaderMW(false),
+    ConcurrentLockerMW,
   ])
   async previewWithManifest(
     inputs: Inputs,
@@ -659,7 +714,7 @@ export class FxCoreV3Implement {
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const manifestFilePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, {}, false, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

@@ -3,12 +3,12 @@
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample",
     "engines": {
-        "node": "14 || 16 || 18"
+        "node": "16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run dev",
+        "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
         "dev": "func start --javascript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
         "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
         "start": "npx func start",

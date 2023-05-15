@@ -3,13 +3,13 @@
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit message extension Bot sample",
     "engines": {
-        "node": "14 || 16 || 18"
+        "node": "16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .localSettings npm run dev",
+        "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
         "build": "tsc --build",
         "start": "node ./lib/index.js",

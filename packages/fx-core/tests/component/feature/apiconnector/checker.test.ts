@@ -7,6 +7,7 @@ import {
   checkHttp,
   checkIsGuid,
 } from "../../../../src/component/feature/apiconnector/checker";
+import { ErrorMessage } from "../../../../src/component/feature/apiconnector/errors";
 
 describe("Checker in Api Connector", () => {
   describe("checkEmptyValue", () => {
@@ -78,5 +79,22 @@ describe("Checker in Api Connector", () => {
       const res = await checkHttp("1234");
       expect(res).not.equal(undefined);
     });
+  });
+});
+
+describe("Errors", () => {
+  it("Errors", async () => {
+    ErrorMessage.ApiConnectorInputError.message("test");
+    ErrorMessage.ApiConnectorFileCreateFailError.message("test");
+    ErrorMessage.ApiConnectorPathError.message("test");
+    ErrorMessage.ApiConnectorRouteError.message("test");
+    ErrorMessage.NoActivePluginsExistError.message();
+    ErrorMessage.NoValidCompoentExistError.message();
+    ErrorMessage.SampleCodeCreateFailError.message("test", "test");
+    ErrorMessage.componentNotExistError.message("test");
+    ErrorMessage.generateApiConFilesError.message("test");
+    ErrorMessage.sdkVersionImcompatibleError.message("test", "test", "test");
+    ErrorMessage.localPkgFileNotExistError.message("test");
+    ErrorMessage.envVarExistError.message("test");
   });
 });

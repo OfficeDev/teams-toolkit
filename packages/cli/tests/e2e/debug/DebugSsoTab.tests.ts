@@ -56,7 +56,7 @@ describe("Debug V3 sso-tab template", () => {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await CliHelper.provisionProject(projectPath, "--env local");
+    await CliHelper.provisionProject(projectPath, "", "local");
     console.log(`[Successfully] provision for ${projectPath}`);
 
     let context = await readContextMultiEnvV3(projectPath, "local");
@@ -74,7 +74,7 @@ describe("Debug V3 sso-tab template", () => {
     chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--env local");
+    await CliHelper.deployAll(projectPath, "", "local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "local");
@@ -86,7 +86,7 @@ describe("Debug V3 sso-tab template", () => {
     chai.assert.isDefined(context.SSL_KEY_FILE);
     chai.assert.isNotEmpty(context.SSL_KEY_FILE);
 
-    // validate .localSettings
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localSettings")));
+    // validate .localConfigs
+    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
   });
 });

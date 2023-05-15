@@ -1,6 +1,7 @@
 version: 1.0.0
 provision:
-  - uses: cli/runNpmCommand # Run npm command
+  # Run npm command
+  - uses: cli/runNpmCommand
     with:
       args: install --production
     env: 

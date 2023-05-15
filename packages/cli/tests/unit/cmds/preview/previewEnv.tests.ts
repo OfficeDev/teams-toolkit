@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import fs from "fs-extra";
+import * as path from "path";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
@@ -41,6 +42,7 @@ describe("Preview --env", () => {
     defaultOptions = {};
     logs = [];
     telemetries = [];
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }, more?: any) => {
       if (typeof ops === "string") {
         options.push(ops);
@@ -55,6 +57,15 @@ describe("Preview --env", () => {
     });
     sandbox.stub(cliLogger, "necessaryLog").callsFake((lv, msg, white) => {
       logs.push(msg);
+    });
+    sandbox.stub(cliLogger, "outputInfo").callsFake((message: string) => {
+      logs.push(message);
+    });
+    sandbox.stub(cliLogger, "outputError").callsFake((message: string) => {
+      logs.push(message);
+    });
+    sandbox.stub(cliLogger, "outputSuccess").callsFake((message: string) => {
+      logs.push(message);
     });
     sandbox.stub(cliTelemetry, "sendTelemetryEvent").callsFake((eventName, properties) => {
       telemetries.push([eventName, properties]);
@@ -314,9 +325,10 @@ describe("PreviewEnv Steps", () => {
     public runCommandAsTask(
       projectPath: string,
       runCommand: string,
-      runningPatternRegex: RegExp
+      runningPatternRegex: RegExp,
+      execPath: string
     ): Promise<Result<null, FxError>> {
-      return super.runCommandAsTask(projectPath, runCommand, runningPatternRegex);
+      return super.runCommandAsTask(projectPath, runCommand, runningPatternRegex, execPath);
     }
 
     public launchBrowser(
@@ -546,12 +558,46 @@ describe("PreviewEnv Steps", () => {
     sandbox.stub(Task.prototype, "waitFor").resolves(ok({ foo: "bar" } as any));
 
     const previewEnv = new PreviewEnvTest();
-    const taskRes = await previewEnv.runCommandAsTask("./", "npm start", /done/i);
+    const taskRes = await previewEnv.runCommandAsTask(
+      "./",
+      "npm start",
+      /done/i,
+      "./devTools/func"
+    );
     expect(taskRes.isOk()).to.be.true;
     const tasks = previewEnv.getRunningTasks();
     expect(tasks.length).equals(1);
     expect((tasks[0] as any).taskTitle).equals("Run Command");
     expect((tasks[0] as any).command).equals("npm start");
+  });
+
+  it("runCommandAsTask - customize exec path", async () => {
+    sandbox
+      .stub(commonUtils, "createTaskStartCb")
+      .returns((a0: any, a1: any) => new Promise((res, rej) => res()));
+    sandbox
+      .stub(commonUtils, "createTaskStopCb")
+      .returns((a0: any, a1: any, a2: any, a3: any) => new Promise((res, rej) => res(null)));
+    sandbox.stub(ServiceLogWriter.prototype, "init").resolves();
+    sandbox.stub(Task.prototype, "waitFor").resolves(ok({ foo: "bar" } as any));
+
+    const previewEnv = new PreviewEnvTest();
+    const taskRes = await previewEnv.runCommandAsTask(
+      "./",
+      "npm start",
+      /done/i,
+      `./devTools/func${path.delimiter}${path.resolve(`./devTools/func1`)}`
+    );
+    expect(taskRes.isOk()).to.be.true;
+    const tasks = previewEnv.getRunningTasks();
+    expect(tasks.length).equals(1);
+    expect((tasks[0] as any).taskTitle).equals("Run Command");
+    expect((tasks[0] as any).command).equals("npm start");
+    expect((tasks[0] as any).options.env.PATH).include(
+      `${path.resolve("./devTools/func")}${path.delimiter}${path.resolve("./devTools/func1")}${
+        path.delimiter
+      }`
+    );
   });
 
   it("launchBrowser - teams", async () => {

@@ -3,6 +3,7 @@ env/.env.*.user
 env/.env.local
 .DS_Store
 build
+appPackage/build
 
 # dependencies
 node_modules/
@@ -16,5 +17,5 @@ node_modules/
 lib/
 
 # Local data
-.localSettings
+.localConfigs
 .notification.localstore.json

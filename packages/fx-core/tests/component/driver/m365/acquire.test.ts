@@ -12,8 +12,13 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
+import {
+  FileNotFoundError,
+  InvalidActionInputError,
+  UnhandledError,
+} from "../../../../src/error/common";
 
-describe("m365Title/acquire", async () => {
+describe("teamsApp/extendToM365", async () => {
   const acquireDriver = new M365TitleAcquireDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
@@ -34,7 +39,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.run(args, mockedDriverContext);
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(result.error.name, "InvalidActionInputError");
+      chai.assert.isTrue(result.error instanceof InvalidActionInputError);
       chai.assert.isTrue(result.error.message.includes("writeToEnvironmentFile"));
     }
   });
@@ -51,7 +56,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "InvalidActionInputError");
+      chai.assert.isTrue(result.result.error instanceof InvalidActionInputError);
       chai.assert.isTrue(result.result.error.message.includes("appPackagePath"));
     }
   });
@@ -64,7 +69,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, undefined);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "InvalidActionInputError");
+      chai.assert.isTrue(result.result.error instanceof InvalidActionInputError);
       chai.assert.isTrue(result.result.error.message.includes("writeToEnvironmentFile"));
     }
   });
@@ -78,7 +83,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "InvalidActionInputError");
+      chai.assert.isTrue(result.result.error instanceof InvalidActionInputError);
       chai.assert.isTrue(result.result.error.message.includes("writeToEnvironmentFile"));
     }
   });
@@ -92,7 +97,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "InvalidActionInputError");
+      chai.assert.isTrue(result.result.error instanceof InvalidActionInputError);
       chai.assert.isTrue(result.result.error.message.includes("writeToEnvironmentFile"));
     }
   });
@@ -109,7 +114,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "FileNotFound");
+      chai.assert.isTrue(result.result.error instanceof FileNotFoundError);
     }
   });
 
@@ -128,7 +133,7 @@ describe("m365Title/acquire", async () => {
     const result = await acquireDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     chai.assert(result.result.isErr());
     if (result.result.isErr()) {
-      chai.assert.equal(result.result.error.name, "UnhandledError");
+      chai.assert.isTrue(result.result.error instanceof UnhandledError);
     }
   });
 

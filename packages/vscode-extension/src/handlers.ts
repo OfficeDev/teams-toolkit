@@ -246,9 +246,11 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     if (isV3Enabled()) {
       core.on(CoreCallbackEvent.lock, async (command: string) => {
+        globalVariables.setCommandIsRunning(true);
         await commandController.lockedByOperation(command);
       });
       core.on(CoreCallbackEvent.unlock, async (command: string) => {
+        globalVariables.setCommandIsRunning(false);
         await commandController.unlockedByOperation(command);
       });
     }
@@ -532,15 +534,6 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
-export async function initProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.init);
-  if (result.isOk()) {
-    await openFolder(result.value, false, true, args);
-  }
-  return result;
-}
-
 export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
@@ -587,13 +580,6 @@ export async function createProjectFromWalkthroughHandler(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;
-}
-
-export async function debugHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug, getTriggerFromProperty(args));
-  await vscode.commands.executeCommand("workbench.action.debug.start");
-
-  return ok(null);
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -718,34 +704,8 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   );
 
   if (isV3Enabled()) {
-    const schemaOption: OptionItem = {
-      id: "validateAgainstSchema",
-      label: localize("teamstoolkit.handlers.validate.schemaOption"),
-      description: localize("teamstoolkit.handlers.validate.schemaOptionDescription"),
-    };
-    const appPackageOption: OptionItem = {
-      id: "validateAgainstPackage",
-      label: localize("teamstoolkit.handlers.validate.appPackageOption"),
-      description: localize("teamstoolkit.handlers.validate.appPackageOptionDescription"),
-    };
-    const config: SingleSelectConfig = {
-      name: "validateMethod",
-      title: localize("teamstoolkit.handlers.validate.selectTitle"),
-      options: [schemaOption, appPackageOption],
-    };
-    const result = await VS_CODE_UI.selectOption(config);
-    if (result.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error, {
-        ...getTriggerFromProperty(args),
-      });
-      return err(result.error);
-    } else {
-      const telemetryProperties: { [key: string]: string } = getTriggerFromProperty(args);
-      telemetryProperties[TelemetryProperty.ValidateMethod] = result.value.result as string;
-      const inputs = getSystemInputs();
-      inputs.validateMethod = result.value.result;
-      return await runCommand(Stage.validateApplication, inputs, telemetryProperties);
-    }
+    const inputs = getSystemInputs();
+    return await runCommand(Stage.validateApplication, inputs);
   } else {
     const func: Func = {
       namespace: "fx-solution-azure",
@@ -1036,16 +996,6 @@ export async function runCommand(
         }
         break;
       }
-      case Stage.init: {
-        const initResult = await core.init(inputs);
-        if (initResult.isErr()) {
-          result = err(initResult.error);
-        } else {
-          const uri = Uri.file(initResult.value);
-          result = ok(uri);
-        }
-        break;
-      }
       case Stage.provision: {
         result = await core.provisionResources(inputs);
         break;
@@ -1060,6 +1010,10 @@ export async function runCommand(
       }
       case Stage.deployTeams: {
         result = await core.deployTeamsManifest(inputs);
+        break;
+      }
+      case Stage.buildAad: {
+        result = await core.buildAadManifest(inputs);
         break;
       }
       case Stage.publish: {
@@ -1600,23 +1554,11 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 }
 
 /**
- * Get func binary path to be referenced by task definition.
- * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ * Get path delimiter
+ * Usage like ${workspaceFolder}/devTools/func${command:...}${env:PATH}
  */
-export async function getFuncPathHandler(): Promise<string> {
-  try {
-    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
-    if (funcStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
-        path.delimiter
-      }`;
-    }
-  } catch (error: any) {
-    showError(assembleError(error));
-  }
-
-  return `${path.delimiter}`;
+export async function getPathDelimiterHandler(): Promise<string> {
+  return path.delimiter;
 }
 
 /**
@@ -1803,7 +1745,7 @@ export async function checkUpgrade(args?: any[]) {
       });
       return;
     } else if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar) {
-      input["confirmOnly"] = true;
+      input["skipUserConfirm"] = true;
     }
     const result = await core.phantomMigrationV3(input);
     if (result.isErr()) {
@@ -2768,7 +2710,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     }
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    window.showErrorMessage(localize("teamstoolkit.handlers.decryptFailed"));
+    window.showErrorMessage(result.error.message);
   }
 }
 
@@ -2831,7 +2773,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.BuildAadManifestStart,
     getTriggerFromProperty(args)
   );
-  const res = await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
+  const inputs = getSystemInputs();
+  inputs.env = envName;
+  const res = isV3Enabled()
+    ? await runCommand(Stage.buildAad, inputs)
+    : await runUserTask(func, TelemetryEvent.BuildAadManifest, false, envName);
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);
@@ -3607,6 +3553,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                     detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
                     groupName: localize("teamstoolkit.guide.development"),
                     data: "https://aka.ms/teamsfx-add-cicd-new",
+                    buttons: [
+                      {
+                        iconPath: "file-symlink-file",
+                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                        command: "fx-extension.openTutorial",
+                      },
+                    ],
+                  },
+                  {
+                    id: "mobilePreview",
+                    label: `${localize("teamstoolkit.guides.mobilePreview.label")}`,
+                    detail: localize("teamstoolkit.guides.mobilePreview.detail"),
+                    groupName: localize("teamstoolkit.guide.development"),
+                    data: "https://aka.ms/teamsfx-mobile",
                     buttons: [
                       {
                         iconPath: "file-symlink-file",

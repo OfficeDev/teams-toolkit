@@ -7,7 +7,9 @@ import fs from "fs-extra";
 import path from "path";
 import axios, { AxiosResponse } from "axios";
 import {
+  downloadDirectory,
   getSampleInfoFromName,
+  runWithLimitedConcurrency,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
@@ -35,6 +37,19 @@ import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
+
+const mockedSampleInfo: SampleInfo = {
+  id: "test-id",
+  title: "test-title",
+  shortDescription: "test-sd",
+  fullDescription: "test-fd",
+  tags: [],
+  time: "",
+  configuration: "test-configuration",
+  link: "test-link",
+  suggested: false,
+  url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
+};
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -247,6 +262,47 @@ describe("Generator utils", () => {
       assert.equal(zip.getEntries().length, 1);
     });
   });
+
+  it("download directory get file info error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 403 });
+    try {
+      await downloadDirectory("https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test", tmpDir);
+    } catch (e) {
+      assert.exists(e);
+      assert.isTrue(e.message.includes("HTTP Request failed"));
+      return;
+    }
+    assert.fail("Should not reach here.");
+  });
+
+  it("download directory happy path", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
+    await fs.ensureDir(tmpDir);
+    await downloadDirectory("https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test", tmpDir);
+    const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
+    assert.equal(data, mockFileData);
+  });
+
+  it("limit concurrency", async () => {
+    const data = [1, 10, 2, 3];
+    let res: number[] = [];
+    const callback = async (num: number) => {
+      await new Promise((resolve) => setTimeout(resolve, num * 10));
+      res.push(num);
+    };
+    await runWithLimitedConcurrency(data, callback, 2);
+    assert.deepEqual(res, [1, 2, 3, 10]);
+    res = [];
+    await runWithLimitedConcurrency(data, callback, 1);
+    assert.deepEqual(res, [1, 10, 2, 3]);
+  });
 });
 
 describe("Generator error", async () => {
@@ -288,7 +344,8 @@ describe("Generator error", async () => {
 
   it("fetch sample zip from url error", async () => {
     sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
-    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "FetchZipFromUrlError");
     }
@@ -398,7 +455,8 @@ describe("Generator happy path", async () => {
 
   it("teamsfx sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
-    const sampleName = "bot-sso";
+    const sampleName = "test";
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
   });
@@ -441,5 +499,84 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
+  });
+});
+
+describe("Generate sample using download directory", () => {
+  const tmpDir = path.join(__dirname, "tmp");
+  const sandbox = createSandbox();
+  let mockedEnvRestore = mockedEnv({});
+  const tools = new MockTools();
+  setTools(tools);
+  const ctx = createContextV3();
+  beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      DOWNLOAD_DIRECTORY: "true",
+    });
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+    mockedEnvRestore();
+    if (await fs.pathExists(tmpDir)) {
+      await fs.rm(tmpDir, { recursive: true });
+    }
+  });
+
+  it("generate sample using download directory", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    assert.isTrue(result.isOk());
+  });
+
+  it("download directory throw api limit error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 403 });
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleApiLimitError");
+    }
+  });
+
+  it("download directory throw network error", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    axiosStub.onFirstCall().resolves({ status: 502 });
+    axiosStub.onSecondCall().resolves({ status: 502 });
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+    }
+  });
+
+  it("throw error if one file download failed", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [
+      { type: "file", path: `${sampleName}/${mockFileName}` },
+      { type: "file", path: `${sampleName}/${mockFileName}_1` },
+      { type: "file", path: `${sampleName}/${mockFileName}_2` },
+    ];
+    axiosStub.onCall(0).resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onCall(1).resolves({ status: 200, data: mockFileData });
+    axiosStub.onCall(2).resolves({ status: 200, data: mockFileData });
+    axiosStub.onCall(3).resolves({ status: 502 });
+    axiosStub.onCall(4).resolves({ status: 502 });
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+    }
+    assert.isFalse(await fs.pathExists(path.join(tmpDir, sampleName)));
   });
 });

@@ -4,7 +4,7 @@
 using Azure.Core;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
@@ -30,7 +30,7 @@ public class TeamsFxTests
     {
         var tokenCredentialMock = new Mock<TokenCredential>();
         var client = teamsfx.CreateMicrosoftGraphClient(tokenCredentialMock.Object);
-        var ex = await Assert.ThrowsExceptionAsync<ServiceException>(async () => await client.Me.Request().GetAsync());
+        var ex = await Assert.ThrowsExceptionAsync<ODataError>(async () => await client.Me.GetAsync());
         Assert.AreEqual("InvalidAuthenticationToken", ex.Error.Code);
         tokenCredentialMock.Verify(t => t.GetTokenAsync(It.IsAny<TokenRequestContext>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }

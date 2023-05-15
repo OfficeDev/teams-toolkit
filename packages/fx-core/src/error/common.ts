@@ -17,15 +17,17 @@ export class FileNotFoundError extends UserError {
   }
 }
 
-export class UnresolvedPlaceholderError extends UserError {
-  constructor(source: string, placeholders: string, filePath?: string, helpLink?: string) {
-    const key = "error.common.UnresolvedPlaceholderError";
+export class MissingEnvironmentVariablesError extends UserError {
+  constructor(source: string, variableNames: string, filePath?: string, helpLink?: string) {
+    const templateFilePath = filePath || globalVars.ymlFilePath || "";
+    const envFilePath = globalVars.envFilePath || "";
+    const key = "error.common.MissingEnvironmentVariablesError";
     const errorOptions: UserErrorOptions = {
       source: camelCase(source),
-      name: "UnresolvedPlaceholderError",
-      message: getDefaultString(key, placeholders, filePath || globalVars.ymlFilePath),
-      displayMessage: getLocalizedString(key, placeholders, filePath || globalVars.ymlFilePath),
-      helpLink: helpLink || "https://aka.ms/teamsfx-actions",
+      name: "MissingEnvironmentVariablesError",
+      message: getDefaultString(key, variableNames, templateFilePath, envFilePath),
+      displayMessage: getLocalizedString(key, variableNames, templateFilePath, envFilePath),
+      helpLink: helpLink || "https://aka.ms/teamsfx-v5.0-guide#environments",
     };
     super(errorOptions);
   }
@@ -90,8 +92,36 @@ export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: camelCase(source || "unknown"),
-      message: getDefaultString("error.common.UnhandledError", source || "", e.message),
-      displayMessage: getLocalizedString("error.common.UnhandledError", source || "", e.message),
+      message: getDefaultString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+      displayMessage: getLocalizedString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+    });
+    if (e.stack) super.stack = e.stack;
+  }
+}
+
+export class UnhandledUserError extends UserError {
+  constructor(e: Error, source?: string, helpLink?: string) {
+    super({
+      source: camelCase(source || "unknown"),
+      message: getDefaultString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+      displayMessage: getLocalizedString(
+        "error.common.UnhandledError",
+        source || "",
+        e.message || JSON.stringify(e)
+      ),
+      helpLink: helpLink,
     });
     if (e.stack) super.stack = e.stack;
   }
@@ -105,5 +135,38 @@ export class InstallSoftwareError extends UserError {
       displayMessage: getLocalizedString("error.common.InstallSoftwareError", nameAndVersion),
     });
     if (helpLink) this.helpLink = helpLink;
+  }
+}
+
+export class MissingRequiredInputError extends UserError {
+  constructor(name: string) {
+    super({
+      source: "coordinator",
+      message: getDefaultString("error.common.MissingRequiredInputError", name),
+      displayMessage: getLocalizedString("error.common.MissingRequiredInputError", name),
+    });
+  }
+}
+
+export class InputValidationError extends UserError {
+  constructor(name: string, reason: string) {
+    super({
+      source: "coordinator",
+      message: getDefaultString("error.common.InputValidationError", name, reason),
+      displayMessage: getLocalizedString("error.common.InputValidationError", name, reason),
+    });
+  }
+}
+
+export class NoEnvFilesError extends UserError {
+  constructor(source: string) {
+    const key = "error.common.NoEnvFilesError";
+    const errorOptions: UserErrorOptions = {
+      source: camelCase(source),
+      name: "NoEnvFilesError",
+      message: getDefaultString(key),
+      displayMessage: getLocalizedString(key),
+    };
+    super(errorOptions);
   }
 }

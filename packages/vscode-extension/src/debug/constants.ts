@@ -7,23 +7,7 @@ import { TaskLabel } from "@microsoft/teamsfx-core/build/common/local";
 import { ExtensionErrors } from "../error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
-export const openWenClientCommand = "launch Teams web client";
-export const npmRunDevRegex = /npm[\s]+run[\s]+dev/im;
-
-export const frontendProblemMatcher = "$teamsfx-frontend-watch";
-export const backendProblemMatcher = "$teamsfx-backend-watch";
-export const authProblemMatcher = "$teamsfx-auth-watch";
-export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
-export const botProblemMatcher = "$teamsfx-bot-watch";
-export const tscWatchProblemMatcher = "$tsc-watch";
-
 export const localSettingsJsonName = "localSettings.json";
-
-export const frontendLocalEnvPrefix = "FRONTEND_";
-export const backendLocalEnvPrefix = "BACKEND_";
-export const authLocalEnvPrefix = "AUTH_";
-export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
-export const botLocalEnvPrefix = "BOT_";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -298,6 +282,22 @@ export const devTunnelDisplayMessages = Object.freeze(
           getDefaultString("teamstoolkit.localDebug.output.tunnel.createDevTunnelMessage"),
           tag
         ),
+      deleteDevTunnelMessage: (tunnelId: string) =>
+        util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.deleteDevTunnelMessage"),
+          tunnelId
+        ),
+      devTunnelLimitExceededMessage: () =>
+        util.format(
+          localize("teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceededMessage"),
+          "command:fx-extension.showOutputChannel"
+        ),
+      devTunnelListMessage: () =>
+        localize("teamstoolkit.localDebug.output.tunnel.devTunnelListMessage"),
+      devTunnelLimitExceededAnswerDelete: () =>
+        localize("teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceeded.deleteAllTunnels"),
+      devTunnelLimitExceededAnswerCancel: () =>
+        localize("teamstoolkit.localDebug.output.tunnel.devTunnelLimitExceeded.cancel"),
     },
     baseTunnelDisplayMessages
   )

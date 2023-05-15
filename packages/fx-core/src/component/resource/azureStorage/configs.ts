@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import { AzureAccountProvider, v3 } from "@microsoft/teamsfx-api";
 import { AzureOpsConstant } from "../../../common/azure-hosting/hostingConstant";
 import { PreconditionError } from "../../../common/azure-hosting/hostingError";

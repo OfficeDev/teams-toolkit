@@ -54,8 +54,8 @@
           { "$ref": "#/definitions/botframeworkCreate" },
           { "$ref": "#/definitions/fileCreateOrUpdateEnvironmentFile" },
           { "$ref": "#/definitions/fileCreateOrUpdateJsonFile" },
-          { "$ref": "#/definitions/prerequisiteInstall" },
-          { "$ref": "#/definitions/m365TitleAcquire" },
+          { "$ref": "#/definitions/devToolInstall" },
+          { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
           { "$ref": "#/definitions/script" }
@@ -1133,10 +1133,10 @@
         }
       }
     },
-    "prerequisiteInstall": {
+    "devToolInstall": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Install prerequisite(s). Refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
+      "description": "Install development tool(s). Refer to https://aka.ms/teamsfx-actions/devtool-install for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -1152,8 +1152,8 @@
         },
         "uses": {
           "type": "string",
-          "description": "Install prerequisite(s). Refer to https://aka.ms/teamsfx-actions/prerequisite-install for more details.",
-          "const": "prerequisite/install"
+          "description": "Install development tool(s). Refer to https://aka.ms/teamsfx-actions/devtool-install for more details.",
+          "const": "devTool/install"
         },
         "with": {
           "type": "object",
@@ -1173,8 +1173,29 @@
               }
             },
             "func": {
-              "type": "boolean",
-              "description": "Install Azure Functions Core Tools. This will output environment variable specified by `funcPath` to current environment's .env file."
+              "type": "object",
+              "description": "Install Azure Functions Core Tools. This will output environment variable specified by `funcPath` to current environment's .env file.",
+              "additionalProperties": false,
+              "required": [
+                "version"
+              ],
+              "properties": {
+                "version": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "description": "The version number of Azure Functions Core Tools that follow the Semantic Versioning scheme."
+                },
+                "symlinkDir": {
+                  "type": "string",
+                  "description": "The path of the symlink target for the folder containing Azure Functions Core Tools binaries."
+                }
+              }
             },
             "dotnet": {
               "type": "boolean",
@@ -1207,10 +1228,10 @@
         }
       }
     },
-    "m365TitleAcquire": {
+    "teamsAppExtendToM365": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Upload app as M365 title. Refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
+      "description": "Extend Teams app across Microsoft 365. Refer to https://aka.ms/teamsfx-actions/teamsapp-extendToM365 for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -1226,8 +1247,8 @@
         },
         "uses": {
           "type": "string",
-          "description": "Upload app as M365 title. Refer to https://aka.ms/teamsfx-actions/m365-title-acquire for more details.",
-          "const": "m365Title/acquire"
+          "description": "Extend Teams app across Microsoft 365. Refer to https://aka.ms/teamsfx-actions/teamsapp-extendToM365 for more details.",
+          "const": "teamsApp/extendToM365"
         },
         "with": {
           "type": "object",

@@ -56,7 +56,7 @@ export const CollaboratorEmailNode = new QTreeNode({
   title: "Input email address of collaborator",
 });
 
-export const ManifestFilePathParamName = "manifest-file-path";
+export const ManifestFilePathParamName = "manifest-path";
 export const AppPackageFilePathParamName = "app-package-file-path";
 export const BuildPackageOptions: OptionsMap = {
   [ManifestFilePathParamName]: {
@@ -94,7 +94,7 @@ export const ValidateApplicationOptions: OptionsMap = {
   },
 };
 
-export const AadManifestFilePathName = "manifest-file-path";
+export const AadManifestFilePathName = CoreQuestionNames.AadAppManifestFilePath;
 export const AadManifestOptions: OptionsMap = {
   [AadManifestFilePathName]: {
     type: "string",

@@ -11,11 +11,10 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
 import { CreateOrUpdateEnvironmentFileDriver } from "../../../../src/component/driver/file/createOrUpdateEnvironmentFile";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
-import { InvalidActionInputError } from "../../../../src/error/common";
+import { InvalidActionInputError, UnhandledError } from "../../../../src/error/common";
 
 describe("CreateOrUpdateEnvironmentFileDriver", () => {
   const mockedDriverContexts = [
@@ -109,7 +108,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         const result = await driver.run(args, mockedDriverContext);
         chai.assert(result.isErr());
         if (result.isErr()) {
-          chai.assert(result.error instanceof UnhandledSystemError);
+          chai.assert(result.error instanceof UnhandledError);
           const message =
             "error.common.UnhandledError. file/createOrUpdateEnvironmentFile. exception.";
           chai.assert(result.error.message, message);

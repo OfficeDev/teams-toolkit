@@ -2,7 +2,7 @@
 .development
 .DS_Store
 .git*
-.localSettings
+.localConfigs
 .notification.localstore.json
 .vscode
 *.js.map
@@ -21,3 +21,4 @@ teamsapp.*.yml
 /appPackage/
 /infra/
 /teamsfx/
+/devTools/

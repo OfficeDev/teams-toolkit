@@ -46,6 +46,7 @@ describe("Yargs Command Tests", function () {
   const existedSubId = "existedSubId";
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
@@ -67,7 +68,8 @@ describe("Yargs Command Tests", function () {
         allArguments.set(key, args[key]);
       }
     });
-    sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(LogProvider, "outputInfo").returns();
+    sandbox.stub(LogProvider, "outputSuccess").returns();
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     CLIUIInstance.interactive = false;
     telemetryEvents = [];

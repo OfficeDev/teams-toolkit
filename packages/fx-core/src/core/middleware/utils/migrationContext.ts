@@ -30,6 +30,7 @@ export class MigrationContext {
   telemetryProperties: Record<string, string> = {};
   backupPath = "";
   projectPath = "";
+  isBotValidDomain = false;
 
   static async create(ctx: CoreHookContext): Promise<MigrationContext> {
     const context = new MigrationContext(ctx);

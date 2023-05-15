@@ -12,6 +12,8 @@ import {
   templateAlphaVersion,
   templateFileExt,
   templatePrereleaseVersion,
+  sampleConcurrencyLimits,
+  sampleDefaultRetryLimits,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
@@ -19,7 +21,7 @@ import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
-import { CancelDownloading } from "./error";
+import { CancelDownloading, ParseUrlError } from "./error";
 import { deepCopy } from "../../common/tools";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
@@ -55,9 +57,9 @@ export async function sendRequestWithRetry<T>(
       const res = await requestFn();
       if (res.status === 200 || res.status === 201) {
         return res;
+      } else {
+        error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       }
-
-      error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       status = res.status;
     } catch (e: any) {
       error = e;
@@ -234,4 +236,99 @@ export function zipFolder(folderPath: string): AdmZip {
   const zip = new AdmZip();
   zip.addLocalFolder(folderPath);
   return zip;
+}
+
+export async function downloadDirectory(
+  sampleUrl: string,
+  dstPath: string,
+  concurrencyLimits = sampleConcurrencyLimits,
+  retryLimits = sampleDefaultRetryLimits
+): Promise<void> {
+  const urlInfo = parseSampleUrl(sampleUrl);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(urlInfo, retryLimits);
+  await downloadSampleFiles(
+    fileUrlPrefix,
+    samplePaths,
+    dstPath,
+    urlInfo.dir,
+    retryLimits,
+    concurrencyLimits
+  );
+}
+
+type SampleUrlInfo = {
+  owner: string;
+  repository: string;
+  ref: string;
+  dir: string;
+};
+
+function parseSampleUrl(url: string): SampleUrlInfo {
+  const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
+  const parsed = urlParserRegex.exec(url);
+  if (!parsed) throw new ParseUrlError(url);
+  const [owner, repository, ref, dir] = parsed.slice(1);
+  return { owner, repository, ref, dir };
+}
+
+async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
+  const fileInfoUrl = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/git/trees/${urlInfo.ref}?recursive=1`;
+  const fileInfo = (
+    await sendRequestWithRetry(async () => {
+      return await axios.get(fileInfoUrl);
+    }, retryLimits)
+  ).data as any;
+
+  const fileInfoTree = fileInfo.tree as any[];
+  const samplePaths = fileInfoTree
+    .filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
+    .map((node) => node.path);
+  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
+  return { samplePaths, fileUrlPrefix };
+}
+
+async function downloadSampleFiles(
+  fileUrlPrefix: string,
+  samplePaths: string[],
+  dstPath: string,
+  relativePath: string,
+  retryLimits: number,
+  concurrencyLimits: number
+): Promise<void> {
+  const downloadCallback = async (samplePath: string) => {
+    const file = await sendRequestWithRetry(async () => {
+      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+    }, retryLimits);
+    const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
+    await fs.ensureFile(filePath);
+    await fs.writeFile(filePath, Buffer.from(file.data as any));
+  };
+  await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
+}
+
+export async function runWithLimitedConcurrency<T>(
+  items: T[],
+  callback: (arg: T) => any,
+  concurrencyLimit: number
+) {
+  const queue: any[] = [];
+  for (const item of items) {
+    // fire the async function, add its promise to the queue, and remove
+    // it from queue when complete
+    const p = callback(item)
+      .then((res: any) => {
+        queue.splice(queue.indexOf(p), 1);
+        return res;
+      })
+      .catch((err: any) => {
+        throw err;
+      });
+    queue.push(p);
+    // if max concurrent, wait for one to finish
+    if (queue.length >= concurrencyLimit) {
+      await Promise.race(queue);
+    }
+  }
+  // wait for the rest of the calls to finish
+  await Promise.all(queue);
 }

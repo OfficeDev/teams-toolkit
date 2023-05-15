@@ -60,7 +60,7 @@ import {
 } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
-import { FileNotFoundError, UnresolvedPlaceholderError } from "../../../../error/common";
+import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -86,9 +86,16 @@ export class ManifestUtils {
     projectPath: string
   ): Promise<Result<undefined, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
+    return await this._writeAppManifest(appManifest, filePath);
+  }
+
+  async _writeAppManifest(
+    appManifest: TeamsAppManifest,
+    manifestTemplatePath: string
+  ): Promise<Result<undefined, FxError>> {
     const content = JSON.stringify(appManifest, undefined, 4);
     const contentV2 = convertManifestTemplateToV2(content);
-    await fs.writeFile(filePath, contentV2);
+    await fs.writeFile(manifestTemplatePath, contentV2);
     return ok(undefined);
   }
 
@@ -493,7 +500,7 @@ export class ManifestUtils {
     const manifestTemplatePath = await this.getTeamsAppManifestPath(projectPath);
     if (tokens.length > 0) {
       return err(
-        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+        new MissingEnvironmentVariablesError("teamsApp", tokens.join(","), manifestTemplatePath)
       );
     }
     const manifest: TeamsAppManifest = JSON.parse(resolvedManifestString);
@@ -515,7 +522,7 @@ export class ManifestUtils {
       if (botId) {
         if (!botDomain && !ignoreEnvStateValueMissing) {
           return err(
-            new UnresolvedPlaceholderError("teamsApp", "validDomain", manifestTemplatePath)
+            new MissingEnvironmentVariablesError("teamsApp", "validDomain", manifestTemplatePath)
           );
         } else if (botDomain) {
           validDomains.push(botDomain);
@@ -532,8 +539,6 @@ export class ManifestUtils {
 
   async getManifestV3(
     manifestTemplatePath: string,
-    state: any,
-    withEmptyCapabilities?: boolean,
     generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -542,18 +547,9 @@ export class ManifestUtils {
     }
     let manifest: TeamsAppManifest = manifestRes.value;
 
-    if (withEmptyCapabilities) {
-      manifest.bots = [];
-      manifest.composeExtensions = [];
-      manifest.configurableTabs = [];
-      manifest.staticTabs = [];
-      manifest.webApplicationInfo = undefined;
-      manifest.validDomains = [];
-    }
-
     let teamsAppId = "";
     if (generateIdIfNotResolved) {
-      // Corner Case: Avoid UnresolvedPlaceholderError for manifest.id
+      // Corner Case: Avoid MissingEnvironmentVariablesError for manifest.id
       teamsAppId = expandEnvironmentVariable(manifest.id);
       manifest.id = "";
     }
@@ -570,7 +566,7 @@ export class ManifestUtils {
     const tokens = getEnvironmentVariables(resolvedManifestString);
     if (tokens.length > 0) {
       return err(
-        new UnresolvedPlaceholderError("teamsApp", tokens.join(","), manifestTemplatePath)
+        new MissingEnvironmentVariablesError("teamsApp", tokens.join(","), manifestTemplatePath)
       );
     }
 

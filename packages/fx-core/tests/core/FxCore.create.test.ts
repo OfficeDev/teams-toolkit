@@ -120,6 +120,20 @@ describe("Core basic APIs for v3", () => {
     projectPath = inputs.projectPath!;
   });
 
+  it("create from sample (CLI)", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
+      [CoreQuestionNames.Samples]: "todo-list-SPFx",
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.create,
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
+  });
+
   it("create from sample (VSC)", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

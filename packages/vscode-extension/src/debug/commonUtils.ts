@@ -19,6 +19,8 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
+import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
@@ -33,51 +35,6 @@ export async function getProjectRoot(
   const projectRoot: string = path.join(folderPath, folderName);
   const projectExists: boolean = await fs.pathExists(projectRoot);
   return projectExists ? projectRoot : undefined;
-}
-
-function getLocalEnvWithPrefix(
-  env: { [key: string]: string } | undefined,
-  prefix: string
-): { [key: string]: string } | undefined {
-  if (env === undefined) {
-    return undefined;
-  }
-  const result: { [key: string]: string } = {};
-  for (const key of Object.keys(env)) {
-    if (key.startsWith(prefix) && env[key]) {
-      result[key.slice(prefix.length)] = env[key];
-    }
-  }
-  return Object.keys(result).length > 0 ? result : undefined;
-}
-
-export function getFrontendLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.frontendLocalEnvPrefix);
-}
-
-export function getBackendLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.backendLocalEnvPrefix);
-}
-
-export function getAuthLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnvWithPrefix(env, constants.authLocalEnvPrefix);
-}
-
-export function getAuthServicePath(env: { [key: string]: string } | undefined): string | undefined {
-  return env ? env[constants.authServicePathEnvKey] : undefined;
-}
-
-export function getBotLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
 }
 
 export async function hasTeamsfxBackend(): Promise<boolean> {
@@ -400,7 +357,8 @@ export async function getV3TeamsAppId(projectPath: string, env: string): Promise
     throw result.error;
   }
 
-  const teamsAppId = result.value.TEAMS_APP_ID;
+  const teamsAppIdKey = (await getTeamsAppKeyName(env)) || "TEAMS_APP_ID";
+  const teamsAppId = result.value[teamsAppIdKey];
   if (teamsAppId === undefined) {
     throw new UserError(
       ExtensionSource,
@@ -410,6 +368,23 @@ export async function getV3TeamsAppId(projectPath: string, env: string): Promise
   }
 
   return teamsAppId;
+}
+
+export async function getTeamsAppKeyName(env?: string): Promise<string | undefined> {
+  const templatePath = pathUtils.getYmlFilePath(globalVariables.workspaceUri!.fsPath, env);
+  const maybeProjectModel = await metadataUtil.parse(templatePath, env);
+  if (maybeProjectModel.isErr()) {
+    return undefined;
+  }
+  const projectModel = maybeProjectModel.value;
+  if (projectModel.provision?.driverDefs && projectModel.provision.driverDefs.length > 0) {
+    for (const driver of projectModel.provision.driverDefs) {
+      if (driver.uses === "teamsApp/create") {
+        return driver.writeToEnvironmentFile?.teamsAppId;
+      }
+    }
+  }
+  return undefined;
 }
 
 export async function getV3M365TitleId(

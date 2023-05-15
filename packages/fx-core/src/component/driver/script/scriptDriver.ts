@@ -49,10 +49,10 @@ export class ScriptDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const res = await this.run(args, ctx);
-    const summary = `${res.isOk() ? "success" : "failed"} to execute command '${maskSecretValues(
-      (args as any).run
-    )}'`;
-    return { result: res, summaries: [summary] };
+    const summaries: string[] = res.isOk()
+      ? [`Successfully executed command ${maskSecretValues((args as any).run)}`]
+      : [];
+    return { result: res, summaries: summaries };
   }
 }
 

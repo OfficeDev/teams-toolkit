@@ -5,10 +5,10 @@ Now you have the ability to create a single unit of distribution for all your Mi
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/): version 16 or 18.
-- Outlook for Windows: Beta Channel, Build 16320 or higher. 
+- Outlook for Windows: Beta Channel, Build 16320 or higher. Follow [this link](https://github.com/OfficeDev/TeamsFx/wiki/How-to-switch-Outlook-client-update-channel-and-verify-Outlook-client-build-version) for switching update channels and check your Outlook client build version.
 - Edge installed for debugging Outlook add-in.
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) Pre-release version
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher.
 
 ## Debug Outlook add-in
 - Please note that the same M365 account should be used both in Teams Toolkit and Outlook. 
@@ -38,10 +38,13 @@ To sideload the deployed add-in:
 
 ## Validate manifest file
 
+Known issue: manifest validation is not supported for now.
+
 To check that your manifest file is valid:
 
-- From Visual Studio Code: open the command palette and select: `Teams: Validate manifest file`.
+- From Visual Studio Code: open the command palette and select: `Teams: Validate Application` and select `Validate using manifest schema`.
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
 
 ## Known Issues
-- Publish doesn't work for a Outlook add-in project now.
+- Publish is not supported for an Outlook add-in project now.
+- Manifest validation is not supported for now.

@@ -25,7 +25,7 @@ describe("Init Command Tests", () => {
   let telemetryEvents: string[] = [];
   let telemetryEventStatus: string | undefined = undefined;
 
-  before(() => {
+  beforeEach(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
     sandbox
       .stub<any, any>(yargs, "command")
@@ -41,13 +41,9 @@ describe("Init Command Tests", () => {
       }
       return yargs;
     });
+    sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
-    });
-    sandbox.stub(FxCore.prototype, "phantomMigrationV3").callsFake((inputs) => {
-      if (inputs.projectPath?.includes("fake"))
-        return Promise.resolve(err(NonTeamsFxProjectFolder()));
-      return Promise.resolve(ok(Void));
     });
     sandbox
       .stub(CliTelemetry, "sendTelemetryEvent")
@@ -65,7 +61,7 @@ describe("Init Command Tests", () => {
       });
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -82,21 +78,34 @@ describe("Init Command Tests", () => {
     expect(registeredCommands).deep.equals(["upgrade"]);
   });
 
-  // it("Command Running Check", async () => {
-  //   const cmd = new Upgrade();
-  //   const args = {
-  //     folder: TestFolder,
-  //   };
-  //   await cmd.handler(args);
-  //   expect(telemetryEvents).deep.equals([TelemetryEvent.UpgradeStart, TelemetryEvent.Upgrade]);
-  //   expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  // });
+  it("Command Running Check", async () => {
+    sandbox.stub(FxCore.prototype, "phantomMigrationV3").callsFake((inputs) => {
+      expect(inputs.projectPath).equals(TestFolder);
+      expect(inputs.skipUserConfirm).equals(true);
+      expect(inputs.nonInteractive).equals(undefined);
+      return Promise.resolve(ok(Void));
+    });
+    const cmd = new Upgrade();
+    const args = {
+      folder: TestFolder,
+      force: true,
+    };
+    await cmd.runCommand(args as any);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.UpgradeStart, TelemetryEvent.Upgrade]);
+  });
 
   it("Command Running Check - error", async () => {
+    sandbox.stub(FxCore.prototype, "phantomMigrationV3").callsFake((inputs) => {
+      if (inputs.projectPath?.includes("fake"))
+        return Promise.resolve(err(NonTeamsFxProjectFolder()));
+      return Promise.resolve(ok(Void));
+    });
+
     const cmd = new Upgrade();
     const args = {
       folder: "fake",
     };
-    await expect(cmd.handler(args)).rejected;
+    const result = await cmd.runCommand(args);
+    expect(result.isErr());
   });
 });

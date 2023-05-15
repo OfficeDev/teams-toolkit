@@ -12,7 +12,7 @@ import {
 import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { UnresolvedPlaceholderError } from "@microsoft/teamsfx-core/build/error/common";
+import { MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core/build/error/common";
 
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
@@ -128,7 +128,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
             }
             const key = matchResult[matchResult.length - 1];
             if (!envRes.value[key]) {
-              throw new UnresolvedPlaceholderError(
+              throw new MissingEnvironmentVariablesError(
                 ExtensionSource,
                 key,
                 path.normalize(path.join(folder.uri.fsPath, ".vscode", "launch.json")),

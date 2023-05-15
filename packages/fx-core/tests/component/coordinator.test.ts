@@ -1,3 +1,13 @@
+import "mocha";
+
+import { assert } from "chai";
+import { DotenvParseOutput } from "dotenv";
+import fs, { PathLike } from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import * as sinon from "sinon";
+import { Container } from "typedi";
+
 import {
   err,
   FxError,
@@ -15,31 +25,8 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import "mocha";
-import * as sinon from "sinon";
-import { Generator } from "../../src/component/generator/generator";
-import { settingsUtil } from "../../src/component/utils/settingsUtil";
-import { setTools } from "../../src/core/globalVars";
-import {
-  CoreQuestionNames,
-  CreateNewOfficeAddinOption,
-  ScratchOptionNo,
-  ScratchOptionYes,
-} from "../../src/core/question";
-import {
-  MockAzureAccountProvider,
-  MockM365TokenProvider,
-  MockTools,
-  randomAppName,
-} from "../core/utils";
-import { assert } from "chai";
-import {
-  M365SsoLaunchPageOptionItem,
-  SolutionSource,
-  TabOptionItem,
-} from "../../src/component/constants";
-import { FxCore } from "../../src/core/FxCore";
-import mockedEnv, { RestoreFn } from "mocked-env";
+
+import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 import {
   DriverInstance,
   ExecutionError,
@@ -47,33 +34,61 @@ import {
   ExecutionResult,
   ProjectModel,
 } from "../../src/component/configManager/interface";
-import { DriverContext } from "../../src/component/driver/interface/commonArgs";
-import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
-import { provisionUtils } from "../../src/component/provisionUtils";
+import {
+  M365SsoLaunchPageOptionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  SolutionSource,
+  TabNonSsoItem,
+  TabOptionItem,
+} from "../../src/component/constants";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
-import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import fs, { PathLike } from "fs-extra";
-import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
-import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
-import { createContextV3, createDriverContext } from "../../src/component/utils";
-import * as appStudio from "../../src/component/resource/appManifest/appStudio";
-import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
-import Container from "typedi";
-import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
-import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
-import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
 import { deployUtils } from "../../src/component/deployUtils";
-import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
-import { pathUtils } from "../../src/component/utils/pathUtils";
-import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
+import { DriverContext } from "../../src/component/driver/interface/commonArgs";
+import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
-import { InvalidAzureCredentialError, SelectSubscriptionError } from "../../src/error/azure";
-import { DotenvParseOutput } from "dotenv";
-import * as os from "os";
-import * as path from "path";
+import { Generator } from "../../src/component/generator/generator";
+import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
+import { provisionUtils } from "../../src/component/provisionUtils";
+import * as appStudio from "../../src/component/resource/appManifest/appStudio";
+import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
+import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
+import { MetadataUtil } from "../../src/component/utils/metadataUtil";
+import { pathUtils } from "../../src/component/utils/pathUtils";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import { settingsUtil } from "../../src/component/utils/settingsUtil";
+import { FxCore } from "../../src/core/FxCore";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import { setTools } from "../../src/core/globalVars";
+import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
+import {
+  CoreQuestionNames,
+  CreateNewOfficeAddinOption,
+  ScratchOptionNo,
+  ScratchOptionYes,
+  ScratchOptionYesVSC,
+} from "../../src/core/question";
+import {
+  InvalidAzureCredentialError,
+  ResourceGroupConflictError,
+  SelectSubscriptionError,
+} from "../../src/error/azure";
+import {
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
+} from "../../src/error/common";
+import {
+  MockAzureAccountProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../core/utils";
+import { MockedUserInteraction } from "../plugins/solution/util";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -101,19 +116,11 @@ describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
-  let mockedEnvRestore: RestoreFn | undefined;
-
   afterEach(() => {
     sandbox.restore();
-    if (mockedEnvRestore) {
-      mockedEnvRestore();
-    }
   });
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(versionInfo);
   });
 
@@ -125,7 +132,7 @@ describe("component coordinator test", () => {
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       folder: ".",
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
@@ -149,7 +156,7 @@ describe("component coordinator test", () => {
       .onSecondCall()
       .resolves([]);
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       folder: ".",
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
@@ -175,6 +182,132 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
       [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+  it("create project from scratch MissingRequiredInputError missing folder", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project from scratch MissingRequiredInputError missing App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project from scratch MissingRequiredInputError invalid App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      "app-name": "__#$%___",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof InputValidationError);
+    }
+  });
+  it("create project for new office Addin MissingRequiredInputError missing App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project for new office Addin MissingRequiredInputError invalid App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
+      "app-name": "__#$%___",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof InputValidationError);
+    }
+  });
+  it("create project from sample MissingRequiredInputError missing sample id", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      ignoreLockByUT: true,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: "no",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+
+  it("create project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "csharp",
+      [CoreQuestionNames.SafeProjectName]: "safeprojectname",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+
+  it("create project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "csharp",
+      [CoreQuestionNames.SafeProjectName]: "safeprojectname",
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -398,6 +531,64 @@ describe("component coordinator test", () => {
     assert.equal(generator.args[0][2], TemplateNames.TabAndDefaultBot);
   });
 
+  it("create project for app with no features from Developer Portal - failed expecting inputs", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+      staticTabs: [],
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    assert.isTrue(res2.isErr());
+  });
+
+  it("create project for app from Developer Portal - not overwrite already set project type and capability", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [CoreQuestionNames.ProjectType]: "tab-type",
+      [CoreQuestionNames.Capabilities]: TabNonSsoItem().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    assert.isTrue(res2.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.Tab);
+  });
+
   it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
       provision: {
@@ -469,6 +660,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     sandbox.stub(fs, "writeFile").resolves();
     const progressStartStub = sandbox.stub();
@@ -556,6 +748,7 @@ describe("component coordinator test", () => {
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -636,6 +829,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -809,6 +1003,7 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -879,6 +1074,7 @@ describe("component coordinator test", () => {
       .resolves(undefined);
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -938,6 +1134,7 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const stubShowMessage = sandbox.stub(tools.ui, "showMessage");
 
@@ -1454,6 +1651,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.CLI,
@@ -1503,7 +1701,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox
       .stub(resourceGroupHelper, "createNewResourceGroup")
-      .resolves(err(new UserError({ source: "test", name: "ResourceGroupExists" })));
+      .resolves(err(new ResourceGroupConflictError("xxx", "sss")));
     sandbox.stub(provisionUtils, "getM365TenantId").resolves(
       ok({
         tenantIdInToken: "mockM365Tenant",
@@ -1519,6 +1717,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1667,6 +1866,7 @@ describe("component coordinator test", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(undefined);
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1757,6 +1957,7 @@ describe("component coordinator test", () => {
       .stub(resourceGroupHelper, "checkResourceGroupExistence")
       .resolves(err(new SystemError("test", "test", "", "")));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1882,6 +2083,7 @@ describe("component coordinator test", () => {
       }
     });
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2025,6 +2227,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(tools.ui, "createProgressBar").returns(undefined as any as IProgressHandler);
@@ -2081,6 +2284,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2125,6 +2329,7 @@ describe("component coordinator test", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok(undefined));
     sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VS,
@@ -2319,6 +2524,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     sandbox.stub(tools.ui, "createProgressBar").returns(undefined as any as IProgressHandler);
     const inputs: Inputs = {
@@ -2369,6 +2575,7 @@ describe("component coordinator test", () => {
     } as any as IProgressHandler);
     const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(ok(""));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2426,6 +2633,7 @@ describe("component coordinator test", () => {
       end: progressEndStub,
     } as any as IProgressHandler);
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2478,6 +2686,7 @@ describe("component coordinator test", () => {
     sandbox.stub(tools.ui, "createProgressBar").returns(undefined as any as IProgressHandler);
     const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(ok(""));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2566,7 +2775,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1], error);
   });
 
-  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholderError", async () => {
+  it("convertExecuteResult PartialSuccess - MissingEnvironmentVariablesError", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = err({
       kind: "PartialSuccess",
@@ -2579,7 +2788,7 @@ describe("component coordinator test", () => {
     });
     const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
-    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholderError");
+    assert.isTrue(convertRes[1]! instanceof MissingEnvironmentVariablesError);
   });
 
   it("init infra happy path vsc", async () => {
@@ -2899,18 +3108,6 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("getSettings", async () => {
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.getSettings(inputs);
-    assert.isTrue(res.isOk());
-  });
   it("preProvisionForVS", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
@@ -3030,7 +3227,15 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
     assert.isTrue(res2.isOk());
   });
-
+  it("buildAadManifest", async () => {
+    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.buildAadManifest(inputs);
+    assert.isTrue(res1.isOk());
+  });
   it("executeUserTaskNew", async () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
@@ -3076,12 +3281,84 @@ describe("component coordinator test", () => {
     );
     assert.isTrue(res4.isOk());
   });
+  it("getDotEnvs success", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ k1: "v1" }));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(Object.keys(res.value), ["dev1", "dev2"]);
+    }
+  });
+  it("getDotEnvs error 1", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("getDotEnvs error 2", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    sandbox.stub(envUtil, "readEnv").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getDotEnvs(inputs);
+    assert.isTrue(res.isErr());
+  });
+
+  describe("encrypt/decrypt", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("error", async () => {
+      sandbox.stub(settingsUtil, "readSettings").resolves(err(new UserError({})));
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: ".",
+      };
+      const fxCore = new FxCore(tools);
+      const inputText = "abc";
+      const res = await fxCore.encrypt(inputText, inputs);
+      assert.isTrue(res.isErr());
+      const res2 = await fxCore.decrypt("abc", inputs);
+      assert.isTrue(res2.isErr());
+    });
+    it("happy path", async () => {
+      sandbox
+        .stub(settingsUtil, "readSettings")
+        .resolves(ok({ version: "1", trackingId: "mockid" }));
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: ".",
+      };
+      const fxCore = new FxCore(tools);
+      const inputText = "abc";
+      const res = await fxCore.encrypt(inputText, inputs);
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const res2 = await fxCore.decrypt(res.value, inputs);
+        assert.isTrue(res2.isOk());
+        if (res2.isOk()) {
+          assert.equal(res2.value, inputText);
+        }
+      }
+    });
+  });
+
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {
       sandbox.restore();
-      if (mockedEnvRestore) {
-        mockedEnvRestore();
-      }
     });
     it("missing token provider", async () => {
       const context = createContextV3();
@@ -3190,13 +3467,9 @@ describe("Office Addin", async () => {
   const tools = new MockTools();
   tools.ui = new MockedUserInteraction();
   setTools(tools);
-  let mockedEnvRestore: RestoreFn | undefined;
 
   afterEach(() => {
     sandbox.restore();
-    if (mockedEnvRestore) {
-      mockedEnvRestore();
-    }
   });
 
   it("should scaffold taskpane successfully", async () => {
@@ -3213,6 +3486,7 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
     };
@@ -3228,11 +3502,12 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: "__invalid__",
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
   });
 
   it("should return error if app name is undefined", async () => {
@@ -3243,11 +3518,12 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: undefined,
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {
@@ -3266,7 +3542,8 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");

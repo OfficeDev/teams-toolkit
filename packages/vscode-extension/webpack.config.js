@@ -64,6 +64,10 @@ const config = {
           loader: "url-loader",
         },
       },
+      {
+        test: /node_modules[\\|/](yaml-language-server|vscode-languageserver|vscode-json-languageservice|prettier)/,
+        use: "umd-compat-loader",
+      },
     ],
   },
   plugins: [
@@ -99,10 +103,6 @@ const config = {
         {
           from: "./WHATISNEW.md",
           to: "../resource/WHATISNEW.md",
-        },
-        {
-          from: "./PRERELEASE.md",
-          to: "../resource/PRERELEASE.md",
         },
         {
           from: "./node_modules/@vscode/codicons/dist/codicon.css",

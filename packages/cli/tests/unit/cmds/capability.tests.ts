@@ -54,6 +54,7 @@ describe("Capability Command Tests", function () {
   let telemetryEventStatus: string | undefined = undefined;
 
   beforeEach(() => {
+    sandbox.stub(process, "exit");
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
     sandbox
       .stub<any, any>(yargs, "command")
@@ -184,14 +185,7 @@ describe("Capability Command Tests", function () {
     await cmd.builder(yargs);
 
     expect(options).deep.equals(
-      [
-        "spfx-install-latest-package",
-        "spfx-folder",
-        "spfx-webpart-name",
-        "manifest-path",
-        "local-manifest-path",
-        "folder",
-      ],
+      ["spfx-folder", "spfx-webpart-name", "manifest-path", "local-manifest-path", "folder"],
       JSON.stringify(options)
     );
   });

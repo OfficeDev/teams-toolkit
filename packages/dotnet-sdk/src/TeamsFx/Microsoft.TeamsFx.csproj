@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.TeamsFx</RootNamespace>
-    <Version>1.2.1</Version>
+    <Version>2.1.0-rc</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
@@ -16,7 +16,6 @@
     <Description>This package aims to reduce the developer tasks of implementing identity and access to cloud resources down to single-line statements with "zero configuration".</Description>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-	<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Microsoft.TeamsFx.Test</_Parameter1>
     </AssemblyAttribute>
@@ -36,7 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Graph" Version="4.10.0" />
+    <PackageReference Include="Microsoft.Graph" Version="5.6.0" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.40.0" />
   </ItemGroup>
 

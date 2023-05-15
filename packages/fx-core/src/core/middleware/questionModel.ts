@@ -8,22 +8,34 @@ import {
   FxError,
   Inputs,
   ok,
+  Platform,
   QTreeNode,
   Result,
   traverse,
-  Void,
 } from "@microsoft/teamsfx-api";
+
 import {
   isCLIDotNetEnabled,
   isOfficeAddinEnabled,
   isPreviewFeaturesEnabled,
 } from "../../common/featureFlags";
-import { deepCopy, isExistingTabAppEnabled, isV3Enabled } from "../../common/tools";
+import { isExistingTabAppEnabled, isV3Enabled } from "../../common/tools";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import {
+  ExistingTabOptionItem,
+  NewProjectTypeBotOptionItem,
+  NewProjectTypeMessageExtensionOptionItem,
+  NewProjectTypeOutlookAddinOptionItem,
+  NewProjectTypeTabOptionItem,
+  TabSPFxItem,
+} from "../../component/constants";
+import { getTemplateId, isFromDevPortal } from "../../component/developerPortalScaffoldUtils";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
+import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
+import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
+import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
-import { getQuestionForDeployAadManifest } from "../question";
 import { TOOLS } from "../globalVars";
 import {
   BotIdsQuestion,
@@ -34,9 +46,15 @@ import {
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
   CreateNewOfficeAddinOption,
+  createNewProjectQuestionWith2Layers,
   ExistingTabEndpointQuestion,
+  getBotProjectQuestionNode,
   getCreateNewOrFromSampleQuestion,
+  getMessageExtensionTypeProjectQuestionNode,
+  getOutlookAddinTypeProjectQuestionNode,
+  getQuestionForDeployAadManifest,
   getRuntimeQuestion,
+  getTabTypeProjectQuestionNode,
   ProgrammingLanguageQuestion,
   ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
@@ -44,17 +62,13 @@ import {
   RuntimeOptionNodeJs,
   SampleSelect,
   ScratchOptionNo,
+  ScratchOptionNoVSC,
   ScratchOptionYes,
   ScratchOptionYesVSC,
   tabsContentUrlQuestion,
   tabsWebsitetUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
-import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
-import { convertToAlphanumericOnly } from "../../common/utils";
-import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
-import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
-import { getTemplateId, isFromDevPortal } from "../../component/developerPortalScaffoldUtils";
 
 /**
  * This middleware will help to collect input from question flow
@@ -78,34 +92,26 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     ctx.result = err(getQuestionRes.error);
     return;
   }
-
-  TOOLS?.logProvider.debug(`[core] success to get questions for ${method}`);
-
   const node = getQuestionRes.value;
   if (node) {
     const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (res.isErr()) {
-      TOOLS?.logProvider.debug(`[core] failed to run question model for ${method}`);
       ctx.result = err(res.error);
       return;
     }
-    const desensitized = desensitize(node, inputs);
-    TOOLS?.logProvider.info(
-      `[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`
-    );
   }
   await next();
 };
 
-export function desensitize(node: QTreeNode, input: Inputs): Inputs {
-  const copy = deepCopy(input);
-  const names = new Set<string>();
-  traverseToCollectPasswordNodes(node, names);
-  for (const name of names) {
-    copy[name] = "******";
-  }
-  return copy;
-}
+// export function desensitize(node: QTreeNode, input: Inputs): Inputs {
+//   const copy = deepCopy(input);
+//   const names = new Set<string>();
+//   traverseToCollectPasswordNodes(node, names);
+//   for (const name of names) {
+//     copy[name] = "******";
+//   }
+//   return copy;
+// }
 
 export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<string>): void {
   if (node.data.type === "text" && node.data.password === true) {
@@ -123,7 +129,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
     inputs[CoreQuestionNames.Capabilities] =
-      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp);
+      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp)?.templateId;
   }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
@@ -254,6 +260,105 @@ async function getQuestionsForCreateProjectWithDotNet(
   return ok(runtimeNode.trim());
 }
 
+async function getQuestionsForCreateProjectInVSC(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionNoVSC().id) {
+    // Create from sample flow
+    const sampleNode = new QTreeNode(SampleSelect());
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
+
+    return ok(sampleNode.trim());
+  }
+
+  // We will always create a project from scratch in VSC.
+  inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
+  if (isFromDevPortal(inputs)) {
+    inputs[CoreQuestionNames.ProjectType] =
+      inputs[CoreQuestionNames.ProjectType] ?? getTemplateId(inputs.teamsAppFromTdp)?.projectType;
+    inputs[CoreQuestionNames.Capabilities] =
+      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp)?.templateId;
+  }
+
+  // create new project root
+  const root = new QTreeNode({ type: "group" });
+
+  // project type
+  const capQuestion = createNewProjectQuestionWith2Layers(inputs);
+  const typeNode = new QTreeNode(capQuestion);
+  root.addChild(typeNode);
+
+  // bot type capabilities
+  const botTypeNode = new QTreeNode(getBotProjectQuestionNode(inputs));
+  botTypeNode.condition = {
+    equals: NewProjectTypeBotOptionItem().id,
+  };
+  typeNode.addChild(botTypeNode);
+
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    botTypeNode.addChild(triggerNodeRes.value);
+  }
+
+  // tab type
+  const tabTypeNode = new QTreeNode(getTabTypeProjectQuestionNode(inputs));
+  tabTypeNode.condition = {
+    equals: NewProjectTypeTabOptionItem().id,
+  };
+  typeNode.addChild(tabTypeNode);
+
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem().id };
+    tabTypeNode.addChild(spfxNode);
+  }
+
+  // message extension type
+  const messageExtensionTypeNode = new QTreeNode(
+    getMessageExtensionTypeProjectQuestionNode(inputs)
+  );
+  messageExtensionTypeNode.condition = {
+    equals: NewProjectTypeMessageExtensionOptionItem().id,
+  };
+  typeNode.addChild(messageExtensionTypeNode);
+
+  // Outlook addin type
+  const outlookAddinTypeNode = new QTreeNode(getOutlookAddinTypeProjectQuestionNode(inputs));
+  outlookAddinTypeNode.condition = {
+    equals: NewProjectTypeOutlookAddinOptionItem().id,
+  };
+  typeNode.addChild(outlookAddinTypeNode);
+  outlookAddinTypeNode.addChild(getQuestionsForScaffolding());
+
+  // Language
+  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+  programmingLanguage.condition = {
+    notEquals: NewProjectTypeOutlookAddinOptionItem().id,
+  };
+  typeNode.addChild(programmingLanguage);
+
+  root.addChild(new QTreeNode(QuestionRootFolder()));
+  const defaultName = !inputs.teamsAppFromTdp?.appName
+    ? undefined
+    : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  root.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
+
+  if (isFromDevPortal(inputs)) {
+    const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
+    if (updateTabUrls) {
+      typeNode.addChild(updateTabUrls);
+    }
+
+    const updateBotIds = await getQuestionsForUpdateBotIds(inputs.teamsAppFromTdp);
+    if (updateBotIds) {
+      typeNode.addChild(updateBotIds);
+    }
+  }
+
+  return ok(root.trim());
+}
+
 async function getQuestionsForUpdateStaticTabUrls(
   appDefinition: AppDefinition
 ): Promise<QTreeNode | undefined> {
@@ -299,6 +404,8 @@ export async function getQuestionsForCreateProjectV2(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform)) {
     return getQuestionsForCreateProjectWithDotNet(inputs);
+  } else if (inputs.platform === Platform.VSCode) {
+    return getQuestionsForCreateProjectInVSC(inputs);
   } else {
     return getQuestionsForCreateProjectWithoutDotNet(inputs);
   }

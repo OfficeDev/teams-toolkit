@@ -30,6 +30,7 @@ describe("teamsfx apply", function () {
     options = [];
     telemetryEvents = [];
     telemetryEventStatus = undefined;
+    sandbox.stub(process, "exit");
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {

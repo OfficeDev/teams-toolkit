@@ -13,7 +13,6 @@ Some of the changes you may immediately notice are:
 * Configuration of the lifecycle management using Provision, Deploy, and Publish are now fully customizable and expressed in `teamsapp.local.yml` and `teamsapp.yml`. [More info](https://aka.ms/teamsfx-v5.0-guide#project-files)
 * Configuration and values that were saved in `.fx/config` and `.fx/state` are now handled with environment files and saved to `/env` by default. [More info](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 * The changes to use environment files give greater flexibility of configuring which resources are used to provision, but may require some manual steps when creating new environments. [More info](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
-* Teams Toolkit no longer prompts you for which environment to use when using the Launch targets in `launch.json`. You can edit `.vscode/launch.json` and configure which environments are used. [More info](https://aka.ms/teams-toolkit-5.0-upgrade#launch-your-app)
 
 If you're using APIM:
 * You need to provide values to `APIM__PUBLISHEREMAIL` and the `APIM__PUBLISHERNAME` environment variables. [More info](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)
@@ -22,7 +21,7 @@ You can [view these changes on GitHub](https://aka.ms/teams-toolkit-5.0-upgrade#
 
 ## Changes to your project file structure
 
-1. Created `teamsapp.yml` and `teamsapp.local.yml` in your projects root directory.
+1. Created `teamsapp.yml` and `teamsapp.local.yml` in your project's root directory.
 2. Moved environment files in `.fx` to `.env.{env}` in `env` folder.
 3. If your project contains file `.fx/states/{env}.userdata`, the content will be moved to `.env.{env}.user` in `env` folder
 4. Moved `templates/appPackage` to `appPackage`, renamed `manifest.template.json` to `manifest.json` and placeholders in it will be updated using the latest default conventions.

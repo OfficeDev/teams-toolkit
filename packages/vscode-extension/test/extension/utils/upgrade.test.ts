@@ -4,8 +4,9 @@
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as spies from "chai-spies";
 import { ExtensionUpgrade } from "../../../src/utils/upgrade";
+import * as versionUtil from "../../../src/utils/versionUtil";
 import * as sinon from "sinon";
-import { ExtensionContext, Memento } from "vscode";
+import * as vscode from "vscode";
 import * as chai from "chai";
 chai.use(spies);
 const spy = chai.spy;
@@ -25,8 +26,8 @@ const reporterSpy = spy.interface({
 });
 describe("upgrade show what's new log", () => {
   const sandbox = sinon.createSandbox();
-  let context: ExtensionContext;
-  const mockGlobalState: Memento = {
+  let context: vscode.ExtensionContext;
+  const mockGlobalState: vscode.Memento = {
     keys: gloablStateKeys,
     get: globalStateGet,
     update: globalStateUpdate,
@@ -38,8 +39,21 @@ describe("upgrade show what's new log", () => {
     context = {
       subscriptions: [],
       globalState: mockGlobalState,
-    } as unknown as ExtensionContext;
-    sandbox.stub(ExtensionUpgrade.prototype, "show").resolves();
+    } as unknown as vscode.ExtensionContext;
+    sandbox.stub(versionUtil, "getExtensionId").returns("");
+    sandbox.stub(vscode.window, "showInformationMessage").resolves();
+    sandbox.stub(vscode.extensions, "getExtension").returns({
+      packageJSON: { version: "5.0.0" },
+      id: "",
+      extensionPath: "",
+      isActive: true,
+      exports: {},
+      extensionKind: vscode.ExtensionKind.UI,
+      extensionUri: vscode.Uri.parse("https://www.test.com"),
+      activate(): Thenable<void> {
+        return Promise.resolve();
+      },
+    });
   });
   afterEach(() => {
     sandbox.restore();
@@ -47,7 +61,6 @@ describe("upgrade show what's new log", () => {
   it("show what's new notification happy path", async () => {
     const contextSpy = sandbox.spy(context.globalState, "update");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
-    sandbox.stub(ExtensionUpgrade.prototype, "getTeamsToolkitVersion").returns("5.0.0");
     const instance = new ExtensionUpgrade(context);
     await instance.showChangeLog();
     chai.assert(contextSpy.callCount == 2);
@@ -58,7 +71,6 @@ describe("upgrade show what's new log", () => {
   it("should not show whate's new log when version is not changed", async () => {
     const contextSpy = sandbox.spy(context.globalState, "update");
     sandbox.stub(context.globalState, "get").returns("5.0.0");
-    sandbox.stub(ExtensionUpgrade.prototype, "getTeamsToolkitVersion").returns("5.0.0");
     const instance = new ExtensionUpgrade(context);
     await instance.showChangeLog();
     sinon.assert.notCalled(contextSpy);

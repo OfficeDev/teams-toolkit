@@ -17,37 +17,10 @@ export class ExtensionUpgrade {
     this.context = context;
   }
 
-  public getTeamsToolkitVersion(): any {
+  public async showChangeLog() {
     const extensionId = versionUtil.getExtensionId();
     const teamsToolkit = vscode.extensions.getExtension(extensionId);
-    return teamsToolkit?.packageJSON.version;
-  }
-  public async show(teamsToolkitVersion: string) {
-    const whatIsNew = {
-      title: localize("teamstoolkit.upgrade.whatIsNewTitle"),
-      run: async (): Promise<void> => {
-        const uri = vscode.Uri.file(`${folder.getResourceFolder()}/WHATISNEW.md`);
-        vscode.workspace.openTextDocument(uri).then(() => {
-          const PreviewMarkdownCommand = "markdown.showPreview";
-          vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
-        });
-      },
-    };
-
-    vscode.window
-      .showInformationMessage(
-        util.format(localize("teamstoolkit.upgrade.banner"), teamsToolkitVersion),
-        whatIsNew
-      )
-      .then((selection) => {
-        if (selection?.title === localize("teamstoolkit.upgrade.whatIsNewTitle")) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewContext);
-          selection.run();
-        }
-      });
-  }
-  public async showChangeLog() {
-    const teamsToolkitVersion = this.getTeamsToolkitVersion();
+    const teamsToolkitVersion = teamsToolkit?.packageJSON.version;
     const syncedVersion = this.context.globalState.get<string>(SyncedState.Version);
 
     if (
@@ -62,7 +35,28 @@ export class ExtensionUpgrade {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
       this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
 
-      this.show(teamsToolkitVersion);
+      const whatIsNew = {
+        title: localize("teamstoolkit.upgrade.whatIsNewTitle"),
+        run: async (): Promise<void> => {
+          const uri = vscode.Uri.file(`${folder.getResourceFolder()}/WHATISNEW.md`);
+          vscode.workspace.openTextDocument(uri).then(() => {
+            const PreviewMarkdownCommand = "markdown.showPreview";
+            vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
+          });
+        },
+      };
+
+      vscode.window
+        .showInformationMessage(
+          util.format(localize("teamstoolkit.upgrade.banner"), teamsToolkitVersion),
+          whatIsNew
+        )
+        .then((selection) => {
+          if (selection?.title === localize("teamstoolkit.upgrade.whatIsNewTitle")) {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewContext);
+            selection.run();
+          }
+        });
     }
   }
 }

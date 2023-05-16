@@ -11,6 +11,8 @@ import {
   Func,
   Inputs,
   ProductName,
+  Stage,
+  StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -19,12 +21,12 @@ import { TOOLS } from "../globalVars";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, NoProjectOpenedError } from "../error";
-import { shouldIgnored } from "./projectSettingsLoader";
 import crypto from "crypto";
 import * as os from "os";
 import { waitSeconds } from "../../common/tools";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
 import { FileNotFoundError, InvalidProjectError } from "../../error/common";
+import { CoreHookContext } from "../types";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -116,4 +118,17 @@ export function getLockFolder(projectPath: string): string {
     os.tmpdir(),
     `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`
   );
+}
+
+export function shouldIgnored(ctx: CoreHookContext): boolean {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const method = ctx.method;
+
+  let isCreate = false;
+  if (method === "getQuestions") {
+    const task = ctx.arguments[0] as Stage;
+    isCreate = task === Stage.create;
+  }
+
+  return StaticPlatforms.includes(inputs.platform) || isCreate || inputs.ignoreLockByUT;
 }

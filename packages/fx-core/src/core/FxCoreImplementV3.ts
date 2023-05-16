@@ -16,7 +16,6 @@ import {
   Platform,
   ProjectSettingsV3,
   Result,
-  Settings,
   Stage,
   Tools,
   UserCancelError,
@@ -37,7 +36,6 @@ import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
@@ -392,7 +390,6 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -406,7 +403,6 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -420,7 +416,6 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,

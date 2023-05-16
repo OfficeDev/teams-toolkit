@@ -71,7 +71,6 @@ import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
@@ -373,17 +372,8 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.listCollaborator, inputs);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvLoaderMW(false),
-    ContextInjectorMW,
-  ])
-  async getSelectedEnv(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string | undefined, FxError>> {
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
     return ok(inputs.env); //work for both v2 and v3
   }
 

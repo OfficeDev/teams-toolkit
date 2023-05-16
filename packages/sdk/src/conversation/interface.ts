@@ -214,9 +214,9 @@ export interface PagedData<T> {
    * The Continuation Token to pass to get the next page of results.
    *
    * @remarks
-   * Null or empty token means the page reaches the end.
+   * Undefined or empty token means the page reaches the end.
    */
-  continuationToken: string | null;
+  continuationToken?: string;
 }
 
 /**

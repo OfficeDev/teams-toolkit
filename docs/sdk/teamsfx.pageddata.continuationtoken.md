@@ -9,10 +9,10 @@ The Continuation Token to pass to get the next page of results.
 <b>Signature:</b>
 
 ```typescript
-continuationToken: string | null;
+continuationToken?: string;
 ```
 
 ## Remarks
 
-Null or empty token means the page reaches the end.
+Undefined or empty token means the page reaches the end.
 

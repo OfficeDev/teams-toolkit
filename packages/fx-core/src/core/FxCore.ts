@@ -632,74 +632,54 @@ export async function ensureBasicFolderStructure(
   return ok(null);
 }
 
-export async function listCollaboratorFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
+export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
   setCurrentStage(Stage.listCollaborator);
   inputs.stage = Stage.listCollaborator;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await listCollaborator(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
+  const context = createContextV3();
+  const res = await listCollaborator(
+    context,
+    inputs as v2.InputsWithProjectPath,
+    undefined,
+    TOOLS.tokenProvider
+  );
+  return res;
   return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
 }
 
-export async function checkPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
+export async function checkPermissionFunc(inputs: Inputs): Promise<Result<any, FxError>> {
   setCurrentStage(Stage.checkPermission);
   inputs.stage = Stage.checkPermission;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await checkPermission(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  const context = createContextV3();
+  const res = await checkPermission(
+    context,
+    inputs as v2.InputsWithProjectPath,
+    undefined,
+    TOOLS.tokenProvider
+  );
+  return res;
 }
 
-export async function grantPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
+export async function grantPermissionFunc(inputs: Inputs): Promise<Result<any, FxError>> {
   setCurrentStage(Stage.grantPermission);
   inputs.stage = Stage.grantPermission;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await grantPermission(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  const context = createContextV3();
+  const res = await grantPermission(
+    context,
+    inputs as v2.InputsWithProjectPath,
+    undefined,
+    TOOLS.tokenProvider
+  );
+  return res;
 }

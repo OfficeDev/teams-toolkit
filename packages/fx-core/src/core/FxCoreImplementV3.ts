@@ -391,11 +391,10 @@ export class FxCoreV3Implement {
     QuestionModelMW,
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return grantPermissionFunc(inputs, ctx);
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs);
   }
 
   @hooks([
@@ -404,11 +403,10 @@ export class FxCoreV3Implement {
     QuestionModelMW,
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return checkPermissionFunc(inputs, ctx);
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs);
   }
 
   @hooks([
@@ -417,11 +415,10 @@ export class FxCoreV3Implement {
     QuestionModelMW,
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return listCollaboratorFunc(inputs, ctx);
+    return listCollaboratorFunc(inputs);
   }
 
   /**

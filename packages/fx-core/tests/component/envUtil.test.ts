@@ -46,6 +46,7 @@ describe("env utils", () => {
     trackingId: "mockProjectId",
     version: "1",
   };
+  let mockedEnvRestore: RestoreFn | undefined;
   afterEach(() => {
     sandbox.restore();
   });

@@ -18,7 +18,6 @@ import {
   ok,
   Platform,
   ProjectSettings,
-  ProjectSettingsV3,
   QTreeNode,
   Result,
   Stage,
@@ -26,7 +25,7 @@ import {
   Tools,
   v2,
   v3,
-  Void,
+  Void
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
@@ -36,7 +35,6 @@ import { Container } from "typedi";
 import * as uuid from "uuid";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { isV3Enabled } from "../common/tools";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
 import { ComponentNames, validateSchemaOption } from "../component/constants";
@@ -453,7 +451,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 

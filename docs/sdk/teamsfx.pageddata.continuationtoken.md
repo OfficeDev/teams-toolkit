@@ -9,7 +9,7 @@ The Continuation Token to pass to get the next page of results.
 <b>Signature:</b>
 
 ```typescript
-continuationToken: string;
+continuationToken: string | null;
 ```
 
 ## Remarks

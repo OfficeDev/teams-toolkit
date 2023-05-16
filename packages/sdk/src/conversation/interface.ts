@@ -216,7 +216,7 @@ export interface PagedData<T> {
    * @remarks
    * Null or empty token means the page reaches the end.
    */
-  continuationToken: string;
+  continuationToken: string | null;
 }
 
 /**

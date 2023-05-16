@@ -553,7 +553,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 
 // @public
 export interface PagedData<T> {
-    continuationToken: string;
+    continuationToken: string | null;
     data: T[];
 }
 

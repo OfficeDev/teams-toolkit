@@ -16,6 +16,6 @@ export interface PagedData<T>
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [continuationToken](./teamsfx.pageddata.continuationtoken.md) | string | The Continuation Token to pass to get the next page of results. |
+|  [continuationToken](./teamsfx.pageddata.continuationtoken.md) | string \| null | The Continuation Token to pass to get the next page of results. |
 |  [data](./teamsfx.pageddata.data.md) | T\[\] | Page of data. |
 

@@ -305,7 +305,7 @@ export class FuncToolChecker implements DepsChecker {
       throw new DepsCheckerError(Messages.needInstallNpm(), v3DefaultHelpLink);
     }
 
-    const tmpVersion = uuid.v4();
+    const tmpVersion = `tmp-${uuid.v4().slice(0, 6)}`;
     await this.installFunc(tmpVersion, expectedFuncVersion);
 
     const funcVersionRes = await this.checkFuncVersion(

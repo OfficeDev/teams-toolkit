@@ -6,7 +6,6 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
@@ -28,10 +27,6 @@ describe("upgrade", () => {
   });
 
   it("sample bot sso", { testPlanCaseId: 19314244 }, async function () {
-    if (!isV3Enabled()) {
-      return;
-    }
-
     {
       Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);

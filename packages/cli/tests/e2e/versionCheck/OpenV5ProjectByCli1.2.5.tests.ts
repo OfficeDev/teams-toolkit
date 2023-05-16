@@ -7,7 +7,6 @@
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
@@ -26,10 +25,6 @@ describe("version check", () => {
   });
 
   it("open v5 project by cli 1.2.5", { testPlanCaseId: 17603383 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     {
       const result = await Executor.createProject(
         testFolder,

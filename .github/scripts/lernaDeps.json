@@ -28,5 +28,6 @@
     "packages/sdk-react"
   ],
   "template": ["templates"],
-  "extra-shot-mocha": ["packages/extra-shot-mocha"]
+  "extra-shot-mocha": ["packages/extra-shot-mocha"],
+  "eslint-plugin-teamsfx": ["packages/eslint-plugin-teamsfx"]
 }

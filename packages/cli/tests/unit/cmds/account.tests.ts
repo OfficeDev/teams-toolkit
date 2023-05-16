@@ -1,21 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogLevel, err, ok } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
 import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
-import { replaceTemplateString } from "../../../src/colorize";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import * as codeFlowLogin from "../../../src/commonlib/codeFlowLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
-import LogProvider from "../../../src/commonlib/log";
 import M365TokenProvider from "../../../src/commonlib/m365Login";
 import { ConfigNotFoundError, NotFoundSubscriptionId } from "../../../src/error";
 import * as Utils from "../../../src/utils";
-import { expect } from "../utils";
+import { expect, mockLogProvider, mockYargs } from "../utils";
 
 describe("Account Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -23,35 +21,8 @@ describe("Account Command Tests", function () {
   let mockedEnvRestore: RestoreFn = () => {};
 
   beforeEach(() => {
-    sandbox.stub(process, "exit");
-    sandbox
-      .stub<any, any>(yargs, "command")
-      .callsFake((cmd: any, desc: any, builder: any, handler: any) => {
-        return builder(yargs);
-      });
-    sandbox.stub(yargs, "options").returns(yargs);
-    sandbox.stub(yargs, "positional").returns(yargs);
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      messages.push(message);
-    });
-    sandbox.stub(LogProvider, "outputInfo").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputWarning").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputError").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputSuccess").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputDetails").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
+    mockYargs(sandbox);
+    mockLogProvider(sandbox, messages);
   });
 
   afterEach(() => {

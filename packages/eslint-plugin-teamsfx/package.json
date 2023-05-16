@@ -2,7 +2,6 @@
   "name": "@microsoft/eslint-plugin-teamsfx",
   "version": "0.0.1",
   "description": "eslint for teamsfx",
-  "private": true,
   "keywords": [
     "eslint",
     "eslintplugin",

@@ -170,3 +170,16 @@ export class NoEnvFilesError extends UserError {
     super(errorOptions);
   }
 }
+
+export class MissingRequiredFileError extends UserError {
+  constructor(source: string, task: string, file: string) {
+    const key = "error.common.MissingRequiredFileError";
+    const errorOptions: UserErrorOptions = {
+      source: camelCase(source),
+      name: "MissingRequiredFileError",
+      message: getDefaultString(key, task, file),
+      displayMessage: getLocalizedString(key, task, file),
+    };
+    super(errorOptions);
+  }
+}

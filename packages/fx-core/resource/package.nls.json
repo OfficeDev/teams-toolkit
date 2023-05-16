@@ -976,6 +976,7 @@
   "error.common.MissingRequiredInputError": "Missing required input: %s",
   "error.common.InputValidationError": "Input '%s' validation failed: %s",
   "error.common.NoEnvFilesError": "Unable to find .env files.",
+  "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
   "error.upgrade.NoNeedUpgrade": "This project is already the latest, no need to upgrade.",
   "error.collaboration.InvalidManifestError": "Unable to process your manifest file ('%s') due to the absence of the 'id' key. To identify your application correctly, please make sure that the 'id' key is present in the manifest file.",
   "error.collaboration.FailedToLoadManifest": "Unable to load manifest file. Reason: %s.",

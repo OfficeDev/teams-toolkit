@@ -30,7 +30,11 @@ import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
 import { MetadataV3 } from "../../src/common/versionMetadata";
-import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../src/error/common";
+import {
+  FileNotFoundError,
+  MissingEnvironmentVariablesError,
+  MissingRequiredFileError,
+} from "../../src/error/common";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -42,25 +46,36 @@ describe("env utils", () => {
     trackingId: "mockProjectId",
     version: "1",
   };
-  let mockedEnvRestore: RestoreFn | undefined;
-
   afterEach(() => {
     sandbox.restore();
   });
 
-  it("pathUtils.getYmlFilePath case 1", async () => {
-    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(true);
+  it("pathUtils.getYmlFilePath", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     process.env.TEAMSFX_ENV = "dev";
     const res1 = pathUtils.getYmlFilePath(".", "dev");
     assert.equal(res1, path.join(".", MetadataV3.configFile));
   });
-  it("pathUtils.getYmlFilePath case 2", async () => {
-    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+  it("pathUtils.getYmlFilePath throw MissingRequiredFileError with env=dev", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(false);
     process.env.TEAMSFX_ENV = "dev";
-    const res1 = pathUtils.getYmlFilePath(".", "dev");
-    assert.equal(res1, path.join(".", "teamsfx", YmlFileNameOld));
+    try {
+      await pathUtils.getYmlFilePath(".", "dev");
+      assert.fail("show not reach here");
+    } catch (e) {
+      assert.isTrue(e instanceof MissingRequiredFileError);
+    }
   });
-
+  it("pathUtils.getYmlFilePath throw MissingRequiredFileError with env=local", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    process.env.TEAMSFX_ENV = "local";
+    try {
+      await pathUtils.getYmlFilePath(".", "local");
+      assert.fail("show not reach here");
+    } catch (e) {
+      assert.isTrue(e instanceof MissingRequiredFileError);
+    }
+  });
   it("pathUtils.getEnvFolderPath", async () => {
     const mockProjectModel: ProjectModel = {
       environmentFolderPath: "/home/envs",

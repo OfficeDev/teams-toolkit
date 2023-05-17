@@ -694,7 +694,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
     const fileNames = fsReadDirSync(context, path.join(".fx", "configs")); // search all files, get file names
     for (const fileName of fileNames)
       if (fileName.startsWith("config.")) {
-        const fileRegex = new RegExp("(config\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
+        const fileRegex = new RegExp("(config\\.)([a-zA-Z0-9_-]*)(\\.json)$", "g"); // config.*.json
         const fileNamesArray = fileRegex.exec(fileName);
         if (fileNamesArray != null) {
           // get envName
@@ -763,7 +763,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
     const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
     for (const fileName of fileNames)
       if (fileName.startsWith("state.")) {
-        const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
+        const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)$", "g"); // state.*.json
         const fileNamesArray = fileRegex.exec(fileName);
         if (fileNamesArray != null) {
           // get envName
@@ -926,7 +926,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
       const fileNames = fsReadDirSync(context, path.join(".fx", "configs"));
       for (const fileName of fileNames)
         if (fileName.startsWith("config.")) {
-          const fileRegex = new RegExp("(config.)([a-zA-Z0-9_-]*)(.json)", "g"); // state.*.json
+          const fileRegex = new RegExp("(config.)([a-zA-Z0-9_-]*)(.json)$", "g"); // config.*.json
           const fileNamesArray = fileRegex.exec(fileName);
           if (fileNamesArray != null) {
             // get envName

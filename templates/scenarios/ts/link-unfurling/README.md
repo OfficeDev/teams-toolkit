@@ -213,7 +213,7 @@ In `src/adaptiveCards/helloWorldCard.json`, update `actions` to be following.
         {
             "type": "Action.OpenUrl",
             "title": "View Via Deep Link",
-            "url": "https://teams.microsoft.com/l/stage/${appId}/0?context=%7B%22contentUrl%22%3A%22https%3A%2F%2F${url}%2Ftab%22%2C%22websiteUrl%22%3A%22https%3A%2F%2F${url}%2Fcontent%22%2C%22name%22%3A%22DemoStageView%22%7D"
+            "url": "https://teams.microsoft.com/l/stage/${appId}/0?context=%7B%22contentUrl%22%3A%22https%3A%2F%2F${url}%2Ftab%22%2C%22websiteUrl%22%3A%22https%3A%2F%2F${url}%2Ftab%22%2C%22name%22%3A%22DemoStageView%22%7D"
         }
       ],
 ```
@@ -418,3 +418,20 @@ Click `card action` button, the adaptive card will be updated to be following:
 ![cardActionClick](https://github.com/OfficeDev/TeamsFx/assets/11220663/b141dfe0-2586-47af-9364-e1a5c889f3a8)
 
 Please refer to [Universal actions document](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview) for more details.
+
+### How to Extend this template with Notification, Command and Workflow bot.
+The Notification, Command and Workflow Bot are scenario templates provided by Teams Toolkit. These templates have similar structure. This guide takes Notification Bot as an example.
+
+#### Step 1: Create a Notification Bot template using Teams Toolkit.
+Select the Teams Toolkit icon on the left in the VS Code toolbar. Choose "Create a New App"->"Bot"->"Chat Notification Message". Wait for the download complete.
+
+#### Step 2: Update source code.
+Copy all methods from `src/linkUnfurlingApp.ts` class to Notification Bot's empty `TeamsActivityHandler` in `src/teamsBot.ts`.
+
+#### Step 3: Update manifest.
+Copy `composeExtension` section in your `appPackage/manifest.json`
+to Notification bot's `appPackage/manifest.json`.
+
+Now your Notification bot project has both notification and link unfurling function.
+
+![notification link unfurling](https://github.com/OfficeDev/TeamsFx/assets/25220706/17a5742c-0233-474e-bc2e-78c3ff7e9553)

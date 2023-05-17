@@ -2635,6 +2635,7 @@ describe("component coordinator test", () => {
       end: progressEndStub,
     } as any as IProgressHandler);
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.CLI,
@@ -2678,6 +2679,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2716,6 +2718,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
     const inputs: Inputs = {
       platform: Platform.VS,

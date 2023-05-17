@@ -28,7 +28,7 @@ describe("upgrade", () => {
 
   it("sample bot sso", { testPlanCaseId: 19314244 }, async function () {
     {
-      Executor.installCLI(testFolder, "1.2.5", true);
+      await Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);
       env["TEAMSFX_V3"] = "false";
       // new projiect
@@ -40,6 +40,7 @@ describe("upgrade", () => {
       );
     }
 
+    await Executor.installCLI(testFolder, "alpha", true);
     {
       // upgrade
       const result = await Executor.upgrade(projectPath);

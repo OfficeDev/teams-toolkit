@@ -5,9 +5,7 @@
   .codeTitle {
     display: flex;
     justify-content: flex-end;
-    background-color: var(--vscode-editor-background);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    background-color: var(--vscode-editorGroup-border);
 
     button {
       padding: 5px;
@@ -19,12 +17,21 @@
     }
 
     .copyButton {
-      background-color: var(--vscode-activeSelectionForeground);
+      background-color: var(--vscode-editor-background);
       color: var(--vscode-breadcrumb-activeSelectionForeground);
     }
 
     .copyButton:hover {
       color: var(--vscode-peekViewTitleLabel-foreground);
+    }
+
+    .copiedButton {
+      background-color: var(--vscode-editorGutter-addedBackground);
+      color: var(--vscode-breadcrumb-activeSelectionForeground);
+
+      button {
+        background-color: var(--vscode-editorGutter-addedBackground);
+      }
     }
   }
 

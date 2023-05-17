@@ -20,6 +20,7 @@ export default function CodeSnippet(props: {
   theme: string;
   identifier: string;
 }) {
+  const [copied, setCopied] = React.useState(false);
   const onCopyCode = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
@@ -31,18 +32,35 @@ export default function CodeSnippet(props: {
         },
       },
     });
+    setCopied(true);
   };
+
+  let copyButton;
+  if (copied) {
+    copyButton = (
+      <div className="copiedButton">
+        <span>
+          <Icon iconName="CheckMark" />
+        </span>
+        <button>Copied</button>
+      </div>
+    );
+  } else {
+    copyButton = (
+      <div className="copyButton">
+        <span>
+          <Icon iconName="Copy" />
+        </span>
+        <button>Copy</button>
+      </div>
+    );
+  }
 
   return (
     <div className="codeSnippet">
       <div className="codeTitle">
         <CopyToClipboard text={props.data} onCopy={onCopyCode}>
-          <div className="copyButton">
-            <span>
-              <Icon iconName="Copy" />
-            </span>
-            <button>Copy</button>
-          </div>
+          {copyButton}
         </CopyToClipboard>
       </div>
       <div>

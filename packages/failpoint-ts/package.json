@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/failpoint-ts",
-  "version": "0.1.1-rc.0",
+  "version": "0.1.1",
   "description": "Fault Injection for TypeScript",
   "keywords": [
     "Fault Injection"
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.2-rc.0",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.2",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^8.2.3",
     "@types/node": "^16.0.0",

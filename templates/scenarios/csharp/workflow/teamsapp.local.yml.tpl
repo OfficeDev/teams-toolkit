@@ -33,6 +33,14 @@ provision:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
+  # Generate launchUrl to launchSettings.json file
+  - uses: file/updateLaunchUrlInLaunchSettings
+    with:
+      target: ./Properties/launchSettings.json
+      profile: Microsoft Teams (browser)
+      launchUrl: https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}
+      addLoginHint: true
+
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
     with:

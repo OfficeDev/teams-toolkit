@@ -54,6 +54,7 @@
           { "$ref": "#/definitions/botframeworkCreate" },
           { "$ref": "#/definitions/fileCreateOrUpdateEnvironmentFile" },
           { "$ref": "#/definitions/fileCreateOrUpdateJsonFile" },
+          { "$ref": "#/definitions/fileUpdateLaunchUrlInLaunchSettings"},
           { "$ref": "#/definitions/devToolInstall" },
           { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
@@ -1128,6 +1129,54 @@
             "target": {
               "type": "string",
               "description": "the target file"
+            }
+          }
+        }
+      }
+    },
+    "fileUpdateLaunchUrlInLaunchSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-updatelaunchurlinlaunchsettings for more details.",
+      "required": ["uses", "with"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An optional name of this action."
+        },
+        "env": {
+          "type": "object",
+          "description": "Define environment variables for this action.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "uses": {
+          "type": "string",
+          "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-updatelaunchurlinlaunchsettings for more details.",
+          "const": "file/updateLaunchUrlInLaunchSettings"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "parameters for this action",
+          "required": ["target", "profile", "launchUrl", "addLoginHint"],
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "the target file"
+            },
+            "profile": {
+              "type": "string",
+              "description": "the profile to be updated"
+            },
+            "launchUrl": {
+              "type": "string",
+              "description": "the launch url to be updated"
+            },
+            "addLoginHint": {
+              "type": "boolean",
+              "description": "whether to add login hint"
             }
           }
         }

@@ -32,22 +32,30 @@ namespace {{SafeProjectName}}
             var adaptiveCardFilePath = Path.Combine(context.FunctionAppDirectory, "Resources", "NotificationDefault.json");
             var cardTemplate = await File.ReadAllTextAsync(adaptiveCardFilePath, cancellationToken);
 
-            var installations = await _conversation.Notification.GetInstallationsAsync(cancellationToken);
-            foreach (var installation in installations)
+            var pageSize = 100;
+            string continuationToken = null;
+            do
             {
-                // Build and send adaptive card
-                var cardContent = new AdaptiveCardTemplate(cardTemplate).Expand
-                (
-                    new NotificationDefaultModel
-                    {
-                        Title = "New Event Occurred!",
-                        AppName = "Contoso App Notification",
-                        Description = $"This is a sample timer-triggered notification to {installation.Type}",
-                        NotificationUrl = "https://aka.ms/teamsfx-notification-new",
-                    }
-                );
-                await installation.SendAdaptiveCard(JsonConvert.DeserializeObject(cardContent), cancellationToken);
-            }
+                var pagedInstallations = await _conversation.Notification.GetPagedInstallationsAsync(pageSize, continuationToken, cancellationToken);
+                continuationToken = pagedInstallations.ContinuationToken;
+                var installations = pagedInstallations.Data;
+                foreach (var installation in installations)
+                {
+                    // Build and send adaptive card
+                    var cardContent = new AdaptiveCardTemplate(cardTemplate).Expand
+                    (
+                        new NotificationDefaultModel
+                        {
+                            Title = "New Event Occurred!",
+                            AppName = "Contoso App Notification",
+                            Description = $"This is a sample timer-triggered notification to {installation.Type}",
+                            NotificationUrl = "https://aka.ms/teamsfx-notification-new",
+                        }
+                    );
+                    await installation.SendAdaptiveCard(JsonConvert.DeserializeObject(cardContent), cancellationToken);
+                }
+
+            } while (!string.IsNullOrEmpty(continuationToken));
         }
     }
 }

@@ -60,8 +60,6 @@ export namespace ExtTelemetry {
     switch (stage) {
       case Stage.create:
         return TelemetryEvent.CreateProject;
-      case Stage.init:
-        return TelemetryEvent.InitProject;
       case Stage.provision:
         return TelemetryEvent.Provision;
       case Stage.deploy:

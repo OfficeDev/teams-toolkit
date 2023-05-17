@@ -51,6 +51,5 @@ module.exports = {
         },
       },
     ],
-    "@microsoft/teamsfx/jsdoc-author": ["warn"],
   },
 };

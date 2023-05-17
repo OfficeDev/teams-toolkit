@@ -553,7 +553,7 @@ describe("getManifest V3", () => {
     envInfo.envName = "dev";
     manifest.name.short = "${{MY_APP_NAME}}";
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    const res = await manifestUtils.getManifestV3("", envInfo, false);
+    const res = await manifestUtils.getManifestV3("");
     chai.assert.isTrue(res.isErr() && res.error instanceof MissingEnvironmentVariablesError);
   });
 
@@ -561,7 +561,7 @@ describe("getManifest V3", () => {
     const manifest = new TeamsAppManifest();
     manifest.id = uuid.v4();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    const res = await manifestUtils.getManifestV3("", undefined, false);
+    const res = await manifestUtils.getManifestV3("");
     chai.assert.isTrue(res.isOk());
   });
 });

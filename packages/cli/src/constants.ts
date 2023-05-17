@@ -94,7 +94,7 @@ export const ValidateApplicationOptions: OptionsMap = {
   },
 };
 
-export const AadManifestFilePathName = "manifest-file-path";
+export const AadManifestFilePathName = CoreQuestionNames.AadAppManifestFilePath;
 export const AadManifestOptions: OptionsMap = {
   [AadManifestFilePathName]: {
     type: "string",

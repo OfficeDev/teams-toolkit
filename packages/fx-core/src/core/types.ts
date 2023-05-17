@@ -2,16 +2,16 @@
 // Licensed under the MIT license.
 
 import { HookContext } from "@feathersjs/hooks";
-import { Json, ProjectSettings, Solution, SolutionContext, v2, v3 } from "@microsoft/teamsfx-api";
+import { Json, ProjectSettings, SolutionContext, v2, v3 } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import { VersionState } from "../common/versionMetadata";
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
   solutionContext?: SolutionContext;
-  solution?: Solution;
+  solution?: any;
 
   contextV2?: v2.Context;
-  solutionV2?: v2.SolutionPlugin;
+  solutionV2?: any;
   envInfoV2?: v2.EnvInfoV2;
   localSettings?: Json;
 

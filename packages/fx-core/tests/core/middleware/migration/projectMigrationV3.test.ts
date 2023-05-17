@@ -41,7 +41,6 @@ import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
 import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
 import {
   Metadata,
-  MetadataV2,
   MetadataV3,
   VersionSource,
   VersionState,
@@ -54,11 +53,12 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
+import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil, SettingsUtils } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -70,7 +70,6 @@ import {
   getManifestPathV2,
   loadExpectedYmlFile,
   getYmlTemplates,
-  normalizeLineBreaks,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
@@ -580,11 +579,12 @@ describe("manifestsMigration valid domain", () => {
     assert.equal(manifest, manifestExpeceted);
   });
 
-  it("manifest without validDomain", async () => {
+  it("manifest without validDomain and bicep has output key validDomain", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
+    sandbox.stub(v3MigrationUtils, "isValidDomainForBotOutputKey").resolves(true);
     await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
     const oldManifestPath = getManifestPathV2(projectPath);
     const readRes = await manifestUtils._readAppManifest(oldManifestPath);
@@ -610,7 +610,11 @@ describe("manifestsMigration valid domain", () => {
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
-      .replace(/\n/g, "");
+      .replace(/\n/g, "")
+      .replace(
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__VALIDDOMAIN"
+      );
     assert.equal(manifest, manifestExpeceted);
   });
 
@@ -1108,6 +1112,9 @@ describe("Migration utils", () => {
   it("checkVersionForMigration V3", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: "1.0.0" }));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
@@ -1356,6 +1363,7 @@ describe("debugMigration", () => {
     "V3.5.0-V4.0.6-tab-bot-func-node18",
     "beforeV3.4.0-tab-bot-func-node18",
     "transparent-notification-node18",
+    "V4.0.2-notification-trigger",
   ];
 
   const simpleAuthPath = path.join(os.homedir(), ".fx", "localauth").replace(/\\/g, "\\\\");

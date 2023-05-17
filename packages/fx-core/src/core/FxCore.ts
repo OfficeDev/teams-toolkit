@@ -363,7 +363,7 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.listCollaborator, inputs);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false)])
   async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
     return ok(inputs.env); //work for both v2 and v3
   }

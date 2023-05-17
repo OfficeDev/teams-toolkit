@@ -89,6 +89,7 @@ import {
   randomAppName,
 } from "../core/utils";
 import { MockedUserInteraction } from "../plugins/solution/util";
+import * as coll from "../../src/core/collaborator";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -3316,7 +3317,68 @@ describe("component coordinator test", () => {
     const res = await fxCore.getDotEnvs(inputs);
     assert.isTrue(res.isErr());
   });
-
+  it("getProjectConfig", async () => {
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getProjectConfig(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("getProjectConfigV3", async () => {
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getProjectConfigV3(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("getSelectedEnv", async () => {
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getSelectedEnv(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("listCollaborator", async () => {
+    sandbox.stub(coll, "listCollaborator").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.listCollaborator(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("checkPermission", async () => {
+    sandbox.stub(coll, "checkPermission").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.checkPermission(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("grantPermission", async () => {
+    sandbox.stub(coll, "grantPermission").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.grantPermission(inputs);
+    assert.isTrue(res.isErr());
+  });
   describe("encrypt/decrypt", () => {
     afterEach(() => {
       sandbox.restore();

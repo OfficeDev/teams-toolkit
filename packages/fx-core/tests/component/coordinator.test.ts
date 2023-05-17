@@ -3145,7 +3145,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
-    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",

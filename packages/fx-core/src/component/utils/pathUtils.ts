@@ -10,7 +10,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { yamlParser } from "../configManager/parser";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { InvalidProjectError } from "../../error/common";
+import { MissingRequiredFileError } from "../../error/common";
 
 export const YmlFileNameOld = "app.yml";
 export const LocalYmlFileNameOld = "app.local.yml";
@@ -19,22 +19,18 @@ export class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
     const envName = env || process.env.TEAMSFX_ENV;
     if (!envName) throw new InvalidInputError("util", "env", "env is undefined");
-    let ymlPath = path.join(
+    const ymlPath = path.join(
       projectPath,
       envName === "local" ? MetadataV3.localConfigFile : MetadataV3.configFile
     );
     if (fs.pathExistsSync(ymlPath)) {
       return ymlPath;
     }
-    ymlPath = path.join(
-      projectPath,
-      SettingsFolderName,
-      envName === "local" ? LocalYmlFileNameOld : YmlFileNameOld
-    );
-    if (fs.pathExistsSync(ymlPath)) {
-      return ymlPath;
+    if (envName === "local") {
+      throw new MissingRequiredFileError("core", "Debug ", ymlPath);
+    } else {
+      throw new MissingRequiredFileError("core", "", ymlPath);
     }
-    throw new InvalidProjectError();
   }
   async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {
     const ymlFilePath = this.getYmlFilePath(projectPath, "dev");

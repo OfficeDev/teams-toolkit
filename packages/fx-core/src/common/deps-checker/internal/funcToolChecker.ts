@@ -305,7 +305,7 @@ export class FuncToolChecker implements DepsChecker {
       throw new DepsCheckerError(Messages.needInstallNpm(), v3DefaultHelpLink);
     }
 
-    const tmpVersion = uuid.v4();
+    const tmpVersion = `tmp-${uuid.v4().slice(0, 6)}`;
     await this.installFunc(tmpVersion, expectedFuncVersion);
 
     const funcVersionRes = await this.checkFuncVersion(
@@ -410,7 +410,10 @@ export class FuncToolChecker implements DepsChecker {
       await fs.ensureFile(FuncToolChecker.getVersioningSentinelPath(tmpVersion));
     } catch (error: any) {
       await this.cleanup(tmpVersion);
-      this.telemetryProperties[TelemetryProperties.InstallFuncError] = error.message;
+      // ${funcPackageName}@${expectedFuncVersion} is incorrectly identified as an email format.
+      this.telemetryProperties[TelemetryProperties.InstallFuncError] = (error.message as string)
+        ?.split(`${funcPackageName}@${expectedFuncVersion}`)
+        ?.join(`${funcPackageName}{at}${expectedFuncVersion}`);
       throw new DepsCheckerError(
         getLocalizedString("error.common.InstallSoftwareError", funcToolName),
         v3DefaultHelpLink

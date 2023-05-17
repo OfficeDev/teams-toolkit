@@ -4,6 +4,11 @@
 
 ## BotBuilderCloudAdapter.TeamsBotInstallation.members() method
 
+> Warning: This API is now obsolete.
+> 
+> Use `getPagedMembers` instead.
+> 
+
 Get members from this bot installation.
 
 <b>Signature:</b>

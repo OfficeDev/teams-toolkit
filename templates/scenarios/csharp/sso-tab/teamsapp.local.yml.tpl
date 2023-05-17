@@ -59,6 +59,14 @@ provision:
             InitiateLoginEndpoint: ${{TAB_ENDPOINT}}/auth-start.html
             OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}
 
+  # Generate launchUrl to launchSettings.json file
+  - uses: file/updateLaunchUrlInLaunchSettings
+    with:
+      target: ./Properties/launchSettings.json
+      profile: Microsoft Teams (browser)
+      launchUrl: https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}
+      addLoginHint: true
+
   # Apply the AAD manifest to an existing AAD app. Will use the object id in
   # manifest file to determine which AAD app to update.
   - uses: aadApp/update

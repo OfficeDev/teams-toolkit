@@ -14,7 +14,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
-import { InvalidActionInputError, UnhandledError } from "../../../error/common";
+import { UnhandledError } from "../../../error/common";
 import { UpdateLaunchUrlInLaunchSettingsArgs } from "./interface/UpdateLaunchUrlInLaunchSettingsArgs";
 import { AppStudioScopes } from "../../../common/tools";
 

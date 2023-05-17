@@ -20,6 +20,7 @@ import { CoreQuestionNames } from "../../src/core/question";
 import {
   BOTS_TPL_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
+  DEFAULT_DESCRIPTION,
   DEFAULT_DEVELOPER,
 } from "../../src/component/resource/appManifest/constants";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
@@ -237,7 +238,7 @@ describe("developPortalScaffoldUtils", () => {
           privacyUrl: "",
           websiteUrl: "",
           termsOfUseUrl: "",
-          name: "developer-name",
+          name: "",
         },
         staticTabs: [
           {
@@ -269,7 +270,7 @@ describe("developPortalScaffoldUtils", () => {
           privacyUrl: "",
           websiteUrl: "",
           termsOfUseUrl: "",
-          name: "developer-name",
+          name: "",
         },
         staticTabs: [
           {
@@ -336,8 +337,11 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.staticTabs![1].websiteUrl, "websiteUrl1");
       chai.assert.equal(updatedManifest.staticTabs![1].contentUrl, "localhost/content");
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
+      chai.assert.equal(updatedManifest.developer.name, DEFAULT_DEVELOPER.name);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.description.short, DEFAULT_DESCRIPTION.short);
+      chai.assert.equal(updatedManifest.description.full, DEFAULT_DESCRIPTION.full);
       chai.assert.isTrue(updatedManifest.validDomains?.includes("${{TAB_DOMAIN}}"));
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
@@ -374,14 +378,14 @@ describe("developPortalScaffoldUtils", () => {
         manifestVersion: "version",
         id: "mock-app-id",
         name: { short: "short-name" },
-        description: { short: "", full: "" },
+        description: { short: "short", full: "full" },
         version: "version",
         icons: { outline: "outline.png", color: "color.png" },
         accentColor: "#ffffff",
         developer: {
-          privacyUrl: "",
-          websiteUrl: "",
-          termsOfUseUrl: "",
+          privacyUrl: "privacyUrl",
+          websiteUrl: "websiteUrl",
+          termsOfUseUrl: "termsOfUseUrl",
           name: "developer-name",
         },
         staticTabs: [
@@ -480,9 +484,11 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.staticTabs![0].websiteUrl, "websiteUrl0");
       chai.assert.equal(updatedManifest.staticTabs![1].websiteUrl, "websiteUrl1");
       chai.assert.equal(updatedManifest.staticTabs![1].contentUrl, "contentUrl1");
-      chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
-      chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
-      chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.developer.privacyUrl, "privacyUrl");
+      chai.assert.equal(updatedManifest.developer.termsOfUseUrl, "termsOfUseUrl");
+      chai.assert.equal(updatedManifest.developer.websiteUrl, "websiteUrl");
+      chai.assert.equal(updatedManifest.description.short, "short");
+      chai.assert.equal(updatedManifest.description.full, "full");
       chai.assert.equal(updatedManifest.validDomains, undefined);
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));

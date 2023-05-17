@@ -370,7 +370,7 @@ export class FuncToolChecker implements DepsChecker {
       undefined,
       // same as backend start, avoid powershell execution policy issue.
       { shell: isWindows() ? "cmd.exe" : true },
-      execPath,
+      `"${execPath}"`,
       "--version"
     );
     return mapToFuncToolsVersion(output);

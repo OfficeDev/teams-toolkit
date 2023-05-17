@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-react",
-  "version": "3.0.0-alpha",
+  "version": "3.0.0",
   "description": "React helper functions for Microsoft TeamsFx",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
@@ -30,10 +30,10 @@
   "devDependencies": {
     "@fluentui/react-components": "^9.15.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.1",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.2",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",
-    "@microsoft/teamsfx": "^2.1.0",
+    "@microsoft/teamsfx": "^2.2.1",
     "@testing-library/react": "^13.4.0",
     "@types/enzyme": "^3.10.10",
     "@types/jest": "^29.4.0",

@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { OpenAPIV3 } from 'openapi-types';
+import prettier from 'prettier';
 
 export function getVersion(): string {
   const pkgPath = path.resolve(__dirname, '..', 'package.json');
@@ -67,6 +68,19 @@ export function getCardTitle(
     text: `${operation.toUpperCase()} ${url}: ${summary ?? ''}`,
     wrap: true
   };
+}
+
+export function formatCode(code: string): string {
+  const formattedCode = prettier.format(code, {
+    parser: 'typescript',
+    semi: true,
+    singleQuote: true,
+    trailingComma: 'all',
+    arrowParens: 'always',
+    printWidth: 80,
+    tabWidth: 2
+  });
+  return formattedCode;
 }
 
 export function getResponseJsonResult(

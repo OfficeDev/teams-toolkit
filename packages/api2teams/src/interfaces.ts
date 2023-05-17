@@ -10,3 +10,11 @@ export interface AdaptiveCardResult {
   isArray: boolean;
   content: any;
 }
+
+export interface ResponseObjectResult {
+  name: string;
+  url: string;
+  operation: string;
+  tag: string;
+  content: any;
+}

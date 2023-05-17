@@ -1,9 +1,10 @@
 import fs from 'fs-extra';
-import { CliOptions } from './interfaces';
+import { CliOptions, ResponseObjectResult } from './interfaces';
 import {
   isFolderEmpty,
   getResponseJsonResult,
-  componentRefToName
+  componentRefToName,
+  formatCode
 } from './utils';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { generateRequestCard } from './generateRequestCard';
@@ -11,6 +12,7 @@ import { OpenAPIV3 } from 'openapi-types';
 import { AdaptiveCardResult } from './interfaces';
 import path from 'path';
 import { generateResponseCard } from './generateResponseCard';
+import { generateResponseObject } from './generateResponseObject';
 
 export async function parseApi(yaml: string, options: CliOptions) {
   if (!(await isArgsValid(yaml, options))) {
@@ -66,6 +68,9 @@ export async function parseApi(yaml: string, options: CliOptions) {
 
   const requestCards: AdaptiveCardResult[] = await generateRequestCard(apis);
   const responseCards: AdaptiveCardResult[] = await generateResponseCard(apis);
+  const sampleResponse: ResponseObjectResult[] = await generateResponseObject(
+    apis
+  );
 
   for (const card of requestCards) {
     const cardPath = path.join(options.output, `${card.name}RequestCard.json`);
@@ -83,6 +88,63 @@ export async function parseApi(yaml: string, options: CliOptions) {
     }
     await fs.outputJson(cardPath, card.content, { spaces: 2 });
   }
+
+  const apiFunctionsByTag: any = {};
+  const emptyFunctionsByTag: any = {};
+  for (const sampleJsonResult of sampleResponse) {
+    const jsonString = JSON.stringify(sampleJsonResult.content, null, 2);
+    const tag = sampleJsonResult.tag;
+    const apiFuncTemplate = fs.readFileSync(
+      path.join(__dirname, './resources/apiFuncTemplate.txt'),
+      'utf-8'
+    );
+    const mockApiFunction = apiFuncTemplate
+      .replace('{{functionName}}', sampleJsonResult.name)
+      .replace('{{returnJsonObject}}', `return ${jsonString};`);
+    const emptyApiFunction = apiFuncTemplate
+      .replace('{{functionName}}', sampleJsonResult.name)
+      .replace('{{returnJsonObject}}', '');
+    if (!apiFunctionsByTag[tag]) {
+      apiFunctionsByTag[tag] = [];
+    }
+    apiFunctionsByTag[tag].push(mockApiFunction);
+
+    if (!emptyFunctionsByTag[tag]) {
+      emptyFunctionsByTag[tag] = [];
+    }
+    emptyFunctionsByTag[tag].push(emptyApiFunction);
+  }
+
+  let realApiProviderCode =
+    '// Update this code to call real backend service\n';
+  let mockApiProviderCode = '';
+  for (const tag in apiFunctionsByTag) {
+    const apiClassTemplate = fs.readFileSync(
+      path.join(__dirname, './resources/apiClassTemplate.txt'),
+      'utf-8'
+    );
+    const mockApiClass = apiClassTemplate
+      .replace('{{className}}', tag + 'Api')
+      .replace('{{apiList}}', apiFunctionsByTag[tag].join('\n'));
+
+    const realApiClass = apiClassTemplate
+      .replace('{{className}}', tag + 'Api')
+      .replace('{{apiList}}', emptyFunctionsByTag[tag].join('\n'));
+    mockApiProviderCode += mockApiClass + '\n';
+    realApiProviderCode += realApiClass + '\n';
+  }
+
+  fs.outputFileSync(
+    path.join(options.output, 'mockApiProvider.ts'),
+    formatCode(mockApiProviderCode),
+    'utf-8'
+  );
+
+  fs.outputFileSync(
+    path.join(options.output, 'realApiProvider.ts'),
+    formatCode(realApiProviderCode),
+    'utf-8'
+  );
 }
 
 async function isArgsValid(

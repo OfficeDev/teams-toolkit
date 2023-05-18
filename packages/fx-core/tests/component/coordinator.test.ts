@@ -61,7 +61,12 @@ import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
-import { FxCore } from "../../src/core/FxCore";
+import {
+  checkPermissionFunc,
+  FxCore,
+  grantPermissionFunc,
+  listCollaboratorFunc,
+} from "../../src/core/FxCore";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import { setTools } from "../../src/core/globalVars";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
@@ -89,6 +94,7 @@ import {
   randomAppName,
 } from "../core/utils";
 import { MockedUserInteraction } from "../plugins/solution/util";
+import * as coll from "../../src/core/collaborator";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -3464,7 +3470,65 @@ describe("component coordinator test", () => {
     const res = await fxCore.getDotEnvs(inputs);
     assert.isTrue(res.isErr());
   });
-
+  it("getProjectConfig", async () => {
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getProjectConfig(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("getProjectConfigV3", async () => {
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getProjectConfigV3(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("getSelectedEnv", async () => {
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getSelectedEnv(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("listCollaboratorFunc", async () => {
+    sandbox.stub(coll, "listCollaborator").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await listCollaboratorFunc(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("checkPermissionFunc", async () => {
+    sandbox.stub(coll, "checkPermission").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await checkPermissionFunc(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("grantPermissionFunc", async () => {
+    sandbox.stub(coll, "grantPermission").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await grantPermissionFunc(inputs);
+    assert.isTrue(res.isErr());
+  });
   describe("encrypt/decrypt", () => {
     afterEach(() => {
       sandbox.restore();

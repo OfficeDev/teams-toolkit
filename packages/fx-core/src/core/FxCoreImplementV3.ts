@@ -37,7 +37,6 @@ import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
@@ -392,13 +391,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return grantPermissionFunc(inputs, ctx);
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs);
   }
 
   @hooks([
@@ -406,13 +403,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return checkPermissionFunc(inputs, ctx);
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs);
   }
 
   @hooks([
@@ -420,13 +415,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return listCollaboratorFunc(inputs, ctx);
+  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
+    return listCollaboratorFunc(inputs);
   }
 
   /**

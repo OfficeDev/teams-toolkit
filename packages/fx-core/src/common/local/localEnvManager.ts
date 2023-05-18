@@ -7,7 +7,6 @@ import {
   LogProvider,
   ProjectSettings,
   TelemetryReporter,
-  UserError,
   UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
@@ -19,15 +18,11 @@ import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
-import { getAppSPFxVersion, isVideoFilterProject, waitSeconds } from "../tools";
+import { isVideoFilterProject, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
-import { DepsType } from "../deps-checker/depsChecker";
-import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
-import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
-import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import {
   getProjectSettingsPath,
   loadProjectSettingsByProjectPath,
@@ -46,40 +41,6 @@ export class LocalEnvManager {
     this.logger = logger;
     this.telemetry = telemetry;
     this.ui = ui;
-  }
-
-  public async getActiveDependencies(projectSettings: ProjectSettings): Promise<DepsType[]> {
-    const depsTypes: DepsType[] = [];
-    const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
-    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
-    const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
-    const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
-
-    // NodeJS
-    if (isSPFx) {
-      depsTypes.push(DepsType.SpfxNode);
-    } else {
-      depsTypes.push(DepsType.AzureNode);
-    }
-
-    // Dotnet
-    if ((includeFrontend && includeSimpleAuth) || includeBackend) {
-      depsTypes.push(DepsType.Dotnet);
-    }
-
-    // Function core tool
-    if (includeBackend || includeFuncHostedBot) {
-      depsTypes.push(DepsType.FuncCoreTools);
-    }
-
-    // Ngrok
-    if (includeBot) {
-      depsTypes.push(DepsType.Ngrok);
-    }
-
-    return DepsManager.sortBySequence(depsTypes);
   }
 
   public async getLocalDebugEnvs(

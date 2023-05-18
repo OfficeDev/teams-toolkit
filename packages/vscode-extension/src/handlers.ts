@@ -39,8 +39,6 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
-  InputsWithProjectPath,
-  IProgressHandler,
   M365TokenProvider,
   ok,
   OptionItem,
@@ -57,7 +55,6 @@ import {
   SystemError,
   TemplateFolderName,
   Tools,
-  UserCancelError,
   UserError,
   Void,
   VsCodeEnv,
@@ -111,10 +108,7 @@ import {
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as commonUtils from "./debug/commonUtils";
-import * as constants from "./debug/constants";
-import { installBackendExtension } from "./debug/depsChecker/backendExtensionsInstall";
-import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
-import { vscodeHelper } from "./debug/depsChecker/vscodeHelper";
+
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
@@ -159,11 +153,7 @@ import {
   openFolderInExplorer,
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
-import {
-  localTelemetryReporter,
-  sendDebugAllEvent,
-  sendDebugAllStartEvent,
-} from "./debug/localTelemetryReporter";
+import { localTelemetryReporter, sendDebugAllEvent } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
@@ -503,7 +493,7 @@ export function getSystemInputs(): Inputs {
     projectPath: globalVariables.workspaceUri?.fsPath,
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    "function-dotnet-checker-enabled": vscodeHelper.isDotnetCheckerEnabled(),
+    "function-dotnet-checker-enabled": true, // TODO: remove this flag
     locale: parseLocale(),
   };
   return answers;
@@ -1023,8 +1013,8 @@ export async function runCommand(
       case Stage.debug: {
         inputs.ignoreEnvInfo = false;
         inputs.checkerInfo = {
-          skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
-          trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
+          skipNgrok: false, // TODO: remove this flag
+          trustDevCert: true, // TODO: remove this flag
         };
         result = await core.localDebug(inputs);
         break;
@@ -1327,88 +1317,13 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
       return "1";
     }
   }
-
-  if (commonUtils.checkAndSkipDebugging()) {
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
-  }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart, {
-    [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
-  });
-
-  const nodeType = DepsType.AzureNode;
-  const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
-
-  const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  let shouldContinue = await vscodeDepsChecker.resolve(deps);
-  shouldContinue = shouldContinue && (await validatePorts()).isOk();
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
-    [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
-  });
-
-  if (!shouldContinue) {
-    await debug.stopDebugging();
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
-  }
-}
-
-async function validatePorts(): Promise<Result<void, FxError>> {
-  const portsInUse = await commonUtils.getPortsInUse();
-  if (portsInUse.length > 0) {
-    let message: string;
-    if (portsInUse.length > 1) {
-      message = util.format(
-        localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-        portsInUse.join(", ")
-      );
-    } else {
-      message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
-    }
-    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
-    VS_CODE_UI.showMessage(
-      "error",
-      message,
-      false,
-      localize("teamstoolkit.localDebug.learnMore")
-    ).then(async (result) => {
-      if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-        await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
-      }
-    });
-    return err(error);
-  }
-  return ok(undefined);
 }
 
 /**
  * check & install required dependencies during local debug when selected hosting type is SPFx.
  */
 export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
-  if (commonUtils.checkAndSkipDebugging()) {
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
-  }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheckStart, {
-    [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
-  });
-
-  const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
-    [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
-  });
-
-  if (!shouldContinue) {
-    await debug.stopDebugging();
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
-  }
+  return undefined;
 }
 
 /**
@@ -1424,40 +1339,6 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
       return "1";
     }
   }
-
-  const additionalProperties: { [key: string]: string } = {
-    [TelemetryProperty.DebugIsTransparentTask]: "false",
-  };
-  {
-    // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
-    // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
-    const session = commonUtils.getLocalDebugSession();
-    if (session.id !== commonUtils.DebugNoSessionId) {
-      additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
-      // Indicates in which stage (of the first F5) the user hits F5 again.
-      additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
-        localTelemetryReporter.getLastEventName();
-    }
-  }
-  return await Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
-    if (commonUtils.checkAndSkipDebugging()) {
-      // return non-zero value to let task "exit ${command:xxx}" to exit
-      return "1";
-    }
-
-    await sendDebugAllStartEvent(additionalProperties);
-    const result = await localPrerequisites.checkAndInstall();
-    if (result.isErr()) {
-      // Only local debug use validate-local-prerequisites command
-      await sendDebugAllEvent(result.error, {
-        [TelemetryProperty.DebugIsTransparentTask]: "false",
-      });
-      commonUtils.endLocalDebugSession();
-      // return non-zero value to let task "exit ${command:xxx}" to exit
-      showError(result.error);
-      return "1";
-    }
-  });
 }
 
 /*
@@ -1531,24 +1412,6 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
     } catch (error: any) {
       showError(error);
       return "1";
-    }
-  }
-
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const backendRoot = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-      FolderName.Function
-    );
-
-    if (backendRoot) {
-      const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-      const shouldContinue = await installBackendExtension(backendRoot, depsChecker, vscodeLogger);
-      if (!shouldContinue) {
-        await debug.stopDebugging();
-        // return non-zero value to let task "exit ${command:xxx}" to exit
-        return "1";
-      }
     }
   }
 }

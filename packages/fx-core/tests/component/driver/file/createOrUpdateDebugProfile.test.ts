@@ -5,26 +5,28 @@ import "mocha";
 
 import * as chai from "chai";
 import fs from "fs-extra";
+import * as commentJson from "comment-json";
 import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { UpdateLaunchUrlInLaunchSettingsDriver } from "../../../../src/component/driver/file/updateLaunchUrlInLaunchSettings";
+import { CreateOrUpdateDebugProfileDriver } from "../../../../src/component/driver/file/createOrUpdateDebugProfile";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
-import { UpdateLaunchUrlInLaunchSettingsArgs } from "../../../../src/component/driver/file/interface/UpdateLaunchUrlInLaunchSettingsArgs";
+import { CreateOrUpdateDebugProfileArgs } from "../../../../src/component/driver/file/interface/createOrUpdateDebugProfileArgs";
 
 describe("CreateOrUpdateJsonFileDriver", () => {
   const mockedDriverContext: any = {
     logProvider: new MockedLogProvider(),
     m365TokenProvider: new MockedM365Provider(),
   } as any;
-  const driver = new UpdateLaunchUrlInLaunchSettingsDriver();
-  let mockArgs: UpdateLaunchUrlInLaunchSettingsArgs = {
-    target: "",
-    profile: "",
-    launchUrl: "",
-    addLoginHint: false,
+  const driver = new CreateOrUpdateDebugProfileDriver();
+  let mockArgs: CreateOrUpdateDebugProfileArgs = {
+    name: "",
+    appId: "",
+    target: undefined,
+    loginHint: undefined,
+    host: undefined,
   };
 
   beforeEach(() => {
@@ -38,10 +40,11 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     });
     sinon.stub(localizeUtils, "getLocalizedString").returns("");
     mockArgs = {
-      target: "launchSettings.json",
-      profile: "MyProfile",
-      launchUrl: "http://localhost:3000",
-      addLoginHint: false,
+      name: "MyProfile",
+      appId: "${{TEAMS_APP_ID}}",
+      target: undefined,
+      loginHint: undefined,
+      host: undefined,
     };
   });
 
@@ -55,6 +58,19 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     chai.assert(result.isErr());
   });
 
+  it("should throw UserError if target is set and launch settings file does not exist", async () => {
+    mockArgs = {
+      name: "MyProfile",
+      appId: "${{TEAMS_APP_ID}}",
+      target: "launchSettings.json",
+      loginHint: undefined,
+      host: undefined,
+    };
+    sinon.stub(fs, "pathExists").resolves(false);
+    const result = await driver.run(mockArgs, mockedDriverContext);
+    chai.assert(result.isErr());
+  });
+
   it("should throw UserError if read launch settings file fail", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFileSync").rejects(new Error("exception"));
@@ -62,7 +78,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     chai.assert(result.isErr());
   });
 
-  it("should throw UserError if cannot find launchUrl in profile", async () => {
+  it("should throw UserError if cannot parse json file", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFileSync").returns(
       JSON.stringify({
@@ -73,13 +89,20 @@ describe("CreateOrUpdateJsonFileDriver", () => {
         },
       })
     );
-    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(commentJson, "parse").rejects(new Error("exception"));
 
     const result = await driver.run(mockArgs, mockedDriverContext);
     chai.assert(result.isErr());
   });
 
   it("should update launch URL in launch settings file", async () => {
+    mockArgs = {
+      name: "MyProfile",
+      appId: "${{TEAMS_APP_ID}}",
+      target: undefined,
+      loginHint: false,
+      host: undefined,
+    };
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFileSync").returns(
       JSON.stringify({
@@ -93,13 +116,10 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "writeFile").resolves();
 
     const result = await driver.run(mockArgs, mockedDriverContext);
-
-    console.log(JSON.stringify(result));
     chai.assert(result.isOk());
   });
 
   it("should update launch URL in launch settings file and add loginhint", async () => {
-    mockArgs.addLoginHint = true;
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFileSync").returns(
       JSON.stringify({
@@ -121,7 +141,6 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     const myMockedDriverContext: any = {
       logProvider: new MockedLogProvider(),
     } as any;
-    mockArgs.addLoginHint = true;
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFileSync").returns(
       JSON.stringify({
@@ -135,7 +154,6 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "writeFile").resolves();
 
     const result = await driver.run(mockArgs, myMockedDriverContext);
-
     chai.assert(result.isErr());
   });
 });

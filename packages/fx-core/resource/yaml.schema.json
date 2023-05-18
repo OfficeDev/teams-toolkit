@@ -54,7 +54,7 @@
           { "$ref": "#/definitions/botframeworkCreate" },
           { "$ref": "#/definitions/fileCreateOrUpdateEnvironmentFile" },
           { "$ref": "#/definitions/fileCreateOrUpdateJsonFile" },
-          { "$ref": "#/definitions/fileUpdateLaunchUrlInLaunchSettings"},
+          { "$ref": "#/definitions/fileCreateOrUpdateDebugProfile"},
           { "$ref": "#/definitions/devToolInstall" },
           { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
@@ -1134,10 +1134,10 @@
         }
       }
     },
-    "fileUpdateLaunchUrlInLaunchSettings": {
+    "fileCreateOrUpdateDebugProfile": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-updatelaunchurlinlaunchsettings for more details.",
+      "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-createOrUpdateDebugProfile for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -1153,30 +1153,30 @@
         },
         "uses": {
           "type": "string",
-          "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-updatelaunchurlinlaunchsettings for more details.",
-          "const": "file/updateLaunchUrlInLaunchSettings"
+          "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-createOrUpdateDebugProfile for more details.",
+          "const": "file/createOrUpdateDebugProfile"
         },
         "with": {
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["target", "profile", "launchUrl", "addLoginHint"],
+          "required": ["name", "appId"],
           "properties": {
-            "target": {
+            "name": {
               "type": "string",
-              "description": "the target file"
+              "description": "the debug profile name"
             },
-            "profile": {
+            "appId": {
               "type": "string",
-              "description": "the profile to be updated"
+              "description": "the app id to be used in launch url"
             },
-            "launchUrl": {
-              "type": "string",
-              "description": "the launch url to be updated"
-            },
-            "addLoginHint": {
+            "loginHint": {
               "type": "boolean",
               "description": "whether to add login hint"
+            },
+            "host": {
+              "type": "string",
+              "description": "the host to be used in launch url"
             }
           }
         }

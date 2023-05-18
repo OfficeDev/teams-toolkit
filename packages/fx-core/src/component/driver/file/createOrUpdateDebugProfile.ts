@@ -15,22 +15,30 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
 import { UnhandledError } from "../../../error/common";
-import { UpdateLaunchUrlInLaunchSettingsArgs } from "./interface/UpdateLaunchUrlInLaunchSettingsArgs";
+import { CreateOrUpdateDebugProfileArgs } from "./interface/createOrUpdateDebugProfileArgs";
 import { AppStudioScopes } from "../../../common/tools";
+import { parse } from "comment-json";
+import * as commentJson from "comment-json";
+import * as utils from "util";
+import { internalOutputNames } from "../teamsApp/create";
+import { isCommentObject } from "../../../core/middleware/utils/debug/debugV3MigrationUtils";
 
-const actionName = "file/updateLaunchUrlInLaunchSettings";
-const helpLink = "https://aka.ms/teamsfx-actions/file-updateLaunchUrlInLaunchSettings";
+const actionName = "file/createOrUpdateDebugProfile";
+const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateDebugProfile";
+const launchSettingsFilePath = "./Properties/launchSettings.json";
+const launchUrlTemplate =
+  "https://teams.microsoft.com/l/app/%s?installAppPackage=true&webjoin=true&appTenantId=%s";
 
 @Service(actionName) // DO NOT MODIFY the service name
-export class UpdateLaunchUrlInLaunchSettingsDriver implements StepDriver {
-  description = getLocalizedString("driver.file.updateLaunchUrlInLaunchSettings.description");
+export class CreateOrUpdateDebugProfileDriver implements StepDriver {
+  description = getLocalizedString("driver.file.createOrUpdateDebugProfile.description");
 
   @hooks([
     addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.updateLaunchUrlInLaunchSettings")),
+    updateProgress(getLocalizedString("driver.file.progressBar.createOrUpdateDebugProfile")),
   ])
   public async run(
-    args: UpdateLaunchUrlInLaunchSettingsArgs,
+    args: CreateOrUpdateDebugProfileArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     return wrapRun(async () => {
@@ -41,10 +49,10 @@ export class UpdateLaunchUrlInLaunchSettingsDriver implements StepDriver {
 
   @hooks([
     addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.updateLaunchUrlInLaunchSettings")),
+    updateProgress(getLocalizedString("driver.file.progressBar.createOrUpdateDebugProfile")),
   ])
   public async execute(
-    args: UpdateLaunchUrlInLaunchSettingsArgs,
+    args: CreateOrUpdateDebugProfileArgs,
     ctx: DriverContext
   ): Promise<ExecutionResult> {
     let summaries: string[] = [];
@@ -60,26 +68,47 @@ export class UpdateLaunchUrlInLaunchSettingsDriver implements StepDriver {
   }
 
   private async handler(
-    args: UpdateLaunchUrlInLaunchSettingsArgs,
+    args: CreateOrUpdateDebugProfileArgs,
     context: DriverContext
   ): Promise<{
     output: Map<string, string>;
     summaries: string[];
   }> {
     try {
-      const launchSettingsPath = getAbsolutePath(args.target, context.projectPath);
+      let launchSettingsPath = "";
+      if (!args.target) {
+        launchSettingsPath = getAbsolutePath(launchSettingsFilePath, context.projectPath);
+      } else {
+        launchSettingsPath = getAbsolutePath(args.target, context.projectPath);
+      }
       if (!(await fs.pathExists(launchSettingsPath))) {
         throw new UserError(
           "LaunchSettingsFileNotExist",
           getLocalizedString(
-            "driver.file.updateLaunchUrlInLaunchSettings.launchSettingsFileNotExist",
+            "driver.file.createOrUpdateDebugProfile.launchSettingsFileNotExist",
             launchSettingsPath
           ),
           helpLink
         );
       }
       const launchSettingsContent = fs.readFileSync(launchSettingsPath, "utf-8");
-      if (args.addLoginHint) {
+      const data = parse(launchSettingsContent.toString());
+      if (!isCommentObject(data) || !!Array.isArray(data.profiles)) {
+        throw new UserError(
+          "LaunchSettingsFileInvalid",
+          getLocalizedString(
+            "driver.file.createOrUpdateDebugProfile.launchSettingsFileInvalid",
+            launchSettingsPath
+          ),
+          helpLink
+        );
+      }
+      let launchUrl = utils.format(
+        launchUrlTemplate,
+        args.appId,
+        process.env[internalOutputNames.teamsAppTenantId]
+      );
+      if (args.loginHint === undefined || args.loginHint === true) {
         const tokenObjectRes = await context.m365TokenProvider.getJsonObject({
           scopes: AppStudioScopes,
         });
@@ -88,33 +117,15 @@ export class UpdateLaunchUrlInLaunchSettingsDriver implements StepDriver {
         }
         const tokenObject = tokenObjectRes.value;
         if (tokenObject && "upn" in tokenObject) {
-          args.launchUrl = `${args.launchUrl}&login_hint=${tokenObject.upn}`;
+          launchUrl += `&login_hint=${tokenObject.upn}`;
         }
       }
-      const launchUrlRegex =
-        "profiles[\\s\\S]*" +
-        args.profile.replace("(", "\\(").replace(")", "\\)") +
-        '[\\s\\S]*("launchUrl"\\s*:\\s*"[^"]*")';
-      const match = launchSettingsContent.match(launchUrlRegex);
-      if (!match) {
-        throw new UserError(
-          "LaunchUrlInProfileNotExist",
-          getLocalizedString(
-            "driver.file.updateLaunchUrlInLaunchSettings.launchUrlInProfileNotExist",
-            args.profile
-          ),
-          helpLink
-        );
-      }
-      await fs.writeFile(
-        launchSettingsPath,
-        launchSettingsContent.replace(match[1], '"launchUrl": "' + args.launchUrl + '"'),
-        "utf-8"
-      );
+      (data.profiles as any)[args.name].launchUrl = launchUrl;
+      await fs.writeFile(launchSettingsPath, commentJson.stringify(data, null, 4), "utf-8");
       return {
         output: new Map<string, string>(),
         summaries: [
-          getLocalizedString("driver.file.updateLaunchUrlInLaunchSettings.summary", args.target),
+          getLocalizedString("driver.file.createOrUpdateDebugProfile.summary", args.target),
         ],
       };
     } catch (error) {

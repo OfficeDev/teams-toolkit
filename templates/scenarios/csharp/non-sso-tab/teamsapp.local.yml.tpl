@@ -22,13 +22,11 @@ provision:
     writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
-  # Generate launchUrl to launchSettings.json file
-  - uses: file/updateLaunchUrlInLaunchSettings
+  # Create or update the launchUrl in debug profile
+  - uses: file/createOrUpdateDebugProfile
     with:
-      target: ./Properties/launchSettings.json
-      profile: Microsoft Teams (browser)
-      launchUrl: https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}
-      addLoginHint: true
+      name: Microsoft Teams (browser)
+      appId: ${{TEAMS_APP_ID}}
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

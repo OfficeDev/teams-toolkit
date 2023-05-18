@@ -30,61 +30,87 @@ server.post(
   async (req, res) => {
     // By default this function will iterate all the installation points and send an Adaptive Card
     // to every installation.
-    for (const target of await notificationApp.notification.installations()) {
-      await target.sendAdaptiveCard(
-        AdaptiveCards.declare<CardData>(notificationTemplate).render({
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://aka.ms/teamsfx-notification-new",
-        })
+    const pageSize = 100;
+    let continuousToken: string | undefined = undefined;
+    do {
+      const pagedData = await notificationApp.notification.getPagedInstallations(
+        pageSize,
+        continuousToken
       );
+      const installations = pagedData.data;
+      continuousToken = pagedData.continuationToken;
 
-      // Note - you can filter the installations if you don't want to send the event to every installation.
+      for (const target of installations) {
+        await target.sendAdaptiveCard(
+          AdaptiveCards.declare<CardData>(notificationTemplate).render({
+            title: "New Event Occurred!",
+            appName: "Contoso App Notification",
+            description: `This is a sample http-triggered notification to ${target.type}`,
+            notificationUrl: "https://aka.ms/teamsfx-notification-new",
+          })
+        );
 
-      /** For example, if the current target is a "Group" this means that the notification application is
-       *  installed in a Group Chat.
-      if (target.type === NotificationTargetType.Group) {
-        // You can send the Adaptive Card to the Group Chat
-        await target.sendAdaptiveCard(...);
+        // Note - you can filter the installations if you don't want to send the event to every installation.
 
-        // Or you can list all members in the Group Chat and send the Adaptive Card to each Team member
-        const members = await target.members();
-        for (const member of members) {
-          // You can even filter the members and only send the Adaptive Card to members that fit a criteria
-          await member.sendAdaptiveCard(...);
+        /** For example, if the current target is a "Group" this means that the notification application is
+         *  installed in a Group Chat.
+        if (target.type === NotificationTargetType.Group) {
+          // You can send the Adaptive Card to the Group Chat
+          await target.sendAdaptiveCard(...);
+  
+          // Or you can list all members in the Group Chat and send the Adaptive Card to each Team member
+          const pageSize = 100;
+          let continuousToken: string | undefined = undefined;
+          do {
+            const pagedData = await target.getPagedMembers(pageSize, continuousToken);
+            const members = pagedData.data;
+            continuousToken = pagedData.continuationToken;
+
+            for (const member of members) {
+              // You can even filter the members and only send the Adaptive Card to members that fit a criteria
+              await member.sendAdaptiveCard(...);
+            }
+          } while (continuousToken);
         }
-      }
-      **/
+        **/
 
-      /** If the current target is "Channel" this means that the notification application is installed
-       *  in a Team.
-      if (target.type === NotificationTargetType.Channel) {
-        // If you send an Adaptive Card to the Team (the target), it sends it to the `General` channel of the Team
-        await target.sendAdaptiveCard(...);
+        /** If the current target is "Channel" this means that the notification application is installed
+         *  in a Team.
+        if (target.type === NotificationTargetType.Channel) {
+          // If you send an Adaptive Card to the Team (the target), it sends it to the `General` channel of the Team
+          await target.sendAdaptiveCard(...);
+  
+          // Alternatively, you can list all channels in the Team and send the Adaptive Card to each channel
+          const channels = await target.channels();
+          for (const channel of channels) {
+            await channel.sendAdaptiveCard(...);
+          }
+  
+          // Or, you can list all members in the Team and send the Adaptive Card to each Team member
+          const pageSize = 100;
+          let continuousToken: string | undefined = undefined;
+          do {
+            const pagedData = await target.getPagedMembers(pageSize, continuousToken);
+            const members = pagedData.data;
+            continuousToken = pagedData.continuationToken;
 
-        // Alternatively, you can list all channels in the Team and send the Adaptive Card to each channel
-        const channels = await target.channels();
-        for (const channel of channels) {
-          await channel.sendAdaptiveCard(...);
+            for (const member of members) {
+              // You can even filter the members and only send the Adaptive Card to members that fit a criteria
+              await member.sendAdaptiveCard(...);
+            }
+          } while (continuousToken);
         }
+        **/
 
-        // Or, you can list all members in the Team and send the Adaptive Card to each Team member
-        const members = await target.members();
-        for (const member of members) {
-          await member.sendAdaptiveCard(...);
+        /** If the current target is "Person" this means that the notification application is installed in a
+         *  personal chat.
+        if (target.type === NotificationTargetType.Person) {
+          // Directly notify the individual person
+          await target.sendAdaptiveCard(...);
         }
+        **/
       }
-      **/
-
-      /** If the current target is "Person" this means that the notification application is installed in a
-       *  personal chat.
-      if (target.type === NotificationTargetType.Person) {
-        // Directly notify the individual person
-        await target.sendAdaptiveCard(...);
-      }
-      **/
-    }
+    } while (continuousToken);
 
     /** You can also find someone and notify the individual person
     const member = await notificationApp.notification.findMember(

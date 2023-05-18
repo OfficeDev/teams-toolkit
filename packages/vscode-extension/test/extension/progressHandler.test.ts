@@ -68,4 +68,12 @@ describe("ProgressHandler", () => {
     chai.assert.equal(message, expected);
     sinon.restore();
   });
+
+  it("not started", async () => {
+    message = undefined;
+    const progressHandler = new ProgressHandler("test title", 1, "output");
+    await progressHandler.next("test message.");
+    await progressHandler.end(true);
+    chai.assert.equal(message, undefined);
+  });
 });

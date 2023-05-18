@@ -1,4 +1,4 @@
-import * as d3 from "d3-format";
+import "../styles/ChartWidget.css";
 
 import { AreaChart, IChartProps } from "@fluentui/react-charting";
 import { Button, Text, ToggleButton } from "@fluentui/react-components";
@@ -8,60 +8,30 @@ import {
   MoreHorizontal32Regular,
 } from "@fluentui/react-icons";
 
-import {
-  chart1Points_30D,
-  chart1Points_60D,
-  chart1Points_7D,
-  chart2Points_30D,
-  chart2Points_60D,
-  chart2Points_7D,
-} from "../../services/chartServices";
+import { DayRange, TimeModel } from "../../models/chartModel";
+import { getChart1Points, getChart2Points, getTimeRange } from "../../services/chartServices";
 import { Widget } from "../lib/Widget";
-import { headerContentStyle, headerTextStyle } from "../lib/Widget.styles";
-import {
-  areaChartStyle,
-  footerButtonStyle,
-  pieIconStyle,
-  timeSpanStyle,
-} from "../styles/ChartWidget.style";
-
-enum DayRange {
-  Seven,
-  Thirty,
-  Sixty,
-}
 
 interface IChartWidgetState {
-  dayRange: DayRange;
+  timeRange: TimeModel[];
   chartProps: IChartProps;
+  selectedRange: DayRange;
 }
 
-export default class ChartWidget extends Widget<IChartWidgetState> {
+export default class ChartWidget extends Widget<any, IChartWidgetState> {
   async getData(): Promise<IChartWidgetState> {
-    const chartPoints = [
-      {
-        legend: "Line 1",
-        data: chart1Points_7D,
-        color: "#6264A7",
-      },
-      {
-        legend: "Line 2",
-        data: chart2Points_7D,
-        color: "#D9DBDB",
-      },
-    ];
-    const chartData = {
-      chartTitle: "Area chart multiple example",
-      lineChartData: chartPoints,
+    return {
+      selectedRange: DayRange.Seven,
+      chartProps: this.retriveChartsData(DayRange.Seven),
+      timeRange: getTimeRange(),
     };
-    return { dayRange: DayRange.Seven, chartProps: chartData };
   }
 
   headerContent(): JSX.Element | undefined {
     return (
-      <div style={headerContentStyle()}>
-        <DataPie24Regular style={pieIconStyle()} />
-        <Text style={headerTextStyle()}>Your chart</Text>
+      <div>
+        <DataPie24Regular />
+        <Text>Your chart</Text>
         <Button icon={<MoreHorizontal32Regular />} appearance="transparent" />
       </div>
     );
@@ -69,80 +39,44 @@ export default class ChartWidget extends Widget<IChartWidgetState> {
 
   bodyContent(): JSX.Element | undefined {
     return (
-      <>
-        <div>
-          <ToggleButton
-            appearance="transparent"
-            checked={this.state.data?.dayRange === DayRange.Seven}
-            style={timeSpanStyle()}
-            onClick={() =>
-              this.setState({
-                data: {
-                  chartProps: this.retriveChartsData(DayRange.Seven),
-                  dayRange: DayRange.Seven,
-                },
-              })
-            }
-          >
-            7 Days
-          </ToggleButton>
-          <ToggleButton
-            appearance="transparent"
-            checked={this.state.data?.dayRange === DayRange.Thirty}
-            style={timeSpanStyle()}
-            onClick={() =>
-              this.setState({
-                data: {
-                  chartProps: this.retriveChartsData(DayRange.Thirty),
-                  dayRange: DayRange.Thirty,
-                },
-              })
-            }
-          >
-            30 Days
-          </ToggleButton>
-          <ToggleButton
-            appearance="transparent"
-            checked={this.state.data?.dayRange === DayRange.Sixty}
-            style={timeSpanStyle()}
-            onClick={() =>
-              this.setState({
-                data: {
-                  chartProps: this.retriveChartsData(DayRange.Sixty),
-                  dayRange: DayRange.Sixty,
-                },
-              })
-            }
-          >
-            60 Days
-          </ToggleButton>
+      <div>
+        <div className="time-span">
+          {this.state.timeRange?.map((t: TimeModel, i) => {
+            return (
+              <ToggleButton
+                key={`tb-time-range-${i}`}
+                appearance="transparent"
+                checked={this.state.selectedRange === t.range}
+                onClick={() =>
+                  this.setState({
+                    chartProps: this.retriveChartsData(t.range),
+                    selectedRange: t.range,
+                  })
+                }
+              >
+                {t.name}
+              </ToggleButton>
+            );
+          })}
         </div>
 
-        <div style={areaChartStyle()}>
-          {this.state.data && (
-            <AreaChart
-              data={this.state.data.chartProps}
-              legendsOverflowText={"Overflow Items"}
-              yAxisTickFormat={d3.format(".1s")}
-              wrapXAxisLables={false}
-              legendProps={{
-                allowFocusOnLegends: true,
-              }}
-            />
-          )}
-        </div>
-      </>
+        {this.state.chartProps && (
+          <div className="area-chart">
+            <AreaChart data={this.state.chartProps} />
+          </div>
+        )}
+      </div>
     );
   }
 
   footerContent(): JSX.Element | undefined {
     return (
       <Button
+        id="chart-footer"
         appearance="transparent"
         icon={<ArrowRight16Filled />}
         iconPosition="after"
         size="small"
-        style={footerButtonStyle()}
         onClick={() => {}} // navigate to detailed page
       >
         View details
@@ -154,27 +88,16 @@ export default class ChartWidget extends Widget<IChartWidgetState> {
     const chartPoints = [
       {
         legend: "Line 1",
-        data:
-          r === DayRange.Seven
-            ? chart1Points_7D
-            : r === DayRange.Thirty
-            ? chart1Points_30D
-            : chart1Points_60D,
+        data: getChart1Points(r),
         color: "#6264A7",
       },
       {
         legend: "Line 2",
-        data:
-          r === DayRange.Seven
-            ? chart2Points_7D
-            : r === DayRange.Thirty
-            ? chart2Points_30D
-            : chart2Points_60D,
+        data: getChart2Points(r),
         color: "#D9DBDB",
       },
     ];
     const chartData = {
-      chartTitle: "Area chart multiple example",
       lineChartData: chartPoints,
     };
     return chartData;

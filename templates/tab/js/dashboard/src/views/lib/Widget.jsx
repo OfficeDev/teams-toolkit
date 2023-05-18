@@ -1,18 +1,15 @@
-import React, { Component } from "react";
+import "./Widget.css";
 
-import { headerStyles, widgetStyles } from "./Widget.styles";
+import { Component } from "react";
 
 /**
  * Defined a widget, it's also a react component.
  * For more information about react component, please refer to https://reactjs.org/docs/react-component.html
- * T is the model type of the widget.
  */
 export class Widget extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      data: undefined,
-    };
+    this.state = {};
   }
 
   /**
@@ -21,7 +18,7 @@ export class Widget extends Component {
    * For more information about react lifecycle, please refer to https://reactjs.org/docs/react-component.html#componentdidmount
    */
   async componentDidMount() {
-    this.setState({ data: await this.getData() });
+    this.setState({ ...(await this.getData()) });
   }
 
   /**
@@ -29,10 +26,8 @@ export class Widget extends Component {
    */
   render() {
     return (
-      <div style={widgetStyles()}>
-        {this.headerContent() && (
-          <div style={headerStyles()}>{this.headerContent()}</div>
-        )}
+      <div className="widget-root">
+        {this.headerContent() && <div className="widget-header">{this.headerContent()}</div>}
         {this.bodyContent() && <div>{this.bodyContent()}</div>}
         {this.footerContent() && <div>{this.footerContent()}</div>}
       </div>
@@ -44,7 +39,7 @@ export class Widget extends Component {
    * @returns data for the widget
    */
   async getData() {
-    return new Promise() (() => {});
+    return new Promise()(() => {});
   }
 
   /**

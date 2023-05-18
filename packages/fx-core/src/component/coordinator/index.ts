@@ -999,11 +999,15 @@ export class Coordinator {
         } else {
           const msg = getLocalizedString("core.common.LifecycleComplete.publish", steps, steps);
           const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
-          ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
-            if (value.isOk() && value.value === adminPortal) {
-              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-            }
-          });
+          if (ctx.platform !== Platform.CLI) {
+            ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+              if (value.isOk() && value.value === adminPortal) {
+                ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+              }
+            });
+          } else {
+            ctx.ui?.showMessage("info", msg, false);
+          }
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();

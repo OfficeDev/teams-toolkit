@@ -6,9 +6,9 @@
     "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
-        "websiteUrl": "${{TAB_ENDPOINT}}",
-        "privacyUrl": "${{TAB_ENDPOINT}}/privacy",
-        "termsOfUseUrl": "${{TAB_ENDPOINT}}/termsofuse"
+        "websiteUrl": "https://www.example.com",
+        "privacyUrl": "https://www.example.com/privacy",
+        "termsOfUseUrl": "https://www.example.com/termsofuse"
     },
     "icons": {
         "color": "color.png",
@@ -43,5 +43,5 @@
     "validDomains": [
         "${{TAB_DOMAIN}}"
     ],
-    "showLoadingIndicator": true
+    "showLoadingIndicator": false
 }

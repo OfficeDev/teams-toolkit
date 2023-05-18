@@ -1,33 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
-import yargs, { Options } from "yargs";
-
-import { Err, err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
-
-import Deploy from "../../../src/cmds/deploy";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
-import * as constants from "../../../src/constants";
-import { expect } from "../utils";
-import { assert } from "chai";
-import { NotSupportedProjectType } from "../../../src/error";
-import UI from "../../../src/userInteraction";
-import LogProvider from "../../../src/commonlib/log";
+import { err, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import { FxCore } from "@microsoft/teamsfx-core";
+import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import CLIUIInstance from "../../../src/userInteraction";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import sinon from "sinon";
+import yargs from "yargs";
+import * as activate from "../../../src/activate";
+import Deploy from "../../../src/cmds/deploy";
+import * as constants from "../../../src/constants";
+import { NotSupportedProjectType } from "../../../src/error";
+import HelpParamGenerator from "../../../src/helpParamGenerator";
+import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
+import { expect, mockTelemetry, mockYargs } from "../utils";
+import * as utils from "../../../src/utils";
 
 describe("Deploy Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let telemetryEvents: string[] = [];
   let options: string[] = [];
   let positionals: string[] = [];
-  let allArguments = new Map<string, any>();
   const params = {
     [constants.deployPluginNodeName]: {
       choices: ["a", "b", "c"],
@@ -40,7 +33,10 @@ describe("Deploy Command Tests", function () {
   };
   let mockedEnvRestore: RestoreFn = () => {};
 
-  before(() => {
+  beforeEach(() => {
+    mockYargs(sandbox, options, positionals);
+    mockTelemetry(sandbox, telemetryEvents);
+    sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return params;
     });
@@ -52,66 +48,22 @@ describe("Deploy Command Tests", function () {
         staticOptions: ["a", "b", "c"],
       });
     });
-    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }) => {
-      if (typeof ops === "string") {
-        options.push(ops);
-      } else {
-        options = options.concat(...Object.keys(ops));
-      }
-      return yargs;
-    });
-    sandbox.stub(yargs, "positional").callsFake((name: string) => {
-      positionals.push(name);
-      return yargs;
-    });
-    sandbox.stub(process, "exit");
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
+    sandbox.stub(utils, "promptSPFxUpgrade").resolves();
     sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
       else return err(NotSupportedProjectType());
     });
-    sandbox.stub(UI, "updatePresetAnswer").callsFake((key: any, value: any) => {
-      allArguments.set(key, value);
-    });
-    sandbox.stub(LogProvider, "necessaryLog").returns();
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    CLIUIInstance.interactive = false;
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
-  });
-
-  after(() => {
-    sandbox.restore();
-  });
-
-  beforeEach(() => {
-    telemetryEvents = [];
-    options = [];
-    positionals = [];
-    allArguments = new Map<string, any>();
   });
 
   afterEach(() => {
+    telemetryEvents = [];
+    options = [];
+    positionals = [];
+    sandbox.restore();
     mockedEnvRestore();
   });
 
-  it("Builder Check", () => {
+  it("Builder Check - V2", () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new Deploy();
     cmd.builder(yargs);
@@ -122,55 +74,51 @@ describe("Deploy Command Tests", function () {
     expect(positionals).deep.equals(["components"], JSON.stringify(positionals));
   });
 
-  it("Builder Check V3", () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    const cmd = new Deploy();
-    cmd.builder(yargs);
-  });
-
-  it("Deploy Command Running -- no components", async () => {
+  it("Deploy Command Running -- no components - V2", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new Deploy();
     cmd["params"] = params;
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
     };
-    await cmd.handler(args);
-    expect(allArguments.get("open-api-document")).equals(undefined);
-    expect(allArguments.get("api-prefix")).equals(undefined);
-    expect(allArguments.get("api-version")).equals(undefined);
-    expect(allArguments.get("include-app-manifest")).equals(undefined);
+    const result = await cmd.runCommand(args);
+    expect(result.isOk()).to.be.true;
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
   });
 
-  it("Deploy Command Running -- 1 component", async () => {
+  it("Deploy Command Running -- 1 component - V2", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new Deploy();
     cmd["params"] = params;
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
       components: ["a"],
     };
-    await cmd.handler(args);
+    const result = await cmd.runCommand(args);
+    expect(result.isOk()).to.be.true;
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
+
+  it("Builder Check", () => {
+    const cmd = new Deploy();
+    cmd.builder(yargs);
+    expect(options).to.include.members(["folder", "env"]);
   });
 
   it("Deploy Command Running -- deployArtifacts error", async () => {
     const cmd = new Deploy();
-    cmd["params"] = params;
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };
-    try {
-      await cmd.handler(args);
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
+    const result = await cmd.runCommand(args);
+    expect(result.isErr()).to.be.true;
+    expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+    if (result.isErr()) {
+      expect(result.error.name).equals("NotSupportedProjectType");
     }
   });
 
-  it("Deploy Command Running -- aad manifest component", async () => {
+  it("Deploy Command Running -- aad manifest component - V2", async () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const cmd = new Deploy();
     cmd["params"] = {
@@ -203,7 +151,8 @@ describe("Deploy Command Tests", function () {
       [constants.RootFolderNode.data.name as string]: "real",
       components: ["aad-manifest"],
     };
-    await cmd.handler(args);
+    const result = await cmd.runCommand(args);
+    expect(result.isOk()).to.be.true;
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
   });
 });

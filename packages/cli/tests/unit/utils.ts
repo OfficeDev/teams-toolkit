@@ -67,6 +67,8 @@ export function mockYargs(
     positionals.push(name);
     return yargs;
   });
+  sandbox.stub(yargs, "hide").returns(yargs);
+  sandbox.stub(yargs, "version").returns(yargs);
   sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
     throw err;
   });

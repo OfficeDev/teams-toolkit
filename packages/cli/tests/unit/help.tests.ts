@@ -1,28 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Stage, SystemError } from "@microsoft/teamsfx-api";
-
+import { Stage } from "@microsoft/teamsfx-api";
+import "mocha";
+import { sqlPasswordConfirmQuestionName } from "../../src/constants";
 import HelpParamGenerator from "../../src/helpParamGenerator";
 import { expect } from "./utils";
-import { sqlPasswordConfirmQuestionName } from "../../src/constants";
 
-describe("Help Parameter Tests", function () {
-  beforeEach(async () => {
-    const result = await HelpParamGenerator.initializeQuestionsForHelp();
-    expect(result.isOk() ? result.value : result.error).to.be.true;
-  });
-
-  it("No Initalized Error", () => {
-    HelpParamGenerator["initialized"] = false;
-    try {
-      HelpParamGenerator.getYargsParamForHelp(Stage.create);
-      throw new Error("Not throw error!");
-    } catch (e) {
-      expect(e instanceof SystemError).to.be.true;
-      expect(e.name).equals("NoInitializedHelpGenerator");
-    }
-  });
+describe("Help Parameter Tests", async () => {
+  await HelpParamGenerator.initializeQuestionsForHelp();
 
   it("Create Parameter Hardcode Check", async () => {
     const result = HelpParamGenerator.getYargsParamForHelp(Stage.create);

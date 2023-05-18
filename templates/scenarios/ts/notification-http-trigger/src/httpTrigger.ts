@@ -22,14 +22,14 @@ const httpTrigger: AzureFunction = async function (
   // By default this function will iterate all the installation points and send an Adaptive Card
   // to every installation.
   const pageSize = 100;
-  let continuousToken: string | undefined = undefined;
+  let continuationToken: string | undefined = undefined;
   do {
     const pagedData = await notificationApp.notification.getPagedInstallations(
       pageSize,
-      continuousToken
+      continuationToken
     );
     const installations = pagedData.data;
-    continuousToken = pagedData.continuationToken;
+    continuationToken = pagedData.continuationToken;
 
     for (const target of installations) {
       await target.sendAdaptiveCard(
@@ -51,17 +51,17 @@ const httpTrigger: AzureFunction = async function (
   
         // Or you can list all members in the Group Chat and send the Adaptive Card to each Team member
         const pageSize = 100;
-        let continuousToken: string | undefined = undefined;
+        let continuationToken: string | undefined = undefined;
         do {
-          const pagedData = await target.getPagedMembers(pageSize, continuousToken);
+          const pagedData = await target.getPagedMembers(pageSize, continuationToken);
           const members = pagedData.data;
-          continuousToken = pagedData.continuationToken;
+          continuationToken = pagedData.continuationToken;
 
           for (const member of members) {
             // You can even filter the members and only send the Adaptive Card to members that fit a criteria
             await member.sendAdaptiveCard(...);
           }
-        } while (continuousToken);
+        } while (continuationToken);
       }
       **/
 
@@ -79,17 +79,17 @@ const httpTrigger: AzureFunction = async function (
   
         // Or, you can list all members in the Team and send the Adaptive Card to each Team member
         const pageSize = 100;
-        let continuousToken: string | undefined = undefined;
+        let continuationToken: string | undefined = undefined;
         do {
-          const pagedData = await target.getPagedMembers(pageSize, continuousToken);
+          const pagedData = await target.getPagedMembers(pageSize, continuationToken);
           const members = pagedData.data;
-          continuousToken = pagedData.continuationToken;
+          continuationToken = pagedData.continuationToken;
 
           for (const member of members) {
             // You can even filter the members and only send the Adaptive Card to members that fit a criteria
             await member.sendAdaptiveCard(...);
           }
-        } while (continuousToken);
+        } while (continuationToken);
       }
       **/
 
@@ -101,7 +101,7 @@ const httpTrigger: AzureFunction = async function (
       }
       **/
     }
-  } while (continuousToken);
+  } while (continuationToken);
 
   /** You can also find someone and notify the individual person
   const member = await notificationApp.notification.findMember(

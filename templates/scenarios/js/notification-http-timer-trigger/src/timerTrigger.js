@@ -37,16 +37,16 @@ module.exports = async function (context, myTimer) {
         }
         // List all members in the Team then notify each member
         const pageSize = 100;
-        let continuousToken: string | undefined = undefined;
+        let continuationToken: string | undefined = undefined;
         do {
-          const pagedData = await target.getPagedMembers(pageSize, continuousToken);
+          const pagedData = await target.getPagedMembers(pageSize, continuationToken);
           const members = pagedData.data;
-          continuousToken = pagedData.continuationToken;
+          continuationToken = pagedData.continuationToken;
 
           for (const member of members) {
             await member.sendAdaptiveCard(...);
           }
-        } while (continuousToken);
+        } while (continuationToken);
       }
       **/
 
@@ -56,16 +56,16 @@ module.exports = async function (context, myTimer) {
         await target.sendAdaptiveCard(...);
         // List all members in the Group Chat then notify each member
         const pageSize = 100;
-        let continuousToken: string | undefined = undefined;
+        let continuationToken: string | undefined = undefined;
         do {
-          const pagedData = await target.getPagedMembers(pageSize, continuousToken);
+          const pagedData = await target.getPagedMembers(pageSize, continuationToken);
           const members = pagedData.data;
-          continuousToken = pagedData.continuationToken;
+          continuationToken = pagedData.continuationToken;
 
           for (const member of members) {
             await member.sendAdaptiveCard(...);
           }
-        } while (continuousToken);
+        } while (continuationToken);
       }
       **/
 

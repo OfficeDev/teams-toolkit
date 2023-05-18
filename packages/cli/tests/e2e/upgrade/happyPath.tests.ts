@@ -29,13 +29,13 @@ describe("upgrade", () => {
 
   it("upgrade project", { testPlanCaseId: 17184119 }, async function () {
     {
-      await Executor.installCLI(testFolder, "1.2.5", false);
+      await Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);
       // new a project ( tab only )
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
     }
 
-    await Executor.installCLI(testFolder, "alpha", false);
+    await Executor.installCLI(testFolder, "alpha", true);
     {
       // upgrade
       const result = await Executor.upgrade(projectPath);

@@ -1,5 +1,4 @@
 import Container from "typedi";
-import { Plugin } from "@microsoft/teamsfx-api";
 import "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";

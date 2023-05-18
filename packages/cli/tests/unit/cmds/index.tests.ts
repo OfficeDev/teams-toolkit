@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 
 import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
-
 import { registerCommands } from "../../../src/cmds/index";
 import { expect } from "../utils";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Register Commands Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -17,7 +17,7 @@ describe("Register Commands Tests", function () {
   before(() => {
     sandbox
       .stub<any, any>(yargs, "command")
-      .callsFake((command: string, description: string, builder: any, handler: any) => {
+      .callsFake((command: any, description: any, builder: any, handler: any) => {
         registeredCommands.push(command.split(" ")[0]);
       });
     sandbox.stub(yargs, "options").returns(yargs);

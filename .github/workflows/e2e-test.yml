@@ -101,7 +101,6 @@ jobs:
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
-      TEAMSFX_V3: "true"
       TEAMSFX_DEBUG_TEMPLATE: "true"
       NODE_ENV: "development"
       TEAMSFX_AAD_DEPLOY_ONLY: "true"
@@ -160,7 +159,7 @@ jobs:
           lscpu
 
       - name: Download samples(daily)
-        if: ${{ github.event_name == 'schedule' && startsWith(matrix.cases, './template/') }}
+        if: ${{ github.event_name == 'schedule' && startsWith(matrix.cases, './samples/') }}
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -168,7 +167,7 @@ jobs:
           path: packages/cli/tests/e2e/resource
 
       - name: Download samples(rc)
-        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './template/') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') }}
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples

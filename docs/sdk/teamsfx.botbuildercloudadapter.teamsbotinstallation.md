@@ -37,6 +37,7 @@ It's recommended to get bot installations from .
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [channels()](./teamsfx.botbuildercloudadapter.teamsbotinstallation.channels.md) |  | Get channels from this bot installation. |
+|  [getPagedMembers(pageSize, continuationToken)](./teamsfx.botbuildercloudadapter.teamsbotinstallation.getpagedmembers.md) |  | Gets a pagined list of members from this bot installation. |
 |  [getTeamDetails()](./teamsfx.botbuildercloudadapter.teamsbotinstallation.getteamdetails.md) |  | Get team details from this bot installation |
 |  [members()](./teamsfx.botbuildercloudadapter.teamsbotinstallation.members.md) |  | Get members from this bot installation. |
 |  [sendAdaptiveCard(card, onError)](./teamsfx.botbuildercloudadapter.teamsbotinstallation.sendadaptivecard.md) |  | Send an adaptive card message. |

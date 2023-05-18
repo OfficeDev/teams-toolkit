@@ -4,6 +4,7 @@
 import "mocha";
 import { assert } from "chai";
 import { ConfigMap, OptionItem } from "../src";
+import { FxSuccess } from "../src/v2/types";
 
 describe("Types", () => {
   it("ConfigMap", () => {
@@ -47,5 +48,14 @@ describe("Types", () => {
       configMap2!.getOptionItem("k") as OptionItem
     );
     assert.isTrue(configMap2!.size === 1);
+  });
+});
+
+describe("FxSuccess", () => {
+  it("should create a success object with the correct output", () => {
+    const output = { message: "Hello, world!" };
+    const success = new FxSuccess(output);
+    assert.equal(success.kind, "success");
+    assert.equal(success.output, output);
   });
 });

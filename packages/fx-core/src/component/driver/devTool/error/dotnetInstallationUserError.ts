@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { UserError } from "@microsoft/teamsfx-api";
+import { camelCase } from "lodash";
 import { DepsCheckerError } from "../../../../common/deps-checker/depsError";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -11,7 +12,7 @@ const messageKey = "driver.prerequisite.error.dotnetInstallationError";
 export class DotnetInstallationUserError extends UserError {
   constructor(actionName: string, error: any, helpLink?: string) {
     super({
-      source: actionName,
+      source: camelCase(actionName),
       name: errorCode,
       message: error instanceof DepsCheckerError ? error.message : getDefaultString(messageKey),
       displayMessage:

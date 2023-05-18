@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { execAsync } from "../e2e/commonUtils";
-import { Capability } from "./constants";
+import { execAsync, editDotEnvFile } from "../e2e/commonUtils";
+import { Capability, TemplateProject } from "./constants";
+import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
+import path from "path";
 
 export class Executor {
   static async execute(
@@ -69,8 +71,7 @@ export class Executor {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}` +
-      ` --spfx-install-latest-package true`;
+      ` --local-manifest-path ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 
@@ -157,5 +158,85 @@ export class Executor {
       const command = `npm install @microsoft/teamsfx-cli@${version}`;
       return this.execute(command, workspace);
     }
+  }
+
+  static async createTemplateProject(
+    appName: string,
+    testFolder: string,
+    template: TemplateProject,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const command = `teamsfx new template ${template} --interactive false `;
+    const timeout = 100000;
+    try {
+      await this.execute(command, testFolder, processEnv, timeout);
+
+      //  change original template name to appName
+      await this.execute(
+        `mv ./${template} ./${appName}`,
+        testFolder,
+        processEnv ? processEnv : process.env,
+        timeout
+      );
+
+      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with template ${template}`;
+      console.log(message);
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
+  static async openTemplateProject(
+    appName: string,
+    testFolder: string,
+    template: TemplateProject,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const timeout = 100000;
+    const oldPath = path.resolve("./resource", template);
+    const newPath = path.resolve(testFolder, appName);
+    try {
+      await this.execute(`mv ${oldPath} ${newPath}`, testFolder, processEnv, timeout);
+    } catch (error) {
+      console.log(error);
+      throw new Error(`Failed to open project: ${newPath}`);
+    }
+    if (isV3Enabled()) {
+      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    } else {
+      await this.execute(
+        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/env.default.json `,
+        testFolder,
+        processEnv ? processEnv : process.env,
+        timeout
+      );
+    }
+  }
+
+  static async setSubscription(
+    subscription: string,
+    projectPath: string,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const command = `teamsfx account set --subscription ${subscription}`;
+    return this.execute(command, projectPath, processEnv);
+  }
+
+  static async package(workspace: string, env = "dev") {
+    return this.executeCmd(workspace, "package", env);
   }
 }

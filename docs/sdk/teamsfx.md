@@ -74,12 +74,15 @@
 |  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
+|  [ConversationReferenceStore](./teamsfx.conversationreferencestore.md) | A store to persist notification target references. |
+|  [ConversationReferenceStoreAddOptions](./teamsfx.conversationreferencestoreaddoptions.md) | Options to add a conversation reference to the store. |
 |  [GetTeamsUserTokenOptions](./teamsfx.getteamsusertokenoptions.md) |  |
 |  [Logger](./teamsfx.logger.md) | Interface for customized logger. |
 |  [MessageExtensionTokenResponse](./teamsfx.messageextensiontokenresponse.md) | Token response provided by Teams Bot SSO prompt |
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | Represent a notification target. |
 |  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |
+|  [PagedData](./teamsfx.pageddata.md) | Represents a page of data. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | Token response provided by Teams Bot SSO prompt |
 |  [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) | Interface for adaptive card action handler that can process card action invoke and return a response. |

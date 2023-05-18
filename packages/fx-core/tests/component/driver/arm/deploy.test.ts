@@ -17,15 +17,13 @@ import { ArmDeployDriver } from "../../../../src/component/driver/arm/deploy";
 import fs from "fs-extra";
 import * as cpUtils from "../../../../src/common/cpUtils";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
-import { err, ok } from "@microsoft/teamsfx-api";
+import { ok } from "@microsoft/teamsfx-api";
 import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicepChecker";
 import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
-import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
 import { handleArmDeploymentError } from "../../../../src/component/arm";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
-import mockedEnv from "mocked-env";
 import {
   CompileBicepError,
   DeployArmError,
@@ -254,15 +252,6 @@ describe("util test", () => {
   it("getFileExtension empty", () => {
     const res = getFileExtension("");
     assert.isEmpty(res);
-  });
-
-  it("useUserSetEnv", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    const res = await useUserSetEnv("./", "local");
-    assert.isTrue(res.isErr());
-    restore();
   });
 
   it("convert output", () => {

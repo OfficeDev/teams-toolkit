@@ -36,8 +36,7 @@ import { ObjectIsUndefinedError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment, EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
@@ -392,13 +391,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return grantPermissionFunc(inputs, ctx);
+  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return grantPermissionFunc(inputs);
   }
 
   @hooks([
@@ -406,13 +403,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return checkPermissionFunc(inputs, ctx);
+  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+    return checkPermissionFunc(inputs);
   }
 
   @hooks([
@@ -420,13 +415,11 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     QuestionModelMW,
     EnvLoaderMW(false, true),
-    ProjectSettingsLoaderMW, // this middleware is for v2 and will be removed after v3 refactor
     ConcurrentLockerMW,
-    ContextInjectorMW,
     EnvWriterMW,
   ])
-  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return listCollaboratorFunc(inputs, ctx);
+  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
+    return listCollaboratorFunc(inputs);
   }
 
   /**
@@ -475,6 +468,9 @@ export class FxCoreV3Implement {
       if (!isValid) {
         return err(new InvalidProjectError());
       }
+    }
+    if (version.source === VersionSource.unknown) {
+      return err(new InvalidProjectError());
     }
     return await this.innerMigrationV3(inputs);
   }
@@ -714,7 +710,7 @@ export class FxCoreV3Implement {
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const manifestFilePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, {}, false, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

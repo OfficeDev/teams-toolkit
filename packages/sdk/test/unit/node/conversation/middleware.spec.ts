@@ -7,7 +7,7 @@ import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import * as sinon from "sinon";
 import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
-import { ConversationReferenceStore } from "../../../../src/conversation/storage";
+import { DefaultConversationReferenceStore } from "../../../../src/conversation/storage";
 import {
   MockActionInvokeContext,
   MockCardActionHandler,
@@ -198,7 +198,7 @@ describe("Notification Middleware Tests - Node", () => {
   const sandbox = sinon.createSandbox();
   const testStorage = new TestStorage();
   const middleware = new NotificationMiddleware({
-    conversationReferenceStore: new ConversationReferenceStore(testStorage),
+    conversationReferenceStore: new DefaultConversationReferenceStore(testStorage),
   });
 
   beforeEach(() => {

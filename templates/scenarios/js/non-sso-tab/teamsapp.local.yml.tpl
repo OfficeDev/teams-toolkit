@@ -11,11 +11,11 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
-      
+
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
-  - uses: script 
+  - uses: script
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
@@ -55,7 +55,7 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
-      
+
 deploy:
   # Install development tool(s)
   - uses: devTool/install
@@ -78,8 +78,6 @@ deploy:
     with:
       target: ./.localConfigs
       envs:
-        BROWSER: none
-        HTTPS: true
         PORT: 53000
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}

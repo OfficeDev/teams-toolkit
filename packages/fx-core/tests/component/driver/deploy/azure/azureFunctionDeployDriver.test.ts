@@ -24,7 +24,6 @@ import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
 import { AxiosError } from "axios";
-import { DeployRemoteStartError } from "../../../../../src/error/deploy";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -155,9 +154,11 @@ describe("Azure Function Deploy Driver test", () => {
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
+    const logger = new TestLogProvider();
+    const caller = sandbox.stub(logger, "warning").resolves();
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
+      logProvider: logger,
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -191,6 +192,8 @@ describe("Azure Function Deploy Driver test", () => {
     });
     const res = await deploy.run(args, context);
     expect(res.isErr()).to.equal(false);
+    // log warning will print
+    sinon.assert.calledOnce(caller);
   });
 
   it("Zip deploy throws when upload", async () => {
@@ -332,10 +335,7 @@ describe("Azure Function Deploy Driver test", () => {
       data: { status: 3 },
     });
     const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
-    if (res.isErr()) {
-      assert.isTrue(res.error instanceof DeployRemoteStartError);
-    }
+    expect(res.isOk()).to.equal(true);
   });
 
   it("Check deploy throws", async () => {

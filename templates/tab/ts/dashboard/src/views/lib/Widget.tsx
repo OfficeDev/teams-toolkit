@@ -1,18 +1,17 @@
-import React, { Component } from "react";
+import "./Widget.css";
 
-import { headerStyles, widgetStyles } from "./Widget.styles";
+import { Component } from "react";
 
 /**
  * Defined a widget, it's also a react component.
  * For more information about react component, please refer to https://reactjs.org/docs/react-component.html
- * T is the model type of the widget.
+ * @param P is the props type of the widget.
+ * @param T is the model type of the widget.
  */
-export abstract class Widget<T> extends Component<{}, { data?: T | void }> {
+export abstract class Widget<P, T> extends Component<P, T> {
   constructor(props: any) {
     super(props);
-    this.state = {
-      data: undefined,
-    };
+    this.state = {} as T;
   }
 
   /**
@@ -21,7 +20,7 @@ export abstract class Widget<T> extends Component<{}, { data?: T | void }> {
    * For more information about react lifecycle, please refer to https://reactjs.org/docs/react-component.html#componentdidmount
    */
   async componentDidMount() {
-    this.setState({ data: await this.getData() });
+    this.setState({ ...(await this.getData()) });
   }
 
   /**
@@ -29,10 +28,8 @@ export abstract class Widget<T> extends Component<{}, { data?: T | void }> {
    */
   render() {
     return (
-      <div style={widgetStyles()}>
-        {this.headerContent() && (
-          <div style={headerStyles()}>{this.headerContent()}</div>
-        )}
+      <div className="widget-root">
+        {this.headerContent() && <div className="widget-header">{this.headerContent()}</div>}
         {this.bodyContent() && <div>{this.bodyContent()}</div>}
         {this.footerContent() && <div>{this.footerContent()}</div>}
       </div>

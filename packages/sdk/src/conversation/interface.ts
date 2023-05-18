@@ -4,6 +4,7 @@
 import {
   BotFrameworkAdapter,
   ConversationState,
+  ConversationReference,
   UserState,
   Activity,
   TurnContext,
@@ -91,6 +92,9 @@ export interface NotificationTarget {
 
 /**
  * Interface for a storage provider that stores and retrieves notification target references.
+ *
+ * @deprecated Use ConversationReferenceStore to customize the way
+ * to persist bot notification connections instead.
  */
 export interface NotificationTargetStorage {
   /**
@@ -142,6 +146,77 @@ export interface NotificationOptions {
    * It's recommended to use your own shared storage for production environment.
    */
   storage?: NotificationTargetStorage;
+}
+
+/**
+ * A store to persist notification target references.
+ */
+export interface ConversationReferenceStore {
+  /**
+   * Add a conversation reference to the store. If overwrite, update existing one, otherwise add when not exist.
+   *
+   * @param key the key of the conversation reference.
+   * @param reference the conversation reference to add.
+   * @param options the options to add the conversation reference.
+   *
+   * @returns true if added or updated, false if not changed.
+   */
+  add(
+    key: string,
+    reference: Partial<ConversationReference>,
+    options: ConversationReferenceStoreAddOptions
+  ): Promise<boolean>;
+
+  /**
+   * Remove a conversation reference from the store.
+   *
+   * @param key the key of the conversation reference.
+   * @param reference the conversation reference to remove.
+   *
+   * @returns true if exist and removed, false if not changed.
+   */
+  remove(key: string, reference: Partial<ConversationReference>): Promise<boolean>;
+
+  /**
+   * List stored conversation reference by page.
+   *
+   * @param pageSize the page size.
+   * @param continuationToken the continuation token to get next page.
+   *
+   * @returns a paged list of conversation references.
+   */
+  list(
+    pageSize?: number,
+    continuationToken?: string
+  ): Promise<PagedData<Partial<ConversationReference>>>;
+}
+
+/**
+ * Options to add a conversation reference to the store.
+ */
+export interface ConversationReferenceStoreAddOptions {
+  /**
+   * Whether to overwrite the existing conversation reference.
+   */
+  overwrite?: boolean;
+}
+
+/**
+ * Represents a page of data.
+ */
+export interface PagedData<T> {
+  /**
+   * Page of data.
+   */
+  data: T[];
+
+  /**
+   * The Continuation Token to pass to get the next page of results.
+   *
+   * @remarks
+   * Undefined or empty token means the page reaches the end.
+   */
+  continuationToken?: string;
 }
 
 /**

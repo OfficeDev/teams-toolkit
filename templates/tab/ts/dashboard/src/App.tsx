@@ -1,13 +1,14 @@
+import "./App.css";
+
 import { HashRouter as Router, Redirect, Route } from "react-router-dom";
 
 // https://fluentsite.z22.web.core.windows.net/quick-start
 import {
   FluentProvider,
   Spinner,
-  teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
-  tokens,
+  teamsLightTheme,
 } from "@fluentui/react-components";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>
       <FluentProvider
+        id="fluent-provider"
         theme={
           themeString === "dark"
             ? teamsDarkTheme
@@ -36,17 +38,13 @@ export default function App() {
             ? teamsHighContrastTheme
             : teamsLightTheme
         }
-        style={{
-          height: "100vh",
-          background: tokens.colorNeutralBackground3,
-        }}
       >
         <Router>
           <Route exact path="/">
             <Redirect to="/tab" />
           </Route>
           {loading ? (
-            <Spinner style={{ margin: 100 }} />
+            <Spinner id="spinner" />
           ) : (
             <>
               <Route exact path="/privacy" component={Privacy} />

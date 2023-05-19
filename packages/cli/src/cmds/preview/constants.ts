@@ -116,6 +116,8 @@ export const doctorResult = {
   SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
+  NgrokWarning:
+    "This software downloads npm package ngrok@4.3.3 which contains NGROK(https://ngrok.com/) v2.3.40. Customer must have a valid license to use NGROK software. Microsoft does not license use of the NGROK.",
 };
 
 export const installApp = {

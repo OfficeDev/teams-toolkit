@@ -71,8 +71,7 @@ export class Executor {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}` +
-      ` --spfx-install-latest-package true`;
+      ` --local-manifest-path ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 
@@ -153,7 +152,7 @@ export class Executor {
 
   static async installCLI(workspace: string, version: string, global: boolean) {
     if (global) {
-      const command = `npm install -g @microsoft/teamsfx-cli@${version}`;
+      const command = `npm install -g @microsoft/teamsfx-cli@${version} --force`;
       return this.execute(command, workspace);
     } else {
       const command = `npm install @microsoft/teamsfx-cli@${version}`;

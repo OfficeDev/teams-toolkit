@@ -27,6 +27,7 @@ describe("[Checker UT - Extension]", () => {
     beforeEach(() => {
       logger.cleanup = sandbox.stub().resolves();
       logger.error = sandbox.stub().resolves();
+      logger.warning = sandbox.stub().resolves();
       logger.debug = sandbox.stub().resolves();
       logger.printDetailLog = sandbox.stub().resolves();
       telemetry.sendEvent = sendEventSpy.resolves();

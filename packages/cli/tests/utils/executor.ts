@@ -152,7 +152,7 @@ export class Executor {
 
   static async installCLI(workspace: string, version: string, global: boolean) {
     if (global) {
-      const command = `npm install -g @microsoft/teamsfx-cli@${version}`;
+      const command = `npm install -g @microsoft/teamsfx-cli@${version} --force`;
       return this.execute(command, workspace);
     } else {
       const command = `npm install @microsoft/teamsfx-cli@${version}`;

@@ -35,7 +35,7 @@ export type CliCapabilities = "notification" | "command-bot" | "tab" | "message-
 export type CliTriggerType = "http-restify" | "http-functions" | "timer-functions";
 
 export enum Capability {
-  Tab = "tab",
+  // Tab = "tab",
   SSOTab = "sso-tab",
   Bot = "bot",
   MessageExtension = "message-extension",

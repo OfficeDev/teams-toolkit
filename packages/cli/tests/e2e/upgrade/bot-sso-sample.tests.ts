@@ -6,7 +6,6 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
@@ -28,12 +27,8 @@ describe("upgrade", () => {
   });
 
   it("sample bot sso", { testPlanCaseId: 19314244 }, async function () {
-    if (!isV3Enabled()) {
-      return;
-    }
-
     {
-      Executor.installCLI(testFolder, "1.2.5", true);
+      await Executor.installCLI(testFolder, "1.2.5", false);
       const env = Object.assign({}, process.env);
       env["TEAMSFX_V3"] = "false";
       // new projiect
@@ -45,6 +40,7 @@ describe("upgrade", () => {
       );
     }
 
+    await Executor.installCLI(testFolder, "alpha", false);
     {
       // upgrade
       const result = await Executor.upgrade(projectPath);

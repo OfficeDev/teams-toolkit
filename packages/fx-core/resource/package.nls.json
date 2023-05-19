@@ -362,7 +362,6 @@
   "error.TrustCertificateCancelError": "User canceled. For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.",
   "error.BicepGenerationError": "Unable to generate Bicep file %s. Reason: %s",
   "error.LocalBotEndpointNotConfigured": "Local bot endpoint is not configured. Set \"bot.siteEndpoint\" in \".fx/configs/config.local.json\" and try again.",
-  "error.NgrokTunnelNotConnected": "Ngrok tunnel is not connected. Check your network settings and try again.",
   "error.VideoFilterAppNotRemoteSupported": "Video filter app in remote is not supported by Teams Toolkit. Check the README.md file in project root folder.",
   "error.frontend.FailedSaveEnv": "Unable to save environment variables to %s. Your App may not work.",
   "error.frontend.FailedLoadEnv": "Unable to load environment variables from %s. Your App may not work.",

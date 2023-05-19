@@ -35,13 +35,11 @@ import {
   ConfigLocalDebugSettingsError,
   InvalidLocalBotEndpointFormat,
   LocalBotEndpointNotConfigured,
-  NgrokTunnelNotConnected,
   ScaffoldLocalDebugSettingsError,
   SetupLocalDebugSettingsError,
 } from "./error";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { prepareLocalAuthService } from "./util/localService";
-import { getNgrokHttpUrl } from "./util/ngrok";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ComponentNames } from "../constants";
 import * as Launch from "./util/launch";
@@ -234,17 +232,6 @@ export async function setupLocalEnvironmentCommon(
           envInfo.state[BOT_STATE_KEY].siteEndpoint = localBotEndpoint;
           envInfo.state[BOT_STATE_KEY].validDomain = localBotEndpoint.slice(8);
           envInfo.state[BOT_STATE_KEY].domain = localBotEndpoint.slice(8);
-        } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-          if (!ngrokHttpUrl) {
-            const error = NgrokTunnelNotConnected();
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
-            return err(error);
-          } else {
-            envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
-            envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
-            envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
-          }
         }
       }
     } else if (inputs.platform === Platform.VS) {
@@ -256,16 +243,7 @@ export async function setupLocalEnvironmentCommon(
 
       if (includeBot) {
         envInfo.state[BOT_STATE_KEY] ??= {};
-        const ngrokHttpUrl = await getNgrokHttpUrl(5130);
-        if (!ngrokHttpUrl) {
-          const error = NgrokTunnelNotConnected();
-          TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
-          return err(error);
-        } else {
-          envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
-          envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
-          envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
-        }
+        // TODO: remove this file
       }
     }
   } catch (error: any) {

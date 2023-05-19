@@ -75,25 +75,13 @@ export class CreateOrUpdateDebugProfileDriver implements StepDriver {
     summaries: string[];
   }> {
     try {
-      let launchSettingsPath = "";
-      if (!args.target) {
-        launchSettingsPath = getAbsolutePath(launchSettingsFilePath, context.projectPath);
-      } else {
-        launchSettingsPath = getAbsolutePath(args.target, context.projectPath);
-      }
+      const launchSettingsPath = getAbsolutePath(launchSettingsFilePath, context.projectPath);
       if (!(await fs.pathExists(launchSettingsPath))) {
-        throw new UserError(
-          "LaunchSettingsFileNotExist",
-          getLocalizedString(
-            "driver.file.createOrUpdateDebugProfile.launchSettingsFileNotExist",
-            launchSettingsPath
-          ),
-          helpLink
-        );
+        await fs.writeFile(launchSettingsPath, "{}", "utf-8");
       }
-      const launchSettingsContent = fs.readFileSync(launchSettingsPath, "utf-8");
+      const launchSettingsContent = await fs.readFile(launchSettingsPath, "utf-8");
       const data = parse(launchSettingsContent.toString());
-      if (!isCommentObject(data) || !!Array.isArray(data.profiles)) {
+      if (!isCommentObject(data)) {
         throw new UserError(
           "LaunchSettingsFileInvalid",
           getLocalizedString(
@@ -120,12 +108,17 @@ export class CreateOrUpdateDebugProfileDriver implements StepDriver {
           launchUrl += `&login_hint=${tokenObject.upn}`;
         }
       }
+      (data as any).profiles = data.profiles || {};
+      (data.profiles as any)[args.name] = (data.profiles as any)[args.name] || {};
       (data.profiles as any)[args.name].launchUrl = launchUrl;
       await fs.writeFile(launchSettingsPath, commentJson.stringify(data, null, 4), "utf-8");
       return {
         output: new Map<string, string>(),
         summaries: [
-          getLocalizedString("driver.file.createOrUpdateDebugProfile.summary", args.target),
+          getLocalizedString(
+            "driver.file.createOrUpdateDebugProfile.summary",
+            launchSettingsFilePath
+          ),
         ],
       };
     } catch (error) {

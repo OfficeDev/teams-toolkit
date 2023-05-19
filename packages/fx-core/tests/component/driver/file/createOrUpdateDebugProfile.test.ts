@@ -24,7 +24,6 @@ describe("CreateOrUpdateJsonFileDriver", () => {
   let mockArgs: CreateOrUpdateDebugProfileArgs = {
     name: "",
     appId: "",
-    target: undefined,
     loginHint: undefined,
     host: undefined,
   };
@@ -42,7 +41,6 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     mockArgs = {
       name: "MyProfile",
       appId: "${{TEAMS_APP_ID}}",
-      target: undefined,
       loginHint: undefined,
       host: undefined,
     };
@@ -52,45 +50,16 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.restore();
   });
 
-  it("should throw UserError if launch settings file does not exist", async () => {
-    sinon.stub(fs, "pathExists").resolves(false);
-    const result = await driver.run(mockArgs, mockedDriverContext);
-    chai.assert(result.isErr());
-  });
-
-  it("should throw UserError if target is set and launch settings file does not exist", async () => {
-    mockArgs = {
-      name: "MyProfile",
-      appId: "${{TEAMS_APP_ID}}",
-      target: "launchSettings.json",
-      loginHint: undefined,
-      host: undefined,
-    };
-    sinon.stub(fs, "pathExists").resolves(false);
-    const result = await driver.run(mockArgs, mockedDriverContext);
-    chai.assert(result.isErr());
-  });
-
-  it("should throw UserError if read launch settings file fail", async () => {
+  it("should throw a UserError if the launch settings file is invalid", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFileSync").rejects(new Error("exception"));
+    sinon.stub(fs, "readFile").resolves(Buffer.from("invalid"));
     const result = await driver.run(mockArgs, mockedDriverContext);
     chai.assert(result.isErr());
   });
 
-  it("should throw UserError if cannot parse json file", async () => {
+  it("should throw a UserError if the launch settings file is an array", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFileSync").returns(
-      JSON.stringify({
-        profiles: {
-          MyProfile: {
-            test: "value",
-          },
-        },
-      })
-    );
-    sinon.stub(commentJson, "parse").rejects(new Error("exception"));
-
+    sinon.stub(fs, "readFile").resolves(Buffer.from("[]"));
     const result = await driver.run(mockArgs, mockedDriverContext);
     chai.assert(result.isErr());
   });
@@ -99,20 +68,37 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     mockArgs = {
       name: "MyProfile",
       appId: "${{TEAMS_APP_ID}}",
-      target: undefined,
       loginHint: false,
       host: undefined,
     };
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFileSync").returns(
-      JSON.stringify({
-        profiles: {
-          MyProfile: {
-            launchUrl: "http://localhost:5000",
+    sinon.stub(fs, "readFile").resolves(
+      Buffer.from(
+        JSON.stringify({
+          profiles: {
+            MyProfile: {
+              launchUrl: "http://localhost:5000",
+            },
           },
-        },
-      })
+        })
+      )
     );
+    sinon.stub(fs, "writeFile").resolves();
+
+    const result = await driver.run(mockArgs, mockedDriverContext);
+    console.log(result);
+    chai.assert(result.isOk());
+  });
+
+  it("should create a new launch settings file", async () => {
+    mockArgs = {
+      name: "MyProfile",
+      appId: "${{TEAMS_APP_ID}}",
+      loginHint: false,
+      host: undefined,
+    };
+    sinon.stub(fs, "pathExists").resolves(false);
+    sinon.stub(fs, "readFile").resolves(Buffer.from(JSON.stringify({})));
     sinon.stub(fs, "writeFile").resolves();
 
     const result = await driver.run(mockArgs, mockedDriverContext);
@@ -121,14 +107,16 @@ describe("CreateOrUpdateJsonFileDriver", () => {
 
   it("should update launch URL in launch settings file and add loginhint", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFileSync").returns(
-      JSON.stringify({
-        profiles: {
-          MyProfile: {
-            launchUrl: "http://localhost:5000",
+    sinon.stub(fs, "readFile").resolves(
+      Buffer.from(
+        JSON.stringify({
+          profiles: {
+            MyProfile: {
+              launchUrl: "http://localhost:5000",
+            },
           },
-        },
-      })
+        })
+      )
     );
     sinon.stub(fs, "writeFile").resolves();
 
@@ -142,14 +130,16 @@ describe("CreateOrUpdateJsonFileDriver", () => {
       logProvider: new MockedLogProvider(),
     } as any;
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFileSync").returns(
-      JSON.stringify({
-        profiles: {
-          MyProfile: {
-            launchUrl: "http://localhost:5000",
+    sinon.stub(fs, "readFile").resolves(
+      Buffer.from(
+        JSON.stringify({
+          profiles: {
+            MyProfile: {
+              launchUrl: "http://localhost:5000",
+            },
           },
-        },
-      })
+        })
+      )
     );
     sinon.stub(fs, "writeFile").resolves();
 

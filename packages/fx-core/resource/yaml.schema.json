@@ -1176,6 +1176,7 @@
             },
             "host": {
               "type": "string",
+              "enum": ["teams"],
               "description": "the host to be used in launch url"
             }
           }

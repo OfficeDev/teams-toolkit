@@ -77,6 +77,7 @@ export class CreateOrUpdateDebugProfileDriver implements StepDriver {
     try {
       const launchSettingsPath = getAbsolutePath(launchSettingsFilePath, context.projectPath);
       if (!(await fs.pathExists(launchSettingsPath))) {
+        await fs.ensureFile(launchSettingsPath);
         await fs.writeFile(launchSettingsPath, "{}", "utf-8");
       }
       const launchSettingsContent = await fs.readFile(launchSettingsPath, "utf-8");
@@ -109,7 +110,28 @@ export class CreateOrUpdateDebugProfileDriver implements StepDriver {
         }
       }
       (data as any).profiles = data.profiles || {};
-      (data.profiles as any)[args.name] = (data.profiles as any)[args.name] || {};
+      (data.profiles as any)[args.name] =
+        (data.profiles as any)[args.name] ||
+        commentJson.parse(`{
+        // uncommnet the lines which your project need to debug
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+          // function app
+          //"TEAMSFX_NOTIFICATION_LOCALSTORE_DIR": "../../.." // Path to project folder $(MSBuildProjectDirectory)
+        },
+        //"hotReloadProfile": "aspnetcore",
+        // command and response, web notification or workflow app
+        //"applicationUrl": "http://localhost:5130",
+        // message extension app
+        //"applicationUrl": "https://localhost:7130;http://localhost:5130",
+        // tab app
+        //"applicationUrl": "https://localhost:44302;http://localhost:2544",
+        // function notification app
+        // "commandLineArgs": "host start --port 5130 --pause-on-error",
+      }`);
       (data.profiles as any)[args.name].launchUrl = launchUrl;
       await fs.writeFile(launchSettingsPath, commentJson.stringify(data, null, 4), "utf-8");
       return {

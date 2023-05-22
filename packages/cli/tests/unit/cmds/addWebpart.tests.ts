@@ -7,7 +7,7 @@ import "mocha";
 import sinon from "sinon";
 import yargs from "yargs";
 import * as activate from "../../../src/activate";
-import { AddWebpart } from "../../../src/cmds/capability";
+import { AddWebpart } from "../../../src/cmds/add";
 import * as constants from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockTelemetry, mockYargs } from "../utils";

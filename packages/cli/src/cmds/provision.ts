@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok, Void, Stage } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
 import {
   EnvOptions,
   RootFolderOptions,
-  sqlPasswordQustionName,
   sqlPasswordConfirmQuestionName,
+  sqlPasswordQustionName,
 } from "../constants";
-import HelpParamGenerator from "../helpParamGenerator";
 import { strings } from "../resource";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -23,116 +21,20 @@ import {
 import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
-export class ProvisionManifest extends YargsCommand {
-  public readonly commandHead = "manifest";
-  public readonly command = this.commandHead;
-  public readonly description =
-    "Provision a Teams App in Teams Developer portal with corresponding information specified in the given manifest file";
-
-  public readonly filePathParam = "file-path";
-
-  builder(yargs: Argv): Argv<any> {
-    yargs.option(this.filePathParam, {
-      require: true,
-      description: "Path to the Teams App manifest zip package",
-      type: "string",
-    });
-    return yargs.version(false);
-  }
-
-  async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
-    const rootFolder = path.resolve(args.folder || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
-      TelemetryEvent.ProvisionManifestStart
-    );
-
-    const manifestFilePath = args[this.filePathParam];
-    const inputs = getSystemInputs(rootFolder, args.env);
-    inputs["appPackagePath"] = manifestFilePath;
-
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ProvisionManifest, result.error);
-      return err(result.error);
-    }
-
-    const core = result.value;
-    const provisionResult = await core.provisionTeamsAppForCLI(inputs);
-    if (provisionResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ProvisionManifest, provisionResult.error);
-
-      return err(provisionResult.error);
-    }
-
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionManifest, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.AppId]: provisionResult.value,
-    });
-    return ok(Void);
-  }
-}
-
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = isV3Enabled()
-    ? strings.command.provision.description
-    : "Provision the cloud resources in the current application.";
-  public readonly resourceGroupParam = "resource-group";
-  public readonly subscriptionParam = "subscription";
-  public readonly subCommands = isV3Enabled() ? [] : [new ProvisionManifest()];
+  public readonly description = strings.command.provision.description;
 
   public builder(yargs: Argv): Argv<any> {
-    this.subCommands.forEach((cmd) => {
-      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    });
-    if (isV3Enabled()) {
-      return yargs
-        .hide("interactive")
-        .version(false)
-        .options(EnvOptions)
-        .options(RootFolderOptions);
-    }
-
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
-    yargs.option(this.resourceGroupParam, {
-      require: false,
-      description: "The name of an existing resource group",
-      type: "string",
-      global: false,
-    });
-
-    return yargs.version(false).options(this.params);
-  }
-
-  public override modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
-    if (sqlPasswordQustionName in args) {
-      args[sqlPasswordConfirmQuestionName] = args[sqlPasswordQustionName];
-    }
-    return args;
+    return yargs.hide("interactive").version(false).options(EnvOptions).options(RootFolderOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
 
-    {
-      const result = await setSubscriptionId(args.subscription, rootFolder);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
-        return result;
-      }
-    }
     const inputs = getSystemInputs(rootFolder, args.env);
-
-    if (this.resourceGroupParam in args) {
-      inputs.targetResourceGroupName = args[this.resourceGroupParam];
-    }
-
-    if (this.subscriptionParam in args) {
-      inputs.targetSubscriptionId = args[this.subscriptionParam];
-    }
-
     const result = await activate(rootFolder, true);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);

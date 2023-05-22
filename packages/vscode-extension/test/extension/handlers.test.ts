@@ -41,7 +41,6 @@ import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
 import * as teamsAppInstallation from "../../src/debug/teamsAppInstallation";
-import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import * as taskHandler from "../../src/debug/teamsfxTaskHandler";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
@@ -62,7 +61,6 @@ import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
-import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
@@ -109,14 +107,12 @@ describe("handlers", () => {
   });
 
   it("getSystemInputs()", () => {
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
   it("getAzureProjectConfigV3", async () => {
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     const fake_config_v3 = {
@@ -134,7 +130,6 @@ describe("handlers", () => {
   });
 
   it("getAzureProjectConfigV3 return undefined", async () => {
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     sandbox
@@ -145,7 +140,6 @@ describe("handlers", () => {
   });
 
   it("getSettingsVersion in v3", async () => {
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
@@ -270,7 +264,6 @@ describe("handlers", () => {
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
       const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.createNewProjectHandler();
 
@@ -292,7 +285,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
       sinon.stub(envTreeProviderInstance, "reloadEnvironments");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.provisionHandler();
 
@@ -305,7 +297,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.deployHandler();
 
@@ -318,7 +309,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const publishApplication = sinon.spy(handlers.core, "publishApplication");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.publishHandler();
 
@@ -347,7 +337,6 @@ describe("handlers", () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
       sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
       const validateApplication = sinon.spy(handlers.core, "validateApplication");
 
       sinon.stub(extension, "VS_CODE_UI").value({
@@ -365,7 +354,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(handlers.core, "previewWithManifest").resolves(err({ foo: "bar" } as any));
 
@@ -379,7 +367,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(handlers.core, "previewWithManifest").resolves(ok("test-url"));
       sandbox.stub(launch, "openHubWebClient").resolves();
@@ -583,7 +570,6 @@ describe("handlers", () => {
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       const inputs = { projectId: uuid.v4(), platform: Platform.VSCode };
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.runCommand(Stage.create, inputs);
 
@@ -598,7 +584,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(true);
 
       await handlers.runCommand(Stage.create);
 
@@ -613,7 +598,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.runCommand(Stage.provision);
 
@@ -626,7 +610,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.runCommand(Stage.deploy);
 
@@ -640,7 +623,6 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
-      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
       const input: Inputs = handlers.getSystemInputs();
       await handlers.runCommand(Stage.deployAad, input);
 
@@ -654,7 +636,6 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers.core, "deployAadManifest").resolves(ok("test_success"));
-      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
       const input: Inputs = handlers.getSystemInputs();
       const res = await handlers.runCommand(Stage.deployAad, input);
       chai.assert.isTrue(res.isOk());
@@ -668,7 +649,6 @@ describe("handlers", () => {
       sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       let ignoreEnvInfo: boolean | undefined = undefined;
       let localDebugCalled = 0;
@@ -698,7 +678,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const publishApplication = sinon.spy(handlers.core, "publishApplication");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.runCommand(Stage.publish);
 
@@ -713,7 +692,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createEnv = sinon.spy(handlers.core, "createEnv");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.runCommand(Stage.createEnv);
 
@@ -880,7 +858,6 @@ describe("handlers", () => {
       const decrypt = sinon.spy(handlers.core, "decrypt");
       const encrypt = sinon.spy(handlers.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(true);
       const editBuilder = sinon.spy();
       sinon.stub(vscode.window, "activeTextEditor").value({
         edit: function (callback: (eb: any) => void) {
@@ -914,7 +891,6 @@ describe("handlers", () => {
       decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
       const encrypt = sinon.spy(handlers.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(true);
       const editBuilder = sinon.spy();
       sinon.stub(vscode.window, "activeTextEditor").value({
         edit: function (callback: (eb: any) => void) {
@@ -980,7 +956,6 @@ describe("handlers", () => {
           })
         )
       );
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       const result = await handlers.grantPermission("env");
       chai.expect(result.isOk()).equals(true);
@@ -1092,7 +1067,6 @@ describe("handlers", () => {
           })
         )
       );
-      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       const result = await handlers.manageCollaboratorHandler("env");
       chai.expect(result.isOk()).equals(true);
@@ -1118,7 +1092,6 @@ describe("handlers", () => {
           })
         )
       );
-      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
       const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
       sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
         name: "name",
@@ -1141,7 +1114,6 @@ describe("handlers", () => {
         selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
       });
       sandbox.stub(MockCore.prototype, "listCollaborator").throws(new Error("Error"));
-      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
       const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
       sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
         name: "name",
@@ -1221,7 +1193,6 @@ describe("handlers", () => {
 
     beforeEach(() => {
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
       sandbox.stub(commonTools, "isV3Enabled").returns(true);
       sandbox.stub(handlers, "core").value(mockCore);
     });
@@ -1237,7 +1208,7 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": false,
+          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1254,7 +1225,7 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": false,
+          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1265,7 +1236,7 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.CommandPalette]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledWith({
-          "function-dotnet-checker-enabled": false,
+          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1293,7 +1264,7 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": false,
+          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1320,7 +1291,6 @@ describe("handlers", () => {
   });
 
   it("deployAadAppManifest", async () => {
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -1333,7 +1303,6 @@ describe("handlers", () => {
 
   it("deployAadAppmanifest for v3", async () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1345,7 +1314,6 @@ describe("handlers", () => {
 
   it("deployAadAppManifest on codelens only for v2", async () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1598,7 +1566,6 @@ describe("handlers", () => {
       sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
       const getApp = sinon.stub(AppStudioClient, "getApp").throws("error");
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
@@ -1624,7 +1591,6 @@ describe("handlers", () => {
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
       const appDefinition: AppDefinition = {
         teamsAppId: "mock-id",
       };
@@ -1663,7 +1629,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
 
@@ -1687,7 +1652,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
 
@@ -1708,7 +1672,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
 
@@ -1863,35 +1826,6 @@ describe("handlers", () => {
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, "1");
     });
-
-    it("skip debugging", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
-      const result = await handlers.validateAzureDependenciesHandler();
-      chai.assert.equal(result, "1");
-    });
-
-    it("should not continue", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
-      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
-      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(false));
-      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
-      const result = await handlers.validateAzureDependenciesHandler();
-      chai.assert.equal(result, "1");
-    });
-
-    it("should continue", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
-      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
-      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(true));
-      sinon.stub(debugCommonUtils, "getPortsInUse").returns(Promise.resolve([]));
-      const result = await handlers.validateAzureDependenciesHandler();
-      chai.assert.equal(result, undefined);
-    });
   });
 
   describe("validateLocalPrerequisitesHandler", () => {
@@ -1912,14 +1846,6 @@ describe("handlers", () => {
       sinon.stub(handlers, "showError").resolves();
       const result = await handlers.validateLocalPrerequisitesHandler();
       chai.assert.equal(result, "1");
-    });
-
-    it("skip debugging", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
-      const result = await handlers.validateLocalPrerequisitesHandler();
-      chai.assert.equal(result, "1");
-      sinon.restore();
     });
   });
 

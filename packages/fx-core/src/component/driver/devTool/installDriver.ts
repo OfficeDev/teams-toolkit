@@ -8,13 +8,7 @@ import * as path from "path";
 import semver from "semver";
 import { Service } from "typedi";
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import {
-  DependencyStatus,
-  DepsManager,
-  DepsType,
-  EmptyLogger,
-  EmptyTelemetry,
-} from "../../../common/deps-checker";
+import { DependencyStatus, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
 import {
   LocalCertificate,
   LocalCertificateManager,
@@ -39,6 +33,7 @@ import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
+import { DotnetChecker } from "../../../common/deps-checker/internal/dotnetChecker";
 
 const ACTION_NAME = "devTool/install";
 const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
@@ -198,8 +193,8 @@ export class ToolsInstallDriverImpl {
 
   async resolveDotnet(outputEnvVarNames?: Map<string, string>): Promise<Map<string, string>> {
     const res = new Map<string, string>();
-    const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
-    const dotnetStatus = await depsManager.ensureDependency(DepsType.Dotnet, true);
+    const dotnetChecker = new DotnetChecker(new EmptyLogger(), new EmptyTelemetry());
+    const dotnetStatus = await dotnetChecker.resolve();
 
     this.setDepsCheckTelemetry(TelemetryProperties.dotnetStatus, dotnetStatus);
 

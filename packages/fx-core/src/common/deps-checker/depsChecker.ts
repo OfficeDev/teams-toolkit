@@ -33,13 +33,10 @@ export interface DepsInfo {
 }
 
 export enum DepsType {
-  AzureNode = "azure-node",
-  SpfxNode = "spfx-node",
   LtsNode = "lts-node",
   ProjectNode = "project-node",
   Dotnet = "dotnet",
   FuncCoreTools = "func-core-tools",
-  Ngrok = "ngrok",
   VxTestApp = "vx-test-app",
 }
 

@@ -22,16 +22,6 @@ export function ConfigLocalDebugSettingsError(error: any): SystemError {
   return new SystemError({ error, source: SolutionSource, name: "ConfigLocalDebugSettingsError" });
 }
 
-export function NgrokTunnelNotConnected(): UserError {
-  return new UserError({
-    name: "NgrokTunnelNotConnected",
-    source: "localdebug-plugin",
-    message: getDefaultString("error.NgrokTunnelNotConnected"),
-    displayMessage: getLocalizedString("error.NgrokTunnelNotConnected"),
-    helpLink: "https://aka.ms/teamsfx-localdebug",
-  });
-}
-
 export function LocalBotEndpointNotConfigured(): UserError {
   return new UserError({
     source: SolutionSource,

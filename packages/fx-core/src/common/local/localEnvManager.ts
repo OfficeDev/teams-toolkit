@@ -7,7 +7,6 @@ import {
   LogProvider,
   ProjectSettings,
   TelemetryReporter,
-  UserError,
   UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
@@ -19,22 +18,15 @@ import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
-import { getAppSPFxVersion, isVideoFilterProject, waitSeconds } from "../tools";
+import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
-import { DepsType } from "../deps-checker/depsChecker";
-import { ProjectSettingsHelper } from "./projectSettingsHelper";
-import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
-import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
-import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import {
   getProjectSettingsPath,
   loadProjectSettingsByProjectPath,
 } from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
-import { getNgrokTunnelFromApi } from "../../component/debug/util/ngrok";
-import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 import { FileNotFoundError } from "../../error/common";
 
 export class LocalEnvManager {
@@ -46,40 +38,6 @@ export class LocalEnvManager {
     this.logger = logger;
     this.telemetry = telemetry;
     this.ui = ui;
-  }
-
-  public async getActiveDependencies(projectSettings: ProjectSettings): Promise<DepsType[]> {
-    const depsTypes: DepsType[] = [];
-    const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
-    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
-    const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
-    const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
-    const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(projectSettings);
-
-    // NodeJS
-    if (isSPFx) {
-      depsTypes.push(DepsType.SpfxNode);
-    } else {
-      depsTypes.push(DepsType.AzureNode);
-    }
-
-    // Dotnet
-    if ((includeFrontend && includeSimpleAuth) || includeBackend) {
-      depsTypes.push(DepsType.Dotnet);
-    }
-
-    // Function core tool
-    if (includeBackend || includeFuncHostedBot) {
-      depsTypes.push(DepsType.FuncCoreTools);
-    }
-
-    // Ngrok
-    if (includeBot) {
-      depsTypes.push(DepsType.Ngrok);
-    }
-
-    return DepsManager.sortBySequence(depsTypes);
   }
 
   public async getLocalDebugEnvs(
@@ -109,12 +67,6 @@ export class LocalEnvManager {
 
   public async getPortsInUse(ports: number[]): Promise<number[]> {
     return await getPortsInUse(ports, this.logger);
-  }
-
-  public async getNgrokTunnelFromApi(
-    webServiceUrl: string
-  ): Promise<{ src: string; dest: string } | undefined> {
-    return await getNgrokTunnelFromApi(webServiceUrl);
   }
 
   public async getLocalSettings(
@@ -161,31 +113,6 @@ export class LocalEnvManager {
         throw ReadFileError(error);
       }
     });
-  }
-
-  public async resolveLocalCertificate(
-    workspacePath: string,
-    trustDevCert: boolean,
-    localEnvProvider?: LocalEnvProvider
-  ): Promise<LocalCertificate> {
-    // Do not print any log in LocalCertificateManager, use the error message returned instead.
-    const certManager = new LocalCertificateManager(this.ui);
-    const res = await certManager.setupCertificate(trustDevCert);
-    if (trustDevCert && localEnvProvider) {
-      const isVideoFilter = await isVideoFilterProject(workspacePath);
-      if (isVideoFilter.isOk() && isVideoFilter.value) {
-        const videoFilterEnvs = await localEnvProvider.loadVideoFilterLocalEnvs();
-        videoFilterEnvs.template[LocalEnvKeys.videoFilterApp.template.SslCrtFile] = res.certPath;
-        videoFilterEnvs.template[LocalEnvKeys.videoFilterApp.template.SslKeyFile] = res.keyPath;
-        await localEnvProvider.saveVideoFilterLocalEnvs(videoFilterEnvs);
-      } else {
-        const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
-        frontendEnvs.template[LocalEnvKeys.frontend.template.SslCrtFile] = res.certPath;
-        frontendEnvs.template[LocalEnvKeys.frontend.template.SslKeyFile] = res.keyPath;
-        await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
-      }
-    }
-    return res;
   }
 
   public async getTaskJson(projectPath: string): Promise<any> {

@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 
 import { ProductName, Stage, ok } from "@microsoft/teamsfx-api";
-import { isV3Enabled, TunnelType } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { ITaskDefinition, TaskCommand } from "@microsoft/teamsfx-core/build/common/local";
 import { isValidProjectV3 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";

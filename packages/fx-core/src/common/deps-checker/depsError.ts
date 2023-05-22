@@ -20,14 +20,6 @@ export class NodeNotFoundError extends DepsCheckerError {
   }
 }
 
-export class NodeNotSupportedError extends DepsCheckerError {
-  constructor(message: string, helpLink: string) {
-    super(message, helpLink);
-
-    Object.setPrototypeOf(this, NodeNotSupportedError.prototype);
-  }
-}
-
 export class NodeNotLtsError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);
@@ -49,22 +41,6 @@ export class LinuxNotSupportedError extends DepsCheckerError {
     super(message, helpLink);
 
     Object.setPrototypeOf(this, LinuxNotSupportedError.prototype);
-  }
-}
-
-export class PortableFuncNodeNotMatchedError extends DepsCheckerError {
-  constructor(message: string, helpLink: string) {
-    super(message, helpLink);
-
-    Object.setPrototypeOf(this, PortableFuncNodeNotMatchedError.prototype);
-  }
-}
-
-export class GlobalFuncNodeNotMatchedError extends DepsCheckerError {
-  constructor(message: string, helpLink: string) {
-    super(message, helpLink);
-
-    Object.setPrototypeOf(this, GlobalFuncNodeNotMatchedError.prototype);
   }
 }
 

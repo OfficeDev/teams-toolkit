@@ -80,7 +80,9 @@ function parseResponse(
   const adaptiveCardName = getSafeCardName(api, url, operation);
 
   return {
-    name: adaptiveCardName,
+    tag: api.tags ? api.tags[0] : 'default',
+    id: adaptiveCardName,
+    name: adaptiveCardName + 'ResponseCard',
     content: card,
     url,
     operation,

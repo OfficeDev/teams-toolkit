@@ -1,10 +1,15 @@
 import fs from 'fs-extra';
-import { CliOptions, ResponseObjectResult } from './interfaces';
+import {
+  ActionHandlerResult,
+  CliOptions,
+  ResponseObjectResult
+} from './interfaces';
 import {
   isFolderEmpty,
   getResponseJsonResult,
   componentRefToName,
-  formatCode
+  formatCode,
+  capitalizeFirstLetter
 } from './utils';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { generateRequestCard } from './generateRequestCard';
@@ -13,6 +18,7 @@ import { AdaptiveCardResult } from './interfaces';
 import path from 'path';
 import { generateResponseCard } from './generateResponseCard';
 import { generateResponseObject } from './generateResponseObject';
+import { generateActionHandler } from './generateActionHandler';
 
 export async function parseApi(yaml: string, options: CliOptions) {
   if (!(await isArgsValid(yaml, options))) {
@@ -38,7 +44,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
     throw e;
   }
 
-  const unResolveApi = (await SwaggerParser.parse(yaml)) as OpenAPIV3.Document;
+  const unResolvedApi = (await SwaggerParser.parse(yaml)) as OpenAPIV3.Document;
   const apis = (await SwaggerParser.validate(yaml)) as OpenAPIV3.Document;
 
   console.log(
@@ -51,7 +57,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
   for (const url in apis.paths) {
     for (const operation in apis.paths[url]) {
       if (operation === 'get') {
-        const schema = getResponseJsonResult(unResolveApi.paths[url]!.get!)
+        const schema = getResponseJsonResult(unResolvedApi.paths[url]!.get!)
           .schema as any;
         if (schema) {
           if (schema.type === 'array') {
@@ -73,24 +79,46 @@ export async function parseApi(yaml: string, options: CliOptions) {
   );
 
   for (const card of requestCards) {
-    const cardPath = path.join(options.output, `${card.name}RequestCard.json`);
+    const cardPath = path.join(
+      options.output,
+      'src/adaptiveCards',
+      `${card.name}.json`
+    );
     await fs.outputJSON(cardPath, card.content, { spaces: 2 });
   }
 
   for (const card of responseCards) {
-    let cardPath = path.join(options.output, `${card.name}ResponseCard.json`);
     if (apiResponseToSchemaRef.has(card.url)) {
       const ref = apiResponseToSchemaRef.get(card.url);
-      cardPath = path.join(
-        options.output,
-        componentRefToName(ref!) + (card.isArray ? 'List' : '') + 'Card.json'
-      );
+      card.name =
+        componentRefToName(ref!) + (card.isArray ? 'List' : '') + 'Card';
     }
+    const cardPath = path.join(
+      options.output,
+      'src/adaptiveCards',
+      `${card.name}.json`
+    );
     await fs.outputJson(cardPath, card.content, { spaces: 2 });
   }
 
-  const apiFunctionsByTag: any = {};
-  const emptyFunctionsByTag: any = {};
+  for (const card of responseCards) {
+    const cardActionHandler: ActionHandlerResult = await generateActionHandler(
+      card.tag,
+      card.name,
+      card.id
+    );
+
+    const cardActionHandlerPath = path.join(
+      options.output,
+      'src/cardActions',
+      `${cardActionHandler.name}.ts`
+    );
+
+    await fs.outputFile(cardActionHandlerPath, cardActionHandler.code);
+  }
+
+  const apiFunctionsByTag: Record<string, string[]> = {};
+  const emptyFunctionsByTag: Record<string, string[]> = {};
   for (const sampleJsonResult of sampleResponse) {
     const jsonString = JSON.stringify(sampleJsonResult.content, null, 2);
     const tag = sampleJsonResult.tag;
@@ -124,24 +152,24 @@ export async function parseApi(yaml: string, options: CliOptions) {
       'utf-8'
     );
     const mockApiClass = apiClassTemplate
-      .replace('{{className}}', tag + 'Api')
+      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
       .replace('{{apiList}}', apiFunctionsByTag[tag].join('\n'));
 
     const realApiClass = apiClassTemplate
-      .replace('{{className}}', tag + 'Api')
+      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
       .replace('{{apiList}}', emptyFunctionsByTag[tag].join('\n'));
     mockApiProviderCode += mockApiClass + '\n';
     realApiProviderCode += realApiClass + '\n';
   }
 
   fs.outputFileSync(
-    path.join(options.output, 'mockApiProvider.ts'),
+    path.join(options.output, 'src/apis', 'mockApiProvider.ts'),
     formatCode(mockApiProviderCode),
     'utf-8'
   );
 
   fs.outputFileSync(
-    path.join(options.output, 'realApiProvider.ts'),
+    path.join(options.output, 'src/apis', 'realApiProvider.ts'),
     formatCode(realApiProviderCode),
     'utf-8'
   );
@@ -156,7 +184,7 @@ async function isArgsValid(
     return false;
   }
 
-  if (await fs.existsSync(options.output)) {
+  if (await fs.pathExists(options.output)) {
     const isOutputEmpty = await isFolderEmpty(options.output);
 
     if (!options.force && !isOutputEmpty) {

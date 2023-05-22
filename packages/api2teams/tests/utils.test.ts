@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, componentRefToName } from "../src/utils";
+import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, componentRefToName, capitalizeFirstLetter } from "../src/utils";
 import path from "path";
 import sinon from 'sinon';
 import fs from 'fs-extra';
@@ -176,6 +176,24 @@ describe('utils tests', () => {
       const ref = '#/components/schemas/Pet';
       const result = componentRefToName(ref);
       expect(result).to.equal('Pet');
+    });
+  });
+
+  describe('capitalizeFirstLetter', () => {
+    it('should capitalize the first letter of a string', () => {
+      // Call the capitalizeFirstLetter function with a mock string
+      const result = capitalizeFirstLetter('hello world');
+  
+      // Assert that the result is equal to the expected value
+      expect(result).to.equal('Hello world');
+    });
+  
+    it('should return an empty string if the input is empty', () => {
+      // Call the capitalizeFirstLetter function with an empty string
+      const result = capitalizeFirstLetter('');
+  
+      // Assert that the result is an empty string
+      expect(result).to.equal('');
     });
   });
 })

@@ -1,0 +1,18 @@
+import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import { InvokeResponseFactory, TeamsFxAdaptiveCardActionHandler } from "@microsoft/teamsfx";
+import { TurnContext, InvokeResponse } from "botbuilder";
+import {{cardName}} from "../adaptiveCards/{{cardName}}.json";
+
+// import { {{tag}}Api } from "../apis/realApiProvider"; // for api calls with real backend service
+import { {{tag}}Api } from "../apis/mockApiProvider"; // for api calls with mock data
+
+export class {{className}} implements TeamsFxAdaptiveCardActionHandler {
+  triggerVerb: string = "{{id}}";
+
+  async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse<any>> {
+    const cardData = {{tag}}Api.{{id}}(actionData);
+
+    const cardJson = AdaptiveCards.declare({{cardName}}).render(cardData);
+    return InvokeResponseFactory.adaptiveCard(cardJson);
+  }
+}

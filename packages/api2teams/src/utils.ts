@@ -105,3 +105,7 @@ export function componentRefToName(ref: string): string {
   const refArr = ref.split('/');
   return refArr[refArr.length - 1];
 }
+
+export function capitalizeFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

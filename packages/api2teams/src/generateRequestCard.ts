@@ -163,7 +163,9 @@ function parseGetRequest(
   const fullCard = wrapperCard(cardBody, adaptiveCardName, operation);
 
   return {
-    name: adaptiveCardName,
+    tag: api.tags ? api.tags[0] : 'default',
+    id: adaptiveCardName,
+    name: adaptiveCardName + 'RequestCard',
     content: fullCard,
     url,
     operation,

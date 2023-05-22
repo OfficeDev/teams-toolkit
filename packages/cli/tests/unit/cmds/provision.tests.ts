@@ -1,101 +1,41 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { err, Inputs, ok, UserCancelError, UserError } from "@microsoft/teamsfx-api";
+import { FxCore } from "@microsoft/teamsfx-core";
+import "mocha";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import yargs, { Options } from "yargs";
-
-import {
-  err,
-  FxError,
-  Inputs,
-  ok,
-  QTreeNode,
-  SubscriptionInfo,
-  UserCancelError,
-  UserError,
-} from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore, getUuid } from "@microsoft/teamsfx-core";
-
-import Provision, { ProvisionManifest } from "../../../src/cmds/provision";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
-import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
+import yargs from "yargs";
+import * as activate from "../../../src/activate";
+import Provision from "../../../src/cmds/provision";
 import * as constants from "../../../src/constants";
-import * as Utils from "../../../src/utils";
-import { expect } from "../utils";
-import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
-import UI from "../../../src/userInteraction";
-import LogProvider from "../../../src/commonlib/log";
-import { AzureAccountManager } from "../../../src/commonlib/azureLoginCI";
-import CLIUIInstance from "../../../src/userInteraction";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { NotSupportedProjectType } from "../../../src/error";
+import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
+import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 
 describe("Provision Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let telemetryEvents: string[] = [];
   let logs: string[] = [];
-  let allArguments = new Map<string, any>();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
 
-  const existedSubId = "existedSubId";
-
-  before(() => {
-    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
-      return {};
-    });
-    sandbox.stub(process, "exit");
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
-    sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {
-      if (!id) return ok(null);
-      if (id === existedSubId) return ok(null);
-      else return err(NotFoundSubscriptionId());
-    });
+  beforeEach(() => {
+    mockYargs(sandbox);
+    mockTelemetry(sandbox, telemetryEvents);
+    mockLogProvider(sandbox, logs);
+    sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
       else if (inputs.projectPath?.includes("Cancel")) return err(UserCancelError);
       else return err(NotSupportedProjectType());
     });
-    sandbox.stub(UI, "updatePresetAnswers").callsFake((a: any, args: { [_: string]: any }) => {
-      for (const key of Object.keys(args)) {
-        allArguments.set(key, args[key]);
-      }
-    });
-    sandbox.stub(LogProvider, "necessaryLog").returns();
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
-    CLIUIInstance.interactive = false;
-  });
-
-  after(() => {
-    sandbox.restore();
-  });
-
-  beforeEach(() => {
-    telemetryEvents = [];
-    logs = [];
-    allArguments = new Map<string, any>();
   });
 
   afterEach(() => {
+    telemetryEvents = [];
+    logs = [];
+    sandbox.restore();
     mockedEnvRestore();
   });
 
@@ -104,55 +44,13 @@ describe("Provision Command Tests", function () {
     cmd.builder(yargs);
   });
 
-  it("Builder Check V3", () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
+  it("Running check", async () => {
     const cmd = new Provision();
-    cmd.builder(yargs);
-  });
-
-  it("Provision Command Running -- with sqlPasswordQustionName", async () => {
-    const cmd = new Provision();
-    const args = {
-      interactive: false,
+    const result = await cmd.runCommand({
       [constants.RootFolderNode.data.name as string]: "real",
-      [constants.sqlPasswordQustionName]: "123",
-    };
-    await cmd.handler(args);
-    expect(allArguments.get(constants.sqlPasswordConfirmQuestionName)).equals("123");
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
-  });
-
-  it("Provision Command Running -- V3 error", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
     });
-    const cmd = new Provision();
-    const args = {
-      interactive: false,
-      [constants.RootFolderNode.data.name as string]: "realAndCancel",
-      [constants.sqlPasswordQustionName]: "123",
-      env: "dev",
-    };
-    await cmd.handler(args);
-  });
-
-  it("Provision Command Running -- setSubscriptionId error", async () => {
-    const cmd = new Provision();
-    const args = {
-      subscription: "fake",
-    };
-    try {
-      await cmd.handler(args);
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([
-        TelemetryEvent.ProvisionStart,
-        TelemetryEvent.Provision,
-      ]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotFoundSubscriptionId");
-    }
+    expect(result.isOk()).equals(true);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
   });
 
   it("Provision Command Running -- provisionResources error", async () => {
@@ -160,165 +58,12 @@ describe("Provision Command Tests", function () {
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };
-    try {
-      await cmd.handler(args);
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([
-        TelemetryEvent.ProvisionStart,
-        TelemetryEvent.Provision,
-      ]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
+    const result = await cmd.runCommand(args);
+    expect(result.isErr()).equals(true);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
+    if (result.isErr()) {
+      expect(result.error).instanceOf(UserError);
+      expect(result.error.name).equals("NotSupportedProjectType");
     }
-  });
-
-  it("Provision Command Running -- provision with set subscription error", async () => {
-    const cmd = new Provision();
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-    };
-
-    const subscriptionInfo: SubscriptionInfo = {
-      subscriptionId: "fake",
-      tenantId: "fakeTenantId",
-      subscriptionName: "fakeSubscriptionName",
-    };
-    const azureAccountManager = AzureAccountManager.getInstance();
-    sandbox.stub(azureAccountManager, "readSubscription").callsFake(async () => {
-      return Promise.resolve(subscriptionInfo);
-    });
-
-    sandbox
-      .stub(azureAccountManager, "setSubscription")
-      .callsFake(async (subscriptionId: string) => {
-        throw new UserError(
-          "CI",
-          "NotFoundSubscriptionId",
-          "Inputed subscription not found in your tenant"
-        );
-      });
-
-    await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
-  });
-
-  it("Provision Command Running -- with subscriptionId", async () => {
-    const cmd = new Provision();
-    const subscriptionParam = "subscription";
-    const resourceGroupParam = "resource-group";
-    const args = {
-      interactive: false,
-      [constants.RootFolderNode.data.name as string]: "real",
-      [subscriptionParam]: existedSubId,
-      [resourceGroupParam]: getUuid(),
-    };
-    await cmd.handler(args);
-    expect(allArguments.get(subscriptionParam)).equals(existedSubId);
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
-  });
-});
-
-describe("teamsfx provision manifest", async () => {
-  const sandbox = sinon.createSandbox();
-  let telemetryEvents: string[] = [];
-  let options: string[] = [];
-  let positionals: string[] = [];
-  let allArguments = new Map<string, any>();
-  const params = {
-    [constants.deployPluginNodeName]: {
-      choices: ["a", "b", "c"],
-      description: "deployPluginNodeName",
-    },
-    "open-api-document": {},
-    "api-prefix": {},
-    "api-version": {},
-    "include-app-manifest": {},
-  };
-
-  before(() => {
-    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
-      return params;
-    });
-    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
-      return new QTreeNode({
-        name: constants.deployPluginNodeName,
-        type: "multiSelect",
-        title: "deployPluginNodeName",
-        staticOptions: ["a", "b", "c"],
-      });
-    });
-    sandbox.stub(yargs, "option").callsFake((ops: { [key: string]: Options }) => {
-      if (typeof ops === "string") {
-        options.push(ops);
-      } else {
-        options = options.concat(...Object.keys(ops));
-      }
-      return yargs;
-    });
-    sandbox.stub(yargs, "positional").callsFake((name: string) => {
-      positionals.push(name);
-      return yargs;
-    });
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(process, "exit");
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
-    sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
-      if (inputs.projectPath?.includes("real")) return ok("");
-      else return err(NotSupportedProjectType());
-    });
-
-    sandbox.stub(FxCore.prototype, "provisionTeamsAppForCLI").callsFake(async (inputs: Inputs) => {
-      return ok("aaa");
-    });
-    sandbox.stub(UI, "updatePresetAnswer").callsFake((key: any, value: any) => {
-      allArguments.set(key, value);
-    });
-    sandbox.stub(LogProvider, "necessaryLog").returns();
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
-  });
-
-  after(() => {
-    sandbox.restore();
-  });
-
-  beforeEach(() => {
-    telemetryEvents = [];
-    options = [];
-    positionals = [];
-    allArguments = new Map<string, any>();
-  });
-
-  it("should pass builder check", async () => {
-    const cmd = new ProvisionManifest();
-    cmd.builder(yargs);
-    expect(options).deep.equals([cmd.filePathParam]);
-  });
-
-  it("should work on happy path", async () => {
-    const cmd = new ProvisionManifest();
-    const args = {
-      [cmd.filePathParam]: "./",
-    };
-    await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([
-      TelemetryEvent.ProvisionManifestStart,
-      TelemetryEvent.ProvisionManifest,
-    ]);
   });
 });

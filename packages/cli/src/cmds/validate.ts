@@ -1,33 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok, Func } from "@microsoft/teamsfx-api";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { validateAppPackageOption, validateSchemaOption } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
 import {
-  RootFolderOptions,
-  EnvOptions,
-  ValidateApplicationOptions,
   AppPackageFilePathParamName,
+  EnvOptions,
   ManifestFilePathParamName,
+  RootFolderOptions,
+  ValidateApplicationOptions,
 } from "../constants";
+import { EnvNotSpecified, NotValidInputValue } from "../error";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import CLIUIInstance from "../userInteraction";
-import { EnvNotSpecified, NotValidInputValue } from "../error";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
-import {
-  validateSchemaOption,
-  validateAppPackageOption,
-} from "@microsoft/teamsfx-core/build/component/constants";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -35,9 +31,12 @@ export class ManifestValidate extends YargsCommand {
   public readonly description = "Validate the Teams app using manifest schema or validation rules.";
 
   public builder(yargs: Argv): Argv<any> {
-    if (isV3Enabled()) yargs.options(RootFolderOptions).options(ValidateApplicationOptions);
-    else yargs.options(RootFolderOptions);
-    return yargs.hide("interactive").version(false).options(RootFolderOptions).options(EnvOptions);
+    return yargs
+      .hide("interactive")
+      .version(false)
+      .options(ValidateApplicationOptions)
+      .options(RootFolderOptions)
+      .options(EnvOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -55,32 +54,18 @@ export class ManifestValidate extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-      let result;
-
-      if (isV3Enabled()) {
-        const validateArgsResult = this.validateArgs(args);
-        if (validateArgsResult.isErr()) {
-          return err(validateArgsResult.error);
-        }
-        if (!CLIUIInstance.interactive) {
-          if (args[AppPackageFilePathParamName]) {
-            inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
-          } else {
-            inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
-          }
-        }
-        result = await core.validateApplication(inputs);
-      } else {
-        const func: Func = {
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-          params: {
-            type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-          },
-        };
-        result = await core.executeUserTask!(func, inputs);
+      const validateArgsResult = this.validateArgs(args);
+      if (validateArgsResult.isErr()) {
+        return err(validateArgsResult.error);
       }
-
+      if (!CLIUIInstance.interactive) {
+        if (args[AppPackageFilePathParamName]) {
+          inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
+        } else {
+          inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
+        }
+      }
+      const result = await core.validateApplication(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.ValidateManifest,

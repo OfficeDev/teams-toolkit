@@ -90,7 +90,7 @@ jobs:
         if: ${{needs.downloadAndOutput.outputs.server_version}}
         uses: Azure/pipelines@v1.2
         with:
-          azure-devops-project-url: https://devdiv.visualstudio.com/InternalTools
+          azure-devops-project-url: https://devdiv.visualstudio.com/DevDiv
           azure-pipeline-name: TeamsFx-Dev17-CD
           azure-devops-token: ${{ secrets.VS_ADO_PAT }}
           azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}}'
@@ -119,4 +119,3 @@ jobs:
           echo "`npm run setup` failed after current project finish CD,\
            it may be the inconsistency of package dependencies caused by separate release,\
            please confirm this problem will not affect the CI of subsequent PRs."
-

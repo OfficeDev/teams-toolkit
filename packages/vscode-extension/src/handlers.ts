@@ -125,6 +125,7 @@ import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   AccountType,
+  InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -1693,6 +1694,30 @@ export async function openReadMeHandler(args: any[]) {
       const uri = (await fs.pathExists(rootReadmePath))
         ? Uri.file(rootReadmePath)
         : Uri.file(`${workspacePath}/src/README.md`);
+
+      if (TreatmentVariableValue.inProductDoc) {
+        const content = await fs.readFile(uri.fsPath, "utf8");
+        if (content.includes("## Get Started with the Notification bot")) {
+          // A notification bot project.
+          if (content.includes("restify")) {
+            // Restify server notification bot.
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto,
+              [TelemetryProperty.Interaction]: InProductGuideInteraction.Open,
+              [TelemetryProperty.Identifier]: PanelType.RestifyServerNotificationBotReadme,
+            });
+            WebviewPanel.createOrShow(PanelType.RestifyServerNotificationBotReadme);
+            return;
+          }
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto,
+            [TelemetryProperty.Interaction]: InProductGuideInteraction.Open,
+            [TelemetryProperty.Identifier]: PanelType.FunctionBasedNotificationBotReadme,
+          });
+          WebviewPanel.createOrShow(PanelType.FunctionBasedNotificationBotReadme);
+          return;
+        }
+      }
 
       // Always open README.md in current panel instead of side-by-side.
       await workspace.openTextDocument(uri);

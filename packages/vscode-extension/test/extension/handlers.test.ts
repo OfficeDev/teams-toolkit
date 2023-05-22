@@ -801,6 +801,48 @@ describe("handlers", () => {
     chai.assert.isTrue(executeCommands.calledOnce);
   });
 
+  it("openReadMeHandler - function notification bot template", async () => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("## Get Started with the Notification bot"));
+    const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    sandbox.assert.calledOnceWithExactly(
+      createOrShow,
+      PanelType.FunctionBasedNotificationBotReadme
+    );
+  });
+
+  it("openReadMeHandler - restify notification bot template", async () => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("## Get Started with the Notification bot restify"));
+    const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    sandbox.assert.calledOnceWithExactly(
+      createOrShow,
+      PanelType.RestifyServerNotificationBotReadme
+    );
+  });
+
   it("openReadMeHandler spfx - v2", async () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(globalVariables, "isTeamsFxProject").value(true);

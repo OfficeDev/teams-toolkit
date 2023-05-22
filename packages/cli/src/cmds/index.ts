@@ -1,30 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { Argv } from "yargs";
-
-import { isDeployManifestEnabled, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isRemoteCollaborationEnabled } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
-import New from "./new";
 import Add from "./add";
-import Provision from "./provision";
-import Deploy from "./deploy";
-import Publish from "./publish";
-import Package from "./package";
 import Config from "./config";
-import PreviewEnv from "./preview/previewEnv";
-import { isRemoteCollaborationEnabled } from "../utils";
-import Manifest from "./manifest";
-import Permission from "./permission";
+import Deploy from "./deploy";
 import Env from "./env";
 import M365 from "./m365/m365";
-import { ManifestValidate } from "./validate";
+import New from "./new";
+import Package from "./package";
+import Permission from "./permission";
+import PreviewEnv from "./preview/previewEnv";
+import Provision from "./provision";
+import Publish from "./publish";
 import Update from "./update";
-import Init from "./init";
 import Upgrade from "./upgrade";
+import { ManifestValidate } from "./validate";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -33,7 +27,6 @@ export const commands: YargsCommand[] = [
   new Provision(),
   new Deploy(),
   new Package(),
-  ...(isDeployManifestEnabled() ? [] : [new Manifest()]),
   new ManifestValidate(),
   new Publish(),
   new Config(),
@@ -49,11 +42,8 @@ export function registerCommands(yargs: Argv): void {
   if (isRemoteCollaborationEnabled()) {
     commands.push(new Permission());
   }
-  if (isV3Enabled()) {
-    // commands.push(new Init());
-    commands.push(new Update());
-    commands.push(new Upgrade());
-  }
+  commands.push(new Update());
+  commands.push(new Upgrade());
 
   commands.forEach((command) => {
     yargs.command(

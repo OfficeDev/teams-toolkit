@@ -64,6 +64,7 @@ import {
 import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
+  isFromDevPortal,
 } from "../component/developerPortalScaffoldUtils";
 import {
   ImportAddinProjectItem,
@@ -395,7 +396,6 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabNewUIOptionItem(),
     TabSPFxNewUIItem(),
     TabNonSsoItem(),
     BotNewUIOptionItem(),
@@ -423,8 +423,11 @@ export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSele
     NewProjectTypeBotOptionItem(),
     NewProjectTypeTabOptionItem(),
     NewProjectTypeMessageExtensionOptionItem(),
-    NewProjectTypeOutlookAddinOptionItem(),
   ];
+
+  if (!isFromDevPortal(inputs)) {
+    staticOptions.push(NewProjectTypeOutlookAddinOptionItem());
+  }
 
   return {
     name: CoreQuestionNames.ProjectType,

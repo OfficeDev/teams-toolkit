@@ -110,7 +110,7 @@ export async function executeCommand(
       },
       async (error, stdout, stderr) => {
         if (error) {
-          resolve(err(convertScriptErrorToFxError(error, resolve, run)));
+          resolve(err(convertScriptErrorToFxError(error, run)));
         } else {
           // handle '::set-output' or '::set-teamsfx-env' pattern
           const outputString = outputStrings.join("");
@@ -137,11 +137,14 @@ export async function executeCommand(
   });
 }
 
-export function convertScriptErrorToFxError(error: ExecException, resolve: any, run: string) {
+export function convertScriptErrorToFxError(
+  error: ExecException,
+  run: string
+): ScriptTimeoutError | ScriptExecutionError {
   if (error.killed) {
     return new ScriptTimeoutError(run);
   } else {
-    return new ScriptExecutionError(error.message);
+    return new ScriptExecutionError(run, error.message);
   }
 }
 

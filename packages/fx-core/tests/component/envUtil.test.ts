@@ -243,7 +243,10 @@ describe("env utils", () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     sandbox.stub(fs, "writeFile").resolves();
-    const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
+    const res = await envUtil.writeEnv(".", "dev", {
+      SECRET_ABC: decrypted,
+      TEAMS_APP_UPDATE_TIME: "xx-xx-xx",
+    });
     assert.isTrue(res.isOk());
   });
   it("envUtil.writeEnv failed", async () => {

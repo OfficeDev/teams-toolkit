@@ -175,7 +175,7 @@ export class WebviewPanel {
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
           case Commands.LoadSampleCollection:
-            this.LoadSampleCollection();
+            await this.LoadSampleCollection();
             break;
           default:
             break;
@@ -228,7 +228,8 @@ export class WebviewPanel {
     }
   }
 
-  private LoadSampleCollection() {
+  private async LoadSampleCollection() {
+    await sampleProvider.fetchSampleConfig();
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
         message: EventMessages.LoadSampleCollection,

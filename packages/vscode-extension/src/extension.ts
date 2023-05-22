@@ -33,7 +33,6 @@ import M365TokenInstance from "./commonlib/m365Login";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { localSettingsJsonName } from "./debug/constants";
-import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -70,7 +69,6 @@ import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/t
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-import { PrereleasePage } from "./utils/prerelease";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -1013,8 +1011,6 @@ async function runBackgroundAsyncTasks(
 
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
-
-  await showDebugChangesNotification();
 }
 
 async function runTeamsFxBackgroundTasks() {

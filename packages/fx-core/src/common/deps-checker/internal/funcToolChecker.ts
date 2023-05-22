@@ -337,7 +337,7 @@ export class FuncToolChecker implements DepsChecker {
     return await this.getDepsInfo(funcVersionRes.value, binFolder);
   }
 
-  private static getDefaultInstallPath(): string {
+  protected static getDefaultInstallPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "azfunc");
   }
 
@@ -363,14 +363,14 @@ export class FuncToolChecker implements DepsChecker {
     );
   }
 
-  private async queryFuncVersion(funcBinFolder: string | undefined): Promise<FuncVersion> {
+  protected async queryFuncVersion(funcBinFolder: string | undefined): Promise<FuncVersion> {
     const execPath = funcBinFolder ? path.resolve(funcBinFolder, "func") : "func";
     const output = await cpUtils.executeCommand(
       undefined,
       undefined,
       // same as backend start, avoid powershell execution policy issue.
       { shell: isWindows() ? "cmd.exe" : true },
-      execPath,
+      `"${execPath}"`,
       "--version"
     );
     return mapToFuncToolsVersion(output);

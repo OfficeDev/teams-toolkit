@@ -26,11 +26,10 @@ import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
 import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
-import { getLocalizedString } from "../../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../../../common/localizeUtils";
 import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
-  DeployRemoteStartError,
   GetPublishingCredentialsError,
 } from "../../../../../error/deploy";
 
@@ -139,10 +138,13 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
         } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
           if (res.data?.status === DeployStatus.Failed) {
-            await logger.error(
-              `Deployment is failed with error message: ${JSON.stringify(res.data)}`
+            await this.logger.warning(
+              getDefaultString(
+                "error.deploy.DeployRemoteStartError",
+                location,
+                JSON.stringify(res.data)
+              )
             );
-            throw new DeployRemoteStartError(location, JSON.stringify(res.data), this.helpLink);
           }
           return res.data;
         } else {
@@ -170,6 +172,10 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
+    this.managementClient = new appService.WebSiteManagementClient(
+      azureCredential,
+      azureResource.subscriptionId
+    );
     try {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
@@ -216,10 +222,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       );
     }
 
-    const managementClient = (this.managementClient = new appService.WebSiteManagementClient(
-      azureCredential,
-      azureResource.subscriptionId
-    ));
+    const managementClient = this.managementClient;
     const listResponse = await wrapAzureOperation(
       () =>
         managementClient.webApps.beginListPublishingCredentialsAndWait(
@@ -267,7 +270,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
         azureResource.instanceId
       );
     } catch (e) {
-      this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
+      await this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
     }
   }
 }

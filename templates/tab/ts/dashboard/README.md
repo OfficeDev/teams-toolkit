@@ -2,14 +2,14 @@
 
 ## Introduction
 
-This is a Teams tab dashboard app that uses the [Fluent UI](https://react.fluentui.dev/?path=/docs/concepts-introduction--page) and the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/use-the-api) to display a user's profile information and recent Teams activity.
+This is a dashboard tab app that embed a canvas containing multiple cards that provide an overview of data or content in Microsoft Teams.
 
 ![Default theme](./public/dashboard.png)
 
 This app also supported teams different themes, including dark theme and high contrast theme.
 
-|              Dark theme              |        High contrast theme         |
-| :----------------------------------: | :--------------------------------: |
+|            Dark theme            |      High contrast theme       |
+| :------------------------------: | :----------------------------: |
 | ![](./public/dashboard-dark.png) | ![](./public/dashboard-hc.png) |
 
 ## Prerequisites
@@ -39,27 +39,29 @@ The core dashboard implementation is in `tabs` folder.
 
 The following files provide the business logic for the dashboard tab. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
 
-| File                                       | Contents                                          |
-| ------------------------------------------ | ------------------------------------------------- |
-| `src/data/listData.json`                   | Data for the list widget                          |
-| `src/models/listModel.ts`                  | Data model for the list widget                    |
-| `src/services/chartService.ts`             | A data retrive implementation for the chart widget|
-| `src/services/listService.ts`              | A data retrive implementation for the list widget |
-| `src/views/dashboards/SampleDashboard.tsx` | A sample dashboard layout implementation          |
-| `src/views/lib/Dashboard.styles.ts`        | The dashbaord style file                          |
-| `src/views/lib/Dashboard.tsx`              | An base class that defines the dashboard          |
-| `src/views/lib/Widget.styles.ts`           | The widgt style file                              |
-| `src/views/lib/Widget.tsx`                 | An abstract class that defines the widget         |
-| `src/views/styles/ChartWidget.styles.ts`   | The chart widget style file                       |
-| `src/views/styles/ListWidget.styles.ts`    | The list widget style file                        |
-| `src/views/widgets/ChartWidget.tsx`        | A widget implementation that can display a chart  |
-| `src/views/widgets/ListWidget.tsx`         | A widget implementation that can display a list   |
+| File                                       | Contents                                           |
+| ------------------------------------------ | -------------------------------------------------- |
+| `src/data/listData.json`                   | Data for the list widget                           |
+| `src/models/listModel.ts`                  | Data model for the list widget                     |
+| `src/services/chartService.ts`             | A data retrive implementation for the chart widget |
+| `src/services/listService.ts`              | A data retrive implementation for the list widget  |
+| `src/views/dashboards/SampleDashboard.tsx` | A sample dashboard layout implementation           |
+| `src/views/lib/Dashboard.css`              | The dashbaord style file                           |
+| `src/views/lib/Dashboard.tsx`              | An base class that defines the dashboard           |
+| `src/views/lib/Widget.css`                 | The widgt style file                               |
+| `src/views/lib/Widget.tsx`                 | An abstract class that defines the widget          |
+| `src/views/styles/ChartWidget.css`         | The chart widget style file                        |
+| `src/views/styles/ListWidget.css`          | The list widget style file                         |
+| `src/views/widgets/ChartWidget.tsx`        | A widget implementation that can display a chart   |
+| `src/views/widgets/ListWidget.tsx`         | A widget implementation that can display a list    |
 
 The following files are project-related files. You generally will not need to customize these files.
 
 | File                               | Contents                                                     |
 | ---------------------------------- | ------------------------------------------------------------ |
+| `src/index.css`                    | The style of application entry point                         |
 | `src/index.tsx`                    | Application entry point                                      |
+| `src/App.css`                      | The style of application route                               |
 | `src/App.tsx`                      | Application route                                            |
 | `src/internal/addNewScopes.ts`     | Implementation of new scopes add                             |
 | `src/internal/context.ts`          | TeamsFx Context                                              |
@@ -80,6 +82,7 @@ You can use the following steps to add a new widget to the dashboard:
 Define a data model based on the business scenario, and put it in `tabs/src/models` folder. The widget model defined according to the data you want to display in the widget. Here's a sample data model:
 
 ```typescript
+// sampleModel.ts
 export interface SampleModel {
   content: string;
 }
@@ -92,6 +95,7 @@ Simplely, you can create a service that returns dummy data. We recommend that yo
 Here's a sample json file that contains dummy data:
 
 ```json
+// SampleData.json
 {
   "content": "Hello world!"
 }
@@ -100,6 +104,7 @@ Here's a sample json file that contains dummy data:
 Here's a dummy data retrive service:
 
 ```typescript
+// sampleService.ts
 import { SampleModel } from "../models/sampleModel";
 import SampleData from "../data/SampleData.json";
 
@@ -124,14 +129,19 @@ Create a widget file in `tabs/src/views/widgets` folder. Extend the [`Widget`](s
 Here's a sample widget implementation:
 
 ```tsx
+// SampleWidget.tsx
 import { Button, Text } from "@fluentui/react-components";
 import { Widget } from "../lib/Widget";
 import { SampleModel } from "../../models/sampleModel";
 import { getSampleData } from "../../services/sampleService";
 
-export class SampleWidget extends Widget<SampleModel> {
-  async getData(): Promise<SampleModel> {
-    return getSampleData();
+interface ISampleWidgetState {
+  data?: SampleModel;
+}
+
+export class SampleWidget extends Widget<any, ISampleWidgetState> {
+  async getData(): Promise<ISampleWidgetState> {
+    return { data: getSampleData() };
   }
 
   headerContent(): JSX.Element | undefined {
@@ -143,16 +153,7 @@ export class SampleWidget extends Widget<SampleModel> {
   }
 
   footerContent(): JSX.Element | undefined {
-    return (
-      <Button
-        appearance="primary"
-        size="medium"
-        style={{ width: "fit-content" }}
-        onClick={() => {}}
-      >
-        View Details
-      </Button>
-    );
+    return <Button appearance="primary">View Details</Button>;
   }
 }
 ```
@@ -174,14 +175,22 @@ protected dashboardLayout(): JSX.Element | undefined {
 }
 ```
 
-> Note: If you want put your widget in a column, you can use the [`oneColumn()`](src/views/lib/Dashboard.styles.ts#L32) method to define the column layout. Here is an example:
+Optional: If you want put your widget in a column, you can refer to the following code:
+
+```css
+.one-column {
+  display: grid;
+  gap: 20px;
+  grid-template-rows: 1fr 1fr;
+}
+```
 
 ```tsx
 protected dashboardLayout(): JSX.Element | undefined {
   return (
     <>
       <ListWidget />
-      <div style={oneColumn()}>
+      <div className="one-column">
         <ChartWidget />
         <SampleWidget />
       </div>
@@ -220,6 +229,8 @@ Dashboard class provides some methods that you can override to customize the das
 Here is an example to customize the dashboard layout.
 
 ```tsx
+import { Dashboard } from "../lib/Dashboard";
+
 export default class YourDashboard extends Dashboard {
   protected rowHeights(): string | undefined {
     return "500px";
@@ -233,10 +244,7 @@ export default class YourDashboard extends Dashboard {
     return (
       <>
         <SampleWidget />
-        <div style={oneColumn("6fr 4fr")}>
-          <SampleWidget />
-          <SampleWidget />
-        </div>
+        <SampleWidget />
       </>
     );
   }
@@ -277,7 +285,7 @@ Open the [`templates/appPackage/manifest.template.json`](../templates/appPackage
 
 ### Add SSO First
 
-Before you add your logic of calling a Graph API, you should enable your dashboard project to use SSO. It is convenient to add SSO related files by using `Teams Toolkit`. Refer to the following 2 steps to add SSO.
+Before you add your logic of calling a Graph API, you should enable your dashboard project to use SSO. It is convenient to add SSO related files by using `Teams Toolkit`. Refer to the following steps to add SSO.
 
 1. Step 1: Click `Teams Toolkit` in the side bar > Click `Add features` in `DEVELOPMENT`.
 
@@ -392,6 +400,7 @@ export default async function run(
   return res;
 }
 ```
+
 #### Step 4: Call the Azure Function from the front-end
 
 Call the Azure Function by function name. You can refer to the following code snippet to call the Azure Function.
@@ -407,9 +416,7 @@ async function callFunction(teamsUserCredential?: TeamsUserCredential) {
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,
-      new BearerTokenAuthProvider(
-        async () => (await teamsUserCredential.getToken(""))!.token
-      )
+      new BearerTokenAuthProvider(async () => (await teamsUserCredential.getToken(""))!.token)
     );
     const response = await apiClient.get(functionName);
     return response.data;
@@ -417,7 +424,7 @@ async function callFunction(teamsUserCredential?: TeamsUserCredential) {
 }
 ```
 
-Refer to [this sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/hello-world-tab-with-backend/tabs/src/components/sample/AzureFunctions.tsx) for some helps. And you can read [this doc](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob) for more details.
+Refer to [this sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/hello-world-tab-with-backend/src/components/sample/AzureFunctions.tsx) for some helps. And you can read [this doc](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob) for more details.
 
 ## Additional resources
 

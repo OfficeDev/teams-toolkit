@@ -101,6 +101,7 @@ export const TaskCommand = Object.freeze({
   launchWebClient: "launch-web-client",
   provision: "provision",
   deploy: "deploy",
+  migrate: "migrate",
 });
 
 export const TaskOverallLabel = Object.freeze({

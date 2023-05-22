@@ -415,7 +415,9 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledUserError)
       .and.property("message")
-      .contain("An unexpected error has occurred while performing the aadApp/update task");
+      .equals(
+        'An unexpected error has occurred while performing the aadApp/update task. {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+      );
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -447,7 +449,9 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledError)
       .and.property("message")
-      .contain("An unexpected error has occurred while performing the aadApp/update task");
+      .equals(
+        'An unexpected error has occurred while performing the aadApp/update task. {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+      );
   });
 
   it("should send telemetries when success", async () => {

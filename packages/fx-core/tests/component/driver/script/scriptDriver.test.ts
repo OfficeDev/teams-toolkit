@@ -162,12 +162,12 @@ describe("Script Driver test", () => {
   });
   it("convertScriptErrorToFxError ScriptTimeoutError", async () => {
     const error = { killed: true } as child_process.ExecException;
-    const res = convertScriptErrorToFxError(error, () => {}, "test");
+    const res = convertScriptErrorToFxError(error, "test");
     assert.isTrue(res instanceof ScriptTimeoutError);
   });
   it("convertScriptErrorToFxError ScriptExecutionError", async () => {
     const error = { killed: false, message: "command failed" } as child_process.ExecException;
-    const res = convertScriptErrorToFxError(error, () => {}, "test");
+    const res = convertScriptErrorToFxError(error, "test");
     assert.isTrue(res instanceof ScriptExecutionError);
   });
 });

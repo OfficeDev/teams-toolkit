@@ -28,17 +28,15 @@ describe("upgrade", () => {
   });
 
   it("upgrade project", { testPlanCaseId: 17184119 }, async function () {
-    if (!isV3Enabled()) {
-      return;
-    }
-
     {
+      await Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);
       env["TEAMSFX_V3"] = "false";
       // new a project ( tab only )
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
     }
 
+    await Executor.installCLI(testFolder, "alpha", true);
     {
       // upgrade
       const result = await Executor.upgrade(projectPath);

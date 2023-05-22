@@ -86,7 +86,6 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     const res = await checkAndInstallForTask(
       this.args.prerequisites ?? [],
       this.args.portOccupancy,
-      this.args.vxTestApp,
       telemetryProperties
     );
     const duration = this.getDurationInSeconds();

@@ -83,5 +83,5 @@
     "validDomains": [
         "${{TAB_DOMAIN}}"
     ],
-    "showLoadingIndicator": true
+    "showLoadingIndicator": false
 }

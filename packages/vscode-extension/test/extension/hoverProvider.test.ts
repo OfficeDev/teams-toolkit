@@ -10,7 +10,6 @@ import { envUtil } from "@microsoft/teamsfx-core";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
 import { environmentVariableRegex } from "../../src/constants";
-import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import * as handlers from "../../src/handlers";
 import { MockCore } from "../mocks/mockCore";
 
@@ -61,7 +60,6 @@ describe("Manifest template hover", async () => {
   beforeEach(() => {
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(config));
-    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -119,7 +117,6 @@ describe("Manifest template hover - V3", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
-    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
   });
 
   afterEach(() => {

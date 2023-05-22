@@ -1,97 +1,48 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
-import yargs, { Options } from "yargs";
-import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, Func, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../../src/telemetry/cliTelemetryEvents";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import sinon from "sinon";
+import yargs from "yargs";
+import * as activate from "../../../src/activate";
 import { ManifestValidate } from "../../../src/cmds/validate";
-import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { TelemetryEvent, TelemetrySuccess } from "../../../src/telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../../src/userInteraction";
+import { expect, mockTelemetry, mockYargs } from "../utils";
 
 describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
-  let registeredCommands: string[] = [];
   let options: string[] = [];
   let telemetryEvents: string[] = [];
-  let telemetryEventStatus: string | undefined = undefined;
   let mockedEnvRestore: RestoreFn = () => {};
 
   afterEach(() => {
     mockedEnvRestore();
     sandbox.restore();
+    options = [];
+    telemetryEvents = [];
   });
 
   beforeEach(() => {
-    registeredCommands = [];
-    options = [];
-    telemetryEvents = [];
-    telemetryEventStatus = undefined;
-    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
-    sandbox
-      .stub<any, any>(yargs, "command")
-      .callsFake((command: string, description: string, builder: any, handler: any) => {
-        registeredCommands.push(command);
-        builder(yargs);
-      });
-    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }) => {
-      if (typeof ops === "string") {
-        options.push(ops);
-      } else {
-        options = options.concat(...Object.keys(ops));
-      }
-      return yargs;
-    });
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(process, "exit");
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryEvent")
-      .callsFake((eventName: string, options?: { [_: string]: string }) => {
-        telemetryEvents.push(eventName);
-        if (options && TelemetryProperty.Success in options) {
-          telemetryEventStatus = options[TelemetryProperty.Success];
-        }
-      });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-        telemetryEventStatus = TelemetrySuccess.No;
-      });
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
+    mockYargs(sandbox, options);
+    mockTelemetry(sandbox, telemetryEvents);
+    sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
   });
 
   it("should pass builder check", () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "false",
+    });
     const cmd = new ManifestValidate();
-    yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["validate"]);
+    cmd.builder(yargs);
   });
 
   it("Builder Check V3", () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     const cmd = new ManifestValidate();
     cmd.builder(yargs);
   });
@@ -110,44 +61,35 @@ describe("teamsfx validate", () => {
   });
 
   it("Validate Command Running Check - app package", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
     const cmd = new ManifestValidate();
     const args = {
       [constants.AppPackageFilePathParamName]: "./app.zip",
     };
-    await cmd.handler(args);
+    const result = await cmd.runCommand(args);
+    expect(result.isOk()).equals(true);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.ValidateManifestStart,
       TelemetryEvent.ValidateManifest,
     ]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
   it("Validate Command Running Check - manifest", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
     const cmd = new ManifestValidate();
     const args = {
       [constants.ManifestFilePathParamName]: "./manifest.json",
       env: "dev",
     };
-    await cmd.handler(args);
+    const result = await cmd.runCommand(args);
+    expect(result.isOk()).equals(true);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.ValidateManifestStart,
       TelemetryEvent.ValidateManifest,
     ]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
   it("Validate Command Running Check - Run command failed without env", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
     const cmd = new ManifestValidate();
     const args = {
@@ -183,12 +125,12 @@ describe("teamsfx validate", () => {
       [constants.RootFolderNode.data.name as string]: "real",
       env: "dev",
     };
-    await cmd.handler(args);
+    const result = await cmd.runCommand(args);
+    expect(result.isOk()).equals(true);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.ValidateManifestStart,
       TelemetryEvent.ValidateManifest,
     ]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
   it("Validate Command Running Check with Error", async () => {
@@ -213,17 +155,15 @@ describe("teamsfx validate", () => {
       [constants.RootFolderNode.data.name as string]: "fake",
       env: "dev",
     };
-    try {
-      await cmd.handler(args);
-      throw new Error("Should throw an error.");
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([
-        TelemetryEvent.ValidateManifestStart,
-        TelemetryEvent.ValidateManifest,
-      ]);
-      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotSupportedProjectType");
+    const result = await cmd.runCommand(args);
+    expect(result.isErr()).equals(true);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.ValidateManifestStart,
+      TelemetryEvent.ValidateManifest,
+    ]);
+    if (result.isErr()) {
+      expect(result.error).instanceOf(UserError);
+      expect(result.error.name).equals("NotSupportedProjectType");
     }
   });
 });

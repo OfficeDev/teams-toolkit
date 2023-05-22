@@ -368,7 +368,7 @@
     "teamstoolkit.guides.addTab.label": "Configure Tab Capability",
     "teamstoolkit.guides.cardActionResponse.detail": "Automate repetitive workflows for common business processes in conversation",
     "teamstoolkit.guides.cardActionResponse.label": "Initiate Sequential Workflows in Teams",
-    "teamstoolkit.guides.notificationBot.label": "Overview of the Notification bot template",
+    "teamstoolkit.guides.notificationBot.label": "Overview of the Notification Bot Template",
     "teamstoolkit.guides.cicdPipeline.detail": "Automate development workflow while building Teams application for GitHub, Azure DevOps and Jenkins.",
     "teamstoolkit.guides.cicdPipeline.label": "Automate CI/CD Pipelines",
     "teamstoolkit.guides.mobilePreview.detail": "Run and debug your Teams application on iOS or Android client.",

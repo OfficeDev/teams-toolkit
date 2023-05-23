@@ -85,13 +85,13 @@ export async function executeCommand(
     if (platform === "win32") {
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
-    const defaultOsToShellMap: any = {
-      win32: "powershell",
-      darwin: "bash",
-      linux: "bash",
-    };
+    // const defaultOsToShellMap: any = {
+    //   win32: "powershell",
+    //   darwin: "bash",
+    //   linux: "bash",
+    // };
     let run = command;
-    shell = shell || defaultOsToShellMap[platform] || "pwsh";
+    // shell = shell || defaultOsToShellMap[platform] || "pwsh";
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
@@ -167,16 +167,11 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
   const lines = stdout.toString().replace(/\r\n?/gm, "\n").split(/\r?\n/);
   const output: DotenvOutput = {};
   for (const line of lines) {
-    if (line.startsWith(SET_ENV_CMD1) || line.startsWith(SET_ENV_CMD2)) {
-      const str = line.startsWith(SET_ENV_CMD1)
-        ? line.substring(SET_ENV_CMD1.length).trim()
-        : line.substring(SET_ENV_CMD2.length).trim();
-      const arr = str.split("=");
-      if (arr.length === 2) {
-        const key = arr[0].trim();
-        const value = arr[1].trim();
-        output[key] = value;
-      }
+    const matches = line.match(/(::set-teamsfx-env|::set-output)\s+(\w+)=(\w+)/);
+    if (matches && matches.length >= 4) {
+      const key = matches[2].trim();
+      const value = matches[3].trim();
+      output[key] = value;
     }
   }
   return output;

@@ -49,7 +49,7 @@ describe("Script Driver test", () => {
     // });
     const args = {
       workingDirectory: "./",
-      run: `echo "::set-output MY_KEY=MY_VALUE"`,
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
       redirectTo: "./log",
     };
     const context = {

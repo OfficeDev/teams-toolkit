@@ -30,6 +30,16 @@ describe("Core basic APIs for v3", () => {
   beforeEach(() => {
     sandbox.restore();
     setTools(tools);
+    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+    deleteFolder(projectPath);
+  });
+  it("create from new (VSC, Tab)", async () => {
     sandbox
       .stub<any, any>(axios, "get")
       .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
@@ -43,16 +53,6 @@ describe("Core basic APIs for v3", () => {
           request: {},
         };
       });
-    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-    deleteFolder(projectPath);
-  });
-  it("create from new (VSC, Tab)", async () => {
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -69,6 +69,19 @@ describe("Core basic APIs for v3", () => {
     projectPath = inputs.projectPath!;
   });
   it("create from new (VSC, Tab+Bot)", async () => {
+    sandbox
+      .stub<any, any>(axios, "get")
+      .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
+        const buffer = fs.readFileSync("./tests/core/samples_v2.zip");
+        return {
+          data: buffer,
+          status: 200,
+          statusText: "",
+          headers: {},
+          config: config!,
+          request: {},
+        };
+      });
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -84,6 +97,19 @@ describe("Core basic APIs for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("create from new (VS, Tab+Bot)", async () => {
+    sandbox
+      .stub<any, any>(axios, "get")
+      .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
+        const buffer = fs.readFileSync("./tests/core/samples_v2.zip");
+        return {
+          data: buffer,
+          status: 200,
+          statusText: "",
+          headers: {},
+          config: config!,
+          request: {},
+        };
+      });
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VS,
@@ -101,6 +127,19 @@ describe("Core basic APIs for v3", () => {
     projectPath = inputs.projectPath!;
   });
   it("create from new (VSC, SPFx)", async () => {
+    sandbox
+      .stub<any, any>(axios, "get")
+      .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
+        const buffer = fs.readFileSync("./tests/core/samples_v2.zip");
+        return {
+          data: buffer,
+          status: 200,
+          statusText: "",
+          headers: {},
+          config: config!,
+          request: {},
+        };
+      });
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -128,6 +167,13 @@ describe("Core basic APIs for v3", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       stage: Stage.create,
     };
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "todo-list-SPFx";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
@@ -142,6 +188,13 @@ describe("Core basic APIs for v3", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       stage: Stage.create,
     };
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "todo-list-SPFx";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());

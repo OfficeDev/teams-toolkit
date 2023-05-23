@@ -168,7 +168,7 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
   const output: DotenvOutput = {};
   for (const line of lines) {
     const matches = line.match(/(::set-teamsfx-env|::set-output)\s+(\w+)=(\w+)/);
-    if (matches && matches.length >= 4) {
+    if (matches && matches.length === 4) {
       const key = matches[2].trim();
       const value = matches[3].trim();
       output[key] = value;

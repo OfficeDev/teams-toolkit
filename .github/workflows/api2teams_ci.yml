@@ -1,0 +1,37 @@
+name: Api2teams CI
+
+on:
+  push:
+    paths:
+      - "packages/api2teams/**"
+    branches: [main, dev, prerelease]
+  pull_request:
+    paths:
+      - "packages/api2teams/**"
+    branches: [main, dev, prerelease, api2teams]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: packages/api2teams/
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install
+        run: |
+          npm install
+
+      - name: Test
+        run: |
+          npm run test

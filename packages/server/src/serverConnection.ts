@@ -56,6 +56,7 @@ export default class ServerConnection implements IServerConnection {
       this.createProjectRequest.bind(this),
       this.localDebugRequest.bind(this),
       this.preProvisionResourcesRequest.bind(this),
+      this.preCheckVSLocalRequest.bind(this),
       this.provisionResourcesRequest.bind(this),
       this.deployArtifactsRequest.bind(this),
       this.buildArtifactsRequest.bind(this),
@@ -141,6 +142,19 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.preProvisionForVS(params),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async preCheckVSLocalRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.preCheckForVSLocal(params),
       inputs
     );
     return standardizeResult(res);

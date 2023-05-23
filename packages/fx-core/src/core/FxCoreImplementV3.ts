@@ -535,6 +535,18 @@ export class FxCoreV3Implement {
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+  ])
+  async preCheckForVSLocal(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    const context = createDriverContext(inputs);
+    return coordinator.preCheckForVSLocal(context, inputs as InputsWithProjectPath);
+  }
+
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)

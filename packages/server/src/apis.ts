@@ -88,6 +88,7 @@ export interface IServerConnection {
       FxError
     >
   >;
+  preCheckVSLocalRequest(inputs: Inputs, token: CancellationToken): Promise<Result<Void, FxError>>;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken

@@ -561,6 +561,10 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.preProvisionForVS, inputs);
   }
 
+  async preCheckForVSLocal(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.preCheckForVSLocal, inputs);
+  }
+
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }

@@ -30,11 +30,26 @@ describe("Script Driver test", () => {
     sandbox.restore();
   });
   it("execute success: set-output and append to file", async () => {
+    // sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
     const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
-    sandbox.stub(child_process, "exec").callsArgWith(2, null, "::set-output MY_KEY=MY_VALUE");
+    // const cp = {
+    //   stdout: {
+    //     on: sandbox.stub() as any,
+    //   },
+    //   stderr: {
+    //     on: sandbox.stub() as any,
+    //   },
+    // };
+    // sandbox
+    //   .stub(child_process, "exec")
+    //   .callsArgWith(2, null)
+    //   .returns(cp as child_process.ChildProcess);
+    // cp.stdout.on.callsFake((event: string, callback: (data: string) => void) => {
+    //   callback("::set-output MY_KEY=MY_VALUE");
+    // });
     const args = {
       workingDirectory: "./",
-      run: "echo '::set-output MY_KEY=MY_VALUE'",
+      run: `echo "::set-output MY_KEY=MY_VALUE"`,
       redirectTo: "./log",
     };
     const context = {

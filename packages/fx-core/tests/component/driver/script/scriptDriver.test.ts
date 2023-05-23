@@ -48,6 +48,9 @@ describe("Script Driver test", () => {
       projectPath: "./",
     } as DriverContext;
     const res = await scriptDriver.execute(args, context);
+    if (res.result.isErr()) {
+      console.log(res.result.error);
+    }
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
       const output = res.result.value;

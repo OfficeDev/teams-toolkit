@@ -19,8 +19,6 @@ import iconv from "iconv-lite";
 import child_process from "child_process";
 
 const ACTION_NAME = "script";
-const SET_ENV_CMD1 = "::set-output ";
-const SET_ENV_CMD2 = "::set-teamsfx-env ";
 
 interface ScriptDriverArgs {
   run: string;

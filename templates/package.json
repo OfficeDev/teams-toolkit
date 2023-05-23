@@ -8,7 +8,7 @@
         "precommit": "npm run check-sensitive && lint-staged",
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
-    "templatesV3": [
+    "templates": [
         "common/init-infra",
         "js/notification-http-timer-trigger",
         "js/notification-http-trigger",

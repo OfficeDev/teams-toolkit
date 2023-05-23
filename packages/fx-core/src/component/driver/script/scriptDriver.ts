@@ -86,7 +86,7 @@ export async function executeCommand(
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
     const defaultOsToShellMap: any = {
-      win32: "pwsh",
+      win32: "powershell",
       darwin: "bash",
       linux: "bash",
     };

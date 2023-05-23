@@ -39,7 +39,7 @@ describe("Deploy V3 m365-tab template", () => {
     }
 
     // clean up
-    const context = await readContextMultiEnvV3(projectPath, "local");
+    const context = await readContextMultiEnvV3(projectPath, "dev");
     if (context?.TEAMS_APP_ID) {
       await deleteTeamsApp(context.TEAMS_APP_ID);
     }
@@ -94,7 +94,7 @@ describe("Deploy V3 m365-tab template", () => {
     chai.assert.isNotEmpty(context.M365_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "", "local");
+    await CliHelper.deployAll(projectPath, "", "dev");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "dev");

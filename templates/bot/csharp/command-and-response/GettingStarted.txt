@@ -2,7 +2,7 @@ Welcome to Teams Toolkit!
 
 Quick Start
 -------------------------
-1. In the debug dropdown menu, select or create a dev tunnel in Dev Tunnels
+1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel or select an existing dev tunnel
 2. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
 3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to

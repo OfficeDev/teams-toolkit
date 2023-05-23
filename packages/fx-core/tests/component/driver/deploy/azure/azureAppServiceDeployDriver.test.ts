@@ -96,6 +96,11 @@ describe("Azure App Service Deploy Driver test", () => {
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(client.webApps, "listApplicationSettings").resolves({
+      properties: {
+        WEBSITE_RUN_FROM_PACKAGE: "1",
+      },
+    });
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);

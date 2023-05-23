@@ -9,6 +9,7 @@ import {
   AxiosZipDeployResult,
   AzureUploadConfig,
   DeployContext,
+  DeployResult,
   DeployStepArgs,
 } from "../../../interface/buildAndDeployArgs";
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
@@ -101,22 +102,41 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
     const cost = Date.now() - startTime;
-    this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
-      time_cost: cost.toString(),
-      status: deployRes?.status.toString() ?? "",
-      message: deployRes?.message ?? "",
-      received_time: deployRes?.received_time ?? "",
-      started_time: deployRes?.start_time.toString() ?? "",
-      end_time: deployRes?.end_time.toString() ?? "",
-      last_success_end_time: deployRes?.last_success_end_time.toString() ?? "",
-      complete: deployRes?.complete.toString() ?? "",
-      active: deployRes?.active.toString() ?? "",
-      is_readonly: deployRes?.is_readonly.toString() ?? "",
-      site_name_hash: deployRes?.site_name
-        ? createHash("sha256").update(deployRes.site_name).digest("hex")
-        : "",
-    });
+    await this.sendDeployTelemetryEvent(cost, deployRes);
     return cost;
+  }
+
+  protected async sendDeployTelemetryEvent(cost: number, deployRes?: DeployResult): Promise<void> {
+    if (this.context.telemetryReporter) {
+      let enabled = "false";
+      if (this.azureResource) {
+        const config = await this.managementClient?.webApps.listApplicationSettings(
+          this.azureResource.resourceGroupName,
+          this.azureResource.instanceId
+        );
+        if (config?.properties?.WEBSITE_RUN_FROM_PACKAGE === "1") {
+          enabled = "true";
+        }
+      }
+      // query azure application settings
+
+      this.context.telemetryReporter.sendTelemetryEvent("deployResponse", {
+        time_cost: cost.toString(),
+        status: deployRes?.status.toString() ?? "",
+        message: deployRes?.message ?? "",
+        received_time: deployRes?.received_time ?? "",
+        started_time: deployRes?.start_time.toString() ?? "",
+        end_time: deployRes?.end_time.toString() ?? "",
+        last_success_end_time: deployRes?.last_success_end_time.toString() ?? "",
+        complete: deployRes?.complete.toString() ?? "",
+        active: deployRes?.active.toString() ?? "",
+        is_readonly: deployRes?.is_readonly.toString() ?? "",
+        site_name_hash: deployRes?.site_name
+          ? createHash("sha256").update(deployRes.site_name).digest("hex")
+          : "",
+        is_run_from_package_enabled: enabled,
+      });
+    }
   }
 
   /**

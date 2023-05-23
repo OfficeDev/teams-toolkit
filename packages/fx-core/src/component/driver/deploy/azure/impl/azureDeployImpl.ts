@@ -35,6 +35,7 @@ import {
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
+  protected azureResource?: AzureResourceInfo;
 
   public static readonly AXIOS_INSTANCE = axios.create();
 
@@ -63,7 +64,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       );
     }
     const resourceId = checkMissingArgs("resourceId", args.resourceId);
-    const azureResource = this.parseResourceId(resourceId);
+    this.azureResource = this.parseResourceId(resourceId);
     const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
     const inputs = { ignoreFile: args.ignoreFile };
 
@@ -71,7 +72,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       await this.prepare(inputs);
       return false;
     }
-    await this.azureDeploy(inputs, azureResource, azureCredential);
+    await this.azureDeploy(inputs, this.azureResource, azureCredential);
     return true;
   }
 

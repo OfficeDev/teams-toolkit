@@ -14,7 +14,7 @@ interface QueryParams {
 }
 
 let isRunning = false;
-export class UriHandler extends EventEmitter<Uri> implements vscode.UriHandler {
+export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscode.UriHandler {
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
     if (uri.path === "/" + codeSpacesAuthComplete) {
       this.fire(uri);

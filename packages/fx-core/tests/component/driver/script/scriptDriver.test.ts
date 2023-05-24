@@ -1,41 +1,55 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
+import child_process from "child_process";
+import fs from "fs-extra";
 import "mocha";
+import os from "os";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/tools";
+import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
+import {
+  convertScriptErrorToFxError,
+  scriptDriver,
+} from "../../../../src/component/driver/script/scriptDriver";
+import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
+import { DefaultEncoding, getSystemEncoding } from "../../../../src/component/utils/charsetUtils";
+import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
+import { MockUserInteraction } from "../../../core/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
-import { scriptDriver } from "../../../../src/component/driver/script/scriptDriver";
-import { assert } from "chai";
-import { MockUserInteraction } from "../../../core/utils";
-import { err, IProgressHandler, ok, UserError } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import * as child_process from "child_process";
-import * as utils from "../../../../src/component/code/utils";
-import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
-import { convertScriptErrorToFxError } from "../../../../src/component/code/utils";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     sandbox.stub(tools, "waitSeconds").resolves();
   });
   afterEach(async () => {
     sandbox.restore();
-    mockedEnvRestore();
-    if (await fs.pathExists("./log")) {
-      await fs.remove("./log");
-    }
   });
-  it("execute success set-output", async () => {
+  it("execute success: set-output and append to file", async () => {
+    // sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
+    const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
+    // const cp = {
+    //   stdout: {
+    //     on: sandbox.stub() as any,
+    //   },
+    //   stderr: {
+    //     on: sandbox.stub() as any,
+    //   },
+    // };
+    // sandbox
+    //   .stub(child_process, "exec")
+    //   .callsArgWith(2, null)
+    //   .returns(cp as child_process.ChildProcess);
+    // cp.stdout.on.callsFake((event: string, callback: (data: string) => void) => {
+    //   callback("::set-output MY_KEY=MY_VALUE");
+    // });
     const args = {
       workingDirectory: "./",
-      run: "echo '::set-output MY_KEY=MY_VALUE'",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
       redirectTo: "./log",
     };
     const context = {
@@ -49,98 +63,21 @@ describe("Script Driver test", () => {
       } as IProgressHandler,
       projectPath: "./",
     } as DriverContext;
-    context.ui!.runCommand = undefined;
-    const res = await scriptDriver.execute(args, context);
-    assert.isTrue(res.result.isOk());
-    if (res.result.isOk()) {
-      const output = res.result.value;
-      assert.equal(output.get("MY_KEY"), "MY_VALUE");
-    }
-  });
-  it("execute success exec", async () => {
-    const args = {
-      workingDirectory: "./",
-      run: "echo 123",
-      redirectTo: "./log",
-    };
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-      projectPath: "./",
-    } as DriverContext;
-    context.ui!.runCommand = undefined;
-    sandbox.stub(child_process, "exec").resolves();
     const res = await scriptDriver.execute(args, context);
     if (res.result.isErr()) {
       console.log(res.result.error);
     }
     assert.isTrue(res.result.isOk());
-  });
-  it("execute failed, mock executeCommand fail", async () => {
-    sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
-    const args = {
-      workingDirectory: "./",
-      run: "::set-output KEY=VALUE",
-    };
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-      projectPath: "./",
-    } as DriverContext;
-    const res = await scriptDriver.execute(args, context);
-    assert.isTrue(res.result.isErr());
-  });
-  it("executeCommand: set output", async () => {
-    const args = {
-      workingDirectory: "./",
-      run: "echo '::set-output KEY=VALUE'",
-    };
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-      projectPath: "./",
-    } as DriverContext;
-    const res = await utils.executeCommand(
-      args.run,
-      context.projectPath,
-      context.logProvider,
-      context.ui,
-      args.workingDirectory
-    );
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      const output = res.value[1];
-      assert.deepEqual(output, { KEY: "VALUE" });
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.equal(output.get("MY_KEY"), "MY_VALUE");
     }
+    sinon.assert.called(appendFileSyncStub);
   });
-  it("executeCommand: set output", async () => {
-    const args = {
-      workingDirectory: "./",
-      run: "echo '::set-output KEY=VALUE'",
-    };
-    const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
-      logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
-      projectPath: "./",
-    } as DriverContext;
-    const res = await utils.executeCommand(
-      args.run,
-      context.projectPath,
-      context.logProvider,
-      context.ui,
-      args.workingDirectory
-    );
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      const output = res.value[1];
-      assert.deepEqual(output, { KEY: "VALUE" });
-    }
-  });
-  it("executeCommand: error", async () => {
+  it("execute failed: child_process.exec return error", async () => {
+    const error = new Error("test error");
+    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
+    sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
     const args = {
       workingDirectory: "./",
       run: "abc",
@@ -151,14 +88,8 @@ describe("Script Driver test", () => {
       ui: new MockUserInteraction(),
       projectPath: "./",
     } as DriverContext;
-    const res = await utils.executeCommand(
-      args.run,
-      context.projectPath,
-      context.logProvider,
-      context.ui,
-      args.workingDirectory
-    );
-    assert.isTrue(res.isErr());
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isErr());
   });
   it("convertScriptErrorToFxError ScriptTimeoutError", async () => {
     const error = { killed: true } as child_process.ExecException;
@@ -169,5 +100,66 @@ describe("Script Driver test", () => {
     const error = { killed: false, message: "command failed" } as child_process.ExecException;
     const res = convertScriptErrorToFxError(error, "test");
     assert.isTrue(res instanceof ScriptExecutionError);
+  });
+});
+
+describe("getSystemEncoding", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("should return a string", async () => {
+    const result = await getSystemEncoding();
+    assert.isTrue(typeof result === "string");
+  });
+  it("should return default encoding on other platform", async () => {
+    sandbox.stub(os, "platform").returns("netbsd");
+    const result = await getSystemEncoding();
+    assert.equal(result, "utf-8");
+  });
+
+  it("should return gb2312 on win32 platform", async () => {
+    sandbox.stub(os, "platform").returns("win32");
+    sandbox.stub(child_process, "exec").callsArgWith(2, null, "Active code page: 936");
+    const result = await getSystemEncoding();
+    assert.equal(result, "gb2312");
+  });
+
+  it("should return utf-8 on linux platform", async () => {
+    sandbox.stub(os, "platform").returns("linux");
+    sandbox.stub(child_process, "exec").callsArgWith(2, null, "UTF-8");
+    const result = await getSystemEncoding();
+    assert.equal(result, "utf-8");
+  });
+
+  it("should return utf-8 on darwin platform", async () => {
+    sandbox.stub(os, "platform").returns("darwin");
+    sandbox.stub(child_process, "exec").callsArgWith(2, null, "zh_CN.UTF-8");
+    const result = await getSystemEncoding();
+    assert.equal(result, "utf-8");
+  });
+
+  it("should return default encoding when Error happens on win32 platform", async () => {
+    sandbox.stub(os, "platform").returns("win32");
+    const error = new Error("test error");
+    sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
+    const result = await getSystemEncoding();
+    assert.equal(result, DefaultEncoding);
+  });
+
+  it("should return default encoding when Error happens on linux platform", async () => {
+    sandbox.stub(os, "platform").returns("linux");
+    const error = new Error("test error");
+    sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
+    const result = await getSystemEncoding();
+    assert.equal(result, DefaultEncoding);
+  });
+
+  it("should return default encoding when Error happens on darwin platform", async () => {
+    sandbox.stub(os, "platform").returns("darwin");
+    const error = new Error("test error");
+    sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
+    const result = await getSystemEncoding();
+    assert.equal(result, DefaultEncoding);
   });
 });

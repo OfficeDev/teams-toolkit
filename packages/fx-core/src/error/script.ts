@@ -21,7 +21,7 @@ export class ScriptTimeoutError extends UserError {
  * Script execution error
  */
 export class ScriptExecutionError extends UserError {
-  constructor(message: string, script: string) {
+  constructor(script: string, message: string) {
     const key = "error.script.ScriptExecutionError";
     const errorOptions: UserErrorOptions = {
       source: "script",

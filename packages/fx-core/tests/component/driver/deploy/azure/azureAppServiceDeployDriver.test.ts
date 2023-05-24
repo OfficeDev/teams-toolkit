@@ -91,7 +91,6 @@ describe("Azure App Service Deploy Driver test", () => {
       throw new Error("not found");
     });
     const client = new appService.WebSiteManagementClient(credential, "z");
-    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
@@ -101,6 +100,7 @@ describe("Azure App Service Deploy Driver test", () => {
         WEBSITE_RUN_FROM_PACKAGE: "1",
       },
     });
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
@@ -180,6 +180,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -191,6 +192,11 @@ describe("Azure App Service Deploy Driver test", () => {
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(client.webApps, "listApplicationSettings").resolves({
+      properties: {
+        WEBSITE_RUN_FROM_PACKAGE: "0",
+      },
+    });
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {

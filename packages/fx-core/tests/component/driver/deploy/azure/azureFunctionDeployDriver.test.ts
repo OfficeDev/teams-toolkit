@@ -19,7 +19,7 @@ import * as fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
-import { MockUserInteraction } from "../../../../core/utils";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
@@ -61,6 +61,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -80,6 +81,11 @@ describe("Azure Function Deploy Driver test", () => {
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(client.webApps, "listApplicationSettings").resolves({
+      properties: {
+        WEBSITE_RUN_FROM_PACKAGE: "1",
+      },
+    });
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
@@ -110,6 +116,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -124,6 +131,11 @@ describe("Azure Function Deploy Driver test", () => {
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").rejects();
+    sandbox.stub(client.webApps, "listApplicationSettings").resolves({
+      properties: {
+        WEBSITE_RUN_FROM_PACKAGE: "1",
+      },
+    });
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
@@ -159,6 +171,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: logger,
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -174,6 +187,11 @@ describe("Azure Function Deploy Driver test", () => {
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(client.webApps, "listApplicationSettings").resolves({
+      properties: {
+        WEBSITE_RUN_FROM_PACKAGE: "1",
+      },
+    });
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
@@ -302,6 +320,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -315,6 +334,11 @@ describe("Azure Function Deploy Driver test", () => {
       throw new Error("not found");
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "listApplicationSettings").resolves({
+      properties: {
+        WEBSITE_RUN_FROM_PACKAGE: "1",
+      },
+    });
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
@@ -332,7 +356,18 @@ describe("Azure Function Deploy Driver test", () => {
     });
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
-      data: { status: 3 },
+      data: {
+        status: 3,
+        message: "success",
+        received_time: 123,
+        start_time: 111,
+        end_time: 123,
+        last_success_end_time: 100,
+        complete: true,
+        active: 1,
+        is_readonly: true,
+        site_name: "new_name",
+      },
     });
     const res = await deploy.run(args, context);
     expect(res.isOk()).to.equal(true);

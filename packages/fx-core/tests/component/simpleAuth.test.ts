@@ -4,14 +4,11 @@
 import { InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { ComponentNames } from "../../src/component/constants";
-import "../../src/component/core";
-import { TeamsfxCore } from "../../src/component/core";
 import "../../src/component/feature/bot/bot";
 import "../../src/component/feature/sql";
 import "../../src/component/resource/botService/botService";
@@ -27,7 +24,7 @@ describe("Simple auth component V3", () => {
   const appName = `unittest${randomAppName()}`;
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
-  const fx = Container.get<TeamsfxCore>("fx");
+
   afterEach(() => {
     sandbox.restore();
   });

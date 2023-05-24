@@ -17,7 +17,6 @@ import { createSandbox } from "sinon";
 import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-import "../../../src/component/core";
 import { canAddSso } from "../../../src/component/feature/sso";
 import path from "path";
 import Container from "typedi";

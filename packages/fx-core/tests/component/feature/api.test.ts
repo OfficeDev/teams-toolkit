@@ -21,7 +21,6 @@ import * as utils from "../../../src/component/utils";
 import { getComponent } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames, ProgrammingLanguage } from "../../../src/component/constants";
 import { FunctionScaffold } from "../../../src/component/code/api/scaffold";

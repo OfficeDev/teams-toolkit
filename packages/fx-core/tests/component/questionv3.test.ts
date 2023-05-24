@@ -44,7 +44,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { createContextV3 } from "../../src/component/utils";
 import { newEnvInfoV3 } from "../../src/core/environment";
-import "../../src/component/core";
 import * as tools from "../../src/common/tools";
 import { ComponentNames } from "../../src/component/constants";
 import mockedEnv, { RestoreFn } from "mocked-env";

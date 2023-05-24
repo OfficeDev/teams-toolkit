@@ -78,7 +78,6 @@ import {
   TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../constants";
-import { getBotTroubleShootMessage } from "../core";
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -1060,3 +1059,25 @@ export class Coordinator {
 }
 
 export const coordinator = new Coordinator();
+
+export interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBot ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
+}

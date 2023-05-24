@@ -23,7 +23,6 @@ import * as utils from "../../../src/component/utils";
 import { getComponent } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-import "../../../src/component/core";
 import { environmentManager, newEnvInfoV3 } from "../../../src/core/environment";
 import {
   AadAppOutputs,

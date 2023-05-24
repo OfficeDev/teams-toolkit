@@ -3,7 +3,8 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "../e2e/commonUtils";
-import { Capability, TemplateProject } from "./constants";
+import { Capability } from "./constants";
+import { TemplateProject } from "../commonlib/constants";
 import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
 import path from "path";
 

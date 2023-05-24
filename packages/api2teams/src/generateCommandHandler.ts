@@ -50,7 +50,7 @@ export async function generateCommandHandler(
     .replace(/{{id}}/g, cardId)
     .replace(/{{triggerPattern}}/g, triggerPattern)
     .replace(/{{tag}}/g, capitalizeFirstLetter(tag))
-    .replace(/{{className}}/g, capitalizeFirstLetter(cardId) + 'CommandHanlder')
+    .replace(/{{className}}/g, capitalizeFirstLetter(cardId) + 'CommandHandler')
     .replace(/{{requiredParams}}/g, JSON.stringify(requiredParameters))
     .replace(
       /{{needCookieOrHeaderParams}}/g,
@@ -58,7 +58,7 @@ export async function generateCommandHandler(
     );
 
   return {
-    name: cardId + 'CommandHanlder',
+    name: cardId + 'CommandHandler',
     code: result
   };
 }

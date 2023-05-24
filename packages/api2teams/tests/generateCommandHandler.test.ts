@@ -39,7 +39,7 @@ describe('generateCommandHandler test', () => {
       const url = '/api/test';
       const tag = 'test';
 
-      const expectedClassName = 'testCommandHanlder';
+      const expectedClassName = 'testCommandHandler';
 
       const result = await generateCommandHandler(
         api,

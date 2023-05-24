@@ -5,6 +5,7 @@
     <RuntimeFrameworkVersion>6.0.10</RuntimeFrameworkVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <ItemGroup>

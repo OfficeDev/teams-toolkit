@@ -520,7 +520,7 @@ export const AzureRoleAssignmentsHelpLink =
   "https://aka.ms/teamsfx-azure-role-assignments-help-link";
 export const SharePointManageSiteAdminHelpLink =
   "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
-
+export const ViewAadAppHelpLinkV5 = "https://aka.ms/teamsfx-view-aad-app-v5";
 export const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
 
 export const DoProvisionFirstError = new UserError(

@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   globalStateGet,
   globalStateUpdate,
@@ -39,14 +38,12 @@ export class ExtensionSurvey {
 
   public static getInstance(): ExtensionSurvey {
     if (!ExtensionSurvey.instance) {
-      ExtensionSurvey.instance = isV3Enabled()
-        ? new ExtensionSurvey(
-            TIME_TO_SHOW_SURVEY,
-            V3PREVIEW_SAMPLE_PERCENTAGE,
-            V3PREVIEW_TIME_TO_DISABLE_SURVEY,
-            V3PREVIEW_TIME_TO_REMIND_ME_LATER
-          )
-        : new ExtensionSurvey();
+      ExtensionSurvey.instance = new ExtensionSurvey(
+        TIME_TO_SHOW_SURVEY,
+        V3PREVIEW_SAMPLE_PERCENTAGE,
+        V3PREVIEW_TIME_TO_DISABLE_SURVEY,
+        V3PREVIEW_TIME_TO_REMIND_ME_LATER
+      );
     }
 
     return ExtensionSurvey.instance;
@@ -106,7 +103,7 @@ export class ExtensionSurvey {
   }
 
   public async openSurveyLink() {
-    const link = isV3Enabled() ? SURVEY_URL_V3 : SURVEY_URL;
+    const link = SURVEY_URL_V3;
     vscode.commands.executeCommand(
       "vscode.open",
       vscode.Uri.parse(
@@ -181,11 +178,6 @@ export class ExtensionSurvey {
       await globalStateUpdate(ExtensionSurveyStateKeys.RemindMeLater, disableSurveyForTime);
     }
 
-    if (isV3Enabled()) {
-      this.timeToShowSurvey = V3PREVIEW_TIME_TO_REMIND_ME_LATER;
-    } else {
-      // only pop out once in one session
-      this.needToShow = false;
-    }
+    this.timeToShowSurvey = V3PREVIEW_TIME_TO_REMIND_ME_LATER;
   }
 }

@@ -356,18 +356,6 @@ describe("Azure Function Deploy Driver test", () => {
     });
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
-      data: {
-        status: 3,
-        message: "success",
-        received_time: 123,
-        start_time: 111,
-        end_time: 123,
-        last_success_end_time: 100,
-        complete: true,
-        active: 1,
-        is_readonly: true,
-        site_name: "new_name",
-      },
     });
     const res = await deploy.run(args, context);
     expect(res.isOk()).to.equal(true);

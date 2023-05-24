@@ -19,10 +19,10 @@ import * as fs from "fs-extra";
 import { MissingFieldInManifestUserError } from "../../../../src/component/driver/aad/error/invalidFieldInManifestError";
 import { cwd } from "process";
 import {
+  HttpClientError,
+  HttpServerError,
   InvalidActionInputError,
   MissingEnvironmentVariablesError,
-  UnhandledError,
-  UnhandledUserError,
 } from "../../../../src/error/common";
 import { Platform, ok, err } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
@@ -413,10 +413,10 @@ describe("aadAppUpdate", async () => {
 
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledUserError)
+      .is.instanceOf(HttpClientError)
       .and.property("message")
       .equals(
-        'An unexpected error has occurred while performing the aadApp/update task. {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+        'A http client error happened while performing the aadApp/update task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
       );
   });
 
@@ -447,10 +447,10 @@ describe("aadAppUpdate", async () => {
 
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledError)
+      .is.instanceOf(HttpServerError)
       .and.property("message")
       .equals(
-        'An unexpected error has occurred while performing the aadApp/update task. {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+        'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
       );
   });
 
@@ -567,11 +567,11 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/update");
     expect(endTelemetry.properties.component).to.equal("aadAppupdate");
     expect(endTelemetry.properties.success).to.equal("no");
-    expect(endTelemetry.properties["error-code"]).to.equal("aadAppUpdate.UnhandledError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppUpdate.HttpServerError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
-    expect(endTelemetry.properties["error-message"])
-      .contain("An unexpected error has occurred while performing the aadApp/update task")
-      .and.contain("Internal server error");
+    expect(endTelemetry.properties["error-message"]).to.equal(
+      'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+    );
   });
 
   it("should throw error when missing required environment variable in manifest", async () => {

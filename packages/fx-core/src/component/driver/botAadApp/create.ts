@@ -23,7 +23,12 @@ import { progressBarKeys } from "../../resource/botService/botRegistration/const
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { updateProgress } from "../middleware/updateProgress";
 import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
-import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
+import {
+  HttpClientError,
+  HttpServerError,
+  InvalidActionInputError,
+  UnhandledError,
+} from "../../../error/common";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -155,9 +160,9 @@ export class CreateBotAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(new Error(error.response!.data), actionName, helpLink);
+          throw new HttpClientError(actionName, message, helpLink);
         } else {
-          throw new UnhandledError(new Error(error.response!.data), actionName);
+          throw new HttpServerError(actionName, message);
         }
       }
 

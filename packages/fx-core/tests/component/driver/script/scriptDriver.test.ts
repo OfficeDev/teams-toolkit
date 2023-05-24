@@ -33,7 +33,7 @@ describe("Script Driver test", () => {
     const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
     const args = {
       workingDirectory: "./",
-      run: "echo '::set-output MY_KEY=MY_VALUE'",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
       redirectTo: "./log",
     };
     const context = {

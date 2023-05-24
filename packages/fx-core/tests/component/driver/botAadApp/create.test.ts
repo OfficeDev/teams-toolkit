@@ -12,10 +12,10 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import axios from "axios";
 import {
+  HttpClientError,
+  HttpServerError,
   InvalidActionInputError,
-  MissingEnvironmentVariablesError,
   UnhandledError,
-  UnhandledUserError,
 } from "../../../../src/error/common";
 
 chai.use(chaiAsPromised);
@@ -143,9 +143,9 @@ describe("botAadAppCreate", async () => {
 
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
-        expect(error instanceof UnhandledUserError).to.be.true;
+        expect(error instanceof HttpClientError).to.be.true;
         expect(error.message).contains(
-          "An unexpected error has occurred while performing the botAadApp/create task"
+          'A http client error happened while performing the botAadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
         );
       }
     );
@@ -172,9 +172,9 @@ describe("botAadAppCreate", async () => {
 
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
       (error) => {
-        expect(error instanceof UnhandledError).to.be.true;
-        expect(error.message).contains(
-          "An unexpected error has occurred while performing the botAadApp/create task"
+        expect(error instanceof HttpServerError).to.be.true;
+        expect(error.message).equals(
+          'A http server error happened while performing the botAadApp/create task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
         );
       }
     );

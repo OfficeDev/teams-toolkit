@@ -29,7 +29,7 @@ describe("version check", () => {
       const result = await Executor.createProject(
         testFolder,
         appName,
-        Capability.Tab,
+        Capability.TabNonSso,
         ProgrammingLanguage.TS
       );
       chai.assert.isTrue(result.success);

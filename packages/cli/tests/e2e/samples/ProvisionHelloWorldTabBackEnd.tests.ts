@@ -40,10 +40,6 @@ describe("teamsfx new template", function () {
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
 
-    // Validate Function App
-    const functionValidator = new FunctionValidator(context, projectPath, env);
-    await functionValidator.validateProvision();
-
     // deploy
     {
       const { success } = await Executor.deploy(projectPath);

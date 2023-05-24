@@ -41,17 +41,10 @@ import { ComponentNames, validateSchemaOption } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
-import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
-import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
-  FeatureId,
-  getQuestionsForAddFeatureSubCommand,
-  getQuestionsForAddFeatureV3,
-  getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
-  getQuestionsForInit,
   getQuestionsForProvisionV3,
   getQuestionsForValidateMethod,
 } from "../component/question";
@@ -66,7 +59,6 @@ import { environmentManager, newEnvInfoV3 } from "./environment";
 import { CopyFileError, InvalidInputError, ObjectIsUndefinedError, WriteFileError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
-import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
@@ -104,14 +96,14 @@ export class FxCore implements v3.ICore {
    * @deprecated  Not used any more but still referenced by CLI code
    */
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return this.v3Implement.dispatch(this.initInfra, inputs);
+    return ok(undefined);
   }
 
   /**
    * @deprecated  Not used any more but still referenced by CLI code
    */
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return this.v3Implement.dispatch(this.initDebug, inputs);
+    return ok(undefined);
   }
 
   /**
@@ -267,23 +259,8 @@ export class FxCore implements v3.ICore {
       return await getQuestionsForDeployV3(context, inputs);
     } else if (stage === Stage.provision) {
       return await getQuestionsForProvisionV3(inputs);
-    } else if (stage === Stage.initDebug) {
-      return await getQuestionsForInit("debug", inputs);
-    } else if (stage === Stage.initInfra) {
-      return await getQuestionsForInit("infra", inputs);
     }
     return ok(undefined);
-  }
-
-  /**
-   * @deprecated for V3
-   */
-  async getQuestionsForAddFeature(
-    featureId: FeatureId,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
-    return res;
   }
 
   /**
@@ -294,19 +271,6 @@ export class FxCore implements v3.ICore {
     func: FunctionRouter,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    inputs.stage = Stage.getQuestions;
-    setCurrentStage(Stage.getQuestions);
-    const context = createContextV3();
-    if (func.method === "addFeature") {
-      return await getQuestionsForAddFeatureV3(context, inputs);
-    } else if (func.method === "addResource") {
-      return await getQuestionsForAddResourceV3(context, inputs);
-    } else if (func.method === "addCICDWorkflows") {
-      return await addCicdQuestion(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "connectExistingApi") {
-      const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
-      return await apiConnectorImpl.generateQuestion(context, inputs as InputsWithProjectPath);
-    }
     return ok(undefined);
   }
 

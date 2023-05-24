@@ -86,9 +86,7 @@ import { BicepComponent } from "../../component/bicep";
 import { getComponent } from "../../component/workflow";
 import { bicepUtils, createContextV3, generateConfigBiceps } from "../../component/utils";
 import { assign, cloneDeep } from "lodash";
-import { IdentityResource } from "../../component/resource/identity";
 import { AzureFunctionResource } from "../../component/resource/azureAppService/azureFunction";
-import { KeyVaultResource } from "../../component/resource/keyVault";
 import { AzureSqlResource } from "../../component/resource/azureSql/azureSql";
 import { AadApp } from "../../component/resource/aadApp/aadApp";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
@@ -1107,20 +1105,20 @@ export async function generateBicepsV3(
   }
 
   // identity
-  {
-    const identity = getComponent(projectSettings, ComponentNames.Identity);
-    if (identity) {
-      const clonedInputs = cloneDeep(inputs);
-      assign(clonedInputs, {
-        componentId: "",
-        scenario: "",
-      });
-      const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
-      const res = await identityComponent.generateBicep(context, clonedInputs);
-      if (res.isErr()) return err(res.error);
-      res.value.forEach((b: Bicep) => biceps.push(b));
-    }
-  }
+  // {
+  //   const identity = getComponent(projectSettings, ComponentNames.Identity);
+  //   if (identity) {
+  //     const clonedInputs = cloneDeep(inputs);
+  //     assign(clonedInputs, {
+  //       componentId: "",
+  //       scenario: "",
+  //     });
+  //     const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
+  //     const res = await identityComponent.generateBicep(context, clonedInputs);
+  //     if (res.isErr()) return err(res.error);
+  //     res.value.forEach((b: Bicep) => biceps.push(b));
+  //   }
+  // }
 
   // apim
   {
@@ -1134,15 +1132,15 @@ export async function generateBicepsV3(
   }
 
   // keyvault
-  {
-    const config = getComponent(projectSettings, ComponentNames.KeyVault);
-    if (config) {
-      const resource = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
-      const res = await resource.generateBicep(context, inputs);
-      if (res.isErr()) return err(res.error);
-      res.value.forEach((b: Bicep) => biceps.push(b));
-    }
-  }
+  // {
+  //   const config = getComponent(projectSettings, ComponentNames.KeyVault);
+  //   if (config) {
+  //     const resource = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
+  //     const res = await resource.generateBicep(context, inputs);
+  //     if (res.isErr()) return err(res.error);
+  //     res.value.forEach((b: Bicep) => biceps.push(b));
+  //   }
+  // }
 
   // sql
   {

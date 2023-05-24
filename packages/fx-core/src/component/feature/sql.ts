@@ -2,20 +2,17 @@
 // Licensed under the MIT license.
 
 import { ContextV3, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
+import { cloneDeep } from "lodash";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { getComponent } from "../workflow";
-import "../connection/azureWebAppConfig";
-import "../resource/azureSql";
-import "../resource/identity";
-import { ComponentNames } from "../constants";
 import { hasApi, hasTab } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
+import { AzureResourceSQL, ComponentNames } from "../constants";
+import "../resource/azureSql";
 import { AzureSqlResource } from "../resource/azureSql";
-import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
-import { cloneDeep } from "lodash";
-import { AzureResourceFunction, AzureResourceSQL } from "../constants";
+import { addFeatureNotify, bicepUtils, generateConfigBiceps } from "../utils";
+import { getComponent } from "../workflow";
 
 @Service("sql")
 export class Sql {

@@ -11,7 +11,6 @@ import mockFs from "mock-fs";
 import {
   getSideloadingStatus,
   canAddApiConnection,
-  canAddSso,
   getFixedCommonProjectSettings,
   canAddCICDWorkflows,
   getAppSPFxVersion,
@@ -190,53 +189,6 @@ describe("tools", () => {
       };
 
       const result = canAddApiConnection(solutionSettings);
-
-      chai.assert.isDefined(result);
-      chai.assert.isFalse(result);
-    });
-  });
-
-  describe("canAddSso()", () => {
-    beforeEach(() => {
-      sinon.stub<any, any>(featureFlags, "isFeatureFlagEnabled").returns(true);
-    });
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("returns true when nothing is added", async () => {
-      const projectSettings: ProjectSettings = {
-        solutionSettings: {
-          activeResourcePlugins: ["fx-resource-function"],
-          hostType: "Azure",
-          capabilities: [],
-          azureResources: [],
-          name: "test",
-        },
-        appName: "test",
-        projectId: "projectId",
-      };
-
-      const result = canAddSso(projectSettings);
-
-      chai.assert.isDefined(result);
-      chai.assert.isTrue(result);
-    });
-
-    it("returns false when tab sso is added", async () => {
-      const projectSettings: ProjectSettings = {
-        solutionSettings: {
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
-          hostType: "Azure",
-          capabilities: [TabSsoItem().id],
-          azureResources: [],
-          name: "test",
-        },
-        appName: "test",
-        projectId: "projectId",
-      };
-
-      const result = canAddSso(projectSettings);
 
       chai.assert.isDefined(result);
       chai.assert.isFalse(result);

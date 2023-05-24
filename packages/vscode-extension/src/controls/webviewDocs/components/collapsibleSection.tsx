@@ -11,11 +11,10 @@ import {
 import { Commands } from "../../Commands";
 import { Chevron } from "../../resources";
 
-function StepTitle(props: { step: number; title: string }) {
+function SectionTitle(props: { title: string }) {
   return (
     <div className="stepContainer">
       <div className="stepTitle">
-        <p className="step">Step {props.step}</p>
         <h2 className="title">{props.title}</h2>
       </div>
       <div className="chevron">
@@ -25,8 +24,7 @@ function StepTitle(props: { step: number; title: string }) {
   );
 }
 
-export default function CollapsibleStep(props: {
-  step: number;
+export default function CollapsibleSection(props: {
   title: string;
   triggerFrom: TelemetryTriggerFrom;
   identifier: string;
@@ -67,8 +65,8 @@ export default function CollapsibleStep(props: {
   return (
     <Collapsible
       className={["collapsibleStep", `${transitionClassName}`].join(" ")}
-      trigger={<StepTitle step={props.step} title={props.title} />}
-      open={true}
+      trigger={<SectionTitle title={props.title} />}
+      open={false}
       onTriggerOpening={onOpen}
       onClosing={onClosing}
       onClose={onClose}

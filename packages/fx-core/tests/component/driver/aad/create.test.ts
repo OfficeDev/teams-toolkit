@@ -16,9 +16,9 @@ import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAp
 import { AADApplication } from "../../../../src/component/resource/aadApp/interfaces/AADApplication";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
 import {
+  HttpClientError,
+  HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
-  UnhandledUserError,
 } from "../../../../src/error/common";
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
@@ -325,9 +325,11 @@ describe("aadAppCreate", async () => {
     const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledUserError)
+      .is.instanceOf(HttpClientError)
       .and.has.property("message")
-      .and.contains("An unexpected error has occurred while performing the aadApp/create task");
+      .and.equals(
+        'A http client error happened while performing the aadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+      );
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -352,9 +354,11 @@ describe("aadAppCreate", async () => {
     const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledError)
+      .is.instanceOf(HttpServerError)
       .and.has.property("message")
-      .and.contains("An unexpected error has occurred while performing the aadApp/create task");
+      .and.equals(
+        'A http server error happened while performing the aadApp/create task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+      );
   });
 
   it("should send telemetries when success", async () => {
@@ -464,11 +468,11 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/create");
     expect(endTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.properties.success).to.equal("no");
-    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledUserError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.HttpClientError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
-    expect(endTelemetry.properties["error-message"])
-      .contain("An unexpected error has occurred while performing the aadApp/create task")
-      .and.contain("Invalid value specified for property");
+    expect(endTelemetry.properties["error-message"]).to.equal(
+      'A http client error happened while performing the aadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+    );
   });
 
   it("should use input signInAudience when provided", async () => {

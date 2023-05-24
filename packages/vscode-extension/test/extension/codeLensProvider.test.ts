@@ -11,7 +11,6 @@ import {
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
-import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import * as globalVariables from "../../src/globalVariables";
 
 describe("Manifest codelens", () => {
@@ -77,7 +76,6 @@ describe("Manifest codelens", () => {
   it("ResolveEnvironmentVariableCodelens", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
-    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
     const lens: PlaceholderCodeLens = new PlaceholderCodeLens(
@@ -97,7 +95,6 @@ describe("Manifest codelens", () => {
   it("ResolveEnvironmentVariableCodelens for AAD manifest", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
-    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
     const lens: PlaceholderCodeLens = new PlaceholderCodeLens(
@@ -117,7 +114,6 @@ describe("Manifest codelens", () => {
   it("ComputeTemplateCodeLenses for AAD manifest", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
-    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
     const document = <vscode.TextDocument>{
       fileName: "./aad.manifest.json",
       getText: () => {

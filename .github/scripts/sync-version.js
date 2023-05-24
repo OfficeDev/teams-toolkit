@@ -73,9 +73,7 @@ function main() {
         console.log('syncup templates')
         const templateDir = path.join(__dirname, "../../templates");
         const templateV3Dir = path.join(templateDir, "scenarios");
-        const templateList = require(path.join(templateDir, "package.json")).templates;
         const templateV3List = require(path.join(templateDir, "package.json")).templatesV3;
-        updateTemplatesDeps(templateDir, templateList);
         updateTemplatesDeps(templateV3Dir, templateV3List);
     }
 }

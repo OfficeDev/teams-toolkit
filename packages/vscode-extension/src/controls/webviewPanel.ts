@@ -94,7 +94,12 @@ export class WebviewPanel {
     this.panel.onDidChangeViewState(
       (e) => {
         const panel = e.webviewPanel;
-        if (TreatmentVariableValue.inProductDoc && panelType === PanelType.RespondToCardActions) {
+        if (
+          TreatmentVariableValue.inProductDoc &&
+          (panelType === PanelType.RespondToCardActions ||
+            panelType === PanelType.FunctionBasedNotificationBotReadme ||
+            panelType === PanelType.RestifyServerNotificationBotReadme)
+        ) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
             [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
             [TelemetryProperty.Interaction]: panel.visible
@@ -233,7 +238,7 @@ export class WebviewPanel {
     }
   }
 
-  private getWebpageTitle(panelType: PanelType) {
+  private getWebpageTitle(panelType: PanelType): string {
     switch (panelType) {
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
@@ -243,6 +248,10 @@ export class WebviewPanel {
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:
         return localize("teamstoolkit.webview.accountHelp");
+      case PanelType.RestifyServerNotificationBotReadme:
+        return localize("teamstoolkit.guides.notificationBot.label");
+      case PanelType.FunctionBasedNotificationBotReadme:
+        return localize("teamstoolkit.guides.notificationBot.label");
     }
   }
 

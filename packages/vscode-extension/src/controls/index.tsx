@@ -8,8 +8,10 @@ import { initializeIcons } from "@fluentui/react/lib/Icons";
 import { PanelType } from "./PanelType";
 import SampleGallery from "./SampleGallery";
 import Survey from "./Survey";
-import WorkflowBot from "./webviewDocs/workflowBot";
 import AccountHelp from "./webviewDocs/accountHelp";
+import FunctionBasedNotificationBot from "./webviewDocs/functionBasedNotificationBot";
+import RestifyServerNotificationBot from "./webviewDocs/restifyServerNotificationBot";
+import WorkflowBot from "./webviewDocs/workflowBot";
 
 const language = "en";
 
@@ -31,16 +33,29 @@ export default function App(props: any) {
     initialIndex = 2;
   } else if (panelType === PanelType.AccountHelp) {
     initialIndex = 3;
+  } else if (panelType === PanelType.FunctionBasedNotificationBotReadme) {
+    initialIndex = 4;
+  } else if (panelType === PanelType.RestifyServerNotificationBotReadme) {
+    initialIndex = 5;
   }
   return (
     <MemoryRouter
-      initialEntries={["/sample-gallery", "/survey", "/respond-to-card-actions", "/account-help"]}
+      initialEntries={[
+        "/sample-gallery",
+        "/survey",
+        "/respond-to-card-actions",
+        "/account-help",
+        "/function-based-notification-bot",
+        "/restify-server-notification-bot",
+      ]}
       initialIndex={initialIndex}
     >
       <Route path="/sample-gallery" component={SampleGallery} />
       <Route path="/survey" component={Survey} />
       <Route path="/respond-to-card-actions" component={WorkflowBot} />
       <Route path="/account-help" component={AccountHelp} />
+      <Route path="/function-based-notification-bot" component={FunctionBasedNotificationBot} />
+      <Route path="/restify-server-notification-bot" component={RestifyServerNotificationBot} />
     </MemoryRouter>
   );
 }

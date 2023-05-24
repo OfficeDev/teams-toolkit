@@ -114,3 +114,7 @@ export function isValidProjectV2(workspacePath: string): boolean {
 export function isVSProject(projectSettings?: ProjectSettings): boolean {
   return projectSettings?.programmingLanguage === "csharp";
 }
+
+export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
+  return false;
+}

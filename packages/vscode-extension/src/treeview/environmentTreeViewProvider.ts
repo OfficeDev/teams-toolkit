@@ -5,7 +5,6 @@ import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
 import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 

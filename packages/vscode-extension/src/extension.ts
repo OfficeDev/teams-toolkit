@@ -345,23 +345,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
-  if (!isV3Enabled()) {
-    // Add features
-    registerInCommandController(
-      context,
-      "fx-extension.addFeature",
-      handlers.addFeatureHandler,
-      "addFeature"
-    );
-    // Edit manifest file
-    registerInCommandController(
-      context,
-      "fx-extension.openManifest",
-      handlers.openManifestHandler,
-      "manifestEditor"
-    );
-  }
-
   // Open adaptive card
   registerInCommandController(
     context,
@@ -769,16 +752,6 @@ async function setTDPIntegrationEnabledContext() {
 function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
-  const userDataSelector = {
-    language: "plaintext",
-    scheme: "file",
-    pattern: "**/*.userdata",
-  };
-  const localDebugDataSelector = {
-    language: "json",
-    scheme: "file",
-    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
-  };
   const envDataSelector = {
     scheme: "file",
     pattern: "**/.env.*",
@@ -839,18 +812,9 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/permissions.json`,
   };
 
-  if (isV3Enabled()) {
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
-    );
-  } else {
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
-    );
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
-    );
-  }
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
+  );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,
@@ -1014,7 +978,7 @@ async function runBackgroundAsyncTasks(
 }
 
 async function runTeamsFxBackgroundTasks() {
-  const upgradeable = isV3Enabled() && (await checkProjectUpgradable());
+  const upgradeable = await checkProjectUpgradable();
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await handlers.promptSPFxUpgrade();

@@ -4,7 +4,6 @@
 import * as vscode from "vscode";
 
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "../../commonlib/azureLogin";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
@@ -31,15 +30,8 @@ export class AzureAccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedIn;
     this.label = upn;
     this.contextValue = "signedinAzure";
-    if (isV3Enabled()) {
-      this.eventEmitter.fire(this);
-      return false;
-    } else {
-      const needManualSelection = await this.autoSelectSubscription();
-      // refresh
-      this.eventEmitter.fire(this);
-      return needManualSelection;
-    }
+    this.eventEmitter.fire(this);
+    return false;
   }
 
   public setSigningIn() {
@@ -69,11 +61,8 @@ export class AzureAccountNode extends DynamicNode {
   }
 
   public async getChildren(): Promise<DynamicNode[] | undefined | null> {
-    if (isV3Enabled()) {
-      // No subscription info in V3
-      return null;
-    }
-    return [this.subscriptionNode];
+    // No subscription info in V3
+    return null;
   }
 
   public async getTreeItem(): Promise<vscode.TreeItem> {
@@ -83,11 +72,7 @@ export class AzureAccountNode extends DynamicNode {
       this.iconPath = azureIcon;
     }
     if (this.status === AccountItemStatus.SignedIn) {
-      if (isV3Enabled()) {
-        this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-      } else {
-        this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-      }
+      this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.command = undefined;
     } else if (this.status === AccountItemStatus.SigningIn) {
       this.label = localize("teamstoolkit.accountTree.signingInAzure");

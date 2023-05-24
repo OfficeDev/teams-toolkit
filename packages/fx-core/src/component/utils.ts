@@ -34,7 +34,7 @@ import { Container } from "typedi";
 import { format } from "util";
 import * as uuid from "uuid";
 import { getLocalizedString } from "../common/localizeUtils";
-import { getProjectSettingsVersion, isVSProject } from "../common/projectSettingsHelper";
+import { isVSProject } from "../common/projectSettingsHelper";
 import { hasBot, hasSPFxTab, hasTab } from "../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../common/utils";
 import { LocalCrypto } from "../core/crypto";
@@ -440,7 +440,7 @@ export function newProjectSettingsV3(): ProjectSettingsV3 {
   const projectSettings: ProjectSettingsV3 = {
     appName: "test",
     projectId: uuid.v4(),
-    version: getProjectSettingsVersion(),
+    version: "2.1.0",
     components: [],
   };
   return projectSettings;

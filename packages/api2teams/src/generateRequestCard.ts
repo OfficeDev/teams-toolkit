@@ -169,6 +169,7 @@ function parseGetRequest(
     content: fullCard,
     url,
     operation,
-    isArray: false
+    isArray: false,
+    api
   };
 }

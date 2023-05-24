@@ -1,12 +1,12 @@
 import * as fs from 'fs-extra';
 import { capitalizeFirstLetter } from './utils';
-import { ActionHandlerResult } from './interfaces';
+import { CodeResult } from './interfaces';
 
 export async function generateActionHandler(
   tag: string,
   responseCardName: string,
   cardId: string
-): Promise<ActionHandlerResult> {
+): Promise<CodeResult> {
   const codeTemplate = await fs.readFile(
     './src/resources/actionHandlerTemplate.txt',
     'utf8'

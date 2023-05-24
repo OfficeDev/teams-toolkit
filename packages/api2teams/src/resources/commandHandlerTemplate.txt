@@ -1,0 +1,37 @@
+import { Activity, TurnContext } from "botbuilder";
+import {
+  CommandMessage,
+  TeamsFxBotCommandHandler,
+  TriggerPatterns,
+  MessageBuilder,
+} from "@microsoft/teamsfx";
+import {{requestCardName}} from "../adaptiveCards/{{requestCardName}}.json";
+import {{responseCardName}} from "../adaptiveCards/{{responseCardName}}.json";
+// import { {{tag}}Api } from "../apis/realApiProvider"; // for api calls with real backend service
+import { {{tag}}Api } from "../apis/mockApiProvider"; // for api calls with mock data
+
+export class {{className}}CommandHandler implements TeamsFxBotCommandHandler {
+  triggerPatterns: TriggerPatterns = new RegExp(
+    "{{operation}} {{triggerPattern}}",
+    "i"
+  );
+  requiredParams: string[] = {{requiredParams}};
+  needCookieOrHeaderParams = {{needCookieOrHeaderParams}};
+
+  async handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage
+  ): Promise<string | Partial<Activity> | void> {
+    console.log("Bot received message: " + message.text);
+    const queryObject = new URLSearchParams(message.matches!.groups?.queries);
+
+    if (this.needCookieOrHeaderParams || this.requiredParams.some((name) => !queryObject.has(name))) {
+      return MessageBuilder.attachAdaptiveCardWithoutData(
+        {{requestCardName}}
+      );
+    }
+
+    const cardData = {{tag}}Api.{{id}}(Object.fromEntries(queryObject.entries()));
+    return MessageBuilder.attachAdaptiveCard({{responseCardName}}, cardData);
+  }
+}

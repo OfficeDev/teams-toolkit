@@ -1,3 +1,5 @@
+import { OpenAPIV3 } from 'openapi-types';
+
 export interface CliOptions {
   output: string;
   force?: boolean;
@@ -11,6 +13,7 @@ export interface AdaptiveCardResult {
   isArray: boolean;
   content: any;
   tag: string;
+  api: OpenAPIV3.OperationObject;
 }
 
 export interface ResponseObjectResult {
@@ -21,7 +24,7 @@ export interface ResponseObjectResult {
   content: any;
 }
 
-export interface ActionHandlerResult {
+export interface CodeResult {
   code: string;
   name: string;
 }

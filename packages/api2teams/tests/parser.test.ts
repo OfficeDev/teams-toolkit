@@ -21,11 +21,13 @@ describe('parseApi tests', () => {
     let parseStub: sinon.SinonStub;
     let generateRequestCardStub: sinon.SinonStub;
     let generateResponseCardStub: sinon.SinonStub;
+    let outputFileSyncStub: sinon.SinonStub;
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       isFolderEmptyStub = sandbox.stub(utils, 'isFolderEmpty');
       existsSyncStub = sandbox.stub(fs, 'existsSync');
       mkdirSyncStub = sandbox.stub(fs, 'mkdirSync');
+      outputFileSyncStub = sandbox.stub(fs, 'outputFileSync');
       validateStub = sandbox.stub(SwaggerParser, 'validate');
       parseStub = sandbox.stub(SwaggerParser, "parse");
       generateRequestCardStub = sandbox.stub(

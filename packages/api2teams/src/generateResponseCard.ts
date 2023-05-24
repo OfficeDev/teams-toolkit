@@ -86,7 +86,8 @@ function parseResponse(
     content: card,
     url,
     operation,
-    isArray: (jsonResult.schema as OpenAPIV3.SchemaObject)?.type === 'array'
+    isArray: (jsonResult.schema as OpenAPIV3.SchemaObject)?.type === 'array',
+    api
   };
 }
 

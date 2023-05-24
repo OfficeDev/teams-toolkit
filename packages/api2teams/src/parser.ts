@@ -1,9 +1,5 @@
 import fs from 'fs-extra';
-import {
-  ActionHandlerResult,
-  CliOptions,
-  ResponseObjectResult
-} from './interfaces';
+import { CliOptions, CodeResult, ResponseObjectResult } from './interfaces';
 import {
   isFolderEmpty,
   getResponseJsonResult,
@@ -19,6 +15,7 @@ import path from 'path';
 import { generateResponseCard } from './generateResponseCard';
 import { generateResponseObject } from './generateResponseObject';
 import { generateActionHandler } from './generateActionHandler';
+import { generateCommandHandler } from './generateCommandHandler';
 
 export async function parseApi(yaml: string, options: CliOptions) {
   if (!(await isArgsValid(yaml, options))) {
@@ -102,7 +99,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
   }
 
   for (const card of responseCards) {
-    const cardActionHandler: ActionHandlerResult = await generateActionHandler(
+    const cardActionHandler: CodeResult = await generateActionHandler(
       card.tag,
       card.name,
       card.id
@@ -115,6 +112,24 @@ export async function parseApi(yaml: string, options: CliOptions) {
     );
 
     await fs.outputFile(cardActionHandlerPath, cardActionHandler.code);
+  }
+
+  for (const card of responseCards) {
+    const commandHandler: CodeResult = await generateCommandHandler(
+      card.api,
+      card.name,
+      card.id,
+      card.url,
+      card.tag
+    );
+
+    const cardActionHandlerPath = path.join(
+      options.output,
+      'src/commands',
+      `${commandHandler.name}.ts`
+    );
+
+    await fs.outputFile(cardActionHandlerPath, commandHandler.code);
   }
 
   const apiFunctionsByTag: Record<string, string[]> = {};

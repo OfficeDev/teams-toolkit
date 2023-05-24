@@ -23,39 +23,23 @@ import {
   Stage,
   TextInputQuestion,
   UserError,
-  v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { HelpLinks, ResourcePlugins } from "../common/constants";
-import {
-  isBotNotificationEnabled,
-  isCLIDotNetEnabled,
-  isSPFxMultiTabEnabled,
-} from "../common/featureFlags";
+import { isBotNotificationEnabled, isCLIDotNetEnabled } from "../common/featureFlags";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { isVSProject } from "../common/projectSettingsHelper";
-import {
-  hasAAD,
-  hasApi,
-  hasAPIM,
-  hasAzureResourceV3,
-  hasBot,
-  hasKeyVault,
-  hasTab,
-} from "../common/projectSettingsHelperV3";
-import { canAddCICDWorkflows } from "../common/tools";
+import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { NoCapabilityFoundError } from "../core/error";
 import {
   CoreQuestionNames,
-  ProgrammingLanguageQuestion,
   selectM365HostQuestion,
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
 } from "../core/question";
 import {
-  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceApimNewUI,
   AzureResourceFunction,
@@ -65,51 +49,31 @@ import {
   AzureResourceSQL,
   AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
-  BotFeatureIds,
-  BotNewUIOptionItem,
   BotOptionItem,
   BuiltInFeaturePluginNames,
-  CicdOptionItem,
   CommandAndResponseOptionItem,
   ComponentNames,
   GLOBAL_CONFIG,
-  HostTypeOptionSPFx,
   MessageExtensionItem,
-  MessageExtensionNewUIItem,
   NotificationOptionItem,
   Runtime,
-  SingleSignOnOptionItem,
   SOLUTION_PROVISION_SUCCEEDED,
   SPFxQuestionNames,
-  TabFeatureIds,
-  TabNewUIOptionItem,
-  TabNonSsoItem,
   TabOptionItem,
-  TabSPFxNewUIItem,
   validateAppPackageOption,
   validateSchemaOption,
-  WorkflowOptionItem,
 } from "./constants";
-import { InvalidFeature } from "./error";
-import { functionNameQuestion } from "./feature/api/question";
-import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import {
   createHostTypeTriggerQuestion,
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import { addCicdQuestion } from "./feature/cicd/cicd";
-import { getAddSPFxQuestionNode } from "./feature/spfx";
-import { canAddSso } from "./feature/sso";
 import { ComponentName2pluginName } from "./migrate";
 import { Constants } from "./resource/aadApp/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
-import { Constants as Constants1, STATIC_TABS_MAX_ITEMS } from "./resource/appManifest/constants";
-import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
+import { Constants as Constants1 } from "./resource/appManifest/constants";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { webpartNameQuestion } from "./resource/spfx/utils/questions";
-import { createContextV3 } from "./utils";
-import { getComponent } from "./workflow";
 
 export async function getQuestionsForProvisionV3(
   inputs: Inputs

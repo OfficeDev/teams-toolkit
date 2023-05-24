@@ -76,37 +76,6 @@ export async function persistProvisionBicep(
   return ok(undefined);
 }
 
-export async function persistProvisionBicepPlans(
-  projectPath: string,
-  provisionBicep: ProvisionBicep
-): Promise<string[]> {
-  const plans: string[] = [];
-  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
-  const templateFolder = path.join(templateRoot, "azure");
-  if (provisionBicep.Modules) {
-    for (const module of Object.keys(provisionBicep.Modules)) {
-      const value = provisionBicep.Modules[module];
-      if (value) {
-        const filePath = path.join(templateFolder, "provision", `${module}.bicep`);
-        const effect = appendFileEffect(filePath, `provision module bicep for ${module}`);
-        const plan = fileEffectPlanString(effect);
-        if (plan) {
-          plans.push(plan);
-        }
-      }
-    }
-  }
-  if (provisionBicep.Orchestration) {
-    const filePath = path.join(templateFolder, "provision.bicep");
-    const effect = appendFileEffect(filePath, "provision orchestration bicep");
-    const plan = fileEffectPlanString(effect);
-    if (plan) {
-      plans.push(plan);
-    }
-  }
-  return plans;
-}
-
 export async function persistConfigBicep(
   projectPath: string,
   configBicep: ConfigurationBicep
@@ -130,70 +99,6 @@ export async function persistConfigBicep(
     );
   }
   return ok(undefined);
-}
-
-export async function persistConfigBicepPlans(
-  projectPath: string,
-  provisionBicep: ProvisionBicep
-): Promise<string[]> {
-  const plans: string[] = [];
-  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
-  const templateFolder = path.join(templateRoot, "azure");
-  if (provisionBicep.Modules) {
-    for (const module of Object.keys(provisionBicep.Modules)) {
-      const value = provisionBicep.Modules[module];
-      if (value) {
-        const filePath = path.join(templateFolder, "teamsFx", `${module}.bicep`);
-        const effect = createFileEffect(
-          filePath,
-          "replace",
-          `configuration module bicep for ${module}`
-        );
-        const plan = fileEffectPlanString(effect);
-        if (plan) {
-          plans.push(plan);
-        }
-      }
-    }
-  }
-  if (provisionBicep.Orchestration) {
-    const filePath = path.join(templateFolder, "provision.bicep");
-    const effect = appendFileEffect(filePath, "configuration orchestration bicep");
-    const plan = fileEffectPlanString(effect);
-    if (plan) {
-      plans.push(plan);
-    }
-  }
-  return plans;
-}
-
-export function persistParamsBicepPlans(
-  projectPath: string,
-  params: Record<string, string>
-): string[] {
-  const plans: string[] = [];
-  if (Object.keys(params).length === 0) return [];
-  const parameterEnvFolderPath = path.join(projectPath, ".fx", "configs");
-  fs.ensureDirSync(parameterEnvFolderPath);
-  const configFiles = fs.readdirSync(parameterEnvFolderPath);
-  const remoteEnvNames = configFiles
-    .map((file) => {
-      const match = /^config\.(?<envName>[\w\d-_]+)\.json$/i.exec(file);
-      if (match != null && match.groups != null) {
-        const envName = match.groups.envName;
-        if (envName !== "local") return envName;
-      }
-      return null;
-    })
-    .filter((env) => env !== null);
-  for (const env of remoteEnvNames) {
-    const parameterFileName = `azure.parameters.${env}.json`;
-    const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-    const effect = createFileEffect(parameterEnvFilePath, "replace");
-    const plan = fileEffectPlanString(effect);
-    if (plan) plans.push(plan);
-  }
-  return plans;
 }
 
 export async function readParametersJson(
@@ -299,143 +204,6 @@ export async function persistBicep(
   return ok(undefined);
 }
 
-export async function persistBicepPlans(projectPath: string, bicep: Bicep): Promise<string[]> {
-  let plans: string[] = [];
-  if (bicep.Provision) {
-    const res = await persistProvisionBicepPlans(projectPath, bicep.Provision);
-    plans = plans.concat(res);
-  }
-  if (bicep.Configuration) {
-    const res = await persistConfigBicepPlans(projectPath, bicep.Configuration);
-    plans = plans.concat(res);
-  }
-  if (bicep.Parameters) {
-    const res = persistParamsBicepPlans(projectPath, bicep.Parameters);
-    plans = plans.concat(res);
-  }
-  return plans.filter(Boolean);
-}
-
-export function fileEffectPlanStrings(fileEffect: FileEffect): string[] {
-  const plans = [];
-  if (typeof fileEffect.filePath === "string") {
-    plans.push(fileEffectPlanString(fileEffect));
-  } else {
-    for (const file of fileEffect.filePath) {
-      plans.push(
-        fileEffectPlanString({
-          ...fileEffect,
-          filePath: file,
-          remarks: undefined,
-        })
-      );
-    }
-  }
-  return plans.filter((p) => p !== undefined) as string[];
-}
-
-export function serviceEffectPlanString(serviceEffect: CallServiceEffect): string {
-  return `call cloud service: ${serviceEffect.name} (${serviceEffect.remarks})`;
-}
-
-export function createFilesEffects(
-  files: string[],
-  operateIfExists: "replace" | "skip" = "replace",
-  remarks?: string
-): FileEffect[] {
-  const effects: FileEffect[] = [];
-  for (const file of files) {
-    if (fs.pathExistsSync(file)) {
-      if (operateIfExists === "replace") {
-        effects.push({
-          type: "file",
-          filePath: file,
-          operate: "replace",
-          remarks: remarks,
-        });
-      } else {
-        effects.push({
-          type: "file",
-          filePath: file,
-          operate: "skipCreate",
-          remarks: remarks,
-        });
-      }
-    } else {
-      effects.push({
-        type: "file",
-        filePath: file,
-        operate: "create",
-        remarks: remarks,
-      });
-    }
-  }
-  return effects;
-}
-
-export function createFileEffect(
-  file: string,
-  operateIfExists: "replace" | "skip" | "append" = "replace",
-  remarks?: string
-): FileEffect {
-  if (fs.pathExistsSync(file)) {
-    if (operateIfExists === "replace") {
-      return {
-        type: "file",
-        filePath: file,
-        operate: "replace",
-        remarks: remarks,
-      };
-    } else if (operateIfExists === "skip") {
-      return {
-        type: "file",
-        filePath: file,
-        operate: "skipCreate",
-        remarks: remarks,
-      };
-    } else {
-      return {
-        type: "file",
-        filePath: file,
-        operate: "append",
-        remarks: remarks,
-      };
-    }
-  } else {
-    return {
-      type: "file",
-      filePath: file,
-      operate: "create",
-      remarks: remarks,
-    };
-  }
-}
-
-export function appendFileEffect(file: string, remarks?: string): FileEffect {
-  if (fs.pathExistsSync(file)) {
-    return {
-      type: "file",
-      filePath: file,
-      operate: "append",
-      remarks: remarks,
-    };
-  } else {
-    return {
-      type: "file",
-      filePath: file,
-      operate: "create",
-      remarks: remarks,
-    };
-  }
-}
-
-export function fileEffectPlanString(effect: FileEffect): string | undefined {
-  if (effect.operate.startsWith("skip")) return undefined;
-  return effect.remarks
-    ? `${effect.operate} file: '${effect.filePath}' (${effect.remarks})`
-    : `${effect.operate} file: '${effect.filePath}'`;
-}
-
 export function newProjectSettingsV3(): ProjectSettingsV3 {
   const projectSettings: ProjectSettingsV3 = {
     appName: "test",
@@ -495,16 +263,6 @@ export function isInComponentConnection(component: Component, item: string): boo
     return true;
   }
   return false;
-}
-
-export function getHostingComponent(
-  component: Component,
-  projectSettings: ProjectSettingsV3
-): Component | undefined {
-  if (component.hosting) {
-    return getComponent(projectSettings, component.hosting);
-  }
-  return undefined;
 }
 
 export function isLocalEnv(context: ContextV3): boolean {

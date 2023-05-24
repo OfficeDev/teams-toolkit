@@ -31,9 +31,6 @@ import { AadResult, ResultFactory } from "./results";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
 import { UnhandledError } from "./errors";
-import { hooks } from "@feathersjs/hooks/lib";
-import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
-import { BuiltInFeaturePluginNames } from "../../constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
 import { Language } from "../../constants";
@@ -165,11 +162,6 @@ export class AadApp implements CloudResource {
     return res;
   }
 
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
   async buildAadManifest(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
@@ -191,11 +183,6 @@ export class AadApp implements CloudResource {
     return res;
   }
 
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
   async listCollaborator(
     ctx: ContextV3,
     aadObjectIdV3?: string
@@ -209,11 +196,6 @@ export class AadApp implements CloudResource {
     return res;
   }
 
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
   async grantPermission(
     ctx: ContextV3,
     userInfo: AppUser,
@@ -228,11 +210,6 @@ export class AadApp implements CloudResource {
     return res;
   }
 
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
   async checkPermission(
     ctx: ContextV3,
     userInfo: AppUser,

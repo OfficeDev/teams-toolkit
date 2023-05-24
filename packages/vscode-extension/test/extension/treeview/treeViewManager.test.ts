@@ -2,7 +2,10 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+
 import { AdaptiveCardCodeLensProvider } from "../../../src/codeLensProvider";
+import { TreatmentVariableValue } from "../../../src/exp/treatmentVariables";
 import * as globalVariables from "../../../src/globalVariables";
 import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
 import treeViewManager from "../../../src/treeview/treeViewManager";
@@ -15,18 +18,25 @@ describe("TreeViewManager", () => {
   });
 
   it("registerTreeViews", async () => {
-    sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-    sandbox.stub(globalVariables, "isSPFxProject").value(false);
-
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
-
     chai.assert.isDefined(treeViewManager.getTreeView("teamsfx-accounts"));
+
     const lifecycleTreeView = treeViewManager.getTreeView("teamsfx-lifecycle");
     chai.assert.isDefined(lifecycleTreeView);
     chai.assert.equal(lifecycleTreeView.commands.length, 3);
     chai.assert.equal(lifecycleTreeView.commands[0].commandId, "fx-extension.provision");
+  });
+
+  it("registerTreeViews in v3", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
+    sandbox.stub(globalVariables, "isSPFxProject").value(false);
+    treeViewManager.registerTreeViews({
+      subscriptions: [],
+    } as unknown as vscode.ExtensionContext);
+
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
     chai.assert.equal(developmentTreeview.commands.length, 4);
@@ -47,6 +57,7 @@ describe("TreeViewManager", () => {
   });
 
   it("updateTreeViewsByContent has adaptive cards", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
@@ -70,6 +81,7 @@ describe("TreeViewManager", () => {
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
 
     treeViewManager.registerTreeViews({
@@ -88,6 +100,7 @@ describe("TreeViewManager", () => {
   });
 
   it("updateTreeViewsOnSPFxChanged", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],

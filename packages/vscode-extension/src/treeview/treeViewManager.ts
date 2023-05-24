@@ -5,6 +5,7 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
@@ -202,6 +203,24 @@ class TreeViewManager {
         undefined,
         { name: "debug-alt", custom: false }
       ),
+      ...(isV3Enabled()
+        ? []
+        : [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
+              "fx-extension.addFeature",
+              "addFeature",
+              { name: "teamsfx-add-feature", custom: false }
+            ),
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
+              "fx-extension.openManifest",
+              "manifestEditor",
+              { name: "edit", custom: false }
+            ),
+          ]),
     ];
   }
 

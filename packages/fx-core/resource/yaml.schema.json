@@ -54,7 +54,6 @@
           { "$ref": "#/definitions/botframeworkCreate" },
           { "$ref": "#/definitions/fileCreateOrUpdateEnvironmentFile" },
           { "$ref": "#/definitions/fileCreateOrUpdateJsonFile" },
-          { "$ref": "#/definitions/fileCreateOrUpdateDebugProfile"},
           { "$ref": "#/definitions/devToolInstall" },
           { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
@@ -1129,55 +1128,6 @@
             "target": {
               "type": "string",
               "description": "the target file"
-            }
-          }
-        }
-      }
-    },
-    "fileCreateOrUpdateDebugProfile": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-createOrUpdateDebugProfile for more details.",
-      "required": ["uses", "with"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "An optional name of this action."
-        },
-        "env": {
-          "type": "object",
-          "description": "Define environment variables for this action.",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "uses": {
-          "type": "string",
-          "description": "Update launch url in launchSettings.json. Refer to https://aka.ms/teamsfx-actions/file-createOrUpdateDebugProfile for more details.",
-          "const": "file/createOrUpdateDebugProfile"
-        },
-        "with": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "parameters for this action",
-          "required": ["name", "appId"],
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "the debug profile name"
-            },
-            "appId": {
-              "type": "string",
-              "description": "the app id to be used in launch url"
-            },
-            "loginHint": {
-              "type": "boolean",
-              "description": "whether to add login hint"
-            },
-            "host": {
-              "type": "string",
-              "enum": ["teams"],
-              "description": "the host to be used in launch url"
             }
           }
         }

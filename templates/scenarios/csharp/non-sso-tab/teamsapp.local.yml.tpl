@@ -22,12 +22,6 @@ provision:
     writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
-  # Create or update the launchUrl in debug profile
-  - uses: file/createOrUpdateDebugProfile
-    with:
-      name: Microsoft Teams (browser)
-      appId: ${{TEAMS_APP_ID}}
-
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

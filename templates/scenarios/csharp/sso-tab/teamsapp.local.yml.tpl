@@ -59,12 +59,6 @@ provision:
             InitiateLoginEndpoint: ${{TAB_ENDPOINT}}/auth-start.html
             OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}
 
-  # Create or update the launchUrl in debug profile
-  - uses: file/createOrUpdateDebugProfile
-    with:
-      name: Microsoft Teams (browser)
-      appId: ${{TEAMS_APP_ID}}
-
   # Apply the AAD manifest to an existing AAD app. Will use the object id in
   # manifest file to determine which AAD app to update.
   - uses: aadApp/update

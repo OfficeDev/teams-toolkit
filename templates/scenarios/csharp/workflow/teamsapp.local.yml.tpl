@@ -33,12 +33,6 @@ provision:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
-  # Create or update the launchUrl in debug profile
-  - uses: file/createOrUpdateDebugProfile
-    with:
-      name: Microsoft Teams (browser)
-      appId: ${{TEAMS_APP_ID}}
-
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
     with:

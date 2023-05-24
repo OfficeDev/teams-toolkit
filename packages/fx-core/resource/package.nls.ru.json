@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Ошибка проверки ввода '%s': %s",
   "error.common.NoEnvFilesError": "Не удалось найти файлы .env.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Этот проект уже самый последний, обновлять его не нужно.",
   "error.collaboration.InvalidManifestError": "Не удалось обработать файл манифеста (\"%s\") из-за отсутствия ключа \"id\". Чтобы правильно идентифицировать приложение, убедитесь, что в файле манифеста присутствует ключ \"id\".",
   "error.collaboration.FailedToLoadManifest": "Не удалось загрузить файл манифеста. Причина: %s.",

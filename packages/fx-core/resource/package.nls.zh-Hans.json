@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "输入 \"%s\" 验证失败: %s",
   "error.common.NoEnvFilesError": "找不到 .env 文件。",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "此项目已是最新项目，无需升级。",
   "error.collaboration.InvalidManifestError": "由于缺少“id”键，无法处理清单文件 ('%s')。若要正确标识应用程序，请确保清单文件中存在 “id”键。",
   "error.collaboration.FailedToLoadManifest": "无法加载清单文件。原因: %s。",

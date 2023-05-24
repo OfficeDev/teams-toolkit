@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Weryfikacja danych wejściowych „%s” nie powiodła się: %s",
   "error.common.NoEnvFilesError": "Nie można odnaleźć plików env.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Ten projekt jest już najnowszy i nie trzeba go uaktualniać.",
   "error.collaboration.InvalidManifestError": "Nie można przetworzyć pliku manifestu („%s”) z powodu braku klucza „id”. Aby prawidłowo zidentyfikować aplikację, upewnij się, że w pliku manifestu znajduje się klucz „id”.",
   "error.collaboration.FailedToLoadManifest": "Nie można załadować pliku manifestu. Przyczyna: %s.",

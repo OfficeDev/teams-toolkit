@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Échec de la validation de l’entrée '%s': %s",
   "error.common.NoEnvFilesError": "Fichiers .env introuvables.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Ce projet est déjà le plus récent. Il n’est pas nécessaire d’effectuer une mise à niveau.",
   "error.collaboration.InvalidManifestError": "Impossible de traiter votre fichier manifeste ('%s') en raison de l’absence de la clé 'id'. Pour identifier correctement votre application, vérifiez que la clé ' id' est présente dans le fichier manifeste.",
   "error.collaboration.FailedToLoadManifest": "Impossible de charger le fichier manifeste. Raison : %s.",

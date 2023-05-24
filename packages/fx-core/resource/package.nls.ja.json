@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "入力 '%s' の検証に失敗しました: %s",
   "error.common.NoEnvFilesError": ".env ファイルが見つかりません。",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "このプロジェクトはすでに最新であり、アップグレードする必要はありません。",
   "error.collaboration.InvalidManifestError": "'id' キーがないため、マニフェスト ファイル ('%s') を処理できません。アプリケーションを正しく識別するには、マニフェスト ファイルに 'id' キーが存在することを確認します。",
   "error.collaboration.FailedToLoadManifest": "マニフェスト ファイルを読み込めません。理由: %s。",

@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Falha na '%s' de entrada: %s",
   "error.common.NoEnvFilesError": "Não é possível localizar arquivos .env.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Este projeto já é o mais recente, não é necessário atualizar.",
   "error.collaboration.InvalidManifestError": "Não foi possível processar seu arquivo de manifesto ('%s') devido à ausência da chave 'id'. Para identificar seu aplicativo corretamente, verifique se a chave 'id' está presente no arquivo de manifesto.",
   "error.collaboration.FailedToLoadManifest": "Não foi possível carregar o arquivo de manifesto. Razão: %s.",

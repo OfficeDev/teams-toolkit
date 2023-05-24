@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "'%s' girişi doğrulanamadı: %s",
   "error.common.NoEnvFilesError": ".env dosyaları bulunamıyor.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Bu proje zaten en son proje, yükseltmeye gerek yok.",
   "error.collaboration.InvalidManifestError": "'id' anahtarı eksik olduğundan bildirim dosyanız ('%s') işlenemiyor. Uygulamanızı doğru şekilde tanımlamak için lütfen bildirim dosyasında 'id' anahtarının mevcut olduğundan emin olun.",
   "error.collaboration.FailedToLoadManifest": "Bildirim dosyası yüklenemiyor. Neden: %s.",

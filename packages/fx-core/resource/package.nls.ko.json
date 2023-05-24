@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "입력 '%s' 유효성 검사 실패: %s",
   "error.common.NoEnvFilesError": ".env 파일을 찾을 수 없습니다.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "이 프로젝트는 이미 최신 프로젝트이므로 업그레이드할 필요가 없습니다.",
   "error.collaboration.InvalidManifestError": "'id' 키가 없어서 매니페스트 파일('%s')을 처리할 수 없습니다. 애플리케이션을 올바르게 식별하려면 매니페스트 파일에 'id' 키가 있는지 확인하세요.",
   "error.collaboration.FailedToLoadManifest": "매니페스트 파일을 로드할 수 없습니다. 이유: %s.",

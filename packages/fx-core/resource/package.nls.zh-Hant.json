@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "輸入 '%s' 驗證失敗: %s",
   "error.common.NoEnvFilesError": "找不到 .env 檔案。",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "此專案已是最新狀態，不需要升級。",
   "error.collaboration.InvalidManifestError": "由於缺少 'id' 金鑰，因此無法處理您的資訊清單檔 ('%s')。若要正確識別您的應用程式，請確定資訊清單檔中有 'id' 金鑰。",
   "error.collaboration.FailedToLoadManifest": "無法載入資訊清單檔。原因: %s。",

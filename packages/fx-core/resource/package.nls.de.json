@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Fehler bei der Überprüfung der Eingabe „%s“: %s",
   "error.common.NoEnvFilesError": "Es können keine ENV-Dateien gefunden werden.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Dieses Projekt ist bereits das neueste, es ist kein Upgrade erforderlich.",
   "error.collaboration.InvalidManifestError": "Die Manifestdatei („%s“) kann nicht verarbeitet werden, weil der Schlüssel „id“ nicht vorhanden ist. Um Ihre Anwendung ordnungsgemäß zu identifizieren, stellen Sie sicher, dass der Schlüssel „id“ in der Manifestdatei vorhanden ist.",
   "error.collaboration.FailedToLoadManifest": "Die Manifestdatei kann nicht geladen werden. Grund: %s.",

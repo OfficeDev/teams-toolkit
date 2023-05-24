@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Error de validación de entrada ''%s'': %s",
   "error.common.NoEnvFilesError": "No se pueden encontrar los archivos .env.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Este proyecto ya es el más reciente, no es necesario actualizarlo.",
   "error.collaboration.InvalidManifestError": "No se puede procesar el archivo de manifiesto ('%s') debido a la ausencia de la clave ''id''. Para identificar la aplicación correctamente, asegúrese de que la clave \"id\" está presente en el archivo de manifiesto.",
   "error.collaboration.FailedToLoadManifest": "No se puede cargar el archivo de manifiesto. Motivo: %s.",

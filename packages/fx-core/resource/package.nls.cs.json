@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Ověření vstupu %s se nezdařilo: %s",
   "error.common.NoEnvFilesError": "Nepovedlo se najít soubory .env.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Tento projekt je už nejnovější, není potřeba upgradovat.",
   "error.collaboration.InvalidManifestError": "Soubor manifestu (%s) nelze zpracovat kvůli chybějícímu klíči id. Pokud chcete aplikaci správně identifikovat, ujistěte se prosím, že se v souboru manifestu nachází klíč id.",
   "error.collaboration.FailedToLoadManifest": "Nelze načíst soubor manifestu. Důvod: %s.",

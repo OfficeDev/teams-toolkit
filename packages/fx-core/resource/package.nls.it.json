@@ -961,6 +961,8 @@
   "error.common.InputValidationError": "Convalida dell'input '%s' non riuscita: %s",
   "error.common.NoEnvFilesError": "Impossibile trovare i file con estensione env.",
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
+  "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
+  "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
   "error.upgrade.NoNeedUpgrade": "Questo progetto è già il più recente, non è necessario eseguire l'aggiornamento.",
   "error.collaboration.InvalidManifestError": "Impossibile elaborare il file manifesto ('%s') a causa dell'assenza della chiave 'id'. Per identificare correttamente l'applicazione, assicurarsi che la chiave 'id' sia presente nel file manifesto.",
   "error.collaboration.FailedToLoadManifest": "Non è stato possibile caricare il file manifesto. Motivo: %s.",

@@ -5,14 +5,16 @@
  * @author Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
-import path from "path";
-import { BotValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
-import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
-import { describe } from "mocha";
 import { it } from "@microsoft/extra-shot-mocha";
-import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource } from "../../commonlib/constants";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import { expect } from "chai";
+import { describe } from "mocha";
+import path from "path";
+import { FrontendValidator } from "../../commonlib";
+import { Cleaner } from "../../utils/cleaner";
+import { Capability } from "../../utils/constants";
+import { Executor } from "../../utils/executor";
+import { getTestFolder, getUniqueAppName } from "../commonUtils";
 
 describe("Azure App Scaffold", function () {
   let testFolder: string;
@@ -29,38 +31,18 @@ describe("Azure App Scaffold", function () {
   });
 
   afterEach(async () => {
-    await cleanUpLocalProject(projectPath);
+    await Cleaner.clean(testFolder);
   });
 
   it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 9863654 }, async function () {
-    const lang = "typescript";
-
-    await CliHelper.createProjectWithCapability(
-      appName,
-      testFolder,
-      Capability.Tab,
-      process.env,
-      `--programming-language ${lang}`
-    );
-    console.log(`[Successfully] scaffold typescript tab project to ${projectPath}`);
-
-    if (!isV3Enabled()) {
-      // V3 does not support add features
-      await CliHelper.addCapabilityToProject(projectPath, Capability.Notification);
-      console.log(`[Successfully] add capability ${Capability.Notification}`);
-
-      await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
-      console.log(`[Successfully] add resource ${Resource.AzureFunction}`);
-    }
-
     {
-      if (isV3Enabled()) {
-        await FrontendValidator.validateScaffoldV3(projectPath, lang);
-      } else {
-        await FrontendValidator.validateScaffold(projectPath, lang);
-        await BotValidator.validateScaffold(projectPath, lang, "src");
-        await FunctionValidator.validateScaffold(projectPath, lang);
-      }
+      const result = await Executor.createProject(
+        testFolder,
+        appName,
+        Capability.TabNonSso,
+        ProgrammingLanguage.TS
+      );
+      expect(result.success).to.be.true;
     }
   });
 });

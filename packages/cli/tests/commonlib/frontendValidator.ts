@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import {
@@ -105,9 +105,7 @@ export class FrontendValidator {
       javascript: "index.jsx",
     };
     const indexPath = path.resolve(projectPath, "src", indexFile[programmingLanguage]);
-    fs.access(indexPath, fs.constants.F_OK, (err) => {
-      chai.assert.isNull(err);
-    });
+    await fs.access(indexPath, fs.constants.F_OK);
   }
 
   public static async validateProvision(frontendObject: IFrontendObject): Promise<void> {

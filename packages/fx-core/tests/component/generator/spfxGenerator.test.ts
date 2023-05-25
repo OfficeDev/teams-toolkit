@@ -18,11 +18,11 @@ import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
 } from "../../../src/component/resource/spfx/utils/question-helper";
-import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
 import { Utils } from "../../../src/component/resource/spfx/utils/utils";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
+import { SPFXQuestionNames } from "../../../src/question/spfx";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");

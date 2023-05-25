@@ -19,12 +19,6 @@ import {
 import { PluginDisplayName } from "../../common/constants";
 import { TOOLS } from "../../core/globalVars";
 import {
-  CoreQuestionNames,
-  newResourceGroupNameQuestion,
-  QuestionNewResourceGroupLocation,
-  QuestionSelectResourceGroup,
-} from "../../core/question";
-import {
   CheckResourceGroupExistenceError,
   CreateResourceGroupError,
   GetResourceGroupError,
@@ -34,6 +28,12 @@ import {
   ResourceGroupConflictError,
 } from "../../error/azure";
 import { SolutionSource } from "../constants";
+import {
+  CoreQuestionNames,
+  newResourceGroupNameQuestion,
+  QuestionNewResourceGroupLocation,
+  QuestionSelectResourceGroup,
+} from "../../question/core";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";

@@ -37,7 +37,7 @@ import {
   ProjectNamePattern,
   ScratchOptionNo,
   ScratchOptionYes,
-} from "../../core/question";
+} from "../../question/core";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   InputValidationError,

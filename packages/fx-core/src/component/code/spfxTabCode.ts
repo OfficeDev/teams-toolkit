@@ -35,7 +35,6 @@ import {
   ScaffoldProgressMessage,
 } from "../resource/spfx/utils/constants";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import { Utils } from "../resource/spfx/utils/utils";
 import { cpUtils } from "../utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
@@ -43,6 +42,7 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { getComponent } from "../workflow";
 import { InstallSoftwareError } from "../../error/common";
+import { SPFXQuestionNames } from "../../question/spfx";
 /**
  * SPFx tab scaffold
  */

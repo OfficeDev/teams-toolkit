@@ -23,7 +23,6 @@ import {
 import path from "path";
 import fs from "fs-extra";
 import { environmentManager } from "../core/environment";
-import { CoreQuestionNames } from "../core/question";
 import {
   BOTS_TPL_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
@@ -49,6 +48,7 @@ import {
   needTabCode,
 } from "./resource/appManifest/utils/utils";
 import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
+import { CoreQuestionNames } from "../question/core";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";

@@ -52,13 +52,13 @@ import * as Settings from "./util/settings";
 import fs from "fs-extra";
 import { TOOLS } from "../../core/globalVars";
 import { getComponent } from "../workflow";
-import { CoreQuestionNames } from "../../core/question";
 import { QuestionKey } from "../code/api/enums";
 import { DefaultValues } from "../feature/api/constants";
 import { CommentObject } from "comment-json";
 import * as commentJson from "comment-json";
 import * as os from "os";
 import { TaskCommand } from "../../common/local/constants";
+import { CoreQuestionNames } from "../../question/core";
 
 export interface LocalEnvConfig {
   vscodeEnv?: VsCodeEnv;

@@ -37,13 +37,12 @@ import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import { ComponentNames, validateSchemaOption } from "../component/constants";
+import { ComponentNames } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForValidateMethod } from "../component/question";
 import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
@@ -57,8 +56,12 @@ import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import {
+  CoreQuestionNames,
+  getQuestionsForValidateMethod,
+  validateSchemaOption,
+} from "../question/core";
 
 export class FxCore implements v3.ICore {
   tools: Tools;

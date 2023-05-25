@@ -17,7 +17,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { DepsChecker, DepsType } from "../../../common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../common/deps-checker/checkerFactory";
-import { CoreQuestionNames } from "../../../core/question";
 import { FunctionScaffold } from "./scaffold";
 import { funcDepsHelper } from "./depsChecker/funcHelper";
 import { ComponentNames, PathConstants, ProgrammingLanguage } from "../../constants";
@@ -34,6 +33,7 @@ import { funcDepsTelemetry } from "./depsChecker/funcPluginTelemetry";
 import { QuestionKey } from "./enums";
 import { FuncPluginLogger } from "./depsChecker/funcPluginLogger";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { CoreQuestionNames } from "../../../question/core";
 /**
  * api scaffold
  */

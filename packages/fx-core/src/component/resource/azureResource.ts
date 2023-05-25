@@ -15,9 +15,9 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { compileHandlebarsTemplateString } from "../../common/tools";
-import { CoreQuestionNames } from "../../core/question";
 import { getTemplatesFolder } from "../../folder";
 import { languageToRuntime } from "../constants";
+import { CoreQuestionNames } from "../../question/core";
 
 export abstract class AzureResource implements CloudResource {
   abstract readonly name: string;

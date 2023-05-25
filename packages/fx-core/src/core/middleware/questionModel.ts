@@ -25,13 +25,8 @@ import {
 } from "../../component/constants";
 import { getTemplateId, isFromDevPortal } from "../../component/developerPortalScaffoldUtils";
 import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
-import {
-  getNotificationTriggerQuestionNode,
-  getSPFxScaffoldQuestion,
-} from "../../component/question";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
 import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
-import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
   BotIdsQuestion,
@@ -55,15 +50,16 @@ import {
   getBotProjectQuestionNode,
   getCreateNewOrFromSampleQuestion,
   getMessageExtensionTypeProjectQuestionNode,
+  getNotificationTriggerQuestionNode,
   getOutlookAddinTypeProjectQuestionNode,
   getQuestionForDeployAadManifest,
   getRuntimeQuestion,
+  getSPFxScaffoldQuestion,
   getTabTypeProjectQuestionNode,
   tabsContentUrlQuestion,
   tabsWebsitetUrlQuestion,
-} from "../question";
+} from "../../question/core";
 import { CoreHookContext } from "../types";
-import { getQuestionForDeployAadManifest } from "../../question/core";
 import {
   getQuestionsForGrantPermission,
   getQuestionsForListCollaborator,

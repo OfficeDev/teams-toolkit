@@ -5,8 +5,11 @@ import { FxError, Inputs, QTreeNode, Result, err, ok, traverse } from "@microsof
 import { environmentManager } from "../environment";
 import { NoProjectOpenedError } from "../error";
 import { TOOLS } from "../globalVars";
-import { QuestionSelectSourceEnvironment, getQuestionNewTargetEnvironmentName } from "../question";
 import { CoreHookContext } from "../types";
+import {
+  QuestionSelectSourceEnvironment,
+  getQuestionNewTargetEnvironmentName,
+} from "../../question/core";
 
 const lastUsedMark = " (last used)";
 export let lastUsedEnv: string | undefined;

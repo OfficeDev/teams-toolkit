@@ -33,8 +33,8 @@ import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
-import { CoreQuestionNames } from "../../../core/question";
 import { convertProject } from "office-addin-project";
+import { CoreQuestionNames } from "../../../question/core";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";

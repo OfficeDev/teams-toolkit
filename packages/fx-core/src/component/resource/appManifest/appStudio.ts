@@ -51,10 +51,10 @@ import { envUtil } from "../../utils/envUtil";
 import { AppPackage } from "./interfaces/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
-import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
 import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
 import { FileNotFoundError } from "../../../error/common";
+import { CoreQuestionNames } from "../../../question/core";
 
 /**
  * Create Teams app if not exists

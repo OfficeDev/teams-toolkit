@@ -26,7 +26,6 @@ import {
   scaffoldFromTemplates,
 } from "../../../common/template-utils/templatesActions";
 import { convertToAlphanumericOnly } from "../../../common/utils";
-import { CoreQuestionNames } from "../../../core/question";
 import { FrontendDeployment } from "./deploy";
 import {
   ComponentNames,
@@ -52,6 +51,7 @@ import ssoBlazorAppSettings from "../appSettings/ssoBlazorAppSettings.json";
 import { Commands, NpmScripts, TemplateGroup, TemplatePlaceHolders } from "../constants";
 import { TelemetryEvent } from "../../../common/telemetry";
 import { DefaultValues, errorSource } from "./constants";
+import { CoreQuestionNames } from "../../../question/core";
 /**
  * tab scaffold
  */

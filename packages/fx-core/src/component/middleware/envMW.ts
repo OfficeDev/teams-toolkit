@@ -7,8 +7,8 @@ import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
-import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
+import { SelectEnvQuestion } from "../../question/core";
 
 /**
  *

@@ -21,7 +21,7 @@ import { createContextV3 } from "../../utils";
 import { Constants } from "./utility/constants";
 import { NoConfigurationError } from "./error/noConfigurationError";
 import { SPFxQuestionNames } from "../../constants";
-import { SPFXQuestionNames } from "../../resource/spfx/utils/questions";
+import { SPFXQuestionNames } from "../../../question/spfx";
 
 @Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {

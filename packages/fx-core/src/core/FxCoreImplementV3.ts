@@ -58,13 +58,15 @@ import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateA
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
+  CoreQuestionNames,
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
   getQuestionsForPreviewWithManifest,
   getQuestionsForUpdateTeamsApp,
   getQuestionsForValidateAppPackage,
   getQuestionsForValidateManifest,
-} from "../component/question";
+  validateAadManifestContainsPlaceholder,
+} from "../question/core";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import {
   containsUnsupportedFeature,
@@ -91,7 +93,6 @@ import {
   getTrackingIdFromPath,
   getVersionState,
 } from "./middleware/utils/v3MigrationUtils";
-import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 

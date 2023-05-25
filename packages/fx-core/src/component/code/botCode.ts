@@ -26,7 +26,6 @@ import {
 } from "../../common/template-utils/templatesActions";
 import { convertToLangKey, execute } from "./utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { CoreQuestionNames } from "../../core/question";
 import { Commands, DEFAULT_DOTNET_FRAMEWORK } from "./constants";
 import { ComponentNames, PathConstants, ProgrammingLanguage } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
@@ -39,6 +38,7 @@ import { AppSettingConstants, replaceBotAppSettings } from "./appSettingUtils";
 import baseAppSettings from "./appSettings/baseAppSettings.json";
 import botAppSettings from "./appSettings/botAppSettings.json";
 import ssoBotAppSettings from "./appSettings/ssoBotAppSettings.json";
+import { CoreQuestionNames } from "../../question/core";
 
 const errorSource = "BT";
 @Service("bot-code")

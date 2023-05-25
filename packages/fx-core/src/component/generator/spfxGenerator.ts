@@ -16,7 +16,6 @@ import * as path from "path";
 import fs from "fs-extra";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import {
   LatestPackageInstallError,
   ScaffoldError,
@@ -30,13 +29,14 @@ import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker"
 import { cpUtils } from "../../common/deps-checker";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
-import { CoreQuestionNames } from "../../core/question";
 import { getLocalizedString } from "../../common/localizeUtils";
 import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
 } from "../resource/spfx/utils/question-helper";
 import { SPFxQuestionNames } from "../constants";
+import { SPFXQuestionNames } from "../../question/spfx";
+import { CoreQuestionNames } from "../../question/core";
 
 export class SPFxGenerator {
   @hooks([

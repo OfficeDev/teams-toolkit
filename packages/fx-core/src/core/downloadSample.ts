@@ -7,7 +7,6 @@ import {
   FxError,
   Inputs,
   ok,
-  Platform,
   ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
@@ -29,8 +28,8 @@ import {
 } from "../common/telemetry";
 import { FetchSampleError, InvalidInputError, ProjectFolderInvalidError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
-import { CoreQuestionNames } from "./question";
 import { CoreHookContext } from "./types";
+import { CoreQuestionNames } from "../question/core";
 
 export async function fetchCodeZip(
   url: string,

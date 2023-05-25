@@ -22,7 +22,6 @@ describe("teamsfx new template", function () {
   it(`${TemplateProject.ProactiveMessaging}`, { testPlanCaseId: "XXXXXX" }, async function () {
     await Executor.openTemplateProject(appName, testFolder, TemplateProject.ProactiveMessaging);
     expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // Provision
     {

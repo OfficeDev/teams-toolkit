@@ -1,8 +1,11 @@
-import * as queryString from "query-string";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
-
-import { codeSpacesAuthComplete } from "./commonlib/common/constant";
+import * as queryString from "query-string";
 import { localize } from "./utils/localizeUtils";
+import * as util from "util";
+import { SwitchToPreReleaseVersionLink } from "./constants";
+import { EventEmitter, Uri } from "vscode";
+import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 
 enum Referrer {
   DeveloperPortal = "developerportal",
@@ -14,7 +17,7 @@ interface QueryParams {
 }
 
 let isRunning = false;
-export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscode.UriHandler {
+export class UriHandler extends EventEmitter<Uri> implements vscode.UriHandler {
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
     if (uri.path === "/" + codeSpacesAuthComplete) {
       this.fire(uri);
@@ -38,6 +41,16 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
     }
 
     if (queryParamas.referrer === Referrer.DeveloperPortal) {
+      if (!isV3Enabled()) {
+        vscode.window.showErrorMessage(
+          util.format(
+            localize("teamstoolkit.devPortalIntegration.installPreReleaseWarning"),
+            SwitchToPreReleaseVersionLink
+          )
+        );
+        return;
+      }
+
       if (!queryParamas.appId) {
         vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
         return;

@@ -219,10 +219,6 @@ export enum TelemetryEvent {
   OpenFolder = "open-folder",
   ClickGetHelp = "click-get-help",
 
-  // To track the effect of UX changes
-  // that prevents user performing concurrent operations.
-  TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
-
   // To track the event of opening in new window after creating a new project
   OpenNewProject = "open-new-project",
 
@@ -321,9 +317,6 @@ export enum TelemetryProperty {
   TeamsFxVersion = "version-teamsfx",
   TeamsJSVersion = "version-teams-js",
   BotbuilderVersion = "version-botbuilder",
-  // Used with TreeViewCommandConcurrentExecution
-  RunningCommand = "running-command",
-  BlockedCommand = "blocked-command",
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",

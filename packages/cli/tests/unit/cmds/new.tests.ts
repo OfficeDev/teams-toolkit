@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, UserError } from "@microsoft/teamsfx-api";
+import { err, ok, UserCancelError, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import "mocha";
@@ -12,9 +12,10 @@ import New from "../../../src/cmds/new";
 import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 import * as constants from "../../../src/constants";
 import { RootFolderNode } from "../../../src/constants";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
+import * as questionUtils from "../../../src/questionUtils";
+import * as utils from "../../../src/utils";
 
 describe("New Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -24,15 +25,14 @@ describe("New Command Tests", function () {
   let logs: string[] = [];
 
   beforeEach(() => {
-    sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
-      return {};
-    });
     mockYargs(sandbox, options, positionals);
     mockTelemetry(sandbox, telemetryEvents);
     mockLogProvider(sandbox, logs);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").resolves();
     sandbox.stub(FxCore.prototype, "createProject").resolves(ok(""));
+    sandbox.stub(questionUtils, "filterQTreeNode").resolves(RootFolderNode);
+    sandbox.stub(utils, "flattenNodes").returns([RootFolderNode]);
     sandbox.stub(fs, "pathExistsSync").callsFake((filePath: string) => !filePath.includes("fake"));
   });
 
@@ -44,11 +44,18 @@ describe("New Command Tests", function () {
     logs = [];
   });
 
-  it("Builder Check", () => {
+  it("Builder Check", async () => {
+    sandbox.stub(FxCore.prototype, "getQuestions").resolves(ok(undefined));
     const cmd = new New();
-    cmd.builder(yargs);
+    await cmd.builder(yargs);
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
     expect(positionals).deep.equals(["template-name"], JSON.stringify(positionals));
+  });
+
+  it("Builder Check - error", async () => {
+    sandbox.stub(FxCore.prototype, "getQuestions").resolves(err(UserCancelError));
+    const cmd = new New();
+    await expect(cmd.builder(yargs)).to.be.rejectedWith(UserCancelError);
   });
 
   it("New Command Running Check", async () => {

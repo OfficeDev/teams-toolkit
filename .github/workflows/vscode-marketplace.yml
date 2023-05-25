@@ -35,13 +35,26 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: cd.yml
           path: .
+      
+      - name: Get prerelease tag name
+        if: ${{ github.event.inputs.isPreview != 'no' }}
+        id: prerelease-tag
+        run: |
+          tagName=$(jq -r '.[]|select(.name=="ms-teams-vscode-extension")| .name+"-"+.version' versions.json)
+          echo "===================== TagName=$tagName"
+          echo "tagName=$tagName" >> $GITHUB_OUTPUT
 
       - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}
         env:
           PAT: ${{ secrets.VSCE_PAT }}
         run: vsce publish --pre-release --pat $PAT --packagePath *.vsix
-
+      
+      - if: ${{ github.event.inputs.isPreview != 'no' }}
+        uses: thejeff77/action-push-tag@v1.0.0
+        with:
+          tag: ${{ steps.prerelease-tag.outputs.tagName }}
+          
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
         run: vsce publish --pat $PAT --packagePath *.vsix

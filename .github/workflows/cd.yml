@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       preid:
-        description: "preid name(alpha, prerelease, rc, stable)"
+        description: "preid name(alpha, beta, rc, stable)"
         required: true
         default: "rc"
       skip-version-rc:
@@ -25,9 +25,9 @@ jobs:
       CI: true
     steps:
       - name: Validate CD branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/prerelease' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' }}
         run: |
-          echo It's not allowed to run CD on other branch except main, dev and prerelease.
+          echo It's not allowed to run CD on other branch except main and dev.
           exit 1
 
       - name: Validate inputs for main or hotfix
@@ -90,7 +90,7 @@ jobs:
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
 
       - name: release beta packages to npmjs.org
-        if: ${{ (github.ref == 'refs/heads/prerelease' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'prerelease' }}
+        if: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
         run: |
           npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
 
@@ -247,9 +247,9 @@ jobs:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish beta release to npm org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'prerelease' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
         run: |
-          npx lerna publish from-package --dist-tag=beta --yes --allow-branch prerelease
+          npx lerna publish from-package --dist-tag=beta --yes
         env:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
@@ -280,7 +280,7 @@ jobs:
             npm run package
 
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid != 'prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid != 'beta' }}
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
@@ -315,7 +315,7 @@ jobs:
           echo $TTK_VERSION
 
       - name: set vsc version for prerelease
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'beta' }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/vscode-extension/package.json
@@ -323,7 +323,7 @@ jobs:
           value: ${{ steps.preview-version.outputs.version }}
 
       - name: pack vsix for preview
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'beta' }}
         env:
           RELEASE: preview
           NODE_OPTIONS: "--max_old_space_size=4096"

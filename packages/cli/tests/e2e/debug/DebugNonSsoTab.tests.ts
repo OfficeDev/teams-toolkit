@@ -38,9 +38,6 @@ describe("Debug V3 tab-non-sso template", () => {
     if (context?.TEAMS_APP_ID) {
       await deleteTeamsApp(context.TEAMS_APP_ID);
     }
-    if (context?.AAD_APP_OBJECT_ID) {
-      await deleteAadAppByObjectId(context.AAD_APP_OBJECT_ID);
-    }
     await cleanUpLocalProject(projectPath);
   });
 

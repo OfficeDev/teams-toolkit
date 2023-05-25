@@ -13,8 +13,6 @@ import * as path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
-import m365Provider from "../../../src/commonlib/m365LoginUserPassword";
-import { AadValidator } from "../../commonlib/aadValidate";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import {
@@ -25,7 +23,7 @@ import {
 } from "../commonUtils";
 import { deleteAadAppByObjectId, deleteTeamsApp, getTeamsApp } from "./utility";
 
-describe("Debug V3 sso-tab template", () => {
+describe("Debug V3 tab-non-sso template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -52,7 +50,7 @@ describe("Debug V3 sso-tab template", () => {
     }
 
     // create
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso);
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
@@ -63,10 +61,7 @@ describe("Debug V3 sso-tab template", () => {
     chai.assert.isDefined(context);
 
     // validate aad
-    chai.assert.isDefined(context.AAD_APP_OBJECT_ID);
-    chai.assert.isNotEmpty(context.AAD_APP_OBJECT_ID);
-    const aad = AadValidator.init(context, false, m365Provider);
-    await AadValidator.validate(aad);
+    chai.assert.isUndefined(context.AAD_APP_OBJECT_ID);
 
     // validate teams app
     chai.assert.isDefined(context.TEAMS_APP_ID);

@@ -43,12 +43,8 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import {
-  getQuestionsForDeployV3,
-  getQuestionsForProvisionV3,
-  getQuestionsForValidateMethod,
-} from "../component/question";
-import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
+import { getQuestionsForValidateMethod } from "../component/question";
+import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
@@ -250,15 +246,8 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    const context = createContextV3();
-    if (stage === Stage.publish) {
-      return await publishQuestion(inputs);
-    } else if (stage === Stage.create) {
+    if (stage === Stage.create) {
       return await getQuestionsForCreateProjectV2(inputs);
-    } else if (stage === Stage.deploy) {
-      return await getQuestionsForDeployV3(context, inputs);
-    } else if (stage === Stage.provision) {
-      return await getQuestionsForProvisionV3(inputs);
     }
     return ok(undefined);
   }

@@ -6,7 +6,6 @@ import * as vscode from "vscode";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as versionUtil from "./versionUtil";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { PrereleaseState } from "../constants";
 import * as folder from "../folder";
 
@@ -19,10 +18,9 @@ export class PrereleasePage {
     const teamsToolkitVersion = this.getTeamsToolkitVersion();
     const prereleaseVersion = this.context.globalState.get<string>(PrereleaseState.Version);
     if (
-      isV3Enabled() &&
-      (prereleaseVersion === undefined ||
-        (versionUtil.isPrereleaseVersion(teamsToolkitVersion) &&
-          teamsToolkitVersion != prereleaseVersion))
+      prereleaseVersion === undefined ||
+      (versionUtil.isPrereleaseVersion(teamsToolkitVersion) &&
+        teamsToolkitVersion != prereleaseVersion)
     ) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
       this.context.globalState.update(PrereleaseState.Version, teamsToolkitVersion);

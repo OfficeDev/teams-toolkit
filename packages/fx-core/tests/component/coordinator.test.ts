@@ -76,7 +76,7 @@ import {
   ScratchOptionNo,
   ScratchOptionYes,
   ScratchOptionYesVSC,
-} from "../../src/core/question";
+} from "../../src/question/core";
 import {
   InvalidAzureCredentialError,
   ResourceGroupConflictError,

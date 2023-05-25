@@ -16,7 +16,6 @@ import { AppDefinition } from "../../src/component/resource/appManifest/interfac
 import { ObjectIsUndefinedError } from "../../src/core/error";
 import fs from "fs-extra";
 import path from "path";
-import { CoreQuestionNames } from "../../src/core/question";
 import {
   BOTS_TPL_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
@@ -39,6 +38,7 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
 } from "../../src/component/constants";
+import { CoreQuestionNames } from "../../src/question/core";
 
 describe("developPortalScaffoldUtils", () => {
   describe("updateFilesForTdp", () => {

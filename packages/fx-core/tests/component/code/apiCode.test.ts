@@ -14,7 +14,7 @@ import * as templateUtils from "../../../src/common/template-utils/templatesUtil
 import { TemplateZipFallbackError, UnzipError } from "../../../src/component/code/error";
 import { setTools } from "../../../src/core/globalVars";
 import { ApiCodeProvider } from "../../../src/component/code/api/apiCode";
-import { CoreQuestionNames } from "../../../src/core/question";
+import { CoreQuestionNames } from "../../../src/question/core";
 
 describe("Api code generate", () => {
   const tools = new MockTools();

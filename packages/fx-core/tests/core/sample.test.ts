@@ -13,7 +13,7 @@ import sinon from "sinon";
 import * as downloadSample from "../../src/core/downloadSample";
 import { setTools } from "../../src/core/globalVars";
 import * as projectSettingsLoader from "../../src/core/middleware/projectSettingsLoader";
-import { CoreQuestionNames, ScratchOptionNoVSC } from "../../src/core/question";
+import { CoreQuestionNames, ScratchOptionNoVSC } from "../../src/question/core";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 describe("Core basic APIs - create from sample", () => {
   const sandbox = sinon.createSandbox();

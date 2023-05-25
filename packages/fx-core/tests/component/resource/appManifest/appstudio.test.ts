@@ -25,13 +25,13 @@ import AdmZip from "adm-zip";
 import { RetryHandler } from "../../../../src/component/resource/appManifest/utils/utils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { RestoreFn } from "mocked-env";
-import { CoreQuestionNames } from "../../../../src/core/question";
 import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { setTools } from "../../../../src/core/globalVars";
+import { CoreQuestionNames } from "../../../../src/question/core";
 
 describe("appStudio", () => {
   const tools = new MockTools();

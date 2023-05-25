@@ -12,15 +12,15 @@ import {
   CoreQuestionNames,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
-} from "../../src/core/question";
+} from "../../src/question/core";
 import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { SPFXQuestionNames } from "../../src/component/resource/spfx/utils/questions";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
+import { SPFXQuestionNames } from "../../src/question/spfx";
 
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();

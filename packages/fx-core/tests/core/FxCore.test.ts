@@ -34,7 +34,7 @@ import {
   CoreQuestionNames,
   ProgrammingLanguageQuestion,
   ScratchOptionYesVSC,
-} from "../../src/core/question";
+} from "../../src/question/core";
 import {
   BotOptionItem,
   MessageExtensionItem,

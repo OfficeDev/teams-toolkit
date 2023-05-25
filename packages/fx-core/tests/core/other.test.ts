@@ -35,7 +35,7 @@ import {
   ReadFileError,
   WriteFileError,
 } from "../../src/core/error";
-import { createAppNameQuestion } from "../../src/core/question";
+import { createAppNameQuestion } from "../../src/question/core";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
 import { MyTokenCredential } from "../plugins/solution/util";

@@ -35,21 +35,23 @@ import {
   CollaborationConstants,
   CollaborationUtil,
   checkPermission,
-  getQuestionsForGrantPermission,
-  getQuestionsForListCollaborator,
   grantPermission,
   listCollaborator,
-  validateEnvQuestion,
 } from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
-import { CoreQuestionNames } from "../../src/core/question";
+import { CoreQuestionNames } from "../../src/question/core";
 import {
   MockedAzureAccountProvider,
   MockedM365Provider,
   MockedV2Context,
 } from "../plugins/solution/util";
 import { MockTools, randomAppName } from "./utils";
+import {
+  getQuestionsForGrantPermission,
+  getQuestionsForListCollaborator,
+  validateEnvQuestion,
+} from "../../src/question/collaborator";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();

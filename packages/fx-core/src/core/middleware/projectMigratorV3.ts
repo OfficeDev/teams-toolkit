@@ -20,7 +20,6 @@ import {
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
-import { upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
@@ -153,6 +152,7 @@ export const errorNames = {
   manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
+export const upgradeButton = getLocalizedString("core.option.upgrade");
 export const moreInfoButton = getLocalizedString("core.option.moreInfo");
 const migrationMessageButtons = [upgradeButton, moreInfoButton];
 

@@ -10,8 +10,7 @@ import semver from "semver";
 import { isV3Enabled } from "../../common/tools";
 import { getProjectVersion } from "./utils/v3MigrationUtils";
 import { MetadataV2, VersionInfo, VersionSource } from "../../common/versionMetadata";
-import { learnMoreText } from "./projectMigrator";
-import { learnMoreLink } from "./projectMigratorV3";
+import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
 import {
   sendTelemetryEvent,
   Component,
@@ -59,8 +58,8 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   if (inputs.platform === Platform.VSCode) {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
-      if (res.isOk() && res.value === learnMoreText) {
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
+      if (res.isOk() && res.value === moreInfoButton) {
         TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
       }
     });
@@ -72,8 +71,8 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
-      if (res.isOk() && res.value === learnMoreText) {
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
+      if (res.isOk() && res.value === moreInfoButton) {
         TOOLS.ui.openUrl(learnMoreLink);
       }
     });

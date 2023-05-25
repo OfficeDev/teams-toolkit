@@ -163,7 +163,7 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import commandController from "./commandController";
 import { ExtensionSurvey } from "./utils/survey";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/question/core";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
 export let core: FxCore;

@@ -23,7 +23,7 @@ import {
 } from "../constants";
 import CLIUIInstance from "../userInteraction";
 import { EnvNotSpecified } from "../error";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/question/core";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;

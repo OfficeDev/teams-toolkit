@@ -23,7 +23,7 @@ import {
   isV3Enabled,
 } from "@microsoft/teamsfx-core";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/question/core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";

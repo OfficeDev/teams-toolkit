@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, FxError, ok, Result, Stage } from "@microsoft/teamsfx-api";
-import { getQuestionsForAddWebpart } from "@microsoft/teamsfx-core/build/component/question";
+import { getQuestionsForAddWebpart } from "@microsoft/teamsfx-core/build/question/core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";

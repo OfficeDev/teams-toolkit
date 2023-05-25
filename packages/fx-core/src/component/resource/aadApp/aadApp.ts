@@ -17,7 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { AadAppOutputs, ComponentNames } from "../../constants";
+import { AadAppOutputs, ComponentNames, Language } from "../../constants";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
@@ -33,7 +33,8 @@ import { DialogUtils } from "./utils/dialog";
 import { UnhandledError } from "./errors";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { Language } from "../../constants";
+import { hooks } from "@feathersjs/hooks/lib";
+import { addStartAndEndTelemetry } from "../../driver/middleware/addStartAndEndTelemetry";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -162,6 +163,7 @@ export class AadApp implements CloudResource {
     return res;
   }
 
+  @hooks([addStartAndEndTelemetry("build-aad-manifest", "fx-resource-aad-app-for-teams")])
   async buildAadManifest(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath

@@ -27,6 +27,7 @@ import {
   SPFxVersionOptionIds,
 } from "../../../../../src/component/resource/spfx/utils/question-helper";
 import mockedEnv, { RestoreFn } from "mocked-env";
+
 describe("utils", () => {
   afterEach(async () => {
     sinon.restore();
@@ -101,7 +102,7 @@ describe("utils", () => {
           return false;
         }
       });
-
+      previousInputs["spfx-folder"] = path.join(previousInputs?.projectPath!, "SPFx");
       const res = await (
         (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
@@ -139,7 +140,7 @@ describe("utils", () => {
           return true;
         }
       });
-
+      previousInputs["spfx-folder"] = path.join(previousInputs?.projectPath!, "SPFx");
       const res = await (
         (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);

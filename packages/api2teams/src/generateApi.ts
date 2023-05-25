@@ -1,16 +1,78 @@
+import fs from 'fs-extra';
+import path from 'path';
+import { CodeResult, ResponseObjectResult } from './interfaces';
 import { OpenAPIV3 } from 'openapi-types';
-import { ResponseObjectResult } from './interfaces';
-import { getResponseJsonResult, getSafeCardName } from './utils';
+import {
+  getResponseJsonResult,
+  getSafeCardName,
+  capitalizeFirstLetter
+} from './utils';
 
-export async function generateResponseObject(
+export async function generateApi(
+  apis: OpenAPIV3.Document
+): Promise<CodeResult[]> {
+  const sampleResponse: ResponseObjectResult[] = await generateResponseObject(
+    apis
+  );
+  const result: CodeResult[] = [];
+  const apiFunctionsByTag: Record<string, string[]> = {};
+  const emptyFunctionsByTag: Record<string, string[]> = {};
+  for (const sampleJsonResult of sampleResponse) {
+    const jsonString = JSON.stringify(sampleJsonResult.content, null, 2);
+    const tag = sampleJsonResult.tag;
+    const apiFuncTemplate = await fs.readFile(
+      path.join(__dirname, './resources/apiFuncTemplate.txt'),
+      'utf-8'
+    );
+    const mockApiFunction = apiFuncTemplate
+      .replace('{{functionName}}', sampleJsonResult.name)
+      .replace('{{returnJsonObject}}', `return ${jsonString};`);
+    const emptyApiFunction = apiFuncTemplate
+      .replace('{{functionName}}', sampleJsonResult.name)
+      .replace('{{returnJsonObject}}', '');
+    if (!apiFunctionsByTag[tag]) {
+      apiFunctionsByTag[tag] = [];
+    }
+    apiFunctionsByTag[tag].push(mockApiFunction);
+
+    if (!emptyFunctionsByTag[tag]) {
+      emptyFunctionsByTag[tag] = [];
+    }
+    emptyFunctionsByTag[tag].push(emptyApiFunction);
+  }
+
+  let realApiProviderCode =
+    '// Update this code to call real backend service\n';
+  let mockApiProviderCode = '';
+  for (const tag in apiFunctionsByTag) {
+    const apiClassTemplate = await fs.readFile(
+      path.join(__dirname, './resources/apiClassTemplate.txt'),
+      'utf-8'
+    );
+    const mockApiClass = apiClassTemplate
+      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
+      .replace('{{apiList}}', apiFunctionsByTag[tag].join('\n'));
+
+    const realApiClass = apiClassTemplate
+      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
+      .replace('{{apiList}}', emptyFunctionsByTag[tag].join('\n'));
+    mockApiProviderCode += mockApiClass + '\n';
+    realApiProviderCode += realApiClass + '\n';
+  }
+
+  result.push({ code: mockApiProviderCode, name: 'mockApiProvider' });
+  result.push({ code: realApiProviderCode, name: 'realApiProvider' });
+
+  return result;
+}
+
+async function generateResponseObject(
   apis: OpenAPIV3.Document
 ): Promise<ResponseObjectResult[]> {
-  console.log('Generate sample response');
   const result: ResponseObjectResult[] = [];
   for (const url in apis.paths) {
     for (const operation in apis.paths[url]) {
       if (operation === 'get') {
-        console.log(`API: ${operation} ${url}`);
         try {
           const sampleResponseJson = parseResponse(
             apis.paths[url]![operation]!,
@@ -18,9 +80,6 @@ export async function generateResponseObject(
             operation
           );
           result.push(sampleResponseJson);
-          console.log(
-            `\tsuccessfully generated sample response for this api\n`
-          );
         } catch (error) {
           console.error(
             `\tfailed to generate sample response for ${operation} ${url} due to error: ${(

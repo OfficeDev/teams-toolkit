@@ -1,21 +1,20 @@
 import fs from 'fs-extra';
-import { CliOptions, CodeResult, ResponseObjectResult } from './interfaces';
+import path from 'path';
+import SwaggerParser from '@apidevtools/swagger-parser';
+import { OpenAPIV3 } from 'openapi-types';
+import { CliOptions, CodeResult, AdaptiveCardResult } from './interfaces';
 import {
   isFolderEmpty,
-  getResponseJsonResult,
   componentRefToName,
   formatCode,
-  capitalizeFirstLetter
+  getSchemaRef
 } from './utils';
-import SwaggerParser from '@apidevtools/swagger-parser';
 import { generateRequestCard } from './generateRequestCard';
-import { OpenAPIV3 } from 'openapi-types';
-import { AdaptiveCardResult } from './interfaces';
-import path from 'path';
 import { generateResponseCard } from './generateResponseCard';
-import { generateResponseObject } from './generateResponseObject';
 import { generateActionHandler } from './generateActionHandler';
 import { generateCommandHandler } from './generateCommandHandler';
+import { generateIndexFile } from './generateIndexFile';
+import { generateApi } from './generateApi';
 
 export async function parseApi(yaml: string, options: CliOptions) {
   if (!(await isArgsValid(yaml, options))) {
@@ -26,13 +25,13 @@ export async function parseApi(yaml: string, options: CliOptions) {
   console.log(`output folder is: ${options.output}`);
 
   try {
-    if (fs.existsSync(options.output)) {
+    if (await fs.pathExists(options.output)) {
       console.log(
         'output folder already existed, and will override this folder'
       );
     } else {
       const output = options.output;
-      fs.mkdirSync(output, { recursive: true });
+      await fs.mkdir(output, { recursive: true });
     }
   } catch (e) {
     console.error(
@@ -50,30 +49,10 @@ export async function parseApi(yaml: string, options: CliOptions) {
     apis.info.version
   );
 
-  const apiResponseToSchemaRef = new Map<string, string>();
-  for (const url in apis.paths) {
-    for (const operation in apis.paths[url]) {
-      if (operation === 'get') {
-        const schema = getResponseJsonResult(unResolvedApi.paths[url]!.get!)
-          .schema as any;
-        if (schema) {
-          if (schema.type === 'array') {
-            apiResponseToSchemaRef.set(url, schema.items.$ref);
-          } else if (schema.$ref) {
-            apiResponseToSchemaRef.set(url, schema.$ref);
-          }
-        }
-      }
-    }
-  }
-
   console.log('start analyze swagger files\n');
 
   const requestCards: AdaptiveCardResult[] = await generateRequestCard(apis);
   const responseCards: AdaptiveCardResult[] = await generateResponseCard(apis);
-  const sampleResponse: ResponseObjectResult[] = await generateResponseObject(
-    apis
-  );
 
   for (const card of requestCards) {
     const cardPath = path.join(
@@ -84,9 +63,10 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputJSON(cardPath, card.content, { spaces: 2 });
   }
 
+  const schemaRefMap = getSchemaRef(unResolvedApi);
   for (const card of responseCards) {
-    if (apiResponseToSchemaRef.has(card.url)) {
-      const ref = apiResponseToSchemaRef.get(card.url);
+    if (schemaRefMap.has(card.url)) {
+      const ref = schemaRefMap.get(card.url);
       card.name =
         componentRefToName(ref!) + (card.isArray ? 'List' : '') + 'Card';
     }
@@ -132,60 +112,19 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputFile(cardActionHandlerPath, commandHandler.code);
   }
 
-  const apiFunctionsByTag: Record<string, string[]> = {};
-  const emptyFunctionsByTag: Record<string, string[]> = {};
-  for (const sampleJsonResult of sampleResponse) {
-    const jsonString = JSON.stringify(sampleJsonResult.content, null, 2);
-    const tag = sampleJsonResult.tag;
-    const apiFuncTemplate = fs.readFileSync(
-      path.join(__dirname, './resources/apiFuncTemplate.txt'),
+  const apiProviders = await generateApi(apis);
+  for (const apiProviderResult of apiProviders) {
+    await fs.outputFile(
+      path.join(options.output, 'src/apis', apiProviderResult.name + '.ts'),
+      formatCode(apiProviderResult.code),
       'utf-8'
     );
-    const mockApiFunction = apiFuncTemplate
-      .replace('{{functionName}}', sampleJsonResult.name)
-      .replace('{{returnJsonObject}}', `return ${jsonString};`);
-    const emptyApiFunction = apiFuncTemplate
-      .replace('{{functionName}}', sampleJsonResult.name)
-      .replace('{{returnJsonObject}}', '');
-    if (!apiFunctionsByTag[tag]) {
-      apiFunctionsByTag[tag] = [];
-    }
-    apiFunctionsByTag[tag].push(mockApiFunction);
-
-    if (!emptyFunctionsByTag[tag]) {
-      emptyFunctionsByTag[tag] = [];
-    }
-    emptyFunctionsByTag[tag].push(emptyApiFunction);
   }
 
-  let realApiProviderCode =
-    '// Update this code to call real backend service\n';
-  let mockApiProviderCode = '';
-  for (const tag in apiFunctionsByTag) {
-    const apiClassTemplate = fs.readFileSync(
-      path.join(__dirname, './resources/apiClassTemplate.txt'),
-      'utf-8'
-    );
-    const mockApiClass = apiClassTemplate
-      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
-      .replace('{{apiList}}', apiFunctionsByTag[tag].join('\n'));
-
-    const realApiClass = apiClassTemplate
-      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
-      .replace('{{apiList}}', emptyFunctionsByTag[tag].join('\n'));
-    mockApiProviderCode += mockApiClass + '\n';
-    realApiProviderCode += realApiClass + '\n';
-  }
-
-  fs.outputFileSync(
-    path.join(options.output, 'src/apis', 'mockApiProvider.ts'),
-    formatCode(mockApiProviderCode),
-    'utf-8'
-  );
-
-  fs.outputFileSync(
-    path.join(options.output, 'src/apis', 'realApiProvider.ts'),
-    formatCode(realApiProviderCode),
+  const indexFile = await generateIndexFile(responseCards);
+  await fs.outputFile(
+    path.join(options.output, 'src/index.ts'),
+    indexFile.code,
     'utf-8'
   );
 }
@@ -194,7 +133,7 @@ async function isArgsValid(
   yaml: string,
   options: CliOptions
 ): Promise<boolean> {
-  if (!fs.existsSync(yaml)) {
+  if (!(await fs.pathExists(yaml))) {
     console.error('yaml file path is not exist in the path: ' + yaml);
     return false;
   }

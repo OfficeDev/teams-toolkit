@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, componentRefToName, capitalizeFirstLetter } from "../src/utils";
+import { expect, util } from "chai";
+import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, componentRefToName, capitalizeFirstLetter, getSchemaRef } from "../src/utils";
 import path from "path";
 import sinon from 'sinon';
 import fs from 'fs-extra';
-import { OpenAPIV3 } from "openapi-types";
+
 
 describe('utils tests', () => {
   describe('getVersion', () => {
@@ -194,6 +194,58 @@ describe('utils tests', () => {
   
       // Assert that the result is an empty string
       expect(result).to.equal('');
+    });
+  });
+
+  describe("getSchemaRef", () => {
+    it("should return a map of schema references", () => {
+      const unResolvedApi:any = {
+        paths: {
+          "/users": {
+            get: {
+              responses: {
+                "200": {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "array",
+                        items: {
+                          $ref: "#/components/schemas/User",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "/pet": {
+            get: {
+              responses: {
+                "200": {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+  
+      const expectedMap = new Map([
+        ["/users", "#/components/schemas/User"],
+        ["/pet", "#/components/schemas/Pet"],
+      ]);
+  
+      const result = getSchemaRef(unResolvedApi);
+      expect(result).to.deep.equal(expectedMap);
     });
   });
 })

@@ -5,12 +5,10 @@ import { AdaptiveCardResult } from './interfaces';
 export async function generateRequestCard(
   apis: OpenAPIV3.Document
 ): Promise<AdaptiveCardResult[]> {
-  console.log('Generate adaptive cards');
   const result: AdaptiveCardResult[] = [];
   for (const url in apis.paths) {
     for (const operation in apis.paths[url]) {
       if (operation === 'get') {
-        console.log(`API: ${operation} ${url}`);
         try {
           const card = parseGetRequest(
             apis.paths[url]![operation]!,
@@ -18,7 +16,6 @@ export async function generateRequestCard(
             operation
           );
           result.push(card);
-          console.log(`\tsuccessfully generated request card for this api\n`);
         } catch (error) {
           console.error(
             `\tfailed to generate request card for ${operation} ${url} due to error: ${(

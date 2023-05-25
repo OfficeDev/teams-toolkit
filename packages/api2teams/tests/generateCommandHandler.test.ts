@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { generateCommandHandler } from '../src/generateCommandHandler';
 
 describe('generateCommandHandler test', () => {
-  describe('generateCommandHandler test', () => {
+  describe('generateCommandHandler', () => {
     it('should generate the correct trigger pattern', async () => {
       const api = {
         parameters: [

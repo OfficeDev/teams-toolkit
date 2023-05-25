@@ -84,7 +84,7 @@ export function formatCode(code: string): string {
 }
 
 export function getResponseJsonResult(
-  operationObject: OpenAPIV3.OperationObject
+  operationObject: OpenAPIV3.OperationObject | undefined
 ): OpenAPIV3.MediaTypeObject {
   let jsonResult =
     (operationObject?.responses?.['200'] as OpenAPIV3.ResponseObject)
@@ -108,4 +108,27 @@ export function componentRefToName(ref: string): string {
 
 export function capitalizeFirstLetter(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function getSchemaRef(
+  unResolvedApi: OpenAPIV3.Document
+): Map<string, string> {
+  const schemaRefMap = new Map<string, string>();
+  for (const url in unResolvedApi.paths) {
+    for (const operation in unResolvedApi.paths[url]) {
+      if (operation === 'get') {
+        const schema = getResponseJsonResult(unResolvedApi.paths[url]?.get)
+          .schema as any;
+        if (schema) {
+          if (schema.type === 'array') {
+            schemaRefMap.set(url, schema.items.$ref);
+          } else if (schema.$ref) {
+            schemaRefMap.set(url, schema.$ref);
+          }
+        }
+      }
+    }
+  }
+
+  return schemaRefMap;
 }

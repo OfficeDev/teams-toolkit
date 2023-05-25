@@ -11,12 +11,10 @@ import tableElement from './resources/tableElement.json';
 export async function generateResponseCard(
   apis: OpenAPIV3.Document
 ): Promise<AdaptiveCardResult[]> {
-  console.log('Generate adaptive cards');
   const result: AdaptiveCardResult[] = [];
   for (const url in apis.paths) {
     for (const operation in apis.paths[url]) {
       if (operation === 'get') {
-        console.log(`API: ${operation} ${url}`);
         try {
           const card = parseResponse(
             apis.paths[url]![operation]!,
@@ -24,7 +22,6 @@ export async function generateResponseCard(
             operation
           );
           result.push(card);
-          console.log(`\tsuccessfully generated response card for this api\n`);
         } catch (error) {
           console.error(
             `\tfailed to generate response card for ${operation} ${url} due to error: ${(

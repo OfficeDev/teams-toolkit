@@ -15,21 +15,23 @@ describe('parseApi tests', () => {
   describe('parseApi', () => {
     let sandbox: sinon.SinonSandbox;
     let isFolderEmptyStub: sinon.SinonStub;
-    let existsSyncStub: sinon.SinonStub;
-    let mkdirSyncStub: sinon.SinonStub;
+    let pathExistsStub: sinon.SinonStub;
+    let mkdirStub: sinon.SinonStub;
     let validateStub: sinon.SinonStub;
     let parseStub: sinon.SinonStub;
     let generateRequestCardStub: sinon.SinonStub;
     let generateResponseCardStub: sinon.SinonStub;
-    let outputFileSyncStub: sinon.SinonStub;
+    let outputFileStub: sinon.SinonStub;
+    let getSchemaRefStub: sinon.SinonStub;
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       isFolderEmptyStub = sandbox.stub(utils, 'isFolderEmpty');
-      existsSyncStub = sandbox.stub(fs, 'existsSync');
-      mkdirSyncStub = sandbox.stub(fs, 'mkdirSync');
-      outputFileSyncStub = sandbox.stub(fs, 'outputFileSync');
+      pathExistsStub = sandbox.stub(fs, 'pathExists');
+      mkdirStub = sandbox.stub(fs, 'mkdir');
+      outputFileStub = sandbox.stub(fs, 'outputFile');
       validateStub = sandbox.stub(SwaggerParser, 'validate');
       parseStub = sandbox.stub(SwaggerParser, "parse");
+      getSchemaRefStub = sandbox.stub(utils, 'getSchemaRef');
       generateRequestCardStub = sandbox.stub(
         requestCardGenerator,
         'generateRequestCard'
@@ -45,7 +47,7 @@ describe('parseApi tests', () => {
     });
 
     it('should return early if args are not valid', async () => {
-      existsSyncStub.returns(false);
+      pathExistsStub.resolves(false);
 
       await parseApi('path/to/yaml', { output: 'path/to/output' });
 
@@ -53,20 +55,20 @@ describe('parseApi tests', () => {
     });
 
     it('should create output directory if it does not exist', async () => {
-      existsSyncStub.onCall(0).returns(true);
-      existsSyncStub.onCall(1).returns(false);
+      pathExistsStub.onCall(0).returns(true);
+      pathExistsStub.onCall(1).returns(false);
       isFolderEmptyStub.resolves(true);
       validateStub.resolves({ info: { title: 'API', version: '1.0' } });
 
       await parseApi('path/to/yaml', { output: 'path/to/output' });
 
-      expect(mkdirSyncStub.calledOnceWith('path/to/output', { recursive: true }))
+      expect(mkdirStub.calledOnceWith('path/to/output', { recursive: true }))
         .to.be.true;
     });
 
     it('should call generateRequestCard with correct args', async () => {
-      existsSyncStub.onCall(0).returns(true);
-      existsSyncStub.onCall(1).returns(true);
+      pathExistsStub.onCall(0).returns(true);
+      pathExistsStub.onCall(1).returns(true);
       isFolderEmptyStub.resolves(true);
       const api = { info: { title: 'API', version: '1.0' } };
       validateStub.resolves(api);

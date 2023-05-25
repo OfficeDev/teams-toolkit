@@ -1,23 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
-import yargs, { Options } from "yargs";
-import { err, FxError, ok, UserError, Tools } from "@microsoft/teamsfx-api";
-import { FxCore, envUtil } from "@microsoft/teamsfx-core";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../../src/telemetry/cliTelemetryEvents";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import Update, { UpdateAadApp, UpdateTeamsApp } from "../../../src/cmds/update";
+import { Tools, UserError, err, ok } from "@microsoft/teamsfx-api";
+import { FxCore } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-import CLIUIInstance from "../../../src/userInteraction";
+import sinon from "sinon";
+import yargs from "yargs";
 import * as activate from "../../../src/activate";
+import Update, { UpdateAadApp, UpdateTeamsApp } from "../../../src/cmds/update";
+import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../../../src/userInteraction";
 import { mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 
 describe("Update Aad Manifest Command Tests", function () {

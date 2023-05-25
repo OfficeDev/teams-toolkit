@@ -184,7 +184,7 @@ export class AadApp implements CloudResource {
     this.setState(convertCtx, context);
     return res;
   }
-
+  @hooks([addStartAndEndTelemetry("list-collaborator", "fx-resource-aad-app-for-teams")])
   async listCollaborator(
     ctx: ContextV3,
     aadObjectIdV3?: string
@@ -197,7 +197,7 @@ export class AadApp implements CloudResource {
     );
     return res;
   }
-
+  @hooks([addStartAndEndTelemetry("grant-permission", "fx-resource-aad-app-for-teams")])
   async grantPermission(
     ctx: ContextV3,
     userInfo: AppUser,
@@ -211,7 +211,7 @@ export class AadApp implements CloudResource {
     );
     return res;
   }
-
+  @hooks([addStartAndEndTelemetry("check-permission", "fx-resource-aad-app-for-teams")])
   async checkPermission(
     ctx: ContextV3,
     userInfo: AppUser,

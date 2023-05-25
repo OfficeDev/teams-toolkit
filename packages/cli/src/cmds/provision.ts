@@ -5,12 +5,7 @@ import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
-import {
-  EnvOptions,
-  RootFolderOptions,
-  sqlPasswordConfirmQuestionName,
-  sqlPasswordQustionName,
-} from "../constants";
+import { EnvOptions, RootFolderOptions } from "../constants";
 import { strings } from "../resource";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -18,7 +13,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, setSubscriptionId } from "../utils";
+import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export default class Provision extends YargsCommand {

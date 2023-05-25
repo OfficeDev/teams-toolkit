@@ -66,7 +66,8 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
-import { environmentManager } from "../../../fx-core/build";
+import { FxCore, environmentManager } from "../../../fx-core/build";
+import commandController from "../../src/commandController";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -93,11 +94,31 @@ describe("handlers", () => {
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
       const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
+      const setCommandIsRunningStub = sandbox.stub(globalVariables, "setCommandIsRunning");
+      const lockedByOperationStub = sandbox.stub(commandController, "lockedByOperation");
+      const unlockedByOperationStub = sandbox.stub(commandController, "unlockedByOperation");
+      let lockCallback: any;
+      let unlockCallback: any;
+
+      sandbox.stub(FxCore.prototype, "on").callsFake((event: string, callback: any) => {
+        if (event === "lock") {
+          lockCallback = callback;
+        } else {
+          unlockCallback = callback;
+        }
+      });
       const result = await handlers.activate();
 
       chai.assert.isTrue(addSharedPropertyStub.called);
       chai.assert.isTrue(sendTelemetryStub.calledOnceWith("open-teams-app"));
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
+
+      lockCallback("test");
+      setCommandIsRunningStub.calledOnceWith(true);
+      lockedByOperationStub.calledOnceWith("test");
+
+      unlockCallback("test");
+      unlockedByOperationStub.calledOnceWith("test");
     });
   });
   const sandbox = sinon.createSandbox();
@@ -244,6 +265,15 @@ describe("handlers", () => {
     handlers.sendSDKVersionTelemetry(filePath);
 
     chai.assert.isTrue(readJsonFunc.calledOnce);
+  });
+
+  it("updateAutoOpenGlobalKey", async () => {
+    sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
+    const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
+
+    await handlers.updateAutoOpenGlobalKey(false, false, vscode.Uri.file("test"));
+
+    chai.assert.isTrue(globalStateUpdateStub.calledTwice);
   });
 
   describe("command handlers", function () {

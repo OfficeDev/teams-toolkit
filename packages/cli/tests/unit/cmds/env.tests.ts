@@ -23,7 +23,6 @@ import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
-import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { YargsCommand } from "../../../src/yargsCommand";
 import { CoreHookContext, VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
@@ -53,9 +52,6 @@ class MockVars {
 }
 
 function mockYargs(sandbox: SinonSandbox, vars: Reference<MockVars>) {
-  sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
-    return {};
-  });
   sandbox
     .stub<any, any>(yargs, "command")
     .callsFake((command: string, description: string, builder: any, handler: any) => {

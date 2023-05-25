@@ -29,7 +29,7 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ConstantString } from "../common/constants";
-import { isOfficeAddinEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import { isOfficeAddinEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { sampleProvider } from "../common/samples";

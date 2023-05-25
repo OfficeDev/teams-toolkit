@@ -175,7 +175,7 @@ jobs:
           path: packages/cli/tests/e2e/resource
       
       - name: Download samples from another repo
-        if: github.event_name == 'schedule' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage')
+        if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage')
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples

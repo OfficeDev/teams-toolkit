@@ -10,12 +10,12 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 MINOR_VER=$(echo $VERSION|awk -F. '{print $2}')
 # judge minor version on pre is odd, on main is even.
 if [ $((MINOR_VER%2)) -eq 0 ] && [ "$CURRENT_BRANCH" == 'main' ]; then
-echo "No need to bump up version on main branch with even minor version"
-exit 0;
+  echo "No need to bump up version on main branch with even minor version"
+  exit 0;
 fi
 if [ $((MINOR_VER%2)) -eq 1 ] && [ "$CURRENT_BRANCH" == 'prerelease' ]; then
-echo "No need to bump up version on prerelease branch with odd minor version"
-exit 0;
+  echo "No need to bump up version on prerelease branch with odd minor version"
+  exit 0;
 fi
 #otherwise, bump up minor version, and set patch version start from 0.
 VERSION=$(echo $VERSION | awk -F. '/[0-9]+\./{$2++;$3=0;print}' OFS=.)

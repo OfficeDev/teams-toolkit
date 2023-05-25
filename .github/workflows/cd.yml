@@ -312,8 +312,8 @@ jobs:
         id: preview-version
         working-directory: packages/vscode-extension
         run: |
+          PRERELEASE_VERSION=$(jq -r .version package.json | cut -c1-3)
           DATE_WITH_TIME=`date "+%Y%m%d%H"`
-          PRERELEASE_VERSION=4.99
           TTK_VERSION=$PRERELEASE_VERSION.$DATE_WITH_TIME
           echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION

@@ -8,15 +8,10 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
-import fs from "fs-extra";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { scaffoldSPFx } from "../../../src/component/code/spfxTabCode";
-import {
-  getAddSPFxQuestionNode,
-  getSPFxScaffoldQuestion,
-} from "../../../src/component/feature/spfx";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
 import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
@@ -24,58 +19,9 @@ import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { InstallSoftwareError } from "../../../src/error/common";
 import { MockTools } from "../../core/utils";
+import { getSPFxScaffoldQuestion } from "../../../src/component/question";
 
 describe("spfx", () => {
-  describe("getAddSPFxQuestionNode", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("Ask framework when .yo-rc.json not exist", async () => {
-      sinon.stub(fs, "pathExists").resolves(false);
-
-      const res = await getAddSPFxQuestionNode("c:\\testFolder");
-
-      chai.expect(res.isOk()).equals(true);
-      if (res.isOk()) {
-        chai.expect(res.value!.children![0].children!.length).equals(2);
-      }
-    });
-
-    it("Ask framework when template not persisted in .yo-rc.json", async () => {
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          componentType: "webpart",
-        },
-      });
-
-      const res = await getAddSPFxQuestionNode("c:\\testFolder");
-
-      chai.expect(res.isOk()).equals(true);
-      if (res.isOk()) {
-        chai.expect(res.value!.children![0].children!.length).equals(2);
-      }
-    });
-
-    it("Don't ask framework when template persisted in .yo-rc.json", async () => {
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          componentType: "webpart",
-          template: "none",
-        },
-      });
-
-      const res = await getAddSPFxQuestionNode("c:\\testFolder");
-
-      chai.expect(res.isOk()).equals(true);
-      if (res.isOk()) {
-        chai.expect(res.value!.children![0].children!.length).equals(1);
-      }
-    });
-  });
-
   describe("getSPFxScaffoldQuestion: isSpfxDecoupleEnabled", () => {
     const sandbox = sinon.createSandbox();
     let mockedEnvRestore: RestoreFn | undefined;

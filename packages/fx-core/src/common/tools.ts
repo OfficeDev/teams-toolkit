@@ -393,7 +393,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isExistingTabAppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
+  return false;
 }
 
 export function isAadManifestEnabled(): boolean {

@@ -11,7 +11,9 @@ import * as path from "path";
 import {
   AppPackageFolderName,
   BuildFolderName,
+  CLIPlatforms,
   DynamicPlatforms,
+  err,
   FolderQuestion,
   FxError,
   Inputs,
@@ -29,7 +31,7 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ConstantString } from "../common/constants";
-import { isOfficeAddinEnabled } from "../common/featureFlags";
+import { isCLIDotNetEnabled, isOfficeAddinEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { sampleProvider } from "../common/samples";
@@ -46,6 +48,8 @@ import {
   NewProjectTypeOutlookAddinOptionItem,
   NewProjectTypeTabOptionItem,
   NotificationOptionItem,
+  Runtime,
+  SPFxQuestionNames,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -55,14 +59,30 @@ import {
 import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
+  getTemplateId,
   isFromDevPortal,
 } from "../component/developerPortalScaffoldUtils";
 import {
+  getQuestionsForScaffolding,
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
 import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
-import { environmentManager } from "./environment";
+import { environmentManager } from "../core/environment";
+import { AppDefinition } from "../component/resource/appManifest/interfaces/appDefinition";
+import { isPersonalApp, needBotCode } from "../component/resource/appManifest/utils/utils";
+import { convertToAlphanumericOnly } from "../common/utils";
+import {
+  createHostTypeTriggerQuestion,
+  getConditionOfNotificationTriggerQuestion,
+  showNotificationTriggerCondition,
+} from "../component/feature/bot/question";
+import {
+  frameworkQuestion,
+  loadPackageVersions,
+  spfxPackageSelectQuestion,
+  webpartNameQuestion,
+} from "./spfx";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -928,4 +948,501 @@ export function selectM365HostQuestion(): QTreeNode {
     staticOptions: [Hub.teams, Hub.outlook, Hub.office],
     placeholder: getLocalizedString("core.M365HostQuestion.placeholder"),
   });
+}
+
+export async function getNotificationTriggerQuestionNode(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const res = new QTreeNode({
+    type: "group",
+  });
+  if (isCLIDotNetEnabled()) {
+    Object.values(Runtime).forEach((runtime) => {
+      const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
+      node.condition = getConditionOfNotificationTriggerQuestion(runtime);
+      res.addChild(node);
+    });
+  } else {
+    const runtime = getPlatformRuntime(inputs.platform);
+    const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
+    res.addChild(node);
+  }
+  res.condition = showNotificationTriggerCondition;
+  return ok(res);
+}
+
+const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
+  [Platform.VS, Runtime.dotnet],
+  [Platform.VSCode, Runtime.nodejs],
+  [Platform.CLI, Runtime.nodejs],
+  [Platform.CLI_HELP, Runtime.nodejs],
+]);
+
+function getKeyNotFoundInMapErrorMsg(key: any) {
+  return `The key ${key} is not found in map.`;
+}
+
+export function getPlatformRuntime(platform: Platform): Runtime {
+  const runtime = PlatformRuntimeMap.get(platform);
+  if (runtime) {
+    return runtime;
+  }
+  throw new Error(getKeyNotFoundInMapErrorMsg(platform));
+}
+
+export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
+  let defaultUserEmail = "";
+  if (currentUserEmail && currentUserEmail.indexOf("@") > 0) {
+    defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  }
+  return {
+    name: "email",
+    type: "text",
+    title: getLocalizedString("core.getUserEmailQuestion.title"),
+    default: defaultUserEmail,
+    validation: {
+      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+        if (!input || input.trim() === "") {
+          return getLocalizedString("core.getUserEmailQuestion.validation1");
+        }
+
+        input = input.trim();
+
+        if (input === defaultUserEmail) {
+          return getLocalizedString("core.getUserEmailQuestion.validation2");
+        }
+
+        const re = /\S+@\S+\.\S+/;
+        if (!re.test(input)) {
+          return getLocalizedString("core.getUserEmailQuestion.validation3");
+        }
+        return undefined;
+      },
+    },
+  };
+}
+
+export function SelectEnvQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "env",
+    title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
+
+export function spfxFolderQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: SPFxQuestionNames.SPFxFolder,
+    title: getLocalizedString("core.spfxFolder.title"),
+    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: (inputs: Inputs) => {
+      return path.join(inputs.projectPath!, "src");
+    },
+  };
+}
+
+export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  const addWebpart = new QTreeNode({ type: "group" });
+
+  const spfxFolder = new QTreeNode(spfxFolderQuestion());
+  addWebpart.addChild(spfxFolder);
+
+  const webpartName = new QTreeNode(webpartNameQuestion);
+  spfxFolder.addChild(webpartName);
+
+  const manifestFile = selectTeamsAppManifestQuestion(inputs);
+  webpartName.addChild(manifestFile);
+
+  const localManifestFile = selectTeamsAppManifestQuestion(inputs, true);
+  manifestFile.addChild(localManifestFile);
+
+  return ok(addWebpart);
+}
+
+export const validateSchemaOption: OptionItem = {
+  id: "validateAgainstSchema",
+  label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
+  description: getLocalizedString(
+    "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
+  ),
+};
+
+export const validateAppPackageOption: OptionItem = {
+  id: "validateAgainstPackage",
+  label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
+  description: getLocalizedString(
+    "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
+  ),
+};
+
+export async function getQuestionsForValidateMethod(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  const question: SingleSelectQuestion = {
+    name: CoreQuestionNames.ValidateMethod,
+    title: getLocalizedString("core.selectValidateMethodQuestion.validate.selectTitle"),
+    staticOptions: [validateSchemaOption, validateAppPackageOption],
+    type: "singleSelect",
+  };
+  const node = new QTreeNode(question);
+  group.addChild(node);
+  return ok(group);
+}
+
+export async function getQuestionsForValidateManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForValidateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // App package path node
+  const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForCreateAppPackage(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForUpdateTeamsApp(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  // Manifest path node
+  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  group.addChild(teamsAppSelectNode);
+  return ok(group);
+}
+
+export async function getQuestionsForPreviewWithManifest(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const group = new QTreeNode({ type: "group" });
+  group.addChild(selectM365HostQuestion());
+  group.addChild(selectTeamsAppManifestQuestion(inputs));
+  return ok(group);
+}
+
+export function getSPFxScaffoldQuestion(platform: Platform): QTreeNode {
+  const spfx_frontend_host = new QTreeNode({
+    type: "group",
+  });
+
+  const spfx_select_package_question = new QTreeNode(spfxPackageSelectQuestion);
+  const spfx_framework_type = new QTreeNode(frameworkQuestion);
+  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+
+  if (platform !== Platform.CLI_HELP) {
+    const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
+    spfx_load_package_versions.addChild(spfx_select_package_question);
+    spfx_select_package_question.addChild(spfx_framework_type);
+    spfx_select_package_question.addChild(spfx_webpart_name);
+
+    spfx_frontend_host.addChild(spfx_load_package_versions);
+  } else {
+    spfx_frontend_host.addChild(spfx_select_package_question);
+    spfx_frontend_host.addChild(spfx_framework_type);
+    spfx_frontend_host.addChild(spfx_webpart_name);
+  }
+
+  return spfx_frontend_host;
+}
+
+async function getQuestionsForCreateProjectWithoutDotNet(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (isFromDevPortal(inputs)) {
+    // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
+    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
+    inputs[CoreQuestionNames.Capabilities] =
+      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp)?.templateId;
+  }
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+
+  // create new
+  const createNew = new QTreeNode({ type: "group" });
+  node.addChild(createNew);
+  createNew.condition = { equals: ScratchOptionYes().id };
+
+  // capabilities
+  const capQuestion = createCapabilityQuestionPreview(inputs);
+  const capNode = new QTreeNode(capQuestion);
+
+  createNew.addChild(capNode);
+
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    capNode.addChild(triggerNodeRes.value);
+  }
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem().id };
+    capNode.addChild(spfxNode);
+  }
+  // Language
+  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+  capNode.addChild(programmingLanguage);
+
+  createNew.addChild(new QTreeNode(QuestionRootFolder()));
+  const defaultName = !inputs.teamsAppFromTdp?.appName
+    ? undefined
+    : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
+
+  if (isFromDevPortal(inputs)) {
+    const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
+    if (updateTabUrls) {
+      createNew.addChild(updateTabUrls);
+    }
+
+    const updateBotIds = await getQuestionsForUpdateBotIds(inputs.teamsAppFromTdp);
+    if (updateBotIds) {
+      createNew.addChild(updateBotIds);
+    }
+  }
+  // create from sample
+  const sampleNode = new QTreeNode(SampleSelect());
+  node.addChild(sampleNode);
+  sampleNode.condition = { equals: ScratchOptionNo().id };
+  sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
+
+  if (isOfficeAddinEnabled()) {
+    addOfficeAddinQuestions(node);
+  }
+
+  return ok(node.trim());
+}
+
+async function getQuestionsForCreateProjectWithDotNet(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const runtimeNode = new QTreeNode(getRuntimeQuestion());
+  const maybeNode = await getQuestionsForCreateProjectWithoutDotNet(inputs);
+  if (maybeNode.isErr()) {
+    return err(maybeNode.error);
+  }
+  const node = maybeNode.value;
+
+  if (node) {
+    node.condition = {
+      equals: RuntimeOptionNodeJs().id,
+    };
+    runtimeNode.addChild(node);
+  }
+
+  const dotnetNode = new QTreeNode({ type: "group" });
+  dotnetNode.condition = {
+    equals: RuntimeOptionDotNet().id,
+  };
+  runtimeNode.addChild(dotnetNode);
+
+  const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
+  dotnetNode.addChild(dotnetCapNode);
+
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    dotnetCapNode.addChild(triggerNodeRes.value);
+  }
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem().id };
+    dotnetCapNode.addChild(spfxNode);
+  }
+
+  dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));
+
+  // only CLI need folder input
+  if (CLIPlatforms.includes(inputs.platform)) {
+    runtimeNode.addChild(new QTreeNode(QuestionRootFolder()));
+  }
+  runtimeNode.addChild(new QTreeNode(createAppNameQuestion()));
+
+  return ok(runtimeNode.trim());
+}
+
+async function getQuestionsForCreateProjectInVSC(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs[CoreQuestionNames.CreateFromScratch] === ScratchOptionNoVSC().id) {
+    // Create from sample flow
+    const sampleNode = new QTreeNode(SampleSelect());
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
+
+    return ok(sampleNode.trim());
+  }
+
+  // We will always create a project from scratch in VSC.
+  inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC().id;
+  if (isFromDevPortal(inputs)) {
+    inputs[CoreQuestionNames.ProjectType] =
+      inputs[CoreQuestionNames.ProjectType] ?? getTemplateId(inputs.teamsAppFromTdp)?.projectType;
+    inputs[CoreQuestionNames.Capabilities] =
+      inputs[CoreQuestionNames.Capabilities] ?? getTemplateId(inputs.teamsAppFromTdp)?.templateId;
+  }
+
+  // create new project root
+  const root = new QTreeNode({ type: "group" });
+
+  // project type
+  const capQuestion = createNewProjectQuestionWith2Layers(inputs);
+  const typeNode = new QTreeNode(capQuestion);
+  root.addChild(typeNode);
+
+  // bot type capabilities
+  const botTypeNode = new QTreeNode(getBotProjectQuestionNode(inputs));
+  botTypeNode.condition = {
+    equals: NewProjectTypeBotOptionItem().id,
+  };
+  typeNode.addChild(botTypeNode);
+
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    botTypeNode.addChild(triggerNodeRes.value);
+  }
+
+  // tab type
+  const tabTypeNode = new QTreeNode(getTabTypeProjectQuestionNode(inputs));
+  tabTypeNode.condition = {
+    equals: NewProjectTypeTabOptionItem().id,
+  };
+  typeNode.addChild(tabTypeNode);
+
+  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem().id };
+    tabTypeNode.addChild(spfxNode);
+  }
+
+  // message extension type
+  const messageExtensionTypeNode = new QTreeNode(
+    getMessageExtensionTypeProjectQuestionNode(inputs)
+  );
+  messageExtensionTypeNode.condition = {
+    equals: NewProjectTypeMessageExtensionOptionItem().id,
+  };
+  typeNode.addChild(messageExtensionTypeNode);
+
+  // Outlook addin type
+  const outlookAddinTypeNode = new QTreeNode(getOutlookAddinTypeProjectQuestionNode(inputs));
+  outlookAddinTypeNode.condition = {
+    equals: NewProjectTypeOutlookAddinOptionItem().id,
+  };
+  typeNode.addChild(outlookAddinTypeNode);
+  outlookAddinTypeNode.addChild(getQuestionsForScaffolding());
+
+  // Language
+  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+  programmingLanguage.condition = {
+    notEquals: NewProjectTypeOutlookAddinOptionItem().id,
+  };
+  typeNode.addChild(programmingLanguage);
+
+  root.addChild(new QTreeNode(QuestionRootFolder()));
+  const defaultName = !inputs.teamsAppFromTdp?.appName
+    ? undefined
+    : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  root.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
+
+  if (isFromDevPortal(inputs)) {
+    const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
+    if (updateTabUrls) {
+      typeNode.addChild(updateTabUrls);
+    }
+
+    const updateBotIds = await getQuestionsForUpdateBotIds(inputs.teamsAppFromTdp);
+    if (updateBotIds) {
+      typeNode.addChild(updateBotIds);
+    }
+  }
+
+  return ok(root.trim());
+}
+
+async function getQuestionsForUpdateStaticTabUrls(
+  appDefinition: AppDefinition
+): Promise<QTreeNode | undefined> {
+  if (!isPersonalApp(appDefinition)) {
+    return undefined;
+  }
+
+  const updateTabUrls = new QTreeNode({ type: "group" });
+  const tabs = appDefinition.staticTabs!;
+  const tabsWithContentUrls = tabs.filter((o) => !!o.contentUrl);
+  const tabsWithWebsiteUrls = tabs.filter((o) => !!o.websiteUrl);
+  if (tabsWithWebsiteUrls.length > 0) {
+    updateTabUrls.addChild(new QTreeNode(tabsWebsitetUrlQuestion(tabsWithWebsiteUrls)));
+  }
+
+  if (tabsWithContentUrls.length > 0) {
+    updateTabUrls.addChild(new QTreeNode(tabsContentUrlQuestion(tabsWithContentUrls)));
+  }
+
+  return updateTabUrls;
+}
+
+async function getQuestionsForUpdateBotIds(
+  appDefinition: AppDefinition
+): Promise<QTreeNode | undefined> {
+  if (!needBotCode(appDefinition)) {
+    return undefined;
+  }
+  const bots = appDefinition.bots;
+  const messageExtensions = appDefinition.messagingExtensions;
+
+  // can add only one bot. If existing, the length is 1.
+  const botId = !!bots && bots.length > 0 ? bots![0].botId : undefined;
+  // can add only one message extension. If existing, the length is 1.
+  const messageExtensionId =
+    !!messageExtensions && messageExtensions.length > 0 ? messageExtensions![0].botId : undefined;
+
+  return new QTreeNode(BotIdsQuestion(botId, messageExtensionId));
+}
+
+export async function getQuestionsForCreateProjectV2(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform)) {
+    return getQuestionsForCreateProjectWithDotNet(inputs);
+  } else if (inputs.platform === Platform.VSCode) {
+    return getQuestionsForCreateProjectInVSC(inputs);
+  } else {
+    return getQuestionsForCreateProjectWithoutDotNet(inputs);
+  }
+}
+
+export function addOfficeAddinQuestions(node: QTreeNode): void {
+  const createNewAddin = new QTreeNode({ type: "group" });
+  createNewAddin.condition = { equals: CreateNewOfficeAddinOption().id };
+  node.addChild(createNewAddin);
+
+  const capNode = new QTreeNode(createCapabilityForOfficeAddin());
+  createNewAddin.addChild(capNode);
+
+  capNode.addChild(getQuestionsForScaffolding());
+
+  createNewAddin.addChild(new QTreeNode(QuestionRootFolder()));
+  createNewAddin.addChild(new QTreeNode(createAppNameQuestion()));
 }

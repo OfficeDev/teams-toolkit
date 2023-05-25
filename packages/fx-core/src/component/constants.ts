@@ -1165,19 +1165,3 @@ export const TabFeatureIds = () => [
 export const AadConstants = {
   DefaultTemplateFileName: "aad.manifest.json",
 };
-
-export const validateSchemaOption: OptionItem = {
-  id: "validateAgainstSchema",
-  label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
-  description: getLocalizedString(
-    "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
-  ),
-};
-
-export const validateAppPackageOption: OptionItem = {
-  id: "validateAgainstPackage",
-  label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
-  description: getLocalizedString(
-    "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
-  ),
-};

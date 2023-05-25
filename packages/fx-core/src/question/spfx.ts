@@ -2,17 +2,20 @@ import * as jsonschema from "jsonschema";
 import fs from "fs-extra";
 import * as path from "path";
 import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getLocalizedString } from "../common/localizeUtils";
+import { Constants } from "../component/resource/spfx/utils/constants";
+import { SPFxQuestionNames } from "../component/constants";
+import { Utils } from "../component/resource/spfx/utils/utils";
 import {
   DevEnvironmentSetupError,
   NodeVersionNotSupportedError,
   NpmNotFoundError,
   NpmVersionNotSupportedError,
-} from "../error";
-import { Constants } from "./constants";
-import { Utils } from "./utils";
-import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
-import { SPFxQuestionNames } from "../../../constants";
+} from "../component/resource/spfx/error";
+import {
+  PackageSelectOptionsHelper,
+  SPFxVersionOptionIds,
+} from "../component/resource/spfx/utils/question-helper";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",

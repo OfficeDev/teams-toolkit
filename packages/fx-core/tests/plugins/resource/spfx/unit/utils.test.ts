@@ -19,7 +19,7 @@ import {
   spfxPackageSelectQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
-} from "../../../../../src/component/resource/spfx/utils/questions";
+} from "../../../../../src/question/spfx";
 import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
 import { cpUtils } from "../../../../../src";
 import {

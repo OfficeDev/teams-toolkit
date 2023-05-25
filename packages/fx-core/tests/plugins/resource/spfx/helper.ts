@@ -24,8 +24,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import sinon from "sinon";
-import { SPFXQuestionNames } from "../../../../src/component/resource/spfx/utils/questions";
 import { newEnvInfo } from "../../../../src/core/environment";
+import { SPFXQuestionNames } from "../../../../src/question/spfx";
 
 export class TestHelper {
   static getFakePluginContext(

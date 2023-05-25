@@ -22,7 +22,7 @@ import { createContextV3, newProjectSettingsV3 } from "../../../../../src/compon
 import { setTools } from "../../../../../src/core/globalVars";
 import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
-import { SPFXQuestionNames } from "../../../../../src/component/resource/spfx/utils/questions";
+import { SPFXQuestionNames } from "../../../../../src/question/spfx";
 import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
 import { cpUtils } from "../../../../../src/component/utils/depsChecker/cpUtils";
 import { MockTools, MockUserInteraction } from "../../../../core/utils";

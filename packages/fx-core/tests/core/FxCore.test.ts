@@ -2,20 +2,20 @@
 // Licensed under the MIT license.
 
 import {
-  Inputs,
-  Platform,
-  Stage,
-  Ok,
+  Func,
   FxError,
-  UserError,
+  Inputs,
+  LogProvider,
+  Ok,
+  Platform,
+  Result,
+  Stage,
   SystemError,
+  TeamsAppManifest,
+  UserError,
+  Void,
   err,
   ok,
-  Result,
-  Void,
-  LogProvider,
-  Func,
-  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -26,27 +26,9 @@ import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
-import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
-import { environmentManager } from "../../src/core/environment";
-import { setTools } from "../../src/core/globalVars";
-import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
-import {
-  CoreQuestionNames,
-  ProgrammingLanguageQuestion,
-  ScratchOptionYesVSC,
-} from "../../src/question/core";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../../src/component/constants";
-import { deleteFolder, MockTools, randomAppName } from "./utils";
+import { Hub } from "../../src/common/m365/constants";
+import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
-import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
-import "../../src/component/driver/aad/update";
-import { envUtil } from "../../src/component/utils/envUtil";
-import { YamlParser } from "../../src/component/configManager/parser";
 import {
   DriverDefinition,
   DriverInstance,
@@ -56,24 +38,39 @@ import {
   Output,
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
-import { DriverContext } from "../../src/component/driver/interface/commonArgs";
+import { YamlParser } from "../../src/component/configManager/parser";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../src/component/constants";
 import { coordinator } from "../../src/component/coordinator";
-import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
-import * as coreImplement from "../../src/core/FxCore";
 import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
-import { pathUtils } from "../../src/component/utils/pathUtils";
+import "../../src/component/driver/aad/update";
+import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
-import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
-import { FileNotFoundError, InvalidProjectError } from "../../src/error/common";
-import * as collaborator from "../../src/core/collaborator";
-import { CollaborationUtil } from "../../src/core/collaborator";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { Hub } from "../../src/common/m365/constants";
-import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import { envUtil } from "../../src/component/utils/envUtil";
+import { pathUtils } from "../../src/component/utils/pathUtils";
+import * as coreImplement from "../../src/core/FxCore";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import { environmentManager } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
+import { FileNotFoundError, InvalidProjectError } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
+import * as collaboratorQuestion from "../../src/question/collaborator";
+import {
+  CoreQuestionNames,
+  ProgrammingLanguageQuestion,
+  ScratchOptionYesVSC,
+} from "../../src/question/core";
+import { MockTools, deleteFolder, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -487,8 +484,8 @@ describe("Core basic APIs", () => {
         stage: Stage.listCollaborator,
         projectPath: path.join(os.tmpdir(), appName),
       };
-      sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
-      sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+      sandbox.stub(collaboratorQuestion, "getQuestionsForGrantPermission").resolves(ok(undefined));
+      sandbox.stub(collaboratorQuestion, "getQuestionsForListCollaborator").resolves(ok(undefined));
       sandbox.stub(coreImplement, "listCollaboratorFunc").resolves(ok(undefined));
       sandbox.stub(coreImplement, "checkPermissionFunc").resolves(ok(undefined));
       sandbox.stub(coreImplement, "grantPermissionFunc").resolves(ok(undefined));

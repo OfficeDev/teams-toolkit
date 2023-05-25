@@ -205,7 +205,10 @@ export class Executor {
     processEnv?: NodeJS.ProcessEnv
   ) {
     const timeout = 100000;
-    const oldPath = path.resolve("./resource", template);
+    const oldPath = path.resolve(
+      template !== TemplateProject.ProactiveMessaging ? "./resource" : "./resource/samples",
+      template
+    );
     const newPath = path.resolve(testFolder, appName);
     try {
       await this.execute(`mv ${oldPath} ${newPath}`, testFolder, processEnv, timeout);

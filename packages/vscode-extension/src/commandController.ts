@@ -1,17 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Mutex } from "async-mutex";
 import { commands } from "vscode";
 
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
-import { VS_CODE_UI } from "./extension";
-import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 import treeViewManager from "./treeview/treeViewManager";
-import { getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 
 type CommandHandler = (args?: unknown[]) => Promise<Result<unknown, FxError>>;
@@ -29,15 +23,11 @@ class CommandController {
   // mapping between fx-core API and vscode command
   private commandNameMap: Map<string, string>;
   private exclusiveCommands: Set<string>;
-  private runningCommand: string | undefined;
-  private mutex: Mutex;
 
   private constructor() {
     this.commandMap = new Map<string, TeamsFxCommand>();
-    this.mutex = new Mutex();
     this.exclusiveCommands = new Set([
       "fx-extension.addEnvironment",
-      "fx-extension.addFeature",
       "fx-extension.build",
       "fx-extension.create",
       "fx-extension.deploy",
@@ -49,7 +39,6 @@ class CommandController {
       "fx-extension.publishInDeveloperPortal",
     ]);
     this.commandNameMap = new Map<string, string>([
-      // V3
       ["create", "fx-extension.create"],
       ["createEnv", "fx-extension.addEnvironment"],
       ["deployArtifacts", "fx-extension.deploy"],
@@ -60,12 +49,6 @@ class CommandController {
       ["provisionResources", "fx-extension.provision"],
       ["publishApplication", "fx-extension.publish"],
       ["publishInDeveloperPortal", "fx-extension.publishInDeveloperPortal"],
-      // V2
-      // ["createEnvOld", "fx-extension.addEnvironment"],
-      // ["deployArtifactsOld", "fx-extension.deploy"],
-      // ["executeUserTaskOld addFeature", "fx-extension.addFeature"],
-      // ["provisionResourcesOld", "fx-extension.provision"],
-      // ["publishApplicationOld", "fx-extension.publish"],
     ]);
   }
 
@@ -95,42 +78,10 @@ class CommandController {
   }
 
   public async runCommand(commandName: string, args: unknown[]) {
-    if (isV3Enabled() || !this.exclusiveCommands.has(commandName)) {
-      return this.runNonBlockingCommand(commandName, args);
-    }
-    if (this.runningCommand) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewCommandConcurrentExecution, {
-        ...getTriggerFromProperty(args),
-        [TelemetryProperty.RunningCommand]: this.runningCommand,
-        [TelemetryProperty.BlockedCommand]: commandName,
-      });
-      const command = this.commandMap.get(this.runningCommand);
-      const blockedTooltip = command?.blockTooltip;
-      if (blockedTooltip) {
-        VS_CODE_UI.showMessage("warn", blockedTooltip, false);
-      }
-      return;
-    }
-    this.mutex.runExclusive(async () => await this.runBlockingCommand(commandName, args));
-  }
-
-  private runNonBlockingCommand(commandName: string, args: unknown[]) {
     const command = this.commandMap.get(commandName);
     if (command) {
       command.callback(args);
     }
-  }
-
-  private async runBlockingCommand(commandName: string, args: unknown[]) {
-    this.runningCommand = commandName;
-    const command = this.commandMap.get(commandName);
-    const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);
-    await treeViewManager.setRunningCommand(commandName, blockedCommands, command?.blockTooltip);
-    if (command) {
-      await command.callback(args);
-    }
-    this.runningCommand = undefined;
-    await treeViewManager.restoreRunningCommand(blockedCommands);
   }
 
   public async lockedByOperation(operation: string) {

@@ -2572,15 +2572,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ihr Projekt wurde erfolgreich für den Betrieb mit TeamsFx initialisiert.]A;]A;Einige nächste Schritte:]A;teamsfx add <feature> ermöglicht Ihnen das Hinzufügen von Features wie einmaliges Anmelden oder Integration von Teams-Benachrichtigungen.]A;]A;Pro-Tipp:]A;Lesen Sie auf aka.ms/teams-manifest, um weitere Informationen zum Aktualisieren der Manifestdatei zu erhalten, um eine Verbindung mit Ihrer vorhandenen Startseite herzustellen.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.]]></Val>
@@ -3415,6 +3406,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[App-Paket mithilfe von Validierungsregeln validieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[App-Paket mithilfe von Validierungsregeln validieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mit Manifestschema validieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mit Manifestschema validieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.selectTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a validation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Validierungsmethode auswählen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
@@ -3703,15 +3739,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js (@CurrentVersion) befindet sich nicht in der Unterstützten Versionsliste (@SupportedVersions).]A;]A;Klicken Sie auf "Weitere Informationen", um weitere Informationen zu den unterstützten Node.js Versionen zu erhalten.]A;]A;(Wenn Sie gerade Node.js (@SupportedVersions) installiert haben, starten Sie Visual Studio Code neu, damit die Änderung wirksam wird.)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.V3NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to %s to install a supported Node.js.]]></Val>
@@ -3802,18 +3829,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.failToValidateNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to validate @NameVersion after installation.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die @NameVersion kann nach der Installation nicht validiert werden.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to validate @NameVersion after installation.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.failToValidateVxTestApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to validate video extensibility test app after installation.]]></Val>
@@ -3845,15 +3860,6 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.finishInstallDotnet" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[@NameVersion wurde erfolgreich installiert.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.finishInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3910,15 +3916,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.needInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You must have @NameVersion installed to debug your local bot.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sie müssen @NameVersion installiert haben, um Ihren lokalen Bot zu debuggen.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.needInstallNpm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You must have NPM installed to debug your local functions.]]></Val>
@@ -3946,15 +3943,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.startInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Downloading and installing @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[@NameVersion wird heruntergeladen und installiert.]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5223,15 +5211,6 @@
           <Val><![CDATA[MultipleEnv feature is not enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Das Feature "MultipleEnv" ist nicht aktiviert.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.NgrokTunnelNotConnected" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Ngrok tunnel is not connected. Check your network settings and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Ngroktunnel ist nicht verbunden. Überprüfen Sie Ihre Netzwerkeinstellungen, und versuchen Sie es noch mal.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6628,6 +6607,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.common.MissingRequiredFileError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Missing %srequired file `%s`]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehlende %srequired Datei "%s"]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.common.MissingRequiredInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing required input: %s]]></Val>
@@ -6648,12 +6636,12 @@
       </Item>
       <Item ItemId=";error.common.UnhandledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
+          <Val><![CDATA[An unexpected error has occurred while performing the %s task. %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Unerwarteter Fehler beim Ausführen der Aufgabe „%s“. Der Grund für diesen Fehler ist: %s. Sie können dieses Problem gerne melden, indem Sie auf den bereitgestellten „Problemlink“ klicken, damit wir das Problem so schnell wie möglich untersuchen und beheben können.]]></Val>
+            <Val><![CDATA[Unerwarteter Fehler beim Ausführen der %s-Aufgabe. %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unhandled error: %s]]></Val>
+            <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -6837,15 +6825,6 @@
           <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start due to error: %s.]A; If the reason is not clearly specified, here are some suggestions to troubleshoot:]A; 1. Check the application logs: Look for any error messages or stack traces in the application logs to identify the root cause of the problem.]A; 2. Check the Azure configuration: Ensure that the Azure configuration is correct, including connection strings and application settings.]A; 3. Check the application code: Review the code to see if there are any syntax or logic errors that could be causing the issue.]A; 4. Check the dependencies: Verify that all dependencies required by the application are correctly installed and updated.]A; 5. Restart the application: Try restarting the application in Azure to see if that resolves the issue.]A; 6. Check the resource allocation: Make sure that the resource allocation for the Azure instance is appropriate for the application and its workload.]A; 7. Seek help from Azure support: If the issue persists, reach out to Azure support for further assistance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Das Paket wurde erfolgreich in Azure für den Standort „%s“ bereitgestellt, aber die Anwendung kann aufgrund des folgenden Fehlers nicht gestartet werden: %s.]A; Wenn der Grund nicht eindeutig angegeben ist, finden Sie hier einige Vorschläge zur Fehlerbehebung:]A; 1. Überprüfen Sie die Anwendungsprotokolle: Suchen Sie nach Fehlermeldungen oder Stapelverfolgungen in den Anwendungsprotokollen, um die Grundursache des Problems zu ermitteln.]A; 2. Überprüfen Sie die Azure-Konfiguration: Stellen Sie sicher, dass die Azure-Konfiguration korrekt ist, einschließlich der Zeichenfolgen und Anwendungseinstellungen.]A; 3. Überprüfen Sie den Anwendungscode: Überprüfen Sie den Code, um festzustellen, ob Syntax- oder Logikfehler vorliegen, die die Ursache des Problems sein könnten.]A; 4. Überprüfen Sie die Abhängigkeiten: Überprüfen Sie, ob alle für die Anwendung erforderlichen Abhängigkeiten korrekt installiert und aktualisiert sind.]A; 5. Starten Sie die Anwendung neu: Versuchen Sie, die Anwendung in Azure neu zu starten, um zu sehen, ob das Problem dadurch behoben wird.]A; 6. Überprüfen Sie die Ressourcenzuweisung: Stellen Sie sicher, dass die Ressourcenzuweisung für die Azure-Instanz für die Anwendung und ihre Arbeitslast geeignet ist.]A; 7. Bitten Sie den Azure-Support um Hilfe: Wenn das Problem weiterhin besteht, wenden Sie sich an den Azure-Support, um weitere Unterstützung zu erhalten.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.deploy.DeployRemoteStartError.Notification" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start. Refer to the [Output panel]5D;(command:fx-extension.showOutputChannel) for more suggestions.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Das Paket wurde erfolgreich für den Speicherort „%s“ in Azure bereitgestellt, aber die Anwendung kann nicht gestartet werden. Weitere Vorschläge finden Sie im [Ausgabebereich]5D;(command:fx-extension.showOutputChannel).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7200,10 +7179,13 @@
       </Item>
       <Item ItemId=";error.script.ScriptExecutionError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s]]></Val>
+          <Val><![CDATA[Script ('%s') execution error: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s]]></Val>
+            <Val><![CDATA[Skriptausführungsfehler ("%s"): %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[%s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7470,22 +7452,25 @@
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die YAML-Datei kann nicht analysiert werden: %s. Öffnen Sie die YAML-Datei, und überprüfen Sie die Registerkarte „PROBLEME“, um weitere Informationen zu erhalten.]]></Val>
+            <Val><![CDATA[Die YAML-Datei kann nicht analysiert werden: %s. Überprüfen Sie die YAML-Datei.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
+            <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaErrorWithReason" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die YAML-Datei kann nicht analysiert werden: %s. Grund: %s. Öffnen Sie die YAML-Datei, und überprüfen Sie die Registerkarte „PROBLEME“, um weitere Informationen zu erhalten]]></Val>
+            <Val><![CDATA[Die YAML-Datei kann nicht analysiert werden: %s. Ursache: %s Überprüfen Sie die YAML-Datei.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

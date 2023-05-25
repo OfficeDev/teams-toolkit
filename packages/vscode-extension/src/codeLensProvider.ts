@@ -161,20 +161,10 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-    if (isV3Enabled()) {
-      if (!commandIsRunning && document.fileName.includes(".env.")) {
-        return this.computeCodeLenses(document, this.envSecretRegex);
-      } else {
-        return [];
-      }
+    if (!commandIsRunning && document.fileName.includes(".env.")) {
+      return this.computeCodeLenses(document, this.envSecretRegex);
     } else {
-      if (document.fileName.endsWith("userdata")) {
-        return this.computeCodeLenses(document, this.userDataRegex);
-      } else if (document.fileName.endsWith(localSettingsJsonName)) {
-        return this.computeCodeLenses(document, this.localDebugRegex);
-      } else {
-        return [];
-      }
+      return [];
     }
   }
 

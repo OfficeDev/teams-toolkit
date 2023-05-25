@@ -134,21 +134,21 @@ jobs:
         env:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
-      - name: update templates prerelease tag
+      - name: update templates beta tag
         uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
         with:
-          tag_name: "templates-0.0.0-prerelease"
+          tag_name: "templates-0.0.0-beta"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: release templates' prerelease version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
-          tag: "templates-0.0.0-prerelease"
+          tag: "templates-0.0.0-beta"
           artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true

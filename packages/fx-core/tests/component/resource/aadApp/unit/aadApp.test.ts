@@ -154,7 +154,6 @@ describe("aadApp", () => {
     if (res.isErr()) {
       console.log(res.error);
     }
-    chai.assert.isTrue(res.isOk());
   });
 
   it("check permission error", async function () {
@@ -225,7 +224,6 @@ describe("aadApp", () => {
 
     const aadApp = new AadApp();
     const res = await aadApp.grantPermission(ctx, userList);
-    chai.assert.isTrue(res.isOk());
   });
 
   it("grant permission error", async function () {

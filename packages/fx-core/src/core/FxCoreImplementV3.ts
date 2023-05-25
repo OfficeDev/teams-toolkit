@@ -72,7 +72,6 @@ import { QuestionMW } from "../component/middleware/questionMW";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
-  getQuestionsForInit,
   getQuestionsForProvisionV3,
   getQuestionsForUpdateTeamsApp,
   getQuestionsForValidateManifest,
@@ -158,28 +157,6 @@ export class FxCoreV3Implement {
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
     return ok(inputs.projectPath!);
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW((inputs) => {
-      return getQuestionsForInit("infra", inputs);
-    }),
-  ])
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initInfra(createContextV3(), inputs);
-    return res;
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW((inputs) => {
-      return getQuestionsForInit("debug", inputs);
-    }),
-  ])
-  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initDebug(createContextV3(), inputs);
-    return res;
   }
 
   @hooks([

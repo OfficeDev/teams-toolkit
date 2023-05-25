@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  AppPackageFolderName,
   CLIPlatforms,
   ContextV3,
   DynamicPlatforms,
@@ -24,25 +23,23 @@ import {
   Stage,
   TextInputQuestion,
   UserError,
-  v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { isVSProject } from "../common/projectSettingsHelper";
+import path from "path";
 import { HelpLinks, ResourcePlugins } from "../common/constants";
+import { isBotNotificationEnabled, isCLIDotNetEnabled } from "../common/featureFlags";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { isVSProject } from "../common/projectSettingsHelper";
+import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
+import { NoCapabilityFoundError } from "../core/error";
 import {
-  hasAAD,
-  hasAPIM,
-  hasAzureResourceV3,
-  hasBot,
-  hasApi,
-  hasKeyVault,
-  hasTab,
-} from "../common/projectSettingsHelperV3";
-import { canAddCICDWorkflows } from "../common/tools";
+  CoreQuestionNames,
+  selectM365HostQuestion,
+  selectTeamsAppManifestQuestion,
+  selectTeamsAppPackageQuestion,
+} from "../core/question";
 import {
-  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceApimNewUI,
   AzureResourceFunction,
@@ -52,66 +49,31 @@ import {
   AzureResourceSQL,
   AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
-  BotFeatureIds,
-  BotNewUIOptionItem,
   BotOptionItem,
-  CicdOptionItem,
+  BuiltInFeaturePluginNames,
   CommandAndResponseOptionItem,
   ComponentNames,
-  HostTypeOptionSPFx,
+  GLOBAL_CONFIG,
   MessageExtensionItem,
-  MessageExtensionNewUIItem,
   NotificationOptionItem,
   Runtime,
-  SingleSignOnOptionItem,
-  TabFeatureIds,
-  TabNewUIOptionItem,
-  TabNonSsoItem,
-  TabOptionItem,
-  TabSPFxNewUIItem,
-  WorkflowOptionItem,
-  BuiltInFeaturePluginNames,
-  GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
   SPFxQuestionNames,
-  validateSchemaOption,
+  TabOptionItem,
   validateAppPackageOption,
+  validateSchemaOption,
 } from "./constants";
-import { ComponentName2pluginName } from "./migrate";
-import { getComponent } from "./workflow";
-import { STATIC_TABS_MAX_ITEMS, Constants as Constants1 } from "./resource/appManifest/constants";
 import {
   createHostTypeTriggerQuestion,
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import { NoCapabilityFoundError } from "../core/error";
-import {
-  selectM365HostQuestion,
-  ProgrammingLanguageQuestion,
-  selectTeamsAppManifestQuestion,
-  selectTeamsAppPackageQuestion,
-  CoreQuestionNames,
-} from "../core/question";
-import { createContextV3 } from "./utils";
-import {
-  isBotNotificationEnabled,
-  isCLIDotNetEnabled,
-  isSPFxMultiTabEnabled,
-} from "../common/featureFlags";
-import { buildQuestionNode } from "./resource/azureSql/questions";
-import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
-import { webpartNameQuestion } from "./resource/spfx/utils/questions";
-import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
-import { canAddSso } from "./feature/sso";
-import { addCicdQuestion } from "./feature/cicd/cicd";
-import { InvalidFeature } from "./error";
-import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
-import { getAddSPFxQuestionNode } from "./feature/spfx";
+import { ComponentName2pluginName } from "./migrate";
 import { Constants } from "./resource/aadApp/constants";
-import { functionNameQuestion } from "./feature/api/question";
-import path from "path";
-import fs from "fs-extra";
+import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
+import { Constants as Constants1 } from "./resource/appManifest/constants";
+import { buildQuestionNode } from "./resource/azureSql/questions";
+import { webpartNameQuestion } from "./resource/spfx/utils/questions";
 
 export async function getQuestionsForProvisionV3(
   inputs: Inputs
@@ -255,200 +217,6 @@ export async function getQuestionsForDeployV3(
 export function checkWetherProvisionSucceeded(config: Json): boolean {
   return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 }
-export async function getQuestionsForAddFeatureV3(
-  ctx: v2.Context,
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const notificationOptionItem = NotificationOptionItem();
-  const commandAndResponseOptionItem = CommandAndResponseOptionItem();
-  const workflowOptionItem = WorkflowOptionItem();
-
-  const question: SingleSelectQuestion = {
-    name: AzureSolutionQuestionNames.Features,
-    title: getLocalizedString("core.addFeatureQuestion.title"),
-    type: "singleSelect",
-    staticOptions: [],
-  };
-  const options: OptionItem[] = [];
-  question.staticOptions = options;
-  if (inputs.platform === Platform.CLI_HELP) {
-    options.push(notificationOptionItem);
-    options.push(commandAndResponseOptionItem);
-    options.push(workflowOptionItem);
-    options.push(BotNewUIOptionItem());
-    options.push(TabNewUIOptionItem(), TabNonSsoItem());
-    options.push(MessageExtensionNewUIItem());
-    options.push(AzureResourceApimNewUI);
-    options.push(AzureResourceSQLNewUI);
-    options.push(AzureResourceFunctionNewUI);
-    options.push(AzureResourceKeyVaultNewUI);
-    options.push(SingleSignOnOptionItem);
-    options.push(ApiConnectionOptionItem);
-    options.push(CicdOptionItem);
-    const addFeatureNode = new QTreeNode(question);
-    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-    if (triggerNodeRes.value) {
-      addFeatureNode.addChild(triggerNodeRes.value);
-    }
-    const functionNameNode = new QTreeNode(functionNameQuestion);
-    functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
-    addFeatureNode.addChild(functionNameNode);
-    return ok(addFeatureNode);
-  }
-  // check capability options
-  const azureHost = hasAzureResourceV3(ctx.projectSetting as ProjectSettingsV3);
-  if (azureHost) {
-    const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
-    if (manifestRes.isErr()) return err(manifestRes.error);
-    const manifest = manifestRes.value;
-    const canAddTab = !manifest.staticTabs || manifest.staticTabs.length < STATIC_TABS_MAX_ITEMS;
-    const botExceedLimit = !manifest.bots || manifest.bots.length > 0;
-    const meExceedLimit = !manifest.composeExtensions || manifest.composeExtensions.length > 0;
-    const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
-    const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
-    const alreadyHasNewBot =
-      teamsBot?.capabilities?.includes("notification") ||
-      teamsBot?.capabilities?.includes("command-response") ||
-      teamsBot?.capabilities?.includes("workflow");
-    if (!botExceedLimit && !meExceedLimit) {
-      options.push(notificationOptionItem);
-      options.push(commandAndResponseOptionItem);
-      options.push(workflowOptionItem);
-    }
-    if (canAddTab) {
-      if (!hasTab(projectSettingsV3)) {
-        options.push(TabNewUIOptionItem(), TabNonSsoItem());
-      } else {
-        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem() : TabNonSsoItem());
-      }
-    }
-    if (!botExceedLimit) {
-      options.push(BotNewUIOptionItem());
-    }
-    if (!meExceedLimit && !alreadyHasNewBot) {
-      options.push(MessageExtensionNewUIItem());
-    }
-    // function can always be added
-    options.push(AzureResourceFunctionNewUI);
-    // check cloud resource options
-    if (!hasAPIM(projectSettingsV3)) {
-      options.push(AzureResourceApimNewUI);
-    }
-    options.push(AzureResourceSQLNewUI);
-    if (!hasKeyVault(projectSettingsV3)) {
-      options.push(AzureResourceKeyVaultNewUI);
-    }
-    if (canAddSso(ctx.projectSetting as ProjectSettingsV3) === true) {
-      options.push(SingleSignOnOptionItem);
-    }
-    if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
-      options.push(ApiConnectionOptionItem);
-    }
-  } else if (
-    isSPFxMultiTabEnabled() &&
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionSPFx().id
-  ) {
-    options.push(TabSPFxNewUIItem());
-  }
-  const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
-  if (isCicdAddable) {
-    options.push(CicdOptionItem);
-  }
-  const addFeatureNode = new QTreeNode(question);
-  const functionNameNode = new QTreeNode(functionNameQuestion);
-  functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
-  addFeatureNode.addChild(functionNameNode);
-  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-  if (triggerNodeRes.value) {
-    addFeatureNode.addChild(triggerNodeRes.value);
-  }
-  const addSPFxNodeRes = await getAddSPFxQuestionNode(inputs.projectPath);
-  if (addSPFxNodeRes.isErr()) return err(addSPFxNodeRes.error);
-  if (addSPFxNodeRes.value) {
-    addFeatureNode.addChild(addSPFxNodeRes.value);
-  }
-  if (!ctx.projectSetting.programmingLanguage) {
-    // Language
-    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-    programmingLanguage.condition = {
-      enum: [
-        notificationOptionItem.id,
-        commandAndResponseOptionItem.id,
-        workflowOptionItem.id,
-        TabNewUIOptionItem().id,
-        TabNonSsoItem().id,
-        BotNewUIOptionItem().id,
-        MessageExtensionItem().id,
-        SingleSignOnOptionItem.id, // adding sso means adding sample codes
-      ],
-    };
-    addFeatureNode.addChild(programmingLanguage);
-  }
-  const SelectedFeature: string = inputs[AzureSolutionQuestionNames.Features];
-  if (SelectedFeature && !options.map((op) => op.id).includes(SelectedFeature)) {
-    return err(new InvalidFeature());
-  }
-  return ok(addFeatureNode);
-}
-
-export async function getQuestionsForAddResourceV3(
-  ctx: v2.Context,
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const question: SingleSelectQuestion = {
-    name: AzureSolutionQuestionNames.AddResources,
-    title: getLocalizedString("core.addFeatureQuestion.title"),
-    type: "singleSelect",
-    staticOptions: [],
-  };
-  const options: OptionItem[] = [];
-  question.staticOptions = options;
-  if (inputs.platform === Platform.CLI_HELP) {
-    options.push(AzureResourceApimNewUI);
-    options.push(AzureResourceSQLNewUI);
-    options.push(AzureResourceFunctionNewUI);
-    options.push(AzureResourceKeyVaultNewUI);
-    const addResourceNode = new QTreeNode(question);
-    const functionNameNode = new QTreeNode(functionNameQuestion);
-    functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
-    addResourceNode.addChild(functionNameNode);
-    return ok(addResourceNode);
-  }
-  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
-  if (!hasAPIM(projectSettingsV3)) {
-    options.push(AzureResourceApimNewUI);
-  }
-  options.push(AzureResourceSQLNewUI);
-  if (!hasKeyVault(projectSettingsV3)) {
-    options.push(AzureResourceKeyVaultNewUI);
-  }
-  // function can always be added
-  options.push(AzureResourceFunctionNewUI);
-  const addResourceNode = new QTreeNode(question);
-  const functionNameNode = new QTreeNode(functionNameQuestion);
-  functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
-  addResourceNode.addChild(functionNameNode);
-  if (!ctx.projectSetting.programmingLanguage) {
-    // Language
-    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-    programmingLanguage.condition = {
-      enum: [
-        NotificationOptionItem().id,
-        CommandAndResponseOptionItem().id,
-        WorkflowOptionItem().id,
-        TabNewUIOptionItem().id,
-        TabNonSsoItem().id,
-        BotNewUIOptionItem().id,
-        MessageExtensionItem().id,
-        SingleSignOnOptionItem.id, // adding sso means adding sample codes
-      ],
-    };
-    addResourceNode.addChild(programmingLanguage);
-  }
-  return ok(addResourceNode);
-}
 
 export enum FeatureId {
   Tab = "Tab",
@@ -495,33 +263,6 @@ export function getActionNameByFeatureId(featureId: FeatureId): string | undefin
   if (component) {
     return `${component}.add`;
   }
-}
-
-export async function getQuestionsForAddFeatureSubCommand(
-  featureId: FeatureId,
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (BotFeatureIds().includes(featureId)) {
-    return await getNotificationTriggerQuestionNode(inputs);
-  } else if (TabFeatureIds().includes(featureId)) {
-  } else if (featureId === TabSPFxNewUIItem().id) {
-    return ok(new QTreeNode(webpartNameQuestion));
-  } else if (featureId === AzureResourceSQLNewUI.id) {
-  } else if (
-    featureId === AzureResourceFunctionNewUI.id ||
-    featureId === AzureResourceApimNewUI.id
-  ) {
-    functionNameQuestion.validation = undefined;
-    return ok(new QTreeNode(functionNameQuestion));
-  } else if (featureId === AzureResourceKeyVaultNewUI.id) {
-  } else if (featureId === CicdOptionItem.id) {
-    return await addCicdQuestion(createContextV3(), inputs as InputsWithProjectPath);
-  } else if (featureId === ApiConnectionOptionItem.id) {
-    const apiConnectorImpl = new ApiConnectorImpl();
-    return apiConnectorImpl.generateQuestion(createContextV3(), inputs);
-  } else if (featureId === SingleSignOnOptionItem.id) {
-  }
-  return ok(undefined);
 }
 
 export async function getNotificationTriggerQuestionNode(
@@ -696,138 +437,6 @@ export function SelectEnvQuestion(): SingleSelectQuestion {
     skipSingleOption: true,
     forgetLastValue: true,
   };
-}
-
-export function InitEditorVSCode(): OptionItem {
-  return {
-    id: "vsc",
-    label: getLocalizedString("core.InitEditorVsc"),
-    description: getLocalizedString("core.InitEditorVscDesc"),
-  };
-}
-
-export function InitEditorVS(): OptionItem {
-  return {
-    id: "vs",
-    label: getLocalizedString("core.InitEditorVs"),
-    description: getLocalizedString("core.InitEditorVsDesc"),
-  };
-}
-
-export function InitCapabilityTab(): OptionItem {
-  return {
-    id: "tab",
-    label: "Tab",
-    description: getLocalizedString("core.InitCapabilityTab"),
-  };
-}
-export function InitCapabilityBot(): OptionItem {
-  return {
-    id: "bot",
-    label: "Bot",
-    description: getLocalizedString("core.InitCapabilityBot"),
-  };
-}
-
-export function InitOptionYes(): OptionItem {
-  return {
-    id: "true",
-    label: getLocalizedString("core.InitOptionYes"),
-  };
-}
-export function InitOptionNo(): OptionItem {
-  return {
-    id: "false",
-    label: getLocalizedString("core.InitOptionNo"),
-  };
-}
-export function InitEditorQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "editor",
-    title: getLocalizedString("core.InitEditorTitle"),
-    staticOptions: [InitEditorVSCode(), InitEditorVS()],
-  };
-}
-export function InitCapabilityQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "capability",
-    title: getLocalizedString("core.InitCapabilityTitle"),
-    staticOptions: [InitCapabilityTab(), InitCapabilityBot()],
-  };
-}
-export function InitIsSPFxQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "spfx",
-    title: getLocalizedString("core.InitIsSPFxTitle"),
-    staticOptions: [InitOptionNo(), InitOptionYes()],
-  };
-}
-export function InitDebugProceedQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "proceed",
-    title: async (inputs: Inputs) => {
-      let fileList;
-      if (inputs["editor"] === InitEditorVSCode().id) {
-        const exists = inputs.projectPath
-          ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
-          : false;
-        const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
-        fileList = `  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n  env/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
-      } else {
-        fileList = "  env/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
-      }
-      return getLocalizedString("core.InitGenerateConfirm", fileList);
-    },
-    staticOptions: [InitOptionYes(), InitOptionNo()],
-    default: InitOptionYes().id,
-  };
-}
-export function InitInfraProceedQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "proceed",
-    title: (inputs: Inputs) => {
-      const fileList =
-        inputs["spfx"] === InitOptionYes().id
-          ? "  env/\n    - .env.dev\n  - teamsapp.yml\n"
-          : `  infra/\n${
-              inputs["capability"] === InitCapabilityBot().id
-                ? "    botRegistration/\n      - azurebot.bicep\n      - readme.md\n"
-                : ""
-            }    - azure.bicep\n    - azure.parameters.json\n  env/\n    - .env.dev\n  - teamsapp.yml\n`;
-      return getLocalizedString("core.InitGenerateConfirm", fileList);
-    },
-    staticOptions: [InitOptionYes(), InitOptionNo()],
-    default: InitOptionYes().id,
-  };
-}
-export function getQuestionsForInit(
-  type: "debug" | "infra",
-  inputs: Inputs
-): Result<QTreeNode | undefined, FxError> {
-  const group = new QTreeNode({ type: "group" });
-  group.addChild(new QTreeNode(InitEditorQuestion()));
-  const capabilityNode = new QTreeNode(InitCapabilityQuestion());
-  group.addChild(capabilityNode);
-  const SPFxNode = new QTreeNode(InitIsSPFxQuestion());
-  SPFxNode.condition = {
-    validFunc: (input: string, inputs?: Inputs) => {
-      if (inputs?.editor === InitEditorVSCode().id && inputs?.capability === InitCapabilityTab().id)
-        return undefined;
-      return "Not supported";
-    },
-  };
-  capabilityNode.addChild(SPFxNode);
-  if (inputs.platform !== Platform.CLI_HELP) {
-    group.addChild(
-      new QTreeNode(type === "debug" ? InitDebugProceedQuestion() : InitInfraProceedQuestion())
-    );
-  }
-  return ok(group);
 }
 
 export function spfxFolderQuestion(): FolderQuestion {

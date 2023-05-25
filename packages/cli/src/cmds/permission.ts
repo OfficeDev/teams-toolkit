@@ -158,7 +158,7 @@ export class PermissionGrant extends YargsCommand {
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
       const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, error);
       return err(error);
     }
 

@@ -13,6 +13,7 @@ import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { mockLogProvider, mockTelemetry, mockYargs } from "../utils";
+import CLIUserInteraction from "../../../src/userInteraction";
 
 describe("Permission Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -58,6 +59,23 @@ describe("Permission Command Tests", function () {
     ]);
   });
 
+  it("Permission Status - No Env", async () => {
+    const cmd = new PermissionStatus();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
+    };
+    CLIUserInteraction.interactive = false;
+
+    const result = await cmd.runCommand(args);
+    expect(result.isErr()).equals(true);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.CheckPermissionStart,
+      TelemetryEvent.CheckPermission,
+    ]);
+  });
+
   it("Permission Status - List Collaborator - Happy Path", async () => {
     const cmd = new PermissionStatus();
     const args = {
@@ -88,6 +106,23 @@ describe("Permission Command Tests", function () {
 
     const result = await cmd.runCommand(args);
     expect(result.isOk()).equals(true);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.GrantPermissionStart,
+      TelemetryEvent.GrantPermission,
+    ]);
+  });
+
+  it("Permission Grant - No Env", async () => {
+    const cmd = new PermissionGrant();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      ["aad-app-manifest"]: "aadAppManifest",
+      ["teams-app-manifest"]: "teamsAppManifest",
+      ["email"]: "email",
+    };
+
+    const result = await cmd.runCommand(args);
+    expect(result.isErr()).equals(true);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.GrantPermissionStart,
       TelemetryEvent.GrantPermission,

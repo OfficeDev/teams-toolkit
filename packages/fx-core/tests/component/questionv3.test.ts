@@ -12,7 +12,7 @@ import {
   getQuestionsForValidateAppPackage,
   getQuestionsForValidateManifest,
   spfxFolderQuestion,
-} from "../../src/component/question";
+} from "../../src/question/core";
 describe("question for v3", () => {
   let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();

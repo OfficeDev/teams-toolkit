@@ -53,7 +53,7 @@ import {
   ProgrammingLanguageQuestion,
   ScratchOptionYesVSC,
   validateAadManifestContainsPlaceholder,
-} from "../../src/core/question";
+} from "../../src/question/core";
 import { randomAppName } from "./utils";
 
 describe("Programming Language Questions", async () => {

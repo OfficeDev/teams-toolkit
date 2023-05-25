@@ -14,12 +14,12 @@ import * as sinon from "sinon";
 import { scaffoldSPFx } from "../../../src/component/code/spfxTabCode";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
-import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
 import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { InstallSoftwareError } from "../../../src/error/common";
 import { MockTools } from "../../core/utils";
-import { getSPFxScaffoldQuestion } from "../../../src/component/question";
+import { getSPFxScaffoldQuestion } from "../../../src/question/core";
+import { SPFXQuestionNames } from "../../../src/question/spfx";
 
 describe("spfx", () => {
   describe("getSPFxScaffoldQuestion: isSpfxDecoupleEnabled", () => {

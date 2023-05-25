@@ -3,6 +3,7 @@ import {
   EnvNamePlaceholder,
   err,
   FxError,
+  LogProvider,
   ok,
   ResourceContextV3,
   Result,
@@ -14,7 +15,6 @@ import * as os from "os";
 import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { getResourceFolder } from "../../folder";
-import { addPathToGitignore } from "../../core/middleware/projectMigrator";
 import { TOOLS } from "../../core/globalVars";
 
 const windowsPathLengthLimit = 260;
@@ -131,6 +131,36 @@ export async function backupFiles(
   }
 
   return ok(undefined);
+}
+
+// append folder path to .gitignore under the project root.
+export async function addPathToGitignore(
+  projectPath: string,
+  ignoredPath: string,
+  log: LogProvider
+): Promise<void> {
+  const relativePath = path.relative(projectPath, ignoredPath).replace(/\\/g, "/");
+  await addItemToGitignore(projectPath, relativePath, log);
+}
+
+// append item to .gitignore under the project root.
+async function addItemToGitignore(
+  projectPath: string,
+  item: string,
+  log: LogProvider
+): Promise<void> {
+  const gitignorePath = path.join(projectPath, ".gitignore");
+  try {
+    await fs.ensureFile(gitignorePath);
+
+    const gitignoreContent = await fs.readFile(gitignorePath, "UTF-8");
+    if (gitignoreContent.indexOf(item) === -1) {
+      const appendedContent = os.EOL + item;
+      await fs.appendFile(gitignorePath, appendedContent);
+    }
+  } catch {
+    log.warning(`[core] Failed to add '${item}' to '${gitignorePath}', please do it manually.`);
+  }
 }
 
 async function backupSrcFile(

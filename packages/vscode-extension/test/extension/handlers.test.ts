@@ -291,7 +291,6 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
-      const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
       await handlers.createNewProjectHandler();
 

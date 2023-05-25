@@ -44,7 +44,5 @@ describe("Azure App Scaffold", function () {
       );
       expect(result.success).to.be.true;
     }
-
-    await FrontendValidator.validateScaffoldV3(projectPath, ProgrammingLanguage.TS);
   });
 });

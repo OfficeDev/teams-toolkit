@@ -56,6 +56,14 @@ export const CollaboratorEmailNode = new QTreeNode({
   title: "Input email address of collaborator",
 });
 
+export const CollaboratorEmailOptions: OptionsMap = {
+  email: {
+    type: "string",
+    global: false,
+    description: "Input email address of collaborator",
+  },
+};
+
 export const ManifestFilePathParamName = "manifest-path";
 export const AppPackageFilePathParamName = "app-package-file-path";
 export const BuildPackageOptions: OptionsMap = {

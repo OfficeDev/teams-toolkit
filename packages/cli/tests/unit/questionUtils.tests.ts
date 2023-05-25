@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 
 import { QTreeNode, Question, StaticOptions } from "@microsoft/teamsfx-api";
+import "mocha";
 import sinon from "sinon";
-
-import { expect } from "./utils";
 import { filterQTreeNode } from "../../src/questionUtils";
-import { EmptyQTreeNode } from "../../src/constants";
+import { expect } from "./utils";
 
 describe("Question Utils Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -66,9 +65,7 @@ describe("Question Utils Tests", function () {
   });
 
   it("filterQTreeNode - EmptyQTreeNode", async function () {
-    expect(await filterQTreeNode(root, "add-azure-resources", "xxx")).deep.equal(EmptyQTreeNode);
-    expect(await filterQTreeNode(root, "add-azure-resources", undefined)).deep.equal(
-      EmptyQTreeNode
-    );
+    expect(await filterQTreeNode(root, "add-azure-resources", "xxx")).deep.equal(root);
+    expect(await filterQTreeNode(root, "add-azure-resources", undefined)).deep.equal(root);
   });
 });

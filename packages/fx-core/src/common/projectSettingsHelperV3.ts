@@ -4,13 +4,6 @@ import { ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import { AzureResources, ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 
-export function validateProjectSettings(projectSettings: ProjectSettingsV3): string | undefined {
-  if (!projectSettings) return "empty projectSettings";
-  const components = projectSettings.components;
-  if (!components) return "components is undefined";
-  return undefined;
-}
-
 export function hasTab(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.TeamsTab).length > 0;

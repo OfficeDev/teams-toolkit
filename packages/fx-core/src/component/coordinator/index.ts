@@ -4,7 +4,6 @@ import * as jsonschema from "jsonschema";
 import { camelCase, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
-import { Container } from "typedi";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 
@@ -22,7 +21,6 @@ import {
   Platform,
   ResourceContextV3,
   Result,
-  UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
 
@@ -32,7 +30,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { downloadSampleHook } from "../../core/downloadSample";
-import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
+import { ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
 import {
   CoreQuestionNames,
@@ -51,17 +49,8 @@ import { convertToLangKey } from "../code/utils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import {
-  ApiConnectionOptionItem,
-  AzureResourceApim,
-  AzureResourceFunctionNewUI,
-  AzureResourceKeyVaultNewUI,
-  AzureResourceSQLNewUI,
-  AzureSolutionQuestionNames,
-  BotFeatureIds,
   BotOptionItem,
-  CicdOptionItem,
   CommandAndResponseOptionItem,
-  ComponentNames,
   CoordinatorSource,
   DashboardOptionItem,
   DefaultBotAndMessageExtensionItem,
@@ -70,15 +59,12 @@ import {
   MessageExtensionItem,
   NewProjectTypeOutlookAddinOptionItem,
   NotificationOptionItem,
-  SingleSignOnOptionItem,
-  TabFeatureIds,
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../constants";
-import { getBotTroubleShootMessage } from "../core";
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -95,12 +81,6 @@ import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfxGenerator";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
-import {
-  getQuestionsForAddFeatureV3,
-  InitEditorVS,
-  InitEditorVSCode,
-  InitOptionNo,
-} from "../question";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
 import { envUtil } from "../utils/envUtil";
@@ -151,19 +131,6 @@ export const Feature2TemplateName: any = {
   [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
-};
-
-export const InitTemplateName: any = {
-  ["debug:vsc:tab:true"]: "init-debug-vsc-spfx-tab",
-  ["debug:vsc:tab:false"]: "init-debug-vsc-tab",
-  ["debug:vs:tab:undefined"]: "init-debug-vs-tab",
-  ["debug:vsc:bot:undefined"]: "init-debug-vsc-bot",
-  ["debug:vs:bot:undefined"]: "init-debug-vs-bot",
-  ["infra:vsc:tab:true"]: "init-infra-vsc-spfx-tab",
-  ["infra:vsc:tab:false"]: "init-infra-vsc-tab",
-  ["infra:vs:tab:undefined"]: "init-infra-vs-tab",
-  ["infra:vsc:bot:undefined"]: "init-infra-vsc-bot",
-  ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
 };
 
 const M365Actions = [
@@ -309,47 +276,6 @@ export class Coordinator {
     return ok(projectPath);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "init-infra",
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
-  async initInfra(
-    context: ContextV3,
-    inputs: Inputs,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(InvalidInputError("projectPath is undefined"));
-    }
-    const editor = inputs.editor;
-    const capability = inputs.capability;
-    const spfx = inputs.spfx;
-    if (!editor) return err(InvalidInputError("editor is undefined"));
-    if (!capability) return err(InvalidInputError("capability is undefined"));
-    const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
-    if (!templateName) {
-      return err(InvalidInputError("templateName is undefined"));
-    }
-    const settingsRes = await settingsUtil.readSettings(projectPath, false);
-    const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
-    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
-    if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS().id) {
-      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
-      if (ensure.isErr()) return err(ensure.error);
-    }
-    return ok(undefined);
-  }
-
   async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {
     const list = await fs.readdir(projectPath);
     const csprojFiles = list.filter((fileName) => fileName.endsWith(".csproj"));
@@ -385,51 +311,6 @@ export class Coordinator {
     return ok(undefined);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "init-debug",
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
-  async initDebug(
-    context: ContextV3,
-    inputs: Inputs,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(InvalidInputError("projectPath is undefined"));
-    }
-    const editor = inputs.editor;
-    const capability = inputs.capability;
-    const spfx = inputs.spfx;
-    if (!editor) return err(InvalidInputError("editor is undefined"));
-    if (!capability) return err(InvalidInputError("capability is undefined"));
-    const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
-    if (!templateName) {
-      return err(InvalidInputError("templateName is undefined"));
-    }
-    if (editor === InitEditorVSCode().id) {
-      const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
-      context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
-    }
-    const settingsRes = await settingsUtil.readSettings(projectPath, false);
-    const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
-    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
-    if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS().id) {
-      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
-      if (ensure.isErr()) return err(ensure.error);
-    }
-    return ok(undefined);
-  }
-
   async ensureTrackingId(
     projectPath: string,
     trackingId: string | undefined = undefined
@@ -442,58 +323,6 @@ export class Coordinator {
     settings.trackingId = trackingId || uuid.v4();
     await settingsUtil.writeSettings(projectPath, settings);
     return ok(settings.trackingId);
-  }
-
-  /**
-   * add feature
-   */
-  @hooks([
-    ActionExecutionMW({
-      question: (context, inputs) => {
-        return getQuestionsForAddFeatureV3(context, inputs);
-      },
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.AddFeature,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
-  async addFeature(
-    context: ContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<any, FxError>> {
-    const features = inputs[AzureSolutionQuestionNames.Features];
-    let component;
-    if (BotFeatureIds().includes(features)) {
-      component = Container.get(ComponentNames.TeamsBot);
-    } else if (TabFeatureIds().includes(features)) {
-      component = Container.get(ComponentNames.TeamsTab);
-    } else if (features === AzureResourceSQLNewUI.id) {
-      component = Container.get("sql");
-    } else if (features === AzureResourceFunctionNewUI.id) {
-      component = Container.get(ComponentNames.TeamsApi);
-    } else if (features === AzureResourceApim.id) {
-      component = Container.get(ComponentNames.APIMFeature);
-    } else if (features === AzureResourceKeyVaultNewUI.id) {
-      component = Container.get("key-vault-feature");
-    } else if (features === CicdOptionItem.id) {
-      component = Container.get("cicd");
-    } else if (features === ApiConnectionOptionItem.id) {
-      component = Container.get("api-connector");
-    } else if (features === SingleSignOnOptionItem.id) {
-      component = Container.get("sso");
-    } else if (features === TabSPFxNewUIItem().id) {
-      component = Container.get(ComponentNames.SPFxTab);
-    }
-    if (component) {
-      const res = await (component as any).add(context, inputs);
-      merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: features,
-      });
-      if (res.isErr()) return err(res.error);
-      return ok(res.value);
-    }
-    return ok(undefined);
   }
 
   async preProvisionForVS(
@@ -1060,3 +889,25 @@ export class Coordinator {
 }
 
 export const coordinator = new Coordinator();
+
+export interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBot ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
+}

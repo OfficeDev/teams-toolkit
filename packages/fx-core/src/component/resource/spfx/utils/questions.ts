@@ -12,7 +12,6 @@ import {
 import { Constants } from "./constants";
 import { Utils } from "./utils";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
-import { isV3Enabled } from "../../../../common/tools";
 import { SPFxQuestionNames } from "../../../constants";
 
 export enum SPFXQuestionNames {
@@ -62,9 +61,12 @@ export const webpartNameQuestion: Question = {
           previousInputs[SPFxQuestionNames.SPFxFolder]) ||
           (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath))
       ) {
-        const webpartFolder = isV3Enabled()
-          ? path.join(previousInputs[SPFxQuestionNames.SPFxFolder], "src", "webparts", input)
-          : path.join(previousInputs?.projectPath as any, "SPFx", "src", "webparts", input);
+        const webpartFolder = path.join(
+          previousInputs[SPFxQuestionNames.SPFxFolder],
+          "src",
+          "webparts",
+          input
+        );
         if (await fs.pathExists(webpartFolder)) {
           return getLocalizedString(
             "plugins.spfx.questions.webpartName.error.duplicate",

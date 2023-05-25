@@ -12,7 +12,6 @@ import "mocha";
 import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { scaffoldSPFx } from "../../../src/component/code/spfxTabCode";
-import { getSPFxScaffoldQuestion } from "../../../src/component/feature/spfx";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
 import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
@@ -20,6 +19,7 @@ import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { InstallSoftwareError } from "../../../src/error/common";
 import { MockTools } from "../../core/utils";
+import { getSPFxScaffoldQuestion } from "../../../src/component/question";
 
 describe("spfx", () => {
   describe("getSPFxScaffoldQuestion: isSpfxDecoupleEnabled", () => {

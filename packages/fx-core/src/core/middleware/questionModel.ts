@@ -24,9 +24,11 @@ import {
   TabSPFxItem,
 } from "../../component/constants";
 import { getTemplateId, isFromDevPortal } from "../../component/developerPortalScaffoldUtils";
-import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
-import { getNotificationTriggerQuestionNode } from "../../component/question";
+import {
+  getNotificationTriggerQuestionNode,
+  getSPFxScaffoldQuestion,
+} from "../../component/question";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
 import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";

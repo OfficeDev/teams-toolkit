@@ -2572,15 +2572,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[TeamsFx で動作するようにプロジェクトが正常に初期化されました。]A;]A;次のいくつかの手順: ]A;teamsfx <feature> 追加をすると、シングル サインオンや Teams 通知の統合などの機能を追加できます。]A;]A;Pro のヒント:]A; aka.ms/teams-manifest を参照して、既存の起動ページ エクスペリエンスに接続するためのマニフェスト ファイルの更新の詳細を確認してください。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.]]></Val>
@@ -3415,6 +3406,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[検証規則を使用してアプリ パッケージを検証する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[検証規則を使用してアプリ パッケージを検証する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[マニフェスト スキーマを使用して検証する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[マニフェスト スキーマを使用して検証する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.selectTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a validation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[検証方法を選択する]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
@@ -3703,15 +3739,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js (@CurrentVersion) がサポートされているバージョン一覧 (@SupportedVersions) にありません。]A;]A;サポートされている Node.js バージョンの詳細については "詳細情報" をクリックしてください。]A;]A; (Node.js (@SupportedVersions) をインストールしたばかりの場合は、変更を有効にするために Visual Studio Code を再起動してください)。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.V3NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to %s to install a supported Node.js.]]></Val>
@@ -3802,18 +3829,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.failToValidateNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to validate @NameVersion after installation.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[インストール後に @NameVersion を検証できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to validate @NameVersion after installation.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.failToValidateVxTestApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to validate video extensibility test app after installation.]]></Val>
@@ -3845,15 +3860,6 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.finishInstallDotnet" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[@NameVersion が正常にインストールされました。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.finishInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3910,15 +3916,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.needInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You must have @NameVersion installed to debug your local bot.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ローカル ボットをデバッグするには、@NameVersionがインストールされている必要があります。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.needInstallNpm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You must have NPM installed to debug your local functions.]]></Val>
@@ -3946,15 +3943,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.startInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Downloading and installing @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[@NameVersion をダウンロードしてインストールしています。]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5223,15 +5211,6 @@
           <Val><![CDATA[MultipleEnv feature is not enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[MultipleEnv 機能が有効になっていません]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.NgrokTunnelNotConnected" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Ngrok tunnel is not connected. Check your network settings and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ngrok トンネルが接続されていません。ネットワーク設定を確認して、もう一度やり直してください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6628,6 +6607,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.common.MissingRequiredFileError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Missing %srequired file `%s`]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%srequired ファイル '%s' がありません]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.common.MissingRequiredInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing required input: %s]]></Val>
@@ -6648,12 +6636,12 @@
       </Item>
       <Item ItemId=";error.common.UnhandledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
+          <Val><![CDATA[An unexpected error has occurred while performing the %s task. %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s タスクの実行中に予期しないエラーが発生しました。このエラーの理由: %s。Microsoft ができる限り早く問題を調査して解決できるよう、指定の [問題リンク]5D; をクリックしてこの問題を報告してください。]]></Val>
+            <Val><![CDATA[%s タスクの実行中に予期しないエラーが発生しました。%s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unhandled error: %s]]></Val>
+            <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -6837,15 +6825,6 @@
           <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start due to error: %s.]A; If the reason is not clearly specified, here are some suggestions to troubleshoot:]A; 1. Check the application logs: Look for any error messages or stack traces in the application logs to identify the root cause of the problem.]A; 2. Check the Azure configuration: Ensure that the Azure configuration is correct, including connection strings and application settings.]A; 3. Check the application code: Review the code to see if there are any syntax or logic errors that could be causing the issue.]A; 4. Check the dependencies: Verify that all dependencies required by the application are correctly installed and updated.]A; 5. Restart the application: Try restarting the application in Azure to see if that resolves the issue.]A; 6. Check the resource allocation: Make sure that the resource allocation for the Azure instance is appropriate for the application and its workload.]A; 7. Seek help from Azure support: If the issue persists, reach out to Azure support for further assistance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[パッケージは場所 '%s' の Azure に正常にデプロイされましたが、次のエラーのためアプリケーションを開始できません: %s。]A; 理由が明確に指定されていない場合は、トラブルシューティングを行うためのいくつかの提案を次に示します。]A; 1. アプリケーション ログを確認する: アプリケーション ログでエラー メッセージまたはスタック トレースを探し、問題の根本原因を特定します。]A; 2. Azure の構成を確認する: 接続文字列やアプリケーションの設定など、Azure の構成が正しいことを確認します。]A; 3. アプリケーション コードを確認する: コードを確認して、問題の原因となっている可能性のある構文エラーまたは論理エラーがないかどうかを確認します。]A; 4. 依存関係を確認する: アプリケーションに必要なすべての依存関係が正しくインストールおよび更新されていることを確認します。]A; 5. アプリケーションを再起動する: Azure でアプリケーションを再起動して、問題が解決するかどうかを確認します。]A; 6. リソースの割り当てを確認する: Azure インスタンスのリソースの割り当てが、アプリケーションとそのワークロードに適していることを確認します。]A; 7. Azure サポートに助けを求める: 問題が解決しない場合は、Azure サポートに連絡して支援を受けます。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.deploy.DeployRemoteStartError.Notification" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start. Refer to the [Output panel]5D;(command:fx-extension.showOutputChannel) for more suggestions.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[パッケージは場所 '%s' の Azure に正常にデプロイされましたが、アプリケーションを開始できません。その他の提案については、[出力パネル]5D;(command:fx-extension.showOutputChannel) を参照してください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7200,10 +7179,13 @@
       </Item>
       <Item ItemId=";error.script.ScriptExecutionError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s]]></Val>
+          <Val><![CDATA[Script ('%s') execution error: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s]]></Val>
+            <Val><![CDATA[スクリプト ('%s') 実行エラー: %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[%s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7470,22 +7452,25 @@
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[yaml ファイル %s を解析できません。yaml ファイルを開き、[問題]5D; タブで詳細を確認してください。]]></Val>
+            <Val><![CDATA[YAML ファイルを解析できません: %s。YAML ファイルを確認してください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
+            <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaErrorWithReason" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[yaml ファイル %s を解析できません。理由: %s。yaml ファイルを開き、[問題]5D; タブで詳細を確認してください。]]></Val>
+            <Val><![CDATA[YAML ファイルを解析できません: %s。理由: YAML ファイルを確認してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -35,7 +35,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: cd.yml
           path: .
-    
+
       - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}
         env:

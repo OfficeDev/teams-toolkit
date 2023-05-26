@@ -65,10 +65,12 @@ export enum TemplateProject {
   OneProductivityHub = "graph-toolkit-one-productivity-hub",
   TodoListBackend = "todo-list-with-Azure-backend",
   ShareNow = "share-now",
-  OutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
+  TabOutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
+  OutlookAddIn = "outlook-add-in-set-signature",
   AssistDashboard = "developer-assist-dashboard",
   ProactiveMessaging = "bot-proactive-messaging-teamsfx",
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
+  DiceRoller = "live-share-dice-roller",
 }
 
 export enum Resource {

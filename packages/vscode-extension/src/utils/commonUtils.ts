@@ -30,7 +30,6 @@ import { CONFIGURATION_PREFIX, ConfigurationKey, YmlEnvNamePlaceholder } from ".
 import * as commonUtils from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as yaml from "yaml";
 import { getV3TeamsAppId } from "../debug/commonUtils";
 
@@ -128,35 +127,20 @@ export function getProjectId(): string | undefined {
 }
 
 export function getAppName(): string | undefined {
-  if (isV3Enabled()) {
-    const yamlFilPath = path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.yml");
-    try {
-      const settings = yaml.parse(fs.readFileSync(yamlFilPath, "utf-8"));
-      for (const action of settings?.provision) {
-        if (action?.uses === "teamsApp/create") {
-          const name = action?.with?.name;
-          if (name) {
-            return name.replace(YmlEnvNamePlaceholder, "");
-          }
+  const yamlFilPath = path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.yml");
+  try {
+    const settings = yaml.parse(fs.readFileSync(yamlFilPath, "utf-8"));
+    for (const action of settings?.provision) {
+      if (action?.uses === "teamsApp/create") {
+        const name = action?.with?.name;
+        if (name) {
+          return name.replace(YmlEnvNamePlaceholder, "");
         }
       }
-      return undefined;
-    } catch (e) {}
+    }
     return undefined;
-  } else {
-    const ws = globalVariables.workspaceUri!.fsPath;
-    const settingsJsonPathNew = path.join(
-      ws,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
-    try {
-      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
-      return settingsJson.appName;
-    } catch (e) {}
-    return undefined;
-  }
+  } catch (e) {}
+  return undefined;
 }
 
 export function openFolderInExplorer(folderPath: string): void {
@@ -375,30 +359,13 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
-  if (isV3Enabled()) {
-    // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
-    try {
-      const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
-      return teamsAppId !== "";
-    } catch (error) {
-      return false;
-    }
-  }
-  let provisionResult: Json | undefined;
-
+  // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
   try {
-    provisionResult = await getProvisionResultJson(env);
+    const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+    return teamsAppId !== "";
   } catch (error) {
-    // ignore error on tree view when load provision result failed.
-
-    return undefined;
+    return false;
   }
-
-  if (!provisionResult) {
-    return undefined;
-  }
-
-  return provisionResult.solution?.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
@@ -428,24 +395,6 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
     const provisionResult = await fs.readJSON(provisionOutputFile);
 
     return provisionResult;
-  }
-}
-
-export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promise<boolean> {
-  if (!workspacePath) return false;
-  try {
-    const fx = path.join(workspacePath, ".fx");
-    if (!(await fs.pathExists(fx))) {
-      return false;
-    }
-    const envFileExist = await fs.pathExists(path.join(fx, "env.default.json"));
-    const configDirExist = await fs.pathExists(path.join(fx, "configs"));
-    const armParameterExist = await fs.pathExists(
-      path.join(fx, "configs", "azure.parameters.dev.json")
-    );
-    return envFileExist && (!armParameterExist || !configDirExist);
-  } catch (err) {
-    return false;
   }
 }
 

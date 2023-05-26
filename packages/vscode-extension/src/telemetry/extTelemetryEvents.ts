@@ -29,14 +29,8 @@ export enum TelemetryEvent {
   RunIconDebugStart = "run-icon-debug-start",
   RunIconDebug = "run-icon-debug",
 
-  AddFeatureStart = "add-feature-start",
-  AddFeature = "add-feature",
-
   AddWebpartStart = "add-web-part-start",
   AddWebpart = "add-web-part",
-
-  OpenManifestEditorStart = "open-manifest-editor-start",
-  OpenManifestEditor = "open-manifest-editor",
 
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
@@ -219,10 +213,6 @@ export enum TelemetryEvent {
   OpenFolder = "open-folder",
   ClickGetHelp = "click-get-help",
 
-  // To track the effect of UX changes
-  // that prevents user performing concurrent operations.
-  TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
-
   // To track the event of opening in new window after creating a new project
   OpenNewProject = "open-new-project",
 
@@ -311,9 +301,7 @@ export enum TelemetryProperty {
   Env = "env",
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
-  IsFromSample = "is-from-sample",
   IsSpfx = "is-spfx",
-  IsM365 = "is-m365",
   IsCreatingM365 = "is-creating-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
@@ -321,9 +309,6 @@ export enum TelemetryProperty {
   TeamsFxVersion = "version-teamsfx",
   TeamsJSVersion = "version-teams-js",
   BotbuilderVersion = "version-botbuilder",
-  // Used with TreeViewCommandConcurrentExecution
-  RunningCommand = "running-command",
-  BlockedCommand = "blocked-command",
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",

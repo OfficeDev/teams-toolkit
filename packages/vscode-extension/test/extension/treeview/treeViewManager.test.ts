@@ -2,10 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-
 import { AdaptiveCardCodeLensProvider } from "../../../src/codeLensProvider";
-import { TreatmentVariableValue } from "../../../src/exp/treatmentVariables";
 import * as globalVariables from "../../../src/globalVariables";
 import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
 import treeViewManager from "../../../src/treeview/treeViewManager";
@@ -29,8 +26,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(lifecycleTreeView.commands[0].commandId, "fx-extension.provision");
   });
 
-  it("registerTreeViews in v3", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+  it("registerTreeViews", async () => {
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
@@ -57,7 +53,6 @@ describe("TreeViewManager", () => {
   });
 
   it("updateTreeViewsByContent has adaptive cards", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
@@ -81,7 +76,6 @@ describe("TreeViewManager", () => {
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
 
     treeViewManager.registerTreeViews({
@@ -100,7 +94,6 @@ describe("TreeViewManager", () => {
   });
 
   it("updateTreeViewsOnSPFxChanged", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],

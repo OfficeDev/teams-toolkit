@@ -393,7 +393,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isExistingTabAppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
+  return false;
 }
 
 export function isAadManifestEnabled(): boolean {
@@ -446,121 +446,6 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined
         solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
     );
   }
-}
-
-// TODO: handle VS scenario
-export function canAddSso(
-  projectSettings: ProjectSettings,
-  returnError = false
-): boolean | Result<Void, FxError> {
-  // Can not add sso if feature flag is not enabled
-  if (!isAadManifestEnabled()) {
-    return returnError
-      ? err(
-          new SystemError(
-            SolutionSource,
-            SolutionError.NeedEnableFeatureFlag,
-            getLocalizedString("core.addSso.needEnableFeatureFlag")
-          )
-        )
-      : false;
-  }
-
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (
-    isExistingTabApp(projectSettings) &&
-    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem().id))
-  ) {
-    return ok(Void);
-  }
-  if (!(solutionSettings.hostType === HostTypeOptionAzure().id)) {
-    return returnError
-      ? err(
-          new SystemError(
-            SolutionSource,
-            SolutionError.AddSsoNotSupported,
-            getLocalizedString("core.addSso.onlySupportAzure")
-          )
-        )
-      : false;
-  }
-
-  // Will throw error if only Messaging Extension is selected
-  if (
-    solutionSettings.capabilities.length === 1 &&
-    solutionSettings.capabilities[0] === MessageExtensionItem().id
-  ) {
-    return returnError
-      ? err(
-          new SystemError(
-            SolutionSource,
-            SolutionError.AddSsoNotSupported,
-            getLocalizedString("core.addSso.onlyMeNotSupport")
-          )
-        )
-      : false;
-  }
-
-  // Will throw error if bot host type is Azure Function
-  if (
-    solutionSettings.capabilities.includes(BotOptionItem().id) &&
-    !(
-      solutionSettings.capabilities.includes(TabOptionItem().id) &&
-      !solutionSettings.capabilities.includes(TabSsoItem().id)
-    )
-  ) {
-    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
-    if (botHostType === BotHostTypes.AzureFunctions) {
-      return returnError
-        ? err(
-            new SystemError(
-              SolutionSource,
-              SolutionError.AddSsoNotSupported,
-              getLocalizedString("core.addSso.functionNotSupport")
-            )
-          )
-        : false;
-    }
-  }
-
-  // Check whether SSO is enabled
-  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem().id);
-  const containTab = solutionSettings.capabilities.includes(TabOptionItem().id);
-  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem().id);
-  const containBot = solutionSettings.capabilities.includes(BotOptionItem().id);
-  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
-  if (
-    ((containTabSsoItem && !containBot) ||
-      (containBot && containBotSsoItem && !containTab) ||
-      (containTabSsoItem && containBot && containBotSsoItem)) &&
-    containAadPlugin
-  ) {
-    return returnError
-      ? err(
-          new SystemError(
-            SolutionSource,
-            SolutionError.SsoEnabled,
-            getLocalizedString("core.addSso.ssoEnabled")
-          )
-        )
-      : false;
-  } else if (
-    ((containBotSsoItem && !containBot) ||
-      (containTabSsoItem || containBotSsoItem) !== containAadPlugin) &&
-    returnError
-  ) {
-    // Throw error if the project is invalid
-    // Will not stop showing add sso
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.InvalidSsoProject,
-      getLocalizedString("core.addSso.invalidSsoProject")
-    );
-    return err(e);
-  }
-
-  return returnError ? ok(Void) : true;
 }
 
 export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): boolean {

@@ -127,21 +127,14 @@ export const showNotificationTriggerCondition = {
     if (!inputs) {
       return "Invalid inputs";
     }
-    if (isPreviewFeaturesEnabled()) {
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      if (cap === NotificationOptionItem().id) {
-        return undefined;
-      }
-      // Single Select Option for "Add Feature"
-      const feature = inputs[AzureSolutionQuestionNames.Features];
-      if (feature === NotificationOptionItem().id) {
-        return undefined;
-      }
-    } else {
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities];
-      if (Array.isArray(cap) && cap.includes(NotificationOptionItem().id)) {
-        return undefined;
-      }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+    if (cap === NotificationOptionItem().id) {
+      return undefined;
+    }
+    // Single Select Option for "Add Feature"
+    const feature = inputs[AzureSolutionQuestionNames.Features];
+    if (feature === NotificationOptionItem().id) {
+      return undefined;
     }
     return "Notification is not selected";
   },

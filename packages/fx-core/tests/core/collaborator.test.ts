@@ -2,58 +2,54 @@
 // Licensed under the MIT license.
 
 import {
-  Platform,
-  TokenProvider,
-  v2,
-  v3,
-  UserError,
-  err,
-  ok,
-  ProjectSettingsV3,
   ContextV3,
-  ValidationSchema,
-  getValidationFunction,
+  OptionItem,
+  Platform,
+  ProjectSettingsV3,
   SingleSelectQuestion,
   StaticOptions,
-  OptionItem,
+  TokenProvider,
+  UserError,
+  ValidationSchema,
+  err,
+  getValidationFunction,
+  ok,
+  v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import { Container } from "typedi";
 import * as uuid from "uuid";
+import { FeatureFlagName } from "../../src/common/constants";
+import { CollaborationState } from "../../src/common/permissionInterface";
+import { ComponentNames, SolutionError } from "../../src/component/constants";
+import { AadApp } from "../../src/component/resource/aadApp/aadApp";
+import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
 import {
-  checkPermission,
   CollaborationConstants,
   CollaborationUtil,
+  checkPermission,
   getQuestionsForGrantPermission,
   getQuestionsForListCollaborator,
   grantPermission,
   listCollaborator,
   validateEnvQuestion,
 } from "../../src/core/collaborator";
-import { BuiltInFeaturePluginNames, TEAMS_APP_ID } from "../../src/component/constants";
+import { environmentManager } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
+import { CoreQuestionNames } from "../../src/core/question";
 import {
-  MockedM365Provider,
   MockedAzureAccountProvider,
+  MockedM365Provider,
   MockedV2Context,
 } from "../plugins/solution/util";
 import { MockTools, randomAppName } from "./utils";
-import { Container } from "typedi";
-import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
-import { ComponentNames } from "../../src/component/constants";
-import { hasAAD, hasAzureResource, hasSPFx } from "../../src/common/projectSettingsHelper";
-import { CollaborationState } from "../../src/common/permissionInterface";
-import { SolutionError } from "../../src/component/constants";
-import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import fs from "fs-extra";
-import { FeatureFlagName } from "../../src/common/constants";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { CoreQuestionNames } from "../../src/core/question";
-import { envUtil } from "../../src/component/utils/envUtil";
-import { setTools } from "../../src/core/globalVars";
-import { environmentManager } from "../../src/core/environment";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -83,53 +79,6 @@ describe("Collaborator APIs for V3", () => {
   beforeEach(() => {});
   afterEach(() => {
     sandbox.restore();
-  });
-
-  describe("plugin check", () => {
-    it("hasAAD: yes", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.aad,
-        BuiltInFeaturePluginNames.frontend,
-      ];
-      assert.isTrue(hasAAD(projectSettings));
-    });
-
-    it("hasAAD: no", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.frontend,
-        BuiltInFeaturePluginNames.identity,
-      ];
-      assert.isFalse(hasAAD(projectSettings));
-    });
-
-    it("hasSPFx: yes", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.spfx,
-        BuiltInFeaturePluginNames.aad,
-      ];
-      assert.isTrue(hasSPFx(projectSettings));
-    });
-
-    it("hasSPFx: no", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.frontend,
-      ];
-      assert.isFalse(hasSPFx(projectSettings));
-    });
-
-    it("hasAzureResource: yes", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.spfx,
-        BuiltInFeaturePluginNames.aad,
-        BuiltInFeaturePluginNames.frontend,
-      ];
-      assert.isTrue(hasAzureResource(projectSettings));
-    });
-
-    it("hasAzureResource: no", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [BuiltInFeaturePluginNames.spfx];
-      assert.isFalse(hasAAD(projectSettings));
-    });
   });
 
   describe("listCollaborator", () => {

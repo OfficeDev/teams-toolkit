@@ -8,8 +8,6 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-
 import commandController from "../../src/commandController";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 
@@ -22,11 +20,10 @@ describe("Command Controller", () => {
     sandbox.restore();
   });
 
-  it("directly call command callback in V3", async () => {
+  it("directly call command callback", async () => {
     const commandName = "fx-extension.provision";
     const commandCallback = sandbox.stub();
 
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     commandController.registerCommand(commandName, commandCallback);
     await commandController.runCommand(commandName, []);
 

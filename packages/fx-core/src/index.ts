@@ -25,5 +25,4 @@ export { isValidProject, isExistingTabApp } from "./common/projectSettingsHelper
 export { getPermissionMap } from "./component/resource/aadApp/permissions/index";
 export { AppStudioClient } from "./component/resource/appManifest/appStudioClient";
 export { AppDefinition } from "./component/resource/appManifest/interfaces/appDefinition";
-export { FeatureId } from "./component/question";
 export { CollaborationConstants } from "./core/collaborator";

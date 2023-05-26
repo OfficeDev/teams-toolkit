@@ -5,7 +5,7 @@
  * @author Alive-Fish <547850391@qq.com>
  */
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import "mocha";
@@ -13,13 +13,9 @@ import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import { WorkspaceNotSupported } from "../../src/cmds/preview/errors";
-import LogProvider from "../../src/commonlib/log";
-import { NotFoundSubscriptionId } from "../../src/error";
-import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { default as CLIUIInstance, default as UI } from "../../src/userInteraction";
-import * as Utils from "../../src/utils";
 import { YargsCommand } from "../../src/yargsCommand";
-import { expect } from "./utils";
+import { expect, mockLogProvider } from "./utils";
 
 class TestCommand extends YargsCommand {
   public commandHead = "test";
@@ -38,43 +34,18 @@ class TestCommand extends YargsCommand {
 
 describe("Yargs Command Tests", function () {
   const sandbox = sinon.createSandbox();
-  let telemetryEvents: string[] = [];
   let logs: string[] = [];
-  let allArguments = new Map<string, any>();
   const mockedEnvRestore: RestoreFn = () => {};
 
-  const existedSubId = "existedSubId";
-
   beforeEach(() => {
+    mockLogProvider(sandbox, logs);
     sandbox.stub(process, "exit");
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
-    sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {
-      if (!id) return ok(null);
-      if (id === existedSubId) return ok(null);
-      else return err(NotFoundSubscriptionId());
-    });
-    sandbox.stub(UI, "updatePresetAnswers").callsFake((a: any, args: { [_: string]: any }) => {
-      for (const key of Object.keys(args)) {
-        allArguments.set(key, args[key]);
-      }
-    });
-    sandbox.stub(LogProvider, "outputInfo").returns();
-    sandbox.stub(LogProvider, "outputSuccess").returns();
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    sandbox.stub(UI, "updatePresetAnswers").returns(void 0);
     CLIUIInstance.interactive = false;
-    telemetryEvents = [];
     logs = [];
-    allArguments = new Map<string, any>();
   });
 
   afterEach(() => {

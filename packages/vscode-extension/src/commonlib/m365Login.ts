@@ -269,7 +269,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
         false
       );
       if (tokenRes.isOk()) {
-        let tokenJson = ConvertTokenToJson(tokenRes.value);
+        const tokenJson = ConvertTokenToJson(tokenRes.value);
         // if token is empty, try to get token by app studio scope, normally this should only affect UX
         if (Object.keys(tokenJson).length === 0) {
           const appStudioRes = await M365Login.codeFlowInstance.getTokenByScopes(
@@ -277,11 +277,11 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
             false
           );
           if (appStudioRes.isOk()) {
-            tokenJson = ConvertTokenToJson(appStudioRes.value);
+            const appStudioJson = ConvertTokenToJson(appStudioRes.value);
             return ok({
               status: signedIn,
               token: appStudioRes.value,
-              accountInfo: tokenJson as any,
+              accountInfo: appStudioJson as any,
             });
           }
         }

@@ -1,53 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import path from "path";
 import * as apis from "@microsoft/teamsfx-api";
+import { Colors, Platform, QTreeNode } from "@microsoft/teamsfx-api";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import fs from "fs-extra";
-import {
-  Colors,
-  ConfigFolderName,
-  InputConfigsFolderName,
-  ok,
-  Platform,
-  ProjectSettingsFileName,
-  QTreeNode,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import "mocha";
+import mockedEnv from "mocked-env";
 import sinon from "sinon";
 import * as uuid from "uuid";
-
 import {
   argsToInputs,
   flattenNodes,
   getChoicesFromQTNodeQuestion,
   getColorizedString,
-  getProjectId,
+  getIsM365,
   getSingleOptionString,
   getSystemInputs,
+  getTeamsAppTelemetryInfoByEnv,
   getVersion,
-  getConfigPath,
-  readEnvJsonFile,
-  readEnvJsonFileSync,
-  readProjectSecrets,
+  isWorkspaceSupported,
   readSettingsFileSync,
-  setSubscriptionId,
   sleep,
   toLocaleLowerCase,
   toYargsOptions,
-  getTeamsAppTelemetryInfoByEnv,
-  getIsM365,
-  isSpfxProject,
-  readLocalStateJsonFile,
-  compare,
-  isWorkspaceSupported,
 } from "../../src/utils";
 import { expect } from "./utils";
-import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { environmentManager, FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
-import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
-import mockedEnv from "mocked-env";
-import * as ProjectSettingsHelperV3 from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
   { id: "a", cliName: "aa", label: "aaa" },
@@ -60,41 +39,6 @@ describe("Utils Tests", function () {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it("readLocalStateJsonFile - success", () => {
-    sandbox.stub(fs, "existsSync").returns(true);
-    sandbox.stub(fs, "readJsonSync").returns({});
-    const res = readLocalStateJsonFile("real");
-    expect((res as any).value).to.deep.equal({});
-  });
-
-  it("readLocalStateJsonFile - ConfigNotFoundError", () => {
-    sandbox.stub(fs, "existsSync").returns(false);
-    const res = readLocalStateJsonFile("fake");
-    expect((res as any).error.name).to.equal("ConfigNotFound");
-  });
-
-  it("readLocalStateJsonFile - throw Error", () => {
-    sandbox.stub(fs, "existsSync").returns(true);
-    sandbox.stub(fs, "readJsonSync").throws(new Error());
-    const res = readLocalStateJsonFile("fake");
-    expect((res as any).error.name).to.equal("ReadFileError");
-  });
-
-  it("compare", () => {
-    {
-      const res = compare("1.1.1", "1.1.1");
-      expect(res === 0).to.be.true;
-    }
-    {
-      const res = compare("1.1.1", "1.1.2");
-      expect(res === -1).to.be.true;
-    }
-    {
-      const res = compare("1.2.1", "1.1.2");
-      expect(res === 1).to.be.true;
-    }
   });
 
   it("getChoicesFromQTNodeQuestion - string[]", () => {
@@ -254,83 +198,6 @@ describe("Utils Tests", function () {
     await sleep(0);
   });
 
-  it("getConfigPath", async () => {
-    const answer = getConfigPath("123", "abc");
-    expect(answer).includes(path.resolve("123", ".fx", "abc"));
-  });
-
-  describe("readEnvJsonFile", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readJson").callsFake(async (path: string) => {
-        if (path.includes("realbuterror")) {
-          throw Error("realbuterror");
-        } else {
-          return {};
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path", async () => {
-      const result = await readEnvJsonFile("real", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error).deep.equals({});
-    });
-
-    it("Real Path but cannot read", async () => {
-      const result = await readEnvJsonFile("realbuterror", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
-    });
-
-    it("Fake Path", async () => {
-      const result = await readEnvJsonFile("fake", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
-    });
-  });
-
-  describe("readEnvJsonFileSync", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readJsonSync").callsFake((path: string) => {
-        if (path.includes("realbuterror")) {
-          throw Error("realbuterror");
-        } else {
-          return {};
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path", () => {
-      const result = readEnvJsonFileSync("real", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error).deep.equals({});
-    });
-
-    it("Real Path but cannot read", () => {
-      const result = readEnvJsonFileSync("realbuterror", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
-    });
-
-    it("Fake Path", () => {
-      const result = readEnvJsonFileSync("fake", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
-    });
-  });
-
   describe("readSettingsFileSync", async () => {
     const sandbox = sinon.createSandbox();
 
@@ -392,103 +259,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("Fake Path", () => {
       const result = readSettingsFileSync("fake");
       expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
-    });
-  });
-
-  describe("readProjectSecrets", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readFile").callsFake(async (file: string | Buffer | number) => {
-        if (typeof file === "string" && file.includes("realbuterror")) {
-          throw Error("realbuterror");
-        } else {
-          return Promise.resolve(Buffer.from(""));
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path", async () => {
-      const result = await readProjectSecrets("real", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error).deep.equals({});
-    });
-
-    it("Real Path but cannot read", async () => {
-      const result = await readProjectSecrets(
-        "realbuterror",
-        environmentManager.getDefaultEnvName()
-      );
-      expect(result.isOk() ? result.value : result.error.name).equals("ReadFileError");
-    });
-
-    it("Fake Path", async () => {
-      const result = await readProjectSecrets("fake", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error.name).equals("UserdataNotFound");
-    });
-  });
-
-  describe("setSubscriptionId", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readJson").callsFake(async (path: string) => {
-        if (path.includes("real")) {
-          return { solution: {} };
-        } else {
-          throw Error("not real");
-        }
-      });
-      sandbox.stub(fs, "readJsonSync").callsFake((path: string) => {
-        if (path.includes("real")) {
-          return { solution: {} };
-        } else {
-          throw Error("not real");
-        }
-      });
-      sandbox.stub(AzureAccountManager, "setSubscription");
-      sandbox.stub(AzureAccountManager, "listSubscriptions").returns(
-        Promise.resolve([
-          {
-            subscriptionName: "real",
-            tenantId: "real",
-            subscriptionId: "real",
-          },
-        ])
-      );
-      sandbox.stub(fs, "writeFile").callsFake(async (folder: any, content: string) => {
-        const obj = JSON.parse(content);
-        expect(obj).deep.equals({
-          solution: {
-            subscriptionId: "real",
-            tenantId: "real",
-          },
-        });
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path", async () => {
-      const result = await setSubscriptionId("real", "real");
-      expect(result.isOk() ? result.value : result.error).equals(null);
-    });
-
-    it("Fake Path", async () => {
-      const result = await setSubscriptionId("fake", "fake");
-      expect(result.isOk() ? result.value : result.error).instanceOf(UserError);
-      expect(result.isOk() ? result.value : result.error.name).equals("WorkspaceNotSupported");
     });
   });
 
@@ -598,134 +368,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
   });
 
-  describe("getProjectId", async () => {
-    const sandbox = sinon.createSandbox();
-
-    const oldSettingsPath = path.join(`.${ConfigFolderName}`, "settings.json");
-    const newSettingsPath = path.join(
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readJsonSync").callsFake((path: fs.PathLike) => {
-        if (path.toString().includes("real")) {
-          return { projectId: "real" };
-        } else {
-          throw new Error(`ENOENT: no such file or directory, open '${path.toString()}'`);
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("No Root Folder", async () => {
-      const result = getProjectId(undefined);
-      expect(result).equals(undefined);
-    });
-
-    it("Real Path", async () => {
-      const result = getProjectId("real");
-      expect(result).equals("real");
-    });
-
-    it("Fake Path", async () => {
-      const result = getProjectId("fake");
-      expect(result).equals(undefined);
-    });
-  });
-
-  describe("getProjectId fallback logic", async () => {
-    const sandbox = sinon.createSandbox();
-
-    const oldSettingsPath = path.join(`.${ConfigFolderName}`, "settings.json");
-    const newSettingsPath = path.join(
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
-
-    let oldExist = false;
-    let newExist = false;
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((pathLike: fs.PathLike) => {
-        const _path = pathLike.toString();
-        if (path.normalize(_path).endsWith(oldSettingsPath)) {
-          return oldExist;
-        } else if (path.normalize(_path).endsWith(newSettingsPath)) {
-          return newExist;
-        } else {
-          return _path.includes("real");
-        }
-      });
-      sandbox.stub(fs, "readJsonSync").callsFake((pathLike: fs.PathLike) => {
-        const _path = pathLike.toString();
-        if (path.normalize(_path).endsWith(oldSettingsPath)) {
-          if (oldExist) {
-            return {
-              projectId: "old",
-            };
-          } else {
-            throw new Error(`ENOENT: no such file or directory, open '${_path.toString()}'`);
-          }
-        } else if (path.normalize(_path).endsWith(newSettingsPath)) {
-          if (newExist) {
-            return {
-              projectId: "new",
-            };
-          } else {
-            throw new Error(`ENOENT: no such file or directory, open '${_path.toString()}'`);
-          }
-        } else {
-          return undefined;
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Multi env enabled and both new files and old files exist", async () => {
-      const restore = mockedEnv({ TEAMSFX_V3: "false" });
-      oldExist = true;
-      newExist = true;
-      const result = getProjectId("real");
-      expect(result).equals("new");
-      restore();
-    });
-
-    it("Multi env enabled and only new files exist", async () => {
-      const restore = mockedEnv({ TEAMSFX_V3: "false" });
-      oldExist = false;
-      newExist = true;
-      const result = getProjectId("real");
-      expect(result).equals("new");
-      restore();
-    });
-
-    it("Multi env enabled and only old files exist", async () => {
-      oldExist = true;
-      newExist = false;
-      const result = getProjectId("real");
-      expect(result).equals("old");
-    });
-
-    it("Multi env enabled and neither new nor old files exist", async () => {
-      oldExist = false;
-      newExist = false;
-      const result = getProjectId("real");
-      expect(result).equals(undefined);
-    });
-  });
-
   it("getSystemInputs", async () => {
     const inputs = getSystemInputs("real");
     expect(inputs.platform).equals(Platform.CLI);
@@ -826,16 +468,5 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const result = getIsM365("real.isM365=undefined");
       expect(result).equals(undefined);
     });
-  });
-
-  it("isSpfxProject", async () => {
-    sandbox.stub(ProjectSettingsHelperV3, "hasSPFxTab").resolves(ok(undefined));
-    const mockFxCore = {
-      getProjectConfig: async () => {
-        return ok(undefined);
-      },
-    } as any;
-    const result = await isSpfxProject("real", mockFxCore);
-    expect(result.isOk()).to.be.true;
   });
 });

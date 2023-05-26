@@ -1,65 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import {
+  Colors,
+  FxError,
+  Inputs,
+  MultiSelectQuestion,
+  OptionItem,
+  Platform,
+  QTreeNode,
+  Question,
+  Result,
+  SingleSelectQuestion,
+  err,
+  getSingleOption,
+  ok,
+} from "@microsoft/teamsfx-api";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import { Options } from "yargs";
-import chalk from "chalk";
 import * as uuid from "uuid";
-import * as dotenv from "dotenv";
-import {
-  OptionItem,
-  Question,
-  err,
-  ok,
-  Result,
-  FxError,
-  ConfigFolderName,
-  getSingleOption,
-  SingleSelectQuestion,
-  MultiSelectQuestion,
-  QTreeNode,
-  Inputs,
-  Platform,
-  Colors,
-  StatesFolderName,
-  EnvNamePlaceholder,
-  ProjectSettingsFileName,
-  EnvStateFileNameTemplate,
-  InputConfigsFolderName,
-  SingleSelectConfig,
-  ProjectSettingsV3,
-  InputTextConfig,
-} from "@microsoft/teamsfx-api";
-
-import {
-  ConfigNotFoundError,
-  UserdataNotFound,
-  EnvUndefined,
-  ReadFileError,
-  EnvNotSpecified,
-} from "./error";
-import AzureAccountManager from "./commonlib/azureLogin";
-import {
-  FeatureFlags,
-  SUPPORTED_SPFX_VERSION,
-  TeamsAppManifestFilePathName,
-  AadManifestFilePathName,
-  teamsAppFileName,
-} from "./constants";
-import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
-import { WorkspaceNotSupported } from "./cmds/preview/errors";
-import CLIUIInstance from "./userInteraction";
-import { CliTelemetry } from "./telemetry/cliTelemetry";
-import cliLogger from "./commonlib/log";
-import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
-import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import { O_CREAT, O_EXCL, O_RDWR } from "constants";
 import { parse } from "yaml";
+import { Options } from "yargs";
+import { FeatureFlags, teamsAppFileName } from "./constants";
+import { ConfigNotFoundError, ReadFileError } from "./error";
+import CLIUIInstance from "./userInteraction";
 
 export type Json = { [_: string]: any };
 
@@ -142,130 +108,8 @@ export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function getConfigPath(projectFolder: string, filePath: string): string {
-  return path.resolve(projectFolder, `.${ConfigFolderName}`, filePath);
-}
-
-// TODO: move config read/write utils to core
-export function getEnvFilePath(
-  projectFolder: string,
-  env: string | undefined
-): Result<string, FxError> {
-  if (!env) {
-    return err(new EnvUndefined());
-  }
-  return ok(
-    path.join(
-      projectFolder,
-      `.${ConfigFolderName}`,
-      StatesFolderName,
-      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
-    )
-  );
-}
-
-export async function askManifestFilePath(): Promise<Result<string, FxError>> {
-  const config: InputTextConfig = {
-    name: AadManifestFilePathName,
-    title: "Enter the AAD app manifest template path",
-    default: "./aad.manifest.json",
-  };
-  const filePathInput = await CLIUIInstance.inputText(config);
-  if (filePathInput.isErr()) {
-    return err(filePathInput.error);
-  } else {
-    return ok(filePathInput.value.result as string);
-  }
-}
-
-export async function askTeamsManifestFilePath(): Promise<Result<string, FxError>> {
-  const config: InputTextConfig = {
-    name: TeamsAppManifestFilePathName,
-    title: "Enter the Teams app manifest template path",
-    default: "./appPackage/manifest.json",
-  };
-  const filePathInput = await CLIUIInstance.inputText(config);
-  if (filePathInput.isErr()) {
-    return err(filePathInput.error);
-  } else {
-    return ok(filePathInput.value.result as string);
-  }
-}
-
 export function getSettingsFilePath(projectFolder: string) {
-  return isV3Enabled()
-    ? path.join(projectFolder, teamsAppFileName)
-    : path.join(
-        projectFolder,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
-}
-
-export function getSecretFilePath(
-  projectRoot: string,
-  env: string | undefined
-): Result<string, FxError> {
-  return ok(path.join(projectRoot, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`));
-}
-
-export async function readEnvJsonFile(
-  projectFolder: string,
-  env: string | undefined
-): Promise<Result<Json, FxError>> {
-  const filePathResult = getEnvFilePath(projectFolder, env);
-  if (filePathResult.isErr()) {
-    return err(filePathResult.error);
-  }
-  const filePath = filePathResult.value;
-  if (!fs.existsSync(filePath)) {
-    return err(ConfigNotFoundError(filePath));
-  }
-  try {
-    const config = await fs.readJson(filePath);
-    return ok(config);
-  } catch (e) {
-    return err(ReadFileError(e));
-  }
-}
-
-export function readEnvJsonFileSync(
-  projectFolder: string,
-  env: string | undefined
-): Result<Json, FxError> {
-  const filePathResult = getEnvFilePath(projectFolder, env);
-  if (filePathResult.isErr()) {
-    return err(filePathResult.error);
-  }
-  const filePath = filePathResult.value;
-  if (!fs.existsSync(filePath)) {
-    return err(ConfigNotFoundError(filePath));
-  }
-  try {
-    const config = fs.readJsonSync(filePath);
-    return ok(config);
-  } catch (e) {
-    return err(ReadFileError(e));
-  }
-}
-
-export function readLocalStateJsonFile(projectFolder: string): Result<Json, FxError> {
-  const localStatePath = path.join(
-    projectFolder,
-    `.${ConfigFolderName}`,
-    `${StatesFolderName}`,
-    "state.local.json"
-  );
-  if (!fs.existsSync(localStatePath)) {
-    return err(ConfigNotFoundError(localStatePath));
-  }
-  try {
-    const config = fs.readJsonSync(localStatePath);
-    return ok(config);
-  } catch (e) {
-    return err(ReadFileError(e));
-  }
+  return path.join(projectFolder, teamsAppFileName);
 }
 
 export function readSettingsFileSync(projectFolder: string): Result<Json, FxError> {
@@ -275,96 +119,21 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
   }
 
   try {
-    if (isV3Enabled()) {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      const configuration = parse(fileContent);
-      return ok({
-        projectId: configuration.projectId,
-        version: configuration.version,
-      });
-    } else {
-      const settings = fs.readJsonSync(filePath);
-      return ok(settings);
-    }
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    const configuration = parse(fileContent);
+    return ok({
+      projectId: configuration.projectId,
+      version: configuration.version,
+    });
   } catch (e) {
     return err(ReadFileError(e));
   }
-}
-
-export async function readProjectSecrets(
-  projectFolder: string,
-  env: string | undefined
-): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-  const secretFileResult = getSecretFilePath(projectFolder, env);
-  if (secretFileResult.isErr()) {
-    return err(secretFileResult.error);
-  }
-  const secretFile = secretFileResult.value;
-  if (!fs.existsSync(secretFile)) {
-    return err(new UserdataNotFound(env!));
-  }
-  try {
-    const secretData = await fs.readFile(secretFile);
-    return ok(dotenv.parse(secretData));
-  } catch (e) {
-    return err(ReadFileError(e));
-  }
-}
-
-export function writeSecretToFile(
-  secrets: dotenv.DotenvParseOutput,
-  rootFolder: string,
-  env: string | undefined
-): Result<undefined, FxError> {
-  const secretFileResult = getSecretFilePath(rootFolder, env);
-  if (secretFileResult.isErr()) {
-    return err(secretFileResult.error);
-  }
-  const secretFile = secretFileResult.value;
-  const array: string[] = [];
-  for (const secretKey of Object.keys(secrets)) {
-    const secretValue = secrets[secretKey];
-    array.push(`${secretKey}=${secretValue}`);
-  }
-  if (!fs.existsSync(secretFile)) {
-    return err(new UserdataNotFound(env!));
-  }
-  try {
-    const fd = fs.openSync(secretFile, O_CREAT | O_EXCL | O_RDWR, 0o600);
-    fs.writeFileSync(fd, array.join("\n"));
-  } catch (e) {
-    return err(WriteFileError(e));
-  }
-  return ok(undefined);
-}
-
-export async function setSubscriptionId(
-  subscriptionId?: string,
-  rootFolder = "./"
-): Promise<Result<null, FxError>> {
-  if (subscriptionId) {
-    if (!isWorkspaceSupported(rootFolder)) {
-      return err(WorkspaceNotSupported(rootFolder));
-    }
-
-    AzureAccountManager.setRootPath(rootFolder);
-    if (subscriptionId) {
-      await AzureAccountManager.setSubscription(subscriptionId);
-    }
-  }
-  return ok(null);
 }
 
 export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 
-  const checklist: string[] = isV3Enabled()
-    ? [p, path.join(p, teamsAppFileName)]
-    : [
-        p,
-        `${p}/.${ConfigFolderName}`,
-        path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
-      ];
+  const checklist = [p, path.join(p, teamsAppFileName)];
 
   for (const fp of checklist) {
     if (!fs.existsSync(path.resolve(fp))) {
@@ -395,30 +164,6 @@ export function getTeamsAppTelemetryInfoByEnv(
     }
   } catch (e) {
     return undefined;
-  }
-}
-
-/**
- * Ask user to select environment, local is included
- */
-export async function askTargetEnvironment(projectDir: string): Promise<Result<string, FxError>> {
-  if (isV3Enabled() && !CLIUIInstance.interactive) {
-    return err(new EnvNotSpecified());
-  }
-  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectDir);
-  if (envProfilesResult.isErr()) {
-    return err(envProfilesResult.error);
-  }
-  const config: SingleSelectConfig = {
-    name: "targetEnvName",
-    title: "Select an environment",
-    options: envProfilesResult.value,
-  };
-  const selectedEnv = await CLIUIInstance.selectOption(config);
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
-  } else {
-    return ok(selectedEnv.value.result as string);
   }
 }
 
@@ -456,51 +201,6 @@ export function getIsM365(rootFolder: string | undefined): string | undefined {
     // ignore errors for telemetry
   }
   return undefined;
-}
-
-export function getLocalTeamsAppId(rootfolder: string | undefined): any {
-  if (!rootfolder) {
-    return undefined;
-  }
-
-  if (isWorkspaceSupported(rootfolder)) {
-    const result = readLocalStateJsonFile(rootfolder);
-    if (result.isErr()) {
-      return undefined;
-    }
-    const localState = result.value;
-    try {
-      return localState["fx-resource-appstudio"].teamsAppId;
-    } catch (error) {
-      return undefined;
-    }
-  }
-
-  return undefined;
-}
-
-export function getProjectId(rootfolder: string | undefined): any {
-  if (!rootfolder) {
-    return undefined;
-  }
-
-  // Do not check validity of project in multi-env.
-  // Before migration, `isWorkspaceSupported()` is false, but we still need to send `project-id` telemetry property.
-  const result = readSettingsFileSync(rootfolder);
-  if (result.isOk()) {
-    return result.value.projectId;
-  }
-
-  // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
-  // While doing migration, sending telemetry will call this `getProjectId()` function.
-  // But before migration done, the settings file is still in the old location.
-  const settingsFilePathOld = getConfigPath(rootfolder, "settings.json");
-  try {
-    const settings = fs.readJsonSync(settingsFilePathOld);
-    return settings.projectId;
-  } catch (e) {
-    return undefined;
-  }
 }
 
 export function getSystemInputs(projectPath?: string, env?: string): Inputs {
@@ -593,97 +293,4 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
-}
-
-export async function isSpfxProject(
-  rootFolder: string,
-  core: FxCore
-): Promise<Result<boolean | undefined, FxError>> {
-  const inputs: Inputs = {
-    platform: Platform.CLI,
-    projectPath: rootFolder,
-  };
-
-  const configResult = await core.getProjectConfig(inputs);
-  if (configResult.isErr()) {
-    return err(configResult.error);
-  }
-  const config = configResult.value;
-  const projectSettings = config?.settings;
-  return ok(hasSPFxTab(projectSettings as ProjectSettingsV3));
-}
-
-export async function promptSPFxUpgrade(rootFolder: string) {
-  const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
-  const projectSettings = await localEnvManager.getProjectSettings(rootFolder);
-  const isSpfx = hasSPFxTab(projectSettings as ProjectSettingsV3);
-  if (isSpfx) {
-    let projectSPFxVersion = null;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    const yoInfoPath = path.join(rootFolder, "SPFx", ".yo-rc.json");
-    if (await fs.pathExists(yoInfoPath)) {
-      const yoInfo = await fs.readJson(yoInfoPath);
-      projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
-    }
-
-    if (!projectSPFxVersion) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-      const packagePath = path.join(rootFolder, "SPFx", "package.json");
-      if (await fs.pathExists(packagePath)) {
-        const packageInfo = await fs.readJSON(packagePath);
-        projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
-      }
-    }
-
-    if (projectSPFxVersion) {
-      const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      if (cmp === 1 || cmp === -1) {
-        CLIUIInstance.showMessage(
-          "warn",
-          cmp === 1
-            ? `You are using a newer version of SPFx in your project while the current version of TeamsFx CLI supports SPFx v${SUPPORTED_SPFX_VERSION}. Please note that some of the newer SPFx features might not be supported. If you are not using the latest version of TeamsFx CLI, consider to upgrade.`
-            : `You are using a legacy version of SPFx in your project while the current version of TeamsFx CLI supports SPFx v${SUPPORTED_SPFX_VERSION}. If you want to use SPFx v${SUPPORTED_SPFX_VERSION}, follow "CLI for Microsoft 365"(https://pnp.github.io/cli-microsoft365/cmd/spfx/project/project-upgrade/) to upgrade.`,
-          false
-        );
-      }
-    }
-  }
-}
-
-export function compare(v1: string | any, v2: string | any) {
-  if (typeof v1 === "string") {
-    v1 = fromString(v1);
-  }
-  if (typeof v2 === "string") {
-    v2 = fromString(v2);
-  }
-
-  if (v1.major > v2.major) return 1;
-  if (v1.major < v2.major) return -1;
-
-  if (v1.minor > v2.minor) return 1;
-  if (v1.minor < v2.minor) return -1;
-
-  if (v1.patch > v2.patch) return 1;
-  if (v1.patch < v2.patch) return -1;
-
-  if (v1.pre === undefined && v2.pre !== undefined) return 1;
-  if (v1.pre !== undefined && v2.pre === undefined) return -1;
-
-  if (v1.pre !== undefined && v2.pre !== undefined) {
-    return v1.pre.localeCompare(v2.pre);
-  }
-
-  return 0;
-}
-
-export function fromString(version: string): any {
-  const [ver, pre] = version.split("-");
-  const [major, minor, patch] = ver.split(".");
-  return {
-    major: typeof major === "string" ? parseInt(major, 10) : major,
-    minor: typeof minor === "string" ? parseInt(minor, 10) : minor,
-    patch: patch == null ? 0 : typeof patch === "string" ? parseInt(patch, 10) : patch,
-    pre: pre,
-  };
 }

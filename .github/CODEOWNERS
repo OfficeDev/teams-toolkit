@@ -42,7 +42,7 @@
 /packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
 /packages/cli/tests/e2e/m365 @kimizhu @swatDong @kuojianlu
 /packages/cli/tests/e2e/debug @kimizhu @swatDong @kuojianlu
-/packages/cli/tests/e2e/samples @ayachensiyuan
+/packages/cli/tests/e2e/samples @LongOddCode @ayachensiyuan
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu

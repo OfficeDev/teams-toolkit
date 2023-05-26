@@ -18,7 +18,6 @@ export * from "./component/migrate";
 export * from "./common/projectSettingsHelperV3";
 export * from "./component/constants";
 export * from "./component/resource/appManifest/utils/utils";
-export * from "./component/resource/azureSql/constants";
 export { envUtil } from "./component/utils/envUtil";
 export { environmentManager, EnvStateFiles } from "./core/environment";
 export { isValidProject, isExistingTabApp } from "./common/projectSettingsHelper";

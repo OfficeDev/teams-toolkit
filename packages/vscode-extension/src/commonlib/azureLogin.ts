@@ -54,7 +54,6 @@ import accountTreeViewProviderInstance from "../treeview/account/accountTreeView
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AccessToken, GetTokenOptions, useIdentityPlugin } from "@azure/identity";
 import { vsCodePlugin } from "@azure/identity-vscode";
-import { Constants } from "@microsoft/teamsfx-core/build/component/resource/azureSql/constants";
 
 useIdentityPlugin(vsCodePlugin);
 
@@ -73,7 +72,7 @@ class TeamsFxTokenCredential implements TokenCredential {
       if (this.tokenCredentialBase) {
         const token = await this.tokenCredentialBase.getToken();
         const tokenJson = ConvertTokenToJson(token.accessToken);
-        if (scopes === Constants.azureSqlScope) {
+        if (scopes === "https://database.windows.net//.default") {
           // fix SQL.DatabaseUserCreateError
           const tenantId = (tokenJson as any).tid;
           const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });

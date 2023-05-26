@@ -28,7 +28,6 @@ import {
   TelemetryConstants,
 } from "../constants";
 import { createAuthFiles } from "../resource/aadApp/utils";
-import "../resource/azureSql";
 import { getComponent } from "../workflow";
 
 @Service("sso")

@@ -381,9 +381,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           };
           if (!isV3Enabled()) {
             await this.saveSubscription(subscriptionInfo);
-            await accountTreeViewProviderInstance.azureAccountNode.setSubscription(
-              subscriptionInfo
-            );
           }
           return;
         }

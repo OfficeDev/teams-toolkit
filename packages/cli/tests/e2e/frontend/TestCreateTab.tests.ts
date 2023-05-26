@@ -38,7 +38,11 @@ describe("Create single tab", function () {
   describe("feature flags for API v3", async function () {
     it(`Create react app without Azure Function`, { testPlanCaseId: 9426074 }, async () => {
       // new a project ( tab only )
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await CliHelper.createProjectWithCapability(
+        appName,
+        testFolder,
+        Capability.M365SsoLaunchPage
+      );
       {
         // Validate scaffold
         if (isV3Enabled()) {

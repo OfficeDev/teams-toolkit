@@ -25,7 +25,7 @@ import {
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { it } from "@microsoft/extra-shot-mocha";
-import { Capability, EnvConstants, PluginId, StateConfigKey } from "../../commonlib/constants";
+import { EnvConstants, PluginId, StateConfigKey } from "../../commonlib/constants";
 import {
   getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
@@ -49,7 +49,7 @@ describe("Blazor App", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
   it(`Create Blazor app`, { testPlanCaseId: 15686028 }, async () => {
-    await CliHelper.createDotNetProject(appName, testFolder, Capability.Tab, env);
+    await CliHelper.createDotNetProject(appName, testFolder, "tab", env);
     const programCsPath = path.join(testFolder, appName, "App.razor");
     chai.assert.isTrue(await fs.pathExists(programCsPath));
   });
@@ -67,7 +67,7 @@ describe("Blazor App", function () {
         value: "B1",
       });
     }
-    await CliHelper.provisionProject(projectPath, "", env);
+    await CliHelper.provisionProject(projectPath, "", "dev", env);
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
@@ -120,7 +120,7 @@ describe("Blazor App", function () {
   });
 
   it("Deploy Blazor app to Azure Web APP", { testPlanCaseId: 15686031 }, async () => {
-    await CliHelper.deployAll(projectPath, "", env);
+    await CliHelper.deployAll(projectPath, "", "dev", env);
 
     let endpoint: string;
     if (isV3Enabled()) {

@@ -683,8 +683,12 @@ export async function generateLocalConfig(context: MigrationContext): Promise<vo
 
 export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
   const projectPath = getParameterFromCxt(context, "projectPath", "");
-  const projectId = await getTrackingIdFromPath(projectPath);
-  globalVars.trackingId = projectId; // set trackingId to globalVars
+  try {
+    const projectId = await getTrackingIdFromPath(projectPath);
+    globalVars.trackingId = projectId; // set trackingId to globalVars
+  } catch (error) {
+    // do not set trackingId if error happens
+  }
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {
@@ -984,7 +988,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   const gitignoreFile = ".gitignore";
   const ignoreFileExist: boolean = await context.backup(gitignoreFile);
   if (!ignoreFileExist) {
-    context.fsCreateFile(gitignoreFile);
+    await context.fsCreateFile(gitignoreFile);
   }
 
   let ignoreFileContent: string = await fs.readFile(

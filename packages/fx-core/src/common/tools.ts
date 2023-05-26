@@ -56,7 +56,7 @@ import {
   TabOptionItem,
   MessageExtensionItem,
 } from "../component/constants";
-import { TOOLS } from "../core/globalVars";
+import { TOOLS, globalVars } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
@@ -843,6 +843,11 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
       const settingsPath = getProjectSettingPathV3(rootPath);
 
       if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
+        if (globalVars.trackingId) {
+          return {
+            projectId: globalVars.trackingId,
+          };
+        }
         return undefined;
       }
 

@@ -39,7 +39,7 @@ import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
-import { TOOLS } from "../../src/core/globalVars";
+import { TOOLS, globalVars } from "../../src/core/globalVars";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
@@ -270,6 +270,25 @@ projectId: 00000000-0000-0000-0000-000000000000`;
         chai.assert.isNotEmpty(result);
         chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
       } finally {
+        restore();
+      }
+    });
+
+    it("V3 for global trackingId", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "true",
+      });
+      try {
+        sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
+          return false;
+        });
+        globalVars.trackingId = "00000000-0000-0000-0000-000000000000";
+
+        const result = getFixedCommonProjectSettings("root-path");
+        chai.assert.isNotEmpty(result);
+        chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
+      } finally {
+        globalVars.trackingId = undefined;
         restore();
       }
     });

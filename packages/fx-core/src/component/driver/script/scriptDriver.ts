@@ -162,13 +162,13 @@ export function convertScriptErrorToFxError(
 }
 
 export function parseSetOutputCommand(stdout: string): DotenvOutput {
-  const lines = stdout.toString().replace(/\r\n?/gm, "\n").split(/\r?\n/);
+  const regex = /(::set-teamsfx-env|::set-output)\s+([^"'\s]+)=([^"'\s]+)/g;
   const output: DotenvOutput = {};
-  for (const line of lines) {
-    const matches = line.match(/(::set-teamsfx-env|::set-output)\s+(\w+)=(\w+)/);
-    if (matches && matches.length === 4) {
-      const key = matches[2].trim();
-      const value = matches[3].trim();
+  let match;
+  while ((match = regex.exec(stdout))) {
+    if (match && match.length === 4) {
+      const key = match[2].trim();
+      const value = match[3].trim();
       output[key] = value;
     }
   }

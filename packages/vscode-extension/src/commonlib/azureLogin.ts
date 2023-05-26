@@ -72,18 +72,10 @@ class TeamsFxTokenCredential implements TokenCredential {
       if (this.tokenCredentialBase) {
         const token = await this.tokenCredentialBase.getToken();
         const tokenJson = ConvertTokenToJson(token.accessToken);
-        if (scopes === "https://database.windows.net//.default") {
-          // fix SQL.DatabaseUserCreateError
-          const tenantId = (tokenJson as any).tid;
-          const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
-          const sqlToken = await vsCredential.getToken(scopes);
-          return sqlToken;
-        } else {
-          return {
-            token: token.accessToken,
-            expiresOnTimestamp: (tokenJson as any).exp * 1000,
-          };
-        }
+        return {
+          token: token.accessToken,
+          expiresOnTimestamp: (tokenJson as any).exp * 1000,
+        };
       } else {
         return null;
       }

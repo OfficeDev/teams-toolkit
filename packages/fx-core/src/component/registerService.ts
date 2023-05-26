@@ -11,7 +11,6 @@ import "./feature/sso";
 import "./resource/apim/apim";
 import "./resource/azureAppService/azureFunction";
 import "./resource/azureAppService/azureWebApp";
-import "./resource/azureSql";
 import "./resource/azureStorage/azureStorage";
 import "./resource/botService/botService";
 import "./resource/spfx";

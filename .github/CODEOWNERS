@@ -57,18 +57,16 @@
 /packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/fx-core/resource/yaml.schema.json @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
-/packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @blackchoey @wenytang-ms
+
+/packages/fx-core/src/question @jayzhang @xzf0587 @hund030 @LongOddCode
+/packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
-
-/packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode @nliu-ms @xzf0587 @hund030
-/packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @qinezh
-/packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
-
+ 
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
@@ -140,23 +138,10 @@
 /templates/scenarios/csharp/notification-webapi @kimizhu @dooriya @swatDong
 /templates/scenarios/csharp/notification-timer-trigger @kimizhu @dooriya @swatDong
 /templates/scenarios/csharp/workflow @kimizhu @dooriya @swatDong
-
-/packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
-/packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey
-
+ 
 /packages/fx-core/src/component/resource/azureSql @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/component/resource/azureSql @xzf0587 @adashen @blackchoey
 
-/packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
-/packages/fx-core/tests/plugins/resource/localdebug @swatDong @kuojianlu
-
-/packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
-/packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
-
-/packages/fx-core/src/plugins/resource/keyvault @adashen @formulahendry @xzf0587
-/packages/fx-core/tests/plugins/resource/keyvault @adashen @formulahendry @xzf0587
-
-/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @wenytang-ms @adashen
 /packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @wenytang-ms @adashen
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
@@ -188,7 +173,6 @@
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
-/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
 /packages/fx-core/src/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu

@@ -107,7 +107,6 @@ import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
 import { localTelemetryReporter, sendDebugAllEvent } from "./debug/localTelemetryReporter";
-import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as teamsAppInstallation from "./debug/teamsAppInstallation";
@@ -229,7 +228,6 @@ export function activate(): Result<Void, FxError> {
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);
     }
-    automaticNpmInstallHandler(false, false, false);
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.

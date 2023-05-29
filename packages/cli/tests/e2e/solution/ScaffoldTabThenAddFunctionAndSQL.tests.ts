@@ -30,7 +30,7 @@ describe("Scaffold Tab then Add Function and SQL", function () {
     if (isV3Enabled()) {
       this.skip();
     }
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabSso);
 
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

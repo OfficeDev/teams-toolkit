@@ -38,7 +38,7 @@ import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
-import { TOOLS } from "../../src/core/globalVars";
+import { TOOLS, globalVars } from "../../src/core/globalVars";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);

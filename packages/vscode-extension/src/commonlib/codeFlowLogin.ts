@@ -523,10 +523,15 @@ export function UserCancelError(source: string): UserError {
   });
 }
 
+// if connot convert token via base64, return empty object
 export function ConvertTokenToJson(token: string): object {
-  const array = token.split(".");
-  const buff = Buffer.from(array[1], "base64");
-  return JSON.parse(buff.toString(UTF8));
+  try {
+    const array = token.split(".");
+    const buff = Buffer.from(array[1], "base64");
+    return JSON.parse(buff.toString(UTF8));
+  } catch (e) {
+    return {};
+  }
 }
 
 export async function checkIsOnline(): Promise<boolean> {

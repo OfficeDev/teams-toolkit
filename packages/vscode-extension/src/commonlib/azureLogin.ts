@@ -54,7 +54,6 @@ import accountTreeViewProviderInstance from "../treeview/account/accountTreeView
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AccessToken, GetTokenOptions, useIdentityPlugin } from "@azure/identity";
 import { vsCodePlugin } from "@azure/identity-vscode";
-import { Constants } from "@microsoft/teamsfx-core/build/component/resource/azureSql/constants";
 
 useIdentityPlugin(vsCodePlugin);
 
@@ -73,18 +72,10 @@ class TeamsFxTokenCredential implements TokenCredential {
       if (this.tokenCredentialBase) {
         const token = await this.tokenCredentialBase.getToken();
         const tokenJson = ConvertTokenToJson(token.accessToken);
-        if (scopes === Constants.azureSqlScope) {
-          // fix SQL.DatabaseUserCreateError
-          const tenantId = (tokenJson as any).tid;
-          const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
-          const sqlToken = await vsCredential.getToken(scopes);
-          return sqlToken;
-        } else {
-          return {
-            token: token.accessToken,
-            expiresOnTimestamp: (tokenJson as any).exp * 1000,
-          };
-        }
+        return {
+          token: token.accessToken,
+          expiresOnTimestamp: (tokenJson as any).exp * 1000,
+        };
       } else {
         return null;
       }
@@ -381,9 +372,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           };
           if (!isV3Enabled()) {
             await this.saveSubscription(subscriptionInfo);
-            await accountTreeViewProviderInstance.azureAccountNode.setSubscription(
-              subscriptionInfo
-            );
           }
           return;
         }

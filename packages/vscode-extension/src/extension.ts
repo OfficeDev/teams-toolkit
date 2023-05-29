@@ -12,12 +12,17 @@ import {
   ConfigFolderName,
   FxError,
   InputConfigsFolderName,
-  ProjectSettingsV3,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
+import { isTDPIntegrationEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -32,7 +37,6 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
-import { localSettingsJsonName } from "./debug/constants";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -55,20 +59,12 @@ import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import {
-  canUpgradeToArmAndMultiEnv,
-  delay,
-  isM365Project,
-  syncFeatureFlags,
-} from "./utils/commonUtils";
+import { UriHandler } from "./uriHandler";
+import { delay, isM365Project, syncFeatureFlags } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
-import { UriHandler } from "./uriHandler";
-import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -668,12 +664,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.selectAndDebugHandler, args)
   );
   context.subscriptions.push(runIconCmd);
-
-  const specifySubscription = vscode.commands.registerCommand(
-    "fx-extension.specifySubscription",
-    (...args) => Correlator.run(handlers.selectSubscriptionCallback, args)
-  );
-  context.subscriptions.push(specifySubscription);
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
@@ -707,18 +697,10 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
   await setApiV3EnabledContext();
   await setTDPIntegrationEnabledContext();
 
-  if (isV3Enabled()) {
-    const upgradeable = await checkProjectUpgradable();
-    if (upgradeable) {
-      await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
-      await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
-    }
-  } else {
-    await vscode.commands.executeCommand(
-      "setContext",
-      "fx-extension.canUpgradeToArmAndMultiEnv",
-      await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
-    );
+  const upgradeable = await checkProjectUpgradable();
+  if (upgradeable) {
+    await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
+    await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
   }
 }
 
@@ -958,9 +940,7 @@ async function runBackgroundAsyncTasks(
       true
     )) as boolean | undefined;
 
-  ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
-  ExtTelemetry.isM365 = await handlers.getIsM365();
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
   await handlers.postUpgrade();

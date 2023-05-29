@@ -3,24 +3,18 @@
 
 import * as vscode from "vscode";
 
-import { SubscriptionInfo } from "@microsoft/teamsfx-api";
-
-import AzureAccountManager from "../../commonlib/azureLogin";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
 import { AccountItemStatus, azureIcon, loadingIcon } from "./common";
-import { SubscriptionNode } from "./subscriptionNode";
 
 export class AzureAccountNode extends DynamicNode {
   public status: AccountItemStatus;
-  private subscriptionNode: SubscriptionNode;
 
   constructor(private eventEmitter: vscode.EventEmitter<DynamicNode | undefined | void>) {
     super("", vscode.TreeItemCollapsibleState.None);
     this.status = AccountItemStatus.SignedOut;
     this.contextValue = "signinAzure";
-    this.subscriptionNode = new SubscriptionNode(this.eventEmitter);
   }
 
   public async setSignedIn(upn: string) {
@@ -54,12 +48,6 @@ export class AzureAccountNode extends DynamicNode {
     this.eventEmitter.fire(this);
   }
 
-  public async setSubscription(subscription: SubscriptionInfo | undefined) {
-    if (subscription) {
-      this.subscriptionNode.setSubscription(subscription);
-    }
-  }
-
   public async getChildren(): Promise<DynamicNode[] | undefined | null> {
     // No subscription info in V3
     return null;
@@ -90,34 +78,5 @@ export class AzureAccountNode extends DynamicNode {
     );
 
     return this;
-  }
-
-  private async autoSelectSubscription(): Promise<boolean> {
-    const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
-    let activeSubscriptionId: string | undefined;
-    const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
-    if (subscriptionInfo) {
-      activeSubscriptionId = subscriptionInfo.subscriptionId;
-    }
-    const activeSubscription = subscriptions.find(
-      (subscription) => subscription.subscriptionId === activeSubscriptionId
-    );
-    if (activeSubscriptionId === undefined || activeSubscription === undefined) {
-      if (subscriptions.length === 0) {
-        this.subscriptionNode.setEmptySubscription();
-      } else if (subscriptions.length === 1) {
-        await this.subscriptionNode.setSubscription(subscriptions[0]);
-        await AzureAccountManager.setSubscription(subscriptions[0].subscriptionId);
-      } else {
-        this.subscriptionNode.unsetSubscription(subscriptions.length);
-      }
-    } else if (activeSubscription) {
-      await this.subscriptionNode.setSubscription(activeSubscription);
-      await AzureAccountManager.setSubscription(activeSubscription.subscriptionId);
-    }
-    return (
-      (activeSubscriptionId === undefined || activeSubscription === undefined) &&
-      subscriptions.length > 1
-    );
   }
 }

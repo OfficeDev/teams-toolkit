@@ -7,6 +7,7 @@
   "scripts": {
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "test:unit": "nyc mocha \"tests/**/*.test.ts\" ",
     "test:core": "nyc mocha \"tests/core/**/*.test.ts\"",
     "test:fxcore": "nyc mocha \"tests/core/FxCore.test.ts\"",
     "test:common": "nyc mocha \"tests/common/**/*.test.ts\"",
@@ -26,7 +27,6 @@
     "test:apim": "nyc mocha \"tests/plugins/resource/apim/**/*.test.ts\"",
     "test:keyvault": "nyc mocha \"tests/plugins/resource/keyvault/**/*.test.ts\"",
     "test:apiconnector": "nyc mocha \"tests/component/feature/apiconnector/**/*.test.ts\"",
-    "test:unit": "nyc mocha \"tests/**/*.test.ts\" ",
     "test:env-checker": "npx mocha \"tests/common/deps-checker/**/*.it.ts\"",
     "test:func-checker": "npx mocha \"tests/common/deps-checker/**/funcTool.it.ts\"",
     "test:node-checker": "npx mocha \"tests/common/deps-checker/**/node.it.ts\"",

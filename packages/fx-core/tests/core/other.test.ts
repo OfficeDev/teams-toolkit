@@ -7,14 +7,10 @@ import {
   AzureAccountProvider,
   FuncValidation,
   Inputs,
-  Json,
   Platform,
   ProjectSettings,
   Settings,
-  Stage,
   SubscriptionInfo,
-  SystemError,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -29,10 +25,10 @@ import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
-import { FetchSampleError, ReadFileError, WriteFileError } from "../../src/core/error";
-import { createAppNameQuestion } from "../../src/core/question";
-import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import { ReadFileError, WriteFileError } from "../../src/core/error";
+import { createAppNameQuestion } from "../../src/core/question";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
 

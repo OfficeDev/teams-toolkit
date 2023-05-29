@@ -44,13 +44,17 @@ describe("Deploy to customized resource group", function () {
     async function () {
       if (isV3Enabled()) {
         // Create new tab project
-        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+        await CliHelper.createProjectWithCapability(
+          appName,
+          testFolder,
+          Capability.M365SsoLaunchPage
+        );
 
         // Create empty resource group
         const customizedRgName = `${appName}-customized-rg`;
         await createResourceGroup(customizedRgName, "eastus");
 
-        await CliHelper.provisionProject(projectPath, undefined, {
+        await CliHelper.provisionProject(projectPath, undefined, "dev", {
           ...process.env,
           AZURE_RESOURCE_GROUP_NAME: customizedRgName,
         });
@@ -73,7 +77,7 @@ describe("Deploy to customized resource group", function () {
         await deleteResourceGroupByName(customizedRgName);
       } else {
         // Create new tab project
-        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabSso);
 
         // Create empty resource group
         const customizedRgName = `${appName}-customized-rg`;

@@ -13,7 +13,7 @@ fi
 TEMPLATE_OUTPUT_DIR=$1
 mkdir -p ${TEMPLATE_OUTPUT_DIR}
 
-TEMPLATE_BASE_DIR="./templates/scenarios"
+TEMPLATE_BASE_DIR="./templates"
 cd ${TEMPLATE_BASE_DIR}
 TEMPLATE_NAMES=$(ls -d *)
 cd -

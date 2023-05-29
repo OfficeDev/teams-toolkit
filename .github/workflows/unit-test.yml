@@ -6,13 +6,11 @@ on:
       - main
       - dev
       - hotfix/**/*
-      - prerelease
   push:
     branches:
       - main
       - dev
       - hotfix/**/*
-      - prerelease
 
 jobs:
   unit-test:

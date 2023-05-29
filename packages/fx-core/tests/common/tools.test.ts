@@ -274,25 +274,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       }
     });
 
-    it("V3 for global trackingId", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "true",
-      });
-      try {
-        sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
-          return false;
-        });
-        globalVars.trackingId = "00000000-0000-0000-0000-000000000000";
-
-        const result = getFixedCommonProjectSettings("root-path");
-        chai.assert.isNotEmpty(result);
-        chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
-      } finally {
-        globalVars.trackingId = undefined;
-        restore();
-      }
-    });
-
     it("project settings not exists", async () => {
       sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
         return false;

@@ -56,7 +56,7 @@ import {
   TabOptionItem,
   MessageExtensionItem,
 } from "../component/constants";
-import { TOOLS, globalVars } from "../core/globalVars";
+import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";

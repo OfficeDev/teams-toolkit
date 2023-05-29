@@ -1584,52 +1584,6 @@ export async function openReadMeHandler(args: any[]) {
   }
 }
 
-export async function promptSPFxUpgrade() {
-  if (globalVariables.isSPFxProject) {
-    const projectSPFxVersion = await commonTools.getAppSPFxVersion(
-      globalVariables.workspaceUri!.fsPath!
-    );
-
-    if (projectSPFxVersion) {
-      const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-
-      if (cmp === 1 || cmp === -1) {
-        const args: string[] =
-          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
-        VS_CODE_UI.showMessage(
-          "warn",
-          util.format(
-            localize(
-              cmp === 1
-                ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"
-                : "teamstoolkit.handlers.promptSPFx.upgradeProject.description"
-            ),
-            ...args
-          ),
-          false,
-          localize(
-            cmp === 1
-              ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.title"
-              : "teamstoolkit.handlers.promptSPFx.upgradeProject.title"
-          )
-        ).then(async (result) => {
-          if (result.isOk()) {
-            if (
-              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeToolkit.title")
-            ) {
-              await vscode.commands.executeCommand("workbench.extensions.search", "Teams Toolkit");
-            } else if (
-              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeProject.title")
-            ) {
-              await VS_CODE_UI.openUrl(CLI_FOR_M365);
-            }
-          }
-        });
-      }
-    }
-  }
-}
-
 export async function postUpgrade(): Promise<void> {
   await openUpgradeChangeLogsHandler();
   await popupAfterUpgrade();

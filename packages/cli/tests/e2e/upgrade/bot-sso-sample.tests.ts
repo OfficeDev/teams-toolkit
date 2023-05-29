@@ -52,7 +52,7 @@ describe("upgrade", () => {
       );
       const content = await fs.readFile(manifestPath, { encoding: "utf-8" });
       const res = JSON.parse(content);
-      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__DOMAIN}}"));
+      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__VALIDDOMAIN}}"));
     }
   });
 });

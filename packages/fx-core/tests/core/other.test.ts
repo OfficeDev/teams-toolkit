@@ -29,12 +29,7 @@ import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
-import {
-  FetchSampleError,
-  ProjectFolderExistError,
-  ReadFileError,
-  WriteFileError,
-} from "../../src/core/error";
+import { FetchSampleError, ReadFileError, WriteFileError } from "../../src/core/error";
 import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
@@ -139,14 +134,6 @@ describe("Other test case", () => {
       inputs
     );
     assert.isTrue(validRes === undefined);
-  });
-
-  it("error: ProjectFolderExistError", async () => {
-    const error = new ProjectFolderExistError(os.tmpdir());
-    assert.isTrue(error.name === "ProjectFolderExistError");
-    assert.isTrue(
-      error.message === `Path ${os.tmpdir()} already exists. Select a different folder.`
-    );
   });
 
   it("error: WriteFileError", async () => {

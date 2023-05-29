@@ -3,41 +3,18 @@
 "use strict";
 
 import {
-  Func,
   FxError,
   Inputs,
   SystemError,
   UserError,
-  Json,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   Stage,
 } from "@microsoft/teamsfx-api";
-import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
 export const UpgradeSource = "Upgrade";
-
-export class ProjectFolderExistError extends UserError {
-  constructor(path: string) {
-    super({
-      message: getDefaultString("error.ProjectFolderExistError", path),
-      displayMessage: getLocalizedString("error.ProjectFolderExistError", path),
-      source: CoreSource,
-    });
-  }
-}
-
-export class ProjectFolderInvalidError extends UserError {
-  constructor(path: string) {
-    super({
-      message: getDefaultString("error.ProjectFolderInvalidError", path),
-      displayMessage: getLocalizedString("error.ProjectFolderInvalidError", path),
-      source: CoreSource,
-    });
-  }
-}
 
 export function WriteFileError(e: Error): SystemError {
   return new SystemError({

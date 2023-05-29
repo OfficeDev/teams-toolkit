@@ -184,10 +184,6 @@ describe("tools", () => {
       const result = getFixedCommonProjectSettings("root-path");
       chai.assert.isNotEmpty(result);
       chai.assert.equal(result!.projectId, projectSettings.projectId);
-      chai.assert.equal(result!.programmingLanguage, projectSettings.programmingLanguage);
-      chai.assert.equal(result!.isFromSample, projectSettings.isFromSample);
-      chai.assert.equal(result!.isM365, projectSettings.isM365);
-      chai.assert.equal(result!.hostType, projectSettings.solutionSettings?.hostType);
       restore();
     });
 

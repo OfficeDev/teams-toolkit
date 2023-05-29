@@ -16,8 +16,6 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
-  SystemError,
-  TeamsAppManifest,
   TokenProvider,
   UserError,
   v2,
@@ -27,9 +25,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { pathToFileURL } from "url";
 import isUUID from "validator/lib/isUUID";
-import { VSCodeExtensionCommand } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
@@ -52,18 +48,10 @@ import { AppStudioError } from "./errors";
 import { AppUser } from "./interfaces/appUser";
 import { autoPublishOption, manuallySubmitOption } from "./questions";
 import { AppStudioResultFactory } from "./results";
-import { TelemetryEventName, TelemetryPropertyKey, TelemetryUtils } from "./utils/telemetry";
+import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import {
-  buildTeamsAppPackage,
-  createTeamsApp,
-  publishTeamsApp,
-  updateManifest,
-  updateManifestV3,
-  updateTeamsApp,
-  validateManifest,
-} from "./appStudio";
+import { createTeamsApp, updateManifestV3, updateTeamsApp } from "./appStudio";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "./constants";
 import { manifestUtils } from "./utils/ManifestUtils";
 
@@ -245,204 +233,6 @@ export class AppManifest implements CloudResource {
     const res = await updateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.publish,
-      question: async (context, inputs) => {
-        return await publishQuestion(inputs);
-      },
-    }),
-  ])
-  async publish(
-    ctx: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionCtx?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    TelemetryUtils.init(ctx);
-    if (
-      inputs.platform === Platform.VSCode &&
-      inputs[Constants.BUILD_OR_PUBLISH_QUESTION] === manuallySubmitOption().id
-    ) {
-      if (actionCtx?.telemetryProps)
-        actionCtx.telemetryProps[TelemetryPropertyKey.manual] = String(true);
-      try {
-        const appPackagePath = await buildTeamsAppPackage(
-          ctx.projectSetting,
-          inputs.projectPath,
-          ctx.envInfo,
-          false,
-          actionCtx!.telemetryProps!
-        );
-        if (appPackagePath.isErr()) return err(appPackagePath.error);
-        const msg = getLocalizedString(
-          "plugins.appstudio.adminApprovalTip",
-          ctx.projectSetting.appName,
-          appPackagePath.value
-        );
-        ctx.userInteraction
-          .showMessage("info", msg, false, "OK", getLocalizedString("core.Notification.ReadMore"))
-          .then((value) => {
-            if (value.isOk() && value.value === getLocalizedString("core.Notification.ReadMore")) {
-              ctx.userInteraction.openUrl(Constants.PUBLISH_GUIDE);
-            }
-          });
-        return ok(undefined);
-      } catch (error: any) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.TeamsPackageBuildError.name,
-            AppStudioError.TeamsPackageBuildError.message(error),
-            error.helpLink
-          )
-        );
-      }
-    }
-    try {
-      const res = await publishTeamsApp(
-        ctx,
-        inputs,
-        ctx.envInfo,
-        ctx.tokenProvider.m365TokenProvider
-      );
-      if (res.isErr()) return err(res.error);
-      ctx.logProvider.info(`Publish success!`);
-      if (inputs.platform === Platform.CLI) {
-        const msg = getLocalizedString(
-          "plugins.appstudio.publishSucceedNotice.cli",
-          res.value.appName,
-          Constants.TEAMS_ADMIN_PORTAL,
-          Constants.TEAMS_MANAGE_APP_DOC
-        );
-        ctx.userInteraction.showMessage("info", msg, false);
-      } else {
-        const msg = getLocalizedString(
-          "plugins.appstudio.publishSucceedNotice",
-          res.value.appName,
-          Constants.TEAMS_MANAGE_APP_DOC
-        );
-        const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
-        ctx.userInteraction.showMessage("info", msg, false, adminPortal).then((value) => {
-          if (value.isOk() && value.value === adminPortal) {
-            ctx.userInteraction.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-          }
-        });
-      }
-      if (actionCtx?.telemetryProps) {
-        actionCtx.telemetryProps[TelemetryPropertyKey.updateExistingApp] = String(res.value.update);
-        actionCtx.telemetryProps[TelemetryPropertyKey.publishedAppId] = String(
-          res.value.publishedAppId
-        );
-      }
-    } catch (error: any) {
-      if (error instanceof SystemError || error instanceof UserError) {
-        throw error;
-      } else {
-        const publishFailed = new SystemError({
-          name: AppStudioError.TeamsAppPublishFailedError.name,
-          message: error.message,
-          source: Constants.PLUGIN_NAME,
-          error: error,
-        });
-        return err(publishFailed);
-      }
-    }
-    return ok(undefined);
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.validateManifest,
-    }),
-  ])
-  async validate(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<string[], FxError>> {
-    const manifestRes = await manifestUtils.getManifest(inputs.projectPath, context.envInfo, false);
-    if (manifestRes.isErr()) {
-      return err(manifestRes.error);
-    }
-    const manifest: TeamsAppManifest = manifestRes.value;
-    const validationResult = await validateManifest(manifest);
-    if (validationResult.isErr()) {
-      return err(validationResult.error);
-    }
-    if (validationResult.value.length > 0) {
-      const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
-      context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
-      const validationFailed = AppStudioResultFactory.UserError(
-        AppStudioError.ValidationFailedError.name,
-        errMessage
-      );
-      return err(validationFailed);
-    }
-    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-    context.userInteraction.showMessage("info", validationSuccess, false);
-    return validationResult;
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.buildTeamsPackage,
-    }),
-  ])
-  async build(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<string, FxError>> {
-    const res = await buildTeamsAppPackage(
-      context.projectSetting,
-      inputs.projectPath,
-      context.envInfo
-    );
-    if (res.isOk()) {
-      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
-        const builtSuccess = [
-          { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
-          { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
-          { content: res.value, color: Colors.BRIGHT_MAGENTA },
-          { content: " built successfully!", color: Colors.BRIGHT_WHITE },
-        ];
-        if (inputs.platform === Platform.VS) {
-          context.logProvider?.info(builtSuccess);
-        } else {
-          context.userInteraction.showMessage("info", builtSuccess, false);
-        }
-      } else if (inputs.platform === Platform.VSCode) {
-        const isWindows = process.platform === "win32";
-        let builtSuccess = getLocalizedString(
-          "plugins.appstudio.buildSucceedNotice.fallback",
-          res.value
-        );
-        if (isWindows) {
-          const folderLink = pathToFileURL(path.dirname(res.value));
-          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
-          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
-        }
-        context.userInteraction.showMessage("info", builtSuccess, false);
-      }
-    }
-    return res;
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.deploy,
-    }),
-  ])
-  async deploy(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    TelemetryUtils.init(context);
-    return await updateManifest(context, inputs);
   }
 
   @hooks([

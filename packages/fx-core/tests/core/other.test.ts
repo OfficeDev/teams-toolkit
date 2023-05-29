@@ -150,12 +150,6 @@ describe("Other test case", () => {
     assert.isTrue(error.message === msg);
   });
 
-  it("error: FetchSampleError", async () => {
-    const error = new FetchSampleError("hello world app");
-    assert.isTrue(error.name === "FetchSampleError");
-    assert.isTrue(error.message.includes("hello world app"));
-  });
-
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
 

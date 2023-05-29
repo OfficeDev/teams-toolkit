@@ -38,7 +38,7 @@ import {
   errorNames,
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
+import { NotAllowedMigrationError } from "../../../../src/core/error";
 import {
   Metadata,
   MetadataV3,
@@ -1139,11 +1139,6 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state.state, VersionState.unsupported);
-  });
-
-  it("UpgradeCanceledError", () => {
-    const err = UpgradeCanceledError();
-    assert.isNotNull(err);
   });
 
   it("getTrackingIdFromPath: V2 ", async () => {

@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as vscode from "vscode";
-import { localSettingsJsonName } from "./debug/constants";
-import {
-  environmentVariableRegex,
-  manifestConfigDataRegex,
-  manifestStateDataRegex,
-} from "./constants";
+import { environmentVariableRegex } from "./constants";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import { Mutex } from "async-mutex";
@@ -24,7 +19,7 @@ import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/compo
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";
-import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";
+import { envUtil } from "@microsoft/teamsfx-core";
 import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 import { commandIsRunning } from "./globalVariables";
 
@@ -243,76 +238,17 @@ export class ProjectSettingsCodeLensProvider implements vscode.CodeLensProvider 
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
 
-  private projectConfigs: ProjectConfigV3 | undefined = undefined;
-  private mutex = new Mutex();
-
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (isV3Enabled()) {
-      return this.computeTemplateCodeLensesV3(document);
-    } else {
-      if (document.fileName.endsWith("template.json")) {
-        // env info needs to be reloaded
-        this.projectConfigs = undefined;
-        return this.computeTemplateCodeLenses(document);
-      } else {
-        return this.computePreviewCodeLenses(document);
-      }
-    }
+    return this.computeTemplateCodeLensesV3(document);
   }
 
   public async resolveCodeLens(
     lens: vscode.CodeLens,
     _token: vscode.CancellationToken
   ): Promise<vscode.CodeLens> {
-    if (isV3Enabled()) {
-      return resolveEnvironmentVariablesCodeLens(lens, "manifest");
-    } else {
-      return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "manifest");
-    }
-  }
-
-  private computeTemplateCodeLenses(document: vscode.TextDocument) {
-    const codeLenses: vscode.CodeLens[] = [];
-    const command = {
-      title: "🖼️Preview",
-      command: "fx-extension.openPreviewFile",
-      arguments: [{ fsPath: document.fileName }],
-    };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
-
-    const text = document.getText();
-    const regex = new RegExp(this.schemaRegex);
-    const matches = regex.exec(text);
-    if (matches != null) {
-      const match = matches[0];
-      const line = document.lineAt(document.positionAt(matches.index).line);
-      const indexOf = line.text.indexOf(match);
-      const position = new vscode.Position(line.lineNumber, indexOf);
-      const range = new vscode.Range(
-        position,
-        new vscode.Position(line.lineNumber, indexOf + match.length)
-      );
-      const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
-      const schemaCommand = {
-        title: "Open schema",
-        command: "fx-extension.openSchema",
-        arguments: [{ url: url }],
-      };
-      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
-    }
-
-    if (document.fileName.endsWith("manifest.template.json")) {
-      // code lens will be resolved later
-      const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex);
-      codeLenses.push(...configCodelenses);
-
-      const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex);
-      codeLenses.push(...stateCodelenses);
-    }
-
-    return codeLenses;
+    return resolveEnvironmentVariablesCodeLens(lens, "manifest");
   }
 
   private computeTemplateCodeLensesV3(document: vscode.TextDocument) {
@@ -370,24 +306,6 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     }
     return codeLenses;
   }
-
-  private computePreviewCodeLenses(document: vscode.TextDocument) {
-    const codeLenses: vscode.CodeLens[] = [];
-    const updateCmd = {
-      title: "🔄Update to Teams platform",
-      command: "fx-extension.updatePreviewFile",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
-
-    const editTemplateCmd = {
-      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
-      command: "fx-extension.editManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
-    return codeLenses;
-  }
 }
 
 export interface PropertyPair {
@@ -404,11 +322,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
     // V3 supports customize aad manifest
-    if (
-      isV3Enabled()
-        ? document.fileName.endsWith(MetadataV3.aadManifestFileName)
-        : document.fileName.endsWith("template.json")
-    ) {
+    if (document.fileName.endsWith(MetadataV3.aadManifestFileName)) {
       this.projectConfigs = undefined;
       return this.computeTemplateCodeLenses(document);
     } else {
@@ -552,11 +466,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     lens: vscode.CodeLens,
     _token: vscode.CancellationToken
   ): Promise<vscode.CodeLens> {
-    if (isV3Enabled()) {
-      return resolveEnvironmentVariablesCodeLens(lens, "aad");
-    } else {
-      return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "aad");
-    }
+    return resolveEnvironmentVariablesCodeLens(lens, "aad");
   }
 
   private calculateCodeLensByRegex(document: vscode.TextDocument, regex: RegExp) {
@@ -579,19 +489,11 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computeStateAndConfigCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses = [];
 
-    if (isV3Enabled()) {
-      const stateAndConfigCodelenses = this.calculateCodeLensByRegex(
-        document,
-        environmentVariableRegex
-      );
-      codeLenses.push(...stateAndConfigCodelenses);
-    } else {
-      const configCodelenses = this.calculateCodeLensByRegex(document, manifestConfigDataRegex);
-      codeLenses.push(...configCodelenses);
-
-      const stateCodelenses = this.calculateCodeLensByRegex(document, manifestStateDataRegex);
-      codeLenses.push(...stateCodelenses);
-    }
+    const stateAndConfigCodelenses = this.calculateCodeLensByRegex(
+      document,
+      environmentVariableRegex
+    );
+    codeLenses.push(...stateAndConfigCodelenses);
 
     return codeLenses;
   }

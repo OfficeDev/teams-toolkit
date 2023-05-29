@@ -34,8 +34,6 @@ export enum AadManifestDeployConstants {
   INCLUDE_AAD_MANIFEST = "include-aad-manifest",
 }
 
-export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
-export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
 
 export const SUPPORTED_SPFX_VERSION = "1.16.1";

@@ -3,79 +3,63 @@
 import {
   AppPackageFolderName,
   AzureAccountProvider,
+  AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
-  err,
   FxError,
+  InputConfigsFolderName,
+  Inputs,
   Json,
-  ok,
+  M365TokenProvider,
   OptionItem,
+  ProjectSettings,
+  ProjectSettingsFileName,
+  ProjectSettingsV3,
   Result,
   SubscriptionInfo,
   SystemError,
-  UserInteraction,
-  ProjectSettings,
-  AzureSolutionSettings,
-  v2,
   UserError,
-  TelemetryReporter,
-  Void,
-  Inputs,
-  Platform,
-  M365TokenProvider,
-  ProjectSettingsV3,
-  InputConfigsFolderName,
-  ProjectSettingsFileName,
-  SettingsFileName,
-  SettingsFolderName,
+  UserInteraction,
   assembleError,
+  err,
+  ok,
+  v2,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { exec, ExecOptions } from "child_process";
+import { ExecOptions, exec } from "child_process";
+import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
+import _ from "lodash";
+import Mustache from "mustache";
+import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
+import { parse } from "yaml";
+import { BotSsoItem, HostTypeOptionAzure, SolutionError, TabSsoItem } from "../component/constants";
+import { NoProjectOpenedError } from "../component/feature/cicd/errors";
+import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
+import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
+import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
+import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
+import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
+import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
+import { LocalCrypto } from "../core/crypto";
+import { environmentManager } from "../core/environment";
+import { FailedToParseResourceIdError } from "../core/error";
+import { TOOLS } from "../core/globalVars";
+import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
 import {
   ConstantString,
   FeatureFlagName,
-  TeamsClientId,
   OfficeClientId,
   OutlookClientId,
-  ResourcePlugins,
+  TeamsClientId,
 } from "./constants";
-import * as crypto from "crypto";
-import { FailedToParseResourceIdError } from "../core/error";
-import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
-import Mustache from "mustache";
-import {
-  HostTypeOptionAzure,
-  TabSsoItem,
-  BotSsoItem,
-  BotOptionItem,
-  TabOptionItem,
-  MessageExtensionItem,
-} from "../component/constants";
-import { TOOLS } from "../core/globalVars";
-import { LocalCrypto } from "../core/crypto";
-import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
-import _ from "lodash";
-import { BotHostTypeName, BotHostTypes } from "./local/constants";
-import { isExistingTabApp } from "./projectSettingsHelper";
-import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
-import { environmentManager } from "../core/environment";
-import { NoProjectOpenedError } from "../component/feature/cicd/errors";
-import { getProjectTemplatesFolderPath } from "./utils";
-import * as path from "path";
+import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isMiniApp } from "./projectSettingsHelperV3";
-import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
-import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
-import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
-import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
-import { parse } from "yaml";
+import { getProjectTemplatesFolderPath } from "./utils";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -422,40 +406,6 @@ export function isDownloadDirectoryEnabled(): boolean {
 
 export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
-}
-
-// This method is for deciding whether AAD should be activated.
-// Currently AAD plugin will always be activated when scaffold.
-// This part will be updated when we support adding aad separately.
-export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined): boolean {
-  if (!solutionSettings) {
-    return false;
-  }
-
-  if (isAadManifestEnabled()) {
-    return (
-      solutionSettings.hostType === HostTypeOptionAzure().id &&
-      (solutionSettings.capabilities.includes(TabSsoItem().id) ||
-        solutionSettings.capabilities.includes(BotSsoItem().id))
-    );
-  } else {
-    return (
-      solutionSettings.hostType === HostTypeOptionAzure().id &&
-      // For scaffold, activeResourecPlugins is undefined
-      (!solutionSettings.activeResourcePlugins ||
-        solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
-    );
-  }
-}
-
-export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): boolean {
-  const activePlugins = solutionSettings?.activeResourcePlugins;
-  if (!activePlugins) {
-    return false;
-  }
-  return (
-    activePlugins.includes(ResourcePlugins.Bot) || activePlugins.includes(ResourcePlugins.Function)
-  );
 }
 
 // Conditions required to be met:

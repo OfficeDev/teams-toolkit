@@ -30,7 +30,6 @@ import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
-import { CliConfigOptions, UserSettings } from "../../userSetttings";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import {
   AppStudioScopes,

@@ -9,7 +9,6 @@ import sinon from "sinon";
 import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import New from "../../../src/cmds/new";
-import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 import * as constants from "../../../src/constants";
 import { RootFolderNode } from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";

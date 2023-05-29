@@ -144,10 +144,6 @@ export enum TelemetryEvent {
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
 
-  AutomaticNpmInstallStart = "automatic-npm-install-start",
-  AutomaticNpmInstall = "automatic-npm-install",
-  ClickDisableAutomaticNpmInstall = "click-disable-automatic-npm-install",
-
   Survey = "survey",
   SurveyData = "survey-data",
 

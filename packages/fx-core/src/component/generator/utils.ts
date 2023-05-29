@@ -30,10 +30,10 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
+  const useLocal = templateConfig.useLocalTemplate;
   const versionPattern = preRelease || templateVersion;
 
-  // To avoid incompatible, alpha release does not download latest template.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
+  if (useLocal.toString() === "true") {
     throw new CancelDownloading();
   }
 

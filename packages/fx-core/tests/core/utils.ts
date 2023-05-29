@@ -49,7 +49,13 @@ import {
 import fs from "fs-extra";
 import sinon from "sinon";
 import * as uuid from "uuid";
-import { DEFAULT_PERMISSION_REQUEST, PluginNames } from "../../src/component/constants";
+import {
+  ComponentNames,
+  DEFAULT_PERMISSION_REQUEST,
+  PluginNames,
+  RESOURCE_GROUP_NAME,
+  SUBSCRIPTION_ID,
+} from "../../src/component/constants";
 import { MyTokenCredential } from "../plugins/solution/util";
 
 function solutionSettings(): AzureSolutionSettings {
@@ -614,3 +620,74 @@ export function mockSolutionV3getQuestionsAPI(solution: v3.ISolution, sandbox: s
     sandbox.stub(solution, "getQuestionsForUserTask").resolves(ok(undefined));
   }
 }
+
+export function MockContext(): any {
+  return {
+    envInfo: {
+      envName: "dev",
+      state: {
+        solution: {
+          [RESOURCE_GROUP_NAME]: "ut",
+          [SUBSCRIPTION_ID]: "ut",
+          ["resourceNameSuffix"]: "ut",
+        },
+      },
+      config: {
+        manifest: {
+          appName: {
+            short: "teamsfx_app",
+          },
+          description: {
+            short: `Short description of teamsfx_app`,
+            full: `Full description of teamsfx_app`,
+          },
+          icons: {
+            color: "resources/color.png",
+            outline: "resources/outline.png",
+          },
+        },
+      },
+    },
+    projectSetting: {
+      appName: "ut",
+      programmingLanguage: "javascript",
+      projectId: "projectId",
+      components: [{ name: ComponentNames.TeamsBot }, { name: ComponentNames.TeamsApi }],
+    },
+
+    telemetryReporter: mockTelemetryReporter,
+    userInteraction: new MockUserInteraction(),
+  };
+}
+
+const mockTelemetryReporter: TelemetryReporter = {
+  async sendTelemetryEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ) {
+    console.log("Telemetry event");
+    console.log(eventName);
+    console.log(properties);
+  },
+
+  async sendTelemetryErrorEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ) {
+    console.log("Telemetry Error");
+    console.log(eventName);
+    console.log(properties);
+  },
+
+  async sendTelemetryException(
+    error: Error,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ) {
+    console.log("Telemetry Exception");
+    console.log(error.message);
+    console.log(properties);
+  },
+};

@@ -44,7 +44,7 @@ This section introduces how to customize or extend this template, including:
 - [How to use Zero Install Link Unfurling in Teams](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-use-zero-install-link-unfurling-in-teams)
 - [How to add link unfurling cache in Teams](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-link-unfurling-cache-in-teams)
 - [How to customize Zero Install Link Unfurling's adaptive cards](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-customize-zero-install-link-unfurlings-adaptive-cards)
-- [How to add stage view (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-stage-view-teams)
+- [How to add stage view](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-stage-view)
 - [How to add task module (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-task-module-teams)
 - [How to add adaptive card action (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-adaptive-card-action-teams)
 - [How to extend this template wiht Notification, Command and Workflow bot](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-extend-this-template-with-notification-command-and-workflow-bot)

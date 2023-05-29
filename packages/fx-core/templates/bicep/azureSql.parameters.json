@@ -1,4 +1,0 @@
-{
-  "azureSqlAdmin": "{{state.azure-sql.admin}}",
-  "azureSqlAdminPassword": "{{state.azure-sql.adminPassword}}"
-}

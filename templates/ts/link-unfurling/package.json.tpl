@@ -7,7 +7,7 @@
     },
     "author": "Microsoft",
     "license": "MIT",
-    "main": "./lib/index.js",
+    "main": "./lib/src/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",

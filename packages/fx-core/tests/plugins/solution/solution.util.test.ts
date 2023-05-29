@@ -8,11 +8,11 @@ import { ComponentNames } from "../../../src/component/constants";
 import * as arm from "../../../src/component/arm";
 import * as backup from "../../../src/component/utils/backupFiles";
 import { BuiltInFeaturePluginNames } from "../../../src/component/constants";
-import { MockContext } from "../../component/feature/apiconnector/utils";
 import {
   handleConfigFilesWhenSwitchAccount,
   hasBotServiceCreated,
 } from "../../../src/component/provisionUtils";
+import { MockContext } from "../../core/utils";
 const tool = require("../../../src/common/tools");
 const expect = chai.expect;
 

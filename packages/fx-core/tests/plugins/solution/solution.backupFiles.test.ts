@@ -5,9 +5,8 @@ import path from "path";
 import fs from "fs-extra";
 import { backupFiles } from "../../../src/component/utils/backupFiles";
 import { expect } from "chai";
-import { MockTools } from "../../core/utils";
+import { MockTools, MockContext } from "../../core/utils";
 import { setTools } from "../../../src/core/globalVars";
-import { MockContext } from "../../component/feature/apiconnector/utils";
 
 describe("update Azure parameters", async () => {
   const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;

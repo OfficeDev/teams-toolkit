@@ -843,11 +843,6 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
       const settingsPath = getProjectSettingPathV3(rootPath);
 
       if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        if (globalVars.trackingId) {
-          return {
-            projectId: globalVars.trackingId,
-          };
-        }
         return undefined;
       }
 

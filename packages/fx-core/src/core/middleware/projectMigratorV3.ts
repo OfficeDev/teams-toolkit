@@ -29,7 +29,7 @@ import {
   TelemetryEvent,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
-import { globalVars, TOOLS } from "../globalVars";
+import { TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,
@@ -130,6 +130,7 @@ export const TelemetryPropertyKey = {
   button: "button",
   mode: "mode",
   upgradeVersion: "upgrade-version",
+  projectId: "project-id",
   reason: "reason",
 };
 
@@ -156,6 +157,10 @@ export const upgradeButton = getLocalizedString("core.option.upgrade");
 export const moreInfoButton = getLocalizedString("core.option.moreInfo");
 const migrationMessageButtons = [upgradeButton, moreInfoButton];
 
+const telemetryProperties = {
+  [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+};
+
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
@@ -173,7 +178,7 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  await ensureTrackingIdInGlobal(ctx);
+  await setTelemetryProjectId(ctx);
   const versionForMigration = await checkVersionForMigration(ctx);
   // abandoned v3 project which will not be supported. Show user the message to create new project.
   if (versionForMigration.source === VersionSource.settings) {
@@ -234,12 +239,10 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart, {
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-    });
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
     await exec(context);
     await showSummaryReport(context);
-    sendTelemetryEvent(
+    sendTelemetryEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorMigrate,
       context.telemetryProperties
@@ -260,7 +263,7 @@ export async function wrapRunMigration(
         displayMessage: error.message,
       });
     }
-    sendTelemetryErrorEvent(
+    sendTelemetryErrorEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorError,
       fxError,
@@ -548,9 +551,8 @@ export async function showNotification(
   }
   const skipUserConfirm = getParameterFromCxt(ctx, Parameters.skipUserConfirm);
   if (skipUserConfirm) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.skipUserConfirm,
     });
     return true;
@@ -562,34 +564,29 @@ export async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-  });
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
     if (answer === moreInfoButton) {
       TOOLS?.ui!.openUrl(learnMoreLink);
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
-        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
   } while (answer === moreInfoButton);
   if (!answer || !migrationMessageButtons.includes(answer)) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
     ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
     [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
     [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
   });
   return true;
@@ -599,22 +596,18 @@ export async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-  });
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const answer = await popupMessageNonmodal(versionForMigration);
   if (answer === moreInfoButton) {
     TOOLS?.ui!.openUrl(learnMoreLink);
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return false;
   } else if (answer === upgradeButton) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return true;
@@ -623,9 +616,7 @@ export async function showNonmodalNotification(
 }
 
 export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-  });
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const res = await TOOLS?.ui.showMessage(
     "info",
     getLocalizedString("core.migrationV3.confirmOnly.Message"),
@@ -633,16 +624,14 @@ export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise
     "OK"
   );
   if (res?.isOk() && res.value === "OK") {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return true;
   } else {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return false;
@@ -681,11 +670,11 @@ export async function generateLocalConfig(context: MigrationContext): Promise<vo
   }
 }
 
-export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
+export async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
   const projectPath = getParameterFromCxt(context, "projectPath", "");
   try {
     const projectId = await getTrackingIdFromPath(projectPath);
-    globalVars.trackingId = projectId; // set trackingId to globalVars
+    telemetryProperties[TelemetryPropertyKey.projectId] = projectId;
   } catch (error) {
     // do not set trackingId if error happens
   }
@@ -969,15 +958,13 @@ export async function checkActiveResourcePlugins(projectPath: string): Promise<b
     if (projectSettings && solutionSettings && solutionSettings.activeResourcePlugins) {
       return true;
     } else {
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
-        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
         [TelemetryPropertyKey.reason]: "solutionSettings invalid",
       });
       return false;
     }
   } catch (error: any) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
       [TelemetryPropertyKey.reason]: error.message,
     });
     return false;
@@ -1001,4 +988,24 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   ignoreFileContent += EOL + ignoreDevToolsDir;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);
+}
+
+function sendTelemetryEventForUpgrade(
+  component: string,
+  eventName: string,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number }
+): void {
+  const mergedProperties = { ...properties, ...telemetryProperties };
+  sendTelemetryEvent(component, eventName, mergedProperties, measurements);
+}
+
+function sendTelemetryErrorEventForUpgrade(
+  component: string,
+  eventName: string,
+  fxError: FxError,
+  properties?: { [p: string]: string }
+): void {
+  const mergedProperties = { ...properties, ...telemetryProperties };
+  sendTelemetryErrorEvent(component, eventName, fxError, mergedProperties);
 }

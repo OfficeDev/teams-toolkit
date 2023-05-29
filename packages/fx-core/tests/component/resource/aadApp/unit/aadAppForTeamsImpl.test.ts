@@ -3,17 +3,14 @@
 
 import {
   AzureSolutionSettings,
-  ContextV3,
   PluginContext,
   ProjectSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
-import faker from "faker";
 import fs from "fs-extra";
 import "mocha";
-import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import * as tool from "../../../../../src/common/tools";
@@ -23,21 +20,12 @@ import { AadAppForTeamsImpl } from "../../../../../src/component/resource/aadApp
 import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import { ConfigKeys } from "../../../../../src/component/resource/aadApp/constants";
 import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/utils/configs";
-import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
-import { MockedV2Context } from "../../../../plugins/solution/util";
 import { TestHelper, mockProvisionResult, mockTokenProviderM365 } from "../helper";
 import { getAppStudioToken } from "../tokenProvider";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
-const userList: AppUser = {
-  tenantId: faker.datatype.uuid(),
-  aadId: faker.datatype.uuid(),
-  displayName: "displayName",
-  userPrincipalName: "userPrincipalName",
-  isAdministrator: true,
-};
 const projectSettings: ProjectSettings = {
   appName: "my app",
   projectId: uuid.v4(),
@@ -50,11 +38,9 @@ const projectSettings: ProjectSettings = {
     activeResourcePlugins: [],
   },
 };
-const ctx = new MockedV2Context(projectSettings) as ContextV3;
 describe("AadAppForTeamsPlugin: CI", () => {
   let plugin: AadAppForTeamsImpl;
   let context: PluginContext;
-  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
     plugin = new AadAppForTeamsImpl();
     sinon.stub(AadAppClient, "createAadApp").resolves();
@@ -77,7 +63,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   afterEach(() => {
     sinon.restore();
-    mockedEnvRestore();
   });
 
   it("provision: using manifest", async function () {

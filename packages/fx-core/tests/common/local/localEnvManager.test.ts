@@ -84,33 +84,6 @@ describe("LocalEnvManager", () => {
       sandbox.restore();
     });
 
-    it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
-      await fs.writeFile(
-        path.resolve(configFolder, "projectSettings.json"),
-        JSON.stringify(projectSettings0)
-      );
-
-      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-
-      chai.assert.isDefined(projectSettings);
-      chai.assert.equal(projectSettings.appName, "unit-test0");
-      chai.assert.equal(projectSettings.projectId, "11111111-1111-1111-1111-111111111111");
-      chai.assert.equal(projectSettings.version, "2.0.0");
-      chai.assert.equal(projectSettings.programmingLanguage, "javascript");
-    });
-
-    it("missing field", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
-      await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
-
-      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-
-      chai.assert.isDefined(projectSettings);
-      chai.assert.isUndefined(projectSettings.appName);
-      chai.assert.isDefined(projectSettings.projectId);
-    });
-
     it("missing file", async () => {
       let error: UserError | undefined = undefined;
       try {
@@ -148,66 +121,6 @@ describe("LocalEnvManager", () => {
     afterEach(() => {
       sandbox.restore();
       mockedEnvRestore();
-    });
-
-    it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
-      await fs.writeFile(
-        path.resolve(configFolder, "projectSettings.json"),
-        JSON.stringify(projectSettings0)
-      );
-      await fs.writeFile(
-        path.resolve(configFolder, "localSettings.json"),
-        JSON.stringify(localSettings0)
-      );
-
-      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
-        projectId: projectSettings.projectId,
-      });
-
-      chai.assert.isDefined(localSettings);
-      chai.assert.isDefined(localSettings!.teamsApp);
-      chai.assert.equal(localSettings!.teamsApp.tenantId, "22222222-2222-2222-2222-222222222222");
-      chai.assert.equal(localSettings!.teamsApp.teamsAppId, "33333333-3333-3333-3333-333333333333");
-      chai.assert.isDefined(localSettings!.auth);
-      chai.assert.equal(localSettings!.auth.clientId, "44444444-4444-4444-4444-444444444444");
-      chai.assert.equal(localSettings!.auth.clientSecret, "password-placeholder");
-      chai.assert.isDefined(localSettings!.frontend);
-      chai.assert.equal(localSettings!.frontend.tabDomain, "localhost");
-      chai.assert.equal(localSettings!.frontend.tabEndpoint, "https://localhost:53000");
-    });
-
-    it("missing field", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
-      await fs.writeFile(
-        path.resolve(configFolder, "projectSettings.json"),
-        JSON.stringify(projectSettings0)
-      );
-      await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
-
-      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
-        projectId: projectSettings.projectId,
-      });
-
-      chai.assert.isDefined(localSettings);
-      chai.assert.isUndefined(localSettings!.teamsApp);
-    });
-
-    it("missing file", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "false" });
-      await fs.writeFile(
-        path.resolve(configFolder, "projectSettings.json"),
-        JSON.stringify(projectSettings0)
-      );
-
-      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
-        projectId: projectSettings.projectId,
-      });
-
-      chai.assert.isUndefined(localSettings);
     });
   });
 

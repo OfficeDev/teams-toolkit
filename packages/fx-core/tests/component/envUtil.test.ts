@@ -721,27 +721,12 @@ describe("environmentManager.listRemoteEnvConfigs", () => {
   const tools = new MockTools();
   setTools(tools);
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn | undefined;
   afterEach(() => {
     sandbox.restore();
-    if (mockedEnvRestore) {
-      mockedEnvRestore();
-    }
   });
   it("environmentManager.listRemoteEnvConfigs return error V3", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     sandbox.stub(fs, "readdir").resolves([] as any);
     sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-    const res = await environmentManager.listRemoteEnvConfigs(".", true);
-    assert.isTrue(res.isErr());
-  });
-  it("environmentManager.listRemoteEnvConfigs return error V2", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    sandbox.stub(fs, "readdir").resolves([] as any);
     const res = await environmentManager.listRemoteEnvConfigs(".", true);
     assert.isTrue(res.isErr());
   });

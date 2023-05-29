@@ -47,4 +47,4 @@ This section introduces how to customize or extend this template, including:
 - [How to add stage view](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-stage-view)
 - [How to add task module (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-task-module-teams)
 - [How to add adaptive card action (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-adaptive-card-action-teams)
-- [How to extend this template wiht Notification, Command and Workflow bot](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-extend-this-template-with-notification-command-and-workflow-bot)
+- [How to extend this template with Notification, Command and Workflow bot](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-extend-this-template-with-notification-command-and-workflow-bot)

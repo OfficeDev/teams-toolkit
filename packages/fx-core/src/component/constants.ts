@@ -289,7 +289,7 @@ export const GLOBAL_CONFIG = "solution";
  * Set to true when provison succeeds, to false when a new resource is added.
  */
 export const SOLUTION_PROVISION_SUCCEEDED = "provisionSucceeded";
-
+export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
 /**
  * Config key whose value is output of ARM templates deployment.
  */

@@ -22,15 +22,24 @@ import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
-import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/component/constants";
+import {
+  ARM_TEMPLATE_OUTPUT,
+  DEFAULT_PERMISSION_REQUEST,
+} from "../../../../src/component/constants";
 import {
   ConfigKeys,
   ConfigKeysOfOtherPlugin,
   Plugins,
 } from "../../../../src/component/resource/aadApp/constants";
+import { Utils } from "../../../../src/component/resource/aadApp/utils/configs";
+import { SOLUTION } from "../../../../src/component/resource/appManifest/constants";
 import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
 import { newEnvInfo } from "../../../../src/core/environment";
 import { MockUserInteraction } from "../../../core/utils";
+
+const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
+const permissionsWrong =
+  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
 
 const mockPermissionRequestProvider: PermissionRequestProvider = {
   async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
@@ -244,6 +253,65 @@ function mockConfigOfOtherPluginsLocalDebug(
   ]);
   result.set(Plugins.localDebug, localDebugConfig);
   return result;
+}
+
+export function mockProvisionResult(
+  context: PluginContext,
+  isLocalDebug = false,
+  hasFrontend = true
+) {
+  context.config.set(
+    Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId),
+    faker.datatype.uuid()
+  );
+  context.config.set(
+    Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId),
+    faker.datatype.uuid()
+  );
+  context.config.set(
+    Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret),
+    faker.datatype.uuid()
+  );
+  if (!isLocalDebug) {
+    const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
+    const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
+    const aadProfile = context.envInfo.state.get(Plugins.pluginNameComplex) ?? new Map();
+    aadProfile.set(ConfigKeys.clientId, faker.datatype.uuid());
+    aadProfile.set(ConfigKeys.objectId, faker.datatype.uuid());
+    aadProfile.set(ConfigKeys.clientSecret, faker.datatype.uuid());
+
+    if (hasFrontend) {
+      armOutput["frontendHostingOutput"] = {
+        type: "Object",
+        value: {
+          teamsFxPluginId: "fx-resource-frontend-hosting",
+          storageResourceId: `/subscriptions/test_subscription_id/resourceGroups/test_resource_group_name/providers/Microsoft.Storage/storageAccounts/test_storage_name`,
+          endpoint: `https://test_storage_name.z13.web.core.windows.net`,
+          domain: `test_storage_name.z13.web.core.windows.net`,
+        },
+      };
+    }
+    solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
+
+    context.envInfo.state.set(SOLUTION, solutionProfile);
+    context.envInfo.state.set(Plugins.pluginNameComplex, aadProfile);
+  } else {
+    const aadInfo = new ConfigMap();
+    aadInfo.set(ConfigKeys.clientId, faker.datatype.uuid());
+    aadInfo.set(ConfigKeys.objectId, faker.datatype.uuid());
+    aadInfo.set(ConfigKeys.clientSecret, faker.datatype.uuid());
+    aadInfo.set(ConfigKeys.oauth2PermissionScopeId, faker.datatype.uuid());
+
+    const frontendInfo = new ConfigMap();
+    frontendInfo.set("tabDomain", "fake.storage.domain.test");
+    frontendInfo.set("tabEndpoint", "https://fake.storage.domain.test");
+    const localSettings: LocalSettings = {
+      teamsApp: new ConfigMap(),
+      auth: aadInfo,
+      frontend: frontendInfo,
+    };
+    context.localSettings = localSettings;
+  }
 }
 
 export function mockSkipFlag(context: PluginContext, isLocalDebug = false) {

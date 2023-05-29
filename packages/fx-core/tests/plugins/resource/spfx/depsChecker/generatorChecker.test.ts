@@ -13,6 +13,8 @@ import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api
 import { TestHelper } from "../helper";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { MockTools } from "../../../../core/utils";
 
 const rGeneratorChecker = rewire(
   "../../../../../src/component/resource/spfx/depsChecker/generatorChecker"
@@ -69,6 +71,7 @@ describe("generator checker", () => {
   });
 
   describe("getDependencyInfo", async () => {
+    setTools(new MockTools());
     it("Set SPFx version to 1.15", () => {
       const info = GeneratorChecker.getDependencyInfo();
 

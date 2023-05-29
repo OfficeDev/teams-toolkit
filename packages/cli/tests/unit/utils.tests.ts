@@ -227,28 +227,12 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.restore();
     });
 
-    it("Real Path", () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
-      const result = readSettingsFileSync("real");
-      expect(result.isOk() ? result.value : result.error).deep.equals({});
-      restore();
-    });
-
     it("Real Path in V3", () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "true",
+      const result = readSettingsFileSync("real");
+      expect(result.isOk() ? result.value : result.error).deep.equals({
+        projectId: "00000000-0000-0000-0000-000000000000",
+        version: "1.0.0",
       });
-      try {
-        const result = readSettingsFileSync("real");
-        expect(result.isOk() ? result.value : result.error).deep.equals({
-          projectId: "00000000-0000-0000-0000-000000000000",
-          version: "1.0.0",
-        });
-      } finally {
-        restore();
-      }
     });
 
     it("Real Path but cannot read", () => {
@@ -275,21 +259,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.restore();
     });
 
-    it("Real Path", async () => {
+    it("Real Path in V3", async () => {
       const result = isWorkspaceSupported("real");
       expect(result).equals(true);
-    });
-
-    it("Real Path in V3", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "true",
-      });
-      try {
-        const result = isWorkspaceSupported("real");
-        expect(result).equals(true);
-      } finally {
-        restore();
-      }
     });
 
     it("Fake Path", async () => {
@@ -448,20 +420,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("No File", async () => {
       const result = getIsM365("error");
       expect(result).equals(undefined);
-    });
-
-    it("isM365 == true", async () => {
-      const restore = mockedEnv({ TEAMSFX_V3: "false" });
-      const result = getIsM365("real.isM365=true");
-      expect(result).equals("true");
-      restore();
-    });
-
-    it("isM365 == false", async () => {
-      const restore = mockedEnv({ TEAMSFX_V3: "false" });
-      const result = getIsM365("real.isM365=false");
-      expect(result).equals("false");
-      restore();
     });
 
     it("isM365 == undefined", async () => {

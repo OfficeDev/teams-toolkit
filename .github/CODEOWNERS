@@ -102,43 +102,43 @@
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
 
-/templates/tab @hund030 @eriolchan @huimiu
-/templates/function-base @hund030 @eriolchan @huimiu
-/templates/function-triggers @hund030 @eriolchan @huimiu
-/templates/blazor-base @JerryYangKai @eriolchan @hund030 @huimiu
-/templates/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/bot-msgext @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/msgext @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/tab/js/m365 @kuojianlu @swatDong @kimizhu
-/templates/tab/ts/m365 @kuojianlu @swatDong @kimizhu
-/templates/bot/js/m365 @kuojianlu @swatDong @kimizhu
-/templates/bot/ts/m365 @kuojianlu @swatDong @kimizhu
+/templates/js/non-sso-tab @hund030 @eriolchan @huimiu
+/templates/ts/non-sso-tab @hund030 @eriolchan @huimiu
+/templates/csharp/non-sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
+/templates/csharp/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
+/templates/js/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/ts/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/js/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/ts/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/js/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/ts/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/csharp/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/fx-core/src/common/template-utils @hund030 @huimiu @eriolchan
 /packages/fx-core/tests/common/templateFetch.test.ts @hund030 @huimiu @eriolchan
 
-/templates/scenarios/js/command-and-response @kimizhu @dooriya @swatDong
-/templates/scenarios/js/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/js/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/js/notification-restify @kimizhu @dooriya @swatDong
-/templates/scenarios/js/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/js/workflow @kimizhu @dooriya @swatDong
-/templates/scenarios/js/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/scenarios/js/m365-tab @kimizhu @swatDong @kuojianlu
-/templates/scenarios/ts/command-and-response @kimizhu @dooriya @swatDong
-/templates/scenarios/ts/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/ts/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/ts/notification-restify @kimizhu @dooriya @swatDong
-/templates/scenarios/ts/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/ts/workflow @kimizhu @dooriya @swatDong
-/templates/scenarios/ts/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/scenarios/ts/m365-tab @kimizhu @swatDong @kuojianlu
-/templates/scenarios/csharp/command-and-response @kimizhu @dooriya @swatDong
-/templates/scenarios/csharp/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/csharp/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/csharp/notification-webapi @kimizhu @dooriya @swatDong
-/templates/scenarios/csharp/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/scenarios/csharp/workflow @kimizhu @dooriya @swatDong
- 
+/templates/js/command-and-response @kimizhu @dooriya @swatDong
+/templates/js/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/js/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/js/notification-restify @kimizhu @dooriya @swatDong
+/templates/js/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/js/workflow @kimizhu @dooriya @swatDong
+/templates/js/m365-message-extension @kimizhu @swatDong @kuojianlu
+/templates/js/m365-tab @kimizhu @swatDong @kuojianlu
+/templates/ts/command-and-response @kimizhu @dooriya @swatDong
+/templates/ts/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/ts/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/ts/notification-restify @kimizhu @dooriya @swatDong
+/templates/ts/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/ts/workflow @kimizhu @dooriya @swatDong
+/templates/ts/m365-message-extension @kimizhu @swatDong @kuojianlu
+/templates/ts/m365-tab @kimizhu @swatDong @kuojianlu
+/templates/csharp/command-and-response @kimizhu @dooriya @swatDong
+/templates/csharp/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/csharp/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/csharp/notification-webapi @kimizhu @dooriya @swatDong
+/templates/csharp/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/csharp/workflow @kimizhu @dooriya @swatDong
+
 /packages/fx-core/src/component/resource/azureSql @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/component/resource/azureSql @xzf0587 @adashen @blackchoey
 

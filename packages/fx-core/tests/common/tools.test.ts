@@ -8,10 +8,7 @@ import "mocha";
 import mockFs from "mock-fs";
 import Sinon, * as sinon from "sinon";
 
-import {
-  ProjectSettings,
-  ok
-} from "@microsoft/teamsfx-api";
+import { ProjectSettings, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
@@ -437,14 +434,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const res = isApiConnectEnabled();
       chai.expect(res).false;
     });
-    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).true;
-    });
-  });
-});
- });
     it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
       const res = isApiConnectEnabled();

@@ -29,7 +29,6 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { downloadSampleHook } from "../../core/downloadSample";
 import { ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
 import {
@@ -89,6 +88,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { glob } from "glob";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -910,4 +910,22 @@ export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessag
     textForMsgBox: botTroubleShootDesc,
     textForActionButton: botTroubleShootLearnMore,
   } as BotTroubleShootMessage;
+}
+
+export async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+  // A temporary solution to avoid duplicate componentId
+  if (sampleId === "todo-list-SPFx") {
+    const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+    const componentId = uuid.v4();
+    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
+      await Promise.all(
+        files.map(async (file) => {
+          let content = (await fs.readFile(file)).toString();
+          const reg = new RegExp(originalId, "g");
+          content = content.replace(reg, componentId);
+          await fs.writeFile(file, content);
+        })
+      );
+    });
+  }
 }

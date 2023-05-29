@@ -10,7 +10,6 @@ import mockFs from "mock-fs";
 
 import {
   getSideloadingStatus,
-  canAddApiConnection,
   getFixedCommonProjectSettings,
   canAddCICDWorkflows,
   getAppSPFxVersion,
@@ -39,7 +38,7 @@ import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
-import { TOOLS } from "../../src/core/globalVars";
+import { TOOLS, globalVars } from "../../src/core/globalVars";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
@@ -145,53 +144,6 @@ describe("tools", () => {
       chai.assert.isUndefined(result);
       chai.assert.equal(events, 0);
       chai.assert.equal(errors, 3);
-    });
-  });
-
-  describe("canAddApiConnection()", () => {
-    it("returns true when function is added", async () => {
-      const solutionSettings: AzureSolutionSettings = {
-        activeResourcePlugins: ["fx-resource-function"],
-        hostType: "Azure",
-        capabilities: [],
-        azureResources: [],
-        name: "test",
-      };
-
-      const result = canAddApiConnection(solutionSettings);
-
-      chai.assert.isDefined(result);
-      chai.assert.isTrue(result);
-    });
-
-    it("returns true when bot is added", async () => {
-      const solutionSettings: AzureSolutionSettings = {
-        activeResourcePlugins: ["fx-resource-bot"],
-        hostType: "Azure",
-        capabilities: [],
-        azureResources: [],
-        name: "test",
-      };
-
-      const result = canAddApiConnection(solutionSettings);
-
-      chai.assert.isDefined(result);
-      chai.assert.isTrue(result);
-    });
-
-    it("returns false when bot or function is not added", async () => {
-      const solutionSettings: AzureSolutionSettings = {
-        activeResourcePlugins: [],
-        hostType: "Azure",
-        capabilities: [],
-        azureResources: [],
-        name: "test",
-      };
-
-      const result = canAddApiConnection(solutionSettings);
-
-      chai.assert.isDefined(result);
-      chai.assert.isFalse(result);
     });
   });
 

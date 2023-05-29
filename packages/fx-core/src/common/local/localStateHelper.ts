@@ -17,7 +17,6 @@ import {
   LocalStateBotKeys,
   LocalStateFrontendKeys,
   LocalStateSimpleAuthKeys,
-  LocalStateTeamsAppKeys,
 } from "../localStateConstants";
 import { getAllowedAppIds } from "../tools";
 import {

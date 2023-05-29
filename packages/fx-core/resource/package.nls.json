@@ -86,8 +86,6 @@
   "core.deployArmTemplates.FailedToGetSubsId": "Unable to get subscription id.",
   "core.deployArmTemplates.ActionSuccess": "Successfully deployed ARM templates. Resource group name: %s. Deployment name: %s",
   "core.handleConfigFile.FailedToUpdateAzureParameters": "Unable to update Azure parameters for %s environment.",
-  "core.appSettingsUtil.FailedToResetAppSettingsDevelopment": "Unable to reset values in appsettings.Development.json.",
-  "core.backupFiles.FailedToBackupFiles": "Unable to backup %s.",
   "core.collaboration.ListCollaboratorsSuccess": "'List Microsoft 365 App owners' succeeded, you can view it in [Output panel](%s).",
   "core.collaboration.GrantingPermission": "Granting permission",
   "core.collaboration.EmailCannotBeEmptyOrSame": "Collaborator's email cannot be null or same as current user",

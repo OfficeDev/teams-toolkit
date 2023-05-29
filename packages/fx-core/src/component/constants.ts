@@ -349,8 +349,6 @@ export enum SolutionError {
   InvalidProjectPath = "InvalidProjectPath",
   FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
   FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
-  FailedToBackupFiles = "FailedToBackupFiles",
-  FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   InvalidManifestError = "InvalidManifestError",
   FailedToLoadManifestFile = "FailedToLoadManifestFile",

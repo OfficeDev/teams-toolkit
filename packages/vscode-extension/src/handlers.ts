@@ -313,14 +313,6 @@ export function addFileSystemWatcher(workspacePath: string) {
     await openUnifyConfigMd(workspacePath, event.fsPath);
   });
 
-  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/backup-config-change-logs.md"
-  );
-
-  backupConfigWatcher.onDidCreate(async (event) => {
-    await openBackupConfigMd(workspacePath, event.fsPath);
-  });
-
   if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
@@ -360,13 +352,6 @@ export async function sendSDKVersionTelemetry(filePath: string) {
     [TelemetryProperty.TeamsJSVersion]:
       packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
   });
-}
-
-export async function openBackupConfigMd(workspacePath: string, filePath: string) {
-  const backupName = ".backup";
-  const backupConfigMD = "backup-config-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
-  await openPreviewMarkDown(filePath, changeLogsPath);
 }
 
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {

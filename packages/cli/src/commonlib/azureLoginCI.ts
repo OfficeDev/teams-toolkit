@@ -189,13 +189,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        if (!isV3Enabled()) {
-          await this.saveSubscription({
-            subscriptionId: item.subscriptionId,
-            subscriptionName: item.subscriptionName,
-            tenantId: item.tenantId,
-          });
-        }
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
         AzureAccountManager.subscriptionName = item.subscriptionName;
@@ -254,28 +247,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    if (isV3Enabled()) {
-      return undefined;
-    }
-    const subscriptionFIlePath = await this.getSubscriptionInfoPath();
-    if (subscriptionFIlePath === undefined) {
-      return undefined;
-    }
-    if (!fs.existsSync(subscriptionFIlePath)) {
-      return undefined;
-    }
-    const content = (await fs.readFile(subscriptionFIlePath)).toString();
-    if (content.length == 0) {
-      return undefined;
-    }
-    const subscriptionJson = JSON.parse(content);
-    AzureAccountManager.subscriptionId = subscriptionJson.subscriptionId;
-    AzureAccountManager.subscriptionName = subscriptionJson.subscriptionName;
-    return {
-      subscriptionId: subscriptionJson.subscriptionId,
-      tenantId: subscriptionJson.tenantId,
-      subscriptionName: subscriptionJson.subscriptionName,
-    };
+    return undefined;
   }
 }
 

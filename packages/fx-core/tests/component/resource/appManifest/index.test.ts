@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
+import * as chai from "chai";
 import sinon from "sinon";
 import fs from "fs-extra";
 import _ from "lodash";

@@ -4,7 +4,6 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
   CloudResource,
-  Colors,
   err,
   FxError,
   Inputs,
@@ -31,7 +30,6 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInt
 import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { AppStudioScopes, isV3Enabled } from "../../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
-import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
 import { AppStudioClient } from "./appStudioClient";
 import {
@@ -51,7 +49,7 @@ import { AppStudioResultFactory } from "./results";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { createTeamsApp, updateManifestV3, updateTeamsApp } from "./appStudio";
+import { createTeamsApp, updateManifestV3 } from "./appStudio";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "./constants";
 import { manifestUtils } from "./utils/ManifestUtils";
 
@@ -163,31 +161,7 @@ export class AppManifest implements CloudResource {
   ): Promise<Result<boolean, FxError>> {
     return manifestUtils.capabilityExceedLimit(inputs.projectPath, capability);
   }
-  @hooks([
-    ActionExecutionMW({
-      enableProgressBar: true,
-      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
-      progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.provision, // TODO
-    }),
-  ])
-  async provision(
-    ctx: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    TelemetryUtils.init(ctx);
-    await actionContext?.progressBar?.next(
-      getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSetting.appName)
-    );
-    const res = await createTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
-    if (res.isErr()) return err(res.error);
-    ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
-    globalVars.teamsAppId = res.value;
-    return ok(undefined);
-  }
+
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
@@ -210,29 +184,6 @@ export class AppManifest implements CloudResource {
     );
     const res = await createTeamsApp(ctx, inputs, envInfo, tokenProvider);
     return res;
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableProgressBar: true,
-      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
-      progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.localDebug,
-    }),
-  ])
-  async configure(
-    ctx: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    TelemetryUtils.init(ctx);
-    await actionContext?.progressBar?.next(
-      getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSetting.appName)
-    );
-    const res = await updateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
-    if (res.isErr()) return err(res.error);
-    return ok(undefined);
   }
 
   @hooks([

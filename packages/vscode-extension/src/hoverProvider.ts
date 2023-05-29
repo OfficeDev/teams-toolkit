@@ -27,7 +27,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
         new vscode.Position(position.line, indexOf),
         new RegExp(regex)
       );
-      const spfxLocal = document.fileName.endsWith("manifest.template.local.json");
+      const spfxLocal = document.fileName.endsWith("manifest.local.json");
       const message = await this.generateHoverMessageV3(key, spfxLocal);
       const hover = new vscode.Hover(message, range);
       return hover;

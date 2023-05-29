@@ -1,44 +1,33 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import Sinon, * as sinon from "sinon";
+import "mocha";
 import mockFs from "mock-fs";
+import Sinon, * as sinon from "sinon";
 
 import {
-  getSideloadingStatus,
-  getFixedCommonProjectSettings,
-  canAddCICDWorkflows,
-  getAppSPFxVersion,
-  isVideoFilterProject,
-  setRegion,
-  ConvertTokenToJson,
-  getSPFxToken,
-  isV3Enabled,
-  isApiConnectEnabled,
-} from "../../src/common/tools";
+  ProjectSettings,
+  ok
+} from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as path from "path";
 import * as telemetry from "../../src/common/telemetry";
 import {
-  AzureSolutionSettings,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  ProjectSettings,
-  Settings,
-  v2,
-} from "@microsoft/teamsfx-api";
-import { TabSsoItem } from "../../src/component/constants";
-import * as featureFlags from "../../src/common/featureFlags";
-import * as path from "path";
-import fs from "fs-extra";
-import { environmentManager } from "../../src/core/environment";
-import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
-import mockedEnv, { RestoreFn } from "mocked-env";
+  ConvertTokenToJson,
+  getAppSPFxVersion,
+  getFixedCommonProjectSettings,
+  getSPFxToken,
+  getSideloadingStatus,
+  isApiConnectEnabled,
+  isV3Enabled,
+  isVideoFilterProject,
+  setRegion,
+} from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
-import { TOOLS } from "../../src/core/globalVars";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
@@ -248,51 +237,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
   });
 
-  describe("canAddCICDWorkflows", () => {
-    beforeEach(() => {
-      sinon.stub<any, any>(featureFlags, "isFeatureFlagEnabled").returns(true);
-    });
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("returns true in SPFx project", async () => {
-      sinon.stub(environmentManager, "listRemoteEnvConfigs").returns(Promise.resolve(ok(["test"])));
-      sinon.stub(ExistingTemplatesStat.prototype, "notExisting").returns(true);
-
-      const projectSettings = {
-        appName: "test",
-        projectId: "projectId",
-        version: "2.1.0",
-        isFromSample: false,
-        components: [],
-        programmingLanguage: "javascript",
-        solutionSettings: {
-          name: "fx-solution-azure",
-          version: "1.0.0",
-          hostType: "SPFx",
-          azureResources: [],
-          capabilities: ["Tab"],
-          activeResourcePlugins: [
-            "fx-resource-spfx",
-            "fx-resource-local-debug",
-            "fx-resource-appstudio",
-          ],
-        },
-      };
-      const inputs: InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: ".",
-      };
-
-      const result = await canAddCICDWorkflows(inputs, {
-        projectSetting: projectSettings,
-      } as unknown as v2.Context);
-
-      chai.assert.isTrue(result);
-    });
-  });
-
   describe("getAppSPFxVersion", async () => {
     afterEach(() => {
       sinon.restore();
@@ -493,6 +437,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const res = isApiConnectEnabled();
       chai.expect(res).false;
     });
+    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
+      const res = isApiConnectEnabled();
+      chai.expect(res).true;
+    });
+  });
+});
+ });
     it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
       const res = isApiConnectEnabled();

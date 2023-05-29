@@ -195,7 +195,6 @@
   "plugins.appstudio.updateOverwriteTip": "The manifest file on Teams platform has been changed since your last update. Do you want to continue to update and overwrite the manifest file on Teams platform?",
   "plugins.appstudio.provisionTitle": "Provision Teams app",
   "plugins.appstudio.provisionProgress": "Registering Teams app %s...",
-  "plugins.appstudio.postProvisionProgress": "Updating Teams app %s...",
   "plugins.appstudio.manuallySubmitTip": "Manually submit Teams app package file",
   "plugins.appstudio.manuallySubmitDescription": "Build the Teams app package. You will need to send it to your Teams administrator manually",
   "plugins.appstudio.autoPublishTip": "Install for your organization",

@@ -36,7 +36,7 @@ import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { parse } from "yaml";
-import { BotSsoItem, HostTypeOptionAzure, SolutionError, TabSsoItem } from "../component/constants";
+import { HostTypeOptionAzure, SolutionError } from "../component/constants";
 import { NoProjectOpenedError } from "../component/feature/cicd/errors";
 import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
 import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
@@ -583,11 +583,6 @@ export async function isVideoFilterProject(projectPath: string): Promise<Result<
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
-}
-
-export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-  return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
 }
 
 interface BasicJsonSchema {

@@ -41,10 +41,10 @@ The following files can be customized and demonstrate an example implementation 
 
 This section introduces how to customize or extend this template, including:
 
-- [How to use Zero Install Link Unfurling in Teams](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-use-zero-install-link-unfurling-in-teams)
-- [How to add link unfurling cache in Teams](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-link-unfurling-cache-in-teams)
-- [How to customize Zero Install Link Unfurling's adaptive cards](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-customize-zero-install-link-unfurlings-adaptive-cards)
-- [How to add stage view](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-stage-view)
-- [How to add task module (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-task-module-teams)
-- [How to add adaptive card action (Teams)](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-add-adaptive-card-action-teams)
-- [How to extend this template with Notification, Command and Workflow bot](https://github.com/OfficeDev/TeamsFx/wiki/How-to-extend-Link-Unfurling-template#how-to-extend-this-template-with-notification-command-and-workflow-bot)
+- [How to use Zero Install Link Unfurling in Teams](https://aka.ms/teamsfx-extend-link-unfurling#how-to-use-zero-install-link-unfurling-in-teams)
+- [How to add link unfurling cache in Teams](https://aka.ms/teamsfx-extend-link-unfurling#how-to-add-link-unfurling-cache-in-teams)
+- [How to customize Zero Install Link Unfurling's adaptive cards](https://aka.ms/teamsfx-extend-link-unfurling#how-to-customize-zero-install-link-unfurlings-adaptive-cards)
+- [How to add stage view](https://aka.ms/teamsfx-extend-link-unfurling#how-to-add-stage-view)
+- [How to add task module (Teams)](https://aka.ms/teamsfx-extend-link-unfurling#how-to-add-task-module-teams)
+- [How to add adaptive card action (Teams)](https://aka.ms/teamsfx-extend-link-unfurling#how-to-add-adaptive-card-action-teams)
+- [How to extend this template with Notification, Command and Workflow bot](https://aka.ms/teamsfx-extend-link-unfurling#how-to-extend-this-template-with-notification-command-and-workflow-bot)

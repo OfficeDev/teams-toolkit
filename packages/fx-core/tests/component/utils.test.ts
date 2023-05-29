@@ -131,25 +131,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     expect(true).to.eql(true);
   });
 
-  it("askForDeployConsent", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Deploy"));
-    const envInfo = newEnvInfoV3();
-    envInfo.state.solution.subscriptionId = "mockSubId";
-    const res = await deployUtils.askForDeployConsent(
-      context,
-      tools.tokenProvider.azureAccountProvider,
-      envInfo
-    );
-    assert.isTrue(res.isErr());
-  });
   it("askForDeployConsentV3 confirm", async () => {
     process.env.TEAMSFX_ENV = "dev";
     const inputs: InputsWithProjectPath = {

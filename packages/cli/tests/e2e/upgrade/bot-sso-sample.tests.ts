@@ -28,7 +28,7 @@ describe("upgrade", () => {
 
   it("sample bot sso", { testPlanCaseId: 19314244 }, async function () {
     {
-      await Executor.installCLI(testFolder, "1.2.5", false);
+      await Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);
       env["TEAMSFX_V3"] = "false";
       // new projiect
@@ -40,7 +40,7 @@ describe("upgrade", () => {
       );
     }
 
-    await Executor.installCLI(testFolder, "alpha", false);
+    await Executor.installCLI(testFolder, "alpha", true);
     {
       // upgrade
       const result = await Executor.upgrade(projectPath);
@@ -52,7 +52,7 @@ describe("upgrade", () => {
       );
       const content = await fs.readFile(manifestPath, { encoding: "utf-8" });
       const res = JSON.parse(content);
-      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__DOMAIN}}"));
+      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__VALIDDOMAIN}}"));
     }
   });
 });

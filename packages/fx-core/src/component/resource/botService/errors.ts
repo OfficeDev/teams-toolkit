@@ -9,11 +9,9 @@ import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { err, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
-import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 import { CreateAppError, CreateSecretError } from "../aadApp/errors";
 import { GraphErrorCodes } from "../aadApp/errorCodes";
 import { HelpLinks } from "../../../common/constants";
-import { CommonStrings } from "./strings";
 
 export const ErrorType = {
   USER: "User",
@@ -211,7 +209,7 @@ export function wrapError(e: InnerError): FxResult {
     const res = err(e);
     return res;
   }
-  if (e instanceof PluginError || e instanceof CommonHostingError) {
+  if (e instanceof PluginError) {
     const message = e.genMessage();
     const displayMessage = e.genDisplayMessage();
     const result =

@@ -22,7 +22,7 @@ import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicep
 import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
-import { handleArmDeploymentError } from "../../../../src/component/arm";
+import { handleArmDeploymentError } from "../../../../src/component/driver/arm/util/handleError";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 import {
   CompileBicepError,
@@ -31,7 +31,7 @@ import {
 } from "../../../../src/error/arm";
 import { ResourceGroupNotExistError } from "../../../../src/error/azure";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import arm from "../../../../src/component/arm";
+import arm from "../../../../src/component/driver/arm/util/handleError";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -213,9 +213,7 @@ describe("util test", () => {
     logProvider: new MockLogProvider(),
     projectPath: "./",
   };
-  const driver = new ArmDeployDriver();
 
-  const bicepCliVersion = "v0.9.1";
   beforeEach(() => {});
 
   afterEach(() => {

@@ -553,36 +553,8 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
 
-  if (isV3Enabled()) {
-    const inputs = getSystemInputs();
-    return await runCommand(Stage.validateApplication, inputs);
-  } else {
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "validateManifest",
-      params: {},
-    };
-
-    let env: string | undefined;
-    if (!(await isVideoFilterProject())) {
-      const selectedEnv = await askTargetEnvironment();
-      if (selectedEnv.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-        showError(selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      env = selectedEnv.value;
-    }
-
-    const isLocalDebug = env === environmentManager.getLocalEnvName();
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
-    } else {
-      func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
-    }
-  }
+  const inputs = getSystemInputs();
+  return await runCommand(Stage.validateApplication, inputs);
 }
 
 /**
@@ -612,50 +584,7 @@ export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
 
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
-
-  if (isV3Enabled()) {
-    return await runCommand(Stage.createAppPackage);
-  } else {
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "buildPackage",
-      params: {
-        type: "",
-      },
-    };
-
-    if (args && args.length > 0 && args[0] != TelemetryTriggerFrom.TreeView) {
-      func.params.type = args[0];
-      const isLocalDebug = args[0] === "localDebug";
-      if (isLocalDebug) {
-        return await runUserTask(func, TelemetryEvent.Build, false, "local");
-      } else {
-        return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
-      }
-    } else {
-      let env: string | undefined;
-      // Video filter does not support remote, so do not ask env and runUserTask directly.
-      // VideoFilterAppBlocker middleware will block it.
-      if (!(await isVideoFilterProject())) {
-        const selectedEnv = await askTargetEnvironment();
-        if (selectedEnv.isErr()) {
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-          showError(selectedEnv.error);
-          return err(selectedEnv.error);
-        }
-        env = selectedEnv.value;
-      }
-
-      const isLocalDebug = env === "local";
-      if (isLocalDebug) {
-        func.params.type = "localDebug";
-        return await runUserTask(func, TelemetryEvent.Build, false, env);
-      } else {
-        func.params.type = "remote";
-        return await runUserTask(func, TelemetryEvent.Build, false, env);
-      }
-    }
-  }
+  return await runCommand(Stage.createAppPackage);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -2658,20 +2587,8 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     await core.activateEnv(inputs);
   }
 
-  let result;
-  if (isV3Enabled()) {
-    const inputs = getSystemInputs();
-    result = await runCommand(Stage.deployTeams, inputs);
-  } else {
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-appstudio",
-      method: "updateManifest",
-      params: {
-        envName: env,
-      },
-    };
-    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
-  }
+  const inputs = getSystemInputs();
+  const result = await runCommand(Stage.deployTeams, inputs);
 
   if (!args || args.length === 0) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
@@ -2682,7 +2599,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
       return err(env.error);
     }
-    const manifestPath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+    const manifestPath = `${workspacePath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value}.json`;
     workspace.openTextDocument(manifestPath).then((document) => {
       window.showTextDocument(document);
     });

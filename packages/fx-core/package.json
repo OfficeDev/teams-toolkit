@@ -60,7 +60,8 @@
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
     "version": "bash ../../.github/scripts/pkg-version.sh api-connector-sync",
-    "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1"
+    "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1",
+    "deleteUnusedStrings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",

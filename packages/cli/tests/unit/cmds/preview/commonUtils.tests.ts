@@ -13,7 +13,6 @@ import * as sinon from "sinon";
 import {
   createTaskStartCb,
   createTaskStopCb,
-  getAutomaticNpmInstallSetting,
   generateAccountHint,
   getBotOutlookChannelLink,
 } from "../../../../src/cmds/preview/commonUtils";
@@ -51,53 +50,6 @@ describe("commonUtils", () => {
         exitCode: null,
       });
       expect(progressHandler.end.calledOnce).to.be.true;
-    });
-  });
-
-  describe("getAutomaticNpmInstallSetting", () => {
-    const automaticNpmInstallOption = "automatic-npm-install";
-
-    it("on", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(
-        ok({
-          [automaticNpmInstallOption]: "on",
-        })
-      );
-      expect(getAutomaticNpmInstallSetting()).to.be.true;
-    });
-
-    it("off", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(
-        ok({
-          [automaticNpmInstallOption]: "off",
-        })
-      );
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("others", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(
-        ok({
-          [automaticNpmInstallOption]: "others",
-        })
-      );
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("none", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(ok({}));
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("getConfigSync error", () => {
-      const error = new UserError(cliSource, "Test", "Test");
-      sandbox.stub(UserSettings, "getConfigSync").returns(err(error));
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("getConfigSync exception", () => {
-      sandbox.stub(UserSettings, "getConfigSync").throws("Test");
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
   });
 

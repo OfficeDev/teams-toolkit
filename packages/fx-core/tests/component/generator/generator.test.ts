@@ -74,11 +74,11 @@ describe("Generator utils", () => {
     assert.isTrue(url.includes("0.0.0-rc"));
   });
 
-  it("alpha or prerelease should return error to use fallback", async () => {
+  it("set useLocalTemplate flag to true", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_TEMPLATE_PRERELEASE: "",
     });
-    sandbox.replace(templateConfig, "version", "0.0.0-alpha");
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     try {

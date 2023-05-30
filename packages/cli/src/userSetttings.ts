@@ -22,7 +22,6 @@ export enum CliConfigOptions {
   TrustDevCert = "trust-development-certificate",
   RunFrom = "run-from",
   Interactive = "interactive",
-  AutomaticNpmInstall = "automatic-npm-install",
 }
 
 export enum CliConfigTelemetry {
@@ -40,11 +39,6 @@ export enum CliConfigRunFrom {
   AzDo = "AzDo",
   Jenkins = "Jenkins",
   Other = "Other",
-}
-
-export enum CliConfigAutomaticNpmInstall {
-  On = "on",
-  Off = "off",
 }
 
 export class UserSettings {

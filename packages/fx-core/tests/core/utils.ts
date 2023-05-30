@@ -53,8 +53,6 @@ import {
   ComponentNames,
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
-  RESOURCE_GROUP_NAME,
-  SUBSCRIPTION_ID,
 } from "../../src/component/constants";
 import { MyTokenCredential } from "../plugins/solution/util";
 
@@ -627,8 +625,8 @@ export function MockContext(): any {
       envName: "dev",
       state: {
         solution: {
-          [RESOURCE_GROUP_NAME]: "ut",
-          [SUBSCRIPTION_ID]: "ut",
+          ["resourceGroupName"]: "ut",
+          ["subscriptionId"]: "ut",
           ["resourceNameSuffix"]: "ut",
         },
       },

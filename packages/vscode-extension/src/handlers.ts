@@ -332,18 +332,16 @@ export function addFileSystemWatcher(workspacePath: string) {
       await sendSDKVersionTelemetry(event.fsPath);
     });
 
-    if (isV3Enabled()) {
-      const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-      yorcFileWatcher.onDidCreate(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-      yorcFileWatcher.onDidChange(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-      yorcFileWatcher.onDidDelete(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-    }
+    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
+    yorcFileWatcher.onDidCreate(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidChange(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidDelete(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
   }
 }
 

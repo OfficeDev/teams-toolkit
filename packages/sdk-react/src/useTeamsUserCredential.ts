@@ -50,7 +50,7 @@ export type TeamsContextWithCredential = {
  * @param authConfig - custom configuration to override default ones.
  * @returns TeamsContextWithCredential object
  *
- * @beta
+ * @public
  */
 export function useTeamsUserCredential(
   authConfig: TeamsUserCredentialAuthConfig

@@ -17,7 +17,7 @@ import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/c
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { SPFXQuestionNames } from "../../src/component/resource/spfx/utils/questions";
+import { SPFXQuestionNames } from "../../src/component/generator/spfx/utils/questions";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
 import * as templateActions from "../../src/common/template-utils/templatesActions";

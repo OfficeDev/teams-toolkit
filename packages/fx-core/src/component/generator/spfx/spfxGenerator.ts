@@ -14,29 +14,22 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
-import {
-  LatestPackageInstallError,
-  ScaffoldError,
-  YoGeneratorScaffoldError,
-} from "../resource/spfx/error";
-import { Utils } from "../resource/spfx/utils/utils";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { ProgressHelper } from "./utils/progress-helper";
+import { SPFXQuestionNames } from "./utils/questions";
+import { LatestPackageInstallError, ScaffoldError, YoGeneratorScaffoldError } from "./error";
+import { Utils } from "./utils/utils";
 import { camelCase } from "lodash";
-import { Constants, ScaffoldProgressMessage } from "../resource/spfx/utils/constants";
-import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
-import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
-import { cpUtils } from "../../common/deps-checker";
-import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
-import { Generator } from "./generator";
-import { CoreQuestionNames } from "../../core/question";
-import { getLocalizedString } from "../../common/localizeUtils";
-import {
-  PackageSelectOptionsHelper,
-  SPFxVersionOptionIds,
-} from "../resource/spfx/utils/question-helper";
-import { SPFxQuestionNames } from "../constants";
+import { Constants } from "./utils/constants";
+import { YoChecker } from "./depsChecker/yoChecker";
+import { GeneratorChecker } from "./depsChecker/generatorChecker";
+import { cpUtils } from "../../../common/deps-checker";
+import { TelemetryEvents } from "./utils/telemetryEvents";
+import { Generator } from "../generator";
+import { CoreQuestionNames } from "../../../core/question";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./utils/question-helper";
+import { SPFxQuestionNames } from "../../constants";
 
 export class SPFxGenerator {
   @hooks([

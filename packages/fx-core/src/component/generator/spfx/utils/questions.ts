@@ -3,12 +3,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import {
-  DevEnvironmentSetupError,
-  NodeVersionNotSupportedError,
-  NpmNotFoundError,
-  NpmVersionNotSupportedError,
-} from "../error";
+import { DevEnvironmentSetupError } from "../error";
 import { Constants } from "./constants";
 import { Utils } from "./utils";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
@@ -86,31 +81,6 @@ export const webpartDescriptionQuestion: Question = {
   default: "helloworld description",
   validation: {
     required: true,
-  },
-};
-
-export const versionCheckQuestion: Question = {
-  type: "func",
-  name: SPFXQuestionNames.version_check,
-  title: getLocalizedString("plugins.spfx.questions.versionCheck.title"),
-  func: async (inputs: Inputs) => {
-    const npmMajorVersion = await Utils.getNPMMajorVersion(undefined);
-    if (npmMajorVersion === undefined) {
-      throw NpmNotFoundError();
-    }
-
-    const isNpmVersionSupported = Constants.SUPPORTED_NPM_VERSION.includes(npmMajorVersion);
-    if (!isNpmVersionSupported) {
-      throw NpmVersionNotSupportedError(npmMajorVersion!);
-    }
-
-    const nodeMajorVersion = await Utils.getNodeVersion();
-    const isNodeVersionSupported =
-      nodeMajorVersion && Constants.SUPPORTED_NODE_VERSION.includes(nodeMajorVersion);
-    if (!isNodeVersionSupported) {
-      throw NodeVersionNotSupportedError(nodeMajorVersion ?? "");
-    }
-    return undefined;
   },
 };
 

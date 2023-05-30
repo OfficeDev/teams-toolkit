@@ -50,9 +50,13 @@ export async function loadProjectSettingsByProjectPath(
   try {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, true);
     if (readSettingsResult.isOk()) {
-      const projectSettings: ProjectSettings = {
+      const projectSettings: any = {
         projectId: readSettingsResult.value.trackingId,
         version: readSettingsResult.value.version,
+        isFromSample: false,
+        programmingLanguage: "",
+        hostType: "",
+        isM365: false,
       };
       return ok(projectSettings);
     } else {

@@ -29,6 +29,7 @@ import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
+import { newEnvInfo } from "../../../../src/core/environment";
 import {
   ConfigKeys,
   ConfigKeysOfOtherPlugin,
@@ -164,7 +165,7 @@ export class TestHelper {
       ui: mockUI,
       telemetryReporter: mockTelemetryReporter,
       config: config,
-      // envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       projectSettings: {
         appName: "aad-plugin-unit-test",
         solutionSettings: {

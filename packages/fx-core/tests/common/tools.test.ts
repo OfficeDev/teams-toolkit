@@ -140,52 +140,6 @@ describe("tools", () => {
       sandbox.restore();
     });
 
-    it("happy path", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
-      const projectSettings: ProjectSettings = {
-        appName: "app-name",
-        projectId: "project-id",
-        version: "0.0.0",
-        isFromSample: false,
-        isM365: false,
-        solutionSettings: {
-          name: "fx-solution-azure",
-          version: "1.0.0",
-          hostType: "Azure",
-          azureResources: [],
-          capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: [
-            "fx-resource-frontend-hosting",
-            "fx-resource-identity",
-            "fx-resource-bot",
-            "fx-resource-local-debug",
-            "fx-resource-appstudio",
-            "fx-resource-cicd",
-            "fx-resource-api-connector",
-          ],
-        },
-        programmingLanguage: "typescript",
-        pluginSettings: {
-          "fx-resource-bot": {
-            "host-type": "app-service",
-          },
-        },
-      };
-
-      sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
-        return projectSettings;
-      });
-      sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
-        return true;
-      });
-
-      const result = getFixedCommonProjectSettings("root-path");
-      chai.assert.isNotEmpty(result);
-      restore();
-    });
-
     it("happy path V3", async () => {
       const restore = mockedEnv({
         TEAMSFX_V3: "true",

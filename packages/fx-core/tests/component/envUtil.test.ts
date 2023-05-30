@@ -737,14 +737,6 @@ describe("environmentManager.listRemoteEnvConfigs", () => {
     const res = await environmentManager.listRemoteEnvConfigs(".", true);
     assert.isTrue(res.isErr());
   });
-  it("environmentManager.listRemoteEnvConfigs return error V2", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    sandbox.stub(fs, "readdir").resolves([] as any);
-    const res = await environmentManager.listRemoteEnvConfigs(".", true);
-    assert.isTrue(res.isErr());
-  });
 });
 
 describe("parseSetOutputCommand", () => {

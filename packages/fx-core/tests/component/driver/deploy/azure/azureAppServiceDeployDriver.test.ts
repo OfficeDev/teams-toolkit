@@ -246,6 +246,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      telemetryReporter: new MockTelemetryReporter(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")

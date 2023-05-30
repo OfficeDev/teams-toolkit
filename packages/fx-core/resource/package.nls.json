@@ -148,7 +148,6 @@
   "plugins.spfx.buildSharepointPackage": "Building SharePoint package",
   "plugins.spfx.deploy.title": "Upload and deploy SharePoint package",
   "plugins.spfx.scaffold.title": "Scaffolding project",
-  "plugins.spfx.error.npmNotFound": "NPM not found on your machine. Install the supported version.",
   "plugins.spfx.error.npmInstallFailed": "Unable to run 'npm install' due to %s",
   "plugins.spfx.error.invalidDependency": "Unable to validate package %s",
   "plugins.spfx.error.noConfiguration": "There's no .yo-rc.json file in your SPFx project, add the configuration file and try again.",

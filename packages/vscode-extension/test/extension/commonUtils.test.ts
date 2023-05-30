@@ -189,16 +189,6 @@ describe("CommonUtils", () => {
       const result = commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
-
-    describe("menus", async () => {
-      it("preview", async () => {
-        const previewCommand = extensionPackage.contributes.menus["editor/title"].find(
-          (x) => x.command === "fx-extension.openPreviewFile"
-        );
-        chai.assert.isTrue(previewCommand !== undefined);
-        chai.assert.isTrue(previewCommand?.when.includes("manifest.template.json"));
-      });
-    });
   });
 
   describe("isTriggerFromWalkThrough", () => {

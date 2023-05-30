@@ -3,8 +3,7 @@
 /**
  * @author Huajie Zhang <huajiezhang@microsoft.com>
  */
-import { MultiSelectQuestion, OptionItem, UserError } from "@microsoft/teamsfx-api";
-import { RestError } from "@azure/ms-rest-js";
+import { OptionItem } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 

@@ -100,9 +100,6 @@ export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
 
-export const automaticNpmInstallHintMessage =
-  'Automatically installing packages required for your project. You can disable this by setting the global config "automatic-npm-install" to "off".';
-
 export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version.`,

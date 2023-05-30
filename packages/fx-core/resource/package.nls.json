@@ -231,7 +231,6 @@
   "plugins.cicd.result.scaffold.skipped": "You have already created template(s) of %s using %s for %s environment, customize it or remove it to create a new one.",
   "plugins.cicd.suggestions.checkPermission": "Check if you got sufficient permission.",
   "plugins.cicd.suggestions.createProjectOrOpenExisting": "You can create a new project or open an existing one.",
-  "error.cicd.FailedToListMultiEnv": "Unable to list multi env: %s.",
   "error.cicd.PreconditionNotMet": "Some preconditions of inputs are not met.",
   "error.NoProjectOpenedError": "No project opened, you can create a new project or open an existing one.",
   "error.InvalidProjectSettingsFileError": "The projectSettings.json file is invalid: %s.",

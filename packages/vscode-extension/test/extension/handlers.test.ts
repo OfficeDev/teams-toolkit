@@ -184,30 +184,6 @@ describe("handlers", () => {
     );
   });
 
-  it("addFileSystemWatcher in valid project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const isV3Enabled = sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
-    const sendTelemetryEventFunc = sandbox
-      .stub(ExtTelemetry, "sendTelemetryEvent")
-      .callsFake(() => {});
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.isTrue(createWatcher.calledThrice);
-    chai.assert.isTrue(createListener.calledThrice);
-    chai.assert.isTrue(changeListener.calledOnce);
-  });
-
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);

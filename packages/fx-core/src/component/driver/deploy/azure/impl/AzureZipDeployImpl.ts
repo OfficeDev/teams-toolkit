@@ -103,15 +103,15 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     const cost = Date.now() - startTime;
     this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
       time_cost: cost.toString(),
-      status: deployRes?.status.toString() ?? "",
+      status: deployRes?.status?.toString() ?? "",
       message: deployRes?.message ?? "",
       received_time: deployRes?.received_time ?? "",
-      started_time: deployRes?.start_time.toString() ?? "",
-      end_time: deployRes?.end_time.toString() ?? "",
-      last_success_end_time: deployRes?.last_success_end_time.toString() ?? "",
-      complete: deployRes?.complete.toString() ?? "",
-      active: deployRes?.active.toString() ?? "",
-      is_readonly: deployRes?.is_readonly.toString() ?? "",
+      started_time: deployRes?.start_time?.toString() ?? "",
+      end_time: deployRes?.end_time?.toString() ?? "",
+      last_success_end_time: deployRes?.last_success_end_time?.toString() ?? "",
+      complete: deployRes?.complete?.toString() ?? "",
+      active: deployRes?.active?.toString() ?? "",
+      is_readonly: deployRes?.is_readonly?.toString() ?? "",
       site_name_hash: deployRes?.site_name
         ? createHash("sha256").update(deployRes.site_name).digest("hex")
         : "",

@@ -37,13 +37,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
       // add shared properties
       const fixedProjectSettings = getFixedCommonProjectSettings(rootPath);
       this.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
-      this.addSharedProperty(TelemetryProperty.IsFromSample, fixedProjectSettings?.isFromSample);
-      this.addSharedProperty(
-        TelemetryProperty.ProgrammingLanguage,
-        fixedProjectSettings?.programmingLanguage
-      );
-      this.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
-      this.addSharedProperty(TelemetryProperty.IsM365, fixedProjectSettings?.isM365);
     }
     return this;
   }
@@ -134,18 +127,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
         this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
       }
     }
   }

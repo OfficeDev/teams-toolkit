@@ -3,58 +3,46 @@
 
 import {
   ConfigFolderName,
-  ConfigMap,
   CryptoProvider,
-  EnvStateFileNameTemplate,
   EnvConfig,
-  err,
-  FxError,
-  ok,
-  StatesFolderName,
-  Result,
-  SystemError,
-  InputConfigsFolderName,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
-  EnvInfo,
-  Json,
-  v3,
+  EnvStateFileNameTemplate,
+  FxError,
+  InputConfigsFolderName,
   Inputs,
+  Json,
   Platform,
+  Result,
+  StatesFolderName,
+  SystemError,
   Void,
-  CloudResource,
-  InputsWithProjectPath,
-  v2,
-  UserError,
+  err,
+  ok,
+  v3,
 } from "@microsoft/teamsfx-api";
-import path, { basename } from "path";
-import fs from "fs-extra";
-import * as dotenv from "dotenv";
-import {
-  dataNeedEncryption,
-  replaceTemplateWithUserData,
-  serializeDict,
-  separateSecretData,
-  mapToJson,
-  compileHandlebarsTemplateString,
-  isV3Enabled,
-} from "../common/tools";
-import { GLOBAL_CONFIG } from "../component/constants";
-import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
+import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
-import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import { ConstantString, ManifestVariables } from "../common/constants";
+import * as dotenv from "dotenv";
+import fs from "fs-extra";
+import path, { basename } from "path";
+import { ConstantString } from "../common/constants";
+import { Component, TelemetryEvent, sendTelemetryErrorEvent } from "../common/telemetry";
+import {
+  compileHandlebarsTemplateString,
+  dataNeedEncryption,
+  mapToJson,
+  replaceTemplateWithUserData,
+  separateSecretData,
+  serializeDict,
+} from "../common/tools";
+import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
+import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
+import { envUtil } from "../component/utils/envUtil";
+import { FileNotFoundError, NoEnvFilesError } from "../error/common";
 import { InvalidEnvConfigError, WriteFileError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
-import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
-import { Container } from "typedi";
-import { pick } from "lodash";
-import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
-import { LocalCrypto } from "./crypto";
-import { envUtil } from "../component/utils/envUtil";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { FileNotFoundError, NoEnvFilesError } from "../error/common";
 
 export interface EnvStateFiles {
   envState: string;
@@ -105,35 +93,6 @@ class EnvironmentManager {
       config: configResult.value as Json,
       state: stateResult.value as v3.ResourceStates,
     });
-  }
-
-  public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
-    const envConfig: EnvConfig = {
-      $schema: this.schema,
-      description: this.envConfigDescription,
-      manifest: {
-        appName: {
-          short: appName,
-          full: `Full name for ${appName}`,
-        },
-        description: {
-          short: `Short description of ${appName}`,
-          full: `Full description of ${appName}`,
-        },
-        icons: {
-          color: "resources/color.png",
-          outline: "resources/outline.png",
-        },
-      },
-    };
-
-    if (existingTabEndpoint) {
-      // Settings to build a static Tab app from existing app.
-      envConfig.manifest[ManifestVariables.TabContentUrl] = existingTabEndpoint;
-      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = existingTabEndpoint;
-    }
-
-    return envConfig;
   }
 
   public async writeEnvConfig(
@@ -206,24 +165,9 @@ class EnvironmentManager {
     if (!(await fs.pathExists(projectPath))) {
       return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
-
-    if (isV3Enabled()) {
-      const allEnvsRes = await envUtil.listEnv(projectPath);
-      if (allEnvsRes.isErr()) return err(allEnvsRes.error);
-      return ok(allEnvsRes.value);
-    }
-
-    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
-    if (!(await fs.pathExists(envConfigsFolder))) {
-      return ok([]);
-    }
-
-    const configFiles = await fs.readdir(envConfigsFolder);
-    const envNames = configFiles
-      .map((file) => this.getEnvNameFromPath(file))
-      .filter((name): name is string => name !== null);
-
-    return ok(envNames);
+    const allEnvsRes = await envUtil.listEnv(projectPath);
+    if (allEnvsRes.isErr()) return err(allEnvsRes.error);
+    return ok(allEnvsRes.value);
   }
 
   public async listRemoteEnvConfigs(
@@ -233,26 +177,12 @@ class EnvironmentManager {
     if (!(await fs.pathExists(projectPath))) {
       return err(new FileNotFoundError("EnvironmentManager", projectPath));
     }
-
-    if (isV3Enabled()) {
-      const allEnvsRes = await envUtil.listEnv(projectPath);
-      if (allEnvsRes.isErr()) return err(allEnvsRes.error);
-      const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
-      if (remoteEnvs.length === 0 && returnErrorIfEmpty)
-        return err(new NoEnvFilesError("EnvironmentManager"));
-      return ok(remoteEnvs);
-    }
-
-    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
-    const configFiles = !(await fs.pathExists(envConfigsFolder))
-      ? []
-      : await fs.readdir(envConfigsFolder);
-    const envNames = configFiles
-      .map((file) => this.getEnvNameFromPath(file))
-      .filter((name): name is string => name !== null && name !== this.getLocalEnvName());
-    if (envNames.length === 0 && returnErrorIfEmpty)
+    const allEnvsRes = await envUtil.listEnv(projectPath);
+    if (allEnvsRes.isErr()) return err(allEnvsRes.error);
+    const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
+    if (remoteEnvs.length === 0 && returnErrorIfEmpty)
       return err(new NoEnvFilesError("EnvironmentManager"));
-    return ok(envNames);
+    return ok(remoteEnvs);
   }
 
   public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
@@ -490,85 +420,9 @@ class EnvironmentManager {
   public getLocalEnvName() {
     return this.localEnvName;
   }
-
-  public async resetProvisionState(inputs: InputsWithProjectPath, ctx: v2.Context): Promise<void> {
-    const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-    if (allEnvRes.isOk()) {
-      for (const env of allEnvRes.value) {
-        const loadEnvRes = await this.loadEnvInfo(
-          inputs.projectPath,
-          new LocalCrypto(ctx.projectSetting.projectId),
-          env,
-          true
-        );
-        if (loadEnvRes.isOk()) {
-          const envInfo = loadEnvRes.value as v3.EnvInfoV3;
-          if (
-            envInfo.state?.solution?.provisionSucceeded === true ||
-            envInfo.state?.solution?.provisionSucceeded === "true"
-          ) {
-            envInfo.state.solution.provisionSucceeded = false;
-            await environmentManager.writeEnvState(
-              envInfo.state,
-              inputs.projectPath,
-              ctx.cryptoProvider,
-              env,
-              true
-            );
-          }
-        }
-      }
-    }
-  }
-}
-
-export function separateSecretDataV3(envState: any): Record<string, string> {
-  const res: Record<string, string> = {};
-  for (const resourceName of Object.keys(envState)) {
-    if (resourceName === "solution") continue;
-    const component = Container.get<CloudResource>(resourceName);
-    const state = envState[resourceName] as Json;
-    if (component.secretKeys && component.secretKeys.length > 0) {
-      component.secretKeys.forEach((secretKey: string) => {
-        const keyName = component.outputs[secretKey].key;
-        const fullKeyName = `${resourceName}.${keyName}`;
-        res[keyName] = state[keyName];
-        state[secretKey] = `{{${fullKeyName}}}`;
-      });
-    }
-    const outputKeys = component.finalOutputKeys.map((k) => component.outputs[k].key);
-    envState[resourceName] = pick(state, outputKeys);
-  }
-  return res;
 }
 
 export const environmentManager = new EnvironmentManager();
-
-export function newEnvInfo(
-  envName?: string,
-  config?: EnvConfig,
-  state?: Map<string, any>
-): EnvInfo {
-  return {
-    envName: envName ?? environmentManager.getDefaultEnvName(),
-    config: config ?? {
-      manifest: {
-        appName: {
-          short: "teamsfx_app",
-        },
-        description: {
-          short: `Short description of teamsfx_app`,
-          full: `Full description of teamsfx_app`,
-        },
-        icons: {
-          color: "resources/color.png",
-          outline: "resources/outline.png",
-        },
-      },
-    },
-    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
-  };
-}
 
 export function newEnvInfoV3(
   envName?: string,

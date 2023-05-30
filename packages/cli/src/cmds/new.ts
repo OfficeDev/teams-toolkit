@@ -19,7 +19,6 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -73,8 +72,6 @@ export default class New extends YargsCommand {
         });
         return err(result.error);
       }
-
-      await automaticNpmInstallHandler(result.value, false, false, false);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {

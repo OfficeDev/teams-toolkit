@@ -74,9 +74,6 @@ export enum TelemetryEvent {
   PreviewPrereqsCheckM365Account = "preview-prereqs-check-m365-account",
   PreviewStartServices = "preview-start-services",
 
-  AutomaticNpmInstallStart = "automatic-npm-install-start",
-  AutomaticNpmInstall = "automatic-npm-install",
-
   ConfigGet = "config-get",
   ConfigSet = "config-set",
 

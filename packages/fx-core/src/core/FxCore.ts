@@ -89,20 +89,6 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  /**
    * lifecycle commands: provision
    */
   async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {

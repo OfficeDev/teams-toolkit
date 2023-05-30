@@ -7,7 +7,6 @@ import {
   FxError,
   InputsWithProjectPath,
   M365TokenProvider,
-  ManifestUtil,
   ok,
   Result,
   ResourceContextV3,
@@ -23,6 +22,7 @@ import {
   LogProvider,
   Platform,
   Colors,
+  ManifestUtil,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -33,7 +33,6 @@ import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import { Container } from "typedi";
 import { AppStudioScopes, getAppDirectory, isSPFxProject } from "../../../common/tools";
-import { HelpLinks } from "../../../common/constants";
 import { AppStudioClient } from "./appStudioClient";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -203,166 +202,6 @@ export async function checkIfAppInDifferentAcountSameTenant(
 }
 
 /**
- * Update Teams app
- * @param ctx
- * @param inputs
- * @param envInfo
- * @param tokenProvider
- * @returns
- */
-export async function updateTeamsApp(
-  ctx: v2.Context,
-  inputs: InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3,
-  tokenProvider: TokenProvider
-): Promise<Result<string, FxError>> {
-  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
-    scopes: AppStudioScopes,
-  });
-  if (appStudioTokenRes.isErr()) {
-    return err(appStudioTokenRes.error);
-  }
-  const appStudioToken = appStudioTokenRes.value;
-
-  let archivedFile;
-  if (inputs.appPackagePath) {
-    if (!(await fs.pathExists(inputs.appPackagePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
-        )
-      );
-    }
-    archivedFile = await fs.readFile(inputs.appPackagePath);
-  } else {
-    const buildPackage = await buildTeamsAppPackage(
-      ctx.projectSetting,
-      inputs.projectPath,
-      envInfo!
-    );
-    if (buildPackage.isErr()) {
-      return err(buildPackage.error);
-    }
-    archivedFile = await fs.readFile(buildPackage.value);
-  }
-
-  try {
-    const appDefinition = await AppStudioClient.importApp(
-      archivedFile,
-      appStudioToken,
-      ctx.logProvider,
-      true
-    );
-    ctx.logProvider.info(
-      getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", appDefinition.teamsAppId!)
-    );
-    return ok(appDefinition.teamsAppId!);
-  } catch (e: any) {
-    return err(
-      AppStudioResultFactory.SystemError(
-        AppStudioError.TeamsAppCreateFailedError.name,
-        AppStudioError.TeamsAppCreateFailedError.message(e)
-      )
-    );
-  }
-}
-
-export async function publishTeamsApp(
-  ctx: v2.Context,
-  inputs: InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3,
-  tokenProvider: M365TokenProvider,
-  telemetryProps?: Record<string, string>
-): Promise<Result<{ appName: string; publishedAppId: string; update: boolean }, FxError>> {
-  let archivedFile;
-  // User provided zip file
-  if (inputs.appPackagePath) {
-    if (await fs.pathExists(inputs.appPackagePath)) {
-      archivedFile = await fs.readFile(inputs.appPackagePath);
-    } else {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
-        )
-      );
-    }
-  } else {
-    const buildPackage = await buildTeamsAppPackage(
-      ctx.projectSetting,
-      inputs.projectPath,
-      envInfo!,
-      false,
-      telemetryProps
-    );
-    if (buildPackage.isErr()) {
-      return err(buildPackage.error);
-    }
-    archivedFile = await fs.readFile(buildPackage.value);
-  }
-
-  const zipEntries = new AdmZip(archivedFile).getEntries();
-
-  const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
-  if (!manifestFile) {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
-      )
-    );
-  }
-  const manifestString = manifestFile.getData().toString();
-  const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-
-  // manifest.id === externalID
-  const appStudioTokenRes = await tokenProvider.getAccessToken({ scopes: AppStudioScopes });
-  if (appStudioTokenRes.isErr()) {
-    return err(appStudioTokenRes.error);
-  }
-  const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
-  if (existApp) {
-    let executePublishUpdate = false;
-    let description = getLocalizedString(
-      "plugins.appstudio.pubWarn",
-      existApp.displayName,
-      existApp.publishingState
-    );
-    if (existApp.lastModifiedDateTime) {
-      description =
-        description +
-        getLocalizedString(
-          "plugins.appstudio.lastModified",
-          existApp.lastModifiedDateTime?.toLocaleString()
-        );
-    }
-    description = description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
-    const confirm = getLocalizedString("core.option.confirm");
-    const res = await ctx.userInteraction.showMessage("warn", description, true, confirm);
-    if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
-
-    if (executePublishUpdate) {
-      const appId = await AppStudioClient.publishTeamsAppUpdate(
-        manifest.id,
-        archivedFile,
-        appStudioTokenRes.value
-      );
-      return ok({ publishedAppId: appId, appName: manifest.name.short, update: true });
-    } else {
-      return err(UserCancelError);
-    }
-  } else {
-    const appId = await AppStudioClient.publishTeamsApp(
-      manifest.id,
-      archivedFile,
-      appStudioTokenRes.value
-    );
-    return ok({ publishedAppId: appId, appName: manifest.name.short, update: false });
-  }
-}
-
-/**
  * Build appPackage.{envName}.zip
  * @returns Path for built Teams app package
  */
@@ -483,181 +322,6 @@ export async function buildTeamsAppPackage(
   }
 
   return ok(zipFileName);
-}
-
-/**
- * Validate manifest
- * @returns an array of validation error strings
- */
-export async function validateManifest(
-  manifest: TeamsAppManifest
-): Promise<Result<string[], FxError>> {
-  /*
-  // Corner case: SPFx project validate without provision
-  if (!isUUID(manifest.id)) {
-    manifest.id = v4();
-  }
-
-  if (manifest.$schema) {
-    try {
-      const result = await ManifestUtil.validateManifest(manifest);
-      return ok(result);
-    } catch (e: any) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message([
-            getLocalizedString(
-              "error.appstudio.validateFetchSchemaFailed",
-              manifest.$schema,
-              e.message
-            ),
-          ]),
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    }
-  } else {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.ValidationFailedError.name,
-        AppStudioError.ValidationFailedError.message([
-          getLocalizedString("error.appstudio.validateSchemaNotDefined"),
-        ]),
-        HelpLinks.WhyNeedProvision
-      )
-    );
-  }*/
-  return ok([]);
-}
-
-export async function updateManifest(
-  ctx: ResourceContextV3,
-  inputs: InputsWithProjectPath
-): Promise<Result<any, FxError>> {
-  const teamsAppId = ctx.envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
-  let manifest: any;
-  const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
-  if (manifestResult.isErr()) {
-    return err(manifestResult.error);
-  } else {
-    manifest = manifestResult.value;
-  }
-
-  const manifestFileName = await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
-  if (!(await fs.pathExists(manifestFileName))) {
-    const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
-    if (!isProvisionSucceeded) {
-      const msgs = AppStudioError.FileNotFoundError.message(manifestFileName);
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          [
-            msgs[0] + getDefaultString("plugins.appstudio.provisionTip"),
-            msgs[1] + getLocalizedString("plugins.appstudio.provisionTip"),
-          ],
-          HelpLinks.WhyNeedProvision
-        )
-      );
-    }
-    await buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
-  }
-  const existingManifest = await fs.readJSON(manifestFileName);
-  delete manifest.id;
-  delete existingManifest.id;
-  if (!_.isEqual(manifest, existingManifest)) {
-    const previewOnly = getLocalizedString("plugins.appstudio.previewOnly");
-    const previewUpdate = getLocalizedString("plugins.appstudio.previewAndUpdate");
-    const res = await ctx.userInteraction.showMessage(
-      "warn",
-      getLocalizedString("plugins.appstudio.updateManifestTip"),
-      true,
-      previewOnly,
-      previewUpdate
-    );
-
-    if (res?.isOk() && res.value === previewOnly) {
-      return await buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
-    } else if (res?.isOk() && res.value === previewUpdate) {
-      buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
-    } else {
-      return err(UserCancelError);
-    }
-  }
-
-  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
-    scopes: AppStudioScopes,
-  });
-  if (appStudioTokenRes.isErr()) {
-    return err(appStudioTokenRes.error);
-  }
-  const appStudioToken = appStudioTokenRes.value;
-
-  try {
-    const localUpdateTime = ctx.envInfo.state[ComponentNames.AppManifest]
-      .teamsAppUpdatedAt as number;
-    if (localUpdateTime) {
-      const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-      const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
-      if (localUpdateTime < devPortalUpdateTime) {
-        const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
-        const res = await ctx.userInteraction.showMessage(
-          "warn",
-          getLocalizedString("plugins.appstudio.updateOverwriteTip"),
-          true,
-          option
-        );
-        if (!(res?.isOk() && res.value === option)) {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    const result = await updateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
-
-    let loginHint = "";
-    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
-      scopes: AppStudioScopes,
-    });
-    if (accountRes.isOk()) {
-      loginHint = accountRes.value.unique_name as string;
-    }
-
-    ctx.userInteraction
-      .showMessage(
-        "info",
-        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
-        false,
-        getLocalizedString("plugins.appstudio.viewDeveloperPortal")
-      )
-      .then((res) => {
-        if (
-          res?.isOk() &&
-          res.value === getLocalizedString("plugins.appstudio.viewDeveloperPortal")
-        ) {
-          ctx.userInteraction.openUrl(
-            util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, result.value, loginHint)
-          );
-        }
-      });
-    return ok(teamsAppId);
-  } catch (error) {
-    if (error.message && error.message.includes("404")) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.UpdateManifestWithInvalidAppError.name,
-          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
-        )
-      );
-    } else {
-      return err(error);
-    }
-  }
 }
 
 export async function updateManifestV3(
@@ -843,17 +507,13 @@ export async function updateTeamsAppV3ForPublish(
         );
       } else {
         teamsAppId = manifest.id;
-        const validationResult = await validateManifest(manifest);
-        if (validationResult.isErr()) {
-          validationError = validationResult.error;
-        } else {
-          if (validationResult.value.length > 0) {
-            const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
-            validationError = AppStudioResultFactory.UserError(
-              AppStudioError.ValidationFailedError.name,
-              errMessage
-            );
-          }
+        const validationResult = await ManifestUtil.validateManifest(manifest);
+        if (validationResult.length > 0) {
+          const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
+          validationError = AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            errMessage
+          );
         }
       }
     } catch (e) {

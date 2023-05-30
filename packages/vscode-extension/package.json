@@ -196,11 +196,6 @@
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isV3Enabled",
           "group": "deploy@0"
-        },
-        {
-          "command": "fx-extension.deployManifestFromCtxMenu",
-          "when": "resourceFilename == manifest.template.json",
-          "group": "deploy@0"
         }
       ],
       "view/title": [
@@ -343,16 +338,6 @@
         }
       ],
       "editor/title": [
-        {
-          "command": "fx-extension.openPreviewFile",
-          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json || resourceFilename == manifest.template.json && !fx-extension.isV3Enabled",
-          "group": "navigation"
-        },
-        {
-          "command": "fx-extension.updatePreviewFile",
-          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && !fx-extension.isV3Enabled",
-          "group": "navigation"
-        },
         {
           "command": "fx-extension.openPreviewAadFile",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",

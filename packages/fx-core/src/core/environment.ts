@@ -27,7 +27,7 @@ import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
 import path, { basename } from "path";
-import { ConstantString } from "../common/constants";
+import { ConstantString, ManifestVariables } from "../common/constants";
 import { Component, TelemetryEvent, sendTelemetryErrorEvent } from "../common/telemetry";
 import {
   compileHandlebarsTemplateString,
@@ -119,6 +119,35 @@ class EnvironmentManager {
     }
 
     return ok(envConfigPath);
+  }
+
+  public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
+    const envConfig: EnvConfig = {
+      $schema: this.schema,
+      description: this.envConfigDescription,
+      manifest: {
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
+        },
+        description: {
+          short: `Short description of ${appName}`,
+          full: `Full description of ${appName}`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
+        },
+      },
+    };
+
+    if (existingTabEndpoint) {
+      // Settings to build a static Tab app from existing app.
+      envConfig.manifest[ManifestVariables.TabContentUrl] = existingTabEndpoint;
+      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = existingTabEndpoint;
+    }
+
+    return envConfig;
   }
 
   public async writeEnvState(

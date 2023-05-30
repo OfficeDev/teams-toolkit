@@ -14,7 +14,6 @@ import {
   Result,
   traverse,
   UserError,
-  v2,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../common/constants";
 import { TOOLS } from "../../core/globalVars";
@@ -234,19 +233,6 @@ export class ResourceGroupHelper {
     newResourceGroupNameNode.addChild(newResourceGroupLocationNode);
 
     return node.trim();
-  }
-
-  /**
-   * Ask user to create a new resource group or use an existing resource group
-   */
-  async askResourceGroupInfo(
-    ctx: v2.Context,
-    inputs: Inputs,
-    azureAccountProvider: AzureAccountProvider,
-    rmClient: ResourceManagementClient,
-    defaultResourceGroupName: string
-  ): Promise<Result<ResourceGroupInfo, FxError>> {
-    return this.askResourceGroupInfoV3(azureAccountProvider, rmClient, defaultResourceGroupName);
   }
 
   /**

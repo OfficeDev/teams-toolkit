@@ -86,6 +86,24 @@ describe("Yo checker", () => {
     }
   });
 
+  it("install throw error", async () => {
+    const yc = new YoChecker(new StubLogger());
+    const cleanStub = stub(YoChecker.prototype, <any>"cleanup").callsFake(async () => {
+      console.log("stub cleanup");
+      return;
+    });
+    stub(cpUtils, "executeCommand").throws(new Error("unknown"));
+    stub(fs, "pathExists").callsFake(async () => {
+      return true;
+    });
+
+    try {
+      await yc.install();
+    } catch (e) {
+      expect(e.name).equal("NpmInstallFailed");
+    }
+  });
+
   it("findGloballyInstalledVersion: returns version", async () => {
     const generatorChecker = new YoChecker(new StubLogger());
     stub(cpUtils, "executeCommand").resolves("C:\\Roaming\\npm\n`-- yo@4.3.1\n\n");

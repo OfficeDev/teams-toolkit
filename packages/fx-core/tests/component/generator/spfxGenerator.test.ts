@@ -288,6 +288,27 @@ describe("SPFxGenerator", function () {
     chai.expect(result.isErr()).to.eq(true);
   });
 
+  it("Yeoman Generator scaffolding error with unknown", async function () {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(cpUtils, "executeCommand").throws(new Error("errorMessage"));
+    sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
+    sinon.stub(YoChecker.prototype, "ensureLatestDependency").throws(new Error("unknown"));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).equal("SPFxScaffoldError");
+    }
+  });
+
   it("install locally and use path", async function () {
     mockedEnvRestore = mockedEnv({
       PATH: undefined,

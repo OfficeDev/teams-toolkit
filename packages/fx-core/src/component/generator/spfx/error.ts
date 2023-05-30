@@ -18,16 +18,6 @@ export function ScaffoldError(error: Error): UserError | SystemError {
   }
 }
 
-export function NpmNotFoundError(): UserError {
-  return new UserError({
-    source: Constants.PLUGIN_NAME,
-    name: "NpmNotFound",
-    message: getDefaultString("plugins.spfx.error.npmNotFound"),
-    displayMessage: getLocalizedString("plugins.spfx.error.npmNotFound"),
-    helpLink: Constants.SPFX_HELP_LINK,
-  });
-}
-
 export function NpmInstallError(error: Error): SystemError {
   return new SystemError(
     Constants.PLUGIN_NAME,
@@ -44,16 +34,6 @@ export function DependencyValidateError(dependency: string): SystemError {
     getDefaultString("plugins.spfx.error.invalidDependency", dependency),
     getLocalizedString("plugins.spfx.error.invalidDependency", dependency)
   );
-}
-
-export function NoConfigurationError(): SystemError {
-  return new UserError({
-    source: Constants.PLUGIN_NAME,
-    name: "NoConfigurationFile",
-    message: getDefaultString("plugins.spfx.error.noConfiguration"),
-    displayMessage: getLocalizedString("plugins.spfx.error.noConfiguration"),
-    helpLink: Constants.SPFX_HELP_LINK,
-  });
 }
 
 export function DevEnvironmentSetupError(): UserError {

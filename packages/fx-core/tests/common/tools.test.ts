@@ -8,15 +8,13 @@ import "mocha";
 import mockFs from "mock-fs";
 import Sinon, * as sinon from "sinon";
 
-import { InputsWithProjectPath, Platform, ProjectSettings, ok, v2 } from "@microsoft/teamsfx-api";
+import { ProjectSettings, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
-import * as featureFlags from "../../src/common/featureFlags";
 import * as telemetry from "../../src/common/telemetry";
 import {
   ConvertTokenToJson,
-  canAddCICDWorkflows,
   getAppSPFxVersion,
   getFixedCommonProjectSettings,
   getSPFxToken,
@@ -26,9 +24,7 @@ import {
   isVideoFilterProject,
   setRegion,
 } from "../../src/common/tools";
-import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
-import { environmentManager } from "../../src/core/environment";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
@@ -235,51 +231,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("empty root path", async () => {
       const result = getFixedCommonProjectSettings("");
       chai.assert.isUndefined(result);
-    });
-  });
-
-  describe("canAddCICDWorkflows", () => {
-    beforeEach(() => {
-      sinon.stub<any, any>(featureFlags, "isFeatureFlagEnabled").returns(true);
-    });
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("returns true in SPFx project", async () => {
-      sinon.stub(environmentManager, "listRemoteEnvConfigs").returns(Promise.resolve(ok(["test"])));
-      sinon.stub(ExistingTemplatesStat.prototype, "notExisting").returns(true);
-
-      const projectSettings = {
-        appName: "test",
-        projectId: "projectId",
-        version: "2.1.0",
-        isFromSample: false,
-        components: [],
-        programmingLanguage: "javascript",
-        solutionSettings: {
-          name: "fx-solution-azure",
-          version: "1.0.0",
-          hostType: "SPFx",
-          azureResources: [],
-          capabilities: ["Tab"],
-          activeResourcePlugins: [
-            "fx-resource-spfx",
-            "fx-resource-local-debug",
-            "fx-resource-appstudio",
-          ],
-        },
-      };
-      const inputs: InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: ".",
-      };
-
-      const result = await canAddCICDWorkflows(inputs, {
-        projectSetting: projectSettings,
-      } as unknown as v2.Context);
-
-      chai.assert.isTrue(result);
     });
   });
 

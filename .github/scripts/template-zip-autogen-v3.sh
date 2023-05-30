@@ -18,12 +18,12 @@ TEMPLATE_NAMES=(common csharp js ts)
 
 for TEMPLATE_NAME in ${TEMPLATE_NAMES[@]}; do
     TEMPLATE_PATH=${TEMPLATE_BASE_DIR}/${TEMPLATE_NAME}
-    if [ ! -d "${TEMPLATE_PATH}" ]; then
+    if [ ! -d ${TEMPLATE_PATH} ]; then
         echo "The folder ${TEMPLATE_PATH} does not exist."
         exit -1
     fi
 
-    cd "${TEMPLATE_PATH}"
+    cd ${TEMPLATE_PATH}
     zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE_NAME}.zip .
     cd -
 done

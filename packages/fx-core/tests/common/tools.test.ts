@@ -1,44 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import Sinon, * as sinon from "sinon";
+import "mocha";
 import mockFs from "mock-fs";
+import Sinon, * as sinon from "sinon";
 
-import {
-  getSideloadingStatus,
-  getFixedCommonProjectSettings,
-  canAddCICDWorkflows,
-  getAppSPFxVersion,
-  isVideoFilterProject,
-  setRegion,
-  ConvertTokenToJson,
-  getSPFxToken,
-  isV3Enabled,
-  isApiConnectEnabled,
-} from "../../src/common/tools";
+import { InputsWithProjectPath, Platform, ProjectSettings, ok, v2 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as path from "path";
+import * as featureFlags from "../../src/common/featureFlags";
 import * as telemetry from "../../src/common/telemetry";
 import {
-  AzureSolutionSettings,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  ProjectSettings,
-  Settings,
-  v2,
-} from "@microsoft/teamsfx-api";
-import { TabSsoItem } from "../../src/component/constants";
-import * as featureFlags from "../../src/common/featureFlags";
-import * as path from "path";
-import fs from "fs-extra";
-import { environmentManager } from "../../src/core/environment";
+  ConvertTokenToJson,
+  canAddCICDWorkflows,
+  getAppSPFxVersion,
+  getFixedCommonProjectSettings,
+  getSPFxToken,
+  getSideloadingStatus,
+  isApiConnectEnabled,
+  isV3Enabled,
+  isVideoFilterProject,
+  setRegion,
+} from "../../src/common/tools";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
-import { TOOLS, globalVars } from "../../src/core/globalVars";
+import { environmentManager } from "../../src/core/environment";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);

@@ -152,7 +152,6 @@ export class FxCoreV3Implement {
     }
     const res = await coordinator.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
-    ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
     return ok(inputs.projectPath!);
   }
@@ -303,7 +302,7 @@ export class FxCoreV3Implement {
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    const context = createContextV3();
     const component = Container.get("app-manifest") as any;
     const res = await component.deployV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {

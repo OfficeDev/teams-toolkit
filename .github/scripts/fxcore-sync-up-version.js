@@ -45,7 +45,7 @@ if (!semver.prerelease(templateVersion)) {
   console.log("sync up template in fx-core as 0.0.0-alpha");
   templateConfigFile.version = "0.0.0-alpha";
   templateConfigFile.tagPrefix = "templates-";
-  templateConfigFile.useLocalTemplate = false;
+  templateConfigFile.useLocalTemplate = true;
   fse.writeFileSync(
     templateConfig,
     JSON.stringify(templateConfigFile, null, 4)
@@ -54,7 +54,7 @@ if (!semver.prerelease(templateVersion)) {
   console.log("sync up template in fx-core as 0.0.0-beta");
   templateConfigFile.version = "0.0.0-beta";
   templateConfigFile.tagPrefix = "templates-";
-  templateConfigFile.useLocalTemplate = false;
+  templateConfigFile.useLocalTemplate = true;
   fse.writeFileSync(
     templateConfig,
     JSON.stringify(templateConfigFile, null, 4)

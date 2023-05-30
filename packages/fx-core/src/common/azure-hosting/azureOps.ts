@@ -14,9 +14,7 @@ import { DeployStatusConstant } from "./hostingConstant";
 import { waitSeconds } from "../tools";
 import {
   AxiosOnlyStatusResult,
-  AxiosResponseWithStatusResult,
   AxiosZipDeployResult,
-  AzurePublishingCredentials,
   AzureUploadConfig,
   Logger,
 } from "./interfaces";

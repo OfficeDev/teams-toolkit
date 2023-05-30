@@ -3,12 +3,6 @@
 
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
-export class AppServiceBicepConstant {
-  static readonly resourceId: string = "provisionOutputs.botOutput.value.resourceId";
-  static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
-  static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
-}
-
 export class DeployStatusConstant {
   public static readonly RETRY_TIMES = 120; // Timeout: 20 min
   public static readonly BACKOFF_TIME_S = 10;
@@ -22,14 +16,6 @@ export class AzureOpsConstant {
   public static FAIL_TO_GET_AZURE_CREDENTIALS: () => [string, string] = () => [
     getDefaultString("plugin.hosting.FailRetrieveAzureCredentials"),
     getLocalizedString("plugin.hosting.FailRetrieveAzureCredentials"),
-  ];
-  public static readonly FAIL_TO_UPDATE_MESSAGE_ENDPOINT = (endpoint: string): [string, string] => [
-    getDefaultString("plugin.hosting.FailedUpdateMessageEndpoint", endpoint),
-    getLocalizedString("plugin.hosting.FailedUpdateMessageEndpoint", endpoint),
-  ];
-  public static readonly FAIL_TO_PROVISION_SOME_RESOURCE = (resource: string): [string, string] => [
-    getDefaultString("plugin.hosting.FailedToProvision", resource),
-    getLocalizedString("plugin.hosting.FailedToProvision", resource),
   ];
   public static readonly FAIL_TO_LIST_PUBLISHING_CREDENTIALS: () => [string, string] = () => [
     getDefaultString("plugin.hosting.FailedListPublishingCredentials"),
@@ -59,8 +45,6 @@ export class AzureOpsConstant {
 
 export class ErrorNameConstant {
   public static readonly PRECONDITION_ERROR = "PreconditionError";
-  public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
-  public static readonly PROVISION_ERROR = "ProvisionError";
   public static readonly LIST_PUBLISHING_CREDENTIALS_ERROR = "ListPublishingCredentialsError";
   public static readonly ZIP_DEPLOY_ERROR = "ZipDeployError";
   public static readonly DEPLOY_STATUS_ERROR = "DeployStatusError";
@@ -74,12 +58,4 @@ export class AzureOperationCommonConstants {
     2 * AzureOperationCommonConstants.msInOneSecond;
   public static readonly latestTrustMtime: number = new Date(2000, 1, 1).getTime();
   public static readonly deployTimeoutInMs: number = 10 * 60 * 1000;
-}
-
-export class DeployConfigsConstants {
-  public static readonly DEPLOYMENT_FOLDER = ".deployment";
-  public static readonly DEPLOYMENT_INFO_FILE = "deployment.json";
-  public static readonly DEPLOYMENT_ZIP_CACHE_FILE = "deployment.zip";
-  public static readonly FUNC_IGNORE_FILE = ".funcignore";
-  public static readonly GIT_IGNORE_FILE = ".gitignore";
 }

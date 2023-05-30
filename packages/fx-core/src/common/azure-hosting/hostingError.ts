@@ -69,26 +69,6 @@ export class PreconditionError extends CommonHostingError {
   }
 }
 
-export class MessageEndpointUpdatingError extends CommonHostingError {
-  constructor(endpoint: string, innerError?: InnerError) {
-    super(
-      ErrorNameConstant.MSG_ENDPOINT_UPDATING_ERROR,
-      AzureOpsConstant.FAIL_TO_UPDATE_MESSAGE_ENDPOINT(endpoint),
-      innerError
-    );
-  }
-}
-
-export class ProvisionError extends CommonHostingError {
-  constructor(resource: string, innerError?: InnerError) {
-    super(
-      ErrorNameConstant.PROVISION_ERROR,
-      AzureOpsConstant.FAIL_TO_PROVISION_SOME_RESOURCE(resource),
-      innerError
-    );
-  }
-}
-
 export class ListPublishingCredentialsError extends CommonHostingError {
   constructor(innerError?: InnerError) {
     super(

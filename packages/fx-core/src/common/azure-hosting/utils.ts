@@ -1,17 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ArmTemplateResult } from "../armInterface";
 import { IProgressHandler, TokenProvider } from "@microsoft/teamsfx-api";
 import { TokenCredential } from "@azure/core-auth";
 import * as appService from "@azure/arm-appservice";
-import {
-  AzureUploadConfig,
-  BicepContext,
-  HandlebarsContext,
-  Logger,
-  ServiceType,
-} from "./interfaces";
+import { AzureUploadConfig, Logger } from "./interfaces";
 import { Base64 } from "js-base64";
 import { AzureOperations } from "./azureOps";
 import { AzureOperationCommonConstants, AzureOpsConstant } from "./hostingConstant";
@@ -22,50 +15,6 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../tools";
 import { Messages } from "./messages";
-
-export function getHandlebarContext(
-  bicepContext: BicepContext,
-  serviceType: ServiceType
-): HandlebarsContext {
-  const moduleName = bicepContext.moduleNames?.[serviceType] ?? serviceType;
-  return {
-    plugins: bicepContext.plugins,
-    configs: bicepContext.configs,
-    moduleName: moduleName,
-    moduleNameCapitalized: capitalizeFirstLetter(moduleName),
-    moduleAlias: bicepContext.moduleAlias,
-    pluginId: bicepContext.pluginId,
-  };
-}
-
-export function capitalizeFirstLetter([first, ...rest]: Iterable<string>): string {
-  return [first?.toUpperCase(), ...rest].join("");
-}
-
-export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResult {
-  const existsProvision = templates.some((it) => it.Provision);
-  const existsParameters = templates.some((it) => it.Parameters);
-  return {
-    Provision: existsProvision
-      ? {
-          Orchestration: templates.map((template) => template.Provision?.Orchestration).join(""),
-          Modules: templates
-            .map((template) => template.Provision?.Modules)
-            .reduce((result, current) => Object.assign(result, current), {}),
-        }
-      : undefined,
-    Configuration: {
-      Orchestration: templates.map((template) => template.Configuration?.Orchestration).join(""),
-      Modules: templates
-        .map((template) => template.Configuration?.Modules)
-        .reduce((result, current) => Object.assign(result, current), {}),
-    },
-    Parameters: existsParameters
-      ? Object.assign({}, ...templates.map((template) => template.Parameters))
-      : undefined,
-    Reference: Object.assign({}, ...templates.map((template) => template.Reference)),
-  };
-}
 
 async function getAzureAccountCredential(tokenProvider: TokenProvider): Promise<TokenCredential> {
   const credential = await tokenProvider.azureAccountProvider.getIdentityCredentialAsync();

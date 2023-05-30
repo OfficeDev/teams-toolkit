@@ -21,6 +21,7 @@ import {
   environmentManager,
   getSideloadingStatus,
   isV3Enabled,
+  setRegion,
 } from "@microsoft/teamsfx-core";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
@@ -72,6 +73,7 @@ export default class ServerConnection implements IServerConnection {
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
+      this.setRegionRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -391,5 +393,18 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
+  }
+
+  public async setRegionRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const authSvcToken: string = accountToken.token;
+    if (authSvcToken) {
+      await setRegion(authSvcToken);
+    }
+    return ok(Void);
   }
 }

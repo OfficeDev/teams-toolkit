@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import {
@@ -16,80 +16,42 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { DependencyChecker, DependencyInfo } from "./dependencyChecker";
+import { DependencyChecker } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
-import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
-import { PackageSelectOptionsHelper } from "../utils/question-helper";
+import { Constants } from "../utils/constants";
 
-const name = Constants.GeneratorPackageName;
-const supportedVersion = Constants.SPFX_VERSION;
+const name = Constants.YeomanPackageName;
 const displayName = `${name}@${Constants.LatestVersion}`;
 const timeout = 6 * 60 * 1000;
 
-export class GeneratorChecker implements DependencyChecker {
+export class YoChecker implements DependencyChecker {
   private readonly _logger: LogProvider;
 
   constructor(logger: LogProvider) {
     this._logger = logger;
   }
 
-  public static getDependencyInfo(): DependencyInfo {
-    return {
-      supportedVersion: supportedVersion,
-      displayName: displayName,
-    };
-  }
-
-  public async ensureDependency(ctx: PluginContext | ContextV3): Promise<Result<boolean, FxError>> {
-    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGeneratorStart);
-    try {
-      if (!(await this.isInstalled())) {
-        this._logger.info(`${displayName} not found, installing ...`);
-        await this.install();
-        this._logger.info(`Successfully installed ${displayName}`);
-      }
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGenerator);
-    } catch (error) {
-      telemetryHelper.sendErrorEvent(
-        ctx,
-        TelemetryEvents.EnsureSharepointGenerator,
-        error as UserError | SystemError,
-        {
-          [TelemetryProperty.EnsureSharepointGeneratorReason]: (error as UserError | SystemError)
-            .name,
-        }
-      );
-      await this._logger.error(`Failed to install ${name}, error = '${error}'`);
-      return err(error as UserError | SystemError);
-    }
-
-    return ok(true);
-  }
-
   public async ensureLatestDependency(
     ctx: PluginContext | ContextV3
   ): Promise<Result<boolean, FxError>> {
-    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
-
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
     try {
       this._logger.info(`${displayName} not found, installing...`);
       await this.install();
       this._logger.info(`Successfully installed ${displayName}`);
 
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator);
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo);
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
-        TelemetryEvents.EnsureLatestSharepointGenerator,
+        TelemetryEvents.EnsureLatestYo,
         error as UserError | SystemError,
         {
-          [TelemetryProperty.EnsureLatestSharepointGeneratorReason]: (
-            error as UserError | SystemError
-          ).name,
+          [TelemetryProperty.EnsureLatestYoReason]: (error as UserError | SystemError).name,
         }
       );
       await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
@@ -99,27 +61,12 @@ export class GeneratorChecker implements DependencyChecker {
     return ok(true);
   }
 
-  public async isInstalled(): Promise<boolean> {
-    let isVersionSupported = false,
-      hasSentinel = false;
-    try {
-      const generatorVersion = await this.queryVersion();
-      isVersionSupported = generatorVersion !== undefined && supportedVersion === generatorVersion;
-      hasSentinel = await fs.pathExists(this.getSentinelPath());
-    } catch (error) {
-      return false;
-    }
-    return isVersionSupported && hasSentinel;
-  }
-
   public async isLatestInstalled(): Promise<boolean> {
     try {
-      const generatorVersion = await this.queryVersion();
-      const latestGeneratorVersion =
-        PackageSelectOptionsHelper.getLatestSpGeneratorVersion() ??
-        (await this.findLatestVersion(5));
+      const yoVersion = await this.queryVersion();
+      const latestYeomanVersion = await this.findLatestVersion(5);
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
-      return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion && hasSentinel;
+      return !!latestYeomanVersion && yoVersion === latestYeomanVersion && hasSentinel;
     } catch (error) {
       return false;
     }
@@ -128,27 +75,19 @@ export class GeneratorChecker implements DependencyChecker {
   public async install(): Promise<void> {
     this._logger.info("Start installing...");
     await this.cleanup();
-    await this.installGenerator();
+    await this.installYo();
 
     this._logger.info("Validating package...");
     if (!(await this.validate())) {
-      this._logger.debug(`Failed to validate ${name}, cleaning up...`);
+      this._logger.debug("Failed to validate yo, cleaning up...");
       await this.cleanup();
       throw DependencyValidateError(name);
     }
   }
 
-  public getSpGeneratorPath(): string {
-    return `"${path.join(
-      this.getDefaultInstallPath(),
-      "node_modules",
-      "@microsoft",
-      "generator-sharepoint",
-      "lib",
-      "generators",
-      "app",
-      "index.js"
-    )}"`;
+  public async getBinFolders(): Promise<string[]> {
+    const defaultPath = this.getDefaultInstallPath();
+    return [defaultPath, path.join(defaultPath, "node_modules", ".bin")];
   }
 
   public async findGloballyInstalledVersion(
@@ -157,8 +96,8 @@ export class GeneratorChecker implements DependencyChecker {
     return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
   }
 
-  public async findLatestVersion(timeoutInSeconds?: number): Promise<string | undefined> {
-    return await Utils.findLatestVersion(this._logger, name, timeoutInSeconds ?? 0);
+  public async findLatestVersion(timeoutInSeconds: number): Promise<string | undefined> {
+    return await Utils.findLatestVersion(this._logger, name, timeoutInSeconds);
   }
 
   private async validate(): Promise<boolean> {
@@ -166,19 +105,18 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   private getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spGenerator");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "yo");
   }
 
   private getSentinelPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "spGenerator-sentinel");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "yo-sentinel");
   }
 
   private async queryVersion(): Promise<string | undefined> {
     const packagePath = path.join(
       this.getDefaultInstallPath(),
       "node_modules",
-      "@microsoft",
-      "generator-sharepoint",
+      "yo",
       "package.json"
     );
     if (await fs.pathExists(packagePath)) {
@@ -198,6 +136,23 @@ export class GeneratorChecker implements DependencyChecker {
 
       await fs.emptyDir(this.getDefaultInstallPath());
       await fs.remove(this.getSentinelPath());
+
+      const yoExecutables = [
+        "yo",
+        "yo.cmd",
+        "yo.ps1",
+        "yo-complete",
+        "yo-complete.cmd",
+        "yo-complete.ps1",
+      ];
+      await Promise.all(
+        yoExecutables.map(async (executable) => {
+          const executablePath = path.join(this.getDefaultInstallPath(), executable);
+          if (await fs.pathExists(executablePath)) {
+            await fs.remove(executablePath);
+          }
+        })
+      );
     } catch (err) {
       await this._logger.error(
         `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
@@ -205,7 +160,7 @@ export class GeneratorChecker implements DependencyChecker {
     }
   }
 
-  private async installGenerator(): Promise<void> {
+  private async installYo(): Promise<void> {
     try {
       const version = Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
@@ -224,7 +179,7 @@ export class GeneratorChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error(`Failed to execute npm install ${displayName}`);
+      this._logger.error("Failed to execute npm install yo");
       throw NpmInstallError(error as Error);
     }
   }

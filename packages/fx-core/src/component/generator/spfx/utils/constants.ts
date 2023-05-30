@@ -21,9 +21,6 @@ export class Constants {
     "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
   public static readonly CREATE_APP_CATALOG_GUIDE =
     "https://docs.microsoft.com/en-us/sharepoint/use-app-catalog#create-the-app-catalog";
-  public static readonly SPFX_VERSION = "1.16.1";
-  public static readonly SUPPORTED_NODE_VERSION = ["16"];
-  public static readonly SUPPORTED_NPM_VERSION = ["7", "8"];
   public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
   public static readonly SetUpDevEnvironmentHelpLink =
     "https://aka.ms/teamsfx-spfx-dev-environment-setup";
@@ -36,19 +33,6 @@ export class Constants {
   public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
   public static readonly DevProgramLink =
     "https://developer.microsoft.com/en-us/microsoft-365/dev-program";
-}
-
-export class PlaceHolders {
-  public static readonly componentName = "<%= componentName %>";
-  public static readonly componentNameCamelCase = "<%= componentNameCamelCase %>";
-  public static readonly componentClassName = "<%= componentClassName %>";
-  public static readonly componentStrings = "<%= componentStrings %>";
-  public static readonly libraryName = "<%= libraryName %>";
-  public static readonly componentId = "<%= componentId %>";
-  public static readonly componentAlias = "<%= componentAlias %>";
-  public static readonly componentDescription = "<%= componentDescription %>";
-  public static readonly componentNameUnescaped = "<%= componentNameUnescaped %>";
-  public static readonly componentClassNameKebabCase = "<%= componentClassNameKebabCase %>";
 }
 
 export class TelemetryKey {
@@ -66,13 +50,6 @@ export class TelemetryValue {
   static readonly SystemError = "system";
 }
 
-export class TelemetryEvent {
-  static readonly StartSuffix = "-start";
-  static readonly Scaffold = "scaffold";
-  static readonly PreDeploy = "pre-deploy";
-  static readonly Deploy = "deploy";
-}
-
 export class ProgressTitleMessage {
   static readonly PreDeployProgressTitle = getLocalizedString(
     "plugins.spfx.buildSharepointPackage"
@@ -80,17 +57,6 @@ export class ProgressTitleMessage {
   static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
   static readonly ScaffoldProgressTitle = getLocalizedString("plugins.spfx.scaffold.title");
   static readonly AddProgressTitle = getLocalizedString("driver.spfx.add.progress.title");
-}
-
-export class PreDeployProgressMessage {
-  static readonly NpmInstall = "Run: npm install. This may take more than 5 minutes to finish";
-  static readonly GulpBundle = "Run: gulp bundle --ship";
-  static readonly GulpPackage = "Run: gulp package-solution --ship";
-}
-
-export class DeployProgressMessage {
-  static readonly CreateSPAppCatalog = getLocalizedString("plugins.spfx.deploy.createAppcatalog");
-  static readonly UploadAndDeploy = getLocalizedString("plugins.spfx.deploy.uploadAddDeploy");
 }
 
 export class ScaffoldProgressMessage {
@@ -112,8 +78,4 @@ export class ManifestTemplate {
   static readonly WEBSITE_URL = "https://products.office.com/en-us/sharepoint/collaboration";
   static readonly WEB_APP_INFO_RESOURCE = "https://{teamSiteDomain}";
   static readonly WEB_APP_INFO_ID = "00000003-0000-0ff1-ce00-000000000000";
-}
-
-export enum UserTasks {
-  AddFeature = "addFeature",
 }

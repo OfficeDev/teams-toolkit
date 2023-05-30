@@ -1,5 +1,5 @@
 import { expect, util } from "chai";
-import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, componentRefToName, capitalizeFirstLetter, getSchemaRef } from "../src/utils";
+import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, capitalizeFirstLetter, getSchemaRef, componentRefToCardName } from "../src/utils";
 import path from "path";
 import sinon from 'sinon';
 import fs from 'fs-extra';
@@ -171,11 +171,38 @@ describe('utils tests', () => {
     });
   });
   
-  describe('componentRefToName', () => {
-    it('should return the last part of the ref string', () => {
-      const ref = '#/components/schemas/Pet';
-      const result = componentRefToName(ref);
-      expect(result).to.equal('Pet');
+  describe("componentRefToCardName", () => {
+    it("should return the correct card name for a non-array component ref", () => {
+      const ref = "components/MyComponent";
+      const isArray = false;
+      const expectedName = "MyComponentCard";
+  
+      const result = componentRefToCardName(ref, isArray);
+  
+      expect(result).to.equal(expectedName);
+    });
+  
+    it("should return the correct card name for an array component ref", () => {
+      const ref = "components/MyComponent";
+      const isArray = true;
+      const expectedName = "MyComponentListCard";
+  
+      const result = componentRefToCardName(ref, isArray);
+  
+      expect(result).to.equal(expectedName);
+    });
+  
+    it("should split the component ref correctly", () => {
+      const ref = "components/MyComponent";
+      const isArray = false;
+    
+      const splitStub = sinon.stub(String.prototype, "split").returns(["components", "MyComponent"]);
+    
+      componentRefToCardName(ref, isArray);
+    
+      expect(splitStub.calledWithExactly(sinon.match("/"))).to.be.true;
+    
+      splitStub.restore();
     });
   });
 

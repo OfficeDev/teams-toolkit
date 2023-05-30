@@ -6,7 +6,7 @@
   "author": "Microsoft Corporation",
   "license": "MIT",
   "scripts": {
-    "build": "rimraf lib && tsc -p ./ && copyfiles -u 1 src/**/*.txt lib",
+    "build": "rimraf lib && tsc -p ./ && copyfiles -u 1 src/resources/**/* lib",
     "package": "rimraf lib && webpack --mode production --config ./webpack.config.js",
     "lint": "eslint . --ext .ts",
     "test": "mocha -r ts-node/register tests/**/*.test.ts",

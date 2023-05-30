@@ -26,7 +26,7 @@ export async function generateIndexFile(
   }
 
   const codeTemplate = await fs.readFile(
-    './src/resources/indexFileTemplate.txt',
+    __dirname + '/resources/indexFileTemplate.txt',
     'utf8'
   );
 
@@ -36,7 +36,7 @@ export async function generateIndexFile(
     .replace(/{{actionHandlers}}/g, newActionHandler.join(', '));
 
   return {
-    name: 'index.ts',
+    name: 'index',
     code: result
   };
 }

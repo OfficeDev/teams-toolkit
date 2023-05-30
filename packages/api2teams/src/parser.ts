@@ -5,9 +5,9 @@ import { OpenAPIV3 } from 'openapi-types';
 import { CliOptions, CodeResult, AdaptiveCardResult } from './interfaces';
 import {
   isFolderEmpty,
-  componentRefToName,
   formatCode,
-  getSchemaRef
+  getSchemaRef,
+  componentRefToCardName
 } from './utils';
 import { generateRequestCard } from './generateRequestCard';
 import { generateResponseCard } from './generateResponseCard';
@@ -15,12 +15,9 @@ import { generateActionHandler } from './generateActionHandler';
 import { generateCommandHandler } from './generateCommandHandler';
 import { generateIndexFile } from './generateIndexFile';
 import { generateApi } from './generateApi';
+import { generateCommandIntellisenses } from './generateCommandIntellisenses';
 
 export async function parseApi(yaml: string, options: CliOptions) {
-  if (!(await isArgsValid(yaml, options))) {
-    return;
-  }
-
   console.log(`yaml file path is: ${yaml}`);
   console.log(`output folder is: ${options.output}`);
 
@@ -67,8 +64,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
   for (const card of responseCards) {
     if (schemaRefMap.has(card.url)) {
       const ref = schemaRefMap.get(card.url);
-      card.name =
-        componentRefToName(ref!) + (card.isArray ? 'List' : '') + 'Card';
+      card.name = componentRefToCardName(ref!, card.isArray);
     }
     const cardPath = path.join(
       options.output,
@@ -114,40 +110,37 @@ export async function parseApi(yaml: string, options: CliOptions) {
 
   const apiProviders = await generateApi(apis);
   for (const apiProviderResult of apiProviders) {
+    const apiProviderPath = path.join(
+      options.output,
+      'src/apis',
+      `${apiProviderResult.name}.ts`
+    );
     await fs.outputFile(
-      path.join(options.output, 'src/apis', apiProviderResult.name + '.ts'),
+      apiProviderPath,
       formatCode(apiProviderResult.code),
       'utf-8'
     );
   }
 
   const indexFile = await generateIndexFile(responseCards);
-  await fs.outputFile(
-    path.join(options.output, 'src/index.ts'),
-    indexFile.code,
-    'utf-8'
+  const indexFilePath = path.join(
+    options.output,
+    'src',
+    `${indexFile.name}.ts`
   );
-}
+  await fs.outputFile(indexFilePath, formatCode(indexFile.code), 'utf-8');
 
-async function isArgsValid(
-  yaml: string,
-  options: CliOptions
-): Promise<boolean> {
-  if (!(await fs.pathExists(yaml))) {
-    console.error('yaml file path is not exist in the path: ' + yaml);
-    return false;
-  }
+  const resourcePath = path.join(__dirname, './resources/project-template');
+  await fs.copy(resourcePath, options.output);
 
-  if (await fs.pathExists(options.output)) {
-    const isOutputEmpty = await isFolderEmpty(options.output);
+  const intellisenses = await generateCommandIntellisenses(requestCards);
+  const teamsAppMainifestPath = path.join(
+    options.output,
+    '/appPackage/manifest.json'
+  );
+  const manifestJson = await fs.readJSON(teamsAppMainifestPath, 'utf8');
+  manifestJson.bots[0].commandLists[0].commands = intellisenses;
+  await fs.outputJSON(teamsAppMainifestPath, manifestJson, { spaces: 2 });
 
-    if (!options.force && !isOutputEmpty) {
-      console.error(
-        'output folder is not empty, and you can use -f parameter to overwrite output folder'
-      );
-      return false;
-    }
-  }
-
-  return true;
+  console.log('generate code successfully!');
 }

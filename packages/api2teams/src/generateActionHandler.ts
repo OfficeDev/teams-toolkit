@@ -8,7 +8,7 @@ export async function generateActionHandler(
   cardId: string
 ): Promise<CodeResult> {
   const codeTemplate = await fs.readFile(
-    './src/resources/actionHandlerTemplate.txt',
+    __dirname + '/resources/actionHandlerTemplate.txt',
     'utf8'
   );
 

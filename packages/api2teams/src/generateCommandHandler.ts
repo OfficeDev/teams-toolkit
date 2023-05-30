@@ -39,7 +39,7 @@ export async function generateCommandHandler(
   const triggerPattern = `${apiUrl}${queriesRegex}$`;
 
   const codeTemplate = await fs.readFile(
-    './src/resources/commandHandlerTemplate.txt',
+    __dirname + '/resources/commandHandlerTemplate.txt',
     'utf8'
   );
 

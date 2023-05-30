@@ -101,9 +101,10 @@ export function getResponseJsonResult(
   return jsonResult;
 }
 
-export function componentRefToName(ref: string): string {
+export function componentRefToCardName(ref: string, isArray: boolean): string {
   const refArr = ref.split('/');
-  return refArr[refArr.length - 1];
+  const lastName = refArr[refArr.length - 1];
+  return lastName + (isArray ? 'List' : '') + 'Card';
 }
 
 export function capitalizeFirstLetter(str: string): string {

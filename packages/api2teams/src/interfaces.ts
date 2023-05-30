@@ -28,3 +28,8 @@ export interface CodeResult {
   code: string;
   name: string;
 }
+
+export interface CommandIntellisense {
+  title: string;
+  description: string;
+}

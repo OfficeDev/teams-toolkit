@@ -35,10 +35,9 @@ import { Card2ActionHandler } from './cardActions/card2ActionHandler';`;
         const expectedCode2 = `commands: [new Card1CommandHandler(), new Card2CommandHandler()]`;
         const expectedCode3 = `actions: [new Card1ActionHandler(), new Card2ActionHandler()]`;
 
-
         const result = await generateIndexFile(cards);
 
-        expect(result.name).to.equal('index.ts');
+        expect(result.name).to.equal('index');
         expect(result.code).to.contain(expectedCode1);
         expect(result.code).to.contain(expectedCode2);
         expect(result.code).to.contain(expectedCode3);

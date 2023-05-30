@@ -46,17 +46,8 @@ describe('parseApi tests', () => {
       sandbox.restore();
     });
 
-    it('should return early if args are not valid', async () => {
-      pathExistsStub.resolves(false);
-
-      await parseApi('path/to/yaml', { output: 'path/to/output' });
-
-      expect(validateStub.called).to.be.false;
-    });
-
     it('should create output directory if it does not exist', async () => {
-      pathExistsStub.onCall(0).returns(true);
-      pathExistsStub.onCall(1).returns(false);
+      pathExistsStub.onCall(0).returns(false);
       isFolderEmptyStub.resolves(true);
       validateStub.resolves({ info: { title: 'API', version: '1.0' } });
 

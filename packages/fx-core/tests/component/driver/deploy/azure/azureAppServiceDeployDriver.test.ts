@@ -130,6 +130,77 @@ describe("Azure App Service Deploy Driver test", () => {
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
 
+  it("deploy happy path with response data is empty", async () => {
+    const deploy = new AzureAppServiceDeployDriver();
+    const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
+    await fs.close(fh);
+    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
+      encoding: "utf8",
+      flag: "a",
+    });
+    const args = {
+      workingDirectory: sysTmp,
+      artifactFolder: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      outputZipFile: ".deployment/deployment.zip",
+    } as DeployArgs;
+    const progressHandler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    const ui = new MockUserInteraction();
+    const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
+
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      telemetryReporter: new MockTelemetryReporter(),
+      progressBar: progressHandler,
+    } as DriverContext;
+    const credential = new MyTokenCredential();
+    sandbox.stub(credential, "getToken").resolves(undefined);
+    sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
+    // ignore file
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").callsFake((file) => {
+      if (file === "ignore") {
+        return Promise.resolve(Buffer.from("node_modules"));
+      }
+      throw new Error("not found");
+    });
+    const client = new appService.WebSiteManagementClient(credential, "z");
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
+      publishingUserName: "test-username",
+      publishingPassword: "test-password",
+    } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    // mock klaw
+    // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
+      status: 200,
+      headers: {
+        location: "/api/123",
+      },
+    });
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
+      status: 200,
+      data: {},
+    });
+    sandbox.stub(client.webApps, "restart").resolves();
+    const res = await deploy.run(args, context);
+    expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(1);
+    const rex = await deploy.execute(args, context);
+    expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+  });
+
   it("resource id error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {

@@ -20,10 +20,10 @@ import { ComponentNames } from "../../../../../src/component/constants";
 import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
 import { createContextV3, newProjectSettingsV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
-import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
-import { SPFXQuestionNames } from "../../../../../src/component/resource/spfx/utils/questions";
-import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
+import { GeneratorChecker } from "../../../../../src/component/generator/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
+import { SPFXQuestionNames } from "../../../../../src/component/generator/spfx/utils/questions";
+import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import { cpUtils } from "../../../../../src/component/utils/depsChecker/cpUtils";
 import { MockTools, MockUserInteraction } from "../../../../core/utils";
 
@@ -50,8 +50,6 @@ describe("SPFxScaffold", function () {
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
     sinon.stub(fs, "stat").resolves();
-    sinon.stub(YoChecker.prototype, "isInstalled").resolves(true);
-    sinon.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
     const manifestId = uuid.v4();
     sinon.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));

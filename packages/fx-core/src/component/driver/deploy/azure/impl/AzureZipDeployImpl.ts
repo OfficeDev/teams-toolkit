@@ -101,7 +101,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
     const cost = Date.now() - startTime;
-    this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
+    this.context.telemetryReporter.sendTelemetryEvent("deployResponse", {
       time_cost: cost.toString(),
       status: deployRes?.status?.toString() ?? "",
       message: deployRes?.message ?? "",

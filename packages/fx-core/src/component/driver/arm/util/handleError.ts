@@ -1,0 +1,232 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import { ResourceManagementClient } from "@azure/arm-resources";
+import { err, FxError, ok, Result, SolutionContext } from "@microsoft/teamsfx-api";
+import { SolutionError } from "../../../constants";
+import { ConstantString } from "../../../../common/constants";
+import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
+import { ResourceGroupNotExistError } from "../../../../error/azure";
+import { DeployArmError, GetArmDeploymentError } from "../../../../error/arm";
+
+// constant string
+
+const ErrorCodes: { [key: string]: string } = {
+  InvalidTemplate: SolutionError.FailedToValidateArmTemplates,
+  InvalidTemplateDeployment: SolutionError.FailedToValidateArmTemplates,
+  ResourceGroupNotFound: SolutionError.ResourceGroupNotFound,
+};
+
+export type DeployContext = {
+  ctx: SolutionContext;
+  finished: boolean;
+  client: ResourceManagementClient;
+  resourceGroupName: string;
+  deploymentStartTime: number;
+  deploymentName: string;
+};
+
+function fetchInnerError(error: any): any {
+  if (!error.details) {
+    return error;
+  }
+  if (error.details.error) {
+    return fetchInnerError(error.details.error);
+  } else if (error.details instanceof Array && error.details[0]) {
+    return fetchInnerError(error.details[0]);
+  }
+  return error;
+}
+
+export async function handleArmDeploymentError(
+  error: any,
+  deployCtx: DeployContext
+): Promise<Result<undefined, FxError>> {
+  // return the error if the template is invalid
+  if (Object.keys(ErrorCodes).includes(error.code)) {
+    if (error.code === "InvalidTemplateDeployment") {
+      error = fetchInnerError(error);
+    }
+    if (error.code === "ResourceGroupNotFound") {
+      return err(
+        new ResourceGroupNotExistError(deployCtx.resourceGroupName, deployCtx.client.subscriptionId)
+      );
+    } else if (error.code === "InvalidTemplate" || error.code === "InvalidTemplateDeployment") {
+      return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
+    }
+  }
+
+  // try to get deployment error
+  const result = await arm.wrapGetDeploymentError(
+    deployCtx,
+    deployCtx.resourceGroupName,
+    deployCtx.deploymentName,
+    error
+  );
+  if (result.isOk()) {
+    const deploymentError = result.value;
+
+    // return thrown error if deploymentError is empty
+    if (!deploymentError) {
+      return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
+    }
+    const deploymentErrorObj = formattedDeploymentError(deploymentError);
+    const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
+    let failedDeployments: string[] = [];
+    if (deploymentError.subErrors) {
+      failedDeployments = Object.keys(deploymentError.subErrors);
+    } else {
+      failedDeployments.push(deployCtx.deploymentName);
+    }
+    const format = failedDeployments.map((deployment) => deployment + " module");
+    error.message = error.message + "\n" + deploymentErrorMessage;
+    return err(new DeployArmError(format.join(", "), deployCtx.resourceGroupName, error));
+  } else {
+    deployCtx.ctx.logProvider?.info(
+      `origin error message is : \n${JSON.stringify(error, undefined, 2)}`
+    );
+    return result;
+  }
+}
+
+export async function wrapGetDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string,
+  rawError: any
+): Promise<Result<any, FxError>> {
+  try {
+    const deploymentError = await arm.getDeploymentError(
+      deployCtx,
+      resourceGroupName,
+      deploymentName
+    );
+    return ok(deploymentError);
+  } catch (error: any) {
+    return err(
+      new GetArmDeploymentError(
+        deployCtx.deploymentName,
+        deployCtx.resourceGroupName,
+        rawError,
+        error
+      )
+    );
+  }
+}
+
+async function getDeploymentError(
+  deployCtx: DeployContext,
+  resourceGroupName: string,
+  deploymentName: string
+): Promise<any> {
+  let deployment;
+  try {
+    deployment = await deployCtx.client.deployments.get(resourceGroupName, deploymentName);
+  } catch (error: any) {
+    if (
+      deploymentName !== deployCtx.deploymentName &&
+      error.code === ConstantString.DeploymentNotFound
+    ) {
+      return undefined;
+    }
+    throw error;
+  }
+
+  // The root deployment error name is deployCtx.deploymentName.
+  // If we find the root error has a timestamp less than startTime, it is an old error to be ignored.
+  // Other erros will be ignored as well.
+  if (
+    deploymentName === deployCtx.deploymentName &&
+    deployment.properties?.timestamp &&
+    deployment.properties.timestamp.getTime() < deployCtx.deploymentStartTime
+  ) {
+    return undefined;
+  }
+  if (!deployment.properties?.error) {
+    return undefined;
+  }
+  const deploymentError: any = {
+    error: deployment.properties?.error,
+  };
+  const operations = [];
+  for await (const page of deployCtx.client.deploymentOperations
+    .list(resourceGroupName, deploymentName)
+    .byPage({ maxPageSize: 100 })) {
+    for (const deploymentOperation of page) {
+      operations.push(deploymentOperation);
+    }
+  }
+  for (const operation of operations) {
+    if (operation.properties?.statusMessage?.error) {
+      if (!deploymentError.subErrors) {
+        deploymentError.subErrors = {};
+      }
+      const name = operation.properties.targetResource?.resourceName ?? operation.id;
+      deploymentError.subErrors[name!] = {
+        error: operation.properties.statusMessage.error,
+      };
+      if (
+        operation.properties.targetResource?.resourceType ===
+          ConstantString.DeploymentResourceType &&
+        operation.properties.targetResource?.resourceName &&
+        operation.properties.targetResource?.id
+      ) {
+        const resourceGroupName: string = getResourceGroupNameFromResourceId(
+          operation.properties.targetResource.id
+        );
+        const subError = await getDeploymentError(
+          deployCtx,
+          resourceGroupName,
+          operation.properties.targetResource?.resourceName
+        );
+        if (subError) {
+          deploymentError.subErrors[name!].inner = subError;
+        }
+      }
+    }
+  }
+  return deploymentError;
+}
+
+export function formattedDeploymentError(deploymentError: any): any {
+  if (deploymentError.subErrors) {
+    const result: any = {};
+    for (const key in deploymentError.subErrors) {
+      const subError = deploymentError.subErrors[key];
+      if (subError.inner) {
+        result[key] = formattedDeploymentError(subError.inner);
+      } else {
+        const needFilter =
+          subError.error?.message?.includes("Template output evaluation skipped") &&
+          subError.error?.code === "DeploymentOperationFailed";
+        if (!needFilter) {
+          result[key] = subError.error;
+        }
+      }
+    }
+    return result;
+  } else {
+    return deploymentError.error;
+  }
+}
+
+class Arm {
+  async wrapGetDeploymentError(
+    deployCtx: DeployContext,
+    resourceGroupName: string,
+    deploymentName: string,
+    rawError: any
+  ): Promise<Result<any, FxError>> {
+    return await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName, rawError);
+  }
+  async getDeploymentError(
+    deployCtx: DeployContext,
+    resourceGroupName: string,
+    deploymentName: string
+  ): Promise<any> {
+    return await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
+  }
+}
+
+const arm = new Arm();
+export default arm;

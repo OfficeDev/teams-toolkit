@@ -745,10 +745,6 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
     const settings = parse(settingsContent);
     return {
       projectId: settings?.projectId ?? undefined,
-      isFromSample: false,
-      programmingLanguage: "",
-      hostType: "",
-      isM365: false,
     };
   } catch {
     return undefined;

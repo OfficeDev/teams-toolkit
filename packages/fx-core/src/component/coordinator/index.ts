@@ -77,7 +77,7 @@ import {
 } from "../feature/bot/question";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { SPFxGenerator } from "../generator/spfxGenerator";
+import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
@@ -170,7 +170,6 @@ export class Coordinator {
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
-    const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo().id) {
       // create from sample
       const sampleId = inputs[CoreQuestionNames.Samples] as string;
@@ -258,9 +257,6 @@ export class Coordinator {
       inputs.projectId = ensureRes.value;
     }
 
-    if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(automaticNpmInstall, true);
-    }
     context.projectPath = projectPath;
 
     if (inputs.teamsAppFromTdp) {

@@ -9,7 +9,6 @@ import sinon from "sinon";
 import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import New from "../../../src/cmds/new";
-import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 import * as constants from "../../../src/constants";
 import { RootFolderNode } from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
@@ -29,7 +28,6 @@ describe("New Command Tests", function () {
     mockTelemetry(sandbox, telemetryEvents);
     mockLogProvider(sandbox, logs);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
-    sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").resolves();
     sandbox.stub(FxCore.prototype, "createProject").resolves(ok(""));
     sandbox.stub(questionUtils, "filterQTreeNode").resolves(RootFolderNode);
     sandbox.stub(utils, "flattenNodes").returns([RootFolderNode]);

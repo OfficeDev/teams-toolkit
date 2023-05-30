@@ -184,30 +184,6 @@ describe("handlers", () => {
     );
   });
 
-  it("addFileSystemWatcher in valid project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const isV3Enabled = sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
-    const sendTelemetryEventFunc = sandbox
-      .stub(ExtTelemetry, "sendTelemetryEvent")
-      .callsFake(() => {});
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.isTrue(createWatcher.calledThrice);
-    chai.assert.isTrue(createListener.calledThrice);
-    chai.assert.isTrue(changeListener.calledOnce);
-  });
-
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
@@ -1361,60 +1337,6 @@ describe("handlers", () => {
         "help-link": "test helpLink",
       })
     );
-  });
-
-  describe("promptSPFxUpgrade", async () => {
-    it("Prompt user to upgrade toolkit when project SPFx version higher than toolkit", async () => {
-      sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon
-        .stub(commonTools, "getAppSPFxVersion")
-        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`);
-      const stubShowMessage = sinon.stub().resolves(ok({}));
-      sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
-      });
-
-      await handlers.promptSPFxUpgrade();
-
-      chai.assert(stubShowMessage.calledOnce);
-      chai.assert.equal(stubShowMessage.args[0].length, 4);
-      sinon.restore();
-    });
-
-    it("Prompt user to upgrade project when project SPFx version lower than toolkit", async () => {
-      sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon
-        .stub(commonTools, "getAppSPFxVersion")
-        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) - 1}.0`);
-
-      const stubShowMessage = sinon.stub().resolves(ok({}));
-      sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
-      });
-
-      await handlers.promptSPFxUpgrade();
-
-      chai.assert(stubShowMessage.calledOnce);
-      chai.assert.equal(stubShowMessage.args[0].length, 4);
-      sinon.restore();
-    });
-
-    it("Dont show notification when project SPFx version is the same with toolkit", async () => {
-      sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(commonTools, "getAppSPFxVersion").resolves(SUPPORTED_SPFX_VERSION);
-      const stubShowMessage = sinon.stub();
-      sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
-      });
-
-      await handlers.promptSPFxUpgrade();
-
-      chai.assert.equal(stubShowMessage.callCount, 0);
-      sinon.restore();
-    });
   });
 
   describe("getDotnetPathHandler", async () => {

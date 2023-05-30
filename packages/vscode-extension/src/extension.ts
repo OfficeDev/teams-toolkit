@@ -15,7 +15,6 @@ import {
   ProjectSettingsFileName,
   ProjectSettingsV3,
   Result,
-  TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import { isTDPIntegrationEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
@@ -503,12 +502,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateAadAppManifestFromCtxMenu);
 
-  const deployManifestFromCtxMenuCmd = vscode.commands.registerCommand(
-    "fx-extension.deployManifestFromCtxMenu",
-    (...args) => Correlator.run(handlers.updatePreviewManifest, args)
-  );
-  context.subscriptions.push(deployManifestFromCtxMenuCmd);
-
   if (isV3Enabled()) {
     const manageCollaborator = vscode.commands.registerCommand(
       "fx-extension.manageCollaborator",
@@ -758,14 +751,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
-    pattern: isV3Enabled()
-      ? `**/${AppPackageFolderName}/manifest.json`
-      : `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
+    pattern: `**/${AppPackageFolderName}/manifest.json`,
   };
   const localManifestTemplateSelector = {
     language: "json",
     scheme: "file",
-    pattern: `**/${AppPackageFolderName}/manifest.template.local.json`,
+    pattern: `**/${AppPackageFolderName}/manifest.local.json`,
   };
 
   const manifestPreviewSelector = {
@@ -775,11 +766,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   };
 
   const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
-  const aadAppTemplateSelector = {
-    language: "json",
-    scheme: "file",
-    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`,
-  };
 
   const aadAppTemplateSelectorV3 = {
     language: "json",
@@ -815,14 +801,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       manifestTemplateCodeLensProvider
     )
   );
-  if (isV3Enabled()) {
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        localManifestTemplateSelector,
-        manifestTemplateCodeLensProvider
-      )
-    );
-  }
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      localManifestTemplateSelector,
+      manifestTemplateCodeLensProvider
+    )
+  );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
@@ -836,13 +820,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     )
   );
 
-  // Register hover provider
-  const aadManifestPreviewSelector = {
-    language: "json",
-    scheme: "file",
-    pattern: `**/${BuildFolderName}/${AppPackageFolderName}/aad.*.json`,
-  };
-
   const aadManifestPreviewSelectorV3 = {
     language: "json",
     scheme: "file",
@@ -854,53 +831,30 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     vscode.languages.registerHoverProvider(manifestTemplateSelector, manifestTemplateHoverProvider)
   );
 
-  if (isV3Enabled()) {
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        aadAppTemplateSelectorV3,
-        aadAppTemplateCodeLensProvider
-      )
-    );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      aadAppTemplateSelectorV3,
+      aadAppTemplateCodeLensProvider
+    )
+  );
 
-    context.subscriptions.push(
-      vscode.languages.registerHoverProvider(
-        localManifestTemplateSelector,
-        manifestTemplateHoverProvider
-      )
-    );
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(
+      localManifestTemplateSelector,
+      manifestTemplateHoverProvider
+    )
+  );
 
-    context.subscriptions.push(
-      vscode.languages.registerHoverProvider(
-        aadAppTemplateSelectorV3,
-        manifestTemplateHoverProvider
-      )
-    );
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider(aadAppTemplateSelectorV3, manifestTemplateHoverProvider)
+  );
 
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        aadManifestPreviewSelectorV3,
-        aadAppTemplateCodeLensProvider
-      )
-    );
-  } else {
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        aadAppTemplateSelector,
-        aadAppTemplateCodeLensProvider
-      )
-    );
-
-    context.subscriptions.push(
-      vscode.languages.registerHoverProvider(aadAppTemplateSelector, manifestTemplateHoverProvider)
-    );
-
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        aadManifestPreviewSelector,
-        aadAppTemplateCodeLensProvider
-      )
-    );
-  }
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      aadManifestPreviewSelectorV3,
+      aadAppTemplateCodeLensProvider
+    )
+  );
 }
 
 function registerDebugConfigProviders(context: vscode.ExtensionContext) {
@@ -961,7 +915,6 @@ async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
-    await handlers.promptSPFxUpgrade();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
     await AzureAccountManager.updateSubscriptionInfo();
   }

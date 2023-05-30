@@ -3,7 +3,7 @@ name: TeamsFx-CD Triggers
 on:
   workflow_run:
     workflows: ["CD"]
-    branches: ["main", "dev", "hotfix/**", "prerelease"]
+    branches: ["main", "dev", "hotfix/**"]
     types: ["completed"]
 
 jobs:

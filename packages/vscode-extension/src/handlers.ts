@@ -107,7 +107,6 @@ import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
 import { localTelemetryReporter, sendDebugAllEvent } from "./debug/localTelemetryReporter";
-import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as teamsAppInstallation from "./debug/teamsAppInstallation";
@@ -229,7 +228,6 @@ export function activate(): Result<Void, FxError> {
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);
     }
-    automaticNpmInstallHandler(false, false, false);
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -334,18 +332,16 @@ export function addFileSystemWatcher(workspacePath: string) {
       await sendSDKVersionTelemetry(event.fsPath);
     });
 
-    if (isV3Enabled()) {
-      const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-      yorcFileWatcher.onDidCreate(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-      yorcFileWatcher.onDidChange(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-      yorcFileWatcher.onDidDelete(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-    }
+    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
+    yorcFileWatcher.onDidCreate(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidChange(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidDelete(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
   }
 }
 
@@ -555,36 +551,8 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
 
-  if (isV3Enabled()) {
-    const inputs = getSystemInputs();
-    return await runCommand(Stage.validateApplication, inputs);
-  } else {
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "validateManifest",
-      params: {},
-    };
-
-    let env: string | undefined;
-    if (!(await isVideoFilterProject())) {
-      const selectedEnv = await askTargetEnvironment();
-      if (selectedEnv.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-        showError(selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      env = selectedEnv.value;
-    }
-
-    const isLocalDebug = env === environmentManager.getLocalEnvName();
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
-    } else {
-      func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
-    }
-  }
+  const inputs = getSystemInputs();
+  return await runCommand(Stage.validateApplication, inputs);
 }
 
 /**
@@ -614,50 +582,7 @@ export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
 
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
-
-  if (isV3Enabled()) {
-    return await runCommand(Stage.createAppPackage);
-  } else {
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "buildPackage",
-      params: {
-        type: "",
-      },
-    };
-
-    if (args && args.length > 0 && args[0] != TelemetryTriggerFrom.TreeView) {
-      func.params.type = args[0];
-      const isLocalDebug = args[0] === "localDebug";
-      if (isLocalDebug) {
-        return await runUserTask(func, TelemetryEvent.Build, false, "local");
-      } else {
-        return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
-      }
-    } else {
-      let env: string | undefined;
-      // Video filter does not support remote, so do not ask env and runUserTask directly.
-      // VideoFilterAppBlocker middleware will block it.
-      if (!(await isVideoFilterProject())) {
-        const selectedEnv = await askTargetEnvironment();
-        if (selectedEnv.isErr()) {
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-          showError(selectedEnv.error);
-          return err(selectedEnv.error);
-        }
-        env = selectedEnv.value;
-      }
-
-      const isLocalDebug = env === "local";
-      if (isLocalDebug) {
-        func.params.type = "localDebug";
-        return await runUserTask(func, TelemetryEvent.Build, false, env);
-      } else {
-        func.params.type = "remote";
-        return await runUserTask(func, TelemetryEvent.Build, false, env);
-      }
-    }
-  }
+  return await runCommand(Stage.createAppPackage);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1583,52 +1508,6 @@ export async function openReadMeHandler(args: any[]) {
     await workspace.openTextDocument(uri);
     const PreviewMarkdownCommand = "markdown.showPreview";
     await vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
-  }
-}
-
-export async function promptSPFxUpgrade() {
-  if (globalVariables.isSPFxProject) {
-    const projectSPFxVersion = await commonTools.getAppSPFxVersion(
-      globalVariables.workspaceUri!.fsPath!
-    );
-
-    if (projectSPFxVersion) {
-      const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-
-      if (cmp === 1 || cmp === -1) {
-        const args: string[] =
-          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
-        VS_CODE_UI.showMessage(
-          "warn",
-          util.format(
-            localize(
-              cmp === 1
-                ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"
-                : "teamstoolkit.handlers.promptSPFx.upgradeProject.description"
-            ),
-            ...args
-          ),
-          false,
-          localize(
-            cmp === 1
-              ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.title"
-              : "teamstoolkit.handlers.promptSPFx.upgradeProject.title"
-          )
-        ).then(async (result) => {
-          if (result.isOk()) {
-            if (
-              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeToolkit.title")
-            ) {
-              await vscode.commands.executeCommand("workbench.extensions.search", "Teams Toolkit");
-            } else if (
-              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeProject.title")
-            ) {
-              await VS_CODE_UI.openUrl(CLI_FOR_M365);
-            }
-          }
-        });
-      }
-    }
   }
 }
 
@@ -2660,20 +2539,8 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     await core.activateEnv(inputs);
   }
 
-  let result;
-  if (isV3Enabled()) {
-    const inputs = getSystemInputs();
-    result = await runCommand(Stage.deployTeams, inputs);
-  } else {
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-appstudio",
-      method: "updateManifest",
-      params: {
-        envName: env,
-      },
-    };
-    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
-  }
+  const inputs = getSystemInputs();
+  const result = await runCommand(Stage.deployTeams, inputs);
 
   if (!args || args.length === 0) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
@@ -2684,7 +2551,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
       return err(env.error);
     }
-    const manifestPath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+    const manifestPath = `${workspacePath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value}.json`;
     workspace.openTextDocument(manifestPath).then((document) => {
       window.showTextDocument(document);
     });

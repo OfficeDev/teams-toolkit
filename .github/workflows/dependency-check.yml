@@ -54,7 +54,7 @@ jobs:
           payload: |
             {
               "to": "${{ steps.email.outputs.to }}",
-              "body": "${{ steps.email.outputs.body }}"",
+              "body": "${{ steps.email.outputs.body }}",
               "subject": "${{ steps.email.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

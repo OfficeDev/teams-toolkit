@@ -14,6 +14,7 @@ import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
 import { MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
+import { PackageSelectOptionsHelper } from "../../../../../src/component/resource/spfx/utils/question-helper";
 
 const rGeneratorChecker = rewire(
   "../../../../../src/component/resource/spfx/depsChecker/generatorChecker"
@@ -68,6 +69,7 @@ describe("generator checker", () => {
 
   afterEach(() => {
     restore();
+    PackageSelectOptionsHelper.clear();
   });
 
   describe("getDependencyInfo", async () => {

@@ -144,7 +144,7 @@ describe("generator checker", () => {
   });
 
   describe("isLatestInstalled", () => {
-    it.only("is latest installed", async () => {
+    it("is latest installed", async () => {
       const checker = new GeneratorChecker(new StubLogger());
       stub(fs, "pathExists").callsFake(async () => {
         console.log("stub pathExists");

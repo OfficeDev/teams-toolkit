@@ -24,11 +24,11 @@ jobs:
           script: |
             const axios = require("axios");
             const response = await axios.get("https://registry.npmjs.org/botbuilder");
-            cont ltsVersion = response.data["dist-tags"].latest;
+            const ltsVersion = response.data["dist-tags"].latest;
             const ltsVersionTime = response.data.time[ltsVersion];
             const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
             if (timeDiff <= 86400) {
-              return true, 'ltsVersion';
+              return true, ltsVersion;
             } else {
               return false;
             }
@@ -39,7 +39,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const responseBody = "<p>Botbuilder v" + "${{ steps.getLTSVersion.outputs.result[1] }} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases";
+            const responseBody = "<p>Botbuilder v" + "${{ steps.getLTSVersion.outputs.result[1] }} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>";
             return responseBody;
 
       - name: Setup Email and Recipient

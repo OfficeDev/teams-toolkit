@@ -37,7 +37,7 @@ jobs:
         if: ${{ contains(steps.getLTSVersion.outputs.result, 'v') }}
         id: email
         run: |
-          emails="yiqingzhao@microsoft.com"
+          emails="vsciotadt@microsoft.com;zhididr@microsoft.com;johmil@microsoft.com"
           subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
           body="Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases"
 

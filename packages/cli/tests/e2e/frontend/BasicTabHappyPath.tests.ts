@@ -15,6 +15,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   setProvisionParameterValueV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import { Capability, EnvConstants } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -55,6 +56,8 @@ describe("Basic Tab", function () {
         process.env,
         `--programming-language ${language}`
       );
+      const filePath = path.join(projectPath, "teamsapp.yml");
+      removeTeamsAppExtendToM365(filePath);
 
       // Validate Scaffold
       const indexFile = path.join(projectPath, "src", file);

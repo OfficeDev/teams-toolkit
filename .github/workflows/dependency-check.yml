@@ -34,7 +34,7 @@ jobs:
             }
 
       - name: Setup Email and Recipient
-        if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
+        if: ${{ startsWith(steps.getLTSVersion.outputs.result, 'v') }}
         id: email
         run: |
           emails="yiqingzhao@microsoft.com"
@@ -46,7 +46,7 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
 
       - name: Send E-mail Notifications
-        if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
+        if: ${{ startsWith(steps.getLTSVersion.outputs.result, 'v') }}
         uses: satak/webrequest-action@master
         with:
           url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs

@@ -27,7 +27,7 @@ jobs:
             const ltsVersion = response.data["dist-tags"].latest;
             const ltsVersionTime = response.data.time[ltsVersion];
             const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
-            if (timeDiff <= 86400) {
+            if (timeDiff >= 86400) {
               return true, ltsVersion;
             } else {
               return false;
@@ -46,23 +46,23 @@ jobs:
         if: ${{steps.getLTSVersion.outputs.result[0] == 'true'}}
         id: email
         run: |
-          emails="vsciotadt@microsoft.com;junjieli@microsoft.com;zhshang@microsoft.com;donji@microsoft.com;zhany@microsoft.com"
+          emails="yiqingzhao@microsoft.com"
           subject="Bot Framework JS SDK ${{ steps.getLTSVersion.outputs.result[1] }} Released"
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail Notifications
-        # uses: satak/webrequest-action@master
+        if: ${{steps.getLTSVersion.outputs.result[0] == 'true'}}
+        uses: satak/webrequest-action@master
         run: echo ${{steps.getLTSVersion.outputs.result}}
-
-      #   with:
-      #     url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-      #     method: POST
-      #     payload: |
-      #       {
-      #         "to": "${{ steps.email.outputs.to }}",
-      #         "body": ${{ steps.detail.outputs.result }},
-      #         "subject": "${{ steps.email.outputs.subject }}",
-      #         "apiKey": "${{ secrets.MAIL_API_KEY }}"
-      #       }
+        with:
+          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
+          method: POST
+          payload: |
+            {
+              "to": "${{ steps.email.outputs.to }}",
+              "body": ${{ steps.detail.outputs.result }},
+              "subject": "${{ steps.email.outputs.subject }}",
+              "apiKey": "${{ secrets.MAIL_API_KEY }}"
+            }

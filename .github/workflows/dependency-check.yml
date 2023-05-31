@@ -38,7 +38,7 @@ jobs:
         id: detail
         run: |
           responseBody = "<p>Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>"
-          echo "responseBody = $responseBody" >> $GITHUB_OUTPUT
+          echo "responseBody=$responseBody" >> $GITHUB_OUTPUT
 
       - name: Setup Email and Recipient
         if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')

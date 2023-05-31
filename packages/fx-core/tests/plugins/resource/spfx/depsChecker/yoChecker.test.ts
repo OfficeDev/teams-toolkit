@@ -15,6 +15,8 @@ import { YoChecker } from "../../../../../src/component/generator/spfx/depsCheck
 import { LogProvider, LogLevel, Colors, UserError } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { MockTools } from "../../../../core/utils";
 
 const ryc = rewire("../../../../../src/component/generator/spfx/depsChecker/yoChecker");
 
@@ -225,6 +227,7 @@ describe("Yo checker", () => {
   });
 
   describe("ensureLatestDependency", () => {
+    setTools(new MockTools());
     it("install successfully", async () => {
       const yc = new YoChecker(new StubLogger());
 

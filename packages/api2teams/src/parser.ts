@@ -3,12 +3,7 @@ import path from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
 import { CliOptions, CodeResult, AdaptiveCardResult } from './interfaces';
-import {
-  isFolderEmpty,
-  formatCode,
-  getSchemaRef,
-  componentRefToCardName
-} from './utils';
+import { formatCode, getSchemaRef, componentRefToCardName } from './utils';
 import { generateRequestCard } from './generateRequestCard';
 import { generateResponseCard } from './generateResponseCard';
 import { generateActionHandler } from './generateActionHandler';
@@ -18,14 +13,16 @@ import { generateApi } from './generateApi';
 import { generateCommandIntellisenses } from './generateCommandIntellisenses';
 
 export async function parseApi(yaml: string, options: CliOptions) {
-  console.log(`yaml file path is: ${yaml}`);
-  console.log(`output folder is: ${options.output}`);
-
   try {
     if (await fs.pathExists(options.output)) {
       console.log(
         'output folder already existed, and will override this folder'
       );
+
+      await fs.rm(path.join(options.output, 'src'), {
+        recursive: true,
+        force: true
+      });
     } else {
       const output = options.output;
       await fs.mkdir(output, { recursive: true });
@@ -37,6 +34,10 @@ export async function parseApi(yaml: string, options: CliOptions) {
     throw e;
   }
 
+  console.log(`yaml file path is: ${yaml}`);
+  console.log(`output folder is: ${options.output}`);
+
+  console.log('start analyze swagger files\n');
   const unResolvedApi = (await SwaggerParser.parse(yaml)) as OpenAPIV3.Document;
   const apis = (await SwaggerParser.validate(yaml)) as OpenAPIV3.Document;
 
@@ -46,11 +47,13 @@ export async function parseApi(yaml: string, options: CliOptions) {
     apis.info.version
   );
 
-  console.log('start analyze swagger files\n');
-
+  console.log('  analyze requests');
   const requestCards: AdaptiveCardResult[] = await generateRequestCard(apis);
+
+  console.log('  analyze responses');
   const responseCards: AdaptiveCardResult[] = await generateResponseCard(apis);
 
+  console.log('  generate request cards');
   for (const card of requestCards) {
     const cardPath = path.join(
       options.output,
@@ -60,6 +63,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputJSON(cardPath, card.content, { spaces: 2 });
   }
 
+  console.log('  generate response cards');
   const schemaRefMap = getSchemaRef(unResolvedApi);
   for (const card of responseCards) {
     if (schemaRefMap.has(card.url)) {
@@ -74,6 +78,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputJson(cardPath, card.content, { spaces: 2 });
   }
 
+  console.log('  generate action cards');
   for (const card of responseCards) {
     const cardActionHandler: CodeResult = await generateActionHandler(
       card.tag,
@@ -90,6 +95,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputFile(cardActionHandlerPath, cardActionHandler.code);
   }
 
+  console.log('  generate command handlers');
   for (const card of responseCards) {
     const commandHandler: CodeResult = await generateCommandHandler(
       card.api,
@@ -108,6 +114,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputFile(cardActionHandlerPath, commandHandler.code);
   }
 
+  console.log('  generate apis');
   const apiProviders = await generateApi(apis);
   for (const apiProviderResult of apiProviders) {
     const apiProviderPath = path.join(
@@ -122,6 +129,7 @@ export async function parseApi(yaml: string, options: CliOptions) {
     );
   }
 
+  console.log('  generate index file');
   const indexFile = await generateIndexFile(responseCards);
   const indexFilePath = path.join(
     options.output,
@@ -130,9 +138,11 @@ export async function parseApi(yaml: string, options: CliOptions) {
   );
   await fs.outputFile(indexFilePath, formatCode(indexFile.code), 'utf-8');
 
+  console.log('  copy project template');
   const resourcePath = path.join(__dirname, './resources/project-template');
   await fs.copy(resourcePath, options.output);
 
+  console.log('  update manifest file');
   const intellisenses = await generateCommandIntellisenses(requestCards);
   const teamsAppMainifestPath = path.join(
     options.output,

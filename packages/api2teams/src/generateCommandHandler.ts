@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra';
-import { capitalizeFirstLetter } from './utils';
+import { capitalizeFirstLetter, getSafeName } from './utils';
 import { CodeResult } from './interfaces';
 import { OpenAPIV3 } from 'openapi-types';
 
@@ -49,7 +49,7 @@ export async function generateCommandHandler(
     .replace(/{{operation}}/g, 'GET')
     .replace(/{{id}}/g, cardId)
     .replace(/{{triggerPattern}}/g, triggerPattern)
-    .replace(/{{tag}}/g, capitalizeFirstLetter(tag))
+    .replace(/{{tag}}/g, capitalizeFirstLetter(getSafeName(tag)))
     .replace(/{{className}}/g, capitalizeFirstLetter(cardId) + 'CommandHandler')
     .replace(/{{requiredParams}}/g, JSON.stringify(requiredParameters))
     .replace(

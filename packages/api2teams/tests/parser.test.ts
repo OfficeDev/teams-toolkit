@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import fs from 'fs-extra';
+import fs, { read } from 'fs-extra';
 import * as utils from '../src/utils'
 import { parseApi } from '../src/parser';
 import chai from 'chai';
@@ -23,12 +23,28 @@ describe('parseApi tests', () => {
     let generateResponseCardStub: sinon.SinonStub;
     let outputFileStub: sinon.SinonStub;
     let getSchemaRefStub: sinon.SinonStub;
+    let copyFileStub: sinon.SinonStub;
+    let readJsonStub: sinon.SinonStub;
+    let outputJsonStub: sinon.SinonStub;
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       isFolderEmptyStub = sandbox.stub(utils, 'isFolderEmpty');
       pathExistsStub = sandbox.stub(fs, 'pathExists');
       mkdirStub = sandbox.stub(fs, 'mkdir');
       outputFileStub = sandbox.stub(fs, 'outputFile');
+      readJsonStub = sandbox.stub(fs, 'readJSON').resolves({
+        bots: [
+          {
+            commandLists: [
+              {
+                commands: []
+              }
+            ]
+          }
+        ]
+      });
+      outputJsonStub = sandbox.stub(fs, 'outputJSON');
+      copyFileStub = sandbox.stub(fs, 'copy');
       validateStub = sandbox.stub(SwaggerParser, 'validate');
       parseStub = sandbox.stub(SwaggerParser, "parse");
       getSchemaRefStub = sandbox.stub(utils, 'getSchemaRef');

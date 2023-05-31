@@ -5,7 +5,8 @@ import { OpenAPIV3 } from 'openapi-types';
 import {
   getResponseJsonResult,
   getSafeCardName,
-  capitalizeFirstLetter
+  capitalizeFirstLetter,
+  getSafeName
 } from './utils';
 
 export async function generateApi(
@@ -50,18 +51,20 @@ export async function generateApi(
       'utf-8'
     );
     const mockApiClass = apiClassTemplate
-      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
+      .replace('{{className}}', capitalizeFirstLetter(getSafeName(tag)) + 'Api')
       .replace('{{apiList}}', apiFunctionsByTag[tag].join('\n'));
 
     const realApiClass = apiClassTemplate
-      .replace('{{className}}', capitalizeFirstLetter(tag) + 'Api')
+      .replace('{{className}}', capitalizeFirstLetter(getSafeName(tag)) + 'Api')
       .replace('{{apiList}}', emptyFunctionsByTag[tag].join('\n'));
     mockApiProviderCode += mockApiClass + '\n';
     realApiProviderCode += realApiClass + '\n';
   }
 
-  result.push({ code: mockApiProviderCode, name: 'mockApiProvider' });
-  result.push({ code: realApiProviderCode, name: 'realApiProvider' });
+  if (mockApiProviderCode) {
+    result.push({ code: mockApiProviderCode, name: 'mockApiProvider' });
+    result.push({ code: realApiProviderCode, name: 'realApiProvider' });
+  }
 
   return result;
 }
@@ -103,12 +106,15 @@ function parseResponse(
 
   let responseSampleObject = {};
 
-  if (jsonResult.schema) {
+  // Deprecated: The example property has been deprecated in favor of the JSON Schema examples keyword. Use of example is discouraged, and later versions of this specification may remove it.
+  if (jsonResult.examples) {
+    responseSampleObject = jsonResult.examples;
+  } else if (jsonResult.example) {
+    responseSampleObject = jsonResult.example;
+  } else if (jsonResult.schema) {
     responseSampleObject = generateResponse(
       jsonResult.schema as OpenAPIV3.SchemaObject
     );
-  } else if (jsonResult.examples) {
-    responseSampleObject = JSON.stringify(jsonResult.examples, null, 2);
   } else {
     responseSampleObject = {};
   }

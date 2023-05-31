@@ -1,5 +1,5 @@
-import { expect, util } from "chai";
-import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, capitalizeFirstLetter, getSchemaRef, componentRefToCardName } from "../src/utils";
+import { expect } from "chai";
+import { getVersion, isFolderEmpty, getSafeCardName, wrapperCard, getCardTitle, getResponseJsonResult, capitalizeFirstLetter, getSchemaRef, componentRefToCardName, truncateString } from "../src/utils";
 import path from "path";
 import sinon from 'sinon';
 import fs from 'fs-extra';
@@ -117,7 +117,7 @@ describe('utils tests', () => {
   
     it('should include an empty summary if none is provided', () => {
       const result = getCardTitle('get', '/users');
-      expect(result.text).to.equal('GET /users: ');
+      expect(result.text).to.equal('GET /users');
     });
   });
 
@@ -273,6 +273,27 @@ describe('utils tests', () => {
   
       const result = getSchemaRef(unResolvedApi);
       expect(result).to.deep.equal(expectedMap);
+    });
+  });
+
+  describe('truncateString', () => {
+    it('should truncate a string and end with a complete word', () => {
+      const str = 'Lists the currently available (non-finetuned) models, and provides basic information about each one such as the owner and availability.';
+      const maxLength = 50;
+      const expected = 'Lists the currently available (non-finetuned)...';
+  
+      const result = truncateString(str, maxLength);
+  
+      expect(result).to.equal(expected);
+    });
+  
+    it('should not truncate a string shorter than the maximum length', () => {
+      const str = 'Hello, world!';
+      const maxLength = 20;
+  
+      const result = truncateString(str, maxLength);
+  
+      expect(result).to.equal(str);
     });
   });
 })

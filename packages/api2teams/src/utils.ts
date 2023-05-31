@@ -19,9 +19,14 @@ export function getSafeCardName(
   url: string,
   operation: string
 ): string {
-  let name = api.operationId || api.summary || operation + url;
+  const name = api.operationId || api.summary || operation + url;
+  return getSafeName(name);
+}
+
+export function getSafeName(tag: string): string {
+  let name = tag;
   name = name.replace(/[{}]/g, '');
-  const wordArr = name.split(/[ /.-]/g);
+  const wordArr = name.split(/[ !@#$%^&*()\-_+=|:;"',.<>?/\\]/g);
   let safeName = wordArr[0];
   for (let i = 1; i < wordArr.length; i++) {
     safeName += wordArr[i].charAt(0).toUpperCase() + wordArr[i].slice(1);
@@ -65,7 +70,7 @@ export function getCardTitle(
 ) {
   return {
     type: 'TextBlock',
-    text: `${operation.toUpperCase()} ${url}: ${summary ?? ''}`,
+    text: `${operation.toUpperCase()} ${url}${summary ? ': ' + summary : ''}`,
     wrap: true
   };
 }
@@ -121,7 +126,7 @@ export function getSchemaRef(
         const schema = getResponseJsonResult(unResolvedApi.paths[url]?.get)
           .schema as any;
         if (schema) {
-          if (schema.type === 'array') {
+          if (schema.type === 'array' && schema.items.$ref) {
             schemaRefMap.set(url, schema.items.$ref);
           } else if (schema.$ref) {
             schemaRefMap.set(url, schema.$ref);
@@ -132,4 +137,19 @@ export function getSchemaRef(
   }
 
   return schemaRefMap;
+}
+
+export function truncateString(str: string, maxLength: number): string {
+  maxLength = maxLength - 3;
+  let truncatedStr = str.slice(0, maxLength);
+
+  // Ensure that the last word is complete
+  if (truncatedStr.length === maxLength) {
+    const lastSpaceIndex = truncatedStr.lastIndexOf(' ');
+    if (lastSpaceIndex !== -1) {
+      truncatedStr = truncatedStr.slice(0, lastSpaceIndex) + '...';
+    }
+  }
+
+  return truncatedStr;
 }

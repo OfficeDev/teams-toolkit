@@ -43,14 +43,16 @@ function parseResponse(
 ): AdaptiveCardResult {
   const jsonResult = getResponseJsonResult(api);
 
-  let cardBody;
+  let cardBody = [];
 
   if (jsonResult.schema) {
     cardBody = generateCardFromResponse(
       jsonResult.schema as OpenAPIV3.SchemaObject,
       ''
     );
-  } else if (jsonResult.examples) {
+  }
+
+  if (cardBody.length === 0 && (jsonResult.examples || jsonResult.example)) {
     cardBody = [
       {
         type: 'TextBlock',
@@ -58,7 +60,9 @@ function parseResponse(
         wrap: true
       }
     ];
-  } else {
+  }
+
+  if (!cardBody) {
     cardBody = [
       {
         type: 'TextBlock',

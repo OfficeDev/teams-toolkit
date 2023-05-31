@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra';
-import { capitalizeFirstLetter } from './utils';
+import { capitalizeFirstLetter, getSafeName } from './utils';
 import { CodeResult } from './interfaces';
 
 export async function generateActionHandler(
@@ -13,7 +13,7 @@ export async function generateActionHandler(
   );
 
   const result = codeTemplate
-    .replace(/{{tag}}/g, capitalizeFirstLetter(tag))
+    .replace(/{{tag}}/g, capitalizeFirstLetter(getSafeName(tag)))
     .replace(/{{cardName}}/g, responseCardName)
     .replace(/{{id}}/g, cardId)
     .replace(/{{className}}/g, capitalizeFirstLetter(cardId) + 'ActionHandler');

@@ -17,15 +17,14 @@ import * as path from "path";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 import {
   spfxPackageSelectQuestion,
-  versionCheckQuestion,
   webpartNameQuestion,
-} from "../../../../../src/component/resource/spfx/utils/questions";
-import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
+} from "../../../../../src/component/generator/spfx/utils/questions";
+import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import { cpUtils } from "../../../../../src";
 import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
-} from "../../../../../src/component/resource/spfx/utils/question-helper";
+} from "../../../../../src/component/generator/spfx/utils/question-helper";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("utils", () => {
@@ -154,52 +153,6 @@ describe("utils", () => {
           )
         );
       sinon.restore();
-    });
-  });
-
-  describe("versionCheckQuestion", async () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("Throw error when NPM not installed", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves(undefined);
-
-      try {
-        await (versionCheckQuestion as any).func({});
-      } catch (e) {
-        chai.expect(e.name).equal("NpmNotFound");
-      }
-    });
-
-    it("Throw error when NPM version not supported", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves("4");
-
-      try {
-        await (versionCheckQuestion as any).func({});
-      } catch (e) {
-        chai.expect(e.name).equal("NpmVersionNotSupported");
-      }
-    });
-
-    it("Throw error when Node version not supported", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves("8");
-      sinon.stub(Utils, "getNodeVersion").resolves("18");
-
-      try {
-        await (versionCheckQuestion as any).func({});
-      } catch (e) {
-        chai.expect(e.name).equal("NodeVersionNotSupported");
-      }
-    });
-
-    it("Return undefined when both Node and NPM version supported", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves("8");
-      sinon.stub(Utils, "getNodeVersion").resolves("16");
-
-      const res = await (versionCheckQuestion as any).func({});
-
-      chai.expect(res).equal(undefined);
     });
   });
 

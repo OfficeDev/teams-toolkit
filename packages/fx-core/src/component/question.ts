@@ -36,7 +36,7 @@ import {
   loadPackageVersions,
   spfxPackageSelectQuestion,
   webpartNameQuestion,
-} from "./resource/spfx/utils/questions";
+} from "./generator/spfx/utils/questions";
 
 export async function getNotificationTriggerQuestionNode(
   inputs: Inputs

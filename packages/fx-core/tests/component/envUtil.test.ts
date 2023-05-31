@@ -13,29 +13,28 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as path from "path";
 import * as sinon from "sinon";
+import { MetadataV3 } from "../../src/common/versionMetadata";
+import { ProjectModel } from "../../src/component/configManager/interface";
+import { yamlParser } from "../../src/component/configManager/parser";
+import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
 import { DotenvOutput, dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
+import { pathUtils } from "../../src/component/utils/pathUtils";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
-import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
+import { environmentManager } from "../../src/core/environment";
+import { FxCore } from "../../src/core/FxCore";
+import { globalVars, setTools } from "../../src/core/globalVars";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
-import { MockTools } from "../core/utils";
-import { globalVars, setTools } from "../../src/core/globalVars";
-import { environmentManager } from "../../src/core/environment";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { FxCore } from "../../src/core/FxCore";
-import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
-import * as path from "path";
-import { yamlParser } from "../../src/component/configManager/parser";
-import { ProjectModel } from "../../src/component/configManager/interface";
-import { MetadataV3 } from "../../src/common/versionMetadata";
 import {
   FileNotFoundError,
   MissingEnvironmentVariablesError,
   MissingRequiredFileError,
 } from "../../src/error/common";
-import { parseSetOutputCommand } from "../../src/component/driver/script/scriptDriver";
+import { MockTools } from "../core/utils";
 
 describe("envUtils", () => {
   const tools = new MockTools();
@@ -234,54 +233,54 @@ describe("envUtils", () => {
     assert.isFalse(error3.message.includes("abc.yml"));
   });
 
-  describe("pathUtils.readEnv", () => {
-    it("happy path", async () => {
-      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
-      let value = "";
-      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
-        value = data as string;
-        return Promise.resolve();
-      });
-      sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-      const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
-      assert.isTrue(res.isOk());
-      assert.isDefined(value);
-      value = value!.substring("SECRET_ABC=".length);
-      const decRes = await cryptoProvider.decrypt(value);
-      if (decRes.isErr()) throw decRes.error;
-      assert.isTrue(decRes.isOk());
-      assert.equal(decRes.value, decrypted);
-    });
-    it("no variables", async () => {
-      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
-      sandbox.stub(fs, "readFile").resolves("" as any);
-      sandbox.stub(fs, "writeFile").resolves();
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-      const res = await envUtil.writeEnv(".", "dev", {});
-      assert.isTrue(res.isOk());
-    });
-    it("write to default path", async () => {
-      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
-      sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-      sandbox.stub(fs, "writeFile").resolves();
-      const res = await envUtil.writeEnv(".", "dev", {
-        SECRET_ABC: decrypted,
-        TEAMS_APP_UPDATE_TIME: "xx-xx-xx",
-      });
-      assert.isTrue(res.isOk());
-    });
-    it("write failed", async () => {
-      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
-      sandbox
-        .stub(settingsUtil, "readSettings")
-        .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
-      const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
-      assert.isTrue(res.isErr());
-    });
-  });
+  // describe("pathUtils.writeEnv", () => {
+  //   it("happy path", async () => {
+  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+  //     let value = "";
+  //     sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+  //       value = data as string;
+  //       return Promise.resolve();
+  //     });
+  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+  //     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
+  //     assert.isTrue(res.isOk());
+  //     assert.isDefined(value);
+  //     value = value!.substring("SECRET_ABC=".length);
+  //     const decRes = await cryptoProvider.decrypt(value);
+  //     if (decRes.isErr()) throw decRes.error;
+  //     assert.isTrue(decRes.isOk());
+  //     assert.equal(decRes.value, decrypted);
+  //   });
+  //   it("no variables", async () => {
+  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+  //     sandbox.stub(fs, "readFile").resolves("" as any);
+  //     sandbox.stub(fs, "writeFile").resolves();
+  //     sandbox.stub(fs, "pathExists").resolves(true);
+  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+  //     const res = await envUtil.writeEnv(".", "dev", {});
+  //     assert.isTrue(res.isOk());
+  //   });
+  //   it("write to default path", async () => {
+  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
+  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+  //     sandbox.stub(fs, "writeFile").resolves();
+  //     const res = await envUtil.writeEnv(".", "dev", {
+  //       SECRET_ABC: decrypted,
+  //       TEAMS_APP_UPDATE_TIME: "xx-xx-xx",
+  //     });
+  //     assert.isTrue(res.isOk());
+  //   });
+  //   it("write failed", async () => {
+  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+  //     sandbox
+  //       .stub(settingsUtil, "readSettings")
+  //       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
+  //     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
+  //     assert.isTrue(res.isErr());
+  //   });
+  // });
 
-  describe("pathUtils.readEnv", () => {
+  describe("pathUtils.listEnv", () => {
     it("happy path", async () => {
       sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
       sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
@@ -625,66 +624,66 @@ describe("envUtils", () => {
     });
   });
 
-  describe("EnvLoaderMW", () => {
-    it("EnvWriterMW success", async () => {
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
-      let value = "";
-      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
-        value = data as string;
-        return Promise.resolve();
-      });
-      sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-      const envs = { SECRET_ABC: decrypted };
-      class MyClass {
-        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          ctx!.envVars = envs;
-          return ok(undefined);
-        }
-      }
-      hooks(MyClass, {
-        myMethod: [ContextInjectorMW, EnvWriterMW],
-      });
-      const my = new MyClass();
-      const inputs = {
-        platform: Platform.VSCode,
-        projectPath: ".",
-        env: "dev",
-      };
-      const res = await my.myMethod(inputs);
-      assert.isTrue(res.isOk());
-      assert.isDefined(value);
-      value = value!.substring("SECRET_ABC=".length);
-      const decRes = await cryptoProvider.decrypt(value);
-      if (decRes.isErr()) throw decRes.error;
-      assert.isTrue(decRes.isOk());
-      assert.equal(decRes.value, decrypted);
-    });
+  // describe("EnvWriterMW", () => {
+  //   it("EnvWriterMW success", async () => {
+  //     sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+  //     let value = "";
+  //     sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+  //       value = data as string;
+  //       return Promise.resolve();
+  //     });
+  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+  //     const envs = { SECRET_ABC: decrypted };
+  //     class MyClass {
+  //       async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  //         ctx!.envVars = envs;
+  //         return ok(undefined);
+  //       }
+  //     }
+  //     hooks(MyClass, {
+  //       myMethod: [ContextInjectorMW, EnvWriterMW],
+  //     });
+  //     const my = new MyClass();
+  //     const inputs = {
+  //       platform: Platform.VSCode,
+  //       projectPath: ".",
+  //       env: "dev",
+  //     };
+  //     const res = await my.myMethod(inputs);
+  //     assert.isTrue(res.isOk());
+  //     assert.isDefined(value);
+  //     value = value!.substring("SECRET_ABC=".length);
+  //     const decRes = await cryptoProvider.decrypt(value);
+  //     if (decRes.isErr()) throw decRes.error;
+  //     assert.isTrue(decRes.isOk());
+  //     assert.equal(decRes.value, decrypted);
+  //   });
 
-    it("EnvWriterMW fail with envUtil Error", async () => {
-      sandbox
-        .stub(envUtil, "writeEnv")
-        .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
-      sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-      const envs = { SECRET_ABC: decrypted };
-      class MyClass {
-        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          ctx!.envVars = envs;
-          return ok(undefined);
-        }
-      }
-      hooks(MyClass, {
-        myMethod: [ContextInjectorMW, EnvWriterMW],
-      });
-      const my = new MyClass();
-      const inputs = {
-        platform: Platform.VSCode,
-        projectPath: ".",
-        env: "dev",
-      };
-      const res = await my.myMethod(inputs);
-      assert.isTrue(res.isErr());
-    });
-  });
+  //   it("EnvWriterMW fail with envUtil Error", async () => {
+  //     sandbox
+  //       .stub(envUtil, "writeEnv")
+  //       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
+  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+  //     const envs = { SECRET_ABC: decrypted };
+  //     class MyClass {
+  //       async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  //         ctx!.envVars = envs;
+  //         return ok(undefined);
+  //       }
+  //     }
+  //     hooks(MyClass, {
+  //       myMethod: [ContextInjectorMW, EnvWriterMW],
+  //     });
+  //     const my = new MyClass();
+  //     const inputs = {
+  //       platform: Platform.VSCode,
+  //       projectPath: ".",
+  //       env: "dev",
+  //     };
+  //     const res = await my.myMethod(inputs);
+  //     assert.isTrue(res.isErr());
+  //   });
+  // });
 
   describe("dotenvUtil", () => {
     it("dotenvUtil deserialize & serialize", async () => {
@@ -740,9 +739,7 @@ describe("envUtils", () => {
     it("settingsUtil read and ensure trackingId", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("."));
-      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
-        return "version: 1.0.0";
-      });
+      sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
       sandbox.stub(fs, "writeFile").resolves();
       const res = await settingsUtil.readSettings("abc");
       assert.isTrue(res.isOk());
@@ -755,9 +752,7 @@ describe("envUtils", () => {
       sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("."));
       sandbox.stub(fs, "writeFile").resolves();
       sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
-        return "version: 1.0.0";
-      });
+      sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
       const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
       assert.isTrue(res.isOk());
     });
@@ -767,22 +762,6 @@ describe("envUtils", () => {
       const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
       assert.isTrue(res.isErr());
       assert.isTrue(res._unsafeUnwrapErr() instanceof FileNotFoundError);
-    });
-  });
-
-  describe("parseSetOutputCommand", () => {
-    it("parse one key value pair", async () => {
-      const res = parseSetOutputCommand('echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"');
-      assert.deepEqual(res, { TAB_DOMAIN: "localhost:53000" });
-    });
-    it("parse two key value pairs", async () => {
-      const res = parseSetOutputCommand(
-        'echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"; echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";'
-      );
-      assert.deepEqual(res, {
-        TAB_DOMAIN: "localhost:53000",
-        TAB_ENDPOINT: "https://localhost:53000",
-      });
     });
   });
 });

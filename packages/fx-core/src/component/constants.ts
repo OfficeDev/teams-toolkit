@@ -306,8 +306,6 @@ export const PathConstants = {
   dotnetWorkingDir: ".",
   npmPackageFolder: "node_modules",
   nodePackageFile: "package.json",
-  functionExtensionsFolder: "bin",
-  functionExtensionsFile: "extensions.csproj",
   deploymentInfoFolder: ".deployment",
   deploymentInfoFile: "deployment.json",
   nodeArtifactFolder: "build",

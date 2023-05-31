@@ -260,6 +260,8 @@
   "_error.appstudio.BotProvisionReturnsForbiddenResult.comment": "This is to describe API call, no need to translate 'Botframework'.",
   "error.appstudio.BotProvisionReturnsConflictResult": "Botframework provisioning returns conflict result from attempting to create bot registration.",
   "_error.appstudio.BotProvisionReturnsConflictResult.comment": "This is to describe API call, no need to translate 'Botframework'.",
+  "error.appstudio.FailedToGetDownstreamAccessToken": "Teams Developer Portal cannot get downstream access token. That may come from AADSTS50076: Due to a configuration change made by your administrator, or because you moved to a new location, you must use multi-factor authentication to access '00000003-0000-0000-c000-000000000000'. ",
+  "_error.appstudio.FailedToGetDownstreamAccessToken.comment": "Do not need to translate: AADSTS50076: Due to a configuration change made by your administrator, or because you moved to a new location, you must use multi-factor authentication to access '00000003-0000-0000-c000-000000000000'.",
   "error.function.FindAppError": "Unable to find the function app.",
   "error.generator.TemplateZipFallbackError": "Unable to download zip package and open local zip package.",
   "error.generator.FetchZipFromUrlError": "Unable to download zip package from %s.",

@@ -187,4 +187,12 @@ export class AppStudioError {
       getLocalizedString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
     ],
   };
+
+  public static readonly FailedToGetDownstreamAccessToken = {
+    name: "FailedToGetDownstreamAccessToken",
+    message: (): [string, string] => [
+      getDefaultString("error.appstudio.FailedToGetDownstreamAccessToken"),
+      getLocalizedString("error.appstudio.FailedToGetDownstreamAccessToken"),
+    ],
+  };
 }

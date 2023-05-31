@@ -15,12 +15,9 @@ import {
 } from "../../src/core/question";
 import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import fs from "fs-extra";
 import { SPFXQuestionNames } from "../../src/component/generator/spfx/utils/questions";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
-import * as templateActions from "../../src/common/template-utils/templatesActions";
 import { Generator } from "../../src/component/generator/generator";
 
 describe("Core basic APIs for v3", () => {
@@ -35,7 +32,6 @@ describe("Core basic APIs for v3", () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
 
   afterEach(() => {

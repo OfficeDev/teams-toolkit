@@ -19,12 +19,12 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { unzip } from "../../../common/template-utils/templatesUtils";
 import { isV3Enabled } from "../../../common/tools";
 import { FileNotFoundError } from "../../../error/common";
 import { getTemplatesFolder } from "../../../folder";
 import { AddSsoParameters, Language, SolutionError, SolutionSource } from "../../constants";
 import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../migrate";
+import { unzip } from "../../generator/utils";
 
 export function convertContext(context: ContextV3, inputs: InputsWithProjectPath): PluginContext {
   const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);

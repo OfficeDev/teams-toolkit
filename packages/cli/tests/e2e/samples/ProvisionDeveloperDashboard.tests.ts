@@ -25,7 +25,7 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     // remove teamsApp/extendToM365 in case it fails
-    removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.local.yml"));
+    removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
     // Provision
     {

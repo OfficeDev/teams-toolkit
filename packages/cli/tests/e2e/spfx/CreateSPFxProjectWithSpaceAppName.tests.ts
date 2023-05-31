@@ -20,7 +20,7 @@ describe("Start a new project", function () {
   let projectPath: string;
   beforeEach(async () => {
     testFolder = getTestFolder();
-    appName = `"spfx tab"`;
+    appName = "spfx tab";
     projectPath = path.resolve(testFolder, appName);
   });
 
@@ -28,7 +28,7 @@ describe("Start a new project", function () {
     {
       const result = await Executor.createProject(
         testFolder,
-        appName,
+        `"${appName}"`,
         Capability.SPFxTab,
         ProgrammingLanguage.TS
       );

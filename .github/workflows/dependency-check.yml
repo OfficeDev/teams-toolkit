@@ -33,22 +33,17 @@ jobs:
               return '';
             }
 
-      - name: Get Release Detail
-        if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
-        id: detail
-        run: |
-          responseBody = "<p>Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>"
-          echo "responseBody=$responseBody" >> $GITHUB_OUTPUT
-
       - name: Setup Email and Recipient
         if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
         id: email
         run: |
           emails="yiqingzhao@microsoft.com"
           subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
+          body="<p>Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>"
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
 
       - name: Send E-mail Notifications
         if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
@@ -59,7 +54,7 @@ jobs:
           payload: |
             {
               "to": "${{ steps.email.outputs.to }}",
-              "body": ${{ steps.detail.outputs.responseBody }},
+              "body": ${{ steps.email.outputs.body }},
               "subject": "${{ steps.email.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

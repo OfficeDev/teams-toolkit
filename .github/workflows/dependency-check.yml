@@ -39,7 +39,7 @@ jobs:
         run: |
           emails="yiqingzhao@microsoft.com"
           subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
-          body="<p>Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>"
+          body="Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases"
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
@@ -54,7 +54,7 @@ jobs:
           payload: |
             {
               "to": "${{ steps.email.outputs.to }}",
-              "body": ${{ steps.email.outputs.body }},
+              "body": "${{ steps.email.outputs.body }}"",
               "subject": "${{ steps.email.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

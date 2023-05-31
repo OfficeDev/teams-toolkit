@@ -17,7 +17,11 @@ import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
-import { handleArmDeploymentError } from "../../../../src/component/driver/arm/util/handleError";
+import {
+  ArmErrorHandle,
+  DeployContext,
+} from "../../../../src/component/driver/arm/util/handleError";
+import * as innerHandleError from "../../../../src/component/driver/arm/util/innerHandleError";
 import {
   CompileBicepError,
   DeployArmError,
@@ -25,8 +29,8 @@ import {
 } from "../../../../src/error/arm";
 import { ResourceGroupNotExistError } from "../../../../src/error/azure";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import arm from "../../../../src/component/driver/arm/util/handleError";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
+import { ConstantString } from "../../../../src/common/constants";
 
 describe("utils test", () => {
   const sandbox = createSandbox();
@@ -130,7 +134,7 @@ describe("arm deploy error handle test", () => {
       },
     };
 
-    let res = await handleArmDeploymentError(mockError, {
+    let res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -152,7 +156,7 @@ describe("arm deploy error handle test", () => {
         ],
       },
     } as any;
-    res = await handleArmDeploymentError(mockError, {
+    res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -177,7 +181,7 @@ describe("arm deploy error handle test", () => {
         ],
       },
     } as any;
-    res = await handleArmDeploymentError(mockError, {
+    res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -197,7 +201,7 @@ describe("arm deploy error handle test", () => {
       message:
         "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
     };
-    const res = await handleArmDeploymentError(mockError, {
+    const res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -211,7 +215,7 @@ describe("arm deploy error handle test", () => {
 
   it("handleArmDeploymentError case 3: getDeploymentError without subErrors", async () => {
     const client = new ResourceManagementClient(new MyTokenCredential(), "id");
-    sandbox.stub(arm, "wrapGetDeploymentError").resolves(
+    sandbox.stub(ArmErrorHandle, "wrapGetDeploymentError").resolves(
       ok({
         error: {
           code: "MockError",
@@ -223,7 +227,7 @@ describe("arm deploy error handle test", () => {
       code: "RawMockError",
       message: "RawMockErrorMessasge",
     };
-    const res = await handleArmDeploymentError(mockError, {
+    const res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -237,12 +241,14 @@ describe("arm deploy error handle test", () => {
 
   it("handleArmDeploymentError case 4: getDeploymentError with subErrors", async () => {
     const client = new ResourceManagementClient(new MyTokenCredential(), "id");
-    sandbox.stub(arm, "wrapGetDeploymentError").resolves(ok({ subErrors: { module1: "value1" } }));
+    sandbox
+      .stub(ArmErrorHandle, "wrapGetDeploymentError")
+      .resolves(ok({ subErrors: { module1: "value1" } }));
     const mockError = {
       code: "RawMockError",
       message: "RawMockErrorMessasge",
     };
-    const res = await handleArmDeploymentError(mockError, {
+    const res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -257,13 +263,13 @@ describe("arm deploy error handle test", () => {
   it("handleArmDeploymentError case 5: getDeploymentError throws error", async () => {
     const client = new ResourceManagementClient(new MyTokenCredential(), "id");
     sandbox
-      .stub(arm, "getDeploymentError")
+      .stub(ArmErrorHandle, "getDeploymentError")
       .throws({ code: "GetDeploymentError", message: "GetDeploymentErrorMessage" });
     const mockError = {
       code: "RawMockError",
       message: "RawMockErrorMessasge",
     };
-    const res = await handleArmDeploymentError(mockError, {
+    const res = await ArmErrorHandle.handleArmDeploymentError(mockError, {
       ctx: { logProvider: new MockLogProvider() },
       deploymentName: "mockDeployName",
       resourceGroupName: "mockRG",
@@ -335,5 +341,143 @@ describe("arm deploy error handle test", () => {
     } catch (e) {
       assert.isTrue(e instanceof CompileBicepError);
     }
+  });
+});
+
+describe("getDeploymentError", () => {
+  const sandbox = createSandbox();
+  const tools = new MockTools();
+  setTools(tools);
+  const deployCtx = {
+    ctx: { logProvider: new MockLogProvider() },
+    deploymentName: "mockDeployName",
+    resourceGroupName: "mockRG",
+    deploymentStartTime: Date.now(),
+  } as DeployContext;
+  beforeEach(() => {});
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("throw error", async () => {
+    sandbox
+      .stub(innerHandleError, "innerGetDeploymentError")
+      .throws({ code: ConstantString.DeploymentNotFound });
+    try {
+      await ArmErrorHandle.getDeploymentError(
+        deployCtx,
+        deployCtx.resourceGroupName,
+        deployCtx.deploymentName
+      );
+      assert.fail("should not reach here");
+    } catch (error) {
+      assert.isTrue(error.code === ConstantString.DeploymentNotFound);
+    }
+  });
+
+  it("get error:empty", async () => {
+    sandbox
+      .stub(innerHandleError, "innerGetDeploymentError")
+      .throws({ code: ConstantString.DeploymentNotFound });
+    const res = await ArmErrorHandle.getDeploymentError(
+      deployCtx,
+      deployCtx.resourceGroupName,
+      "mockDeploymentName"
+    );
+    assert.isUndefined(res);
+  });
+
+  it("timestamp is less than startTime", async () => {
+    sandbox.stub(innerHandleError, "innerGetDeploymentError").resolves({
+      properties: {
+        timestamp: new Date(deployCtx.deploymentStartTime - 1000),
+      },
+    } as any);
+    const res = await ArmErrorHandle.getDeploymentError(
+      deployCtx,
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
+    );
+    assert.isUndefined(res);
+  });
+
+  it("error is empty", async () => {
+    sandbox.stub(innerHandleError, "innerGetDeploymentError").resolves({
+      properties: {
+        timestamp: new Date(),
+      },
+    } as any);
+    const res = await ArmErrorHandle.getDeploymentError(
+      deployCtx,
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
+    );
+    assert.isUndefined(res);
+  });
+
+  it("error not empty", async () => {
+    sandbox.stub(innerHandleError, "innerGetDeploymentError").resolves({
+      properties: {
+        error: {
+          message: "mockMessage",
+        },
+      },
+    } as any);
+    sandbox.stub(innerHandleError, "innerGetDeploymentOperations").resolves([
+      {
+        properties: {
+          targetResource: {
+            resourceName: "mockResourceName",
+          },
+          statusMessage: {
+            error: {},
+          },
+        },
+      },
+    ] as any);
+    const res = await ArmErrorHandle.getDeploymentError(
+      deployCtx,
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
+    );
+    assert.isNotEmpty(res);
+  });
+
+  it("error not empty and nested error", async () => {
+    // sandbox.stub(innerHandleError, "innerGetDeploymentError").onFirstCall
+    sandbox
+      .stub(innerHandleError, "innerGetDeploymentError")
+      .onFirstCall()
+      .resolves({
+        properties: {
+          error: {
+            message: "mockMessage",
+          },
+        },
+      } as any)
+      .onSecondCall()
+      .throws({ code: ConstantString.DeploymentNotFound });
+    sandbox.stub(innerHandleError, "innerGetDeploymentOperations").resolves([
+      {
+        id: "mockId",
+        properties: {
+          targetResource: {
+            resourceType: ConstantString.DeploymentResourceType,
+            resourceName: "mockResourceName2",
+            id: "/resourceGroups/mockGroup2/mockId2",
+          },
+          statusMessage: {
+            error: {},
+          },
+        },
+      },
+    ] as any);
+    const res = await ArmErrorHandle.getDeploymentError(
+      deployCtx,
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
+    );
+    assert.isNotEmpty(res);
   });
 });

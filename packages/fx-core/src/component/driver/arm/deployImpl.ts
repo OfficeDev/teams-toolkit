@@ -24,7 +24,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { DeployContext, handleArmDeploymentError } from "./util/handleError";
+import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { InvalidActionInputError } from "../../../error/common";
 import { InvalidAzureCredentialError } from "../../../error/azure";
 import { CompileBicepError, DeployArmError } from "../../../error/arm";
@@ -141,7 +141,7 @@ export class ArmDeployImpl {
     try {
       return await this.innerExecuteDeployment(templateArg, deploymentParameters);
     } catch (error) {
-      const errRes = handleArmDeploymentError(error, deployCtx);
+      const errRes = ArmErrorHandle.handleArmDeploymentError(error, deployCtx);
       return errRes;
     }
   }

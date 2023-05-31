@@ -58,7 +58,7 @@ describe("Collaboration", function () {
         }
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
-      const filePath = path.join(testFolder, "teamsapp.yml");
+      const filePath = path.join(projectPath, "teamsapp.yml");
       removeTeamsAppExtendToM365(filePath);
 
       // provision

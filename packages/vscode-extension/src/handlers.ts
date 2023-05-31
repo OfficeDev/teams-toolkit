@@ -150,6 +150,8 @@ import {
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { compare } from "./utils/versionUtil";
+import { setRegion } from "@microsoft/teamsfx-core";
+import { AuthSvcScopes } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -3299,6 +3301,13 @@ export async function scaffoldFromDeveloperPortalHandler(
       return err(tokenRes.error);
     }
     token = tokenRes.value;
+
+    // set region
+    const AuthSvcTokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+    if (AuthSvcTokenRes.isOk()) {
+      await setRegion(AuthSvcTokenRes.value);
+    }
+
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(

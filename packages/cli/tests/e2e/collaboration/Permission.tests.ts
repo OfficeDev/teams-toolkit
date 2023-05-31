@@ -16,6 +16,7 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
+  removeTeamsAppExtendToM365,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
@@ -58,6 +59,8 @@ describe("Collaboration", function () {
         }
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
+      const filePath = path.join(testFolder, "teamsapp.yml");
+      removeTeamsAppExtendToM365(filePath);
 
       if (!isV3Enabled()) {
         await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());

@@ -702,7 +702,7 @@ export function removeTeamsAppExtendToM365(filePath: string) {
       const action = provisionStage.items?.[i] as YAMLMap;
       if (
         action.commentBefore &&
-        action.comment?.includes("Extend your Teams app to Outlook and the Microsoft 365 app")
+        action.commentBefore?.includes("Extend your Teams app to Outlook and the Microsoft 365 app")
       ) {
         provisionStage.delete(i);
       }

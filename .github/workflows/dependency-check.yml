@@ -36,11 +36,9 @@ jobs:
       - name: Get Release Detail
         if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
         id: detail
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const responseBody = "<p>Botbuilder " + "${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>";
-            return responseBody;
+        run: |
+          responseBody = "<p>Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases<p>"
+          echo "responseBody = $responseBody" >> $GITHUB_OUTPUT
 
       - name: Setup Email and Recipient
         if: startsWith(${{steps.getLTSVersion.outputs.result}}, 'v')
@@ -61,7 +59,7 @@ jobs:
           payload: |
             {
               "to": "${{ steps.email.outputs.to }}",
-              "body": ${{ steps.detail.outputs.result }},
+              "body": ${{ steps.detail.outputs.responseBody }},
               "subject": "${{ steps.email.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

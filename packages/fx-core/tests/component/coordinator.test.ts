@@ -288,8 +288,10 @@ describe("component coordinator test", () => {
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      ["spfx-framework-type"]: "none",
+      ["spfx-webpart-name"]: "test",
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);

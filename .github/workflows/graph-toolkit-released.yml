@@ -18,13 +18,16 @@ jobs:
           script: |
             const responseBody = "<p>Microsoft Graph Toolkit v" + "${{ github.event.client_payload.version }} has been released.\n Details can be found here: https://github.com/microsoftgraph/microsoft-graph-toolkit/releases/tag/v${{ github.event.client_payload.version }}";
             return responseBody;
+
       - name: Setup Email and Recipient
         id: email
         run: |
           emails="vsciotadt@microsoft.com;junjieli@microsoft.com;zhshang@microsoft.com;donji@microsoft.com;zhany@microsoft.com"
           subject="Microsoft Graph Toolkit v${{ github.event.client_payload.version }} Released"
+
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+
       - name: Send E-mail Notifications
         uses: satak/webrequest-action@master
         with:

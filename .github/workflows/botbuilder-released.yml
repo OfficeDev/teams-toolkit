@@ -2,6 +2,7 @@ name: Botbuilder New Version Released
 on:
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   notification:
@@ -12,8 +13,12 @@ jobs:
         with:
           node-version: 14
 
-      - name: Check LTS Version
-        id: checkLTSVersion
+      - name: Install npm packages
+        run: |
+          npm install axios
+
+      - name: Get LTS Version
+        id: getLTSVersion
         uses: actions/github-script@v6
         with:
           script: |
@@ -23,41 +28,33 @@ jobs:
             const ltsVersionTime = response.data.time[ltsVersion];
             const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
             if (timeDiff <= 86400) {
-              return ltsVersion;
+              return 'v' + ltsVersion;
             } else {
-              return "";
+              return '';
             }
 
-      - name: Get Release Detail
-        if: ${{steps.checkLTSVersion.outputs.result != ""}}
-        id: detail
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const responseBody = "<p>Botbuilder v" + "${{ steps.checkLTSVersion.outputs.result }} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases";
-            return responseBody;
-
       - name: Setup Email and Recipient
-        if: ${{steps.checkLTSVersion.outputs.result != ""}}
+        if: ${{ contains(steps.getLTSVersion.outputs.result, 'v') }}
         id: email
         run: |
-          emails="vsciotadt@microsoft.com;junjieli@microsoft.com;zhshang@microsoft.com;donji@microsoft.com;zhany@microsoft.com"
-          subject="Bot Framework JS SDK ${{ steps.checkLTSVersion.outputs.result }} Released"
+          emails="vsciotadt@microsoft.com;zhididr@microsoft.com;johmil@microsoft.com"
+          subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
+          body="Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases"
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
 
       - name: Send E-mail Notifications
-        # uses: satak/webrequest-action@master
-        run: echo ${{steps.checkLTSVersion.outputs.result}}
-
-      #   with:
-      #     url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-      #     method: POST
-      #     payload: |
-      #       {
-      #         "to": "${{ steps.email.outputs.to }}",
-      #         "body": ${{ steps.detail.outputs.result }},
-      #         "subject": "${{ steps.email.outputs.subject }}",
-      #         "apiKey": "${{ secrets.MAIL_API_KEY }}"
-      #       }
+        if: ${{ contains(steps.getLTSVersion.outputs.result, 'v') }}
+        uses: satak/webrequest-action@master
+        with:
+          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
+          method: POST
+          payload: |
+            {
+              "to": "${{ steps.email.outputs.to }}",
+              "body": "${{ steps.email.outputs.body }}",
+              "subject": "${{ steps.email.outputs.subject }}",
+              "apiKey": "${{ secrets.MAIL_API_KEY }}"
+            }

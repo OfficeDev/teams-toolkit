@@ -162,12 +162,6 @@ export function activate(): Result<Void, FxError> {
       globalVariables.workspaceUri?.fsPath
     );
     ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.ProgrammingLanguage,
-      fixedProjectSettings?.programmingLanguage
-    );
-    ExtTelemetry.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
-
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",

@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import mockedEnv from "mocked-env";
-import rewire from "rewire";
-import fs from "fs-extra";
-import chai from "chai";
-import { stub, restore } from "sinon";
-import { GeneratorChecker } from "../../../../../src/component/generator/spfx/depsChecker/generatorChecker";
-import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api";
-import { TestHelper } from "../helper";
+import chai from "chai";
+import fs from "fs-extra";
+import "mocha";
+import { restore, stub } from "sinon";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
+import { GeneratorChecker } from "../../../../../src/component/generator/spfx/depsChecker/generatorChecker";
+import { PackageSelectOptionsHelper } from "../../../../../src/component/generator/spfx/utils/question-helper";
+import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { createContextV3 } from "../../../../../src/component/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { MockTools } from "../../../../core/utils";
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -49,6 +49,7 @@ class StubLogger implements LogProvider {
 }
 
 describe("generator checker", () => {
+  setTools(new MockTools());
   beforeEach(() => {
     stub(telemetryHelper, "sendSuccessEvent").callsFake(() => {
       console.log("success event");
@@ -62,6 +63,7 @@ describe("generator checker", () => {
 
   afterEach(() => {
     restore();
+    PackageSelectOptionsHelper.clear();
   });
 
   describe("getDependencyInfo", async () => {

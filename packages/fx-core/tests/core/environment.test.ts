@@ -502,66 +502,6 @@ describe("APIs of Environment Manager", () => {
     });
   });
 
-  describe("List Environment Configs", () => {
-    const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(async () => {
-      await fs.ensureDir(configFolder);
-    });
-
-    afterEach(async () => {
-      deleteFolder(projectPath);
-      mockedEnvRestore();
-    });
-
-    it("list all the env configs with correct naming convention", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-      const envFileNames = [
-        // correct env file names
-        "config.default.json",
-        "config.42.JSON",
-        "config.dev1.json",
-        "CONFIG.dev2.JSON",
-        "CONFIG.dev_1.JSON",
-        "CONFIG.stage-42.json",
-        // incorrect env file names
-        "config..json",
-        "config. .json",
-        "config.4 2.json",
-        "config.+.json",
-        "config.=.json",
-      ];
-
-      for (const envFileName of envFileNames) {
-        await fs.ensureFile(path.resolve(configFolder, envFileName));
-      }
-
-      const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
-      if (envNamesResult.isErr()) {
-        assert.fail("Fail to get the list of env configs.");
-      }
-
-      assert.sameMembers(envNamesResult.value, [
-        "default",
-        "dev1",
-        "dev2",
-        "42",
-        "dev_1",
-        "stage-42",
-      ]);
-    });
-
-    it("no env state found", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-      const envNamesResult = await environmentManager.listRemoteEnvConfigs(projectPath);
-      if (envNamesResult.isErr()) {
-        assert.fail("Fail to get the list of env configs.");
-      }
-
-      assert.isEmpty(envNamesResult.value);
-    });
-  });
-
   describe("Check If File Is Environment Config", () => {
     const configFolder = path.resolve(projectPath, `.${ConfigFolderName}`, InputConfigsFolderName);
 

@@ -355,20 +355,9 @@ describe("envUtils", () => {
         assert.deepEqual(res.value, ["dev", "prod"]);
       }
     });
-    it("environmentManager.listRemoteEnvConfigs return error V3", async () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_V3: "true",
-      });
+    it("environmentManager.listRemoteEnvConfigs return error", async () => {
       sandbox.stub(fs, "readdir").resolves([] as any);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-      const res = await environmentManager.listRemoteEnvConfigs(".", true);
-      assert.isTrue(res.isErr());
-    });
-    it("environmentManager.listRemoteEnvConfigs return error V2", async () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
-      sandbox.stub(fs, "readdir").resolves([] as any);
       const res = await environmentManager.listRemoteEnvConfigs(".", true);
       assert.isTrue(res.isErr());
     });

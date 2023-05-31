@@ -13,6 +13,10 @@ jobs:
         with:
           node-version: 14
 
+      - name: Install npm packages
+        run: |
+          npm install axios
+
       - name: Check LTS Version
         id: checkLTSVersion
         uses: actions/github-script@v6

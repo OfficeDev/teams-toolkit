@@ -109,7 +109,6 @@ import { openHubWebClient } from "./debug/launch";
 import { localTelemetryReporter, sendDebugAllEvent } from "./debug/localTelemetryReporter";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
-import * as teamsAppInstallation from "./debug/teamsAppInstallation";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
@@ -1117,41 +1116,14 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
  * Prompt window to let user install the app in Teams
  */
 export async function installAppInTeams(): Promise<string | undefined> {
-  let shouldContinue = false;
-  try {
-    let teamsAppId: string;
-    if (isV3Enabled()) {
-      teamsAppId = await commonUtils.getV3TeamsAppId(
-        globalVariables.workspaceUri!.fsPath,
-        environmentManager.getLocalEnvName()
-      );
-    } else {
-      const debugConfig = await commonUtils.getDebugConfig(
-        false,
-        environmentManager.getLocalEnvName()
-      );
-      if (debugConfig?.appId === undefined) {
-        throw new UserError(
-          ExtensionErrors.GetTeamsAppInstallationFailed,
-          ExtensionSource,
-          "Debug config not found"
-        );
-      }
-      teamsAppId = debugConfig.appId;
+  if (isV3Enabled()) {
+    try {
+      await commonUtils.triggerV3Migration();
+      return undefined;
+    } catch (error: any) {
+      showError(error);
+      return "1";
     }
-    shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
-      environmentManager.getLocalEnvName(),
-      teamsAppId
-    );
-  } catch (error: any) {
-    showError(error);
-  }
-  if (!shouldContinue) {
-    terminateAllRunningTeamsfxTasks();
-    await debug.stopDebugging();
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
   }
 }
 

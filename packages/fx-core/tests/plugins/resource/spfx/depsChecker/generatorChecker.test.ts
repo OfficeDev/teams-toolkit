@@ -13,7 +13,7 @@ import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api
 import { TestHelper } from "../helper";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
-import { PackageSelectOptionsHelper } from "../../../../../src/component/resource/spfx/utils/question-helper";
+import { PackageSelectOptionsHelper } from "../../../../../src/component/generator/spfx/utils/question-helper";
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {

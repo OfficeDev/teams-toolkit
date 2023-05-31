@@ -33,8 +33,8 @@ The following files can be customized and demonstrate an example implementation 
 
 | File | Contents |
 | - | - |
-| `src/index.ts` | Application entry point and `restify` handlers |
-| `src/linkUnfurlingApp.ts`| The teams activity handler |
+| `src/index.js` | Application entry point and `restify` handlers |
+| `src/linkUnfurlingApp.js`| The teams activity handler |
 | `src/adaptiveCards/helloWorldCard.json` | The adaptive card |
 
 ## Extend this template

@@ -53,8 +53,6 @@ import fs from "fs-extra";
 import { TOOLS } from "../../core/globalVars";
 import { getComponent } from "../workflow";
 import { CoreQuestionNames } from "../../core/question";
-import { QuestionKey } from "../code/api/enums";
-import { DefaultValues } from "../feature/api/constants";
 import { CommentObject } from "comment-json";
 import * as commentJson from "comment-json";
 import * as os from "os";
@@ -72,7 +70,6 @@ export interface LocalEnvConfig {
   skipNgrok?: boolean;
   hasFunctionBot: boolean;
   botCapabilities: string[];
-  defaultFunctionName: string;
   programmingLanguage: string;
   isM365?: boolean;
 }
@@ -81,18 +78,6 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
   const settings = context.projectSetting;
   const bot = getComponent(settings, ComponentNames.TeamsBot);
   const botCapabilities = bot?.capabilities || [];
-  const api = getComponent(settings, ComponentNames.TeamsApi);
-  let defaultFuncName;
-  if (api) {
-    if (api.functionNames && api.functionNames.length > 0) {
-      defaultFuncName = api.functionNames[0];
-    }
-    defaultFuncName =
-      defaultFuncName ||
-      settings.defaultFunctionName ||
-      inputs[QuestionKey.functionName] ||
-      DefaultValues.functionName;
-  }
   const config: LocalEnvConfig = {
     hasAzureTab: hasAzureTab(settings),
     hasSPFxTab: hasSPFxTab(settings),
@@ -102,7 +87,6 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
     hasSimpleAuth: hasSimpleAuth(settings),
     hasFunctionBot: hasFunctionBot(settings),
     botCapabilities: botCapabilities,
-    defaultFunctionName: defaultFuncName,
     programmingLanguage:
       settings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage] || "javascript",
     isM365: settings.isM365,
@@ -332,7 +316,6 @@ export async function configLocalEnvironmentCommon(
 
         if (includeBackend) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncEndpoint] = localFuncEndpoint;
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncName] = config.defaultFunctionName;
 
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.FuncWorkerRuntime] = "node";
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientId] = clientId;

@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs, SingleSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AzureSolutionQuestionNames, NotificationOptionItem } from "../../constants";
-import { Runtime } from "../../constants";
+import { AzureSolutionQuestionNames, NotificationOptionItem, Runtime } from "../../constants";
 import { NotificationTrigger, NotificationTriggers, QuestionNames } from "./constants";
 
 enum HostType {

@@ -1,14 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  IProgressHandler,
-  err,
-  ok,
-  UserError,
-  ProjectConfig,
-  ConfigMap,
-} from "@microsoft/teamsfx-api";
+import { IProgressHandler, ok, ProjectConfig, ConfigMap } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import {
   createTaskStartCb,
@@ -17,8 +10,6 @@ import {
   getBotOutlookChannelLink,
 } from "../../../../src/cmds/preview/commonUtils";
 import { expect } from "../../utils";
-import { UserSettings } from "../../../../src/userSetttings";
-import { cliSource } from "../../../../src/constants";
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import fs from "fs-extra";

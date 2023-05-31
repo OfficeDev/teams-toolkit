@@ -40,7 +40,7 @@ describe("Deploy to customized resource group", function () {
 
   it(
     `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
-    { testPlanCaseId: 9863660 },
+    { testPlanCaseId: 17449539 },
     async function () {
       if (isV3Enabled()) {
         // Create new tab project

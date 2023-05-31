@@ -36,7 +36,7 @@ describe("Multi Env Happy Path for SPFx", function () {
 
   it(
     "Can create/provision/deploy/validate/package/publish an SPFx project",
-    { testPlanCaseId: 15687128 },
+    { testPlanCaseId: 24137702 },
     async function () {
       if (!isV3Enabled()) {
         return this.skip();

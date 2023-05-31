@@ -19,7 +19,7 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`${TemplateProject.ProactiveMessaging}`, { testPlanCaseId: "XXXXXX" }, async function () {
+  it(`${TemplateProject.ProactiveMessaging}`, { testPlanCaseId: 1277473 }, async function () {
     await Executor.openTemplateProject(appName, testFolder, TemplateProject.ProactiveMessaging);
     expect(fs.pathExistsSync(projectPath)).to.be.true;
 

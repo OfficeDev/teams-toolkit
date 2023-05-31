@@ -19,7 +19,7 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`${TemplateProject.QueryOrg}`, { testPlanCaseId: "XXXXXX" }, async function () {
+  it(`${TemplateProject.QueryOrg}`, { testPlanCaseId: 24132148 }, async function () {
     await Executor.openTemplateProject(appName, testFolder, TemplateProject.QueryOrg);
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

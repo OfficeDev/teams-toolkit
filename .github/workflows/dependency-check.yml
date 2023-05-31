@@ -27,7 +27,7 @@ jobs:
             const ltsVersion = response.data["dist-tags"].latest;
             const ltsVersionTime = response.data.time[ltsVersion];
             const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
-            if (timeDiff >= 86400) {
+            if (timeDiff <= 86400) {
               return 'v' + ltsVersion;
             } else {
               return '';

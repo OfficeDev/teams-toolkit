@@ -15,6 +15,7 @@ import {
   execAsyncWithRetry,
   getTestFolder,
   getUniqueAppName,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
@@ -57,6 +58,8 @@ describe("Collaboration", function () {
         }
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
+      const filePath = path.join(testFolder, "teamsapp.yml");
+      removeTeamsAppExtendToM365(filePath);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {

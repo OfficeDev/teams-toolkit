@@ -16,6 +16,8 @@ jobs:
         - server
         - vscode-extension
         - manifest
+        - api
+        - cli
 
     steps:
     - name: Checkout
@@ -52,6 +54,8 @@ jobs:
         - server
         - vscode-extension
         - manifest
+        - api
+        - cli
 
     steps:
     - name: Checkout
@@ -74,6 +78,8 @@ jobs:
         - server
         - vscode-extension
         - manifest
+        - api
+        - cli
     
     steps:
     - name: Checkout

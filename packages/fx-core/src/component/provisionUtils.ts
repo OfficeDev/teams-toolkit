@@ -36,11 +36,9 @@ import {
   M365TenantIdNotMatchError,
   M365TokenJSONNotFoundError,
 } from "../error/m365";
-import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
 import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
 import { AppStudioScopes } from "./resource/appManifest/constants";
-import { backupFiles } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
 export interface M365TenantRes {
   tenantIdInToken: string;
@@ -297,23 +295,6 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         for (const key of keys) {
           if (key !== "solution") {
             delete (envInfo as v3.EnvInfoV3).state[key];
-          }
-        }
-
-        if (projectPath !== undefined) {
-          const backupFilesRes = await backupFiles(
-            envInfo.envName,
-            projectPath!,
-            isCSharpProject,
-            inputs?.platform === Platform.VS,
-            ctx
-          );
-          if (backupFilesRes.isErr()) {
-            return err(backupFilesRes.error);
-          }
-
-          if (isCSharpProject) {
-            await resetAppSettingsDevelopment(projectPath);
           }
         }
       }

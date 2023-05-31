@@ -35,7 +35,6 @@ export enum ExtensionErrors {
   TeamsAppIdNotFoundError = "TeamsAppIdNotFoundError",
   GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
-  GetTeamsAppInstallationFailed = "GetTeamsAppInstallationFailed",
   TaskDefinitionError = "TaskDefinitionError",
   TaskCancelError = "TaskCancelError",
   NoTunnelServiceError = "NoTunnelServiceError",

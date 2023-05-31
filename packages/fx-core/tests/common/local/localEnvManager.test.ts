@@ -97,33 +97,6 @@ describe("LocalEnvManager", () => {
     });
   });
 
-  describe("getLocalSettings()", () => {
-    const sandbox = sinon.createSandbox();
-    let files: Record<string, any> = {};
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-      files = {};
-      sandbox.restore();
-      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
-        return Promise.resolve(files[path.resolve(file)] !== undefined);
-      });
-      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
-        files[path.resolve(file as string)] = data;
-        return Promise.resolve();
-      });
-      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
-        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
-      });
-      sandbox.stub(tools, "waitSeconds").resolves();
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-      mockedEnvRestore();
-    });
-  });
-
   describe("getPortsFromProject()", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => {

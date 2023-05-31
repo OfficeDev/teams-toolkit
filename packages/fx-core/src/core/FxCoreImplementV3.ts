@@ -12,7 +12,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsV3,
   Result,
   Stage,
   Tools,
@@ -69,7 +68,7 @@ import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
 } from "../component/resource/appManifest/utils/utils";
-import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
+import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";

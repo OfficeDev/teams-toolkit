@@ -132,6 +132,16 @@ describe("AAD manifest helper Test", () => {
       })
       .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAppId, "Invalid Id"));
   });
+
+  it("processRequiredResourceAccessInManifest with no requiredResourceAccess", async () => {
+    const manifest: any = {};
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      })
+      .to.not.throw();
+  });
 });
 
 const invalidAadManifest: AADManifest = {

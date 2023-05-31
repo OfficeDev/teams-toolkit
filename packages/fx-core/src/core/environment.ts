@@ -14,7 +14,6 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
-  InputsWithProjectPath,
   Json,
   Platform,
   Result,
@@ -23,7 +22,6 @@ import {
   Void,
   err,
   ok,
-  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
@@ -31,9 +29,7 @@ import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import { pick } from "lodash";
 import path, { basename } from "path";
-import { Container } from "typedi";
 import { ConstantString, ManifestVariables } from "../common/constants";
 import { Component, TelemetryEvent, sendTelemetryErrorEvent } from "../common/telemetry";
 import {
@@ -44,14 +40,13 @@ import {
   separateSecretData,
   serializeDict,
 } from "../common/tools";
-import { GLOBAL_CONFIG } from "../component/constants";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { FileNotFoundError, NoEnvFilesError } from "../error/common";
-import { LocalCrypto } from "./crypto";
 import { InvalidEnvConfigError, WriteFileError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
+import { GLOBAL_CONFIG } from "../component/constants";
 
 export interface EnvStateFiles {
   envState: string;
@@ -104,6 +99,32 @@ class EnvironmentManager {
     });
   }
 
+  public async writeEnvConfig(
+    projectPath: string,
+    envConfig: EnvConfig,
+    envName?: string
+  ): Promise<Result<string, FxError>> {
+    if (!(await fs.pathExists(projectPath))) {
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
+    }
+
+    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
+    if (!(await fs.pathExists(envConfigsFolder))) {
+      await fs.ensureDir(envConfigsFolder);
+    }
+
+    envName = envName ?? this.getDefaultEnvName();
+    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
+
+    try {
+      await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
+    } catch (error) {
+      return err(WriteFileError(error));
+    }
+
+    return ok(envConfigPath);
+  }
+
   public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
@@ -131,32 +152,6 @@ class EnvironmentManager {
     }
 
     return envConfig;
-  }
-
-  public async writeEnvConfig(
-    projectPath: string,
-    envConfig: EnvConfig,
-    envName?: string
-  ): Promise<Result<string, FxError>> {
-    if (!(await fs.pathExists(projectPath))) {
-      return err(new FileNotFoundError("EnvironmentManager", projectPath));
-    }
-
-    const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
-    if (!(await fs.pathExists(envConfigsFolder))) {
-      await fs.ensureDir(envConfigsFolder);
-    }
-
-    envName = envName ?? this.getDefaultEnvName();
-    const envConfigPath = this.getEnvConfigPath(envName, projectPath);
-
-    try {
-      await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
-    } catch (error) {
-      return err(WriteFileError(error));
-    }
-
-    return ok(envConfigPath);
   }
 
   public async writeEnvState(
@@ -458,60 +453,9 @@ class EnvironmentManager {
   public getLocalEnvName() {
     return this.localEnvName;
   }
-
-  public async resetProvisionState(inputs: InputsWithProjectPath, ctx: v2.Context): Promise<void> {
-    const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-    if (allEnvRes.isOk()) {
-      for (const env of allEnvRes.value) {
-        const loadEnvRes = await this.loadEnvInfo(
-          inputs.projectPath,
-          new LocalCrypto(ctx.projectSetting.projectId),
-          env,
-          true
-        );
-        if (loadEnvRes.isOk()) {
-          const envInfo = loadEnvRes.value as v3.EnvInfoV3;
-          if (
-            envInfo.state?.solution?.provisionSucceeded === true ||
-            envInfo.state?.solution?.provisionSucceeded === "true"
-          ) {
-            envInfo.state.solution.provisionSucceeded = false;
-            await environmentManager.writeEnvState(
-              envInfo.state,
-              inputs.projectPath,
-              ctx.cryptoProvider,
-              env,
-              true
-            );
-          }
-        }
-      }
-    }
-  }
-}
-
-export function separateSecretDataV3(envState: any): Record<string, string> {
-  const res: Record<string, string> = {};
-  for (const resourceName of Object.keys(envState)) {
-    if (resourceName === "solution") continue;
-    const component = Container.get<CloudResource>(resourceName);
-    const state = envState[resourceName] as Json;
-    if (component.secretKeys && component.secretKeys.length > 0) {
-      component.secretKeys.forEach((secretKey: string) => {
-        const keyName = component.outputs[secretKey].key;
-        const fullKeyName = `${resourceName}.${keyName}`;
-        res[keyName] = state[keyName];
-        state[secretKey] = `{{${fullKeyName}}}`;
-      });
-    }
-    const outputKeys = component.finalOutputKeys.map((k) => component.outputs[k].key);
-    envState[resourceName] = pick(state, outputKeys);
-  }
-  return res;
 }
 
 export const environmentManager = new EnvironmentManager();
-
 export function newEnvInfo(
   envName?: string,
   config?: EnvConfig,
@@ -537,7 +481,6 @@ export function newEnvInfo(
     state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
-
 export function newEnvInfoV3(
   envName?: string,
   config?: EnvConfig,

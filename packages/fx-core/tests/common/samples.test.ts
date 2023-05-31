@@ -3,7 +3,6 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { sampleProvider } from "../../src/common/samples";
-import sampleConfig from "../../src/common/samples-config.json";
 import sampleConfigV3 from "../../src/common/samples-config-v3.json";
 import axios from "axios";
 import { err } from "@microsoft/teamsfx-api";

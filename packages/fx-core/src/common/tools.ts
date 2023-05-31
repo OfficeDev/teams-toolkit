@@ -732,7 +732,6 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   if (!rootPath) {
     return undefined;
   }
-
   try {
     const settingsPath = getProjectSettingPathV3(rootPath);
 

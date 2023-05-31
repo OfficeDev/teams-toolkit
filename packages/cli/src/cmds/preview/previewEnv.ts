@@ -432,7 +432,7 @@ export default class PreviewEnv extends YargsCommand {
 
     cliLogger.necessaryLog(
       LogLevel.Warning,
-      util.format(constants.installApp.nonInteractive.manifestChangesV3, `--env ${env}`)
+      util.format(constants.manifestChangesHintMessage, `--env ${env}`)
     );
     if (hub !== Hub.teams) {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);

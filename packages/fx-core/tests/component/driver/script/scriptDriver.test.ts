@@ -12,6 +12,7 @@ import * as tools from "../../../../src/common/tools";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import {
   convertScriptErrorToFxError,
+  parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
@@ -142,5 +143,21 @@ describe("getSystemEncoding", () => {
     sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
     const result = await getSystemEncoding();
     assert.equal(result, DefaultEncoding);
+  });
+});
+
+describe("parseSetOutputCommand", () => {
+  it("parse one key value pair", async () => {
+    const res = parseSetOutputCommand('echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"');
+    assert.deepEqual(res, { TAB_DOMAIN: "localhost:53000" });
+  });
+  it("parse two key value pairs", async () => {
+    const res = parseSetOutputCommand(
+      'echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"; echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";'
+    );
+    assert.deepEqual(res, {
+      TAB_DOMAIN: "localhost:53000",
+      TAB_ENDPOINT: "https://localhost:53000",
+    });
   });
 });

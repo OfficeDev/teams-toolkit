@@ -26,7 +26,6 @@ import {
   TelemetryProperty,
   sendTelemetryEvent,
 } from "../../common/telemetry";
-import { isV3Enabled } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 import { settingsUtil } from "../../component/utils/settingsUtil";
@@ -49,19 +48,15 @@ export async function loadProjectSettingsByProjectPath(
   isMultiEnvEnabled = false
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
-    if (isV3Enabled()) {
-      const readSettingsResult = await settingsUtil.readSettings(projectPath, true);
-      if (readSettingsResult.isOk()) {
-        const projectSettings: ProjectSettings = {
-          projectId: readSettingsResult.value.trackingId,
-          version: readSettingsResult.value.version,
-        };
-        return ok(projectSettings);
-      } else {
-        return err(readSettingsResult.error);
-      }
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, true);
+    if (readSettingsResult.isOk()) {
+      const projectSettings: ProjectSettings = {
+        projectId: readSettingsResult.value.trackingId,
+        version: readSettingsResult.value.version,
+      };
+      return ok(projectSettings);
     } else {
-      return await loadProjectSettingsByProjectPathV2(projectPath, isMultiEnvEnabled);
+      return err(readSettingsResult.error);
     }
   } catch (e) {
     return err(ReadFileError(e));
@@ -108,11 +103,7 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
 }
 
 export function getProjectSettingsPath(projectPath: string): string {
-  if (isV3Enabled()) {
-    return getProjectSettingPathV3(projectPath);
-  } else {
-    return getProjectSettingPathV2(projectPath);
-  }
+  return getProjectSettingPathV3(projectPath);
 }
 
 export function getProjectSettingPathV3(projectPath: string): string {

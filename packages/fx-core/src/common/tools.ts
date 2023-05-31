@@ -8,13 +8,11 @@ import {
   ConfigMap,
   FxError,
   InputConfigsFolderName,
-  Inputs,
   Json,
   M365TokenProvider,
   OptionItem,
   ProjectSettings,
   ProjectSettingsFileName,
-  ProjectSettingsV3,
   Result,
   SubscriptionInfo,
   SystemError,
@@ -36,16 +34,13 @@ import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { parse } from "yaml";
-import { HostTypeOptionAzure, SolutionError } from "../component/constants";
-import { NoProjectOpenedError } from "../component/feature/cicd/errors";
-import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
+import { SolutionError } from "../component/constants";
 import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
 import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
 import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 import { LocalCrypto } from "../core/crypto";
-import { environmentManager } from "../core/environment";
 import { FailedToParseResourceIdError } from "../core/error";
 import { TOOLS } from "../core/globalVars";
 import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
@@ -58,7 +53,6 @@ import {
 } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { isMiniApp } from "./projectSettingsHelperV3";
 import { getProjectTemplatesFolderPath } from "./utils";
 
 Handlebars.registerHelper("contains", (value, array) => {
@@ -408,48 +402,6 @@ export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }
 
-// Conditions required to be met:
-// 1. Not (All templates were existing env x provider x templates)
-// 2. Not minimal app
-export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
-  // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp =
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure().id &&
-    isMiniApp(ctx.projectSetting as ProjectSettingsV3);
-  if (isExistingApp) {
-    return false;
-  }
-
-  if (!inputs.projectPath) {
-    throw new NoProjectOpenedError();
-  }
-
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
-  if (envProfilesResult.isErr()) {
-    throw new SystemError(
-      "Core",
-      "ListMultiEnvError",
-      getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
-      getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message)
-    );
-  }
-
-  const existingInstance = ExistingTemplatesStat.getInstance(
-    inputs.projectPath,
-    envProfilesResult.value
-  );
-  await existingInstance.scan();
-
-  // If at least one env are not all-existing, return true.
-  for (const envName of envProfilesResult.value) {
-    if (existingInstance.notExisting(envName)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
   let projectSPFxVersion = undefined;
   const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");
@@ -782,41 +734,18 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   if (!rootPath) {
     return undefined;
   }
-
   try {
-    if (isV3Enabled()) {
-      const settingsPath = getProjectSettingPathV3(rootPath);
+    const settingsPath = getProjectSettingPathV3(rootPath);
 
-      if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        return undefined;
-      }
-
-      const settingsContent = fs.readFileSync(settingsPath, "utf-8");
-      const settings = parse(settingsContent);
-      return {
-        projectId: settings?.projectId ?? undefined,
-      };
-    } else {
-      const projectSettingsPath = path.join(
-        rootPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
-
-      if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
-        return undefined;
-      }
-
-      const projectSettings = fs.readJsonSync(projectSettingsPath);
-      return {
-        projectId: projectSettings?.projectId ?? undefined,
-        isFromSample: projectSettings?.isFromSample ?? undefined,
-        programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
-        hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
-        isM365: projectSettings?.isM365 ?? false,
-      };
+    if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
+      return undefined;
     }
+
+    const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+    const settings = parse(settingsContent);
+    return {
+      projectId: settings?.projectId ?? undefined,
+    };
   } catch {
     return undefined;
   }

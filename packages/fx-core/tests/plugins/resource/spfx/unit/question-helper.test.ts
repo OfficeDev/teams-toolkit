@@ -1,8 +1,8 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
-import { PackageSelectOptionsHelper } from "../../../../../src/component/resource/spfx/utils/question-helper";
+import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
+import { PackageSelectOptionsHelper } from "../../../../../src/component/generator/spfx/utils/question-helper";
 
 describe("question-helpers", () => {
   describe("PackageSelectOptionsHelper", () => {

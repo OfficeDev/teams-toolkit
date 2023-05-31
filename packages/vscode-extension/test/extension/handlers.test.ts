@@ -40,8 +40,6 @@ import { DeveloperPortalHomeLink, SUPPORTED_SPFX_VERSION } from "../../src/const
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
-import * as teamsAppInstallation from "../../src/debug/teamsAppInstallation";
-import * as taskHandler from "../../src/debug/teamsfxTaskHandler";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
@@ -169,45 +167,6 @@ describe("handlers", () => {
     chai.assert.equal(res, "3.0.0");
   });
 
-  it("openBackupConfigMd", async () => {
-    const workspacePath = "test";
-    const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
-
-    const openTextDocument = sandbox.stub(vscode.workspace, "openTextDocument").resolves();
-    const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
-
-    await handlers.openBackupConfigMd(workspacePath, filePath);
-
-    chai.assert.isTrue(openTextDocument.calledOnce);
-    chai.assert.isTrue(
-      executeCommand.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
-    );
-  });
-
-  it("addFileSystemWatcher in valid project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const isV3Enabled = sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
-    const sendTelemetryEventFunc = sandbox
-      .stub(ExtTelemetry, "sendTelemetryEvent")
-      .callsFake(() => {});
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.isTrue(createWatcher.calledThrice);
-    chai.assert.isTrue(createListener.calledThrice);
-    chai.assert.isTrue(changeListener.calledOnce);
-  });
-
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
@@ -230,8 +189,8 @@ describe("handlers", () => {
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.equal(createWatcher.callCount, 4);
-    chai.assert.equal(createListener.callCount, 4);
+    chai.assert.equal(createWatcher.callCount, 3);
+    chai.assert.equal(createListener.callCount, 3);
     chai.assert.isTrue(changeListener.calledTwice);
   });
 
@@ -251,8 +210,8 @@ describe("handlers", () => {
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.isTrue(createWatcher.calledTwice);
-    chai.assert.isTrue(createListener.calledTwice);
+    chai.assert.isTrue(createWatcher.calledOnce);
+    chai.assert.isTrue(createListener.calledOnce);
     chai.assert.isTrue(changeListener.notCalled);
   });
 
@@ -459,82 +418,6 @@ describe("handlers", () => {
     this.afterEach(() => {
       sinon.restore();
     });
-
-    it("openConfigStateFile() - local", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(localizeUtils, "localize").callsFake((key: string) => {
-        return key;
-      });
-
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: ProjectSettings = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([{ type: "state" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.EnvStateNotFoundError);
-        chai.assert.equal(
-          res.error.message,
-          util.format(localizeUtils.localize("teamstoolkit.handlers.localStateFileNotFound"), env)
-        );
-      }
-    });
-
-    it("openConfigStateFile() - env - FileNotFound", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: ProjectSettings = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sinon.stub(extension, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sinon.stub(pathUtils, "getEnvFolderPath").resolves(ok(path.resolve("../../env")));
-
-      const res = await handlers.openConfigStateFile([{ type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.EnvFileNotFoundError);
-      }
-    });
-
     it("openConfigStateFile() - InvalidArgs", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
@@ -1359,60 +1242,6 @@ describe("handlers", () => {
     );
   });
 
-  describe("promptSPFxUpgrade", async () => {
-    it("Prompt user to upgrade toolkit when project SPFx version higher than toolkit", async () => {
-      sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon
-        .stub(commonTools, "getAppSPFxVersion")
-        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`);
-      const stubShowMessage = sinon.stub().resolves(ok({}));
-      sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
-      });
-
-      await handlers.promptSPFxUpgrade();
-
-      chai.assert(stubShowMessage.calledOnce);
-      chai.assert.equal(stubShowMessage.args[0].length, 4);
-      sinon.restore();
-    });
-
-    it("Prompt user to upgrade project when project SPFx version lower than toolkit", async () => {
-      sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon
-        .stub(commonTools, "getAppSPFxVersion")
-        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) - 1}.0`);
-
-      const stubShowMessage = sinon.stub().resolves(ok({}));
-      sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
-      });
-
-      await handlers.promptSPFxUpgrade();
-
-      chai.assert(stubShowMessage.calledOnce);
-      chai.assert.equal(stubShowMessage.args[0].length, 4);
-      sinon.restore();
-    });
-
-    it("Dont show notification when project SPFx version is the same with toolkit", async () => {
-      sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(commonTools, "getAppSPFxVersion").resolves(SUPPORTED_SPFX_VERSION);
-      const stubShowMessage = sinon.stub();
-      sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
-      });
-
-      await handlers.promptSPFxUpgrade();
-
-      chai.assert.equal(stubShowMessage.callCount, 0);
-      sinon.restore();
-    });
-  });
-
   describe("getDotnetPathHandler", async () => {
     afterEach(() => {
       sinon.restore();
@@ -1743,57 +1572,21 @@ describe("handlers", () => {
   });
 
   describe("installAppInTeams", () => {
-    beforeEach(() => {
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
-    });
-
     afterEach(() => {
       sinon.restore();
     });
 
-    it("v3: happ path", async () => {
+    it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));
-      sinon
-        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
-        .returns(Promise.resolve(true));
+      sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.installAppInTeams();
       chai.assert.equal(result, undefined);
     });
 
-    it("v3: user cancel", async () => {
+    it("v3: migration error", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
-      sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));
-      sinon
-        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
-        .returns(Promise.resolve(false));
-      sinon.stub(taskHandler, "terminateAllRunningTeamsfxTasks").callsFake(() => {});
-      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
-      const result = await handlers.installAppInTeams();
-      chai.assert.equal(result, "1");
-    });
-
-    it("v2: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(debugCommonUtils, "getDebugConfig").returns(
-        Promise.resolve({
-          appId: "appId",
-          env: "local",
-        })
-      );
-      sinon
-        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
-        .returns(Promise.resolve(true));
-      const result = await handlers.installAppInTeams();
-      chai.assert.equal(result, undefined);
-    });
-
-    it("v2: no appId", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(debugCommonUtils, "getDebugConfig").returns(Promise.resolve(undefined));
-      sinon.stub(handlers, "showError").callsFake(async () => {});
-      sinon.stub(taskHandler, "terminateAllRunningTeamsfxTasks").callsFake(() => {});
-      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
+      sinon.stub(handlers, "showError").resolves();
       const result = await handlers.installAppInTeams();
       chai.assert.equal(result, "1");
     });

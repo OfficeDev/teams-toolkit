@@ -197,15 +197,6 @@ jobs:
           tag: "template-tag-list"
           allowUpdates: true
 
-      - name: download simpleauth to fx-core
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            bash ./.github/scripts/download-simpleauth.sh
-
       - name: replace sideloading placeholders
         run: bash .github/scripts/sideloading-replace.sh
         env:

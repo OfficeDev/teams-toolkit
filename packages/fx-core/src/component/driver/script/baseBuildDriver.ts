@@ -6,7 +6,7 @@
 
 import { BuildArgs } from "../interface/buildAndDeployArgs";
 import { asFactory, asOptional, asString, checkMissingArgs } from "../../utils/common";
-import { executeCommand } from "../../code/utils";
+import { executeCommand } from "./scriptDriver";
 import { err, ok, IProgressHandler, LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../interface/commonArgs";
 import * as path from "path";

@@ -233,52 +233,52 @@ describe("envUtils", () => {
     assert.isFalse(error3.message.includes("abc.yml"));
   });
 
-  // describe("pathUtils.writeEnv", () => {
-  //   it("happy path", async () => {
-  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
-  //     let value = "";
-  //     sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
-  //       value = data as string;
-  //       return Promise.resolve();
-  //     });
-  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-  //     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
-  //     assert.isTrue(res.isOk());
-  //     assert.isDefined(value);
-  //     value = value!.substring("SECRET_ABC=".length);
-  //     const decRes = await cryptoProvider.decrypt(value);
-  //     if (decRes.isErr()) throw decRes.error;
-  //     assert.isTrue(decRes.isOk());
-  //     assert.equal(decRes.value, decrypted);
-  //   });
-  //   it("no variables", async () => {
-  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
-  //     sandbox.stub(fs, "readFile").resolves("" as any);
-  //     sandbox.stub(fs, "writeFile").resolves();
-  //     sandbox.stub(fs, "pathExists").resolves(true);
-  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-  //     const res = await envUtil.writeEnv(".", "dev", {});
-  //     assert.isTrue(res.isOk());
-  //   });
-  //   it("write to default path", async () => {
-  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
-  //     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-  //     sandbox.stub(fs, "writeFile").resolves();
-  //     const res = await envUtil.writeEnv(".", "dev", {
-  //       SECRET_ABC: decrypted,
-  //       TEAMS_APP_UPDATE_TIME: "xx-xx-xx",
-  //     });
-  //     assert.isTrue(res.isOk());
-  //   });
-  //   it("write failed", async () => {
-  //     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
-  //     sandbox
-  //       .stub(settingsUtil, "readSettings")
-  //       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
-  //     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
-  //     assert.isTrue(res.isErr());
-  //   });
-  // });
+  describe("pathUtils.writeEnv", () => {
+    it("happy path", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+      let value = "";
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        value = data as string;
+        return Promise.resolve();
+      });
+      sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+      const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
+      assert.isTrue(res.isOk());
+      assert.isDefined(value);
+      value = value!.substring("SECRET_ABC=".length);
+      const decRes = await cryptoProvider.decrypt(value);
+      if (decRes.isErr()) throw decRes.error;
+      assert.isTrue(decRes.isOk());
+      assert.equal(decRes.value, decrypted);
+    });
+    // it("no variables", async () => {
+    //   sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+    //   sandbox.stub(fs, "readFile").resolves("" as any);
+    //   sandbox.stub(fs, "writeFile").resolves();
+    //   sandbox.stub(fs, "pathExists").resolves(true);
+    //   sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    //   const res = await envUtil.writeEnv(".", "dev", {});
+    //   assert.isTrue(res.isOk());
+    // });
+    // it("write to default path", async () => {
+    //   sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
+    //   sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    //   sandbox.stub(fs, "writeFile").resolves();
+    //   const res = await envUtil.writeEnv(".", "dev", {
+    //     SECRET_ABC: decrypted,
+    //     TEAMS_APP_UPDATE_TIME: "xx-xx-xx",
+    //   });
+    //   assert.isTrue(res.isOk());
+    // });
+    // it("write failed", async () => {
+    //   sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+    //   sandbox
+    //     .stub(settingsUtil, "readSettings")
+    //     .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
+    //   const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
+    //   assert.isTrue(res.isErr());
+    // });
+  });
 
   describe("pathUtils.listEnv", () => {
     it("happy path", async () => {
@@ -418,10 +418,6 @@ describe("envUtils", () => {
       assert.isTrue(res.isOk());
       assert.isUndefined(process.env.SECRET_ABC);
       assert.equal(process.env.ENV_VAR, "1", "process.env.ENV_VAR should be restored to 1");
-
-      // const core = new FxCore(tools);
-      // const getDotEnvRes = await core.getDotEnv(inputs);
-      // assert.isTrue(getDotEnvRes.isOk());
     });
 
     it("EnvLoaderMW skip load", async () => {

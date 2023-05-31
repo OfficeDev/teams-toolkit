@@ -7,7 +7,6 @@ import {
   ContextV3,
   FxError,
   InputsWithProjectPath,
-  LogProvider,
   ok,
   ProjectSettingsV3,
   Result,
@@ -15,25 +14,17 @@ import {
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { DepsChecker, DepsType } from "../../../common/deps-checker/depsChecker";
-import { CheckerFactory } from "../../../common/deps-checker/checkerFactory";
 import { CoreQuestionNames } from "../../../core/question";
 import { FunctionScaffold } from "./scaffold";
-import { funcDepsHelper } from "./depsChecker/funcHelper";
 import { ComponentNames, PathConstants, ProgrammingLanguage } from "../../constants";
 import { BadComponent, invalidProjectSettings } from "../../error";
-import { ErrorMessage, LogMessages, ProgressMessages, ProgressTitles } from "../../messages";
+import { ErrorMessage, ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { getComponent } from "../../workflow";
-import { LinuxNotSupportedError } from "../../../common/deps-checker/depsError";
 import { LanguageStrategyFactory } from "./language-strategy";
 import { execute } from "../utils";
 import { ApiConstants } from "../constants";
-import { DepsManager } from "../../../common/deps-checker";
-import { funcDepsTelemetry } from "./depsChecker/funcPluginTelemetry";
 import { QuestionKey } from "./enums";
-import { FuncPluginLogger } from "./depsChecker/funcPluginLogger";
-import { getLocalizedString } from "../../../common/localizeUtils";
 /**
  * api scaffold
  */
@@ -94,22 +85,6 @@ export class ApiCodeProvider {
       throw new invalidProjectSettings(ErrorMessage.programmingLanguageInvalid);
     const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
 
-    await this.handleDotnetChecker(context, inputs);
-    try {
-      await this.installFuncExtensions(
-        buildPath,
-        language as ProgrammingLanguage,
-        context.logProvider
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-        throw funcDepsHelper.transferError(error);
-      } else {
-        throw error;
-      }
-    }
-
     await actionContext?.progressBar?.next(ProgressMessages.buildingApi);
     for (const commandItem of LanguageStrategyFactory.getStrategy(language as ProgrammingLanguage)
       .buildCommands) {
@@ -119,55 +94,5 @@ export class ApiCodeProvider {
       await execute(command, absolutePath, context.logProvider);
     }
     return ok(undefined);
-  }
-
-  public async handleDotnetChecker(ctx: ContextV3, inputs: InputsWithProjectPath): Promise<void> {
-    const funcDepsLogger = new FuncPluginLogger(ctx.logProvider);
-    const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
-      DepsType.Dotnet,
-      funcDepsLogger,
-      funcDepsTelemetry
-    );
-    try {
-      if (!(await funcDepsHelper.dotnetCheckerEnabled(inputs))) {
-        return;
-      }
-      await dotnetChecker.resolve();
-    } catch (error) {
-      if (error instanceof LinuxNotSupportedError) {
-        return;
-      }
-      if (error instanceof Error) {
-        funcDepsLogger.error(getLocalizedString("error.common.InstallSoftwareError", ".NET SDK"));
-        await funcDepsLogger.printDetailLog();
-        throw funcDepsHelper.transferError(error);
-      } else {
-        throw error;
-      }
-    } finally {
-      funcDepsLogger.cleanup();
-    }
-  }
-
-  private async installFuncExtensions(
-    componentPath: string,
-    language: ProgrammingLanguage,
-    logger: LogProvider
-  ): Promise<void> {
-    if (LanguageStrategyFactory.getStrategy(language).skipFuncExtensionInstall) {
-      return;
-    }
-    const funcDepsLogger = new FuncPluginLogger(logger);
-    const binPath = path.join(componentPath, PathConstants.functionExtensionsFolder);
-    const depsManager = new DepsManager(funcDepsLogger, funcDepsTelemetry);
-    const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))[0];
-
-    await funcDepsHelper.installFuncExtension(
-      componentPath,
-      dotnetStatus.command,
-      funcDepsLogger,
-      PathConstants.functionExtensionsFile,
-      binPath
-    );
   }
 }

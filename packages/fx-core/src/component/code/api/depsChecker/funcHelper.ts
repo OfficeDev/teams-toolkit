@@ -5,30 +5,8 @@ import { Inputs, UserError } from "@microsoft/teamsfx-api";
 import { DepsCheckerError } from "../../../../common/deps-checker/depsError";
 import { defaultHelpLink } from "../../../../common/deps-checker/constant/helpLink";
 import { Messages } from "../../../../common/deps-checker/constant/message";
-import { installExtension } from "../../../../common/deps-checker/util/extensionInstaller";
-import { DepsLogger } from "../../../../common/deps-checker/depsLogger";
 
 export class FuncHelper {
-  private readonly dotnetSettingKey = "function-dotnet-checker-enabled";
-
-  public async dotnetCheckerEnabled(inputs?: Inputs): Promise<boolean> {
-    let enabled = true;
-    if (inputs && inputs[this.dotnetSettingKey] !== undefined) {
-      enabled = (<boolean>inputs[this.dotnetSettingKey]) as boolean;
-    }
-    return Promise.resolve(enabled);
-  }
-
-  public async installFuncExtension(
-    backendRoot: string,
-    dotnetCommand: string,
-    logger: DepsLogger,
-    csprojPath: string,
-    outputPath: string
-  ): Promise<void> {
-    await installExtension(backendRoot, dotnetCommand, logger, csprojPath, outputPath);
-  }
-
   public transferError(error: Error): Error {
     const source = "functionDepsChecker";
     const defaultAnchor = "report-issues";

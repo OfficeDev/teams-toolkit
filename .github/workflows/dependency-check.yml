@@ -30,7 +30,7 @@ jobs:
             }
 
       - name: Get Release Detail
-        if: ${{steps.checkLTSVersion.outputs.result != ""}}
+        if: ${{steps.checkLTSVersion.outputs.result}}
         id: detail
         uses: actions/github-script@v6
         with:
@@ -39,7 +39,7 @@ jobs:
             return responseBody;
 
       - name: Setup Email and Recipient
-        if: ${{steps.checkLTSVersion.outputs.result != ""}}
+        if: ${{steps.checkLTSVersion.outputs.result}}
         id: email
         run: |
           emails="vsciotadt@microsoft.com;junjieli@microsoft.com;zhshang@microsoft.com;donji@microsoft.com;zhany@microsoft.com"

@@ -8,7 +8,7 @@ import "mocha";
 import mockFs from "mock-fs";
 import Sinon, * as sinon from "sinon";
 
-import { ProjectSettings, ok } from "@microsoft/teamsfx-api";
+import { ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
@@ -141,9 +141,6 @@ describe("tools", () => {
     });
 
     it("happy path V3", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "true",
-      });
       try {
         sandbox.stub<any, any>(fs, "readFileSync").callsFake((file: string) => {
           return `version: 1.0.0
@@ -152,12 +149,10 @@ projectId: 00000000-0000-0000-0000-000000000000`;
         sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
           return true;
         });
-
         const result = getFixedCommonProjectSettings("root-path");
         chai.assert.isNotEmpty(result);
         chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
       } finally {
-        restore();
       }
     });
 

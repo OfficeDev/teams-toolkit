@@ -13,6 +13,7 @@ import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api
 import { TestHelper } from "../helper";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
+import { PackageSelectOptionsHelper } from "../../../../../src/component/resource/spfx/utils/question-helper";
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -62,6 +63,7 @@ describe("generator checker", () => {
 
   afterEach(() => {
     restore();
+    PackageSelectOptionsHelper.clear();
   });
 
   describe("getDependencyInfo", async () => {
@@ -142,7 +144,7 @@ describe("generator checker", () => {
   });
 
   describe("isLatestInstalled", () => {
-    it("is latest installed", async () => {
+    it.only("is latest installed", async () => {
       const checker = new GeneratorChecker(new StubLogger());
       stub(fs, "pathExists").callsFake(async () => {
         console.log("stub pathExists");

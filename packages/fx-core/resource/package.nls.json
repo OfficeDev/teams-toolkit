@@ -553,8 +553,6 @@
   "core.addSsoFiles.FailedToCreateAuthFiles": "Unable to create files for add sso. Detail error: %s.",
   "core.addSsoFiles.invalidLanguage": "Invalid language. Please make sure '.fx/projectSettings.json' is not modified and try again.",
   "core.getUserEmailQuestion.validation3": "Email address is not valid",
-  "plugins.bot.DetailedError": "Detailed error: %s.",
-  "plugins.bot.DetailedErrorReason": "Reason: %s",
   "plugins.bot.ErrorSuggestions": "Suggestions: %s",
   "plugins.bot.InvalidValue": "%s is invalid with value: %s",
   "plugins.bot.TemplateZipFallbackError": "Unable to download zip package and open local zip package.",

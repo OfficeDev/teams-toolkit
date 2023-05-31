@@ -169,21 +169,6 @@ describe("handlers", () => {
     chai.assert.equal(res, "3.0.0");
   });
 
-  it("openBackupConfigMd", async () => {
-    const workspacePath = "test";
-    const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
-
-    const openTextDocument = sandbox.stub(vscode.workspace, "openTextDocument").resolves();
-    const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
-
-    await handlers.openBackupConfigMd(workspacePath, filePath);
-
-    chai.assert.isTrue(openTextDocument.calledOnce);
-    chai.assert.isTrue(
-      executeCommand.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
-    );
-  });
-
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
@@ -206,8 +191,8 @@ describe("handlers", () => {
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.equal(createWatcher.callCount, 4);
-    chai.assert.equal(createListener.callCount, 4);
+    chai.assert.equal(createWatcher.callCount, 3);
+    chai.assert.equal(createListener.callCount, 3);
     chai.assert.isTrue(changeListener.calledTwice);
   });
 
@@ -227,8 +212,8 @@ describe("handlers", () => {
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.isTrue(createWatcher.calledTwice);
-    chai.assert.isTrue(createListener.calledTwice);
+    chai.assert.isTrue(createWatcher.calledOnce);
+    chai.assert.isTrue(createListener.calledOnce);
     chai.assert.isTrue(changeListener.notCalled);
   });
 

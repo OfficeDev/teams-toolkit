@@ -734,41 +734,18 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   if (!rootPath) {
     return undefined;
   }
-
   try {
-    if (isV3Enabled()) {
-      const settingsPath = getProjectSettingPathV3(rootPath);
+    const settingsPath = getProjectSettingPathV3(rootPath);
 
-      if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        return undefined;
-      }
-
-      const settingsContent = fs.readFileSync(settingsPath, "utf-8");
-      const settings = parse(settingsContent);
-      return {
-        projectId: settings?.projectId ?? undefined,
-      };
-    } else {
-      const projectSettingsPath = path.join(
-        rootPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
-
-      if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
-        return undefined;
-      }
-
-      const projectSettings = fs.readJsonSync(projectSettingsPath);
-      return {
-        projectId: projectSettings?.projectId ?? undefined,
-        isFromSample: projectSettings?.isFromSample ?? undefined,
-        programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
-        hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
-        isM365: projectSettings?.isM365 ?? false,
-      };
+    if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
+      return undefined;
     }
+
+    const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+    const settings = parse(settingsContent);
+    return {
+      projectId: settings?.projectId ?? undefined,
+    };
   } catch {
     return undefined;
   }

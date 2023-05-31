@@ -162,10 +162,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage]
-    ) {
+    if (!properties[TelemetryProperty.ProjectId]) {
       const fixedProjectSettings = getFixedCommonProjectSettings(
         globalVariables.workspaceUri?.fsPath
       );
@@ -173,13 +170,6 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
         this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
       }
     }
   }

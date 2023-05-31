@@ -109,7 +109,6 @@ import { openHubWebClient } from "./debug/launch";
 import { localTelemetryReporter, sendDebugAllEvent } from "./debug/localTelemetryReporter";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
-import * as teamsAppInstallation from "./debug/teamsAppInstallation";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
@@ -163,12 +162,6 @@ export function activate(): Result<Void, FxError> {
       globalVariables.workspaceUri?.fsPath
     );
     ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.ProgrammingLanguage,
-      fixedProjectSettings?.programmingLanguage
-    );
-    ExtTelemetry.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
-
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
@@ -313,14 +306,6 @@ export function addFileSystemWatcher(workspacePath: string) {
     await openUnifyConfigMd(workspacePath, event.fsPath);
   });
 
-  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/backup-config-change-logs.md"
-  );
-
-  backupConfigWatcher.onDidCreate(async (event) => {
-    await openBackupConfigMd(workspacePath, event.fsPath);
-  });
-
   if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
@@ -332,18 +317,16 @@ export function addFileSystemWatcher(workspacePath: string) {
       await sendSDKVersionTelemetry(event.fsPath);
     });
 
-    if (isV3Enabled()) {
-      const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-      yorcFileWatcher.onDidCreate(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-      yorcFileWatcher.onDidChange(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-      yorcFileWatcher.onDidDelete(async (event) => {
-        await refreshSPFxTreeOnFileChanged();
-      });
-    }
+    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
+    yorcFileWatcher.onDidCreate(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidChange(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
+    yorcFileWatcher.onDidDelete(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
+    });
   }
 }
 
@@ -362,13 +345,6 @@ export async function sendSDKVersionTelemetry(filePath: string) {
     [TelemetryProperty.TeamsJSVersion]:
       packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
   });
-}
-
-export async function openBackupConfigMd(workspacePath: string, filePath: string) {
-  const backupName = ".backup";
-  const backupConfigMD = "backup-config-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
-  await openPreviewMarkDown(filePath, changeLogsPath);
 }
 
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
@@ -1134,41 +1110,14 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
  * Prompt window to let user install the app in Teams
  */
 export async function installAppInTeams(): Promise<string | undefined> {
-  let shouldContinue = false;
-  try {
-    let teamsAppId: string;
-    if (isV3Enabled()) {
-      teamsAppId = await commonUtils.getV3TeamsAppId(
-        globalVariables.workspaceUri!.fsPath,
-        environmentManager.getLocalEnvName()
-      );
-    } else {
-      const debugConfig = await commonUtils.getDebugConfig(
-        false,
-        environmentManager.getLocalEnvName()
-      );
-      if (debugConfig?.appId === undefined) {
-        throw new UserError(
-          ExtensionErrors.GetTeamsAppInstallationFailed,
-          ExtensionSource,
-          "Debug config not found"
-        );
-      }
-      teamsAppId = debugConfig.appId;
+  if (isV3Enabled()) {
+    try {
+      await commonUtils.triggerV3Migration();
+      return undefined;
+    } catch (error: any) {
+      showError(error);
+      return "1";
     }
-    shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
-      environmentManager.getLocalEnvName(),
-      teamsAppId
-    );
-  } catch (error: any) {
-    showError(error);
-  }
-  if (!shouldContinue) {
-    terminateAllRunningTeamsfxTasks();
-    await debug.stopDebugging();
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
   }
 }
 
@@ -1510,52 +1459,6 @@ export async function openReadMeHandler(args: any[]) {
     await workspace.openTextDocument(uri);
     const PreviewMarkdownCommand = "markdown.showPreview";
     await vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
-  }
-}
-
-export async function promptSPFxUpgrade() {
-  if (globalVariables.isSPFxProject) {
-    const projectSPFxVersion = await commonTools.getAppSPFxVersion(
-      globalVariables.workspaceUri!.fsPath!
-    );
-
-    if (projectSPFxVersion) {
-      const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-
-      if (cmp === 1 || cmp === -1) {
-        const args: string[] =
-          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
-        VS_CODE_UI.showMessage(
-          "warn",
-          util.format(
-            localize(
-              cmp === 1
-                ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"
-                : "teamstoolkit.handlers.promptSPFx.upgradeProject.description"
-            ),
-            ...args
-          ),
-          false,
-          localize(
-            cmp === 1
-              ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.title"
-              : "teamstoolkit.handlers.promptSPFx.upgradeProject.title"
-          )
-        ).then(async (result) => {
-          if (result.isOk()) {
-            if (
-              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeToolkit.title")
-            ) {
-              await vscode.commands.executeCommand("workbench.extensions.search", "Teams Toolkit");
-            } else if (
-              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeProject.title")
-            ) {
-              await VS_CODE_UI.openUrl(CLI_FOR_M365);
-            }
-          }
-        });
-      }
-    }
   }
 }
 

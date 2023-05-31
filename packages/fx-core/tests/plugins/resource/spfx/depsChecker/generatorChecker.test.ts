@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import mockedEnv from "mocked-env";
 import rewire from "rewire";
 import fs from "fs-extra";
 import chai from "chai";
@@ -13,6 +12,8 @@ import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api
 import { TestHelper } from "../helper";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
+import { MockTools } from "../../../../core/utils";
+import { setTools } from "../../../../../src/core/globalVars";
 
 const rGeneratorChecker = rewire(
   "../../../../../src/component/resource/spfx/depsChecker/generatorChecker"
@@ -53,6 +54,7 @@ class StubLogger implements LogProvider {
 }
 
 describe("generator checker", () => {
+  setTools(new MockTools());
   beforeEach(() => {
     stub(telemetryHelper, "sendSuccessEvent").callsFake(() => {
       console.log("success event");

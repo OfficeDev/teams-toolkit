@@ -1,7 +1,8 @@
 name: Botbuilder New Version Released
 on:
   schedule:
-    cron: "0 0 * * *"
+    - cron: "0 0 * * *"
+
 jobs:
   notification:
     runs-on: ubuntu-latest

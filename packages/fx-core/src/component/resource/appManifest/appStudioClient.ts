@@ -154,6 +154,14 @@ export namespace AppStudioClient {
         );
         throw error;
       }
+      // Corner case: Cannot get downstream graph access token due to MFA configuration
+      if (
+        e.response?.status === HttpStatusCode.UNPROCESSABLE_CONTENT &&
+        e.response?.data.includes("Value cannot be null. (Parameter 'accessToken')")
+      ) {
+        e.response!.data =
+          "AADSTS50076: Due to a configuration change made by your administrator, or because you moved to a new location, you must use multi-factor authentication to access '00000003-0000-0000-c000-000000000000'.";
+      }
       // Corner case: App Id must be a GUID
       if (
         e.response?.status === HttpStatusCode.BAD_REQUEST &&

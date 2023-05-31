@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DeploymentsGetResponse, ResourceManagementClient } from "@azure/arm-resources";
+import { ResourceManagementClient } from "@azure/arm-resources";
 import { err, FxError, ok, Result, SolutionContext } from "@microsoft/teamsfx-api";
 import { SolutionError } from "../../../constants";
 import { ConstantString } from "../../../../common/constants";

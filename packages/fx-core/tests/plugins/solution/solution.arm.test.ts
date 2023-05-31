@@ -8,9 +8,8 @@ import * as tools from "../../../src/common/tools";
 import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { TestHelper } from "./helper";
 chai.use(chaiAsPromised);
-import { formattedDeploymentError } from "../../../src/component/driver/arm/util/handleError";
+import { ArmErrorHandle } from "../../../src/component/driver/arm/util/handleError";
 
 describe("formattedDeploymentError Status", () => {
   const mocker = sinon.createSandbox();
@@ -63,7 +62,7 @@ describe("formattedDeploymentError Status", () => {
         },
       },
     };
-    const res = formattedDeploymentError(errors);
+    const res = ArmErrorHandle.formattedDeploymentError(errors);
     chai.assert.deepEqual(res, {
       botProvision: {
         skuError: {

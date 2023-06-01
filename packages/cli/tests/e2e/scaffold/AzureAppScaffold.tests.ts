@@ -34,7 +34,7 @@ describe("Azure App Scaffold", function () {
     await Cleaner.clean(testFolder);
   });
 
-  it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 9863654 }, async function () {
+  it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 24137753 }, async function () {
     {
       const result = await Executor.createProject(
         testFolder,

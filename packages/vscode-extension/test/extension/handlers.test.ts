@@ -67,7 +67,6 @@ import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
 import { FxCore, environmentManager } from "../../../fx-core/build";
 import commandController from "../../src/commandController";
-import { AppStudioClient as BotAppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/botService/appStudio/appStudioClient";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1295,7 +1294,7 @@ describe("handlers", () => {
     });
   });
 
-  describe.only("scaffoldFromDeveloperPortalHandler", async () => {
+  describe("scaffoldFromDeveloperPortalHandler", async () => {
     beforeEach(() => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();

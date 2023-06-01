@@ -364,12 +364,6 @@ export const SharePointManageSiteAdminHelpLink =
 export const ViewAadAppHelpLinkV5 = "https://aka.ms/teamsfx-view-aad-app-v5";
 export const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
 
-export const DoProvisionFirstError = new UserError(
-  "DoProvisionFirst",
-  "DoProvisionFirst",
-  "Solution"
-);
-export const CancelError = new UserError("Solution", "UserCancel", "UserCancel");
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 

@@ -37,10 +37,7 @@ import {
   getTemplate,
   OfficeHostQuestion,
 } from "../../../src/component/generator/officeAddin/question";
-import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
 import * as childProcess from "child_process";
-import { Utils } from "../../../src/component/resource/spfx/utils/utils";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
@@ -65,10 +62,7 @@ describe("OfficeAddinGenerator", function () {
     context = createContextV3(newProjectSettingsV3());
 
     await fse.ensureDir(testFolder);
-    sinon.stub(Utils, "configure");
     sinon.stub(fs, "stat").resolves();
-    sinon.stub(YoChecker.prototype, "isInstalled").resolves(true);
-    sinon.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
     const manifestId = uuid.v4();
     sinon.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));

@@ -66,23 +66,22 @@
 
 /packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
- 
+
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
 /packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
 /packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
 
-/packages/fx-core/src/component/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
+/packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
+/packages/fx-core/src/common/samples-config-v3.json @HuihuiWu-Microsoft @wenytang-ms @jayzhang
+/packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
-/packages/fx-core/src/component/code/spfxTabCode.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
-/packages/fx-core/src/component/feature/spfx.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
-/packages/fx-core/src/component/generator/spfxGenerator.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
-/packages/fx-core/tests/component/feature/spfx.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 

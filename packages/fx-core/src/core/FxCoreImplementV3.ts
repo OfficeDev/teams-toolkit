@@ -12,7 +12,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsV3,
   Result,
   Stage,
   Tools,
@@ -24,14 +23,12 @@ import * as os from "os";
 import * as path from "path";
 import { Container } from "typedi";
 
-import { DotenvParseOutput } from "dotenv";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
-import { isV3Enabled } from "../common/tools";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -56,6 +53,18 @@ import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/Va
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
+import { DotenvParseOutput } from "dotenv";
+import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import {
+  containsUnsupportedFeature,
+  getFeaturesFromAppDefinition,
+} from "../component/resource/appManifest/utils/utils";
+import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import {
+  getVersionState,
+  getProjectVersionFromPath,
+  getTrackingIdFromPath,
+} from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
   getQuestionsForAddWebpart,
@@ -66,11 +75,7 @@ import {
   getQuestionsForValidateManifest,
 } from "../component/question";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import {
-  containsUnsupportedFeature,
-  getFeaturesFromAppDefinition,
-} from "../component/resource/appManifest/utils/utils";
-import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
+import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -84,15 +89,8 @@ import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
-import {
-  getProjectVersionFromPath,
-  getTrackingIdFromPath,
-  getVersionState,
-} from "./middleware/utils/v3MigrationUtils";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 
 export class FxCoreV3Implement {
@@ -462,20 +460,11 @@ export class FxCoreV3Implement {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      let isSupport: VersionState;
-      if (!isV3Enabled()) {
-        if (versionInfo.source === VersionSource.projectSettings) {
-          isSupport = VersionState.compatible;
-        } else {
-          isSupport = VersionState.unsupported;
-        }
-      } else {
-        isSupport = getVersionState(versionInfo);
-        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
-        if (isSupport === VersionState.upgradeable) {
-          if (!(await checkActiveResourcePlugins(projectPath))) {
-            return err(new InvalidProjectError());
-          }
+      const isSupport = getVersionState(versionInfo);
+      // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+      if (isSupport === VersionState.upgradeable) {
+        if (!(await checkActiveResourcePlugins(projectPath))) {
+          return err(new InvalidProjectError());
         }
       }
       return ok({

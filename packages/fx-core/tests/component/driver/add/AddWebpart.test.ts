@@ -19,7 +19,7 @@ import { AddWebPartDriver } from "../../../../src/component/driver/add/addWebPar
 import { AddWebPartArgs } from "../../../../src/component/driver/add/interface/AddWebPartArgs";
 import { Constants } from "../../../../src/component/driver/add/utility/constants";
 import { NoConfigurationError } from "../../../../src/component/driver/add/error/noConfigurationError";
-import { SPFxGenerator } from "../../../../src/component/generator/spfxGenerator";
+import { SPFxGenerator } from "../../../../src/component/generator/spfx/spfxGenerator";
 import { ManifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
 import { setTools } from "../../../../src/core/globalVars";

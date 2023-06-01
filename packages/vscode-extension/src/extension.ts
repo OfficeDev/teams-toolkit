@@ -915,9 +915,7 @@ async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
-    await handlers.promptSPFxUpgrade();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
-    await AzureAccountManager.updateSubscriptionInfo();
   }
 }
 

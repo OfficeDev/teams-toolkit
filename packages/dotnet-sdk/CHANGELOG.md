@@ -1,4 +1,4 @@
-# 2.1.0-rc
+# 2.1.0
 
 - Add new interface `IConversationReferenceStore` to manage notification target references.
 - Support to get a paginated list of targets where the bot is installed in notification bot.

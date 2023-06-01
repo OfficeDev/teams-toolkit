@@ -9,11 +9,9 @@ import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { err, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
-import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 import { CreateAppError, CreateSecretError } from "../aadApp/errors";
 import { GraphErrorCodes } from "../aadApp/errorCodes";
 import { HelpLinks } from "../../../common/constants";
-import { CommonStrings } from "./strings";
 
 export const ErrorType = {
   USER: "User",
@@ -174,60 +172,6 @@ export class BotRegistrationNotFoundError extends PluginError {
       [Messages.CheckOutputLogAndTryToFix],
       innerError
     );
-  }
-}
-
-//! context and name are only for telemetry, they may be empty if sendTelemetry is false
-export function wrapError(e: InnerError): FxResult {
-  let errorMsg = isErrorWithMessage(e) ? e.message : "";
-  const innerError = isPluginError(e) ? e.innerError : undefined;
-  if (innerError) {
-    errorMsg += getLocalizedString(
-      "plugins.bot.DetailedError",
-      isErrorWithMessage(innerError) ? innerError.message : ""
-    );
-    if (isHttpError(innerError)) {
-      if (innerError.response?.data?.errorMessage) {
-        errorMsg += getLocalizedString(
-          "plugins.bot.DetailedErrorReason",
-          innerError.response?.data?.errorMessage
-        );
-      } else if (innerError.response?.data?.error?.message) {
-        // For errors return from Graph API
-        errorMsg += getLocalizedString(
-          "plugins.bot.DetailedErrorReason",
-          innerError.response?.data?.error?.message
-        );
-      } else if (innerError.response?.data?.errors) {
-        // For errors return from App Studio API
-        errorMsg += getLocalizedString(
-          "plugins.bot.DetailedErrorReason",
-          JSON.stringify(innerError.response?.data?.errors)
-        );
-      }
-    }
-  }
-  if (e instanceof UserError || e instanceof SystemError) {
-    const res = err(e);
-    return res;
-  }
-  if (e instanceof PluginError || e instanceof CommonHostingError) {
-    const message = e.genMessage();
-    const displayMessage = e.genDisplayMessage();
-    const result =
-      e instanceof PluginError && e.errorType === ErrorType.SYSTEM
-        ? ResultFactory.SystemError(e.name, [message, displayMessage], e.innerError)
-        : ResultFactory.UserError(
-            e.name,
-            [message, displayMessage],
-            e.innerError,
-            e instanceof PluginError ? e.helpLink : ""
-          );
-    return result;
-  } else {
-    // Unrecognized Exception.
-    const UnhandledErrorCode = "UnhandledError";
-    return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
   }
 }
 

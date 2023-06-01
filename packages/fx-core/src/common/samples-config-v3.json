@@ -24,21 +24,6 @@
             "suggested": true
         },
         {
-            "id": "bot-sso",
-            "title": "Bot App with SSO Enabled",
-            "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
-            "fullDescription": "This is an extended Hello World app of Microsoft Teams Bot app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK, and Graph SDK to implement SSO (Single Sign-On) feature that retrieves profile photos for currently signed-in users.",
-            "tags": [
-                "Bot",
-                "TS",
-                "Adaptive Cards",
-                "SSO"
-            ],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": false
-        },
-        {
             "id": "todo-list-SPFx",
             "title": "Todo List with SPFx",
             "shortDescription": "Todo List app hosting on SharePoint",

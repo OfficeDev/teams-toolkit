@@ -100,7 +100,7 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject, isV3Enabled } from "../../common/tools";
+import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -194,16 +194,6 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
   const isValid = await checkActiveResourcePlugins(projectPath);
   const isUpgradeable = isValid && versionForMigration.state === VersionState.upgradeable;
   if (isUpgradeable) {
-    if (!isV3Enabled()) {
-      await TOOLS?.ui.showMessage(
-        "warn",
-        getLocalizedString("core.migrationV3.CreateNewProject"),
-        true
-      );
-      ctx.result = err(ToolkitNotSupportError());
-      return false;
-    }
-
     // in cli non interactive scenario, migration will return an error instead of popup dialog.
     const nonInteractive = getParameterFromCxt(ctx, "nonInteractive");
     if (nonInteractive) {

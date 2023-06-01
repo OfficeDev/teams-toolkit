@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Middleware, NextFunction } from "@feathersjs/hooks";
-import { err, Inputs, QTreeNode, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { err, Inputs, QTreeNode, traverse } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";

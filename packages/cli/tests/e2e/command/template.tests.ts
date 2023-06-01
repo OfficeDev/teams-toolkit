@@ -16,7 +16,7 @@ describe("teamsfx new template", function () {
   const sampleName = "todo-list-with-Azure-backend";
   const projectPath = path.resolve(testFolder, sampleName);
 
-  it(`${sampleName}`, { testPlanCaseId: 15685967 }, async function () {
+  it(`${sampleName}`, { testPlanCaseId: 24137474 }, async function () {
     await execAsync(`teamsfx new template ${sampleName}`, {
       cwd: testFolder,
       env: process.env,

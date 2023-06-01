@@ -7,12 +7,10 @@ import {
   ConfigFolderName,
   ConfigMap,
   FxError,
-  InputConfigsFolderName,
   Json,
   M365TokenProvider,
   OptionItem,
   ProjectSettings,
-  ProjectSettingsFileName,
   Result,
   SubscriptionInfo,
   SystemError,
@@ -395,7 +393,7 @@ export function isV3Enabled(): boolean {
 }
 
 export function isDownloadDirectoryEnabled(): boolean {
-  return process.env.DOWNLOAD_DIRECTORY === "true";
+  return true;
 }
 
 export function isVideoFilterEnabled(): boolean {

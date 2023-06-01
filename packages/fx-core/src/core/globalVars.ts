@@ -2,20 +2,6 @@
 // Licensed under the MIT license.
 
 import { LogProvider, Stage, Tools } from "@microsoft/teamsfx-api";
-import { FeatureFlagName } from "../common/constants";
-
-function featureFlagEnabled(flagName: string): boolean {
-  const flag = process.env[flagName];
-  if (flag !== undefined && flag.toLowerCase() === "true") {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-export function isVsCallingCli(): boolean {
-  return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
-}
 
 export let Logger: LogProvider;
 export let currentStage: Stage;

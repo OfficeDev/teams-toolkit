@@ -1,42 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import {
   InputsWithProjectPath,
   Platform,
-  v3,
-  ok,
-  UserError,
   SystemError,
+  UserError,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
-import {
-  addFeatureNotify,
-  createContextV3,
-  createDriverContext,
-  newProjectSettingsV3,
-  resetEnvInfoWhenSwitchM365,
-  scaffoldRootReadme,
-} from "../../src/component/utils";
-import { BuiltInFeaturePluginNames } from "../../src/component/constants";
-import { MockTools } from "../core/utils";
+import { assert, expect } from "chai";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 import { deployUtils } from "../../src/component/deployUtils";
-import { assert } from "chai";
 import {
   FindFunctionAppError,
   PackDirectoryExistenceError,
   ResourceNotFoundError,
 } from "../../src/component/error";
-import { setTools } from "../../src/core/globalVars";
-import { newEnvInfoV3 } from "../../src/core/environment";
-import fs from "fs-extra";
-import { MockedTelemetryReporter, MyTokenCredential } from "../plugins/solution/util";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
-import { getLocalizedString } from "../../src/common/localizeUtils";
+import { newEnvInfoV3 } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
+import { MockTools } from "../core/utils";
+import { MockedTelemetryReporter } from "../plugins/solution/util";
 
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
@@ -44,79 +33,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
   setTools(tools);
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it("clear keys and apim", () => {
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.aad]: {},
-        [BuiltInFeaturePluginNames.appStudio]: {},
-        [BuiltInFeaturePluginNames.apim]: {
-          apimClientAADObjectId: "mockId",
-          apimClientAADClientSecret: "mockSecret",
-        },
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-
-    resetEnvInfoWhenSwitchM365(envInfo);
-
-    const expected = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.apim]: {},
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-    expect(envInfo).to.eql(expected);
-  });
-
-  it("clear bot id", () => {
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.appStudio]: {},
-        [BuiltInFeaturePluginNames.bot]: {
-          resourceId: "mockResourceId",
-          botId: "mockBotId",
-          random: "random",
-        },
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-
-    resetEnvInfoWhenSwitchM365(envInfo);
-
-    const expected = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.bot]: {
-          random: "random",
-        },
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-    expect(envInfo).to.eql(expected);
-  });
-
-  it("addFeatureNotify", () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    addFeatureNotify(inputs, context.userInteraction, "Resource", ["sql", "apim"]);
-    addFeatureNotify(inputs, context.userInteraction, "Capability", ["Tab"]);
-    expect(true).to.eql(true);
   });
 
   it("askForDeployConsentV3 confirm", async () => {
@@ -148,20 +64,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     assert.isDefined(error2);
     const error3 = new FindFunctionAppError("FE");
     assert.isDefined(error3);
-  });
-  it("scaffoldRootReadme", async () => {
-    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
-    sandbox.stub(fs, "copy").resolves();
-    const projectSettings = newProjectSettingsV3();
-    projectSettings.components = [
-      {
-        name: "teams-tab",
-      },
-      {
-        name: "teams-bot",
-      },
-    ];
-    await scaffoldRootReadme(projectSettings, ".");
   });
 });
 

@@ -2,34 +2,17 @@
 // Licensed under the MIT license.
 
 import { hooks, NextFunction } from "@feathersjs/hooks/lib";
-import {
-  ConfigFolderName,
-  Context,
-  Func,
-  FxError,
-  InputConfigsFolderName,
-  Inputs,
-  ok,
-  Platform,
-  ProjectSettingsFileName,
-  Result,
-  SettingsFileName,
-  SettingsFolderName,
-} from "@microsoft/teamsfx-api";
+import { Func, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
-import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import * as os from "os";
-import * as path from "path";
-import sinon from "sinon";
 import mockFs from "mock-fs";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as path from "path";
+import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
-import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { VideoFilterAppBlockerMW } from "../../../src/core/middleware/videoFilterAppBlocker";
 import { CoreHookContext } from "../../../src/core/types";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
-import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
+import { MockTools } from "../utils";
 
 describe("Middleware - VideoFilterAppBlockerMW", () => {
   function createMock(): {

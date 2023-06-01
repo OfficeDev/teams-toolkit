@@ -1,28 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import faker from "faker";
 import {
-  PluginContext,
-  TelemetryReporter,
-  LogProvider,
-  UserInteraction,
-  LogLevel,
-  PermissionRequestProvider,
-  Result,
-  FxError,
-  ok,
-  LocalSettings,
   ConfigMap,
+  FxError,
+  LocalSettings,
+  LogLevel,
+  LogProvider,
+  PermissionRequestProvider,
+  PluginContext,
+  Result,
+  TelemetryReporter,
+  UserInteraction,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { MockUserInteraction } from "../../../core/utils";
-import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/component/constants";
-import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
+import faker from "faker";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
+import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/component/constants";
+import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
 import { newEnvInfo } from "../../../../src/core/environment";
+import { MockUserInteraction } from "../../../core/utils";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =

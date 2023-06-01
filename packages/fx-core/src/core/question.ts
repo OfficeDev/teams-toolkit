@@ -34,7 +34,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { sampleProvider } from "../common/samples";
 import {
-  BotNewUIOptionItem,
+  BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
   M365SearchAppOptionItem,
@@ -49,7 +49,6 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../component/constants";
 import {
@@ -250,9 +249,9 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabSPFxNewUIItem(),
+    TabSPFxItem(),
     TabNonSsoItem(),
-    BotNewUIOptionItem(),
+    BotOptionItem(),
     MessageExtensionNewUIItem(),
     M365SsoLaunchPageOptionItem(),
     M365SearchAppOptionItem(),
@@ -291,7 +290,7 @@ export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSele
 
 export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    BotNewUIOptionItem(),
+    BotOptionItem(),
     NotificationOptionItem(),
     CommandAndResponseOptionItem(),
     WorkflowOptionItem(),
@@ -324,7 +323,7 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
     TabNonSsoItem(),
     M365SsoLaunchPageOptionItem(),
     DashboardOptionItem(),
-    TabSPFxNewUIItem(),
+    TabSPFxItem(),
   ];
 
   return {

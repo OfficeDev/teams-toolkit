@@ -395,7 +395,6 @@ export function getSystemInputs(): Inputs {
     projectPath: globalVariables.workspaceUri?.fsPath,
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    "function-dotnet-checker-enabled": true, // TODO: remove this flag
     locale: parseLocale(),
   };
   return answers;

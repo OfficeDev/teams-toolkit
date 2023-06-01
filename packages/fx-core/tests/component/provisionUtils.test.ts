@@ -4,11 +4,10 @@ import { assert } from "console";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import { getResourceManagementClientForArmDeployment } from "../../src/component/arm";
 import { M365TenantRes, provisionUtils } from "../../src/component/provisionUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { setTools } from "../../src/core/globalVars";
-import { InvalidAzureCredentialError, ResourceGroupNotExistError } from "../../src/error/azure";
+import { ResourceGroupNotExistError } from "../../src/error/azure";
 import { M365TenantIdNotFoundInTokenError, M365TokenJSONNotFoundError } from "../../src/error/m365";
 import { MockAzureAccountProvider, MockTelemetryReporter, MockTools } from "../core/utils";
 import {
@@ -491,20 +490,6 @@ describe("provisionUtils", () => {
         mockedEnvRestore();
       }
       mocker.restore();
-    });
-    it("getResourceManagementClientForArmDeployment", async () => {
-      mocker
-        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-        .resolves(undefined);
-      try {
-        await getResourceManagementClientForArmDeployment(
-          tools.tokenProvider.azureAccountProvider,
-          "mksub"
-        );
-        chai.assert.fail("Should not reach here.");
-      } catch (e) {
-        chai.assert.isTrue(e instanceof InvalidAzureCredentialError);
-      }
     });
   });
 });

@@ -6,7 +6,7 @@ import mockFs from "mock-fs";
 import { AxiosRequestConfig, default as axios } from "axios";
 import * as stream from "stream";
 
-import { ensureBicepForDriver } from "../../../../src/component/utils/depsChecker/bicepChecker";
+import { ensureBicepForDriver } from "../../../../src/component/driver/arm/util/bicepChecker";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { MockTools } from "../../../core/utils";

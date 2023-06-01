@@ -8,7 +8,7 @@ import {
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { cpUtils } from "./cpUtils";
+import { cpUtils } from "../../../utils/depsChecker/cpUtils";
 import { finished, Readable, Writable } from "stream";
 import {
   DepsCheckerEvent,
@@ -17,18 +17,18 @@ import {
   Messages,
   TelemetryMeasurement,
   TelemtryMessages,
-} from "./common";
+} from "../../../utils/depsChecker/common";
 import {
   SolutionTelemetryComponentName,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-} from "../../constants";
+} from "../../../constants";
 
 import { performance } from "perf_hooks";
-import { sendErrorTelemetryThenReturnError } from "../../utils";
-import { DriverContext } from "../../driver/interface/commonArgs";
-import { InstallSoftwareError } from "../../../error/common";
-import { DownloadBicepCliError } from "../../../error/arm";
+import { sendErrorTelemetryThenReturnError } from "../../../utils";
+import { DriverContext } from "../../interface/commonArgs";
+import { InstallSoftwareError } from "../../../../error/common";
+import { DownloadBicepCliError } from "../../../../error/arm";
 
 export const BicepName = "Bicep";
 

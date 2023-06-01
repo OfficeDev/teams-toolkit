@@ -7,6 +7,7 @@ import {
   ResourceManagementClient,
 } from "@azure/arm-resources";
 
+const pageSize = 100;
 export async function innerGetDeploymentError(
   client: ResourceManagementClient,
   resourceGroupName: string,
@@ -23,7 +24,7 @@ export async function innerGetDeploymentOperations(
   const res = [];
   for await (const page of client.deploymentOperations
     .list(resourceGroupName, deploymentName)
-    .byPage({ maxPageSize: 100 })) {
+    .byPage({ maxPageSize: pageSize })) {
     res.push(...page);
   }
   return res;

@@ -481,3 +481,60 @@ describe("getDeploymentError", () => {
     assert.isNotEmpty(res);
   });
 });
+
+describe("formattedDeploymentError Status", () => {
+  const mocker = createSandbox();
+
+  beforeEach(async () => {});
+
+  afterEach(async () => {
+    mocker.restore();
+  });
+
+  it("formattedDeploymentError OK", async () => {
+    const errors = {
+      error: {
+        code: "OutsideError",
+        message: "out side error",
+      },
+      subErrors: {
+        botProvision: {
+          error: {
+            code: "BotError",
+            message: "bot error",
+          },
+          inner: {
+            error: {
+              code: "BotInnerError",
+              message: "bot inner error",
+            },
+            subErrors: {
+              skuError: {
+                error: {
+                  code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+                  message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
+                },
+              },
+              evaluationError: {
+                error: {
+                  code: "DeploymentOperationFailed",
+                  message:
+                    "Template output evaluation skipped: at least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/DeployOperations for usage details.",
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const res = ArmErrorHandle.formattedDeploymentError(errors);
+    assert.deepEqual(res, {
+      botProvision: {
+        skuError: {
+          code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+          message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
+        },
+      },
+    });
+  });
+});

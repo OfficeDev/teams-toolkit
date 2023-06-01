@@ -17,7 +17,7 @@ import { ArmDeployDriver } from "../../../../src/component/driver/arm/deploy";
 import fs from "fs-extra";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
-import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicepChecker";
+import * as bicepChecker from "../../../../src/component/driver/arm/util/bicepChecker";
 import axios from "axios";
 import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";

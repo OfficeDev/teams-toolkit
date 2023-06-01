@@ -1,0 +1,2731 @@
+{
+	"info": {
+		"_postman_id": "073d0b0c-a086-4b39-a25e-18a0f637f13a",
+		"name": "Content API - Restricted API",
+		"description": "We are making updates to our collections. If you run into any issues pulling the latest changes, simply fork the collection again.\n\n**You must apply for access to the Marketing Developer Platform in order to use these APIs. See the [Developer Portal](https://developer.linkedin.com/product-catalog/marketing/campaign-management) on how to apply.**",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4939497",
+		"_collection_link": "https://www.postman.com/linkedin-developer-apis/workspace/linkedin-marketing-solutions/collection/16069442-073d0b0c-a086-4b39-a25e-18a0f637f13a?action=share&creator=4939497&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Use Cases",
+			"item": [
+				{
+					"name": "Video Ads - Beta",
+					"item": [
+						{
+							"name": "Upload A Video - No Caption No Thumbnails",
+							"item": [
+								{
+									"name": "1. Initialize upload for video",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    var jsonData = JSON.parse(responseBody);",
+													"    // if(jsonData.value.uploadInstructions.includes(\"uploadUrl\")){",
+													"    if(jsonData.value.uploadInstructions){",
+													"        //grab the Url of the uploaded video file returned from the initializeUpload action.",
+													"        pm.environment.set(\"upload_video_url\", jsonData.value.uploadInstructions[0].uploadUrl);",
+													"        pm.environment.set(\"video_id\",jsonData.value.video);",
+													"    }",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=initializeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "initializeUpload"
+												}
+											]
+										},
+										"description": "Success"
+									},
+									"response": [
+										{
+											"name": "1. Initialize upload for video",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{ \"initializeUploadRequest\": {\n        \"owner\": \"urn:li:organization:{{org_id}}\",\n        \"purpose\": \"VIDEO_AD\",\n        \"fileSizeBytes\": 1055736,\n        \"uploadCaptions\": false,\n        \"uploadThumbnail\": false\n}}\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/videos?action=initializeUpload",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"videos"
+													],
+													"query": [
+														{
+															"key": "action",
+															"value": "initializeUpload"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "1803"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 07:07:23 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635145643:t=1635163257:v=2:sig=AQGMc8ObBHINMA5HQJaWVeXreXu83aPx\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635145643:t=1635163257:v=2:sig=AQGMc8ObBHINMA5HQJaWVeXreXu83aPx\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "dKC1rEw0sRbwmkl6KisAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"value\": {\n        \"uploadUrlsExpireAt\": 1635232043867,\n        \"video\": \"urn:li:video:C4E10AQEybvRa4xvxjA\",\n        \"uploadInstructions\": [\n            {\n                \"uploadUrl\": \"https://www.linkedin.com/dms-uploads/C4E10AQEybvRa4xvxjA/uploadedVideo?sau=aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2FtYnJ5L2FtYnJ5LXZpZGVvLz94LWxpLWFtYnJ5LWVwPUFRSDRydk90bV9TRThnQUFBWHkyUm5kYlZNN2xiNlB0MXFXSTVNZDVTNXNJTVdmcnc0VmF6ZFFwYUhLZjVzdUlXZDVBcnZmOFM0YUNSdkduN1hmMTRpSWlIWEFNU3Q5aGpfN3k4SDFuQi1RMTl1YjFiVG51UXpWQUludnNPZG13TUltZlRqTElEbHFJcEd2TFBseWZpcVIxNVFqTGo4Mkl1N21mbUtvNE1oMzZ5cG5MVTk0OXdMRTNoYkU4OWtlUmEtV1R6ZzROOTBZb3FxdG0tX1BVNjM1REYySHNDLThfSF9vSTVkTTU2SXMxQ3FKU2hISUhybkVyREQ1V0lfR3U3SGRNeWItVlVoTmlfRVNsbDRBTDhRbUh6YkRkVnRvZjVZSVZRLU5haXQ0c002RE5Mb0lUdUxuWldpWWkzNnFoQTlOLW91SlBIejdEQVYxVW1Ta0dkU0ZHRmR2T3o1a1JFZlVoeDJfZlpZZ0lUSnRiLW1kTDBlR0pyV1dpOUhTTXUtWlh0R3dkRmJKVEdIYmdzUUdsOUxzbHFoemJFYUN2RXRoU3lzQmJNa3NGbTZNM3MzN2RjblFpeVhhX3l0VUppZExJcV92WXAzUWFheE5IcGJHQldGSWMyQ0dTU2JOOWkxT2Y4S0N3bDZVVGdTSThPSU1rT0djN3luSFUxZkJTUXhJRmFGaDQ3am9qTGdUSDUwZHlNcm4ybmpTUVY5THBFRnZiZmZKbjRpQmtadHExaTBLdk5NUy12cjBxMF9paU1zMVM2bHc1SjhUOGNHQ3J5eXBrT19xS0NiTnREWlh4SkFDUFFBdDRCem0tYXhKT2p2eVNWcExMaEQtMm1VNW15S1NzOGNNVFlaSVpwM3lpMU95ekxtNTVRVkRqcURIbGNkSEJpaUZWN3hEaTRRODdFdmMwVlNvSXhNQkZoOHJiS1ZqVTNYZHNTaVlpb2c3bWVQV2MteG5RNUFhR1ZUcjFOOGlhTmxCZ2RnNTh4ekcwZUQwdVdVVktJRUtlallZWS1CbE5ySk9kUHhkeWJSa3VGc1Z0TlN2ZjU2V1lTMUlNdzZ4eUY0RjVtYkJlcDVhTkFLbEdqZWJVMk5VMnNWTVE4NHI0VldxdXd4SnQyOHhwSUloQlc0STNKLTg1WnViWTVRMXpvSFkxNWNHcDIzSWlzNDVSM19iQ3cxNG9DWkhMQjNHeWlCa2R4em5sMUlhVUZaTFZWUVRTSXBSNDdjeDc5Q0JzM1pqRFdhWEZBMVpyNWxTSWl0T2VfaUNTUW1adHdDTTZBelBJbkpVdDJnQm5hcUpZUjhvRFpvM0hSd3AzbkVGS0w4SWxZV3YycFJsUktQOTZPdnlWa1dGY2VEMjgyeVFaQ0huVVhZWWNNUkVEemQtREZGUzZwQQ%253D%253D&pn=1&m=676867590&app=5194413&sync=0&v=beta&ut=1Bd-e8TirbRFY1\",\n                \"lastByte\": 1055735,\n                \"firstByte\": 0\n            }\n        ],\n        \"uploadToken\": \"\"\n    }\n}"
+										},
+										{
+											"name": "1. Initialize upload for video",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{ \"initializeUploadRequest\": {\n        \"owner\": \"urn:li:organization:{{org_id}}\",\n        \"purpose\": \"VIDEO_AD\",\n        \"fileSizeBytes\": 1055736,\n        \"uploadCaptions\": false,\n        \"uploadThumbnail\": false\n}}\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/videos?action=initializeUpload",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"videos"
+													],
+													"query": [
+														{
+															"key": "action",
+															"value": "initializeUpload"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "1803"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 07:57:27 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635148647:t=1635163257:v=2:sig=AQFYire0JEpGoMyV3aSkQ9o6X9J5cMDY\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635148647:t=1635163257:v=2:sig=AQFYire0JEpGoMyV3aSkQ9o6X9J5cMDY\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "SnbR8wc3sRawH9vWtCoAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"value\": {\n        \"uploadUrlsExpireAt\": 1635235047245,\n        \"video\": \"urn:li:video:C4E10AQFgoel-ds-gZw\",\n        \"uploadInstructions\": [\n            {\n                \"uploadUrl\": \"https://www.linkedin.com/dms-uploads/C4E10AQFgoel-ds-gZw/uploadedVideo?sau=aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2FtYnJ5L2FtYnJ5LXZpZGVvLz94LWxpLWFtYnJ5LWVwPUFRR3lKNkgzQVZMUS1RQUFBWHkyZEV0TVdIMGlLR2cxUnBUR2h6Z0JXelRqTGZSUVNVLW9rVWxEUVVzMUh2emNXc0RLODR0RDBrMWxEUlM0cXZ0MURvWUIwb0RGTTRxWkhIdDRUeVhxb3B2cUU4NnlEUndjT0xTZWliUGU4c3NmdmJiVE5Nc1gwWmEzZVRtTHZxdUhOSkZ0RHZQM3V1eHVpTjRiUUwwcW1tSXp1WnNrcFJKYm5GcS1pcXRTY2FQMFNuRUk4eVBwdEt4amhsYW42RllNeldDa29YbHNYNE5kLTBoMHhTTUFXaWwtaXJoNlBnXzM0Mi1kc0dGNTJEU2ZBZGF6bnBtaUhpdy1HMklsanZJYnVuTHktbm1hYzVSa253bE5BOFpDMTdFbTl6T1k1LWJxUWE1NWd0bVE5WEJwbEU1MDFYaFlGOGtlTEhvbHU0Yl9lNXZFeWNEY001Snp6d1licm9lck12MkRUSWYzX25FaDdmQWtvRXBCTHlZWWVQdUx6RW9POVVmNGZTSTFFZWFFUjhYYTFyQUoyaWNrODdtNXpSU1E2ZEE4RG9VdHVmVTRYckNWbWlRVEpjbXRYUDZPeW1xOXVOWGIxbjhXQ3V1YjNLTEZuWUpQc1NnRXZaQjVfMEJDLUJ2cWY1dXVmWElfMHl5MDVxVm9GQlBDaXJiamM2RXdCQXlRajJJTUJPUVQ0Q2ZhSy1WU2JxcHRWODk5cUtRUHU4dTFYUzFvak5VTElocFVZYWh0bUJiM213SWsxVW5wd2dYS3JGckZUbWlTZ25WUGZPWXZQdG9XSmhBRzcwVkRmSWRsYWlyYllfelJkaG51cmdIOXBnT1R1MTRoRFEzTjRDdDJtTzA2YVVkTkNmNVFWSk9LTUo0RlJTcEgwbHBWRWQzVXN0bEtmNV9hU3cxVnVFdmVUVmpJbTJKbmc3T1R3WjMySklJUXpMWkFHU2lPZEJaZUI0U21WNnZ0akJfNndHc284QTN3R1dMVF84VzJOb3hwRTk1WjZqeXQ2SUY3UWhXOURkRWs1S0xwdW9LREZSb0JGbmFWVWl4dTlMU2NNTGZ3eXU5S2FBSXpxZ3drcFcybjRrZC1iY2FLYzQ1SjgtV1R1WGNEZmwzSjBpdTFkX3ZqTFRYWk1NdnpGZGtGdFJhV1ZDdEg5UVJwUWxDNDlMSWc0Smw1Ri1vangtSDlFY2xWcG1GVmlGUTEwOVcwQXZLRHFyZWhvNTJjeHdKXzJ5M1NJRmw2Z3VwdVlwcWdrY3p5QzJwTXNIUTFpX2w4ME0yTlB1NVhtSS0zbGZCNHJTbW9EcmtGbTVlaXpuTldfZkZlbGxlQXlFVnBNY1BMcFpnUmx5RlYxS1ZDMzY0OEgtbDg2cmlzNG9xUVU4cHhUUQ%253D%253D&pn=1&m=676867590&app=5194413&sync=0&v=beta&ut=2qrUBxZmzZRFY1\",\n                \"lastByte\": 1055735,\n                \"firstByte\": 0\n            }\n        ],\n        \"uploadToken\": \"\"\n    }\n}"
+										},
+										{
+											"name": "1. Initialize upload for video",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{ \"initializeUploadRequest\": {\n        \"owner\": \"urn:li:organization:{{org_id}}\",\n        \"purpose\": \"VIDEO_AD\",\n        \"fileSizeBytes\": 1055736,\n        \"uploadCaptions\": false,\n        \"uploadThumbnail\": false\n}}\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/videos?action=initializeUpload",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"videos"
+													],
+													"query": [
+														{
+															"key": "action",
+															"value": "initializeUpload"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "1799"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 16:20:52 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635178852:t=1635256706:v=2:sig=AQHmXRgpPxZUoUJ8yMMrE0kWRZl9y1l2\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635178852:t=1635256706:v=2:sig=AQHmXRgpPxZUoUJ8yMMrE0kWRZl9y1l2\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-eda6"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "a1dcrIBSsRagrlEsdCsAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"value\": {\n        \"uploadUrlsExpireAt\": 1635265252537,\n        \"video\": \"urn:li:video:C4E10AQFwtiJ1QpVI7g\",\n        \"uploadInstructions\": [\n            {\n                \"uploadUrl\": \"https://www.linkedin.com/dms-uploads/C4E10AQFwtiJ1QpVI7g/uploadedVideo?sau=aHR0cHM6Ly93d3cubGlua2VkaW4uY29tL2FtYnJ5L2FtYnJ5LXZpZGVvLz94LWxpLWFtYnJ5LWVwPUFRRTByUnBIY1RSdEJ3QUFBWHk0UVRDNTUyRE56Wi1Fa3ZLSUR0c3REc29kckl1aHk4N1ZNbkVrTmdFcWdmZ01jTzYyTGhydFdhLVptbTBXWW5EU3JYUF85QzdWbzktaEZBRmJKX3hXS2Z0Y21JbnhEMnU0VF85aldSQjJ6QTNCZ1FrQm1aQzBZbXh1N19aRUFnSlFwQ3Awc294NmJYVzVoa2hKeFlNY3hmeko4SlhncjJab1lmTVpFR2JLbGZfNDEzTzlfRUI3VF9zNzRiZHJ1bEdSaXJoTmh5Qm16a3BWTHl2X1NvM2tDNm5ydHE4ZXlLNVdLbjFkdGU5MVBoWGVGdE83U1JfbjJBU3BhclNhczd1UVBkV0wyOWpTNWNlWTNoSjZweHlCbXVtUFQzU2pMSUlTYlU0RE8xSE1qNFlMLXlUaWQzNDY4bm9wV05mZ3dKNDBacmN5d1l1bHdKMEpWeS1jWkg4cFFCUE03eS1KZWE2LTVfdC13bjh6a3BvekRfdFV5OGVYeTFZLXNXd2t6c1hYajlEd2pTSkdCNEp1R3BpTTBIenN0emNSQmNVaUNMa1VZLUdnbUMzUmlPVVFXUENxN3dnRVVxMWNTdklGS3YxMHBDeGdxR2xkczdjeVgtQkFGZEhDMVNkZjl0Qzgtbk1EMk9tNlB3MFMxSUdYSHJfQUtTMlBsUURvT2JOTEdPaW9KS0s2WXRaOG55YXZMX241cDl3WTVfczkxMEMtQ2lqV1JEdUlSOU9zQzUzTGRJeDZTd0lQZFVvTG1la3c1UW9TcWlqTEh1VFF0MzB0c2s4ZEE0OUg2ZThqVk15aDUtU2tiZkt1TFVwN2ZNNVN6MkVKbzg5RDgxM0pSUzY2Q3RoRnEyY1U2c1JPaW42ZWdoNENTVDhxU1ktODJHWnNmM3dHY1RJbkYxNFFXU0FRR29yWERFZmtlU2d6Q056OF9wZGJaNTE2Y1lGNHZqd3B4MlVJblR0eHYtVWM3N0U1TkhTV3ZGTWF2U0gwZ2RaZjV1MDdlMVI5eVpGZ1gxZHY3bjNFdHlVcEdRcjZGWFVheEV6UE9BcVRBa1JHT0xJMGtyOFNOY0lEemxpVlBZNEpiVkpGMzVNWVJ1MGIyVWg2Z25xdHBQVTZod25RSGh2TFVKNHA2TVltYUR4YTRkaTR2UXVLbVpNZW1kR0h2WEFjaVdrSUtCVDZUOWFiS3NzTVJ3dlV4anlwcHdlQkNjMl9pbjQ0SDE1OHJfa2RmZzNCbEFLaVJCSlBUS2JwUVlEbnhLVW1sNmpKb3hCRDEyX2IySGhvVzhxV1dGTzJ2c1ViZU5ZYU1rTmVMWGlfaDduc2VhSXc1M0t2Ny0tRldPSkNsN3hFSFpLdW9QbFZhR19SMDA2d1UwUVR1b3M%253D&pn=1&m=676867590&app=5194413&sync=0&v=beta&ut=379pOf1ZvQS9Y1\",\n                \"lastByte\": 1055735,\n                \"firstByte\": 0\n            }\n        ],\n        \"uploadToken\": \"\"\n    }\n}"
+										}
+									]
+								},
+								{
+									"name": "2. Upload video file",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    pm.environment.set(\"etag\", pm.response.headers.get(\"ETag\"));",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "file",
+											"file": {
+												"src": "/Users/sjambe/Downloads/sample.mp4"
+											}
+										},
+										"url": {
+											"raw": "{{upload_video_url}}",
+											"host": [
+												"{{upload_video_url}}"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "2. Upload video file",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "file",
+													"file": {
+														"src": "/Users/sjambe/Downloads/sample.mp4"
+													}
+												},
+												"url": {
+													"raw": "{{upload_video_url}}",
+													"host": [
+														"{{upload_video_url}}"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "plain",
+											"header": [
+												{
+													"key": "Cache-Control",
+													"value": "no-cache, no-store"
+												},
+												{
+													"key": "Pragma",
+													"value": "no-cache"
+												},
+												{
+													"key": "Expires",
+													"value": "Thu, 01 Jan 1970 00:00:00 GMT"
+												},
+												{
+													"key": "etag",
+													"value": "/ambry-video/signedId/AQHHZwdflqhGGgAAAXy2Luua-pzKHt9tr4SXwHg59oq8ZcGEvwHaQXoGW0rz6pt3s6uGD-RX-INp9awaJCk21RS8O5ZVP4Ltt1rqp2K6Rr08ZOzuQDwcNT5rUclyRRMgOj7ecrXkiF1bWEsNCEolYXmkw1GO76D1UiIxwmYL3Qr_CX-CNJQWrHj2BvGagupWo7zLN2RgTy-UTvgYepE7rggkUae56IMmlhr2WO6QLo4vUIHTRLLQdQdmmjloT2EFO_-XGcAdbI0.bin"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lang=v=2&lang=en-us; SameSite=None; Path=/; Domain=linkedin.com; Secure"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TGST08:s=T:r=T:a=T:p=T:g=2150:u=1:x=1:i=1635144100:t=1635230500:v=2:sig=AQFzm6nljhNYB4m-VDcYJuSAr-Qvo4R1\"; Expires=Tue, 26 Oct 2021 06:41:40 GMT; domain=.linkedin.com; Path=/; SameSite=None; Secure"
+												},
+												{
+													"key": "x-ambry-creation-time",
+													"value": "Mon Oct 25 06:41:40 UTC 2021"
+												},
+												{
+													"key": "access-control-allow-origin",
+													"value": "https://www.linkedin.com"
+												},
+												{
+													"key": "Expect-CT",
+													"value": "max-age=86400, report-uri=\"https://www.linkedin.com/platform-telemetry/ct\""
+												},
+												{
+													"key": "Strict-Transport-Security",
+													"value": "max-age=31536000"
+												},
+												{
+													"key": "X-Content-Type-Options",
+													"value": "nosniff"
+												},
+												{
+													"key": "Content-Security-Policy",
+													"value": "default-src *; connect-src 'self' https://media-src.linkedin.com/media/ www.linkedin.com s.c.lnkd.licdn.com m.c.lnkd.licdn.com wss://*.linkedin.com dms.licdn.com https://dpm.demdex.net/id lnkd.demdex.net blob: https://accounts.google.com/gsi/status https://linkedin.sc.omtrdc.net/b/ss/ www.google-analytics.com static.licdn.com static-exp1.licdn.com static-exp2.licdn.com static-exp3.licdn.com media.licdn.com media-exp1.licdn.com media-exp2.licdn.com media-exp3.licdn.com; img-src data: blob: *; font-src data: *; style-src 'unsafe-inline' 'self' static-src.linkedin.com *.licdn.com; script-src 'report-sample' 'unsafe-inline' 'unsafe-eval' 'self' spdy.linkedin.com static-src.linkedin.com *.ads.linkedin.com *.licdn.com static.chartbeat.com www.google-analytics.com ssl.google-analytics.com bcvipva02.rightnowtech.com www.bizographics.com sjs.bizographics.com js.bizographics.com d.la4-c1-was.salesforceliveagent.com https://snap.licdn.com/li.lms-analytics/ platform.linkedin.com platform-akam.linkedin.com platform-ecst.linkedin.com platform-azur.linkedin.com; object-src 'none'; media-src blob: *; child-src blob: lnkd-communities: voyager: *; frame-ancestors 'self'"
+												},
+												{
+													"key": "X-Frame-Options",
+													"value": "sameorigin"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "afd-prod-ltx1"
+												},
+												{
+													"key": "X-Li-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "KExz7+QysRYgiE72+SoAAA=="
+												},
+												{
+													"key": "X-Cache",
+													"value": "CONFIG_NOCACHE"
+												},
+												{
+													"key": "X-MSEdge-Ref",
+													"value": "Ref A: 2168E0DEDF9A4E288D98F1FB1BE51ED5 Ref B: CO1EDGE1614 Ref C: 2021-10-25T06:41:38Z"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 06:41:39 GMT"
+												},
+												{
+													"key": "Content-Length",
+													"value": "0"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "2. Upload video file",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "file",
+													"file": {
+														"src": "/Users/sjambe/Downloads/sample.mp4"
+													}
+												},
+												"url": {
+													"raw": "{{upload_video_url}}",
+													"host": [
+														"{{upload_video_url}}"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "plain",
+											"header": [
+												{
+													"key": "Cache-Control",
+													"value": "no-cache, no-store"
+												},
+												{
+													"key": "Pragma",
+													"value": "no-cache"
+												},
+												{
+													"key": "Expires",
+													"value": "Thu, 01 Jan 1970 00:00:00 GMT"
+												},
+												{
+													"key": "etag",
+													"value": "/ambry-video/signedId/AQHqYmux4UEzBQAAAXy2TQIp64HG3RBu54c8biWYCJoMeMqKAeQKYE9rWcgajKWKmD7WKG8Zr-6rGhgW8JZFrgfuRNv-qZ6goBpnndm-PgwQQFab8AOVN1ZCJCu6hj7m-Zp5wQjsErW9rGxr5Poi_RCp7gqcbop6Tz8BzrbCa9Bu8xI2L9oPq6CUozdHyvAHiVxfhxYArLWslNjQaQ25dJ7g21zs5DKENszjukEhjQnlhIH5rYYxLB3WbW2jjTfNMLr59lvqRsQ.bin"
+												},
+												{
+													"key": "x-ambry-creation-time",
+													"value": "Mon Oct 25 07:14:32 UTC 2021"
+												},
+												{
+													"key": "access-control-allow-origin",
+													"value": "https://www.linkedin.com"
+												},
+												{
+													"key": "Expect-CT",
+													"value": "max-age=86400, report-uri=\"https://www.linkedin.com/platform-telemetry/ct\""
+												},
+												{
+													"key": "Strict-Transport-Security",
+													"value": "max-age=31536000"
+												},
+												{
+													"key": "X-Content-Type-Options",
+													"value": "nosniff"
+												},
+												{
+													"key": "Content-Security-Policy",
+													"value": "default-src *; connect-src 'self' https://media-src.linkedin.com/media/ www.linkedin.com s.c.lnkd.licdn.com m.c.lnkd.licdn.com wss://*.linkedin.com dms.licdn.com https://dpm.demdex.net/id lnkd.demdex.net blob: https://accounts.google.com/gsi/status https://linkedin.sc.omtrdc.net/b/ss/ www.google-analytics.com static.licdn.com static-exp1.licdn.com static-exp2.licdn.com static-exp3.licdn.com media.licdn.com media-exp1.licdn.com media-exp2.licdn.com media-exp3.licdn.com; img-src data: blob: *; font-src data: *; style-src 'unsafe-inline' 'self' static-src.linkedin.com *.licdn.com; script-src 'report-sample' 'unsafe-inline' 'unsafe-eval' 'self' spdy.linkedin.com static-src.linkedin.com *.ads.linkedin.com *.licdn.com static.chartbeat.com www.google-analytics.com ssl.google-analytics.com bcvipva02.rightnowtech.com www.bizographics.com sjs.bizographics.com js.bizographics.com d.la4-c1-was.salesforceliveagent.com https://snap.licdn.com/li.lms-analytics/ platform.linkedin.com platform-akam.linkedin.com platform-ecst.linkedin.com platform-azur.linkedin.com; object-src 'none'; media-src blob: *; child-src blob: lnkd-communities: voyager: *; frame-ancestors 'self'; report-uri /security/csp?f=l"
+												},
+												{
+													"key": "X-Frame-Options",
+													"value": "sameorigin"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "afd-prod-ltx1-x"
+												},
+												{
+													"key": "X-Li-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "AAXPKByyeUgk3qcqLziaUg=="
+												},
+												{
+													"key": "X-Cache",
+													"value": "CONFIG_NOCACHE"
+												},
+												{
+													"key": "X-MSEdge-Ref",
+													"value": "Ref A: DEBE0D6FF2794C88B19A00A5C43F4058 Ref B: SJCEDGE0413 Ref C: 2021-10-25T07:14:30Z"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 07:14:31 GMT"
+												},
+												{
+													"key": "Content-Length",
+													"value": "0"
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "3. Finalize video upload",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"finalizeUploadRequest\": {\n    \"video\": \"urn:li:video:{{video_id}}\",\n    \"uploadToken\": \"\",\n    \"uploadedPartIds\": [\n      \"{{etag}}\"\n    ]\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=finalizeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "finalizeUpload"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "4. Check video upload status",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/videos/urn%3Ali%3Avideo%3A{{video_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos",
+												"urn%3Ali%3Avideo%3A{{video_id}}"
+											]
+										},
+										"description": "***endcode urn and add header to match documentation https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http#check-video-upload-status***\n\n***if changes are made be sure to edit and update the example response (it is editable)***"
+									},
+									"response": [
+										{
+											"name": "4. Check video upload status",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-RestLi-Protocol-Version",
+														"value": "2.0.0",
+														"type": "text",
+														"disabled": true
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/videos/urn%3Ali%3Avideo%3A{{video_id}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"videos",
+														"urn%3Ali%3Avideo%3A{{video_id}}"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "391"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 07:15:21 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635146121:t=1635163257:v=2:sig=AQGMLJo7yiQhJhuqdVeuoMyb27LLmO_R\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635146121:t=1635163257:v=2:sig=AQGMLJo7yiQhJhuqdVeuoMyb27LLmO_R\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "+AJ147s0sRbAxTHzJSsAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"owner\": \"urn:li:organization:2414183\",\n    \"duration\": 5336,\n    \"aspectRatioWidth\": 16,\n    \"downloadUrlExpiresAt\": 1635235200000,\n    \"purpose\": \"VIDEO_AD\",\n    \"downloadUrl\": \"https://dms.licdn.com/playlist/C4E10AQEybvRa4xvxjA/mp4-720p-30fp-crf28/0/1635146116984?e=1635235200&v=beta&t=77hyKu1KAXvsMuM48Lh6D3nYOeKuea3k7Gi5mRC19wI\",\n    \"id\": \"urn:li:video:C4E10AQEybvRa4xvxjA\",\n    \"aspectRatioHeight\": 9,\n    \"status\": \"AVAILABLE\"\n}"
+										}
+									]
+								}
+							],
+							"description": "This example shows how to upload a video file, For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)"
+						},
+						{
+							"name": "Upload A Video - Yes Caption No Thumbnails",
+							"item": [
+								{
+									"name": "1. Initialize upload for video",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    var jsonData = JSON.parse(responseBody);",
+													"    // if(jsonData.value.uploadInstructions.includes(\"uploadUrl\")){",
+													"    if(jsonData.value.uploadInstructions){",
+													"        //grab the Url of the uploaded video file returned from the initializeUpload action.",
+													"        pm.environment.set(\"upload_video_url\", jsonData.value.uploadInstructions[0].uploadUrl);",
+													"        pm.environment.set(\"video_id\",jsonData.value.video);",
+													"    }",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{ \"initializeUploadRequest\": {\n        \"owner\": \"urn:li:organization:{{org_id}}\",\n        \"purpose\": \"VIDEO_AD\",\n        \"fileSizeBytes\": 1055736,\n        \"uploadCaptions\": true,\n        \"uploadThumbnail\": false\n}}\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=initializeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "initializeUpload"
+												}
+											]
+										},
+										"description": "Success"
+									},
+									"response": []
+								},
+								{
+									"name": "2. Upload video file",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    pm.environment.set(\"etag\", pm.response.headers.get(\"ETag\"));",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "file",
+											"file": {
+												"src": "csOuIfU_P/sample.mp4"
+											}
+										},
+										"url": {
+											"raw": "{{upload_video_url}}",
+											"host": [
+												"{{upload_video_url}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "3. Finalize video upload",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"finalizeUploadRequest\": {\n    \"video\": \"urn:li:video:{{video_id}}\",\n    \"uploadToken\": \"\",\n    \"uploadedPartIds\": [\n      \"{{etag}}\"\n    ]\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=finalizeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "finalizeUpload"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "4. Check video upload status",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/videos/urn%3Ali%3Avideo%3A{{video_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos",
+												"urn%3Ali%3Avideo%3A{{video_id}}"
+											]
+										},
+										"description": "***endcode urn and add header to match documentation https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http#check-video-upload-status***\n\n***if changes are made be sure to edit and update the example response (it is editable)***"
+									},
+									"response": []
+								}
+							],
+							"description": "This example shows how to upload a video file, For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)"
+						},
+						{
+							"name": "Upload A Video - Yes Caption Yes Thumbnails",
+							"item": [
+								{
+									"name": "1. Initialize upload for video",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    var jsonData = JSON.parse(responseBody);",
+													"    // if(jsonData.value.uploadInstructions.includes(\"uploadUrl\")){",
+													"    if(jsonData.value.uploadInstructions){",
+													"        //grab the Url of the uploaded video file returned from the initializeUpload action.",
+													"        pm.environment.set(\"upload_video_url\", jsonData.value.uploadInstructions[0].uploadUrl);",
+													"        pm.environment.set(\"video_id\",jsonData.value.video);",
+													"    }",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{ \"initializeUploadRequest\": {\n        \"owner\": \"urn:li:organization:{{org_id}}\",\n        \"purpose\": \"VIDEO_AD\",\n        \"fileSizeBytes\": 1055736,\n        \"uploadCaptions\": true,\n        \"uploadThumbnail\": true\n}}\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=initializeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "initializeUpload"
+												}
+											]
+										},
+										"description": "Success"
+									},
+									"response": []
+								},
+								{
+									"name": "2. Upload video file",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    pm.environment.set(\"etag\", pm.response.headers.get(\"ETag\"));",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "file",
+											"file": {
+												"src": "F3gIFiQqc/sample.mp4"
+											}
+										},
+										"url": {
+											"raw": "{{upload_video_url}}",
+											"host": [
+												"{{upload_video_url}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "3. Finalize video upload",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"finalizeUploadRequest\": {\n    \"video\": \"urn:li:video:{{video_id}}\",\n    \"uploadToken\": \"\",\n    \"uploadedPartIds\": [\n      \"{{etag}}\"\n    ]\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=finalizeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "finalizeUpload"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "4. Check video upload status",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/videos/urn%3Ali%3Avideo%3A{{video_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos",
+												"urn%3Ali%3Avideo%3A{{video_id}}"
+											]
+										},
+										"description": "***endcode urn and add header to match documentation https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http#check-video-upload-status***\n\n***if changes are made be sure to edit and update the example response (it is editable)***"
+									},
+									"response": []
+								}
+							],
+							"description": "This example shows how to upload a video file, For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)"
+						},
+						{
+							"name": "Upload A Video - No Caption Yes Thumbnails",
+							"item": [
+								{
+									"name": "1. Initialize upload for video",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    var jsonData = JSON.parse(responseBody);",
+													"    // if(jsonData.value.uploadInstructions.includes(\"uploadUrl\")){",
+													"    if(jsonData.value.uploadInstructions){",
+													"        //grab the Url of the uploaded video file returned from the initializeUpload action.",
+													"        pm.environment.set(\"upload_video_url\", jsonData.value.uploadInstructions[0].uploadUrl);",
+													"        pm.environment.set(\"video_id\",jsonData.value.video);",
+													"    }",
+													"}",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{ \"initializeUploadRequest\": {\n        \"owner\": \"urn:li:organization:{{org_id}}\",\n        \"purpose\": \"VIDEO_AD\",\n        \"fileSizeBytes\": 1055736,\n        \"uploadCaptions\": false,\n        \"uploadThumbnail\": true\n}}\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=initializeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "initializeUpload"
+												}
+											]
+										},
+										"description": "Success"
+									},
+									"response": []
+								},
+								{
+									"name": "2. Upload video file",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var httpresponse = pm.response.code;",
+													"//if 200 OK response, continue",
+													"if(httpresponse == '200') {",
+													"    pm.environment.set(\"etag\", pm.response.headers.get(\"ETag\"));",
+													"}"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "file",
+											"file": {
+												"src": "p1krAAAba/sample.mp4"
+											}
+										},
+										"url": {
+											"raw": "{{upload_video_url}}",
+											"host": [
+												"{{upload_video_url}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "3. Finalize video upload",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"finalizeUploadRequest\": {\n    \"video\": \"urn:li:video:{{video_id}}\",\n    \"uploadToken\": \"\",\n    \"uploadedPartIds\": [\n      \"{{etag}}\"\n    ]\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/videos?action=finalizeUpload",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "finalizeUpload"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "4. Check video upload status***",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/videos/urn%3Ali%3Avideo%3A{{video_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"videos",
+												"urn%3Ali%3Avideo%3A{{video_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"description": "This example shows how to upload a video file, For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)"
+						},
+						{
+							"name": "Organic Post",
+							"item": [
+								{
+									"name": "5. Create a Post For Existing Video",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"author\": \"urn:li:organization:{{org_id}}\",\n  \"commentary\": \"Post oct 25-1\",\n  \"visibility\": \"PUBLIC\",\n  \"distribution\": {\n    \"feedDistribution\":\"MAIN_FEED\",\n    \"targetEntities\": [],\n    \"thirdPartyDistributionChannels\": []\n  },\n  \"content\": {\n      \"media\": {\n        \"id\":\"urn:li:video:{{video_id}}\"\n      }\n  },\n  \"lifecycleState\": \"PUBLISHED\",\n  \"isReshareDisabledByAuthor\": false\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/posts",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "5. Create a Post For Existing Video",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"author\": \"urn:li:organization:{{org_id}}\",\n  \"commentary\": \"Post oct 24\",\n  \"visibility\": \"PUBLIC\",\n  \"distribution\": {\n    \"feedDistribution\":\"MAIN_FEED\",\n    \"targetEntities\": [],\n    \"thirdPartyDistributionChannels\": []\n  },\n  \"content\": {\n      \"media\": {\n        \"id\":\"urn:li:video:{{video_id}}\"\n      }\n  },\n  \"lifecycleState\": \"PUBLISHED\",\n  \"isReshareDisabledByAuthor\": false\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/posts",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"posts"
+													]
+												}
+											},
+											"status": "Created",
+											"code": 201,
+											"_postman_previewlanguage": "plain",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Location",
+													"value": "/posts/urn%3Ali%3AugcPost%3A6858291842715303937"
+												},
+												{
+													"key": "x-linkedin-id",
+													"value": "urn:li:ugcPost:6858291842715303937"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "0"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 06:43:16 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635144196:t=1635163257:v=2:sig=AQEx0lJ5NfRECuSce4XA5kGSKoD9PHG5\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635144196:t=1635163257:v=2:sig=AQEx0lJ5NfRECuSce4XA5kGSKoD9PHG5\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "LnV2n/sysRawIDVadCsAAA=="
+												}
+											],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "5.Create a Post For Existing Video",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"author\": \"urn:li:organization:{{org_id}}\",\n  \"commentary\": \"Post oct 24-2\",\n  \"visibility\": \"PUBLIC\",\n  \"distribution\": {\n    \"feedDistribution\":\"MAIN_FEED\",\n    \"targetEntities\": [],\n    \"thirdPartyDistributionChannels\": []\n  },\n  \"content\": {\n      \"media\": {\n        \"id\":\"urn:li:video:{{video_id}}\"\n      }\n  },\n  \"lifecycleState\": \"PUBLISHED\",\n  \"isReshareDisabledByAuthor\": false\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/posts",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"posts"
+													]
+												}
+											},
+											"status": "Created",
+											"code": 201,
+											"_postman_previewlanguage": "plain",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Location",
+													"value": "/posts/urn%3Ali%3AugcPost%3A6858300075140030464"
+												},
+												{
+													"key": "x-linkedin-id",
+													"value": "urn:li:ugcPost:6858300075140030464"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "0"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 07:15:59 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635146158:t=1635163257:v=2:sig=AQEvIkMEOsu-IzvcHPFmMIkI0D6Be6B4\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635146158:t=1635163257:v=2:sig=AQEvIkMEOsu-IzvcHPFmMIkI0D6Be6B4\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "9VOimcQ0sRbQo04bJisAAA=="
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "5. Create Post To Mention Company in Commentary",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"author\": \"urn:li:organization:{{org_id}}\",\n    \"commentary\": \"Hello @[Devtestco](urn:li:organization:2414183)\",\n    \"visibility\": \"PUBLIC\",\n    \"distribution\": {\n        \"feedDistribution\": \"MAIN_FEED\",\n        \"targetEntities\": [],\n        \"thirdPartyDistributionChannels\": []\n    },\n    \"lifecycleState\": \"PUBLISHED\",\n    \"isReshareDisabledByAuthor\": false\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/posts",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "5. Posts-CREATE-Mention commentary",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"author\": \"urn:li:organization:{{org_id}}\",\n    \"commentary\": \"Hello @[Devtestco](urn:li:organization:2414183)\",\n    \"visibility\": \"PUBLIC\",\n    \"distribution\": {\n        \"feedDistribution\": \"MAIN_FEED\",\n        \"targetEntities\": [],\n        \"thirdPartyDistributionChannels\": []\n    },\n    \"lifecycleState\": \"PUBLISHED\",\n    \"isReshareDisabledByAuthor\": false\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/posts",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"posts"
+													]
+												}
+											},
+											"status": "Created",
+											"code": 201,
+											"_postman_previewlanguage": "plain",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Location",
+													"value": "/posts/urn%3Ali%3Ashare%3A6864691044148133888"
+												},
+												{
+													"key": "x-linkedin-id",
+													"value": "urn:li:share:6864691044148133888"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "0"
+												},
+												{
+													"key": "Date",
+													"value": "Thu, 11 Nov 2021 22:31:24 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2969:u=231:x=1:i=1636669884:t=1636732895:v=2:sig=AQF95Zdsi5XnytyxDru7oNsnCDFsJsm3\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2969:u=231:x=1:i=1636669884:t=1636732895:v=2:sig=AQF95Zdsi5XnytyxDru7oNsnCDFsJsm3\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-lor1"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "PlTfnJaethaAjEsW8CoAAA=="
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "5. Create Post To Hashtag Company in Commentary",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"author\": \"urn:li:organization:{{org_id}}\",\n    \"commentary\": \"Follow best practices #coding\",\n    \"visibility\": \"PUBLIC\",\n    \"distribution\": {\n        \"feedDistribution\": \"MAIN_FEED\",\n        \"targetEntities\": [],\n        \"thirdPartyDistributionChannels\": []\n    },\n    \"lifecycleState\": \"PUBLISHED\",\n    \"isReshareDisabledByAuthor\": false\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/posts",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "5. Posts-CREATE-Hashtag commentary",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"author\": \"urn:li:organization:{{org_id}}\",\n    \"commentary\": \"Follow best practices #coding\",\n    \"visibility\": \"PUBLIC\",\n    \"distribution\": {\n        \"feedDistribution\": \"MAIN_FEED\",\n        \"targetEntities\": [],\n        \"thirdPartyDistributionChannels\": []\n    },\n    \"lifecycleState\": \"PUBLISHED\",\n    \"isReshareDisabledByAuthor\": false\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/posts",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"posts"
+													]
+												}
+											},
+											"status": "Created",
+											"code": 201,
+											"_postman_previewlanguage": "plain",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Location",
+													"value": "/posts/urn%3Ali%3Ashare%3A6864768486615375872"
+												},
+												{
+													"key": "x-linkedin-id",
+													"value": "urn:li:share:6864768486615375872"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "1.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "0"
+												},
+												{
+													"key": "Date",
+													"value": "Fri, 12 Nov 2021 03:39:08 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2969:u=231:x=1:i=1636688348:t=1636732895:v=2:sig=AQGCecoXqNg96ZRyKSD7Na_HaAweRHXK\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2969:u=231:x=1:i=1636688348:t=1636732895:v=2:sig=AQGCecoXqNg96ZRyKSD7Na_HaAweRHXK\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-lor1"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "y86PjmGvthbg3omD+SoAAA=="
+												}
+											],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "6. Fetch Post Details",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/posts/urn%3Ali%3Ashare%3A{{shares_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts",
+												"urn%3Ali%3Ashare%3A{{shares_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "7. Search Post By Author",
+									"protocolProfileBehavior": {
+										"disableUrlEncoding": false
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "FINDER",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/posts?author=List(urn%3Ali%3Aorganization%3A{{org_id}})&isDsc=true&q=author",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts"
+											],
+											"query": [
+												{
+													"key": "author",
+													"value": "List(urn%3Ali%3Aorganization%3A{{org_id}})"
+												},
+												{
+													"key": "isDsc",
+													"value": "true"
+												},
+												{
+													"key": "q",
+													"value": "author"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "8. Search Post By Ad Account",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/posts/urn%3Ali%3Ashare%3A{{shares_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts",
+												"urn%3Ali%3Ashare%3A{{shares_id}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "9. Update Existing Post",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "PARTIAL_UPDATE",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"patch\": {\n    \"$set\": {\n      \"commentary\": \"Update to the post\",\n      \"contentCallToActionLabel\": \"LEARN_MORE\"\n    }\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/posts",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "10. Delete Existing Post",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Restli-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "DELETE",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/posts/urn%3Ali%3Ashare%3A{{shares_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts",
+												"urn%3Ali%3Ashare%3A{{shares_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"description": "This example shows how to create, read, update and finder operations with posts API. For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/posts-api-beta?tabs=http)"
+						},
+						{
+							"name": "Organic Post - Batch operations",
+							"item": [
+								{
+									"name": "6. Fetch Multiple Posts",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "BATCH_GET",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/posts?ids=List(urn%3Ali%3Ashare%3A{{shares_id}})",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"posts"
+											],
+											"query": [
+												{
+													"key": "ids",
+													"value": "List(urn%3Ali%3Ashare%3A{{shares_id}})"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "6. Fetch Multiple Posts",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-RestLi-Protocol-Version",
+														"value": "2.0.0",
+														"type": "text"
+													},
+													{
+														"key": "X-RestLi-Method",
+														"value": "BATCH_GET",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/posts?ids=List(urn%3Ali%3Ashare%3A{{shares_id}})",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"posts"
+													],
+													"query": [
+														{
+															"key": "ids",
+															"value": "List(urn%3Ali%3Ashare%3A{{shares_id}})"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "2.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "524"
+												},
+												{
+													"key": "Date",
+													"value": "Wed, 22 Dec 2021 04:39:59 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Source-Fabric",
+													"value": "prod-lor1"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-lor1-x"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "AAXTtLbil9r395/akLo+rA=="
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640147999:t=1640188937:v=2:sig=AQGhzN3V3R7Q14xxQ8T8Wz-byiEoO5zK\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640147999:t=1640188937:v=2:sig=AQGhzN3V3R7Q14xxQ8T8Wz-byiEoO5zK\""
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"results\": {\n        \"urn:li:share:6857032594463211520\": {\n            \"isReshareDisabledByAuthor\": false,\n            \"createdAt\": 1634843968082,\n            \"lifecycleState\": \"PUBLISHED\",\n            \"lastModifiedAt\": 1634843968082,\n            \"visibility\": \"PUBLIC\",\n            \"publishedAt\": 1634843968082,\n            \"author\": \"urn:li:organization:18799005\",\n            \"id\": \"urn:li:share:6857032594463211520\",\n            \"distribution\": {\n                \"feedDistribution\": \"MAIN_FEED\",\n                \"thirdPartyDistributionChannels\": []\n            },\n            \"commentary\": \"test strings\",\n            \"lifecycleStateInfo\": {\n                \"isEditedByAuthor\": false\n            }\n        }\n    },\n    \"statuses\": {\n        \"urn:li:share:6857032594463211520\": 200\n    },\n    \"errors\": {}\n}"
+										}
+									]
+								}
+							],
+							"description": "This example shows how to create, read, update and finder operations with posts API. For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/posts-api-beta?tabs=http)"
+						},
+						{
+							"name": "Create a Video Ad with Existing Organic Post - Batch operations",
+							"item": [
+								{
+									"name": "5. Create Multiple Creatives For Existing Posts ***",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "BATCH_CREATE",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"elements\": [\n    {\n      \"content\": {\n        \"reference\": \"urn:li:ugcPost:{{ugcPost_id}}\"\n      },\n      \"campaign\": \"urn:li:sponsoredCampaign:{{campaign_id}}\",\n      \"intendedStatus\": \"ACTIVE\"\n    },\n    {\n      \"content\": {\n        \"reference\": \"urn:li:ugcPost:6858504319377948672\"\n      },\n      \"campaign\": \"urn:li:sponsoredCampaign:{{campaign_id}}\",\n      \"intendedStatus\": \"PAUSED\"\n    }\n  ]\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/creatives",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives"
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#batch-create-ad-creatives)"
+									},
+									"response": [
+										{
+											"name": "5. Creatives-BATCH_CREATE Existing Posts",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-RestLi-Protocol-Version",
+														"value": "2.0.0",
+														"type": "text"
+													},
+													{
+														"key": "X-RestLi-Method",
+														"value": "BATCH_CREATE",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"elements\": [\n    {\n      \"content\": {\n        \"reference\": \"urn:li:ugcPost:6858503117126860800\"\n      },\n      \"campaign\": \"urn:li:sponsoredCampaign:{{campaign_id}}\",\n      \"intendedStatus\": \"ACTIVE\"\n    },\n    {\n      \"content\": {\n        \"reference\": \"urn:li:ugcPost:6858504319377948672\"\n      },\n      \"campaign\": \"urn:li:sponsoredCampaign:{{campaign_id}}\",\n      \"intendedStatus\": \"PAUSED\"\n    }\n  ]\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/creatives",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"creatives"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "2.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "278"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 22:25:33 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635200732:t=1635256706:v=2:sig=AQGulUTqCIkkxw-WgOyrwj-npyiOrusv\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635200732:t=1635256706:v=2:sig=AQGulUTqCIkkxw-WgOyrwj-npyiOrusv\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "b2dJAWdmsRZA3Y/E0yoAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"elements\": [\n        {\n            \"location\": \"/partnerApiCreatives/urn%3Ali%3AsponsoredCreative%3A150043754\",\n            \"status\": 201,\n            \"id\": \"urn:li:sponsoredCreative:150043754\"\n        },\n        {\n            \"location\": \"/partnerApiCreatives/urn%3Ali%3AsponsoredCreative%3A150043764\",\n            \"status\": 201,\n            \"id\": \"urn:li:sponsoredCreative:150043764\"\n        }\n    ]\n}"
+										}
+									]
+								},
+								{
+									"name": "6. Fetch Multiple Creatives",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Method",
+												"value": "get",
+												"type": "text"
+											},
+											{
+												"key": "x-restli-protocol-version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/creatives?ids=List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives"
+											],
+											"query": [
+												{
+													"key": "ids",
+													"value": "List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})"
+												}
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#batch-get-ad-creatives)"
+									},
+									"response": [
+										{
+											"name": "6. Fetch Multiple Creatives",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-RestLi-Method",
+														"value": "get",
+														"type": "text"
+													},
+													{
+														"key": "x-restli-protocol-version",
+														"value": "2.0.0",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/creatives/urn%3Ali%3AsponsoredCreative%3A149732394",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"creatives",
+														"urn%3Ali%3AsponsoredCreative%3A149732394"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "2.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "507"
+												},
+												{
+													"key": "Date",
+													"value": "Mon, 25 Oct 2021 07:29:38 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635146978:t=1635163257:v=2:sig=AQH19J4pXd5Q18S-vnSTb_HyrjZs0VcJ\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2960:u=219:x=1:i=1635146978:t=1635163257:v=2:sig=AQH19J4pXd5Q18S-vnSTb_HyrjZs0VcJ\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "JSMbYoM1sRZAsGVxxCoAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"servingHoldReasons\": [\n        \"UNDER_REVIEW\",\n        \"CAMPAIGN_STOPPED\",\n        \"ACCOUNT_SERVING_HOLD\"\n    ],\n    \"lastModifiedAt\": 1634841150000,\n    \"lastModifiedBy\": \"urn:li:person:B1U4S2MZ-C\",\n    \"content\": {\n        \"reference\": \"urn:li:ugcPost:6857020775182987264\"\n    },\n    \"createdAt\": 1634841150000,\n    \"isTest\": false,\n    \"createdBy\": \"urn:li:person:B1U4S2MZ-C\",\n    \"review\": {\n        \"status\": \"PENDING\"\n    },\n    \"isServing\": false,\n    \"campaign\": \"urn:li:sponsoredCampaign:185590714\",\n    \"id\": \"urn:li:sponsoredCreative:149732394\",\n    \"intendedStatus\": \"ACTIVE\",\n    \"account\": \"urn:li:sponsoredAccount:506316595\"\n}"
+										}
+									]
+								},
+								{
+									"name": "7. Search Creatives By Criteria",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Method",
+												"value": "FINDER",
+												"type": "text"
+											},
+											{
+												"key": "x-restli-protocol-version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/creatives?creatives=List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})&q=criteria&sortOrder=ASCENDING",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives"
+											],
+											"query": [
+												{
+													"key": "creatives",
+													"value": "List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})"
+												},
+												{
+													"key": "q",
+													"value": "criteria"
+												},
+												{
+													"key": "sortOrder",
+													"value": "ASCENDING"
+												}
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#search-for-creatives)"
+									},
+									"response": [
+										{
+											"name": "7. Search Creatives By Criteria",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-RestLi-Method",
+														"value": "FINDER",
+														"type": "text"
+													},
+													{
+														"key": "x-restli-protocol-version",
+														"value": "2.0.0",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/creatives?creatives=List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})&q=criteria&sortOrder=ASCENDING",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"creatives"
+													],
+													"query": [
+														{
+															"key": "creatives",
+															"value": "List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})"
+														},
+														{
+															"key": "q",
+															"value": "criteria"
+														},
+														{
+															"key": "sortOrder",
+															"value": "ASCENDING"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "2.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "575"
+												},
+												{
+													"key": "Date",
+													"value": "Wed, 22 Dec 2021 20:09:59 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Source-Fabric",
+													"value": "prod-lor1"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-lor1-x"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "AAXTwbTLVrGVRavDU8eKqQ=="
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640203798:t=1640275340:v=2:sig=AQG9i4U1Za_z6LSe2h_52OFAwOfOb5Q4\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640203798:t=1640275340:v=2:sig=AQG9i4U1Za_z6LSe2h_52OFAwOfOb5Q4\""
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"paging\": {\n        \"start\": 0,\n        \"count\": 10,\n        \"links\": [],\n        \"total\": 1\n    },\n    \"elements\": [\n        {\n            \"servingHoldReasons\": [\n                \"UNDER_REVIEW\",\n                \"CAMPAIGN_STOPPED\",\n                \"ACCOUNT_SERVING_HOLD\"\n            ],\n            \"lastModifiedAt\": 1634841150000,\n            \"lastModifiedBy\": \"urn:li:person:B1U4S2MZ-C\",\n            \"content\": {\n                \"reference\": \"urn:li:ugcPost:6857020775182987264\"\n            },\n            \"createdAt\": 1634841150000,\n            \"isTest\": false,\n            \"createdBy\": \"urn:li:person:B1U4S2MZ-C\",\n            \"review\": {\n                \"status\": \"PENDING\"\n            },\n            \"isServing\": false,\n            \"campaign\": \"urn:li:sponsoredCampaign:185590714\",\n            \"id\": \"urn:li:sponsoredCreative:149732394\",\n            \"intendedStatus\": \"ACTIVE\",\n            \"account\": \"urn:li:sponsoredAccount:506316595\"\n        }\n    ]\n}"
+										}
+									]
+								},
+								{
+									"name": "8. Update Multiple Creatives with Partial_Update",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "BATCH_PARTIAL_UPDATE",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"entities\": {\n    \"urn:li:sponsoredCreative:{{creatives_id}}\": {\n      \"patch\": {\n        \"$set\": {\n          \"intendedStatus\": \"CANCELED\"\n        }\n      }\n    },\n    \"urn:li:sponsoredCreative:{{creatives_id}}\": {\n      \"patch\": {\n        \"$set\": {\n          \"intendedStatus\": \"DRAFT\"\n        }\n      }\n    }\n  }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/creatives?ids=List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}},urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives"
+											],
+											"query": [
+												{
+													"key": "ids",
+													"value": "List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}},urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})"
+												}
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#batch-partial-update-ad-creatives)"
+									},
+									"response": []
+								},
+								{
+									"name": "9. Delete Multiple Creatives",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											},
+											{
+												"key": "X-RestLi-Method",
+												"value": "BATCH_DELETE",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/creatives?ids=List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}},urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives"
+											],
+											"query": [
+												{
+													"key": "ids",
+													"value": "List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}},urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})"
+												}
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?tabs=http#batch-delete-ad-creatives)\n\n***fix url to match others***"
+									},
+									"response": []
+								}
+							],
+							"description": "This example shows how to create, read, update and finder operations with campaign creatives API. For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?tabs=http)"
+						},
+						{
+							"name": "Created a Video Ad with Direct Sponsored Content Post",
+							"item": [
+								{
+									"name": "5. Create a DSC post",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-RestLi-Protocol-Version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"creative\": {\n    \"inlineContent\": {\n      \"post\": {\n        \"adContext\": {\n          \"isDsc\": true,\n          \"dscAdAccount\": \"urn:li:sponsoredAccount:{{adaccount_id}}\",\n          \"dscStatus\": \"ACTIVE\"\n        },\n        \"author\": \"urn:li:organization:{{org_id}}\",\n        \"commentary\": \"comment on Oct 27\",\n        \"visibility\": \"PUBLIC\",\n        \"lifecycleState\": \"PUBLISHED\",\n        \"isReshareDisabledByAuthor\": false,\n        \"content\": {\n          \"media\": {\n            \"title\": \"Oct 27 title\",\n            \"id\": \"urn:li:video:{{video_id}}\"\n          }\n        }\n      }\n    },\n    \"campaign\": \"urn:li:sponsoredCampaign:{{campaign_id}}\",\n    \"intendedStatus\": \"DRAFT\"\n  }\n}\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/creatives?action=createInline",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives"
+											],
+											"query": [
+												{
+													"key": "action",
+													"value": "createInline"
+												}
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#create-a-video-ad-beta)."
+									},
+									"response": [
+										{
+											"name": "5. Create a DSC post",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "X-RestLi-Protocol-Version",
+														"value": "2.0.0",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n  \"creative\": {\n    \"inlineContent\": {\n      \"post\": {\n        \"adContext\": {\n          \"isDsc\": true,\n          \"dscAdAccount\": \"urn:li:sponsoredAccount:{{adaccount_id}}\",\n          \"dscStatus\": \"ACTIVE\"\n        },\n        \"author\": \"urn:li:organization:{{org_id}}\",\n        \"commentary\": \"comment on Oct 27\",\n        \"visibility\": \"PUBLIC\",\n        \"lifecycleState\": \"PUBLISHED\",\n        \"isReshareDisabledByAuthor\": false,\n        \"content\": {\n          \"media\": {\n            \"title\": \"Oct 27 title\",\n            \"id\": \"urn:li:video:{{video_id}}\"\n          }\n        }\n      }\n    },\n    \"campaign\": \"urn:li:sponsoredCampaign:{{campaign_id}}\",\n    \"intendedStatus\": \"DRAFT\"\n  }\n}\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/creatives?action=createInline",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"creatives"
+													],
+													"query": [
+														{
+															"key": "action",
+															"value": "createInline"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "2.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "59"
+												},
+												{
+													"key": "Date",
+													"value": "Wed, 27 Oct 2021 17:56:20 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635357380:t=1635435171:v=2:sig=AQEtj5SFoeCwqtjQ4wrUtmwpPMzGxBXD\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635357380:t=1635435171:v=2:sig=AQEtj5SFoeCwqtjQ4wrUtmwpPMzGxBXD\""
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-esv5"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "Lcd8Yd/0sRZQF8T5rCoAAA=="
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"value\": {\n        \"creative\": \"urn:li:sponsoredCreative:150300054\"\n    }\n}"
+										}
+									]
+								},
+								{
+									"name": "6. Get a DSC post by id",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-RestLi-Method",
+												"value": "get",
+												"type": "text"
+											},
+											{
+												"key": "x-restli-protocol-version",
+												"value": "2.0.0",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/creatives/urn%3Ali%3AsponsoredCreative%3A{{creatives_id}}",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"creatives",
+												"urn%3Ali%3AsponsoredCreative%3A{{creatives_id}}"
+											]
+										},
+										"description": "Please refer to the API Docs [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#get-a-creative)."
+									},
+									"response": [
+										{
+											"name": "6. Get a DSC post by id",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-RestLi-Method",
+														"value": "get",
+														"type": "text"
+													},
+													{
+														"key": "x-restli-protocol-version",
+														"value": "2.0.0",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/creatives/urn%3Ali%3AsponsoredCreative%3A{{creatives_id}}",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"creatives",
+														"urn%3Ali%3AsponsoredCreative%3A{{creatives_id}}"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "x-li-responseorigin",
+													"value": "RGW"
+												},
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "x-restli-protocol-version",
+													"value": "2.0.0"
+												},
+												{
+													"key": "Content-Length",
+													"value": "507"
+												},
+												{
+													"key": "Date",
+													"value": "Wed, 22 Dec 2021 20:32:16 GMT"
+												},
+												{
+													"key": "X-Li-Fabric",
+													"value": "prod-ltx1"
+												},
+												{
+													"key": "Connection",
+													"value": "keep-alive"
+												},
+												{
+													"key": "X-Li-Source-Fabric",
+													"value": "prod-lor1"
+												},
+												{
+													"key": "X-Li-Pop",
+													"value": "prod-lor1-x"
+												},
+												{
+													"key": "X-LI-Proto",
+													"value": "http/1.1"
+												},
+												{
+													"key": "X-LI-UUID",
+													"value": "AAXTwgSFxi+UrGKhcB1oTQ=="
+												},
+												{
+													"key": "Set-Cookie",
+													"value": "lidc=\"b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640205136:t=1640275340:v=2:sig=AQF3O8UhrX15VZYkeB9Yrmca2jtViVJW\""
+												},
+												{
+													"key": "X-LI-Route-Key",
+													"value": "\"b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640205136:t=1640275340:v=2:sig=AQF3O8UhrX15VZYkeB9Yrmca2jtViVJW\""
+												}
+											],
+											"cookie": [],
+											"body": "{\n    \"servingHoldReasons\": [\n        \"UNDER_REVIEW\",\n        \"CAMPAIGN_STOPPED\",\n        \"ACCOUNT_SERVING_HOLD\"\n    ],\n    \"lastModifiedAt\": 1634841150000,\n    \"lastModifiedBy\": \"urn:li:person:B1U4S2MZ-C\",\n    \"content\": {\n        \"reference\": \"urn:li:ugcPost:6857020775182987264\"\n    },\n    \"createdAt\": 1634841150000,\n    \"isTest\": false,\n    \"createdBy\": \"urn:li:person:B1U4S2MZ-C\",\n    \"review\": {\n        \"status\": \"PENDING\"\n    },\n    \"isServing\": false,\n    \"campaign\": \"urn:li:sponsoredCampaign:185590714\",\n    \"id\": \"urn:li:sponsoredCreative:149732394\",\n    \"intendedStatus\": \"ACTIVE\",\n    \"account\": \"urn:li:sponsoredAccount:506316595\"\n}"
+										}
+									]
+								}
+							],
+							"description": "This example shows how to create, read, update and finder operations with campaign creatives API. For complete API Details, check[ here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?tabs=http)"
+						}
+					],
+					"description": "This collection aims to focus on content-api[ video Ads Beta use cases](https://docs.microsoft.com/en-us/linkedin/marketing/usecases/ad-tech/video-ads-beta) and should be used with the **video-ads-beta-env** environment.\n\n--All requests for the Video Ads Beta API collection are in the Restli 2.0 format--\n\n**Prerequisite:** Perform steps 1 & 2 from the [Generate An Access Token using Postman](https://docs.microsoft.com/linkedin/shared/authentication/generate-an-access-token?context=linkedin/marketing/context) of our online documentation for this request to work.\n\nThis is an example for generating an access token with the necessary scope to test the Video Ads Beta collection apis.\n\nThe full process your application will need to implement for 3-legged tokens is described in [Authorization Code Flow](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fmarketing%2Fcontext&tabs=HTTPS)"
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "scope",
+				"value": "r_organization_social,rw_organization_admin,w_organization_social,rw_ads r_ads",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "body",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "content-api-token",
+				"type": "string"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "authorization_code",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{CLIENT-SECRET}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{CLIENT-ID}}",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "https://www.linkedin.com/oauth/v2/authorization",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "https://www.linkedin.com/oauth/v2/accessToken",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

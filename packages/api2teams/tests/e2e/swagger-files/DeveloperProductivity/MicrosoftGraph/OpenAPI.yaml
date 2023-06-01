@@ -1,0 +1,3496 @@
+openapi: 3.0.0
+info:
+  title: Microsoft Graph
+  description: >-
+    [Microsoft Graph](https://docs.microsoft.com/graph/overview) is the gateway
+    to data and intelligence in Microsoft 365. It provides a unified
+    programmability model that you can use to access the tremendous amount of
+    data in Microsoft 365, Windows 10, and Enterprise Mobility + Security. Use
+    the wealth of data in Microsoft Graph to build apps for organizations and
+    consumers that interact with millions of users.
+  version: 1.0.0
+servers:
+  - url: https://graph.microsoft.com
+  - url: http://{{operationurl}}
+  - url: http://localhost:5000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+tags:
+  - name: Delegated
+  - name: Delegated > Applications
+  - name: Delegated > Batch
+  - name: Delegated > Events
+  - name: Delegated > Files
+  - name: Delegated > Groups
+  - name: Delegated > Insights
+  - name: Delegated > Mail
+  - name: Delegated > Notebooks
+  - name: Delegated > Extensions
+  - name: Delegated > Extensions > Open extensions
+  - name: Delegated > Extensions > Schema extensions
+  - name: Delegated > People
+  - name: Delegated > Search
+  - name: Delegated > Security
+  - name: Delegated > SharePoint
+  - name: Delegated > Subscriptions
+  - name: Delegated > Tasks - Planner
+  - name: Delegated > Tasks - Todo
+  - name: Delegated > Teams
+  - name: Delegated > Users
+  - name: Delegated > Windows Updates (beta)
+  - name: Delegated > Windows Updates (beta) > Catalog
+  - name: Delegated > Windows Updates (beta) > Deployment
+  - name: Delegated > Windows Updates (beta) > Deployment > Deployment audience
+  - name: Delegated > Windows Updates (beta) > Updatable asset
+  - name: Delegated > Windows Updates (beta) > Updatable asset > Azure AD device
+  - name: Application
+  - name: Application > Graph Connectors
+  - name: Application > Graph Connectors > Connection setup
+  - name: Application > Graph Connectors > Content sync
+  - name: Application > Graph Connectors > Identity Sync (beta)
+  - name: Application > Mail
+  - name: Application > SharePoint
+  - name: Application > Subscriptions
+  - name: Application > Teams
+  - name: Application > Teams > Memberships
+  - name: Application > Users
+  - name: Misc
+paths:
+  /v1.0/applications:
+    get:
+      tags:
+        - Delegated > Applications
+      summary: Get applications
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Applications
+      summary: Create an application
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"displayName\": \"My App\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/applications/{ApplicationId}:
+    get:
+      tags:
+        - Delegated > Applications
+      summary: Get application
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ApplicationId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Delegated > Applications
+      summary: Update application
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"signInAudience\": \"AzureADMyOrg\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ApplicationId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/applications/{ApplicationId}/owners:
+    get:
+      tags:
+        - Delegated > Applications
+      summary: Get application owners
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ApplicationId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/applications/{ApplicationId}:
+    delete:
+      tags:
+        - Delegated > Applications
+      summary: Delete application
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ApplicationId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/$batch:
+    post:
+      tags:
+        - Delegated > Batch
+      summary: Combine a POST and a GET
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"requests\": [\n    {\n      \"url\":
+                \"/me/drive/root/children\",\n      \"method\": \"POST\",\n     
+                \"id\": \"1\",\n      \"body\": {\n        \"name\":
+                \"TestBatchingFolder\",\n        \"folder\": {}\n      },\n     
+                \"headers\": {\n        \"Content-Type\":
+                \"application/json\"\n      }\n    },\n    {\n      \"url\":
+                \"/me/drive/root/children/TestBatchingFolder \",\n     
+                \"method\": \"GET\",\n      \"id\": \"2\",\n      \"DependsOn\":
+                [\n        \"1\"\n      ]\n    }\n  ]\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/me/findRooms:
+    get:
+      tags:
+        - Delegated > Events
+      summary: Get rooms
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/calendarview:
+    get:
+      tags:
+        - Delegated > Events
+      summary: Get my events for next week
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: startdatetime
+          in: query
+          schema:
+            type: string
+          example: '{{Today}}'
+        - name: enddatetime
+          in: query
+          schema:
+            type: string
+          example: '{{NextWeek}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/calendars:
+    get:
+      tags:
+        - Delegated > Events
+      summary: Get my calendars
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/events:
+    post:
+      tags:
+        - Delegated > Events
+      summary: Add Microsoft Graph community call event
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"subject\": \"Microsoft Graph community call\",\n 
+                \"body\": {\n    \"contentType\": \"HTML\",\n    \"content\":
+                \"Call link: https://aka.ms/mmkv1b Submit a question:
+                https://aka.ms/ybuw2i\"\n  },\n  \"start\": {\n    \"dateTime\":
+                \"2018-09-04T08:00:00\",\n    \"timeZone\": \"Pacific Standard
+                Time\"\n  },\n  \"end\": {\n    \"dateTime\":
+                \"2018-09-04T09:00:00\",\n    \"timeZone\": \"Pacific Standard
+                Time\"\n  },\n  \"location\": {\n    \"displayName\": \"Skype
+                for Business\"\n  },\n  \"recurrence\": {\n    \"pattern\":
+                {\n      \"type\": \"relativeMonthly\",\n      \"interval\":
+                1,\n      \"daysOfWeek\": [\n        \"Tuesday\"\n     
+                ],\n      \"index\": \"first\"\n    },\n    \"range\": {\n     
+                \"type\": \"noEnd\",\n      \"startDate\": \"2017-08-29\"\n   
+                }\n  }\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Delegated > Events
+      summary: Get my Microsoft Graph community call events
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: subject eq 'Microsoft Graph community call'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/drive/root/children:
+    get:
+      tags:
+        - Delegated > Files
+      summary: Get my files
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Files
+      summary: Create a folder
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"name\": \"New Folder\",\n  \"folder\": {}\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/drive/recent:
+    get:
+      tags:
+        - Delegated > Files
+      summary: Get my recent files
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/drive/sharedWithMe:
+    get:
+      tags:
+        - Delegated > Files
+      summary: Get files shared with me
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/drive/root/search(q='finance'):
+    get:
+      tags:
+        - Delegated > Files
+      summary: Search my OneDrive
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: select
+          in: query
+          schema:
+            type: string
+          example: name,id,webUrl
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/groups:
+    get:
+      tags:
+        - Delegated > Extensions > Schema extensions
+      summary: Filter groups by extensions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: adatumisv_courses/id eq '123'
+        - name: $select
+          in: query
+          schema:
+            type: string
+          example: id,displayName,adatumisv_courses
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Extensions > Schema extensions
+      summary: Create a group with extension
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"displayName\": \"Extensions sample group\",\n 
+                \"description\": \"Extensions sample group\",\n  \"groupTypes\":
+                [\n    \"Unified\"\n  ],\n  \"mailEnabled\": true,\n 
+                \"mailNickname\": \"extSample123\",\n  \"securityEnabled\":
+                false,\n  \"adatumisv_courses\": {\n    \"id\": \"123\",\n   
+                \"name\": \"New Managers\",\n    \"type\": \"Online\"\n  }\n}"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/me/insights/trending:
+    get:
+      tags:
+        - Delegated > Insights
+      summary: Get items trending around me
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/me/workingWith:
+    get:
+      tags:
+        - Delegated > Insights
+      summary: Get people I'm working with
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/messages:
+    get:
+      tags:
+        - Delegated > Mail
+      summary: Get email headers
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $select
+          in: query
+          schema:
+            type: string
+          example: internetMessageHeaders
+        - name: $top
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/me/messages:
+    get:
+      tags:
+        - Delegated > Mail
+      summary: Get my messages I'm at mentioned in
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: mentionsPreview/isMentioned eq true
+        - name: $select
+          in: query
+          schema:
+            type: string
+          example: subject,sender,receivedDateTime
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/messages/{MessageId}:
+    get:
+      tags:
+        - Delegated > Mail
+      summary: Get a message
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: MessageId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/mailFolders/inbox/messagerules:
+    get:
+      tags:
+        - Delegated > Mail
+      summary: Get my mailbox rules
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/outlook/masterCategories:
+    get:
+      tags:
+        - Delegated > Mail
+      summary: Get my categories
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/sendMail:
+    post:
+      tags:
+        - Delegated > Mail
+      summary: Send mail
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n  \"message\": {\r\n    \"subject\": \"Meet for
+                lunch?\",\r\n    \"body\": {\r\n      \"contentType\":
+                \"Text\",\r\n      \"content\": \"The new cafeteria is
+                open.\"\r\n    },\r\n    \"toRecipients\": [\r\n     
+                {\r\n        \"emailAddress\": {\r\n          \"address\":
+                \"{{UserName}}\"\r\n        }\r\n      }\r\n    ],\r\n   
+                \"ccRecipients\": [\r\n      {\r\n        \"emailAddress\":
+                {\r\n          \"address\": \"{{UserName}}\"\r\n       
+                }\r\n      }\r\n    ]\r\n  },\r\n  \"saveToSentItems\":
+                \"false\"\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/mailboxSettings:
+    get:
+      tags:
+        - Delegated > Mail
+      summary: Get mailbox settings
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Delegated > Mail
+      summary: Set automatic replies
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n    \"@odata.context\":
+                \"https://graph.microsoft.com/v1.0/$metadata#Me/mailboxSettings\",\r\n\"automaticRepliesSetting\":
+                {\r\n        \"status\": \"scheduled\",\r\n       
+                \"externalAudience\": \"contactsOnly\",\r\n       
+                \"internalReplyMessage\": \"<html>\\n<body>\\n<div>I'm on
+                vacation!</div>\\n<div><br>\\n</div>\\n<div>Kindly
+                regards</div>\\n<div></div>\\n</body>\\n</html>\\n\",\r\n       
+                \"externalReplyMessage\":
+                \"<html>\\n<body>\\n<div></div>\\n<div>I'm on
+                vacation.</div>\\n<div><br>\\n</div>\\n<div>Kindly
+                regards</div>\\n</body>\\n</html>\\n\",\r\n       
+                \"scheduledStartDateTime\": {\r\n            \"dateTime\":
+                \"2019-07-15T08:00:00.0000000\",\r\n            \"timeZone\":
+                \"Europe/Berlin\"\r\n        },\r\n       
+                \"scheduledEndDateTime\": {\r\n            \"dateTime\":
+                \"2019-08-09T16:00:00.0000000\",\r\n            \"timeZone\":
+                \"Europe/Berlin\"\r\n        }\r\n    }\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/onenote/notebooks:
+    get:
+      tags:
+        - Delegated > Notebooks
+      summary: Get my notebooks
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Notebooks
+      summary: Create notebook
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"displayName\": \"Postman Notebook 1\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/onenote/sections:
+    get:
+      tags:
+        - Delegated > Notebooks
+      summary: Get my notebook sections
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/onenote/pages:
+    get:
+      tags:
+        - Delegated > Notebooks
+      summary: Get my notebook pages
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/onenote/notebooks/{NotebookId}/sections:
+    post:
+      tags:
+        - Delegated > Notebooks
+      summary: Create section
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"displayName\": \"Section 1\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: NotebookId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my profile
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/extensions:
+    post:
+      tags:
+        - Delegated > Extensions > Open extensions
+      summary: Create an open extension
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"@odata.type\": \"microsoft.graph.openTypeExtension\",\n 
+                \"extensionName\": \"com.contoso.roamingSettings\",\n 
+                \"theme\": \"dark\",\n  \"color\": \"purple\",\n  \"lang\":
+                \"Japanese\"\n}"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/extensions/{ExtensionId}:
+    patch:
+      tags:
+        - Delegated > Extensions > Open extensions
+      summary: Update an open extension
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"theme\": \"light\",\n  \"color\": \"red\",\n  \"lang\":
+                \"Swahili\"\n}"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ExtensionId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/schemaExtensions:
+    get:
+      tags:
+        - Delegated > Extensions > Schema extensions
+      summary: Get avaiable schema extensions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/groups/{GroupId}:
+    patch:
+      tags:
+        - Delegated > Extensions > Schema extensions
+      summary: Update a group with extension
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"adatumisv_courses\": {\n    \"id\": \"123\",\n   
+                \"name\": \"More Managers\",\n    \"type\": \"Online\"\n  }\n}"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: SdkVersion
+          in: header
+          schema:
+            type: string
+          example: postman-graph/v2.0
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Application > Teams
+      summary: Delete team
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/people:
+    get:
+      tags:
+        - Delegated > People
+      summary: Get people $top $skip
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $top
+          in: query
+          schema:
+            type: integer
+          example: '10'
+        - name: $skip
+          in: query
+          schema:
+            type: integer
+          example: '10'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/people/:
+    get:
+      tags:
+        - Delegated > People
+      summary: Get people $search fuzzy
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $search
+          in: query
+          schema:
+            type: string
+          example: '"John"'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users('{UserName}')/people/:
+    get:
+      tags:
+        - Delegated > People
+      summary: Get a user's related people
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: UserName
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/search/query:
+    post:
+      tags:
+        - Delegated > Search
+      summary: Apply refined query passing the aggregationToken
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n    \"Requests\": [\n        {\n            \"entityTypes\":
+                [\n                \"driveItem\"\n            ],\n           
+                \"query\": {\n                \"queryString\":
+                \"contoso\"\n            },\n            \"aggregationFilters\":
+                [\n               
+                \"contentclass:\\\"ǂǂ5354535f4c6973744974656d5f446f63756d656e744c696272617279\\\"\",\n               
+                \"FileType:\\\"ǂǂ646f6378\\\"\"                \n           
+                ],\n            \"aggregations\": [\n               
+                {\n                    \"field\":
+                \"FileType\",\n                    \"size\":
+                20,\n                    \"bucketDefinition\":
+                {\n                        \"sortBy\":
+                \"count\",\n                        \"isDescending\":
+                \"true\",\n                        \"minimumCount\":
+                0\n                    }\n                },\n               
+                {\n                    \"field\":
+                \"contentclass\",\n                    \"size\":
+                15,\n                    \"bucketDefinition\":
+                {\n                        \"sortBy\":
+                \"keyAsString\",\n                        \"isDescending\":
+                \"true\",\n                        \"minimumCount\":
+                0\n                    }\n                }\n           
+                ]\n        }\n    ]\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/security/alerts:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get alerts filtered by status
+      parameters:
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: Status eq 'NewAlert'
+        - name: $top
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/security/secureScores:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get secure scores
+      parameters:
+        - name: $top
+          in: query
+          schema:
+            type: integer
+          example: '5'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/security/secureScoreControlProfiles:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get secure scores control profiles
+      parameters:
+        - name: $top
+          in: query
+          schema:
+            type: integer
+          example: '5'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/security/tiIndicators:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get TI indicators
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/security/tiIndicators/{TIIndicatorId}:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get TI indicator by id
+      parameters:
+        - name: TIIndicatorId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/security/securityActions:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get security actions
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/security/securityActions/{SecurityActionsId}:
+    get:
+      tags:
+        - Delegated > Security
+      summary: Get security action by id
+      parameters:
+        - name: SecurityActionsId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get my organization's default site collection
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/drives:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get the doc libs in root site
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites:
+    get:
+      tags:
+        - Application > SharePoint
+      summary: Get sites
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: Prefer
+          in: header
+          schema:
+            type: string
+          example: apiversion=2.1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/sites:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get subsites of site
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/columns:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get site columns
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/contentTypes:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get site content types
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/lists:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get site lists
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/lists/{ListId}/columns:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get list columns
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/lists/{ListId}/contentTypes:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get list content types
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: ListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/sites/root/lists/{ListId}/items:
+    get:
+      tags:
+        - Delegated > SharePoint
+      summary: Get list items titled "Contoso Home"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: Prefer
+          in: header
+          schema:
+            type: string
+          example: HonorNonIndexedQueriesWarningMayFailRandomly
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: fields/Title eq 'Contoso Home'
+        - name: ListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/subscriptions:
+    get:
+      tags:
+        - Application > Subscriptions
+      summary: Get subscriptions
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/planner/tasks:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get Planner tasks
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserName}/planner/tasks:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get Planner tasks for a user
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: UserName
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/groups/{GroupId}/planner/plans:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get Planner plans associated with group
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/plans/{PlanId}:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get plan
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: PlanId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Update plan
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"title\": \"Updated plan title\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: If-Match
+          in: header
+          schema:
+            type: string
+          example: '{{PlanETag}}'
+        - name: PlanId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/plans/{PlanId}/buckets:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get plan buckets
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: PlanId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/buckets:
+    post:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Create a bucket in a plan
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"name\": \"New bucket\",\n  \"planId\":
+                \"{{PlanId}}\",\n  \"orderHint\": \" !\"\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: If-Match
+          in: header
+          schema:
+            type: string
+          example: '{{PlanETag}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/buckets/{BucketId}:
+    patch:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Update a bucket
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"name\": \"Updated bucket name\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: If-Match
+          in: header
+          schema:
+            type: string
+          example: '{{PlanETag}}'
+        - name: BucketId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/plans/{PlanId}/tasks:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get Planner tasks for a plan
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: PlanId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/tasks/{TaskId}:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get Planner task by id
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Update a Planner task
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\n  \"title\": \"Updated task title\"\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: If-Match
+          in: header
+          schema:
+            type: string
+          example: '{{PlanETag}}'
+        - name: TaskId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/tasks:
+    post:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Create a Planner task
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"planId\": \"{{PlanId}}\",\n  \"title\": \"New Task\",\n 
+                \"assignments\": {}\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/planner/tasks/{TaskId}/details:
+    get:
+      tags:
+        - Delegated > Tasks - Planner
+      summary: Get Planner task details
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/todo/lists:
+    get:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Get my To Do lists
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/todo/lists/{TaskListId}:
+    get:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Get my To Do list
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Update a To Do list
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\r\n  \"displayName\": \"Postman created items\"\r\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Delete a To Do list
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/todo/lists/:
+    post:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Create a To Do list
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: '"{\r\n  \"displayName\": \"Postman created list\"\r\n}"'
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/todo/lists/{TaskListId}/tasks:
+    get:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Get my To Do list tasks
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Create a To Do task in a list
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n   \"title\":\"Postman created Task\",\r\n  
+                \"linkedResources\":[\r\n      {\r\n        
+                \"webUrl\":\"http://microsoft.com\",\r\n        
+                \"applicationName\":\"Microsoft\",\r\n        
+                \"displayName\":\"Microsoft\"\r\n      }\r\n   ]\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/todo/lists/{TaskListId}/tasks/{TaskId}:
+    patch:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Update a To Do task in a list
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n   \"dueDateTime\":{\r\n     
+                \"dateTime\":\"2021-04-19T00:00:00\",\r\n     
+                \"timeZone\":\"Eastern Standard Time\"\r\n   }\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: TaskId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Delegated > Tasks - Todo
+      summary: Delete a To Do task in a list
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TaskListId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: TaskId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/joinedTeams:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get my joined teams
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/groups/{TeamId}/members:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get members of a team
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/channels:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get channels of a team
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Teams
+      summary: Create channel
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"displayName\": \"Architecture Discussion\",\n 
+                \"description\": \"This channel is where we debate all future
+                architecture plans\"\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/channels/{ChannelId}:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get channel info
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams:
+    post:
+      tags:
+        - Delegated > Teams
+      summary: Create team
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"template@odata.bind\":
+                \"https://graph.microsoft.com/v1.0/teamsTemplates('standard')\",\n 
+                \"displayName\": \"My Sample Team\",\n  \"description\": \"My
+                Sample Team’s Description\"\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/installedApps:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get apps in a team
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: teamsAppDefinition
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/channels/{ChannelId}/tabs:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get tabs in a channel
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: $expand
+          in: query
+          schema:
+            type: string
+          example: teamsApp
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/groups/{TeamId}/drive/root/children:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get items in a team drive
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/teams/{TeamId}/channels/{ChannelId}/messages:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get messages (without replies) in a channel (beta)
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Delegated > Teams
+      summary: Create an HTML chat thread (beta)
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\n  \"body\": {\n    \"contentType\": \"html\",\n   
+                \"content\": \"<div><div>\\n<div><img alt=\\\"GIF Image\\\"
+                height=\\\"250\\\"
+                src=\\\"https://media3.giphy.com/media/f5xmRWRu4zxxh2mE5v/giphy.gif?cid=de9bf95eevnce0lknjlbneccchvdkn991jea1gtmw2zmvdke&amp;rid=giphy.gif\\\"
+                width=\\\"250\\\" style=\\\"max-height:250px; width:250px;
+                height:250px\\\"></div>\\n\\n\\n</div>\\n</div>\"\n  }\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/teams/{TeamId}/channels/{ChannelId}/messages/{MessageId}:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get a message in a channel (beta)
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: MessageId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/teams/{TeamId}/channels/{ChannelId}/messages/{MessageId}/replies:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get replies to a message in a channel (beta)
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: MessageId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/teams/{TeamId}/channels/{ChannelId}/messages/{MessageId}/replies/{ReplyId}:
+    get:
+      tags:
+        - Delegated > Teams
+      summary: Get a reply of a message (beta)
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: MessageId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ReplyId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/aboutMe:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my about me
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my skills
+      parameters:
+        - name: $select
+          in: query
+          schema:
+            type: string
+          example: displayName,skills
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/manager:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my manager
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/directReports:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my direct reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/memberOf:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my groups
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/me/photo/$value:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get my photo
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users:
+    get:
+      tags:
+        - Application > Users
+      summary: Get users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserName}:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get user's profile by email
+      parameters:
+        - name: UserName
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserId}:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get a user's profile by id
+      parameters:
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserId}/photo/$value:
+    get:
+      tags:
+        - Delegated > Users
+      summary: Get a user's photo
+      parameters:
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/invitations:
+    post:
+      tags:
+        - Application > Users
+      summary: Invite guest user
+      description: Invite Azure AD B2B Guest User using Application Permission
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: "{ \r\n    \"invitedUserDisplayName\": \"<Display Name of Invited User>\", \r\n    \"invitedUserEmailAddress\": \"<Email Address of Invited User>, \r\n    \"invitedUserMessageInfo\": {\r\n        \"messageLanguage\": \"en-US\",\r\n        \"ccRecipients\": [\r\n             {\r\n                \"emailAddress\": {\r\n                    \"name\": \"<Optional CC for Invitation>\",\r\n                    \"address\": \"<Optional CC Email Address for Invitation>\"\r\n                 }\r\n             }\r\n        ],\r\n        \"customizedMessageBody\": \"Hi, you have just been invited to Azure AD with Postman using Microsoft Graph!\"\r\n     },\r\n    \"sendInvitationMessage\": true, \r\n    \"inviteRedirectUrl\": \"https://myapps.microsoft.com\" \r\n} "
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/catalog/entries:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Catalog
+      summary: List catalog entries
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/deployments/{DeploymentId}/audience/members:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment > Deployment audience
+      summary: List members
+      parameters:
+        - name: DeploymentId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/deployments/{DeploymentId}/audience/exclusions:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment > Deployment audience
+      summary: List exclusions
+      parameters:
+        - name: DeploymentId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/deployments/{DeploymentId}/audience/updateAudience:
+    post:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment > Deployment audience
+      summary: Update audience (remove exclusions)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                removeExclusions:
+                  - '@odata.type': '#microsoft.graph.windowsUpdates.azureADDevice'
+                    id: '{{AzureAdDeviceId}}'
+      parameters:
+        - name: DeploymentId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/deployments:
+    post:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment
+      summary: Create deployment (date-based gradual rollout)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                content:
+                  '@odata.type': '#microsoft.graph.windowsUpdates.featureUpdateReference'
+                  version: '{{FeatureUpdateVersion}}'
+                settings:
+                  '@odata.type': microsoft.graph.windowsUpdates.windowsDeploymentSettings
+                  rollout:
+                    startDateTime: '{{DeploymentStartDateTime}}'
+                    endDateTime: '{{DeploymentEndDateTime}}'
+                    durationBetweenOffers: P7D
+                  monitoring:
+                    monitoringRules:
+                      - '@odata.type': '#microsoft.graph.windowsUpdates.monitoringRule'
+                        signal: rollback
+                        threshold: 5
+                        action: pauseDeployment
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment
+      summary: List deployments
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/deployments/{DeploymentId}:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment
+      summary: Get deployment
+      parameters:
+        - name: DeploymentId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment
+      summary: Update deployment (clear requested state)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                state:
+                  '@odata.type': '#microsoft.graph.windowsUpdates.deploymentState'
+                  requestedValue: none
+      parameters:
+        - name: DeploymentId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Delegated > Windows Updates (beta) > Deployment
+      summary: Delete deployment
+      parameters:
+        - name: DeploymentId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/updatableAssets/:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Updatable asset > Azure AD device
+      summary: List Azure AD devices
+      parameters:
+        - name: $filter
+          in: query
+          schema:
+            type: string
+          example: isof('microsoft.graph.windowsUpdates.azureADDevice')
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/updatableAssets/{UpdatableAssetId}:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Updatable asset
+      summary: Get updatable asset
+      parameters:
+        - name: UpdatableAssetId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/deployments/{UpdatableAssetId}:
+    delete:
+      tags:
+        - Delegated > Windows Updates (beta) > Updatable asset
+      summary: Delete updatable asset
+      parameters:
+        - name: UpdatableAssetId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/updatableAssets/enrollAssets:
+    post:
+      tags:
+        - Delegated > Windows Updates (beta) > Updatable asset > Azure AD device
+      summary: Enroll in feature update management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                updateCategory: feature
+                assets:
+                  - '@odata.type': '#microsoft.graph.windowsUpdates.azureADDevice'
+                    id: '{{AzureAdDeviceId}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/updatableAssets/unenrollAssets:
+    post:
+      tags:
+        - Delegated > Windows Updates (beta) > Updatable asset > Azure AD device
+      summary: Unenroll from feature update management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                updateCategory: feature
+                assets:
+                  - '@odata.type': '#microsoft.graph.windowsUpdates.azureADDevice'
+                    id: '{{AzureAdDeviceId}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/admin/windows/updates/updatableAssets:
+    get:
+      tags:
+        - Delegated > Windows Updates (beta) > Updatable asset
+      summary: List updatable assets
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/external/connections:
+    get:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Get all connections
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Create connection
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n    \"id\": \"sampleConnectionId\",\r\n    \"name\":
+                \"Sample connection\",\r\n    \"description\": \"Sample
+                connection description\"\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/external/connections/sampleConnectionId:
+    get:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Get connection
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Delete connection
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/external/connections/sampleConnectionId/schema:
+    post:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Register schema
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n    \"baseType\": \"microsoft.graph.externalItem\",\r\n   
+                \"properties\": [\r\n        {\r\n            \"name\":
+                \"id\",\r\n            \"type\": \"string\",\r\n           
+                \"isSearchable\": false,\r\n            \"isRetrievable\":
+                true,\r\n            \"isQueryable\": false,\r\n           
+                \"labels\": [],\r\n            \"aliases\": []\r\n       
+                },\r\n        {\r\n            \"name\":
+                \"title\",\r\n            \"type\": \"string\",\r\n           
+                \"isSearchable\": true,\r\n            \"isRetrievable\":
+                true,\r\n            \"isQueryable\": true,\r\n           
+                \"labels\": [\r\n                \"title\"\r\n           
+                ],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"extension\",\r\n           
+                \"type\": \"string\",\r\n            \"isSearchable\":
+                true,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": true,\r\n            \"labels\":
+                [],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"createdBy\",\r\n           
+                \"type\": \"string\",\r\n            \"isSearchable\":
+                true,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": true,\r\n            \"labels\":
+                [\r\n                \"createdBy\"\r\n           
+                ],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"createdDateTime\",\r\n           
+                \"type\": \"dateTime\",\r\n            \"isSearchable\":
+                false,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": true,\r\n            \"labels\":
+                [\r\n                \"createdDateTime\"\r\n           
+                ],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"lastModifiedBy\",\r\n           
+                \"type\": \"string\",\r\n            \"isSearchable\":
+                false,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": true,\r\n            \"labels\":
+                [],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"lastModifiedDate\",\r\n           
+                \"type\": \"dateTime\",\r\n            \"isSearchable\":
+                false,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": true,\r\n            \"labels\":
+                [\r\n                \"lastModifiedDateTime\"\r\n           
+                ],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"url\",\r\n            \"type\":
+                \"string\",\r\n            \"isSearchable\":
+                false,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": false,\r\n            \"labels\":
+                [\r\n                \"url\"\r\n            ],\r\n           
+                \"aliases\": []\r\n        },\r\n        {\r\n           
+                \"name\": \"description\",\r\n            \"type\":
+                \"string\",\r\n            \"isSearchable\":
+                false,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": false,\r\n            \"labels\":
+                [],\r\n            \"aliases\": []\r\n        },\r\n       
+                {\r\n            \"name\": \"authors\",\r\n            \"type\":
+                \"stringCollection\",\r\n            \"isSearchable\":
+                false,\r\n            \"isRetrievable\": true,\r\n           
+                \"isQueryable\": false,\r\n            \"labels\":
+                [\r\n                \"authors\"\r\n           
+                ],\r\n            \"aliases\": []\r\n        }\r\n    ]\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: prefer
+          in: header
+          schema:
+            type: string
+          example: respond-async
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Get schema
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /:
+    get:
+      tags:
+        - Application > Graph Connectors > Connection setup
+      summary: Get connection operation status
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/external/connections/sampleConnectionId/items/sampleItemId:
+    put:
+      tags:
+        - Application > Graph Connectors > Content sync
+      summary: Put item
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n    \"acl\": [\r\n        {\r\n            \"type\":
+                \"everyone\",\r\n            \"value\":
+                \"c5f19b2d-0a77-454a-9b43-abf298c3b34e\",\r\n           
+                \"accessType\": \"grant\"\r\n        }\r\n    ],\r\n   
+                \"properties\": {\r\n        \"title\": \"Sample item
+                title\",\r\n        \"extension\": \"docx\",\r\n       
+                \"createdBy\": \"John Doe\",\r\n        \"createdDateTime\":
+                \"2021-04-27T11:04:00Z\",\r\n        \"iconUrl\":
+                \"https://contentdepot.blob.core.windows.net/filedepot/sampleIconUrl.png\",\r\n       
+                \"authors\": [\r\n            \"John Doe\"\r\n       
+                ],\r\n        \"authors@odata.type\":
+                \"Collection(String)\",\r\n        \"lastModifiedDate\":
+                \"2021-04-27T11:04:00Z\",\r\n        \"url\":
+                \"https://sampleItemUrl.com\",\r\n        \"containerName\":
+                \"Sample container name\",\r\n        \"containerUrl\":
+                \"https://sampleContainerUrl.com\"\r\n    },\r\n    \"content\":
+                {\r\n        \"type\": \"text\",\r\n        \"value\": \"Empower
+                customers and partners to be more productive by enabling them to
+                bring content and activity information and allow external
+                content to participate in Microsoft Search and OfficeHub
+                experiences so that they find relevant and actionable
+                information across all their applications.\"\r\n    }\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Application > Graph Connectors > Content sync
+      summary: Get item
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Application > Graph Connectors > Content sync
+      summary: Delete item
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/external/connections/sampleConnectionId/groups:
+    post:
+      tags:
+        - Application > Graph Connectors > Identity Sync (beta)
+      summary: Create group
+      description: Create group under the connection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                id: graphConnectorGroupId
+                displayName: Display name of group sampleExternalGroupId
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/external/connections/sampleConnectionId/groups/graphConnectorGroupId/members/:
+    post:
+      tags:
+        - Application > Graph Connectors > Identity Sync (beta)
+      summary: Add connector group as member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                id: childGraphConnectorGroupId
+                type: group
+                identitySource: external
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/external/connections/sampleConnectionId/groups/graphConnectorGroupId/members/childGraphConnectorGroupId:
+    delete:
+      tags:
+        - Application > Graph Connectors > Identity Sync (beta)
+      summary: Remove member
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/external/connections/sampleConnectionId/groups/graphConnectorGroupId:
+    delete:
+      tags:
+        - Application > Graph Connectors > Identity Sync (beta)
+      summary: Delete group
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserId}/messages:
+    get:
+      tags:
+        - Application > Mail
+      summary: Get a user's messages
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserId}/messages/{MessageId}:
+    get:
+      tags:
+        - Application > Mail
+      summary: Get a user's message
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: MessageId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/subscriptions/{SubscriptionId}:
+    patch:
+      tags:
+        - Application > Subscriptions
+      summary: Update subscription
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: string
+              example: >-
+                "{\r\n  
+                \"expirationDateTime\":\"2019-05-19T12:41:53.2962802Z\"\r\n}"
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+        - name: SubscriptionId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/subscriptions:
+    post:
+      tags:
+        - Application > Subscriptions
+      summary: Create subscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                changeType: created,updated
+                notificationUrl: '{{notificationUrl}}'
+                resource: '{{resourcePath}}'
+                expirationDateTime: '{{expirationDateTime}}'
+                clientState: secretClientState
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{GroupId}/members:
+    get:
+      tags:
+        - Application > Teams > Memberships
+      summary: Get team members
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Application > Teams > Memberships
+      summary: Add team member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                '@odata.type': '#microsoft.graph.aadUserConversationMember'
+                roles:
+                  - owner
+                user@odata.bind: >-
+                  https://graph.microsoft.com/v1.0/users/a82083e7-cc7c-48a4-9ed1-ce70e42f7453
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{GroupId}/members/{UserId}:
+    get:
+      tags:
+        - Application > Teams > Memberships
+      summary: Get single team member
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Application > Teams > Memberships
+      summary: Update team member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                '@odata.type': '#microsoft.graph.aadUserConversationMember'
+                roles:
+                  - owner
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{GroupId}/channels/{ChannelId}/members:
+    get:
+      tags:
+        - Application > Teams > Memberships
+      summary: Get channel members
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/channels/{ChannelId}/members:
+    post:
+      tags:
+        - Application > Teams
+      summary: Create team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                template@odata.bind: https://graph.microsoft.com/v1.0/teamsTemplates('standard')
+                displayName: My Sample Team
+                description: My Sample Team’s Description
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/members/{UserId}:
+    delete:
+      tags:
+        - Application > Teams > Memberships
+      summary: Remove team member
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/channels/{ChannelId}members/{UserId}:
+    delete:
+      tags:
+        - Application > Teams > Memberships
+      summary: Remove channel member
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{GroupId}/channels/{ChannelId}/members/{UserId}:
+    patch:
+      tags:
+        - Application > Teams > Memberships
+      summary: Update channel member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                '@odata.type': '#microsoft.graph.aadUserConversationMember'
+                roles:
+                  - owner
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: ChannelId
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/users/{UserId}/joinedTeams:
+    get:
+      tags:
+        - Application > Teams
+      summary: Get user's joined teams
+      parameters:
+        - name: UserId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{GroupId}/primaryChannel:
+    get:
+      tags:
+        - Application > Teams
+      summary: Get primary channel
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{GroupId}/channels:
+    get:
+      tags:
+        - Application > Teams
+      summary: Get team channels
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}:
+    get:
+      tags:
+        - Application > Teams
+      summary: Get team
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Application > Teams
+      summary: Update team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                memberSettings:
+                  allowCreateUpdateChannels: true
+                messagingSettings:
+                  allowUserEditMessages: true
+                  allowUserDeleteMessages: true
+                funSettings:
+                  allowGiphy: true
+                  giphyContentRating: strict
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/groups/{GroupId}/team:
+    put:
+      tags:
+        - Application > Teams
+      summary: Create team from group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                memberSettings:
+                  allowCreatePrivateChannels: true
+                  allowCreateUpdateChannels: true
+                messagingSettings:
+                  allowUserEditMessages: true
+                  allowUserDeleteMessages: true
+                funSettings:
+                  allowGiphy: true
+                  giphyContentRating: strict
+      parameters:
+        - name: GroupId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/archive:
+    post:
+      tags:
+        - Application > Teams
+      summary: Archive team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                shouldSetSpoSiteReadOnlyForMembers: true
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/clone:
+    post:
+      tags:
+        - Application > Teams
+      summary: Clone team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                displayName: Library Assist
+                description: Self help community for library
+                mailNickname: libassist
+                partsToClone: apps,tabs,settings,channels,members
+                visibility: public
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/teams/{TeamId}/unarchive:
+    post:
+      tags:
+        - Application > Teams
+      summary: Unarchive team
+      requestBody:
+        content: {}
+      parameters:
+        - name: TeamId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/notification:
+    post:
+      tags:
+        - Misc
+      summary: Subscription validation
+      description: >-
+        Allows you to validate whether the notification endpoint you are
+        building properly passed Microsoft Graph Subscription creation
+        validation.
+
+        The response content type should be text/plain, code 200 OK and the body
+        the information passed by the validationToken query parameter
+      requestBody:
+        content: {}
+      parameters:
+        - name: validationToken
+          in: query
+          schema:
+            type: string
+          description: >-
+            random validation token passed by the Microsoft Graph when
+            validating the notificationURL
+          example: something
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /v1.0/$metadata:
+    get:
+      tags:
+        - General
+      summary: v1.0 $metadata
+      parameters:
+        - name: Accept
+          in: header
+          schema:
+            type: string
+          example: application/json;odata.metadata=full
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /beta/$metadata:
+    get:
+      tags:
+        - General
+      summary: beta $metadata
+      parameters:
+        - name: Accept
+          in: header
+          schema:
+            type: string
+          example: application/json;odata.metadata=full
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

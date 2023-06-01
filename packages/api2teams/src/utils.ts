@@ -79,7 +79,7 @@ export function formatCode(code: string): string {
   const formattedCode = prettier.format(code, {
     parser: 'typescript',
     semi: true,
-    singleQuote: true,
+    singleQuote: false,
     trailingComma: 'all',
     arrowParens: 'always',
     printWidth: 80,

@@ -1,0 +1,789 @@
+openapi: 3.0.0
+info:
+  description: Yahoo Finance API specification
+  contact:
+    url: 'https://help.yahoo.com/kb/finance-for-web'
+  version: 1.0.8
+  title: Yahoo Finance
+  termsOfService: 'https://www.verizonmedia.com/policies/us/en/verizonmedia/terms/otos/index.html'
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  - url: 'https://query2.finance.yahoo.com'
+tags:
+  - name: quoteSummary
+
+paths:
+  '/v10/finance/quoteSummary/{symbol}':
+    get:
+      operationId: GetChart
+      tags:
+        - chart
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: formatted
+          in: query
+          required: true
+          schema:
+            type: boolean
+            default: true
+        - name: crumb
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: lang
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - en-US
+        - name: region
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - US
+        - name: modules
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - balanceSheetHistory
+                - balanceSheetHistoryQuarterly
+                - calendarEvents
+                - cashflowStatementHistory
+                - cashflowStatementHistoryQuarterly
+                - defaultKeyStatistics
+                - details
+                - earnings
+                - esgScores
+                - incomeStatementHistory
+                - incomeStatementHistoryQuarterly
+                - summaryProfile
+            default:
+              - calendarEvents
+              - defaultKeyStatistics
+              - details
+              - earnings
+              - esgScores
+              - summaryProfile
+          explode: false
+          style: form
+        - name: corsDomain
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - finance.yahoo.com
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteSummary'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: Unprocessable Entity
+        description:
+          type: string
+          example: 1m data not available for startTime=1618960073 and endTime=1622560073. Only 7 days worth of 1m granularity data are allowed to be fetched per request.
+    QuoteSummary:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            properties:
+              esgScores:
+                type: object
+                properties:
+                  maxAge:
+                    type: integer
+                    format: int32
+                  totalEsg:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  environmentScore:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  socialScore:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  governanceScore:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  ratingYear:
+                    type: integer
+                    format: int32
+                  ratingMonth:
+                    type: integer
+                    format: int32
+                  highestControversy:
+                    type: integer
+                    format: int32
+                  peerCount:
+                    type: integer
+                    format: int32
+                  esgPerformance:
+                    type: string
+                  peerGroup:
+                    type: string
+                  relatedControversy:
+                    type: array
+                    items:
+                      type: string
+                  peerEsgScorePerformance:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                      avg:
+                        type: number
+                      max:
+                        type: number
+                  peerGovernancePerformance:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                      avg:
+                        type: number
+                      max:
+                        type: number
+                  peerSocialPerformance:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                      avg:
+                        type: number
+                      max:
+                        type: number
+                  peerEnvironmentPerformance:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                      avg:
+                        type: number
+                      max:
+                        type: number
+                  peerHighestControversyPerformance:
+                    type: object
+                    properties:
+                      min:
+                        type: integer
+                        format: int32
+                      avg:
+                        type: number
+                      max:
+                        type: integer
+                        format: int32
+                  percentile:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  environmentPercentile:
+                    type: string
+                    format: nullable
+                  socialPercentile:
+                    type: string
+                    format: nullable
+                  governancePercentile:
+                    type: string
+                    format: nullable
+                  adult:
+                    type: boolean
+                  alcoholic:
+                    type: boolean
+                  animalTesting:
+                    type: boolean
+                  catholic:
+                    type: boolean
+                  controversialWeapons:
+                    type: boolean
+                  smallArms:
+                    type: boolean
+                  furLeather:
+                    type: boolean
+                  gambling:
+                    type: boolean
+                  gmo:
+                    type: boolean
+                  militaryContract:
+                    type: boolean
+                  nuclear:
+                    type: boolean
+                  pesticides:
+                    type: boolean
+                  palmOil:
+                    type: boolean
+                  coal:
+                    type: boolean
+                  tobacco:
+                    type: boolean
+              defaultKeyStatistics:
+                type: object
+                properties:
+                  maxAge:
+                    type: integer
+                    format: int32
+                  priceHint:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  enterpriseValue:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int64
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  forwardPE:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  profitMargins:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  floatShares:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  sharesOutstanding:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  sharesShort:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  sharesShortPriorMonth:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  sharesShortPreviousMonthDate:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                        format: date
+                  dateShortInterest:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                        format: date
+                  sharesPercentSharesOut:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  heldPercentInsiders:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  heldPercentInstitutions:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  shortRatio:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  shortPercentOfFloat:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  beta:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  impliedSharesOutstanding:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int64
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  morningStarOverallRating:
+                    type: string
+                  morningStarRiskRating:
+                    type: string
+                  category:
+                    type: string
+                    format: nullable
+                  bookValue:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  priceToBook:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  annualReportExpenseRatio:
+                    type: string
+                  ytdReturn:
+                    type: string
+                  beta3Year:
+                    type: string
+                  totalAssets:
+                    type: string
+                  yield:
+                    type: string
+                  fundFamily:
+                    type: string
+                    format: nullable
+                  fundInceptionDate:
+                    type: string
+                  legalType:
+                    type: string
+                    format: nullable
+                  threeYearAverageReturn:
+                    type: string
+                  fiveYearAverageReturn:
+                    type: string
+                  priceToSalesTrailing12Months:
+                    type: string
+                  lastFiscalYearEnd:
+                    type: string
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                        format: date
+                  nextFiscalYearEnd:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                        format: date
+                  mostRecentQuarter:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                        format: date
+                  earningsQuarterlyGrowth:
+                    type: string
+                  revenueQuarterlyGrowth:
+                    type: string
+                  netIncomeToCommon:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int64
+                      fmt:
+                        type: string
+                      longFmt:
+                        type: string
+                  trailingEps:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  forwardEps:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  pegRatio:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  lastSplitFactor:
+                    type: string
+                  lastSplitDate:
+                    type: object
+                    properties:
+                      raw:
+                        type: integer
+                        format: int32
+                      fmt:
+                        type: string
+                        format: date
+                  enterpriseToRevenue:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  enterpriseToEbitda:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  52WeekChange:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  SandP52WeekChange:
+                    type: object
+                    properties:
+                      raw:
+                        type: number
+                      fmt:
+                        type: string
+                  lastDividendValue:
+                    type: string
+                  lastDividendDate:
+                    type: string
+                  lastCapGain:
+                    type: string
+                  annualHoldingsTurnover:
+                    type: string
+              earnings:
+                type: object
+                properties:
+                  maxAge:
+                    type: integer
+                    format: int32
+                  earningsChart:
+                    type: object
+                    properties:
+                      quarterly:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                            actual:
+                              type: object
+                              properties:
+                                raw:
+                                  type: number
+                                fmt:
+                                  type: string
+                            estimate:
+                              type: object
+                              properties:
+                                raw:
+                                  type: number
+                                fmt:
+                                  type: string
+                      currentQuarterEstimate:
+                        type: object
+                        properties:
+                          raw:
+                            type: number
+                          fmt:
+                            type: string
+                      currentQuarterEstimateDate:
+                        type: string
+                      currentQuarterEstimateYear:
+                        type: integer
+                        format: int32
+                      earningsDate:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            raw:
+                              type: integer
+                              format: int32
+                            fmt:
+                              type: string
+                              format: date
+                  financialsChart:
+                    type: object
+                    properties:
+                      yearly:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: integer
+                              format: int32
+                            revenue:
+                              type: object
+                              properties:
+                                raw:
+                                  type: integer
+                                  format: int64
+                                fmt:
+                                  type: string
+                                longFmt:
+                                  type: string
+                            earnings:
+                              type: object
+                              properties:
+                                raw:
+                                  type: integer
+                                  format: int64
+                                fmt:
+                                  type: string
+                                longFmt:
+                                  type: string
+                      quarterly:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                            revenue:
+                              type: object
+                              properties:
+                                raw:
+                                  type: integer
+                                  format: int64
+                                fmt:
+                                  type: string
+                                longFmt:
+                                  type: string
+                            earnings:
+                              type: object
+                              properties:
+                                raw:
+                                  type: integer
+                                  format: int64
+                                fmt:
+                                  type: string
+                                longFmt:
+                                  type: string
+                  financialCurrency:
+                    type: string
+              calendarEvents:
+                type: object
+                properties:
+                  maxAge:
+                    type: integer
+                    format: int32
+                  earnings:
+                    type: object
+                    properties:
+                      earningsDate:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            raw:
+                              type: integer
+                              format: int32
+                            fmt:
+                              type: string
+                              format: date
+                      earningsAverage:
+                        type: object
+                        properties:
+                          raw:
+                            type: number
+                          fmt:
+                            type: string
+                      earningsLow:
+                        type: object
+                        properties:
+                          raw:
+                            type: number
+                          fmt:
+                            type: string
+                      earningsHigh:
+                        type: object
+                        properties:
+                          raw:
+                            type: number
+                          fmt:
+                            type: string
+                      revenueAverage:
+                        type: object
+                        properties:
+                          raw:
+                            type: integer
+                            format: int64
+                          fmt:
+                            type: string
+                          longFmt:
+                            type: string
+                      revenueLow:
+                        type: object
+                        properties:
+                          raw:
+                            type: integer
+                            format: int64
+                          fmt:
+                            type: string
+                          longFmt:
+                            type: string
+                      revenueHigh:
+                        type: object
+                        properties:
+                          raw:
+                            type: integer
+                            format: int64
+                          fmt:
+                            type: string
+                          longFmt:
+                            type: string
+                  exDividendDate:
+                    type: string
+                  dividendDate:
+                    type: string
+              summaryProfile:
+                type: object
+                properties:
+                  address1:
+                    type: string
+                  city:
+                    type: string
+                  state:
+                    type: string
+                  zip:
+                    type: string
+                  country:
+                    type: string
+                  phone:
+                    type: string
+                  website:
+                    type: string
+                  industry:
+                    type: string
+                  sector:
+                    type: string
+                  longBusinessSummary:
+                    type: string
+                  fullTimeEmployees:
+                    type: integer
+                    format: int32
+                  companyOfficers:
+                    type: string
+                  maxAge:
+                    type: integer
+                    format: int32
+        error:
+          $ref: '#/components/schemas/Error'
+          format: nullable

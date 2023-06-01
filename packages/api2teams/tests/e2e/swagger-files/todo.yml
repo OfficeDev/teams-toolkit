@@ -1,0 +1,308 @@
+openapi: 3.0.1
+info:
+  title: Todo API
+  version: '1.0'
+servers:
+  - url: https://pierceapim.azure-api.net
+paths:
+  /api/TodoItems:
+    get:
+      tags:
+        - TodoItems
+      summary: /api/TodoItems - GET
+      operationId: get-api-todoitems
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TodoItemArray'
+              examples:
+                default:
+                  value: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItemArray'
+              example:
+                - id: 0
+                  name: string
+                  isComplete: true
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TodoItemArray'
+              example:
+                - id: 0
+                  name: string
+                  isComplete: true
+    post:
+      tags:
+        - TodoItems
+      summary: /api/TodoItems - POST
+      operationId: post-api-todoitems
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+            example:
+              id: 0
+              name: string
+              isComplete: true
+          text/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+            example:
+              id: 0
+              name: string
+              isComplete: true
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+            example:
+              id: 0
+              name: string
+              isComplete: true
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+              examples:
+                default:
+                  value: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+              example:
+                id: 0
+                name: string
+                isComplete: true
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+              example:
+                id: 0
+                name: string
+                isComplete: true
+  '/api/TodoItems/{id}':
+    get:
+      tags:
+        - TodoItems
+      summary: '/api/TodoItems/{id} - GET'
+      operationId: get-api-todoitems-id
+      parameters:
+        - name: id
+          in: path
+          description: Format - int64.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+              examples:
+                default:
+                  value: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+              example:
+                id: 0
+                name: string
+                isComplete: true
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+              example:
+                id: 0
+                name: string
+                isComplete: true
+    put:
+      tags:
+        - TodoItems
+      summary: '/api/TodoItems/{id} - PUT'
+      operationId: put-api-todoitems-id
+      parameters:
+        - name: id
+          in: path
+          description: Format - int64.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+            example:
+              id: 0
+              name: string
+              isComplete: true
+          text/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+            example:
+              id: 0
+              name: string
+              isComplete: true
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+            example:
+              id: 0
+              name: string
+              isComplete: true
+      responses:
+        '200':
+          description: Success
+    delete:
+      tags:
+        - TodoItems
+      summary: '/api/TodoItems/{id} - DELETE'
+      operationId: delete-api-todoitems-id
+      parameters:
+        - name: id
+          in: path
+          description: Format - int64.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Success
+  /WeatherForecast:
+    get:
+      tags:
+        - WeatherForecast
+      summary: GetWeatherForecast
+      operationId: GetWeatherForecast
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/WeatherForecastArray'
+              examples:
+                default:
+                  value: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherForecastArray'
+              example:
+                - date:
+                    year: 0
+                    month: 0
+                    day: 0
+                    dayOfWeek: 0
+                    dayOfYear: 0
+                    dayNumber: 0
+                  temperatureC: 0
+                  temperatureF: 0
+                  summary: string
+            text/json:
+              schema:
+                $ref: '#/components/schemas/WeatherForecastArray'
+              example:
+                - date:
+                    year: 0
+                    month: 0
+                    day: 0
+                    dayOfWeek: 0
+                    dayOfYear: 0
+                    dayNumber: 0
+                  temperatureC: 0
+                  temperatureF: 0
+                  summary: string
+components:
+  schemas:
+    DateOnly:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+        month:
+          type: integer
+          format: int32
+        day:
+          type: integer
+          format: int32
+        dayOfWeek:
+          $ref: '#/components/schemas/DayOfWeek'
+        dayOfYear:
+          type: integer
+          format: int32
+          readOnly: true
+        dayNumber:
+          type: integer
+          format: int32
+          readOnly: true
+      additionalProperties: false
+    DayOfWeek:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      type: integer
+      format: int32
+    TodoItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        isComplete:
+          type: boolean
+      additionalProperties: false
+    WeatherForecast:
+      type: object
+      properties:
+        date:
+          $ref: '#/components/schemas/DateOnly'
+        temperatureC:
+          type: integer
+          format: int32
+        temperatureF:
+          type: integer
+          format: int32
+          readOnly: true
+        summary:
+          type: string
+      additionalProperties: false
+    TodoItemArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/TodoItem'
+    WeatherForecastArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/WeatherForecast'
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]

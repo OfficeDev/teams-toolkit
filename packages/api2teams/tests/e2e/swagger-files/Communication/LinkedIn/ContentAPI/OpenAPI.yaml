@@ -1,0 +1,681 @@
+openapi: 3.0.0
+info:
+  title: Content API - Restricted API
+  description: >-
+    We are making updates to our collections. If you run into any issues pulling
+    the latest changes, simply fork the collection again.
+
+
+    **You must apply for access to the Marketing Developer Platform in order to
+    use these APIs. See the [Developer
+    Portal](https://developer.linkedin.com/product-catalog/marketing/campaign-management)
+    on how to apply.**
+  version: 1.0.0
+servers:
+  - url: http://{{baseurl}}
+  - url: http://{{upload_video_url}}
+components:
+  securitySchemes:
+    oauth2Auth:
+      type: http
+      scheme: oauth2
+security:
+  - oauth2Auth: []
+tags:
+  - name: Use Cases
+  - name: Use Cases > Video Ads - Beta
+    description: >-
+      This collection aims to focus on content-api[ video Ads Beta use
+      cases](https://docs.microsoft.com/en-us/linkedin/marketing/usecases/ad-tech/video-ads-beta)
+      and should be used with the **video-ads-beta-env** environment.
+
+
+      --All requests for the Video Ads Beta API collection are in the Restli 2.0
+      format--
+
+
+      **Prerequisite:** Perform steps 1 & 2 from the [Generate An Access Token
+      using
+      Postman](https://docs.microsoft.com/linkedin/shared/authentication/generate-an-access-token?context=linkedin/marketing/context)
+      of our online documentation for this request to work.
+
+
+      This is an example for generating an access token with the necessary scope
+      to test the Video Ads Beta collection apis.
+
+
+      The full process your application will need to implement for 3-legged
+      tokens is described in [Authorization Code
+      Flow](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin%2Fmarketing%2Fcontext&tabs=HTTPS)
+  - name: Use Cases > Video Ads - Beta > Upload A Video - No Caption No Thumbnails
+    description: >-
+      This example shows how to upload a video file, For complete API Details,
+      check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)
+  - name: Use Cases > Video Ads - Beta > Upload A Video - Yes Caption No Thumbnails
+    description: >-
+      This example shows how to upload a video file, For complete API Details,
+      check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)
+  - name: Use Cases > Video Ads - Beta > Upload A Video - Yes Caption Yes Thumbnails
+    description: >-
+      This example shows how to upload a video file, For complete API Details,
+      check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)
+  - name: Use Cases > Video Ads - Beta > Upload A Video - No Caption Yes Thumbnails
+    description: >-
+      This example shows how to upload a video file, For complete API Details,
+      check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/videos-api-beta?tabs=http)
+  - name: Use Cases > Video Ads - Beta > Organic Post
+    description: >-
+      This example shows how to create, read, update and finder operations with
+      posts API. For complete API Details, check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/posts-api-beta?tabs=http)
+  - name: Use Cases > Video Ads - Beta > Organic Post - Batch operations
+    description: >-
+      This example shows how to create, read, update and finder operations with
+      posts API. For complete API Details, check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/posts-api-beta?tabs=http)
+  - name: >-
+      Use Cases > Video Ads - Beta > Create a Video Ad with Existing Organic
+      Post - Batch operations
+    description: >-
+      This example shows how to create, read, update and finder operations with
+      campaign creatives API. For complete API Details, check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?tabs=http)
+  - name: >-
+      Use Cases > Video Ads - Beta > Created a Video Ad with Direct Sponsored
+      Content Post
+    description: >-
+      This example shows how to create, read, update and finder operations with
+      campaign creatives API. For complete API Details, check[
+      here](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?tabs=http)
+paths:
+  /videos:
+    post:
+      tags:
+        - >-
+          Use Cases > Video Ads - Beta > Upload A Video - No Caption Yes
+          Thumbnails
+      summary: 3. Finalize video upload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                finalizeUploadRequest:
+                  video: urn:li:video:{{video_id}}
+                  uploadToken: ''
+                  uploadedPartIds:
+                    - '{{etag}}'
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+          example: finalizeUpload
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /:
+    post:
+      tags:
+        - >-
+          Use Cases > Video Ads - Beta > Upload A Video - No Caption Yes
+          Thumbnails
+      summary: 2. Upload video file
+      requestBody:
+        content:
+          text/plain: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /videos/urn:li:video:{video_id}:
+    get:
+      tags:
+        - >-
+          Use Cases > Video Ads - Beta > Upload A Video - No Caption Yes
+          Thumbnails
+      summary: 4. Check video upload status***
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: video_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /posts:
+    post:
+      tags:
+        - Use Cases > Video Ads - Beta > Organic Post
+      summary: 9. Update Existing Post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    commentary: Update to the post
+                    contentCallToActionLabel: LEARN_MORE
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: X-RestLi-Method
+          in: header
+          schema:
+            type: string
+          example: PARTIAL_UPDATE
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Use Cases > Video Ads - Beta > Organic Post - Batch operations
+      summary: 6. Fetch Multiple Posts
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: X-RestLi-Method
+          in: header
+          schema:
+            type: string
+          example: BATCH_GET
+        - name: ids
+          in: query
+          schema:
+            type: string
+          example: List(urn%3Ali%3Ashare%3A{{shares_id}})
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '524'
+            Date:
+              schema:
+                type: string
+                example: Wed, 22 Dec 2021 04:39:59 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1-x
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXTtLbil9r395/akLo+rA==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640147999:t=1640188937:v=2:sig=AQGhzN3V3R7Q14xxQ8T8Wz-byiEoO5zK"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640147999:t=1640188937:v=2:sig=AQGhzN3V3R7Q14xxQ8T8Wz-byiEoO5zK"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                results:
+                  urn:li:share:6857032594463211520:
+                    isReshareDisabledByAuthor: false
+                    createdAt: 1634843968082
+                    lifecycleState: PUBLISHED
+                    lastModifiedAt: 1634843968082
+                    visibility: PUBLIC
+                    publishedAt: 1634843968082
+                    author: urn:li:organization:18799005
+                    id: urn:li:share:6857032594463211520
+                    distribution:
+                      feedDistribution: MAIN_FEED
+                      thirdPartyDistributionChannels: []
+                    commentary: test strings
+                    lifecycleStateInfo:
+                      isEditedByAuthor: false
+                statuses:
+                  urn:li:share:6857032594463211520: 200
+                errors: {}
+  /posts/urn:li:share:{shares_id}:
+    get:
+      tags:
+        - Use Cases > Video Ads - Beta > Organic Post
+      summary: 8. Search Post By Ad Account
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: shares_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Use Cases > Video Ads - Beta > Organic Post
+      summary: 10. Delete Existing Post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: ''
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: X-RestLi-Method
+          in: header
+          schema:
+            type: string
+          example: DELETE
+        - name: shares_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /creatives:
+    post:
+      tags:
+        - >-
+          Use Cases > Video Ads - Beta > Created a Video Ad with Direct
+          Sponsored Content Post
+      summary: 5. Create a DSC post
+      description: >-
+        Please refer to the API Docs
+        [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#create-a-video-ad-beta).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                creative:
+                  inlineContent:
+                    post:
+                      adContext:
+                        isDsc: true
+                        dscAdAccount: urn:li:sponsoredAccount:{{adaccount_id}}
+                        dscStatus: ACTIVE
+                      author: urn:li:organization:{{org_id}}
+                      commentary: comment on Oct 27
+                      visibility: PUBLIC
+                      lifecycleState: PUBLISHED
+                      isReshareDisabledByAuthor: false
+                      content:
+                        media:
+                          title: Oct 27 title
+                          id: urn:li:video:{{video_id}}
+                  campaign: urn:li:sponsoredCampaign:{{campaign_id}}
+                  intendedStatus: DRAFT
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: action
+          in: query
+          schema:
+            type: string
+          example: createInline
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '59'
+            Date:
+              schema:
+                type: string
+                example: Wed, 27 Oct 2021 17:56:20 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635357380:t=1635435171:v=2:sig=AQEtj5SFoeCwqtjQ4wrUtmwpPMzGxBXD"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=TB90:s=T:r=T:a=T:p=T:g=2961:u=219:x=1:i=1635357380:t=1635435171:v=2:sig=AQEtj5SFoeCwqtjQ4wrUtmwpPMzGxBXD"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: Lcd8Yd/0sRZQF8T5rCoAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                value:
+                  creative: urn:li:sponsoredCreative:150300054
+    get:
+      tags:
+        - >-
+          Use Cases > Video Ads - Beta > Create a Video Ad with Existing Organic
+          Post - Batch operations
+      summary: 7. Search Creatives By Criteria
+      description: >-
+        Please refer to the API Docs
+        [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#search-for-creatives)
+      parameters:
+        - name: X-RestLi-Method
+          in: header
+          schema:
+            type: string
+          example: FINDER
+        - name: x-restli-protocol-version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: creatives
+          in: query
+          schema:
+            type: string
+          example: List(urn%3Ali%3AsponsoredCreative%3A{{creatives_id}})
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: criteria
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+          example: ASCENDING
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '575'
+            Date:
+              schema:
+                type: string
+                example: Wed, 22 Dec 2021 20:09:59 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1-x
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXTwbTLVrGVRavDU8eKqQ==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640203798:t=1640275340:v=2:sig=AQG9i4U1Za_z6LSe2h_52OFAwOfOb5Q4"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640203798:t=1640275340:v=2:sig=AQG9i4U1Za_z6LSe2h_52OFAwOfOb5Q4"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links: []
+                  total: 1
+                elements:
+                  - servingHoldReasons:
+                      - UNDER_REVIEW
+                      - CAMPAIGN_STOPPED
+                      - ACCOUNT_SERVING_HOLD
+                    lastModifiedAt: 1634841150000
+                    lastModifiedBy: urn:li:person:B1U4S2MZ-C
+                    content:
+                      reference: urn:li:ugcPost:6857020775182987264
+                    createdAt: 1634841150000
+                    isTest: false
+                    createdBy: urn:li:person:B1U4S2MZ-C
+                    review:
+                      status: PENDING
+                    isServing: false
+                    campaign: urn:li:sponsoredCampaign:185590714
+                    id: urn:li:sponsoredCreative:149732394
+                    intendedStatus: ACTIVE
+                    account: urn:li:sponsoredAccount:506316595
+  /creatives/urn:li:sponsoredCreative:{creatives_id}:
+    get:
+      tags:
+        - >-
+          Use Cases > Video Ads - Beta > Created a Video Ad with Direct
+          Sponsored Content Post
+      summary: 6. Get a DSC post by id
+      description: >-
+        Please refer to the API Docs
+        [here](https://review.docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives-beta?branch=lms-release&tabs=http#get-a-creative).
+      parameters:
+        - name: X-RestLi-Method
+          in: header
+          schema:
+            type: string
+          example: get
+        - name: x-restli-protocol-version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: creatives_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '507'
+            Date:
+              schema:
+                type: string
+                example: Wed, 22 Dec 2021 20:32:16 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1-x
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXTwgSFxi+UrGKhcB1oTQ==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640205136:t=1640275340:v=2:sig=AQF3O8UhrX15VZYkeB9Yrmca2jtViVJW"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=TB90:s=T:r=T:a=T:p=T:g=2986:u=239:x=1:i=1640205136:t=1640275340:v=2:sig=AQF3O8UhrX15VZYkeB9Yrmca2jtViVJW"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                servingHoldReasons:
+                  - UNDER_REVIEW
+                  - CAMPAIGN_STOPPED
+                  - ACCOUNT_SERVING_HOLD
+                lastModifiedAt: 1634841150000
+                lastModifiedBy: urn:li:person:B1U4S2MZ-C
+                content:
+                  reference: urn:li:ugcPost:6857020775182987264
+                createdAt: 1634841150000
+                isTest: false
+                createdBy: urn:li:person:B1U4S2MZ-C
+                review:
+                  status: PENDING
+                isServing: false
+                campaign: urn:li:sponsoredCampaign:185590714
+                id: urn:li:sponsoredCreative:149732394
+                intendedStatus: ACTIVE
+                account: urn:li:sponsoredAccount:506316595

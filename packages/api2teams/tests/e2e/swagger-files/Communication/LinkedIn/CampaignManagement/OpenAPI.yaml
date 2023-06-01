@@ -1,0 +1,4369 @@
+openapi: 3.0.0
+info:
+  title: Campaign Management - Restricted API
+  description: >-
+    We are making updates to our collections. If you run into any issues pulling
+    the latest changes, simply fork the collection again.
+
+
+    **You must apply for access to the Marketing Developer Platform in order to
+    use these APIs. See the** [**Developer
+    Portal**](https://developer.linkedin.com/product-catalog/marketing/campaign-management)
+    **on how to apply.**
+
+
+    This collection aims to focus on different Campaign Management use cases and
+    should be used with the **campaign-management-env** environment.
+
+
+    \--All requests for the Campaign Management API collection are in the Restli
+    2.0 format--
+
+
+    **Prerequisite:** Perform steps 1 & 2 from the [Generate An Access Token
+    using
+    Postman](https://docs.microsoft.com/linkedin/shared/authentication/generate-an-access-token?context=linkedin/marketing/context)
+    of our online documentation for this request to work.
+
+
+    This is an example for generating an access token with the necessary scope
+    to test the Campaign Management collection apis.
+
+
+    The full process your application will need to implement for 3-legged tokens
+    is described in [Authorization Code
+    Flow](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/marketing/context&tabs=HTTPS)
+  version: 1.0.0
+servers:
+  - url: http://{{baseurl}}
+  - url: http://{{upload_url}}
+  - url: http://{{video_uploadurl}}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+    oauth2Auth:
+      type: http
+      scheme: oauth2
+security:
+  - oauth2Auth: []
+tags:
+  - name: Use Cases
+  - name: Use Cases > Account structure
+  - name: Use Cases > Account structure > User Access
+    description: >-
+      View our [Public
+      Documentation](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-unversioned)
+      to understand more on the Ad Account Users APIs.
+
+
+      **For all LMS integrations, it is important to have the**
+
+
+      1.  Ability to determine a user’s access level in all the Sponsored
+      Account he/she is part of.
+
+      2.  Ability to determine a user’s access level in all the Company Pages
+      he/she is part of.
+          
+
+      **Also, the Ad Account Users API enables advertisers to manage user access
+      to Ad Accounts. Ad Account Users are members who have permissions to an Ad
+      Account in Campaign Manager. Advertisers can manage what roles a user has
+      in order to more finely control access.**
+
+
+      1.  Fetch All the Ad Account and the Roles. within them for the
+      authenticated user.
+
+      2.  Fetch All the Roles that the Authenticated User has in Company Pages.
+
+      3.  Get an Ad Account user from provided Account and Person Vale.
+
+      4.  Find all the Ad Account Users for a given Sponsored Account.
+
+      5.  Create an Ad Account User.
+
+      6.  Update an existing Ad Account User.
+
+      7.  Delete an Ad Account User.
+  - name: Use Cases > Account structure > Account Management
+    description: >-
+      LinkedIn allows advertisers to create multiple [Ad
+      Accounts](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-unversioned),
+      which is useful if you advertise on behalf of multiple organizations.
+
+
+      **To create and manage ad campaigns, you must have an Enterprise or
+      Business Ad Account with one authenticated user assigned as the account
+      administrator.**
+  - name: Use Cases > Account structure > Campaign Group Management
+    description: >-
+      [Campaign
+      groups](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned)
+      provide advertisers a way to manage status, budget, and performance across
+      multiple related campaigns.
+
+
+      **Whenever an Ad Account is created, a new campaign group is automatically
+      created for it.**
+  - name: Use Cases > Account structure > Campaign Management
+    description: >-
+      Campaigns define the ad schedule and budget (daily/total.) The campaign
+      can be bound to a specific start and end date or run continuously until
+      the budget is spent.
+
+
+      Campaigns can be targeted for a specific selection of members (target
+      audience) based on categories such as job title, job function, seniority,
+      etc.
+
+
+      View our [Public
+      Documentation](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-unversioned)
+      to understand more on the CampaignV2 APIs.
+  - name: Use Cases > Account structure > Creative Management
+    description: >-
+      An ad creative conceptually contains all the data for visually rendering
+      the ad. There are several types of ad creatives that you can associate
+      with campaigns including Text Ads, Sponsored Content, Message Ads,
+      Sponsored Video, Sponsored Carousel Ads, and Dynamic Ads.
+
+
+      View our [Public
+      Documentation](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http&view=li-lms-unversioned)
+      to understand more on the CreativesV2 APIs.
+  - name: Use Cases > Advertising and Targeting
+  - name: Use Cases > Advertising and Targeting > Ads Targeting
+    description: >-
+      LinkedIn's [Ad Targeting
+      API](https://docs.microsoft.com/linkedin/marketing/integrations/ads/advertising-targeting/ads-targeting?tabs=http&view=li-lms-unversioned)
+      enables advertisers to better control which audiences see their ads. These
+      controls include a variety of member demographics in the LinkedIn
+      platform. Targeting is set at the campaign level, and applies to all
+      creatives associated with that campaign.
+
+
+      **The two core concepts for targeting are facets and entities.**
+
+
+      *   Facets are high-level categories of the types of targeting available
+      to you.
+
+      *   Facets contain multiple entities which are the specific demographic
+      values within that facet.
+          
+
+      For example, Industries is a facet. Specific industries such as Computer
+      Software, Biotechnology, and Telecommunications are entities within the
+      Industries facet.
+  - name: Use Cases > Advertising and Targeting > Ad Creation
+    description: >-
+      View our [Public
+      Documentation](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http&view=li-lms-unversioned)
+      to understand more on the Ad creatives APIs.  
+
+      An ad creative conceptually contains all the data for visually rendering
+      the ad. There are several types of ad creatives that you can associate
+      with campaigns including Text Ads, Sponsored Content, Message Ads,
+      Sponsored Video, Sponsored Carousel Ads, and Dynamic Ads.
+
+
+      The following conditions apply:
+
+
+      An ad account can have a maximum of 15,000 creatives.  
+
+      A campaign can have a maximum of 100 creatives.  
+
+      Creative types must match their campaign's ad format. If the campaign has
+      no ad format set, it will be set by the first creative created under that
+      campaign. Dynamic, carousel, and video ad campaigns must have their format
+      set upon creation.
+  - name: Use Cases > Advertising and Targeting > Ad Creation > Image Ad Creation
+    description: >-
+      Single Image Ads are Sponsored Content posts that appear in the LinkedIn
+      feed. Deliver your message to a targeted audience beyond your
+      organization's LinkedIn Page with these native ads.
+
+
+      **Advertisers can create Sponsored Content Image Ads in two different
+      ways:**
+
+
+      1. Sponsored Content - Post images on a Company Page as organic content
+      and then sponsor the image post to reach more than just Company Page
+      followers.
+
+
+      2. Direct Sponsored Content (dark shares) - Create image posts that do not
+      appear to Company Page followers, but can be directly sponsored to target
+      LinkedIn members' news feed.
+  - name: >-
+      Use Cases > Advertising and Targeting > Ad Creation > Image Ad Creation >
+      Sponsored Content
+    description: >-
+      1. Obtain user authorization (access token)
+
+
+      2. Register an upload and retrieve an URL for uploading the actual image.
+
+      3. Upload the image file synchronously, successfully, to proceed in
+      creating a post or share. 
+
+      4. Retrieve the status of the image upload and confirm whether or not the
+      image asset is available for use. 
+
+      5. Create an organic image share on the Company Page referencing the image
+      asset uploaded in Step 3.
+
+      6. Create a Sponsored Content Campaign.
+
+      7. Create a Sponsored Content Ad Creative referencing the Campaign and
+      previously created image share in step 5.
+  - name: >-
+      Use Cases > Advertising and Targeting > Ad Creation > Image Ad Creation >
+      Direct Sponsored Content (dark shares)
+    description: >-
+      **This use case for creating an image ad differs from the previous as the
+      image posts do not appear to Company Page followers.****However, these
+      posts can be directly sponsored to target LinkedIn members' news feed.
+      These types of posts are known as Direct Sponsored Content (DSC) or Dark
+      Shares.**
+
+
+      1.  Obtain user authorization (access token)
+
+      2.  Register an upload and retrieve an URL for uploading the actual image.
+
+      3.  Upload the image file synchronously, successfully, to proceed in
+      creating a post or share.
+
+      4.  Retrieve the status of the image upload and confirm whether or not the
+      image asset is available for use.
+
+      5.  Create a dark image share on the Company Page referencing the image
+      asset uploaded in step 3.
+
+      6.  Create a Sponsored Content Campaign.
+
+      7.  Create a Sponsored Content Ad Creative referencing the Campaign and
+      previously created image share in step 5.
+  - name: Use Cases > Advertising and Targeting > Ad Creation > Video Ad Creation
+  - name: >-
+      Use Cases > Advertising and Targeting > Ad Creation > Video Ad Creation >
+      Sponsored Content
+  - name: Use Cases > Advertising and Targeting > Audience Counts
+    description: >-
+      The [Audience Count
+      API](https://docs.microsoft.com/linkedin/marketing/integrations/ads/advertising-targeting/audience-counts?view=li-lms-unversioned&tabs=http)
+      provides the number of member accounts that fit your targeting criteria.
+      As your campaign serves ads, the number of member accounts that you reach
+      will be lower than the target audience size.
+
+
+      Since 300 is the minimum audience size in order to run a campaign, this
+      endpoint is also useful to ensure your target audience is large enough.
+      For more information, see [Recommendations for Increasing Audience
+      Size](https://www.linkedin.com/help/linkedin/answer/61007?query=targeting%20reach).
+paths:
+  /adAccountUsersV2/(account:urn:li:sponsoredAccount:{sponsoredaccount_id},user:urn:li:person:{person_id}):
+    put:
+      tags:
+        - Use Cases > Account structure > User Access
+      summary: Create Ad Account User
+      description: >-
+        This API example [creates an Ad Account
+        User](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-unversioned#create-ad-account-user).
+        Creating Ad Account Users grants a member access to an Ad Account.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                account: urn:li:sponsoredAccount:{{sponsoredaccount_id}}
+                role: VIEWER
+                user: urn:li:person:{{person_id}}
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: sponsoredaccount_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: person_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"7"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app35868
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 23:14:59 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633389299:t=1633462669:v=2:sig=AQFHmDWHws7qL4fRx8kF5_LVjJU03CqV"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633389299:t=1633462669:v=2:sig=AQFHmDWHws7qL4fRx8kF5_LVjJU03CqV"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: k+Fp9un2qhbgLpMjNSsAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+    get:
+      tags:
+        - Use Cases > Account structure > User Access
+      summary: Fetch an Ad Account User
+      description: >-
+        This API example [fetches an Ad Account
+        User](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-unversioned#get-ad-account-user).
+        Fetching an existing Ad Account User requires both account and user
+        parameters.
+
+
+        The person id can also be retrieved from the
+        [/me](https://docs.microsoft.com/linkedin/shared/integrations/people/profile-api#retrieve-current-members-profile)
+        endpoint.
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: sponsoredaccount_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: person_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app24829
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '259'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 21:39:08 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633383548:t=1633462669:v=2:sig=AQG-LK_Azyq78a39uZgFvrIzRI0E0cwH"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633383548:t=1633462669:v=2:sig=AQG-LK_Azyq78a39uZgFvrIzRI0E0cwH"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 8hj//K7xqhYQyY644ioAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                role: ACCOUNT_BILLING_ADMIN
+                changeAuditStamps:
+                  created:
+                    actor: urn:li:unknown:0
+                    time: 1620160797000
+                  lastModified:
+                    actor: urn:li:unknown:0
+                    time: 1620160797000
+                user: urn:li:person:123456789
+                account: urn:li:sponsoredAccount:123456789
+    post:
+      tags:
+        - Use Cases > Account structure > User Access
+      summary: Update Existing Ad Account User
+      description: >-
+        This API example [updates an Ad Account
+        User](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-unversioned#update-existing-ad-account-user).
+        An Ad Account User's role can be updated by using this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    account: urn:li:sponsoredAccount:{{sponsoredaccount_id}}
+                    role: VIEWER
+                    user: urn:li:person:{{person_id}}
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: sponsoredaccount_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: person_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app10341
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 22:55:45 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633388145:t=1633462669:v=2:sig=AQG3lOjLdN3TTRugYsWiKKC2AppUaA9f"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633388145:t=1633462669:v=2:sig=AQG3lOjLdN3TTRugYsWiKKC2AppUaA9f"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: IiO/Qt31qhawVPQVrCsAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+    delete:
+      tags:
+        - Use Cases > Account structure > User Access
+      summary: Delete an Ad Account User
+      description: >-
+        This API example [deletes an Ad Account
+        User](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-unversioned#delete-an-ad-account-user).
+        Members can be removed from Ad Account access by using the delete Ad
+        Account User endpoint. Deletion requires both account and user
+        parameters to look up the appropriate Ad Account User.
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: sponsoredaccount_id
+          in: path
+          schema:
+            type: string
+          required: true
+        - name: person_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"3"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app14942
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 23:13:07 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633389187:t=1633462669:v=2:sig=AQG7nT12iMUvRJfllgxalIDhvm2y0tlf"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633389187:t=1633462669:v=2:sig=AQG7nT12iMUvRJfllgxalIDhvm2y0tlf"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: Rc1x5c/2qhYADEghNSsAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+  /adAccountUsersV2:
+    get:
+      tags:
+        - Use Cases > Account structure > User Access
+      summary: Fetch the Authenticated User's Ad Accounts
+      description: >-
+        This API example retrieves all Ad Accounts that an authenticated user
+        has access to. Specifically, this api call will return the Ad Accounts
+        associated with the member whose access token is being used! The only
+        required parameter is q=authenticatedUser.
+
+
+        To understand more about verifying Ad Account Access visit our public
+        documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-unversioned#find-ad-accounts-by-authenticated-user).
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: authenticatedUser
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app5525
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '1487'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 21:25:01 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633382701:t=1633462669:v=2:sig=AQECFEeUYRi86YBzn_F71WavKfPe4hdb"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633382701:t=1633462669:v=2:sig=AQECFEeUYRi86YBzn_F71WavKfPe4hdb"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: EMaCw+nwqhbAcYro+SoAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 2147483647
+                  links: []
+                  total: 4
+                elements:
+                  - role: VIEWER
+                    changeAuditStamps:
+                      created:
+                        time: 1620247332000
+                      lastModified:
+                        time: 1620247332000
+                    user: urn:li:person:123456789
+                    account: urn:li:sponsoredAccount:123456789
+                  - role: ACCOUNT_BILLING_ADMIN
+                    changeAuditStamps:
+                      created:
+                        time: 1620160797000
+                      lastModified:
+                        time: 1620160797000
+                    user: urn:li:person:987654321
+                    account: urn:li:sponsoredAccount:987654321
+                  - role: VIEWER
+                    changeAuditStamps:
+                      created:
+                        time: 1630004460000
+                      lastModified:
+                        time: 1630004460000
+                    user: urn:li:person:123456789
+                    account: urn:li:sponsoredAccount:12345678
+                  - role: ACCOUNT_BILLING_ADMIN
+                    changeAuditStamps:
+                      created:
+                        time: 1621383695000
+                      lastModified:
+                        time: 1621383695000
+                    user: urn:li:person:87654321
+                    account: urn:li:sponsoredAccount:87654321
+  /organizationAcls:
+    get:
+      tags:
+        - Use Cases > Account structure > User Access
+      summary: Fetch the Authenticated User's Organization Roles
+      description: >-
+        To understand more about verifying Company Page Access visit our public
+        documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/community-management/organizations/organization-access-control-by-role?tabs=http&view=li-lms-unversioned#find-a-members-organization-access-control-information).
+
+
+        A role defines the privileges that a member has within the organization.
+        You must be an authenticated member with role type **ADMINISTRATOR** of
+        an organization to use many of the Organization APIs.
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: roleAssignee
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 21:29:51 GMT
+            Server:
+              schema:
+                type: string
+                example: Play
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '320'
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633382991:t=1633462669:v=2:sig=AQGXV0lVdFLKv6LfSOEtJamLVZ4LF88o"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633382991:t=1633462669:v=2:sig=AQGXV0lVdFLKv6LfSOEtJamLVZ4LF88o"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: j1VkKS3xqhYQyKoylisAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links: []
+                elements:
+                  - roleAssignee: urn:li:person:123456789
+                    state: APPROVED
+                    role: ADMINISTRATOR
+                    organization: urn:li:organization:123456789
+                  - roleAssignee: urn:li:person:987654321
+                    state: APPROVED
+                    role: ADMINISTRATOR
+                    organization: urn:li:organization:987654321
+  /adAccountsV2:
+    post:
+      tags:
+        - Use Cases > Account structure > Account Management
+      summary: Create a Test Ad Account
+      description: >-
+        This API example [creates a "test" ad
+        account](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-unversioned#creating-a-test-ad-account)
+        by including an additional boolean `test` flag to `true` on the payload.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                currency: USD
+                name: XYZ Company
+                notifiedOnCampaignOptimization: true
+                notifiedOnCreativeApproval: true
+                notifiedOnCreativeRejection: true
+                notifiedOnEndOfCampaign: true
+                reference: urn:li:organization:{{organization_id}}
+                type: BUSINESS
+                test: true
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+      responses:
+        '201':
+          description: Created
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            Location:
+              schema:
+                type: string
+                example: /adAccountsV2/509233953
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app36771
+            x-resourceidentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredAccount:509233953
+            x-restli-id:
+              schema:
+                type: integer
+                example: '509233953'
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '0'
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 07:08:31 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637910510:t=1637964399:v=2:sig=AQEoLDqSRMo_zAfU9wsoS8INLdlvECqn"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637910510:t=1637964399:v=2:sig=AQEoLDqSRMo_zAfU9wsoS8INLdlvECqn"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: ARC4TO4GuxbA/AzqBysAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+    get:
+      tags:
+        - Use Cases > Account structure > Account Management
+      summary: Search Account by Type
+      description: >-
+        Use the `q=search` parameter with the adAccountsV2 API to [search for
+        accounts](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-unversioned#search-for-accounts)
+        by ID, name, reference, type, and status fields. Search criteria can be
+        chained together for increased granularity. If a search query is
+        omitted, all accounts the caller has access to are returned in the
+        response. This example searches for accounts by the type(BUSINESS).
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: search
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: (type:(values:List(BUSINESS)))
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app18038
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '2792'
+            Date:
+              schema:
+                type: string
+                example: Tue, 05 Oct 2021 00:07:42 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392462:t=1633462669:v=2:sig=AQEBNjn7YHiA3Vn8ZgDtm-gK1pQfHK5E"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392462:t=1633462669:v=2:sig=AQEBNjn7YHiA3Vn8ZgDtm-gK1pQfHK5E"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: dUBlYcr5qhYAF5ggwSoAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 1000
+                  links: []
+                  total: 2
+                elements:
+                  - test: false
+                    notifiedOnCreativeRejection: false
+                    notifiedOnEndOfCampaign: false
+                    servingStatuses:
+                      - BILLING_HOLD
+                    type: BUSINESS
+                    notifiedOnCampaignOptimization: false
+                    version:
+                      versionTag: '5'
+                    reference: urn:li:organization:123456789
+                    changeAuditStamps:
+                      created:
+                        time: 1620160797000
+                      lastModified:
+                        time: 1633392148931
+                    notifiedOnCreativeApproval: false
+                    name: foo's Updated Ad Acount
+                    currency: USD
+                    id: 123456789
+                    status: ACTIVE
+                  - test: false
+                    notifiedOnCreativeRejection: false
+                    notifiedOnEndOfCampaign: false
+                    servingStatuses:
+                      - BILLING_HOLD
+                    type: BUSINESS
+                    notifiedOnCampaignOptimization: false
+                    version:
+                      versionTag: '5'
+                    reference: urn:li:organization:987654321
+                    changeAuditStamps:
+                      created:
+                        time: 1621383695000
+                      lastModified:
+                        time: 1621530514909
+                    notifiedOnCreativeApproval: false
+                    name: bar's ad account
+                    currency: USD
+                    id: 987654321
+                    status: ACTIVE
+  /adAccountsV2/{sponsoredaccount_id}:
+    get:
+      tags:
+        - Use Cases > Account structure > Account Management
+      summary: Fetch the Ad Account by ID
+      description: >-
+        [Fetch an ad
+        Account](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-unversioned#fetch-ad-account)
+        by sponsored account ID.
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: sponsoredaccount_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"4"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app7686
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '510'
+            Date:
+              schema:
+                type: string
+                example: Tue, 05 Oct 2021 00:00:31 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392031:t=1633462669:v=2:sig=AQFZqbkPT2OrPX1GWUZyaomhhBsL3lAv"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392031:t=1633462669:v=2:sig=AQFZqbkPT2OrPX1GWUZyaomhhBsL3lAv"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: gvb1E2b5qhbgHcRy6ioAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                test: false
+                notifiedOnCreativeRejection: false
+                notifiedOnEndOfCampaign: false
+                servingStatuses:
+                  - BILLING_HOLD
+                type: BUSINESS
+                notifiedOnCampaignOptimization: false
+                version:
+                  versionTag: '4'
+                reference: urn:li:organization:123456789
+                changeAuditStamps:
+                  created:
+                    actor: urn:li:unknown:0
+                    time: 1620160797000
+                  lastModified:
+                    actor: urn:li:unknown:0
+                    time: 1620243189480
+                notifiedOnCreativeApproval: false
+                name: Christa’s Ad Account
+                currency: USD
+                id: 123456789
+                status: ACTIVE
+    post:
+      tags:
+        - Use Cases > Account structure > Account Management
+      summary: Update Ad Account Name
+      description: >-
+        Ad Accounts can be updated through a partial update by patching the
+        fields you want to change. The following example changes the name field
+        only.
+
+
+        See our public documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-unversioned#update-ad-account)
+        for more information.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    name: Updated Ad Acount name
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: sponsoredaccount_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"5"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app2934
+            x-resourceIdentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredAccount:1234
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Date:
+              schema:
+                type: string
+                example: Tue, 05 Oct 2021 00:02:28 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392148:t=1633462669:v=2:sig=AQHkHB8AY853CMc1a87xFZDVoz4SDnOx"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392148:t=1633462669:v=2:sig=AQHkHB8AY853CMc1a87xFZDVoz4SDnOx"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 9AW9VYH5qhZA3Y+X2SoAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+  /adCampaignGroupsV2:
+    post:
+      tags:
+        - Use Cases > Account structure > Campaign Group Management
+      summary: Update Multiple Campaign Groups
+      description: >-
+        Multiple campaign groups can be updated with a partial update. This
+        example updates the amount and currencyCode for one Campaign Group and
+        status for another Campaign Group using the RestLi method
+        BATCH_PARTIAL_UPDATE.
+
+
+        View our public documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned#batch-update-campaign-groups)
+        to learn more.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                entities:
+                  '{{campaigngroup_id1}}':
+                    patch:
+                      $set:
+                        totalBudget:
+                          amount: '1000'
+                          currencyCode: USD
+                  '{{campaigngroup_id2}}':
+                    patch:
+                      $set:
+                        status: PAUSED
+      parameters:
+        - name: X-RestLi-Method
+          in: header
+          schema:
+            type: string
+          example: BATCH_PARTIAL_UPDATE
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: ids
+          in: query
+          schema:
+            type: string
+          example: List({{campaigngroup_id1}},{{campaigngroup_id2}})
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app36985
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '79'
+            Date:
+              schema:
+                type: string
+                example: Mon, 25 Oct 2021 08:18:55 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2856:u=231:x=1:i=1635149935:t=1635221135:v=2:sig=AQH6hRLVp0TI-R_HVFA7OJlHh_8HAR7-"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2856:u=231:x=1:i=1635149935:t=1635221135:v=2:sig=AQH6hRLVp0TI-R_HVFA7OJlHh_8HAR7-"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-edc2
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: MaWr3jM4sRawtSGMVCsAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                results:
+                  '123456789':
+                    status: 204
+                  '987654321':
+                    status: 204
+                errors: {}
+    get:
+      tags:
+        - Use Cases > Account structure > Campaign Group Management
+      summary: Search for Campaign Groups
+      description: >-
+        Use the `q=search` parameter to [search for campaign
+        groups](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned#search-for-campaign-groups)
+        by ID, account, name, and status fields. Search criteria can be chained
+        together for increased granularity. If a search query is omitted, all
+        campaign groups the caller has access to is returned in a paginated
+        response. this example fetches campaign groups by the status values
+        DRAFT or ACTIVE and orders it by ID descending.
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: search
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: (status:(values:List(ACTIVE,DRAFT)))
+        - name: sort
+          in: query
+          schema:
+            type: string
+          example: (field:ID,order:DESCENDING)
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app15291
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '3829'
+            Date:
+              schema:
+                type: string
+                example: Tue, 05 Oct 2021 00:13:57 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392837:t=1633462669:v=2:sig=AQHEoM7qPP87i9Mkwdv6tHLhj3jRw0wL"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392837:t=1633462669:v=2:sig=AQHEoM7qPP87i9Mkwdv6tHLhj3jRw0wL"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: i0RVnSH6qhYQ+F+JlCsAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links:
+                    - type: application/json
+                      rel: next
+                      href: >-
+                        /v2/adCampaignGroupsV2?q=search&search=(status:(values:List(ACTIVE,DRAFT)))&start=10&count=10&sort=(field:ID,order:DESCENDING)
+                  total: 4
+                elements:
+                  - runSchedule:
+                      start: 1630692299447
+                      end: 1630778699447
+                    test: false
+                    changeAuditStamps:
+                      created:
+                        time: 1630692374000
+                      lastModified:
+                        time: 1630778262842
+                    totalBudget:
+                      currencyCode: USD
+                      amount: '100'
+                    name: CampaignGroup1
+                    servingStatuses:
+                      - CAMPAIGN_GROUP_END_DATE_HOLD
+                      - STOPPED
+                      - BILLING_HOLD
+                    backfilled: false
+                    id: 123456789
+                    account: urn:li:sponsoredAccount:123456789
+                    status: DRAFT
+                  - runSchedule:
+                      start: 1630528785432
+                    test: false
+                    changeAuditStamps:
+                      created:
+                        time: 1630528785000
+                      lastModified:
+                        time: 1630528785000
+                    name: New Campaign Group
+                    servingStatuses:
+                      - BILLING_HOLD
+                    backfilled: false
+                    id: 987654321
+                    account: urn:li:sponsoredAccount:987654321
+                    status: ACTIVE
+                  - runSchedule:
+                      start: 1628534799098
+                    test: false
+                    changeAuditStamps:
+                      created:
+                        time: 1628534799000
+                      lastModified:
+                        time: 1628534799000
+                    name: New Campaign Group
+                    servingStatuses:
+                      - BILLING_HOLD
+                    backfilled: false
+                    id: 12345678
+                    account: urn:li:sponsoredAccount:12345678
+                    status: ACTIVE
+                  - runSchedule:
+                      start: 1621472658000
+                      end: 1621559058000
+                    test: false
+                    changeAuditStamps:
+                      created:
+                        time: 1621386490000
+                      lastModified:
+                        time: 1621558490691
+                    totalBudget:
+                      currencyCode: USD
+                      amount: '100'
+                    name: Video engagement
+                    servingStatuses:
+                      - CAMPAIGN_GROUP_END_DATE_HOLD
+                      - BILLING_HOLD
+                    backfilled: false
+                    id: 87654321
+                    account: urn:li:sponsoredAccount:87654321
+                    status: ACTIVE
+    delete:
+      tags:
+        - Use Cases > Account structure > Campaign Group Management
+      summary: Delete Multiple Campaign Groups
+      description: >-
+        Multiple Campaign Group can be deleted as shown in this example call.
+        View our online documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned#batch-delete-campaign-groups)
+        to learn more.
+
+
+        Only campaign groups which are in DRAFT status are allowed to be
+        deleted. Once deleted, a campaign group can't be retrieved or recovered.
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: ids
+          in: query
+          schema:
+            type: string
+          example: List({{campaigngroup_id1}},{{campaigngroup_id2}})
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app37620
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '79'
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 06:26:27 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRqyu8vXkYcvKZ+cOP5g==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637907986:t=1637964399:v=2:sig=AQHkGqeIVctNgH0Q9b1HKucq30LHLN7l"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637907986:t=1637964399:v=2:sig=AQHkGqeIVctNgH0Q9b1HKucq30LHLN7l"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                results:
+                  '123456789':
+                    status: 204
+                  '987654321':
+                    status: 204
+                errors: {}
+  /adCampaignGroupsV2/{campaigngroup_id1}:
+    get:
+      tags:
+        - Use Cases > Account structure > Campaign Group Management
+      summary: Fetch a Campaign Group by ID
+      description: >-
+        A Campaign Group can be fetched by the campaign group id as shown in
+        this example call. See our public documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned#get-a-campaign-group)
+        for more information.
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: campaigngroup_id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app14942
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '309'
+            Date:
+              schema:
+                type: string
+                example: Tue, 05 Oct 2021 00:12:43 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392763:t=1633462669:v=2:sig=AQEt3XHoUr0R8g5TbZVM_nBpdvYZRk3G"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633392763:t=1633462669:v=2:sig=AQEt3XHoUr0R8g5TbZVM_nBpdvYZRk3G"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 4rj5WRD6qhag48VQlCsAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                runSchedule:
+                  start: 1621383695870
+                test: false
+                changeAuditStamps:
+                  created:
+                    time: 1621383695000
+                  lastModified:
+                    time: 1621383695000
+                name: Default Campaign Group
+                servingStatuses:
+                  - BILLING_HOLD
+                backfilled: true
+                id: 123456789
+                account: urn:li:sponsoredAccount:123456789
+                status: ACTIVE
+    post:
+      tags:
+        - Use Cases > Account structure > Campaign Group Management
+      summary: Update Campaign Group
+      description: >-
+        Campaign groups can be updated with a partial update. This example
+        updates the amount and currencyCode for a Campaign Group. View our
+        public documentation
+        [here](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned#update-a-campaign-group)
+        to learn more.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    totalBudget:
+                      amount: '3000'
+                      currencyCode: USD
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: campaigngroup_id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"5"
+            X-LinkedIn-Processing-Colo:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LinkedIn-Processing-Machine:
+              schema:
+                type: string
+                example: lor1-app18038
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Date:
+              schema:
+                type: string
+                example: Tue, 05 Oct 2021 00:19:59 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633393199:t=1633462669:v=2:sig=AQEupZxf9xwzoA92Uz9wN9KRZ0KyziqX"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633393199:t=1633462669:v=2:sig=AQEupZxf9xwzoA92Uz9wN9KRZ0KyziqX"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: radG73X6qhbASuf96yoAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+    delete:
+      tags:
+        - Use Cases > Account structure > Campaign Group Management
+      summary: Delete a Campaign Group
+      description: >-
+        This example call [deletes a Campaign
+        Group](https://docs.microsoft.com/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-unversioned#delete-a-campaign-group).
+
+
+        Only campaign groups which are in DRAFT status are allowed to be
+        deleted. Once deleted, a campaign group can't be retrieved or recovered.
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: campaigngroup_id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app27280
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 06:22:30 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRqx2gpfo2ke/5LrK0CQ==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637907750:t=1637964399:v=2:sig=AQG2divWm4DXL1TXnbK4sA25tutMAvRI"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637907750:t=1637964399:v=2:sig=AQG2divWm4DXL1TXnbK4sA25tutMAvRI"
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+  /adCampaignsV2:
+    post:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Video Ad
+          Creation > Sponsored Content
+      summary: Create a Campaign for the Video Ad
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                account: urn:li:sponsoredAccount:{{sponsoredaccount_id}}
+                campaignGroup: urn:li:sponsoredCampaignGroup:{{campaigngroup_id1}}
+                audienceExpansionEnabled: false
+                costType: CPV
+                objectiveType: VIDEO_VIEW
+                creativeSelection: OPTIMIZED
+                locale:
+                  language: en
+                  country: US
+                name: Video campaign Sponsored Update
+                format: SINGLE_VIDEO
+                offsiteDeliveryEnabled: false
+                runSchedule:
+                  start: 1520890990333
+                  end: 1637971200000
+                targetingCriteria:
+                  include:
+                    and:
+                      - or:
+                          urn:li:adTargetingFacet:interfaceLocales:
+                            - urn:li:locale:en_US
+                      - or:
+                          urn:li:adTargetingFacet:locations:
+                            - urn:li:geo:103644278
+                type: SPONSORED_UPDATES
+                dailyBudget:
+                  currencyCode: USD
+                  amount: '18'
+                unitCost:
+                  amount: '15'
+                  currencyCode: USD
+                status: ACTIVE
+      responses:
+        '201':
+          description: Created
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            Location:
+              schema:
+                type: string
+                example: /adCampaignsV2/193958093
+            x-linkedin-id:
+              schema:
+                type: integer
+                example: '193958093'
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app33583
+            x-resourceidentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredCampaign:193958093
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '0'
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 09:06:21 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRrWeUEOzS4oakNlSyIA==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637917580:t=1637964399:v=2:sig=AQEz1EUqGoMGphUQj5z8yNtwSb5B7wFq"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637917580:t=1637964399:v=2:sig=AQEz1EUqGoMGphUQj5z8yNtwSb5B7wFq"
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+    get:
+      tags:
+        - Use Cases > Account structure > Campaign Management
+      summary: Search for Campaign using criteria
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: search
+        - name: search.campaignGroup.values[0]
+          in: query
+          schema:
+            type: string
+          example: urn:li:sponsoredCampaignGroup:{{campaigngroup_id1}}
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app36985
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '1041'
+            Date:
+              schema:
+                type: string
+                example: Mon, 22 Nov 2021 08:40:59 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRXJWGaycpk4Djx9sInQ==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637570459:t=1637618748:v=2:sig=AQFVp5wetQBqEtJDF6xpHpE9sR4etFCU"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637570459:t=1637618748:v=2:sig=AQFVp5wetQBqEtJDF6xpHpE9sR4etFCU"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links: []
+                  total: 1
+                elements:
+                  - test: false
+                    storyDeliveryEnabled: false
+                    format: SPONSORED_INMAIL
+                    targetingCriteria:
+                      include:
+                        and:
+                          - or:
+                              urn:li:adTargetingFacet:profileLocations:
+                                - urn:li:geo:102713980
+                          - or:
+                              urn:li:adTargetingFacet:interfaceLocales:
+                                - urn:li:locale:en_US
+                    servingStatuses:
+                      - ACCOUNT_SERVING_HOLD
+                    locale:
+                      country: US
+                      language: en
+                    type: SPONSORED_INMAILS
+                    version:
+                      versionTag: '10'
+                    objectiveType: WEBSITE_TRAFFIC
+                    runSchedule:
+                      start: 1530267154154
+                    optimizationTargetType: NONE
+                    changeAuditStamps:
+                      created:
+                        time: 1521447148000
+                      lastModified:
+                        time: 1585636845000
+                    campaignGroup: urn:li:sponsoredCampaignGroup:123456789
+                    dailyBudget:
+                      currencyCode: USD
+                      amount: '25'
+                    unitCost:
+                      currencyCode: USD
+                      amount: '0.11'
+                    costType: CPM
+                    creativeSelection: ROUND_ROBIN
+                    name: Test3
+                    offsiteDeliveryEnabled: false
+                    id: 123456789
+                    account: urn:li:sponsoredAccount:123456789
+                    audienceExpansionEnabled: false
+                    status: ACTIVE
+    delete:
+      tags:
+        - Use Cases > Account structure > Campaign Management
+      summary: Delete multiple campaigns using BATCH
+      parameters:
+        - name: X-RestLi-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: ids
+          in: query
+          schema:
+            type: string
+          example: List({{campaign_id1}},{{campaign_id2}})
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app35468
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '79'
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 07:48:36 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRrFGJJNYh4cdD4Fr2Zg==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637912916:t=1637964399:v=2:sig=AQGGQUx9MTEArSqFPjFg0PrTPy8aU8p8"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637912916:t=1637964399:v=2:sig=AQGGQUx9MTEArSqFPjFg0PrTPy8aU8p8"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                results:
+                  '123456789':
+                    status: 204
+                  '987654321':
+                    status: 204
+                errors: {}
+  /adCampaignsV2/{campaignId1}:
+    get:
+      tags:
+        - Use Cases > Account structure > Campaign Management
+      summary: Fetch Campaign using Campaign ID
+      parameters:
+        - name: campaignId1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app37069
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '1063'
+            Date:
+              schema:
+                type: string
+                example: Mon, 22 Nov 2021 06:23:35 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637562215:t=1637618748:v=2:sig=AQGMYC_0JxLU5BcmOBHbL55rK6hnpmM9"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637562215:t=1637618748:v=2:sig=AQGMYC_0JxLU5BcmOBHbL55rK6hnpmM9"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: Re44jCjKuRZA8o2srCoAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                test: false
+                storyDeliveryEnabled: false
+                targetingCriteria:
+                  include:
+                    and:
+                      - or:
+                          urn:li:adTargetingFacet:locations:
+                            - urn:li:geo:103644278
+                      - or:
+                          urn:li:adTargetingFacet:interfaceLocales:
+                            - urn:li:locale:en_US
+                servingStatuses:
+                  - CAMPAIGN_START_DATE_HOLD
+                locale:
+                  country: US
+                  language: en
+                type: SPONSORED_UPDATES
+                version:
+                  versionTag: '1'
+                associatedEntity: urn:li:organization:123456789
+                runSchedule:
+                  start: 1647927789000
+                  end: 1648186989000
+                optimizationTargetType: NONE
+                changeAuditStamps:
+                  created:
+                    time: 1637561547000
+                  lastModified:
+                    time: 1637561547000
+                campaignGroup: urn:li:sponsoredCampaignGroup:1234
+                dailyBudget:
+                  currencyCode: USD
+                  amount: '18'
+                unitCost:
+                  currencyCode: USD
+                  amount: '15'
+                costType: CPC
+                creativeSelection: OPTIMIZED
+                name: Campaign 1
+                offsiteDeliveryEnabled: false
+                id: 123456789
+                account: urn:li:sponsoredAccount:123456789
+                audienceExpansionEnabled: false
+                status: DRAFT
+    post:
+      tags:
+        - Use Cases > Account structure > Campaign Management
+      summary: Update Campaign Using campaignId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    runSchedule:
+                      start: 1647927789001
+                      end: 1648186989000
+      parameters:
+        - name: campaignId1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app21235
+            x-resourceidentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredCampaign:193616353
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Date:
+              schema:
+                type: string
+                example: Mon, 22 Nov 2021 06:27:47 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637562467:t=1637618748:v=2:sig=AQGFBOjWN_s-6LsTv_pb0Sty_66V2BzP"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637562467:t=1637618748:v=2:sig=AQGFBOjWN_s-6LsTv_pb0Sty_66V2BzP"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: b4pDT2PKuRZg6cgW7CoAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+  /adCampaignsV2/{campaign_id1}:
+    post:
+      tags:
+        - Use Cases > Account structure > Campaign Management
+      summary: Archive a Campaign
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    status: ARCHIVED
+      parameters:
+        - name: campaign_id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"6"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app27627
+            x-resourceidentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredCampaign:193616353
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 07:25:11 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRq/3F/OUqcs8IcNtNbQ==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637911510:t=1637964399:v=2:sig=AQHEs9URhSFbqpxb0uEezYz3H3cGj3j5"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637911510:t=1637964399:v=2:sig=AQHEs9URhSFbqpxb0uEezYz3H3cGj3j5"
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+    delete:
+      tags:
+        - Use Cases > Account structure > Campaign Management
+      summary: Delete campaign Using campaign Id
+      parameters:
+        - name: campaign_id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app35468
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 07:41:17 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637912477:t=1637964399:v=2:sig=AQEWE6WCXIeMHP_c8i3DvOpO3pxL8XrZ"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637912477:t=1637964399:v=2:sig=AQEWE6WCXIeMHP_c8i3DvOpO3pxL8XrZ"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: viuRYLgIuxaQ0w2hlCsAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+  /adCreativesV2:
+    post:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Video Ad
+          Creation > Sponsored Content
+      summary: Create a Creative for the Video Ad
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                campaign: urn:li:sponsoredCampaign:{{campaign_id1}}
+                reference: urn:li:ugcPost:{{ugcPost_id1}}
+                status: ACTIVE
+                type: SPONSORED_VIDEO
+                variables:
+                  data:
+                    com.linkedin.ads.SponsoredVideoCreativeVariables: {}
+      responses:
+        '201':
+          description: Created
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            Location:
+              schema:
+                type: string
+                example: /adCreativesV2/169728733
+            x-linkedin-id:
+              schema:
+                type: integer
+                example: '169728733'
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app18801
+            x-resourceidentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredCreative:169728733
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '0'
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 09:08:48 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRrXBUebe/Wa1P7GWUDw==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637917727:t=1637964399:v=2:sig=AQEkeUFzTxGHnw7OlMz_DjP2Ua7yXyJD"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637917727:t=1637964399:v=2:sig=AQEkeUFzTxGHnw7OlMz_DjP2Ua7yXyJD"
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+    get:
+      tags:
+        - Use Cases > Account structure > Creative Management
+      summary: Search Creative using Criteria
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: search
+        - name: search.campaign.values[0]
+          in: query
+          schema:
+            type: string
+          example: urn:li:sponsoredCampaign:{{campaign_id1}}
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app22888
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '636'
+            Date:
+              schema:
+                type: string
+                example: Mon, 22 Nov 2021 08:16:45 GMT
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRXD7VBRHhjwee+CDMDw==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637569004:t=1637618748:v=2:sig=AQGIA3DZT-g7QbNKskIzy4GA36KaU_Wm"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637569004:t=1637618748:v=2:sig=AQGIA3DZT-g7QbNKskIzy4GA36KaU_Wm"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links: []
+                  total: 1
+                elements:
+                  - reference: urn:li:share:123456789
+                    variables:
+                      data:
+                        com.linkedin.ads.SponsoredUpdateCreativeVariables:
+                          activity: urn:li:activity:123456789
+                          directSponsoredContent: false
+                          share: urn:li:share:123456789
+                    test: false
+                    changeAuditStamps:
+                      created:
+                        time: 1637563336000
+                      lastModified:
+                        time: 1637564762000
+                    review:
+                      reviewStatus: PENDING
+                    servingStatuses:
+                      - UNDER_REVIEW
+                    campaign: urn:li:sponsoredCampaign:123456789
+                    id: 123456789
+                    type: SPONSORED_STATUS_UPDATE
+                    version:
+                      versionTag: '2'
+                    status: ACTIVE
+    delete:
+      tags:
+        - Use Cases > Account structure > Creative Management
+      summary: Delete multiple Creatives using BATCH
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: ids
+          in: query
+          schema:
+            type: string
+          example: List({{creative_Id1}})
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+  /adCreativesV2/{creative_Id1}:
+    get:
+      tags:
+        - Use Cases > Account structure > Creative Management
+      summary: Fetch Creative using Creative ID
+      parameters:
+        - name: creative_Id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            ETag:
+              schema:
+                type: string
+                example: W/"1"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app21204
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '705'
+            Date:
+              schema:
+                type: string
+                example: Mon, 22 Nov 2021 06:48:41 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637563721:t=1637618748:v=2:sig=AQH8NRimijbb8TYmE3YKjaur8qjcckzS"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637563721:t=1637618748:v=2:sig=AQH8NRimijbb8TYmE3YKjaur8qjcckzS"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 8GSqMYfLuRYgOk3dhisAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                reference: urn:li:share:112233
+                variables:
+                  data:
+                    com.linkedin.ads.SponsoredUpdateCreativeVariables:
+                      sponsoredStatusUpdateContentType: ARTICLE
+                      mediaAspectRatio:
+                        widthAspect: 2.9565217
+                        heightAspect: 1
+                      share: urn:li:share:112233
+                      activity: urn:li:activity:223344
+                      callToActionEnabled: false
+                      directSponsoredContent: false
+                changeAuditStamps:
+                  created:
+                    time: 1637563336000
+                  lastModified:
+                    time: 1637563336000
+                test: false
+                review:
+                  reviewStatus: PENDING
+                servingStatuses:
+                  - UNDER_REVIEW
+                campaign: urn:li:sponsoredCampaign:123456789
+                id: 123456789
+                type: SPONSORED_STATUS_UPDATE
+                version:
+                  versionTag: '1'
+                status: ACTIVE
+    post:
+      tags:
+        - Use Cases > Account structure > Creative Management
+      summary: Update Creative Using Creative Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                patch:
+                  $set:
+                    variables:
+                      data:
+                        com.linkedin.ads.SponsoredUpdateCreativeVariables:
+                          sponsoredStatusUpdateContentType: ARTICLE
+                          mediaAspectRatio:
+                            widthAspect: 2.8565217
+                            heightAspect: 1
+                          share: urn:li:share:{{share_id}}
+                          activity: urn:li:activity:445566
+                          callToActionEnabled: false
+                          directSponsoredContent: false
+      parameters:
+        - name: creative_Id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app19045
+            x-resourceidentity-urn:
+              schema:
+                type: string
+                example: urn:li:sponsoredCreative:168948093
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Date:
+              schema:
+                type: string
+                example: Mon, 22 Nov 2021 07:06:02 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637564762:t=1637618748:v=2:sig=AQHy2-BP2C2rZNomZLz_zd9cM0IDbcZG"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=263:x=1:i=1637564762:t=1637618748:v=2:sig=AQHy2-BP2C2rZNomZLz_zd9cM0IDbcZG"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 86z0l3nMuRZg1AqR/ioAAA==
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: ''
+    delete:
+      tags:
+        - Use Cases > Account structure > Creative Management
+      summary: Delete Creative Using Creative Id
+      parameters:
+        - name: creative_Id1
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: No Content
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            ETag:
+              schema:
+                type: string
+                example: W/"2"
+            x-linkedin-processing-colo:
+              schema:
+                type: string
+                example: prod-lva1
+            x-linkedin-processing-machine:
+              schema:
+                type: string
+                example: lva1-app33602
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 08:12:48 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lor1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRrKgRJ+o5x4A2rNpufg==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637914367:t=1637964399:v=2:sig=AQFj0_N4wNCE9OXr0Jmq5lsle0Sqq6qq"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637914367:t=1637964399:v=2:sig=AQFj0_N4wNCE9OXr0Jmq5lsle0Sqq6qq"
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+  /adTargetingFacets:
+    get:
+      tags:
+        - Use Cases > Advertising and Targeting > Ads Targeting
+      summary: Fetch the Ad Targeting Facets
+      description: >-
+        View our [Public
+        Documentation](https://docs.microsoft.com/linkedin/marketing/integrations/ads/advertising-targeting/ads-targeting?tabs=http&view=li-lms-unversioned)
+        to understand more on Ads Targeting APIs.
+
+
+        Facets are high-level categories of the types of targeting available to
+        you. Use facets to narrow down your intended audience. The
+        adTargetingFacets API returns available targeting facets.
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '4752'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 18:35:49 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=811:x=1:i=1633372549:t=1633458280:v=2:sig=AQE7_5kcCq_UyD6iwf1UqaUEsJZHMkYi"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=811:x=1:i=1633372549:t=1633458280:v=2:sig=AQE7_5kcCq_UyD6iwf1UqaUEsJZHMkYi"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: pd4hG67nqhYAst9mGisAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links: []
+                elements:
+                  - entityTypes:
+                      - FIELD_OF_STUDY
+                    facetName: fieldsOfStudy
+                    $URN: urn:li:adTargetingFacet:fieldsOfStudy
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - COUNTRY_GROUP
+                      - COUNTRY
+                      - STATE
+                      - REGION
+                    facetName: profileLocations
+                    $URN: urn:li:adTargetingFacet:profileLocations
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - COMPANY
+                    facetName: employersPast
+                    $URN: urn:li:adTargetingFacet:employersPast
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - $UNKNOWN
+                    facetName: audienceMatchingSegments
+                    $URN: urn:li:adTargetingFacet:audienceMatchingSegments
+                    availableEntityFinders:
+                      - $UNKNOWN
+                  - entityTypes:
+                      - COMPANY
+                    facetName: employersAll
+                    $URN: urn:li:adTargetingFacet:employersAll
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - SKILL
+                    facetName: skills
+                    $URN: urn:li:adTargetingFacet:skills
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - SCHOOL
+                    facetName: schools
+                    $URN: urn:li:adTargetingFacet:schools
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - GENDER
+                    facetName: genders
+                    $URN: urn:li:adTargetingFacet:genders
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - $UNKNOWN
+                    facetName: dynamicSegments
+                    $URN: urn:li:adTargetingFacet:dynamicSegments
+                    availableEntityFinders:
+                      - $UNKNOWN
+                  - entityTypes:
+                      - FIRMOGRAPHIC
+                    facetName: growthRate
+                    $URN: urn:li:adTargetingFacet:growthRate
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - TITLE
+                    facetName: titlesAll
+                    $URN: urn:li:adTargetingFacet:titlesAll
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - COMPANY
+                    facetName: firstDegreeConnectionCompanies
+                    $URN: urn:li:adTargetingFacet:firstDegreeConnectionCompanies
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - AGE
+                    facetName: ageRanges
+                    $URN: urn:li:adTargetingFacet:ageRanges
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - DEGREE
+                    facetName: degrees
+                    $URN: urn:li:adTargetingFacet:degrees
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - GROUP
+                    facetName: groups
+                    $URN: urn:li:adTargetingFacet:groups
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - MEMBER_BEHAVIOR
+                    facetName: memberBehaviors
+                    $URN: urn:li:adTargetingFacet:memberBehaviors
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - COMPANY_SIZE
+                    facetName: staffCountRanges
+                    $URN: urn:li:adTargetingFacet:staffCountRanges
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - TITLE
+                    facetName: titles
+                    $URN: urn:li:adTargetingFacet:titles
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - INTEREST
+                    facetName: interests
+                    $URN: urn:li:adTargetingFacet:interests
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - FUNCTION
+                    facetName: jobFunctions
+                    $URN: urn:li:adTargetingFacet:jobFunctions
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - INDUSTRY
+                    facetName: industries
+                    $URN: urn:li:adTargetingFacet:industries
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - COMPANY
+                    facetName: followedCompanies
+                    $URN: urn:li:adTargetingFacet:followedCompanies
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - LOCALE
+                    facetName: interfaceLocales
+                    $URN: urn:li:adTargetingFacet:interfaceLocales
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - YEARS_OF_EXPERIENCE
+                    facetName: yearsOfExperienceRanges
+                    $URN: urn:li:adTargetingFacet:yearsOfExperienceRanges
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - COMPANY
+                    facetName: employers
+                    $URN: urn:li:adTargetingFacet:employers
+                    availableEntityFinders:
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+                  - entityTypes:
+                      - COUNTRY_GROUP
+                      - COUNTRY
+                      - STATE
+                      - REGION
+                    facetName: locations
+                    $URN: urn:li:adTargetingFacet:locations
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - SENIORITY
+                    facetName: seniorities
+                    $URN: urn:li:adTargetingFacet:seniorities
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                  - entityTypes:
+                      - FIRMOGRAPHIC
+                    facetName: companyCategory
+                    $URN: urn:li:adTargetingFacet:companyCategory
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                  - entityTypes:
+                      - TITLE
+                    facetName: titlesPast
+                    $URN: urn:li:adTargetingFacet:titlesPast
+                    availableEntityFinders:
+                      - AD_TARGETING_FACET
+                      - TYPEAHEAD
+                      - SIMILAR_ENTITIES
+  /adTargetingEntities:
+    get:
+      tags:
+        - Use Cases > Advertising and Targeting > Ads Targeting
+      summary: Find Entities by URNs
+      description: >-
+        To understand more about the Ad Targeting Entities refer to our public
+        documentation
+        [here](https://docs.microsoft.com/linkedin/shared/references/v2/ads/adtargetingentities?context=linkedin/marketing/contex&view=li-lms-unversioned).  
+
+        Once you've identified the facet type(s) you'd like to target, you can
+        fetch their entity values. This API example fetches the Entities by
+        URNs.
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: urns
+        - name: queryVersion
+          in: query
+          schema:
+            type: string
+          example: QUERY_USES_URNS
+        - name: urns
+          in: query
+          schema:
+            type: string
+          example: List(urn%3Ali%3Ageo%3A102095887)
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '376'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 19:05:17 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=811:x=1:i=1633374317:t=1633458280:v=2:sig=AQHjtjhWS9DV4LpDFleWsak81qFKf5HZ"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=811:x=1:i=1633374317:t=1633458280:v=2:sig=AQHjtjhWS9DV4LpDFleWsak81qFKf5HZ"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: B+s6t0npqhbAICPeZisAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 2147483647
+                  links: []
+                elements:
+                  - name: California
+                    urn: urn:li:geo:102095887
+                    facetUrn: urn:li:adTargetingFacet:locations
+                  - name: California
+                    urn: urn:li:geo:102095887
+                    facetUrn: urn:li:adTargetingFacet:profileLocations
+                  - name: California
+                    urn: urn:li:geo:102095887
+                    facetUrn: urn:li:adTargetingFacet:contextualCountries
+  /assets:
+    post:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Video Ad
+          Creation > Sponsored Content
+      summary: Register Video Upload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                registerUploadRequest:
+                  owner: urn:li:organization:{{organization_id}}
+                  recipes:
+                    - urn:li:digitalmediaRecipe:feedshare-video
+                  serviceRelationships:
+                    - identifier: urn:li:userGeneratedContent
+                      relationshipType: OWNER
+                  supportedUploadMechanism:
+                    - SYNCHRONOUS_UPLOAD
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+          example: registerUpload
+      responses:
+        '200':
+          description: OK
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '810'
+            Date:
+              schema:
+                type: string
+                example: Thu, 25 Nov 2021 11:38:28 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637840307:t=1637877975:v=2:sig=AQHJiQO2hMP0LUl938Nl3MRmlzySDjzU"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637840307:t=1637877975:v=2:sig=AQHJiQO2hMP0LUl938Nl3MRmlzySDjzU"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-lva1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: iySIFBXHuhbgn4+OZCsAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                value:
+                  mediaArtifact: >-
+                    urn:li:digitalmediaMediaArtifact:(urn:li:digitalmediaAsset:ABCDEFGH,urn:li:digitalmediaMediaArtifactClass:uploadedVideo)
+                  uploadMechanism:
+                    com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest:
+                      uploadUrl: >-
+                        https://api.linkedin.com/mediaUpload/ABCDEFGH/uploadedVideo/0?ca=vector_feedshare&cn=uploads_secure&ccn=ambry-video&m=AQKo-Q6VtXliVQAAAX1W48eILSWW6s5dAD0gCdc--IY8qyISkJ5qPPspRw&app=123456&sync=1&v=beta&ut=123456abcdef
+                      headers:
+                        x-amz-server-side-encryption: aws:kms
+                        x-amz-server-side-encryption-aws-kms-key-id: ignored
+                        Content-Type: application/octet-stream
+                  asset: urn:li:digitalmediaAsset:ABCDEFGH
+                  assetRealTimeTopic: >-
+                    urn:li-realtime:digitalmediaAssetUpdatesTopic:urn:li:digitalmediaAsset:ABCDEFGH
+  /:
+    put:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Video Ad
+          Creation > Sponsored Content
+      summary: >-
+        3. Upload the video file (select a video file in the Body for postman to
+        use)
+      description: >-
+        #### Select an image file on your local machine in the Body for postman
+        to use in this example call.
+
+
+        View our [Public
+        Documentation](https://docs.microsoft.com/linkedin/marketing/integrations/community-management/shares/vector-asset-api?tabs=http&view=li-lms-unversioned#upload-the-image)
+        to understand more on this API.
+
+
+        This API example uses `upLoadUrl` URL from the previous response (step
+        1) for an actual upload of an Image File.
+      requestBody:
+        content:
+          text/plain: {}
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/octet-stream
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+  /assets/{asset_id}:
+    get:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Image Ad
+          Creation > Direct Sponsored Content (dark shares)
+      summary: 4. Check the status of the upload
+      description: >-
+        View our [Public
+        Documentation](https://docs.microsoft.com/linkedin/marketing/integrations/community-management/shares/vector-asset-api?tabs=http&view=li-lms-unversioned#check-status-of-upload)
+        to understand more on this API.
+
+
+        This API examples retrieves the status of the Image File uploaded in the
+        previous step by using the asset ID. The recipe upload status must be
+        **'AVAILABLE'** in order to move on to the next step!
+      parameters:
+        - name: asset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '316'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 19:44:20 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633376660:t=1633462669:v=2:sig=AQHzCOHmM3yRKgLlLuSuzVJNMgciefP4"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633376660:t=1633462669:v=2:sig=AQHzCOHmM3yRKgLlLuSuzVJNMgciefP4"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 9+EJJmvrqhZQ86As5CoAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                recipes:
+                  - recipe: urn:li:digitalmediaRecipe:feedshare-image
+                    status: AVAILABLE
+                serviceRelationships:
+                  - relationshipType: OWNER
+                    identifier: urn:li:userGeneratedContent
+                mediaTypeFamily: STILLIMAGE
+                created: 1633375333466
+                id: ABCDEFGH
+                lastModified: 1633376018248
+                status: ALLOWED
+  /shares:
+    post:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Image Ad
+          Creation > Direct Sponsored Content (dark shares)
+      summary: 5. Create a dark share
+      description: >-
+        View our [Public
+        Documentation](https://docs.microsoft.com/linkedin/marketing/integrations/community-management/shares/share-api?tabs=http&view=li-lms-unversioned#direct-sponsored-content-share)
+        to understand more on creating a direct sponsored content share (dark
+        share).
+
+
+        This API example creates a dark image share on the Company Page
+        (organization) referencing referencing the Image file that was uploaded
+        in Step 3.
+
+
+        A Direct Sponsored Content Share allows an advertiser to sponsor content
+        without first publishing the content on the Organization page. It is
+        very similar to a Sponsored Content Share except the share is not
+        organic. This is otherwise known as a "dark" share and can only be
+        viewed by the administrators of the organization's page.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                agent: urn:li:sponsoredAccount:{{sponsoredaccount_id}}
+                content:
+                  contentEntities:
+                    - entity: urn:li:digitalmediaAsset:{{asset_id}}
+                  title: Test Share with Content title
+                  shareMediaCategory: IMAGE
+                distribution:
+                  linkedInDistributionTarget: {}
+                owner: urn:li:organization:{{organization_id}}
+                subject: Test Share Subject
+                text:
+                  text: Test Share!
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Location:
+              schema:
+                type: string
+                example: /shares/6850898521940475904
+            X-LinkedIn-Id:
+              schema:
+                type: integer
+                example: '6850898521940475904'
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '1001'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 21:04:51 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633381491:t=1633462669:v=2:sig=AQFv4u7p8zmBaw5BVY3gQ0fF57_TMR5N"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633381491:t=1633462669:v=2:sig=AQFv4u7p8zmBaw5BVY3gQ0fF57_TMR5N"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: sKQI4s/vqhYgA1MhPCsAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                owner: urn:li:organization:1234
+                agent: urn:li:sponsoredAccount:123456789
+                activity: urn:li:activity:123456789
+                edited: false
+                subject: Test Share Subject
+                created:
+                  actor: urn:li:person:123456
+                  time: 1633381491314
+                id: ABCDEFGH
+                lastModified:
+                  actor: urn:li:person:123456
+                  time: 1633381491314
+                text:
+                  text: Test Share!
+                content:
+                  title: Test Share with Content title
+                  contentEntities:
+                    - entityLocation: >-
+                        https://media-exp1.licdn.com/dms/image/ABCDEFGH/feedshare-shrink_800/0/1633381440678?e=1635984000&v=beta&t=uq55hiatqoceMWI5ysiZG0dVvVnrTe5TCHI4eHGL5Rw
+                      thumbnails:
+                        - imageSpecificContent:
+                            width: 800
+                            height: 533
+                          resolvedUrl: >-
+                            https://media-exp1.licdn.com/dms/image/ABCDEFGH/feedshare-shrink_800/0/1633381440678?e=1635984000&v=beta&t=uq55hiatqoceMWI5ysiZG0dVvVnrTe5TCHI4eHGL5Rw
+                      title: Test Share with Content title
+                      entity: urn:li:digitalmediaAsset:ABCDEFGH
+                  shareMediaCategory: RICH
+  /assets/{video_asset_id}:
+    get:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Video Ad
+          Creation > Sponsored Content
+      summary: 4. Check the status of the upload
+      description: >-
+        View our [Public
+        Documentation](https://docs.microsoft.com/linkedin/marketing/integrations/community-management/shares/vector-asset-api?tabs=http&view=li-lms-unversioned#check-status-of-upload)
+        to understand more on this API.
+
+
+        This API examples retrieves the status of the Image File uploaded in the
+        previous step by using the digital media asset ID (returned in step 1).
+        The recipe upload status must be **'AVAILABLE'** in order to move on to
+        the next step!
+      parameters:
+        - name: X-Restli-Protocol-Version
+          in: header
+          schema:
+            type: string
+          example: 2.0.0
+        - name: video_asset_id
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 2.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '316'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 19:44:20 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633376660:t=1633462669:v=2:sig=AQHzCOHmM3yRKgLlLuSuzVJNMgciefP4"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=813:x=1:i=1633376660:t=1633462669:v=2:sig=AQHzCOHmM3yRKgLlLuSuzVJNMgciefP4"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: 9+EJJmvrqhZQ86As5CoAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                recipes:
+                  - recipe: urn:li:digitalmediaRecipe:feedshare-video
+                    status: AVAILABLE
+                serviceRelationships:
+                  - relationshipType: OWNER
+                    identifier: urn:li:userGeneratedContent
+                mediaTypeFamily: STILLIMAGE
+                created: 1633375333466
+                id: '123456789'
+                lastModified: 1633376018248
+                status: ALLOWED
+  /ugcPosts:
+    post:
+      tags:
+        - >-
+          Use Cases > Advertising and Targeting > Ad Creation > Video Ad
+          Creation > Sponsored Content
+      summary: Create UGC Post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                author: urn:li:organization:{{organization_id}}
+                lifecycleState: PUBLISHED
+                specificContent:
+                  com.linkedin.ugc.ShareContent:
+                    media:
+                      - title:
+                          attributes: []
+                          text: Sample Video Create
+                        description:
+                          attributes: []
+                          text: Sample Description
+                        media: urn:li:digitalmediaAsset:{{video_asset_id}}
+                        thumbnails: []
+                        status: READY
+                    shareCommentary:
+                      attributes: []
+                      text: Some share text
+                    shareMediaCategory: VIDEO
+                visibility:
+                  com.linkedin.ugc.MemberNetworkVisibility: PUBLIC
+      responses:
+        '201':
+          description: Created
+          headers:
+            x-li-responseorigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Location:
+              schema:
+                type: string
+                example: /ugcPosts/urn%3Ali%3AugcPost%3A6869923512375619585
+            x-linkedin-id:
+              schema:
+                type: string
+                example: urn:li:ugcPost:6869923512375619585
+            x-restli-protocol-version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '43'
+            Date:
+              schema:
+                type: string
+                example: Fri, 26 Nov 2021 09:03:22 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lva1
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Source-Fabric:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-ltx1
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: AAXRrVzuO2YT5aX8AaZ2NA==
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637917402:t=1637964399:v=2:sig=AQFTEKLxi2d7d0aO1aezRxk0Gg4SSZqN"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=VB73:s=V:r=V:a=V:p=V:g=2859:u=267:x=1:i=1637917402:t=1637964399:v=2:sig=AQFTEKLxi2d7d0aO1aezRxk0Gg4SSZqN"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: urn:li:ugcPost:123456789
+  /audienceCountsV2:
+    get:
+      tags:
+        - Use Cases > Advertising and Targeting > Audience Counts
+      summary: Find audience count by targeting criteria
+      description: >-
+        View our [Public
+        Documentation](https://docs.microsoft.com/linkedin/marketing/integrations/ads/advertising-targeting/ads-targeting?tabs=http&view=li-lms-unversioned)
+        to understand more on Ads Targeting APIs.
+
+
+        Facets are high-level categories of the types of targeting available to
+        you. Use facets to narrow down your intended audience. The
+        adTargetingFacets API returns available targeting facets.
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          example: targetingCriteriaV2
+        - name: targetingCriteria
+          in: query
+          schema:
+            type: string
+          example: >-
+            (include:(and:List((or:({encoded facet_URN_1}:List({encoded
+            facet_URN_1_value_1}, {encoded facet_URN_1_value_2}))),(or:({encoded
+            facet_URN_2}:List({encoded facet_URN_2_value_1},{encoded
+            facet_URN_2_value_2}))))))
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-LI-ResponseOrigin:
+              schema:
+                type: string
+                example: RGW
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            X-RestLi-Protocol-Version:
+              schema:
+                type: string
+                example: 1.0.0
+            Content-Length:
+              schema:
+                type: integer
+                example: '4752'
+            Date:
+              schema:
+                type: string
+                example: Mon, 04 Oct 2021 18:35:49 GMT
+            X-Li-Fabric:
+              schema:
+                type: string
+                example: prod-lor1
+            Set-Cookie:
+              schema:
+                type: string
+                example: >-
+                  lidc="b=OB05:s=O:r=O:a=O:p=O:g=3527:u=811:x=1:i=1633372549:t=1633458280:v=2:sig=AQE7_5kcCq_UyD6iwf1UqaUEsJZHMkYi"
+            X-LI-Route-Key:
+              schema:
+                type: string
+                example: >-
+                  "b=OB05:s=O:r=O:a=O:p=O:g=3527:u=811:x=1:i=1633372549:t=1633458280:v=2:sig=AQE7_5kcCq_UyD6iwf1UqaUEsJZHMkYi"
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+            X-Li-Pop:
+              schema:
+                type: string
+                example: prod-esv5
+            X-LI-Proto:
+              schema:
+                type: string
+                example: http/1.1
+            X-LI-UUID:
+              schema:
+                type: string
+                example: pd4hG67nqhYAst9mGisAAA==
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                paging:
+                  start: 0
+                  count: 10
+                  links: []
+                elements:
+                  - active: 0
+                    total: 230000

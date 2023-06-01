@@ -1,0 +1,31 @@
+openapi: 3.0.1
+info:
+  title: Sample API
+  version: 1.0.0
+paths:
+  /users/{userId}:
+    get:
+      summary: Get a user by ID
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: A single user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      description: ID of the user to retrieve
+      required: true
+      schema:
+        type: integer

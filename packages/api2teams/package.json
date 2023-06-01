@@ -9,7 +9,9 @@
     "build": "rimraf lib && tsc -p ./ && copyfiles -u 1 src/resources/**/* lib",
     "package": "rimraf lib && webpack --mode production --config ./webpack.config.js",
     "lint": "eslint . --ext .ts",
-    "test": "mocha -r ts-node/register tests/**/*.test.ts",
+    "test": "npm run unit-test && npm run e2e-test",
+    "unit-test": "mocha -r ts-node/register tests/unit/**/*.test.ts",
+    "e2e-test": "mocha -r ts-node/register tests/e2e/**/*.test.ts",
     "prettier": "prettier --write \"src/**/*.ts\""
   },
   "bin": {

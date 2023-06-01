@@ -95,10 +95,6 @@ deploy:
     name: install dependencies
     with:
       args: install
-  - uses: cli/runNpmCommand
-    name: build app
-    with:
-      args: run build --if-present
   # Deploy your application to Azure App Service using the zip deploy feature.
   # For additional details, refer to https://aka.ms/zip-deploy-to-app-services.
   - uses: azureAppService/zipDeploy

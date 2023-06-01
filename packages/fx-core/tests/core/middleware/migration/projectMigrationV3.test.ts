@@ -38,7 +38,7 @@ import {
   errorNames,
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
+import { NotAllowedMigrationError } from "../../../../src/core/error";
 import {
   Metadata,
   MetadataV3,
@@ -58,7 +58,7 @@ import { getProjectSettingPathV3 } from "../../../../src/core/middleware/project
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil, SettingsUtils } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -1112,6 +1112,9 @@ describe("Migration utils", () => {
   it("checkVersionForMigration V3", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: "1.0.0" }));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
@@ -1136,11 +1139,6 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state.state, VersionState.unsupported);
-  });
-
-  it("UpgradeCanceledError", () => {
-    const err = UpgradeCanceledError();
-    assert.isNotNull(err);
   });
 
   it("getTrackingIdFromPath: V2 ", async () => {

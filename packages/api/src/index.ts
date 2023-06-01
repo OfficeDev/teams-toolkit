@@ -7,8 +7,6 @@ export * from "./constants";
 export * from "./context";
 export * from "./core";
 export * from "./types";
-export * from "./plugin";
-export * from "./solution";
 export * from "./vscode";
 export * from "@microsoft/teams-manifest";
 export * from "./utils";

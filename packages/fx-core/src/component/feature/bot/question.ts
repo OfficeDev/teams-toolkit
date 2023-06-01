@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs, SingleSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AzureSolutionQuestionNames, NotificationOptionItem } from "../../constants";
-import { Runtime } from "../../constants";
+import { AzureSolutionQuestionNames, NotificationOptionItem, Runtime } from "../../constants";
 import { NotificationTrigger, NotificationTriggers, QuestionNames } from "./constants";
 
 enum HostType {
@@ -127,21 +125,14 @@ export const showNotificationTriggerCondition = {
     if (!inputs) {
       return "Invalid inputs";
     }
-    if (isPreviewFeaturesEnabled()) {
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      if (cap === NotificationOptionItem().id) {
-        return undefined;
-      }
-      // Single Select Option for "Add Feature"
-      const feature = inputs[AzureSolutionQuestionNames.Features];
-      if (feature === NotificationOptionItem().id) {
-        return undefined;
-      }
-    } else {
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities];
-      if (Array.isArray(cap) && cap.includes(NotificationOptionItem().id)) {
-        return undefined;
-      }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+    if (cap === NotificationOptionItem().id) {
+      return undefined;
+    }
+    // Single Select Option for "Add Feature"
+    const feature = inputs[AzureSolutionQuestionNames.Features];
+    if (feature === NotificationOptionItem().id) {
+      return undefined;
     }
     return "Notification is not selected";
   },

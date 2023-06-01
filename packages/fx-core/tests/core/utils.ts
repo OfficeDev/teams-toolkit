@@ -23,37 +23,29 @@ import {
   MultiSelectResult,
   ok,
   PermissionRequestProvider,
-  ProjectSettings,
   QTreeNode,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
-  Settings,
   SingleSelectConfig,
   SingleSelectResult,
-  Solution,
   SolutionContext,
   Stage,
   SubscriptionInfo,
-  TaskConfig,
   TelemetryReporter,
   TokenProvider,
   TokenRequest,
   Tools,
   UserInteraction,
   v2,
-  v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import * as uuid from "uuid";
 import { DEFAULT_PERMISSION_REQUEST, PluginNames } from "../../src/component/constants";
-import sinon from "sinon";
 import { MyTokenCredential } from "../plugins/solution/util";
 
 function solutionSettings(): AzureSolutionSettings {
@@ -66,7 +58,7 @@ function solutionSettings(): AzureSolutionSettings {
     activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
   } as AzureSolutionSettings;
 }
-export class MockSolution implements Solution {
+export class MockSolution {
   name = "fx-solution-azure";
 
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -129,7 +121,7 @@ export class MockSolution implements Solution {
   }
 }
 
-export class MockSolutionV2 implements v2.SolutionPlugin {
+export class MockSolutionV2 {
   name = "fx-solution-azure";
   displayName = "Azure Solution V2 Mock";
   async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -409,13 +401,6 @@ export class MockUserInteraction implements UserInteraction {
     return handler;
   }
 
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return task.run(args);
-  }
   async runCommand(args: {
     cmd: string;
     workingDirectory?: string;
@@ -493,97 +478,6 @@ export class MockLogProvider implements LogProvider {
   }
 }
 
-export function MockProjectSettings(appName: string): ProjectSettings {
-  return {
-    appName: appName,
-    projectId: uuid.v4(),
-    solutionSettings: {
-      name: PluginNames.SOLUTION,
-      version: "1.0.0",
-      hostType: "Azure",
-      capabilities: ["Tab"],
-      azureResources: [],
-      activeResourcePlugins: [
-        PluginNames.FE,
-        PluginNames.LDEBUG,
-        PluginNames.AAD,
-        PluginNames.SA,
-        PluginNames.APPST,
-      ],
-    } as AzureSolutionSettings,
-  };
-}
-
-export function MockSPFxProjectSettings(appName: string): ProjectSettings {
-  return {
-    appName: appName,
-    projectId: uuid.v4(),
-    solutionSettings: {
-      name: PluginNames.SOLUTION,
-      version: "1.0.0",
-      hostType: "Azure",
-      capabilities: ["SPFx"],
-      azureResources: [],
-      activeResourcePlugins: [PluginNames.SPFX, PluginNames.LDEBUG, PluginNames.APPST],
-    } as AzureSolutionSettings,
-  };
-}
-
-export function MockPreviousVersionBefore2_3_0Context(): Json {
-  return {
-    solution: {
-      teamsAppTenantId: "tenantId",
-      localDebugTeamsAppId: "teamsAppId",
-    },
-    "fx-resource-aad-app-for-teams": {
-      local_clientId: "local_clientId",
-      local_clientSecret: "{{fx-resource-aad-app-for-teams.local_clientSecret}}",
-      local_objectId: "local_objectId",
-      local_oauth2PermissionScopeId: "local_oauth2PermissionScopeId",
-      local_tenantId: "local_tenantId",
-      local_applicationIdUris: "local_applicationIdUris",
-    },
-  };
-}
-
-export function MockPreviousVersionBefore2_3_0UserData(): Record<string, string> {
-  return {
-    "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret",
-  };
-}
-
-export function MockLatestVersion2_3_0Context(): Json {
-  return {
-    solution: {
-      teamsAppTenantId: "{{solution.teamsAppTenantId}}",
-      localDebugTeamsAppId: "{{solution.localDebugTeamsAppId}}",
-    },
-    "fx-resource-aad-app-for-teams": {
-      local_clientId: "{{fx-resource-aad-app-for-teams.local_clientId}}",
-      local_clientSecret: "{{fx-resource-aad-app-for-teams.local_clientSecret}}",
-      local_objectId: "{{fx-resource-aad-app-for-teams.local_objectId}}",
-      local_oauth2PermissionScopeId:
-        "{{fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId}}",
-      local_tenantId: "{{fx-resource-aad-app-for-teams.local_tenantId}}",
-      local_applicationIdUris: "{{fx-resource-aad-app-for-teams.local_applicationIdUris}}",
-    },
-  };
-}
-
-export function MockLatestVersion2_3_0UserData(): Record<string, string> {
-  return {
-    "fx-resource-aad-app-for-teams.local_clientId": "local_clientId_new",
-    "fx-resource-aad-app-for-teams.local_clientSecret": "local_clientSecret_new",
-    "fx-resource-aad-app-for-teams.local_objectId": "local_objectId_new",
-    "fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId":
-      "local_oauth2PermissionScopeId_new",
-    "fx-resource-aad-app-for-teams.local_tenantId": "local_tenantId_new",
-    "fx-resource-aad-app-for-teams.local_applicationIdUris": "local_applicationIdUris_new",
-    "solution.teamsAppTenantId": "tenantId_new",
-    "solution.localDebugTeamsAppId": "teamsAppId_new",
-  };
-}
-
 export function deleteFolder(filePath?: string): void {
   if (!filePath) return;
   if (fs.existsSync(filePath)) {
@@ -602,26 +496,5 @@ export function deleteFolder(filePath?: string): void {
     try {
       fs.rmdirSync(filePath);
     } catch (e) {}
-  }
-}
-
-export function mockSolutionV3getQuestionsAPI(solution: v3.ISolution, sandbox: sinon.SinonSandbox) {
-  if (solution.getQuestionsForAddFeature) {
-    sandbox.stub(solution, "getQuestionsForAddFeature").resolves(ok(undefined));
-  }
-  if (solution.getQuestionsForInit) {
-    sandbox.stub(solution, "getQuestionsForInit").resolves(ok(undefined));
-  }
-  if (solution.getQuestionsForProvision) {
-    sandbox.stub(solution, "getQuestionsForProvision").resolves(ok(undefined));
-  }
-  if (solution.getQuestionsForDeploy) {
-    sandbox.stub(solution, "getQuestionsForDeploy").resolves(ok(undefined));
-  }
-  if (solution.getQuestionsForPublish) {
-    sandbox.stub(solution, "getQuestionsForPublish").resolves(ok(undefined));
-  }
-  if (solution.getQuestionsForUserTask) {
-    sandbox.stub(solution, "getQuestionsForUserTask").resolves(ok(undefined));
   }
 }

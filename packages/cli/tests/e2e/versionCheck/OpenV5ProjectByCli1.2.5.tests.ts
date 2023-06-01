@@ -7,7 +7,6 @@
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
@@ -26,15 +25,11 @@ describe("version check", () => {
   });
 
   it("open v5 project by cli 1.2.5", { testPlanCaseId: 17603383 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     {
       const result = await Executor.createProject(
         testFolder,
         appName,
-        Capability.Tab,
+        Capability.TabNonSso,
         ProgrammingLanguage.TS
       );
       chai.assert.isTrue(result.success);
@@ -42,7 +37,7 @@ describe("version check", () => {
 
     const env = Object.assign({}, process.env);
     env["TEAMSFX_V3"] = "false";
-    Executor.installCLI(testFolder, "1.2.5", true);
+    await Executor.installCLI(testFolder, "1.2.5", false);
     const errorMessage =
       "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest";
 

@@ -35,13 +35,11 @@ import {
   ConfigLocalDebugSettingsError,
   InvalidLocalBotEndpointFormat,
   LocalBotEndpointNotConfigured,
-  NgrokTunnelNotConnected,
   ScaffoldLocalDebugSettingsError,
   SetupLocalDebugSettingsError,
 } from "./error";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { prepareLocalAuthService } from "./util/localService";
-import { getNgrokHttpUrl } from "./util/ngrok";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ComponentNames } from "../constants";
 import * as Launch from "./util/launch";
@@ -55,8 +53,6 @@ import fs from "fs-extra";
 import { TOOLS } from "../../core/globalVars";
 import { getComponent } from "../workflow";
 import { CoreQuestionNames } from "../../core/question";
-import { QuestionKey } from "../code/api/enums";
-import { DefaultValues } from "../feature/api/constants";
 import { CommentObject } from "comment-json";
 import * as commentJson from "comment-json";
 import * as os from "os";
@@ -74,7 +70,6 @@ export interface LocalEnvConfig {
   skipNgrok?: boolean;
   hasFunctionBot: boolean;
   botCapabilities: string[];
-  defaultFunctionName: string;
   programmingLanguage: string;
   isM365?: boolean;
 }
@@ -83,18 +78,6 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
   const settings = context.projectSetting;
   const bot = getComponent(settings, ComponentNames.TeamsBot);
   const botCapabilities = bot?.capabilities || [];
-  const api = getComponent(settings, ComponentNames.TeamsApi);
-  let defaultFuncName;
-  if (api) {
-    if (api.functionNames && api.functionNames.length > 0) {
-      defaultFuncName = api.functionNames[0];
-    }
-    defaultFuncName =
-      defaultFuncName ||
-      settings.defaultFunctionName ||
-      inputs[QuestionKey.functionName] ||
-      DefaultValues.functionName;
-  }
   const config: LocalEnvConfig = {
     hasAzureTab: hasAzureTab(settings),
     hasSPFxTab: hasSPFxTab(settings),
@@ -104,7 +87,6 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
     hasSimpleAuth: hasSimpleAuth(settings),
     hasFunctionBot: hasFunctionBot(settings),
     botCapabilities: botCapabilities,
-    defaultFunctionName: defaultFuncName,
     programmingLanguage:
       settings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage] || "javascript",
     isM365: settings.isM365,
@@ -234,17 +216,6 @@ export async function setupLocalEnvironmentCommon(
           envInfo.state[BOT_STATE_KEY].siteEndpoint = localBotEndpoint;
           envInfo.state[BOT_STATE_KEY].validDomain = localBotEndpoint.slice(8);
           envInfo.state[BOT_STATE_KEY].domain = localBotEndpoint.slice(8);
-        } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-          if (!ngrokHttpUrl) {
-            const error = NgrokTunnelNotConnected();
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
-            return err(error);
-          } else {
-            envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
-            envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
-            envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
-          }
         }
       }
     } else if (inputs.platform === Platform.VS) {
@@ -256,16 +227,7 @@ export async function setupLocalEnvironmentCommon(
 
       if (includeBot) {
         envInfo.state[BOT_STATE_KEY] ??= {};
-        const ngrokHttpUrl = await getNgrokHttpUrl(5130);
-        if (!ngrokHttpUrl) {
-          const error = NgrokTunnelNotConnected();
-          TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
-          return err(error);
-        } else {
-          envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
-          envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
-          envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
-        }
+        // TODO: remove this file
       }
     }
   } catch (error: any) {
@@ -354,7 +316,6 @@ export async function configLocalEnvironmentCommon(
 
         if (includeBackend) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncEndpoint] = localFuncEndpoint;
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncName] = config.defaultFunctionName;
 
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.FuncWorkerRuntime] = "node";
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientId] = clientId;

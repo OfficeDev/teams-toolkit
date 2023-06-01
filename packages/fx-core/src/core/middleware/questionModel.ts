@@ -4,25 +4,19 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   CLIPlatforms,
-  err,
   FxError,
   Inputs,
-  ok,
   Platform,
   QTreeNode,
   Result,
+  err,
+  ok,
   traverse,
 } from "@microsoft/teamsfx-api";
 
-import {
-  isCLIDotNetEnabled,
-  isOfficeAddinEnabled,
-  isPreviewFeaturesEnabled,
-} from "../../common/featureFlags";
-import { isExistingTabAppEnabled, isV3Enabled } from "../../common/tools";
+import { isCLIDotNetEnabled, isOfficeAddinEnabled } from "../../common/featureFlags";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import {
-  ExistingTabOptionItem,
   NewProjectTypeBotOptionItem,
   NewProjectTypeMessageExtensionOptionItem,
   NewProjectTypeOutlookAddinOptionItem,
@@ -30,9 +24,11 @@ import {
   TabSPFxItem,
 } from "../../component/constants";
 import { getTemplateId, isFromDevPortal } from "../../component/developerPortalScaffoldUtils";
-import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
-import { getNotificationTriggerQuestionNode } from "../../component/question";
+import {
+  getNotificationTriggerQuestionNode,
+  getSPFxScaffoldQuestion,
+} from "../../component/question";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
 import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
@@ -40,21 +36,7 @@ import { TOOLS } from "../globalVars";
 import {
   BotIdsQuestion,
   CoreQuestionNames,
-  createAppNameQuestion,
-  createCapabilityForDotNet,
-  createCapabilityForOfficeAddin,
-  createCapabilityQuestion,
-  createCapabilityQuestionPreview,
   CreateNewOfficeAddinOption,
-  createNewProjectQuestionWith2Layers,
-  ExistingTabEndpointQuestion,
-  getBotProjectQuestionNode,
-  getCreateNewOrFromSampleQuestion,
-  getMessageExtensionTypeProjectQuestionNode,
-  getOutlookAddinTypeProjectQuestionNode,
-  getQuestionForDeployAadManifest,
-  getRuntimeQuestion,
-  getTabTypeProjectQuestionNode,
   ProgrammingLanguageQuestion,
   ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
@@ -65,6 +47,18 @@ import {
   ScratchOptionNoVSC,
   ScratchOptionYes,
   ScratchOptionYesVSC,
+  createAppNameQuestion,
+  createCapabilityForDotNet,
+  createCapabilityForOfficeAddin,
+  createCapabilityQuestionPreview,
+  createNewProjectQuestionWith2Layers,
+  getBotProjectQuestionNode,
+  getCreateNewOrFromSampleQuestion,
+  getMessageExtensionTypeProjectQuestionNode,
+  getOutlookAddinTypeProjectQuestionNode,
+  getQuestionForDeployAadManifest,
+  getRuntimeQuestion,
+  getTabTypeProjectQuestionNode,
   tabsContentUrlQuestion,
   tabsWebsitetUrlQuestion,
 } from "../question";
@@ -79,9 +73,9 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "grantPermission") {
     getQuestionRes = await getQuestionsForGrantPermission(inputs);
-  } else if (isV3Enabled() && (method === "listCollaborator" || method == "checkPermission")) {
+  } else if (method === "listCollaborator" || method == "checkPermission") {
     getQuestionRes = await getQuestionsForListCollaborator(inputs);
-  } else if (isV3Enabled() && method === "deployAadManifest") {
+  } else if (method === "deployAadManifest") {
     getQuestionRes = await getQuestionForDeployAadManifest(inputs);
   }
 
@@ -103,25 +97,6 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   await next();
 };
 
-// export function desensitize(node: QTreeNode, input: Inputs): Inputs {
-//   const copy = deepCopy(input);
-//   const names = new Set<string>();
-//   traverseToCollectPasswordNodes(node, names);
-//   for (const name of names) {
-//     copy[name] = "******";
-//   }
-//   return copy;
-// }
-
-export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<string>): void {
-  if (node.data.type === "text" && node.data.password === true) {
-    names.add(node.data.name);
-  }
-  for (const child of node.children || []) {
-    traverseToCollectPasswordNodes(child, names);
-  }
-}
-
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -139,14 +114,9 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   createNew.condition = { equals: ScratchOptionYes().id };
 
   // capabilities
-  let capNode: QTreeNode;
-  if (isPreviewFeaturesEnabled()) {
-    const capQuestion = createCapabilityQuestionPreview(inputs);
-    capNode = new QTreeNode(capQuestion);
-  } else {
-    const capQuestion = createCapabilityQuestion();
-    capNode = new QTreeNode(capQuestion);
-  }
+  const capQuestion = createCapabilityQuestionPreview(inputs);
+  const capNode = new QTreeNode(capQuestion);
+
   createNew.addChild(capNode);
 
   const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
@@ -161,26 +131,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  if (isPreviewFeaturesEnabled()) {
-    programmingLanguage.condition = {
-      notEquals: ExistingTabOptionItem().id,
-    };
-  } else {
-    programmingLanguage.condition = {
-      minItems: 1,
-      excludes: ExistingTabOptionItem().id,
-    };
-  }
   capNode.addChild(programmingLanguage);
-
-  // existing tab endpoint
-  if (isExistingTabAppEnabled()) {
-    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion());
-    existingTabEndpoint.condition = {
-      equals: ExistingTabOptionItem().id,
-    };
-    capNode.addChild(existingTabEndpoint);
-  }
 
   createNew.addChild(new QTreeNode(QuestionRootFolder()));
   const defaultName = !inputs.teamsAppFromTdp?.appName

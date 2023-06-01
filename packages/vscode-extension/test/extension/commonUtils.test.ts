@@ -1,31 +1,26 @@
 import * as chai from "chai";
-
-import * as sinon from "sinon";
-
 import * as fs from "fs-extra";
-
 import * as os from "os";
+import * as sinon from "sinon";
+import * as tmp from "tmp";
+import { Uri } from "vscode";
 
-import * as commonUtils from "../../src/utils/commonUtils";
-
-import * as extensionPackage from "../../package.json";
-import path = require("path");
 import {
   ConfigFolderName,
   InputConfigsFolderName,
   ok,
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
-import * as globalVariables from "../../src/globalVariables";
-import { Uri } from "vscode";
-import * as tmp from "tmp";
-import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
-import { expect } from "chai";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
+import * as extensionPackage from "../../package.json";
+import * as globalVariables from "../../src/globalVariables";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
+import * as commonUtils from "../../src/utils/commonUtils";
+
+import path = require("path");
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
     it("alpha version", () => {
@@ -194,16 +189,6 @@ describe("CommonUtils", () => {
       const result = commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
-
-    describe("menus", async () => {
-      it("preview", async () => {
-        const previewCommand = extensionPackage.contributes.menus["editor/title"].find(
-          (x) => x.command === "fx-extension.openPreviewFile"
-        );
-        chai.assert.isTrue(previewCommand !== undefined);
-        chai.assert.isTrue(previewCommand?.when.includes("manifest.template.json"));
-      });
-    });
   });
 
   describe("isTriggerFromWalkThrough", () => {
@@ -246,7 +231,7 @@ describe("CommonUtils", () => {
     it("Should return cmp with no args", () => {
       const props = commonUtils.getTriggerFromProperty();
 
-      expect(props).to.deep.equal({
+      chai.expect(props).to.deep.equal({
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
       });
     });
@@ -254,7 +239,7 @@ describe("CommonUtils", () => {
     it("Should return cmp with empty args", () => {
       const props = commonUtils.getTriggerFromProperty([]);
 
-      expect(props).to.deep.equal({
+      chai.expect(props).to.deep.equal({
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
       });
     });
@@ -276,7 +261,7 @@ describe("CommonUtils", () => {
       it(`Should return ${triggerFrom.toString()}`, () => {
         const props = commonUtils.getTriggerFromProperty([triggerFrom]);
 
-        expect(props).to.deep.equal({
+        chai.expect(props).to.deep.equal({
           [TelemetryProperty.TriggerFrom]: triggerFrom,
         });
       });
@@ -288,25 +273,8 @@ describe("CommonUtils", () => {
     afterEach(() => {
       sandbox.restore();
     });
-    it("get app name successfully - v2", () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
-      sandbox.stub(fs, "readFileSync").returns('{ "appName": "name"}');
-      sandbox.stub(commonTools, "isV3Enabled").returns(false);
 
-      const res = commonUtils.getAppName();
-      expect(res).equal("name");
-    });
-
-    it("throw exception - v2", () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
-      sandbox.stub(fs, "readFileSync").throws();
-      sandbox.stub(commonTools, "isV3Enabled").returns(false);
-
-      const res = commonUtils.getAppName();
-      expect(res).equal(undefined);
-    });
-
-    it("get app name successfully - v3", () => {
+    it("get app name successfully", () => {
       const ymlData = `# Triggered when 'teamsfx provision' is executed
       provision:
         - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
@@ -319,28 +287,25 @@ describe("CommonUtils", () => {
       `;
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").returns(ymlData);
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
       const res = commonUtils.getAppName();
-      expect(res).equal("appNameTest");
+      chai.expect(res).equal("appNameTest");
     });
 
-    it("empty yml file - v3", () => {
+    it("empty yml file", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").returns("");
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
       const res = commonUtils.getAppName();
-      expect(res).equal(undefined);
+      chai.expect(res).equal(undefined);
     });
 
-    it("throw exception - v3", () => {
+    it("throw exception", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").throws();
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
       const res = commonUtils.getAppName();
-      expect(res).equal(undefined);
+      chai.expect(res).equal(undefined);
     });
   });
 
@@ -352,7 +317,6 @@ describe("CommonUtils", () => {
     });
 
     it("returns false if teamsAppId is empty", async () => {
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(envUtil, "readEnv").resolves(
         ok({
@@ -366,7 +330,6 @@ describe("CommonUtils", () => {
     });
 
     it("returns true if teamsAppId is not empty", async () => {
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(envUtil, "readEnv").resolves(
         ok({
@@ -383,7 +346,6 @@ describe("CommonUtils", () => {
     });
 
     it("returns false if teamsAppId has error", async () => {
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
 

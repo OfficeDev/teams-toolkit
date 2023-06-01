@@ -2572,15 +2572,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Váš projekt se úspěšně inicializoval, aby fungoval s TeamsFx.]A;]A;Některé další kroky:]A;přidání teamsfx <feature> vám umožní přidat funkce, jako je jednotné přihlašování nebo integrace oznámení Teams.]A;]A;Tip pro profesionály:]A;Další informace o aktualizaci souboru manifestu pro připojení k existujícímu prostředí spouštěcí stránky najdete tady: aka.ms/teams-manifest]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.]]></Val>
@@ -3415,6 +3406,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ověřit balíček aplikace pomocí ověřovacích pravidel]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ověřit balíček aplikace pomocí ověřovacích pravidel]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ověřit pomocí schématu manifestu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ověřit pomocí schématu manifestu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.selectTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a validation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vyberte metodu ověření]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
@@ -3703,15 +3739,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js (@CurrentVersion) není v seznamu podporovaných verzí (@SupportedVersions).]A;]A;Pro další informace o podporovaných verzích Node.js klikněte na Další informace.]A;]A;(Pokud jste Node.js (@SupportedVersions) právě nainstalovali, restartujte editor Visual Studio Code, aby se změna projevila.)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.V3NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to %s to install a supported Node.js.]]></Val>
@@ -3802,18 +3829,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.failToValidateNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to validate @NameVersion after installation.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Po instalaci nelze ověřit @NameVersion.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to validate @NameVersion after installation.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.failToValidateVxTestApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to validate video extensibility test app after installation.]]></Val>
@@ -3845,15 +3860,6 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.finishInstallDotnet" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[@NameVersion se úspěšně nainstaloval.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.finishInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3910,15 +3916,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.needInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You must have @NameVersion installed to debug your local bot.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abyste mohli ladit místního bota, musíte mít nainstalovaný @NameVersion.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.needInstallNpm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You must have NPM installed to debug your local functions.]]></Val>
@@ -3946,15 +3943,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.startInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Downloading and installing @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Stahuje a instaluje se @NameVersion.]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5223,15 +5211,6 @@
           <Val><![CDATA[MultipleEnv feature is not enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Funkce MultipleEnv není povolená.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.NgrokTunnelNotConnected" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Ngrok tunnel is not connected. Check your network settings and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Tunel Ngrok není připojený. Zkontrolujte nastavení sítě a zkuste to znovu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6628,6 +6607,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.common.MissingRequiredFileError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Missing %srequired file `%s`]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Chybí soubor %srequired „%s“.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.common.MissingRequiredInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing required input: %s]]></Val>
@@ -6648,12 +6636,12 @@
       </Item>
       <Item ItemId=";error.common.UnhandledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
+          <Val><![CDATA[An unexpected error has occurred while performing the %s task. %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Při provádění úlohy %s došlo k neočekávané chybě. Důvod této chyby je: %s. Tento problém můžete nahlásit kliknutím na poskytnutý odkaz na problém, abychom mohli problém co nejdříve prozkoumat a vyřešit.]]></Val>
+            <Val><![CDATA[Při provádění úlohy %s došlo k neočekávané chybě. %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unhandled error: %s]]></Val>
+            <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -6837,15 +6825,6 @@
           <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start due to error: %s.]A; If the reason is not clearly specified, here are some suggestions to troubleshoot:]A; 1. Check the application logs: Look for any error messages or stack traces in the application logs to identify the root cause of the problem.]A; 2. Check the Azure configuration: Ensure that the Azure configuration is correct, including connection strings and application settings.]A; 3. Check the application code: Review the code to see if there are any syntax or logic errors that could be causing the issue.]A; 4. Check the dependencies: Verify that all dependencies required by the application are correctly installed and updated.]A; 5. Restart the application: Try restarting the application in Azure to see if that resolves the issue.]A; 6. Check the resource allocation: Make sure that the resource allocation for the Azure instance is appropriate for the application and its workload.]A; 7. Seek help from Azure support: If the issue persists, reach out to Azure support for further assistance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Balíček byl úspěšně nasazen do Azure pro umístění: %s, ale aplikaci se nepovedlo spustit kvůli chybě: %s.]A; Pokud není důvod jasně specifikován, zde je několik návrhů na řešení problémů:]A; 1. Zkontrolujte protokoly aplikace: Pro identifikaci hlavní příčiny problému vyhledejte v protokolech aplikace všechny chybové zprávy nebo trasování zásobníku.]A; 2. Zkontrolujte konfiguraci Azure: Zkontrolujte, zda je konfigurace Azure správná, včetně řetězců připojení a nastavení aplikace.]A; 3. Zkontrolujte kód aplikace: Zkontrolujte kód a zjistěte, zda se v něm nevyskytují syntaktické nebo logické chyby, které by mohly být příčinou problému.]A; 4. Zkontrolujte závislosti: Zkontrolujte, zda jsou všechny závislosti vyžadované aplikací správně nainstalovány a aktualizovány.]A; 5. Restartujte aplikaci: Zkuste restartovat aplikaci v Azure a zjistěte, zda se tím problém vyřeší.]A; 6. Zkontrolujte přidělení prostředků: Zkontrolujte, zda je přidělení prostředků pro instanci Azure vhodné pro aplikaci a její úlohu.]A; 7. Požádejte o pomoc podporu Azure: Pokud problém přetrvává, obraťte se na podporu Azure a požádejte o další pomoc.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.deploy.DeployRemoteStartError.Notification" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start. Refer to the [Output panel]5D;(command:fx-extension.showOutputChannel) for more suggestions.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Balíček se úspěšně nasadil do Azure pro umístění: %s, ale aplikace se nedá spustit. Další návrhy najdete v [Output panel]5D;(command:fx-extension.showOutputChannel).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7200,10 +7179,13 @@
       </Item>
       <Item ItemId=";error.script.ScriptExecutionError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s]]></Val>
+          <Val><![CDATA[Script ('%s') execution error: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s]]></Val>
+            <Val><![CDATA[Chyba spuštění skriptu ('%s'): %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[%s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7470,22 +7452,25 @@
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nelze parsovat soubor yaml: %s. Otevřete prosím soubor yaml a další podrobnosti najdete na kartě PROBLÉMY.]]></Val>
+            <Val><![CDATA[Nepovedlo se parsovat soubor yaml: %s. Zkontrolujte prosím soubor yaml.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
+            <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaErrorWithReason" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Není možné analyzovat soubor yaml: %s. Důvod: %s. Otevřete prosím soubor yaml a podívejte se na kartu PROBLÉMY, kde najdete další podrobnosti.]]></Val>
+            <Val><![CDATA[Nepovedlo se parsovat soubor yaml: %s. Důvod: %s Zkontrolujte prosím soubor yaml.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

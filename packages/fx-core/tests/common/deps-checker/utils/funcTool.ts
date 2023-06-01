@@ -1,63 +1,45 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+/**
+ * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ */
+import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import * as fs from "fs-extra";
+import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/funcToolChecker";
+import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
 
-export const portableFuncInstallPath = path.join(
-  os.homedir(),
-  `.${ConfigFolderName}`,
-  "bin",
-  "func"
-);
-export const portableFuncSentinelPath = path.join(
-  os.homedir(),
-  `.${ConfigFolderName}`,
-  "func-sentinel"
-);
+class TestFuncToolChecker extends FuncToolChecker {
+  public static getDefaultInstallPath() {
+    return super.getDefaultInstallPath();
+  }
+  public async queryGlobalFuncVersion(): Promise<string | undefined> {
+    try {
+      return (await super.queryFuncVersion(undefined)).versionStr;
+    } catch {
+      return undefined;
+    }
+  }
+}
 
 export async function cleanup(): Promise<void> {
-  await fs.remove(portableFuncInstallPath);
-  await fs.remove(portableFuncSentinelPath);
+  await fs.remove(TestFuncToolChecker.getDefaultInstallPath());
 }
 
-export async function isFuncCoreToolsInstalled(): Promise<boolean> {
-  const funcVersion = String(await getFuncCoreToolsVersion());
-  return supportedFuncVersions.includes(funcVersion);
+export async function getGlobalFunc(): Promise<string | undefined> {
+  const funcChecker = new TestFuncToolChecker();
+  return await funcChecker.queryGlobalFuncVersion();
 }
 
-const supportedFuncVersions = ["3"];
-
-export async function getFuncCoreToolsVersion(): Promise<string | null> {
-  try {
-    const output = await cpUtils.executeCommand(
-      undefined,
-      undefined,
-      undefined,
-      "func",
-      "--version"
-    );
-    const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
-    const match = regex.exec(output);
-    if (!match) {
-      return null;
-    }
-
-    switch (match.groups?.major_version) {
-      case "1":
-        return "1";
-      case "2":
-        return "2";
-      case "3":
-        return "3";
-      default:
-        return null;
-    }
-  } catch (error) {
-    console.debug(`Failed to run 'func --version', error = '${error}'`);
-    return null;
-  }
+export async function funcStart(binFolders?: string): Promise<cpUtils.ICommandResult> {
+  return cpUtils.tryExecuteCommand(
+    undefined,
+    undefined,
+    {
+      shell: os.type() === "Windows_NT" ? "cmd.exe" : true,
+      env: binFolders ? { PATH: `${binFolders}${path.delimiter}${process.env.PATH}` } : undefined,
+    },
+    "func",
+    "start"
+  );
 }

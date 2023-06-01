@@ -39,8 +39,11 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
 } from "../../src/component/constants";
+import { MockTools } from "../core/utils";
+import { setTools } from "../../src/core/globalVars";
 
 describe("developPortalScaffoldUtils", () => {
+  setTools(new MockTools());
   describe("updateFilesForTdp", () => {
     const sandbox = sinon.createSandbox();
     class MockedWriteStream {

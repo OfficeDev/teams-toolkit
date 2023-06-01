@@ -35,9 +35,6 @@ export class MigrationContext {
   static async create(ctx: CoreHookContext): Promise<MigrationContext> {
     const context = new MigrationContext(ctx);
     await fs.ensureDir(context.backupPath);
-    context.addTelemetryProperties({
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-    });
     return context;
   }
 

@@ -10,13 +10,15 @@ import fs from "fs-extra";
 
 import { TestHelper } from "../helper";
 
-import { telemetryHelper } from "../../../../../src/component/resource/spfx/utils/telemetry-helper";
-import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
+import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
+import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
 import { LogProvider, LogLevel, Colors, UserError } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { MockTools } from "../../../../core/utils";
 
-const ryc = rewire("../../../../../src/component/resource/spfx/depsChecker/yoChecker");
+const ryc = rewire("../../../../../src/component/generator/spfx/depsChecker/yoChecker");
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -68,50 +70,6 @@ describe("Yo checker", () => {
     restore();
   });
 
-  it("get deps info", async () => {
-    const deps = YoChecker.getDependencyInfo();
-    expect(deps.supportedVersion).equals(ryc.__get__("supportedVersion"));
-  });
-
-  it("ensure deps - already installed", async () => {
-    const yc = new YoChecker(new StubLogger());
-    const pluginContext = TestHelper.getFakePluginContext("test", "./", "");
-    stub(yc, "isInstalled").callsFake(async () => {
-      return true;
-    });
-    const result = await yc.ensureDependency(pluginContext);
-    expect(result.isOk()).is.true;
-  });
-
-  it("ensure deps - uninstalled", async () => {
-    const yc = new YoChecker(new StubLogger());
-    const pluginContext = TestHelper.getFakePluginContext("test", "./", "");
-    stub(yc, "isInstalled").callsFake(async () => {
-      return false;
-    });
-
-    stub(yc, "install").throwsException(new Error());
-
-    const result = await yc.ensureDependency(pluginContext);
-    expect(result.isOk()).is.false;
-  });
-
-  it("is installed", async () => {
-    const yc = new YoChecker(new StubLogger());
-    stub(fs, "pathExists").callsFake(async () => {
-      console.log("stub pathExists");
-      return true;
-    });
-
-    stub(YoChecker.prototype, <any>"queryVersion").callsFake(async () => {
-      console.log("stub queryversion");
-      return ryc.__get__("supportedVersion");
-    });
-
-    const result = await yc.isInstalled();
-    expect(result).is.true;
-  });
-
   it("install", async () => {
     const yc = new YoChecker(new StubLogger());
     const cleanStub = stub(YoChecker.prototype, <any>"cleanup").callsFake(async () => {
@@ -127,6 +85,24 @@ describe("Yo checker", () => {
       await yc.install();
     } catch {
       assert.callCount(cleanStub, 2);
+    }
+  });
+
+  it("install throw error", async () => {
+    const yc = new YoChecker(new StubLogger());
+    const cleanStub = stub(YoChecker.prototype, <any>"cleanup").callsFake(async () => {
+      console.log("stub cleanup");
+      return;
+    });
+    stub(cpUtils, "executeCommand").throws(new Error("unknown"));
+    stub(fs, "pathExists").callsFake(async () => {
+      return true;
+    });
+
+    try {
+      await yc.install();
+    } catch (e) {
+      expect(e.name).equal("NpmInstallFailed");
     }
   });
 
@@ -251,6 +227,7 @@ describe("Yo checker", () => {
   });
 
   describe("ensureLatestDependency", () => {
+    setTools(new MockTools());
     it("install successfully", async () => {
       const yc = new YoChecker(new StubLogger());
 

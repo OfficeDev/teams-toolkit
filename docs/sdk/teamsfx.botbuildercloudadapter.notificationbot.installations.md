@@ -4,6 +4,11 @@
 
 ## BotBuilderCloudAdapter.NotificationBot.installations() method
 
+> Warning: This API is now obsolete.
+> 
+> Use getPagedInstallations instead.
+> 
+
 Get all targets where the bot is installed.
 
 <b>Signature:</b>

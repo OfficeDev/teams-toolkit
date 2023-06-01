@@ -5,6 +5,7 @@
   "version": "5.0.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
+  "private": true,
   "icon": "media/teams.png",
   "main": "./out/src/extension.js",
   "repository": {
@@ -117,11 +118,6 @@
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-and-check-upgrade",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
         "view": "teamsfx-project-and-check-upgradeV3",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content%",
         "enablement": "fx-extension.initialized"
@@ -185,17 +181,12 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isNewUser"
-        },
-        {
-          "id": "teamsfx-empty-project-and-check-upgrade",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser"
         }
       ]
     },
@@ -204,11 +195,6 @@
         {
           "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isV3Enabled",
-          "group": "deploy@0"
-        },
-        {
-          "command": "fx-extension.deployManifestFromCtxMenu",
-          "when": "resourceFilename == manifest.template.json",
           "group": "deploy@0"
         }
       ],
@@ -279,11 +265,6 @@
           "command": "fx-extension.azureAccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline@2"
-        },
-        {
-          "command": "fx-extension.specifySubscription",
-          "when": "view == teamsfx-accounts && viewItem == selectSubscription",
-          "group": "inline"
         },
         {
           "command": "fx-extension.openDocumentLink",
@@ -357,16 +338,6 @@
         }
       ],
       "editor/title": [
-        {
-          "command": "fx-extension.openPreviewFile",
-          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json || resourceFilename == manifest.template.json && !fx-extension.isV3Enabled",
-          "group": "navigation"
-        },
-        {
-          "command": "fx-extension.updatePreviewFile",
-          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && !fx-extension.isV3Enabled",
-          "group": "navigation"
-        },
         {
           "command": "fx-extension.openPreviewAadFile",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
@@ -487,12 +458,8 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.specifySubscription",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.checkProjectUpgrade",
-          "when": "fx-extension.canUpgradeToArmAndMultiEnv || fx-extension.canUpgradeV3"
+          "when": "fx-extension.canUpgradeV3"
         },
         {
           "command": "fx-extension.openSurvey",
@@ -564,12 +531,6 @@
         "title": "%teamstoolkit.commands.createEnvironment.title%",
         "icon": "$(add)",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked"
-      },
-      {
-        "command": "fx-extension.addFeature",
-        "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled && !fx-extension.commandLocked",
-        "category": "Teams"
       },
       {
         "command": "fx-extension.build",
@@ -791,11 +752,6 @@
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",
         "icon": "$(sign-out)"
-      },
-      {
-        "command": "fx-extension.specifySubscription",
-        "title": "%teamstoolkit.commands.specifySubscription.title%",
-        "icon": "$(list-selection)"
       },
       {
         "command": "fx-extension.openSurvey",

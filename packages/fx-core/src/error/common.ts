@@ -170,3 +170,41 @@ export class NoEnvFilesError extends UserError {
     super(errorOptions);
   }
 }
+
+export class MissingRequiredFileError extends UserError {
+  constructor(source: string, task: string, file: string) {
+    const key = "error.common.MissingRequiredFileError";
+    const errorOptions: UserErrorOptions = {
+      source: camelCase(source),
+      name: "MissingRequiredFileError",
+      message: getDefaultString(key, task, file),
+      displayMessage: getLocalizedString(key, task, file),
+    };
+    super(errorOptions);
+  }
+}
+
+export class HttpClientError extends UserError {
+  constructor(actionName: string, responseBody: string, helpLink?: string) {
+    const messageKey = "error.common.HttpClientError";
+    super({
+      source: camelCase(actionName),
+      name: "HttpClientError",
+      message: getDefaultString(messageKey, actionName, responseBody),
+      displayMessage: getLocalizedString(messageKey, actionName, responseBody),
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class HttpServerError extends SystemError {
+  constructor(actionName: string, responseBody: string) {
+    const messageKey = "error.common.HttpServerError";
+    super({
+      source: camelCase(actionName),
+      name: "HttpServerError",
+      message: getDefaultString(messageKey, actionName, responseBody),
+      displayMessage: getLocalizedString(messageKey, actionName, responseBody),
+    });
+  }
+}

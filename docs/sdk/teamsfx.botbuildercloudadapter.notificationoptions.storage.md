@@ -4,7 +4,12 @@
 
 ## BotBuilderCloudAdapter.NotificationOptions.storage property
 
-An optional storage to persist bot notification connections.
+> Warning: This API is now obsolete.
+> 
+> Use `store` to customize the way to persist bot notification target references instead.
+> 
+
+An optional storage to persist bot notification target references.
 
 <b>Signature:</b>
 
@@ -14,7 +19,7 @@ storage?: NotificationTargetStorage;
 
 ## Remarks
 
-If `storage` is not provided, a default local file storage will be used, which stores notification connections into: - `.notification.localstore.json` if running locally - `${process.env.TEMP}/.notification.localstore.json` if `process.env.RUNNING_ON_AZURE` is set to "1"
+If `storage` is not provided, a default local file storage will be used, which stores notification target references into: - `.notification.localstore.json` if running locally - `${process.env.TEMP}/.notification.localstore.json` if `process.env.RUNNING_ON_AZURE` is set to "1"
 
 It's recommended to use your own shared storage for production environment.
 

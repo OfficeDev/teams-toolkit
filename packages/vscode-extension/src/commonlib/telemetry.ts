@@ -162,11 +162,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage] ||
-      !properties[TelemetryProperty.IsFromSample]
-    ) {
+    if (!properties[TelemetryProperty.ProjectId]) {
       const fixedProjectSettings = getFixedCommonProjectSettings(
         globalVariables.workspaceUri?.fsPath
       );
@@ -174,23 +170,6 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
         this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-      }
-
-      if (fixedProjectSettings?.isM365) {
-        properties[TelemetryProperty.IsM365] = fixedProjectSettings?.isM365;
-        this.sharedProperties[TelemetryProperty.IsM365] = fixedProjectSettings?.isM365;
       }
     }
   }

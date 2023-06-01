@@ -11,7 +11,6 @@ import {
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
-import { convertContext } from "../../src/component/resource/aadApp/utils";
 import {
   addFeatureNotify,
   createContextV3,
@@ -109,17 +108,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     expect(envInfo).to.eql(expected);
   });
 
-  it("convertContext", () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const envInfo = newEnvInfoV3();
-    const context = createContextV3();
-    context.envInfo = envInfo;
-    const ctx = convertContext(context, inputs);
-    expect(ctx !== undefined).to.eql(true);
-  });
   it("addFeatureNotify", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: "",

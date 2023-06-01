@@ -10,7 +10,7 @@ export class {{className}} implements TeamsFxAdaptiveCardActionHandler {
   triggerVerb: string = "{{id}}";
 
   async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse<any>> {
-    const cardData = {{tag}}Api.{{id}}(actionData);
+    const cardData = await {{tag}}Api.{{id}}(actionData);
 
     const cardJson = AdaptiveCards.declare({{cardName}}).render(cardData);
     return InvokeResponseFactory.adaptiveCard(cardJson);

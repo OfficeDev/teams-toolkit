@@ -11,6 +11,7 @@ import {{responseCardName}} from "../adaptiveCards/{{responseCardName}}.json";
 import { {{tag}}Api } from "../apis/mockApiProvider"; // for api calls with mock data
 
 export class {{className}} implements TeamsFxBotCommandHandler {
+  {{queryParametersTip}}
   triggerPatterns: TriggerPatterns = new RegExp(
     "{{operation}} {{triggerPattern}}",
     "i"
@@ -31,7 +32,7 @@ export class {{className}} implements TeamsFxBotCommandHandler {
       );
     }
 
-    const cardData = {{tag}}Api.{{id}}(Object.fromEntries(queryObject.entries()));
+    const cardData = await {{tag}}Api.{{id}}(Object.fromEntries(queryObject.entries()));
     return MessageBuilder.attachAdaptiveCard({{responseCardName}}, cardData);
   }
 }

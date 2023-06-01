@@ -1,3 +1,3 @@
-public static {{functionName}}(data: any):any {
+public static async {{functionName}}(data: any): Promise<any> {
   {{returnJsonObject}}
 }

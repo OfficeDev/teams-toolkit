@@ -16,6 +16,7 @@ export async function generateCommandHandler(
   let containCookiePrarms = false;
   let containQueryParams = false;
   const requiredParameters: string[] = [];
+  const optionalParameters: string[] = [];
   if (api.parameters) {
     for (const index in api.parameters) {
       const param = api.parameters[index] as OpenAPIV3.ParameterObject;
@@ -23,7 +24,12 @@ export async function generateCommandHandler(
         apiUrl = apiUrl.replace(`{${param.name}}`, `(?<${param.name}>\\\\w+)`);
       } else if (param.in === 'query') {
         containQueryParams = true;
-        param.required && requiredParameters.push(param.name);
+        if (param.required) {
+          requiredParameters.push(param.name);
+        } else {
+          optionalParameters.push(param.name);
+        }
+        param.required;
       } else if (param.in === 'cookie') {
         containCookiePrarms = true;
       } else if (param.in === 'header') {
@@ -52,6 +58,13 @@ export async function generateCommandHandler(
     .replace(/{{tag}}/g, capitalizeFirstLetter(getSafeName(tag)))
     .replace(/{{className}}/g, capitalizeFirstLetter(cardId) + 'CommandHandler')
     .replace(/{{requiredParams}}/g, JSON.stringify(requiredParameters))
+    .replace(
+      /{{queryParametersTip}}/g,
+      containQueryParams
+        ? '// All supported query parameters: ' +
+            requiredParameters.concat(optionalParameters).join(', ')
+        : ''
+    )
     .replace(
       /{{needCookieOrHeaderParams}}/g,
       containCookiePrarms || containHeaderParams ? 'true' : 'false'

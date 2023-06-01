@@ -8,7 +8,6 @@ import { ErrorNames } from "./constants";
 import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { UserError } from "@microsoft/teamsfx-api";
-import { concatErrorMessageWithSuggestions, ErrorMessage, LocalizedMessage } from "./messages";
 import { CreateAppError, CreateSecretError } from "../aadApp/errors";
 import { GraphErrorCodes } from "../aadApp/errorCodes";
 import { HelpLinks } from "../../../common/constants";
@@ -226,22 +225,17 @@ export const AlreadyCreatedBotNotExist = (botId: string | undefined, innerError:
   });
 };
 
-export class PreconditionError extends UserError {
-  constructor(source: string, messages: LocalizedMessage, suggestions: LocalizedMessage[]) {
-    const msgWithSuggestions = concatErrorMessageWithSuggestions(messages, suggestions);
-    super(source, new.target.name, msgWithSuggestions.default, msgWithSuggestions.localized);
+export class PreconditionError extends PluginError {
+  constructor(name: string) {
+    super(ErrorType.USER, ErrorNames.PRECONDITION_ERROR, Messages.SomethingIsMissing(name), [
+      Messages.RetryTheCurrentStep,
+    ]);
   }
 }
 
-export function CheckThrowSomethingMissing<T>(
-  source: string,
-  name: string,
-  value: T | undefined
-): T {
+export function CheckThrowSomethingMissing<T>(name: string, value: T | undefined): T {
   if (!value) {
-    throw new PreconditionError(source, ErrorMessage.SomethingIsMissing(name), [
-      ErrorMessage.RetryTheCurrentStep,
-    ]);
+    throw new PreconditionError(name);
   }
   return value;
 }

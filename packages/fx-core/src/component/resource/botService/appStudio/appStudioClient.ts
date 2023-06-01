@@ -46,11 +46,7 @@ export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
 
   public static newAxiosInstance(accessToken: string): AxiosInstance {
-    accessToken = CheckThrowSomethingMissing(
-      FxBotPluginResultFactory.source,
-      ConfigNames.APPSTUDIO_TOKEN,
-      accessToken
-    );
+    accessToken = CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, accessToken);
     const instance = axios.create({
       headers: {
         post: {

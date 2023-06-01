@@ -443,24 +443,6 @@ export function TabOptionItem(): OptionItem {
   };
 }
 
-export function TabNewUIOptionItem(): OptionItem {
-  return {
-    id: "Tab",
-    label: `$(browser) ${getLocalizedString("core.TabOption.labelNew")}`,
-    cliName: "tab",
-    detail: getLocalizedString("core.TabOption.detailNew"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
-    data: "https://aka.ms/teamsfx-tab-with-sso",
-    buttons: [
-      {
-        iconPath: "file-symlink-file",
-        tooltip: getLocalizedString("core.option.github"),
-        command: "fx-extension.openTutorial",
-      },
-    ],
-  };
-}
-
 export function DashboardOptionItem(): OptionItem {
   return {
     id: "dashboard-tab",
@@ -482,16 +464,6 @@ export function DashboardOptionItem(): OptionItem {
 }
 
 export function BotOptionItem(): OptionItem {
-  return {
-    id: "Bot",
-    label: "Bot",
-    cliName: "bot",
-    description: getLocalizedString("core.BotOption.description"),
-    detail: getLocalizedString("core.BotOption.detail"),
-  };
-}
-
-export function BotNewUIOptionItem(): OptionItem {
   return {
     id: "Bot",
     label: `${getLocalizedString("core.BotNewUIOption.label")}`,
@@ -575,22 +547,12 @@ export function MessageExtensionNewUIItem(): OptionItem {
 export function TabSPFxItem(): OptionItem {
   return {
     id: "TabSPFx",
-    label: getLocalizedString("core.TabSPFxOption.label"),
+    label: getLocalizedString("core.TabSPFxOption.labelNew"),
     cliName: "tab-spfx",
-    description: getLocalizedString("core.TabSPFxOption.description"),
-    detail: getLocalizedString("core.TabSPFxOption.detail"),
-  };
-}
-
-export function TabSPFxNewUIItem(): OptionItem {
-  return {
-    id: "TabSPFx",
-    label: `${getLocalizedString("core.TabSPFxOption.labelNew")}`,
-    cliName: "tab-spfx",
-    detail: getLocalizedString("core.TabSPFxOption.detailNew"),
     description: getLocalizedString(
       "core.createProjectQuestion.option.description.worksInOutlookM365"
     ),
+    detail: getLocalizedString("core.TabSPFxOption.detailNew"),
   };
 }
 

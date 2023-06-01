@@ -1,41 +1,41 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import faker from "faker";
 import {
-  PluginContext,
-  TelemetryReporter,
-  LogProvider,
-  UserInteraction,
-  LogLevel,
-  PermissionRequestProvider,
-  Result,
-  FxError,
-  ok,
-  LocalSettings,
   ConfigMap,
   EnvConfig,
+  FxError,
+  LocalSettings,
+  LogLevel,
+  LogProvider,
   M365TokenProvider,
+  PermissionRequestProvider,
+  PluginContext,
+  Result,
+  TelemetryReporter,
+  UserInteraction,
+  ok,
 } from "@microsoft/teamsfx-api";
+import faker from "faker";
 import sinon from "sinon";
-import { MockUserInteraction } from "../../../core/utils";
-import {
-  DEFAULT_PERMISSION_REQUEST,
-  ARM_TEMPLATE_OUTPUT,
-} from "../../../../src/component/constants";
-import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
-import { SOLUTION } from "../../../../src/component/resource/appManifest/constants";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
-import { newEnvInfo } from "../../../../src/core/environment";
+import {
+  ARM_TEMPLATE_OUTPUT,
+  DEFAULT_PERMISSION_REQUEST,
+} from "../../../../src/component/constants";
 import {
   ConfigKeys,
   ConfigKeysOfOtherPlugin,
   Plugins,
 } from "../../../../src/component/resource/aadApp/constants";
 import { Utils } from "../../../../src/component/resource/aadApp/utils/configs";
+import { SOLUTION } from "../../../../src/component/resource/appManifest/constants";
+import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
+import { newEnvInfo } from "../../../../src/core/environment";
+import { MockUserInteraction } from "../../../core/utils";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -273,7 +273,6 @@ export function mockProvisionResult(
     faker.datatype.uuid()
   );
   if (!isLocalDebug) {
-    // set context.envInfo.state.get(SOLUTION)[ARM_TEMPLATE_OUTPUT]["domain"] = some fake value
     const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
     const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
     const aadProfile = context.envInfo.state.get(Plugins.pluginNameComplex) ?? new Map();

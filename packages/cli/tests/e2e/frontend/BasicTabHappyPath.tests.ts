@@ -15,6 +15,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   setProvisionParameterValueV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import { Capability, EnvConstants } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -65,12 +66,15 @@ describe("Basic Tab", function () {
           assert.notExists(err);
         });
 
-        // Provision
-        await setProvisionParameterValueV3(projectPath, env, {
-          key: "webAppSku",
-          value: "B1",
-        });
-        await CliHelper.provisionProject(projectPath);
+      // remove teamsApp/extendToM365 in case it fails
+      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
+
+      // Provision
+      await setProvisionParameterValueV3(projectPath, env, {
+        key: "webAppSku",
+        value: "B1",
+      });
+      await CliHelper.provisionProject(projectPath);
 
         // Validate Provision
         let context = await readContextMultiEnvV3(projectPath, env);

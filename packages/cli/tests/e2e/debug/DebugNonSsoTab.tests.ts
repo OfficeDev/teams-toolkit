@@ -21,7 +21,8 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { deleteAadAppByObjectId, deleteTeamsApp, getTeamsApp } from "./utility";
+import { deleteTeamsApp, getTeamsApp } from "./utility";
+import { removeTeamsAppExtendToM365 } from "../commonUtils";
 
 describe("Debug V3 tab-non-sso template", () => {
   const testFolder = getTestFolder();
@@ -49,6 +50,9 @@ describe("Debug V3 tab-non-sso template", () => {
     // create
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso);
     console.log(`[Successfully] scaffold to ${projectPath}`);
+
+    // remove teamsApp/extendToM365 in case it fails
+    removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.local.yml"));
 
     // provision
     await CliHelper.provisionProject(projectPath, "", "local");

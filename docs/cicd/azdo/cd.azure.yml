@@ -11,7 +11,7 @@ steps:
 # Setup environment.
 - task: NodeTool@0
   inputs:
-    versionSpec: '14.17.0'
+    versionSpec: '18'
     checkLatest: true
 
 - task: Bash@3
@@ -22,7 +22,7 @@ steps:
     # You can change it to use your own environment name.
     TEAMSFX_ENV_NAME: 'dev'
     # To specify the version of TTK CLI for use.
-    TEAMSFX_CLI_VERSION: 1.*
+    TEAMSFX_CLI_VERSION: 2.*
   inputs:
     targetType: 'inline'
     script: |

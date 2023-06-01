@@ -3,7 +3,6 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { err, FxError, ok, Result, SolutionContext } from "@microsoft/teamsfx-api";
-import { SolutionError } from "../../../constants";
 import { ConstantString } from "../../../../common/constants";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { ResourceGroupNotExistError } from "../../../../error/azure";
@@ -11,11 +10,13 @@ import { DeployArmError, GetArmDeploymentError } from "../../../../error/arm";
 import { innerGetDeploymentError, innerGetDeploymentOperations } from "./innerHandleError";
 
 // constant string
-const ErrorCodes: { [key: string]: string } = {
-  InvalidTemplate: SolutionError.FailedToValidateArmTemplates,
-  InvalidTemplateDeployment: SolutionError.FailedToValidateArmTemplates,
-  ResourceGroupNotFound: SolutionError.ResourceGroupNotFound,
+const ErrorCodes = {
+  InvalidTemplate: "InvalidTemplate",
+  InvalidTemplateDeployment: "InvalidTemplateDeployment",
+  ResourceGroupNotFound: "ResourceGroupNotFound",
+  DeploymentOperationFailed: "DeploymentOperationFailed",
 };
+const filteredErrorMessage = "Template output evaluation skipped";
 
 export type DeployContext = {
   ctx: SolutionContext;
@@ -46,17 +47,20 @@ export namespace ArmErrorHandle {
   ): Promise<Result<undefined, FxError>> {
     // return the error if the template is invalid
     if (Object.keys(ErrorCodes).includes(error.code)) {
-      if (error.code === "InvalidTemplateDeployment") {
+      if (error.code === ErrorCodes.InvalidTemplateDeployment) {
         error = fetchInnerError(error);
       }
-      if (error.code === "ResourceGroupNotFound") {
+      if (error.code === ErrorCodes.ResourceGroupNotFound) {
         return err(
           new ResourceGroupNotExistError(
             deployCtx.resourceGroupName,
             deployCtx.client.subscriptionId
           )
         );
-      } else if (error.code === "InvalidTemplate" || error.code === "InvalidTemplateDeployment") {
+      } else if (
+        error.code === ErrorCodes.InvalidTemplate ||
+        error.code === ErrorCodes.InvalidTemplateDeployment
+      ) {
         return err(
           new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error)
         );
@@ -211,8 +215,8 @@ export namespace ArmErrorHandle {
           result[key] = formattedDeploymentError(subError.inner);
         } else {
           const needFilter =
-            subError.error?.message?.includes("Template output evaluation skipped") &&
-            subError.error?.code === "DeploymentOperationFailed";
+            subError.error?.message?.includes(filteredErrorMessage) &&
+            subError.error?.code === ErrorCodes.DeploymentOperationFailed;
           if (!needFilter) {
             result[key] = subError.error;
           }

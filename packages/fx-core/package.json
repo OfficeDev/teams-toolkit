@@ -46,7 +46,6 @@
     "test:appstudio": "nyc mocha \"tests/component/resource/appManifest/appstudio.test.ts\"",
     "test:apiFeature": "nyc mocha \"tests/component/feature/api.test.ts\"",
     "test:spfxFeature": "nyc mocha \"tests/component/feature/spfx.test.ts\"",
-    "test:arm": "nyc mocha \"tests/plugins/solution/solution.arm.test.ts\"",
     "test:azureDeployImpl": "nyc mocha \"tests/component/driver/deploy/azure/AzureDeployImpl.test.ts\"",
     "test:azureFuncDeploy": "nyc mocha \"tests/component/driver/deploy/azure/AzureFunctionDeployDriver.test.ts\"",
     "clean": "rm -rf build",

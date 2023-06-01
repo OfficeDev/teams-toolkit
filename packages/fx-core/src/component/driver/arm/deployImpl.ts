@@ -22,7 +22,7 @@ import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
-import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
+import { ensureBicepForDriver } from "./util/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { InvalidActionInputError } from "../../../error/common";

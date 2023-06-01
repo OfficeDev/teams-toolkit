@@ -14,7 +14,7 @@ import {
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { getLocalizedMessage, ProgressMessages } from "../../../../messages";
+import { ProgressMessages } from "../../../../messages";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
@@ -58,10 +58,10 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     await this.restartFunctionApp(azureResource);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
-        getLocalizedMessage(
+        getLocalizedString(
           "driver.deploy.notice.deployAcceleration",
           "https://aka.ms/teamsfx-config-run-from-package"
-        ).localized
+        )
       );
     }
   }

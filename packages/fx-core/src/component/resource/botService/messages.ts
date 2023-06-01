@@ -12,7 +12,6 @@ export function localString(key: string, ...params: any[]): [string, string] {
 export class Messages {
   public static readonly SomethingIsMissing = (something: string): [string, string] =>
     localString("plugins.bot.SomethingIsMissing", something);
-
   public static readonly FailToProvisionSomeResource = (resource: string): [string, string] =>
     localString("plugins.bot.FailedToProvision", resource);
 
@@ -22,16 +21,8 @@ export class Messages {
   public static readonly BotRegistrationNotFoundWith = (botId: string): [string, string] =>
     localString("plugins.bot.BotRegistrationNotFoundWith", botId);
 
-  public static readonly FailToUpdateMessageEndpoint = (endpoint: string): [string, string] =>
-    localString("plugins.bot.FailedUpdateMessageEndpoint", endpoint);
-
-  public static readonly FailToCallAppStudioForCheckingAADApp = (): [string, string] =>
-    localString("plugins.bot.FailToCallAppStudioApi");
   public static readonly BotResourceExist = (where: string): string =>
     getLocalizedString("plugins.bot.BotResourceExists", where);
-  public static readonly SuccessfullyCreatedBotAadApp = getLocalizedString(
-    "plugins.bot.CreateBotAADSuccess"
-  );
 
   public static readonly ProvisioningBotRegistration = getLocalizedString(
     "plugins.bot.ProvisionBotRegistration"
@@ -54,4 +45,41 @@ export class Messages {
     localString("error.appstudio.BotProvisionReturnsForbiddenResult");
   public static readonly BotProvisionReturnsConflictResult = (): [string, string] =>
     localString("error.appstudio.BotProvisionReturnsConflictResult");
+}
+
+export interface LocalizedMessage {
+  default: string;
+  localized: string;
+}
+
+export const getLocalizedMessage = (key: string, ...params: any[]): LocalizedMessage => ({
+  default: getDefaultString(key, params),
+  localized: getLocalizedString(key, params),
+});
+
+export function concatErrorMessageWithSuggestions(
+  message: LocalizedMessage,
+  suggestions: LocalizedMessage[]
+): LocalizedMessage {
+  return {
+    default: getDefaultString(
+      "plugins.baseErrorMessage",
+      message.default,
+      suggestions.map((suggestion) => suggestion.default).join(" ")
+    ),
+    localized: getLocalizedString(
+      "plugins.baseErrorMessage",
+      message.localized,
+      suggestions.map((suggestion) => suggestion.localized).join(" ")
+    ),
+  };
+}
+
+export class ErrorMessage {
+  public static readonly SomethingIsMissing = (something: string): LocalizedMessage =>
+    getLocalizedMessage("plugins.bot.SomethingIsMissing", something);
+  // Suggestions
+  public static readonly RetryTheCurrentStep: LocalizedMessage = getLocalizedMessage(
+    "suggestions.retryTheCurrentStep"
+  );
 }

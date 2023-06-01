@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CheckThrowSomethingMissing } from "../../error";
+import { CheckThrowSomethingMissing } from "./errors";
 import { Alias, RegularExprs } from "./constants";
 import { FxBotPluginResultFactory } from "./result";
 import { CommonStrings } from "./strings";

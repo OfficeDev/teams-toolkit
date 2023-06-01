@@ -7,8 +7,8 @@
 import { ErrorNames } from "./constants";
 import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { err, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
+import { UserError } from "@microsoft/teamsfx-api";
+import { concatErrorMessageWithSuggestions, ErrorMessage, LocalizedMessage } from "./messages";
 import { CreateAppError, CreateSecretError } from "../aadApp/errors";
 import { GraphErrorCodes } from "../aadApp/errorCodes";
 import { HelpLinks } from "../../../common/constants";
@@ -225,3 +225,23 @@ export const AlreadyCreatedBotNotExist = (botId: string | undefined, innerError:
     error: innerError,
   });
 };
+
+export class PreconditionError extends UserError {
+  constructor(source: string, messages: LocalizedMessage, suggestions: LocalizedMessage[]) {
+    const msgWithSuggestions = concatErrorMessageWithSuggestions(messages, suggestions);
+    super(source, new.target.name, msgWithSuggestions.default, msgWithSuggestions.localized);
+  }
+}
+
+export function CheckThrowSomethingMissing<T>(
+  source: string,
+  name: string,
+  value: T | undefined
+): T {
+  if (!value) {
+    throw new PreconditionError(source, ErrorMessage.SomethingIsMissing(name), [
+      ErrorMessage.RetryTheCurrentStep,
+    ]);
+  }
+  return value;
+}

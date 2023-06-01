@@ -18,7 +18,9 @@ export async function start() {
     .version(getVersion(), '-v, --version', 'output the current version')
     .action(async (yaml: string, options: CliOptions) => {
       if (!(await fs.pathExists(yaml))) {
-        console.error('yaml file path is not exist in the path: ' + yaml);
+        console.error(
+          '[ERROR] open api spec file path is not exist in the path: ' + yaml
+        );
         return;
       }
 
@@ -27,13 +29,19 @@ export async function start() {
 
         if (!options.force && !isOutputEmpty) {
           console.error(
-            'output folder is not empty, and you can use -f parameter to overwrite output folder'
+            '[ERROR] output folder is not empty, and you can use -f parameter to overwrite output folder'
           );
           return;
         }
       }
 
-      await parseApi(yaml, options);
+      try {
+        await parseApi(yaml, options);
+      } catch (err: any) {
+        console.error(
+          '[ERROR] generate code failed with error: ' + err.toString()
+        );
+      }
     })
     .showHelpAfterError()
     .allowUnknownOption();

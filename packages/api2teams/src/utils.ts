@@ -19,7 +19,7 @@ export function getSafeCardName(
   url: string,
   operation: string
 ): string {
-  const name = api.operationId || api.summary || operation + url;
+  const name = api.operationId || operation + url;
   return getSafeName(name);
 }
 

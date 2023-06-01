@@ -52,16 +52,18 @@ function parseResponse(
     );
   }
 
+  // if no schema, try to use example value
   if (cardBody.length === 0 && (jsonResult.examples || jsonResult.example)) {
     cardBody = [
       {
         type: 'TextBlock',
-        text: '${$root}',
+        text: '${jsonStringify($root)}',
         wrap: true
       }
     ];
   }
 
+  // if no example value, use default sucess response
   if (!cardBody) {
     cardBody = [
       {
@@ -99,6 +101,19 @@ function generateCardFromResponse(
   parentName = ''
 ): any {
   if (schema.type === 'array') {
+    // schema.items can be arbitrary object
+    if (Object.keys(schema.items).length === 0) {
+      return [
+        {
+          type: 'TextBlock',
+          text: name
+            ? `${name}: \${jsonStringify(${name})}`
+            : 'result: ${jsonStringify($root)}',
+          wrap: true
+        }
+      ];
+    }
+
     const obj = generateCardFromResponse(
       schema.items as OpenAPIV3.SchemaObject,
       '',
@@ -167,6 +182,7 @@ function generateCardFromResponse(
       }
     ];
   }
+
   if (schema.allOf) {
     const result = [];
     for (let i = 0; i < schema.allOf.length; i++) {

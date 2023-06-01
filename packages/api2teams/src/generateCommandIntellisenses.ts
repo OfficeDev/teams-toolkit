@@ -7,8 +7,8 @@ export function generateCommandIntellisenses(
   const commandIntellisenses: CommandIntellisense[] = [];
   for (const card of requestCards) {
     if (commandIntellisenses.length >= 10) {
-      console.log(
-        `    Intellisen for ${card.url} is not included due to command length exceeds maximum length of 10`
+      console.warn(
+        ` > [WARNING] Intellisen for ${card.url} is not included due to command length exceeds maximum length of 10`
       );
     } else {
       const title = `${card.operation.toUpperCase()} ${card.url}`;
@@ -24,8 +24,8 @@ export function generateCommandIntellisenses(
           description: truncateString(description, 128)
         });
       } else {
-        console.log(
-          `    Intellisen for ${card.url} is not included due command title '${title}' exceeds maximum length of 32`
+        console.warn(
+          ` > [WARNING] Intellisen for ${card.url} is not included due command title '${title}' exceeds maximum length of 32`
         );
       }
     }

@@ -185,5 +185,9 @@ function generateResponse(schema: OpenAPIV3.SchemaObject): any {
     );
   }
 
+  if (Object.keys(schema).length === 0) {
+    return {};
+  }
+
   throw new Error(`Unknown schema:${JSON.stringify(schema)}`);
 }

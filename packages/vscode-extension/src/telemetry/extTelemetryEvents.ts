@@ -129,13 +129,8 @@ export enum TelemetryEvent {
   DebugProviderResolveDebugConfiguration = "debug-provider-resolve-debug-configuration",
 
   DebugCheckPrerequisitesTask = "debug-check-prerequisites-task",
-  DebugNpmInstallTask = "debug-npm-install-task",
   DebugStartLocalTunnelTask = "debug-start-local-tunnel-task",
   DebugStartLocalTunnelTaskStarted = "debug-start-local-tunnel-task-started",
-  DebugSetUpTabTask = "debug-set-up-tab-task",
-  DebugSetUpBotTask = "debug-set-up-bot-task",
-  DebugSetUpSSOTask = "debug-set-up-sso-task",
-  DebugPrepareManifestTask = "debug-prepare-manifest-task",
   DebugLifecycleTask = "debug-lifecycle-task",
   LaunchWebClientTask = "launch-web-client",
   DebugDevTunnelCleanNotificationStart = "debug-dev-tunnel-clean-notification-start",

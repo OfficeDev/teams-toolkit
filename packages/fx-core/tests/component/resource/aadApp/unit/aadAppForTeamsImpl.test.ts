@@ -1,43 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as chai from "chai";
-import * as dotenv from "dotenv";
 import {
   AzureSolutionSettings,
-  ContextV3,
   PluginContext,
   ProjectSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
-import { mockProvisionResult, TestHelper, mockSkipFlag, mockTokenProviderM365 } from "../helper";
-import sinon from "sinon";
-import { getAppStudioToken } from "../tokenProvider";
-import faker from "faker";
-import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
-import * as uuid from "uuid";
-import { MockedV2Context } from "../../../../plugins/solution/util";
-import * as tool from "../../../../../src/common/tools";
+import * as chai from "chai";
+import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import { AadAppForTeamsImpl } from "../../../../../src/component/resource/aadApp/aadAppForTeamsImpl";
+import "mocha";
+import sinon from "sinon";
+import * as uuid from "uuid";
+import * as tool from "../../../../../src/common/tools";
+import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/component/constants";
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
-import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/utils/configs";
+import { AadAppForTeamsImpl } from "../../../../../src/component/resource/aadApp/aadAppForTeamsImpl";
 import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import { ConfigKeys } from "../../../../../src/component/resource/aadApp/constants";
-import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/component/constants";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/utils/configs";
+import { TestHelper, mockProvisionResult, mockTokenProviderM365 } from "../helper";
+import { getAppStudioToken } from "../tokenProvider";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
-const userList: AppUser = {
-  tenantId: faker.datatype.uuid(),
-  aadId: faker.datatype.uuid(),
-  displayName: "displayName",
-  userPrincipalName: "userPrincipalName",
-  isAdministrator: true,
-};
 const projectSettings: ProjectSettings = {
   appName: "my app",
   projectId: uuid.v4(),
@@ -50,11 +38,9 @@ const projectSettings: ProjectSettings = {
     activeResourcePlugins: [],
   },
 };
-const ctx = new MockedV2Context(projectSettings) as ContextV3;
 describe("AadAppForTeamsPlugin: CI", () => {
   let plugin: AadAppForTeamsImpl;
   let context: PluginContext;
-  let mockedEnvRestore: RestoreFn;
   beforeEach(async () => {
     plugin = new AadAppForTeamsImpl();
     sinon.stub(AadAppClient, "createAadApp").resolves();
@@ -77,81 +63,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   afterEach(() => {
     sinon.restore();
-    mockedEnvRestore();
-  });
-
-  it("provision: tab", async function () {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    context = await TestHelper.pluginContext(new Map(), true, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const provision = await plugin.provision(context);
-    chai.assert.isTrue(provision.isOk());
-
-    mockProvisionResult(context);
-    const setAppId = plugin.setApplicationInContext(context);
-    chai.assert.isTrue(setAppId.isOk());
-
-    const postProvision = await plugin.postProvision(context);
-    chai.assert.isTrue(postProvision.isOk());
-  });
-
-  it("provision: skip provision", async function () {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    context = await TestHelper.pluginContext(new Map(), true, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-    mockSkipFlag(context);
-
-    const provision = await plugin.provision(context);
-    chai.assert.isTrue(provision.isOk());
-  });
-
-  it("provision: tab and bot", async function () {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    context = await TestHelper.pluginContext(new Map(), true, true, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const provision = await plugin.provision(context);
-    chai.assert.isTrue(provision.isOk());
-
-    mockProvisionResult(context);
-    const setAppId = plugin.setApplicationInContext(context);
-    chai.assert.isTrue(setAppId.isOk());
-
-    const postProvision = await plugin.postProvision(context);
-    chai.assert.isTrue(postProvision.isOk());
-  });
-
-  it("provision: none input and fix", async function () {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    context = await TestHelper.pluginContext(new Map(), false, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const provision = await plugin.provision(context);
-    chai.assert.isTrue(provision.isOk());
-
-    mockProvisionResult(context, false, false);
-    let isExceptionThrown = false;
-    try {
-      const setAppId = plugin.setApplicationInContext(context);
-      chai.assert.isTrue(setAppId.isErr());
-    } catch (e) {
-      isExceptionThrown = true;
-    }
-    chai.assert.isTrue(isExceptionThrown);
-
-    context = await TestHelper.pluginContext(context.config, true, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const provisionSecond = await plugin.provision(context);
-    chai.assert.isTrue(provisionSecond.isOk());
-
-    mockProvisionResult(context, false, true);
-    const setAppIdSecond = plugin.setApplicationInContext(context);
-    chai.assert.isTrue(setAppIdSecond.isOk());
-
-    const postProvision = await plugin.postProvision(context);
-    chai.assert.isTrue(postProvision.isOk());
   });
 
   it("provision: using manifest", async function () {

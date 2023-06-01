@@ -161,7 +161,7 @@ export class SPFxGenerator {
         args.push("--framework", framework);
       }
       if (solutionName) {
-        args.push("--solution-name", solutionName);
+        args.push("--solution-name", `"${solutionName}"`);
       }
 
       try {

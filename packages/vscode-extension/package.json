@@ -1235,7 +1235,8 @@
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged",
     "updateFont": "node ./scripts/updateFont.js",
-    "previewFont": "start ./media/font/teamstoolkit.html"
+    "previewFont": "start ./media/font/teamstoolkit.html",
+    "version": "bash ../../.github/scripts/vsc-version.sh"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",

@@ -66,15 +66,15 @@ describe("Basic Tab", function () {
           assert.notExists(err);
         });
 
-      // remove teamsApp/extendToM365 in case it fails
-      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
+        // remove teamsApp/extendToM365 in case it fails
+        removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
-      // Provision
-      await setProvisionParameterValueV3(projectPath, env, {
-        key: "webAppSku",
-        value: "B1",
-      });
-      await CliHelper.provisionProject(projectPath);
+        // Provision
+        await setProvisionParameterValueV3(projectPath, env, {
+          key: "webAppSku",
+          value: "B1",
+        });
+        await CliHelper.provisionProject(projectPath);
 
         // Validate Provision
         let context = await readContextMultiEnvV3(projectPath, env);

@@ -21,5 +21,18 @@ describe("Resource Name Factory", () => {
       chai.assert.lengthOf(name, limit);
       chai.assert.isTrue(name === expectName);
     });
+
+    it("Throw PreconditionError", () => {
+      // Arrange
+      const appName = undefined;
+      const resourceNameSuffix = "abcdefg";
+      const limit = 5;
+
+      // Act
+      const action = () => ResourceNameFactory.createCommonName(resourceNameSuffix, appName, limit);
+
+      // Assert
+      chai.assert.throws(action);
+    });
   });
 });

@@ -15,6 +15,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   setProvisionParameterValueV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import { Capability, EnvConstants } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -61,6 +62,9 @@ describe("Basic Tab", function () {
       fs.access(indexFile, fs.constants.F_OK, (err) => {
         assert.notExists(err);
       });
+
+      // remove teamsApp/extendToM365 in case it fails
+      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
       // Provision
       await setProvisionParameterValueV3(projectPath, env, {

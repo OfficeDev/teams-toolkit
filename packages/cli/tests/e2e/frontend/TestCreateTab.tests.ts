@@ -22,6 +22,7 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 
 describe("Create single tab", function () {
@@ -55,6 +56,9 @@ describe("Create single tab", function () {
 
     it(`Provision Resource: React app without function`, { testPlanCaseId: 10298738 }, async () => {
       await CliHelper.setSubscription(subscription, projectPath);
+
+      // remove teamsApp/extendToM365 in case it fails
+      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
       await CliHelper.provisionProject(projectPath);
 

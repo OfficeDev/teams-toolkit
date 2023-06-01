@@ -362,6 +362,10 @@ export const AzureRoleAssignmentsHelpLink =
 export const SharePointManageSiteAdminHelpLink =
   "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
 export const ViewAadAppHelpLinkV5 = "https://aka.ms/teamsfx-view-aad-app-v5";
+export const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
+
+// This is the max length specified in
+// https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 
 export enum SolutionTelemetryEvent {
   ArmDeploymentStart = "deploy-armtemplate-start",

@@ -27,6 +27,7 @@ import {
   VsCodeEnv,
   UserCancelError,
   OptionItem,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -66,6 +67,7 @@ import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
 import { FxCore, environmentManager } from "../../../fx-core/build";
 import commandController from "../../src/commandController";
+import { AppStudioClient as BotAppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/botService/appStudio/appStudioClient";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1293,10 +1295,10 @@ describe("handlers", () => {
     });
   });
 
-  describe("scaffoldFromDeveloperPortalHandler", async () => {
+  describe.only("scaffoldFromDeveloperPortalHandler", async () => {
     beforeEach(() => {
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
     });
     afterEach(() => {
       sinon.restore();
@@ -1399,6 +1401,9 @@ describe("handlers", () => {
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon
+        .stub(M365TokenInstance, "getAccessToken")
+        .resolves(err(new SystemError("source", "name", "", "")));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
@@ -1423,6 +1428,8 @@ describe("handlers", () => {
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon.stub(M365TokenInstance, "getAccessToken").resolves(ok("authSvcToken"));
+      sinon.stub(commonTools, "setRegion").resolves();
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);

@@ -393,7 +393,7 @@ export function isV3Enabled(): boolean {
 }
 
 export function isDownloadDirectoryEnabled(): boolean {
-  return process.env.DOWNLOAD_DIRECTORY === "true";
+  return true;
 }
 
 export function isVideoFilterEnabled(): boolean {

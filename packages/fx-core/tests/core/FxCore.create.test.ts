@@ -21,6 +21,7 @@ import { SPFXQuestionNames } from "../../src/component/generator/spfx/utils/ques
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
+import { Generator } from "../../src/component/generator/generator";
 
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -30,19 +31,8 @@ describe("Core basic APIs for v3", () => {
   beforeEach(() => {
     sandbox.restore();
     setTools(tools);
-    sandbox
-      .stub<any, any>(axios, "get")
-      .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
-        const buffer = fs.readFileSync("./tests/core/samples_v2.zip");
-        return {
-          data: buffer,
-          status: 200,
-          statusText: "",
-          headers: {},
-          config: config!,
-          request: {},
-        };
-      });
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();

@@ -49,18 +49,6 @@ export enum Scenarios {
   Api = "Api",
 }
 
-export const componentToScenario = new Map([
-  [ComponentNames.TeamsApi, Scenarios.Api],
-  [ComponentNames.TeamsBot, Scenarios.Bot],
-  [ComponentNames.TeamsTab, Scenarios.Tab],
-]);
-
-export const scenarioToComponent = new Map([
-  [Scenarios.Api, ComponentNames.TeamsApi],
-  [Scenarios.Bot, ComponentNames.TeamsBot],
-  [Scenarios.Tab, ComponentNames.TeamsTab],
-]);
-
 export enum ProgrammingLanguage {
   JS = "javascript",
   TS = "typescript",
@@ -103,25 +91,6 @@ export const ErrorConstants = {
   unhandledErrorMessage: "Unhandled Error",
 };
 
-export const IdentityOutputs = {
-  identityResourceId: {
-    key: "identityResourceId",
-    bicepVariable: "userAssignedIdentityProvision.outputs.identityResourceId",
-  },
-  identityName: {
-    key: "identityName",
-    bicepVariable: "provisionOutputs.identityOutput.value.identityName",
-  },
-  identityClientId: {
-    key: "identityClientId",
-    bicepVariable: "provisionOutputs.identityOutput.value.identityClientId",
-  },
-  identityPrincipalId: {
-    key: "identityPrincipalId",
-    bicepVariable: "userAssignedIdentityProvision.outputs.identityPrincipalId",
-  },
-};
-
 export const APIMOutputs = {
   serviceResourceId: {
     key: "serviceResourceId",
@@ -142,64 +111,6 @@ export const APIMOutputs = {
   },
   apimClientAADClientSecret: {
     key: "apimClientAADClientSecret",
-  },
-};
-
-export const WebAppOutputs = {
-  resourceId: {
-    key: "resourceId",
-    bicepVariable: "provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId",
-  },
-  endpoint: {
-    key: "siteEndpoint",
-    bicepVariable: "provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint",
-  },
-  endpointAsParam: {
-    key: "siteEndpointAsParam",
-    bicepVariable: "azureWebApp{{scenario}}Provision.outputs.siteEndpoint",
-  },
-};
-
-export const FunctionOutputs = {
-  resourceId: {
-    key: "functionAppResourceId",
-    bicepVariable: "provisionOutputs.azureFunction{{scenario}}Output.value.functionAppResourceId",
-  },
-  endpoint: {
-    key: "functionEndpoint",
-    bicepVariable: "provisionOutputs.azureFunction{{scenario}}Output.value.functionEndpoint",
-  },
-  endpointAsParam: {
-    key: "functionEndpointAsParam",
-    bicepVariable: "azureFunction{{scenario}}Provision.outputs.functionEndpoint",
-  },
-};
-
-export const StorageOutputs = {
-  endpoint: {
-    key: "endpoint",
-    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.endpoint",
-  },
-  storageResourceId: {
-    key: "storageResourceId",
-    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.storageResourceId",
-  },
-  domain: {
-    key: "domain",
-    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.domain",
-  },
-  indexPath: {
-    key: "indexPath",
-    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.indexPath",
-  },
-};
-
-export const BotServiceOutputs = {
-  botId: {
-    key: "botId",
-  },
-  botPassword: {
-    key: "botPassword",
   },
 };
 
@@ -243,13 +154,6 @@ export const AadAppOutputs = {
   tenantId: {
     key: "tenantId",
   },
-};
-
-export const FunctionAppSetting = {
-  keys: {
-    allowedAppIds: "ALLOWED_APP_IDS",
-  },
-  allowedAppIdSep: ";",
 };
 
 export const PathConstants = {

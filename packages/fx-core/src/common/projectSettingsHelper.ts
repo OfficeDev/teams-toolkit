@@ -5,9 +5,6 @@ import {
   ConfigFolderName,
   ProjectSettings,
   ProjectSettingsFileName,
-  SettingsFileName,
-  Settings,
-  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";

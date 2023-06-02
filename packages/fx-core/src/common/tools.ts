@@ -74,7 +74,10 @@ import { manifestUtils } from "../component/resource/appManifest/utils/ManifestU
 import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
 import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
+import {
+  getProjectSettingPathV2,
+  getProjectSettingPathV3,
+} from "../core/middleware/projectSettingsLoader";
 import { parse } from "yaml";
 
 Handlebars.registerHelper("contains", (value, array) => {
@@ -958,7 +961,16 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
       const settingsPath = getProjectSettingPathV3(rootPath);
 
       if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        return undefined;
+        // If .yml file does not exist, try to get project id from project settings of v4
+        const v4SettingsPath = getProjectSettingPathV2(rootPath);
+        if (!v4SettingsPath || !fs.pathExistsSync(v4SettingsPath)) {
+          return undefined;
+        }
+
+        const v4SettingsContent = fs.readJsonSync(v4SettingsPath);
+        return {
+          projectId: v4SettingsContent?.projectId ?? undefined,
+        };
       }
 
       const settingsContent = fs.readFileSync(settingsPath, "utf-8");

@@ -130,7 +130,11 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
   ) {
     for (const [key, value] of Object.entries(ymlJsonContent)) {
       if (typeof value === "object") {
-        this.addOrUpdateJsonContent((jsonContent as any)[key], value as any);
+        if (!(jsonContent as any)[key]) {
+          (jsonContent as any)[key] = value;
+        } else {
+          this.addOrUpdateJsonContent((jsonContent as any)[key], value as any);
+        }
       } else {
         (jsonContent as any)[key] = value;
       }

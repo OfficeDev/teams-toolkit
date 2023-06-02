@@ -415,4 +415,186 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     chai.assert(result.isErr());
     chai.expect((result as any).error.name).equals("InvalidActionInputError");
   });
+
+  it("happy path: add nested object", async () => {
+    const target = "path";
+    let content = {};
+    const jsonContent = {
+      FOO: {},
+    };
+    sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+      return;
+    });
+    sinon.stub(fs, "readFileSync").callsFake((path) => {
+      return Buffer.from(JSON.stringify(jsonContent));
+    });
+    sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+      content = data;
+      return;
+    });
+    sinon.stub(fs, "pathExists").resolves(false);
+    sinon.stub(fs, "existsSync").callsFake((path) => {
+      return false;
+    });
+    sinon.stub(fs, "copyFile").callsFake(async (p1, p2) => {
+      return;
+    });
+    const args: any = {
+      target,
+      content: {
+        FOO: {
+          FOO1: {
+            FOO2: "BAR2",
+          },
+        },
+      },
+    };
+    const result = await driver.run(args, mockedDriverContext);
+    chai.assert(result.isOk());
+    if (result.isOk()) {
+      chai.assert.equal(
+        '{\n\t"FOO": {\n\t\t"FOO1": {\n\t\t\t"FOO2": "BAR2"\n\t\t}\n\t}\n}',
+        content
+      );
+    }
+  });
+
+  it("happy path: add nested object to empty json", async () => {
+    const target = "path";
+    let content = {};
+    const jsonContent = {
+      BOT_ID: "$botId$",
+    };
+    sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+      return;
+    });
+    sinon.stub(fs, "readFileSync").callsFake((path) => {
+      return Buffer.from(JSON.stringify(jsonContent));
+    });
+    sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+      content = data;
+      return;
+    });
+    sinon.stub(fs, "pathExists").resolves(false);
+    sinon.stub(fs, "existsSync").callsFake((path) => {
+      return false;
+    });
+    sinon.stub(fs, "copyFile").callsFake(async (p1, p2) => {
+      return;
+    });
+    const args: any = {
+      target,
+      content: {
+        FOO: {
+          FOO1: {
+            FOO2: "BAR2",
+          },
+        },
+      },
+    };
+    const result = await driver.run(args, mockedDriverContext);
+    chai.assert(result.isOk());
+    if (result.isOk()) {
+      chai.assert.equal(
+        '{\n\t"BOT_ID": "$botId$",\n\t"FOO": {\n\t\t"FOO1": {\n\t\t\t"FOO2": "BAR2"\n\t\t}\n\t}\n}',
+        content
+      );
+    }
+  });
+
+  it("invalid path: no target path", async () => {
+    let content = {};
+    const jsonContent = {
+      BOT_ID: "$botId$",
+    };
+    sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+      return;
+    });
+    sinon.stub(fs, "readFileSync").callsFake((path) => {
+      return Buffer.from(JSON.stringify(jsonContent));
+    });
+    sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+      content = data;
+      return;
+    });
+    sinon.stub(fs, "pathExists").resolves(false);
+    sinon.stub(fs, "existsSync").callsFake((path) => {
+      return false;
+    });
+    sinon.stub(fs, "copyFile").callsFake(async (p1, p2) => {
+      return;
+    });
+    const args: any = {
+      content: {
+        FOO: {
+          FOO1: {
+            FOO2: "BAR2",
+          },
+        },
+      },
+    };
+    const result = await driver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+  });
+
+  it("invalid path: no content and appsettings", async () => {
+    const target = "path";
+    let content = {};
+    const jsonContent = {
+      BOT_ID: "$botId$",
+    };
+    sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+      return;
+    });
+    sinon.stub(fs, "readFileSync").callsFake((path) => {
+      return Buffer.from(JSON.stringify(jsonContent));
+    });
+    sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+      content = data;
+      return;
+    });
+    sinon.stub(fs, "pathExists").resolves(false);
+    sinon.stub(fs, "existsSync").callsFake((path) => {
+      return false;
+    });
+    sinon.stub(fs, "copyFile").callsFake(async (p1, p2) => {
+      return;
+    });
+    const args: any = {
+      target,
+    };
+    const result = await driver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+  });
+
+  it("invalid path: content is not object", async () => {
+    const target = "path";
+    let content = {};
+    const jsonContent = {
+      BOT_ID: "$botId$",
+    };
+    sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+      return;
+    });
+    sinon.stub(fs, "readFileSync").callsFake((path) => {
+      return Buffer.from(JSON.stringify(jsonContent));
+    });
+    sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+      content = data;
+      return;
+    });
+    sinon.stub(fs, "pathExists").resolves(false);
+    sinon.stub(fs, "existsSync").callsFake((path) => {
+      return false;
+    });
+    sinon.stub(fs, "copyFile").callsFake(async (p1, p2) => {
+      return;
+    });
+    const args: any = {
+      target,
+      content: "foo",
+    };
+    const result = await driver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+  });
 });

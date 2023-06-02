@@ -10,7 +10,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { createSandbox } from "sinon";
 import Container from "typedi";
 import { FeatureFlagName } from "../../../src/common/constants";
-import * as templateUtils from "../../../src/common/template-utils/templatesUtils";
+import * as templateUtils from "../../../src/component/generator/utils";
 import { ComponentNames } from "../../../src/component/constants";
 import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";

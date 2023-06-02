@@ -132,34 +132,3 @@ async function readZip(cache: string): Promise<AdmZip | undefined> {
   }
   return undefined;
 }
-
-/**
- * Recursively list all files that match a naming pattern in a specified directory
- * @param directoryPath base dir
- * @param matchPattern filename pattern
- * @param ignorePattern filename ignore pattern
- */
-export async function listFilePaths(
-  directoryPath: string,
-  matchPattern = "**",
-  ignorePattern?: string
-): Promise<string[]> {
-  return new Promise<string[]>((resolve, reject) => {
-    const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : "";
-    glob(
-      path.join(directoryPath, matchPattern),
-      {
-        dot: true, // Include .dot files
-        nodir: true, // Only match files
-        ignore,
-      },
-      (error, filePaths) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(filePaths);
-        }
-      }
-    );
-  });
-}

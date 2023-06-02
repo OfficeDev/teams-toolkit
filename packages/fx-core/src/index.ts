@@ -8,7 +8,6 @@ export * from "./common/tools";
 export * from "./common/correlator";
 export * from "./common/local";
 export * from "./common/deps-checker";
-export * from "./component/debugHandler";
 export * from "./common/samples";
 export * from "./core/error";
 export * from "./common/globalState";

@@ -26,10 +26,8 @@ import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
-import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
-import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
   ProgrammingLanguageQuestion,
@@ -42,7 +40,6 @@ import {
   TabSPFxItem,
 } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
-import * as templateActions from "../../src/common/template-utils/templatesActions";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import "../../src/component/driver/aad/update";
 import { envUtil } from "../../src/component/utils/envUtil";
@@ -84,7 +81,6 @@ describe("Core basic APIs", () => {
   beforeEach(() => {
     setTools(tools);
     sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
-    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
   afterEach(async () => {
     sandbox.restore();

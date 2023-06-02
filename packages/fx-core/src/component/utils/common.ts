@@ -160,18 +160,6 @@ export function getEnvironmentVariables(content: string): string[] {
   return [];
 }
 
-/**
- * compare two key-value pairs, return true if they are exactly same
- * @param kv1 parameter the first key-value pair
- * @param kv2 parameter the first key-value pair
- */
-export function isKvPairEqual<T>(kv1: { [key: string]: T }, kv2: { [key: string]: T }): boolean {
-  const _compare = (l: { [key: string]: T }, r: { [key: string]: T }) =>
-    !Object.keys(l).some((key) => r[key] !== l[key]);
-
-  return _compare(kv1, kv2) && _compare(kv2, kv1);
-}
-
 export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string): string {
   relativeOrAbsolutePath = relativeOrAbsolutePath || "";
   projectPath = projectPath || "";

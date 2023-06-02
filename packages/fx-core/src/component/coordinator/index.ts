@@ -44,7 +44,7 @@ import {
   MissingRequiredInputError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
-import { convertToLangKey } from "../code/utils";
+import { convertToLangKey } from "../generator/utils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import {

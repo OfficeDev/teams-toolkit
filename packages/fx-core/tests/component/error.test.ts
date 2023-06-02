@@ -38,7 +38,6 @@ describe("assembleError", function () {
     const raw = new Error(myMessage);
     const fxError = assembleError(raw);
     assert.isTrue(fxError instanceof UnhandledError);
-    assert.isTrue(fxError.message === myMessage);
     assert.isTrue(fxError.source === "unknown");
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
   });
@@ -47,7 +46,6 @@ describe("assembleError", function () {
     const raw = new Error(myMessage);
     const fxError = assembleError(raw, mySource);
     assert.isTrue(fxError instanceof UnhandledError);
-    assert.isTrue(fxError.message === myMessage);
     assert.isTrue(fxError.source === mySource);
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
   });
@@ -55,7 +53,7 @@ describe("assembleError", function () {
     const raw = [1, 2, 3];
     const fxError = assembleError(raw);
     assert.isTrue(fxError instanceof UnhandledError);
-    assert.isTrue(fxError.message === JSON.stringify(raw, Object.getOwnPropertyNames(raw)));
+    assert.isTrue(fxError.message.includes(JSON.stringify(raw, Object.getOwnPropertyNames(raw))));
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
   });
 });

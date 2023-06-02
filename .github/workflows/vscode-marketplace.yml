@@ -45,7 +45,7 @@ jobs:
         if: ${{ github.event.inputs.isPreview != 'no' }}
         id: vsc_ver
         run: |
-          VSC_VER=$(jq -c -r '.[]|select(.name == "ms-teams-vscode-extension")|.name+"-"+.version' versions.json)
+          VSC_VER=$(jq -c -r '.[]|select(.name == "ms-teams-vscode-extension")|.name+"@"+.version' versions.json)
           echo "-------------------" $VSC_VER
           echo "::set-output name=vsc_ver::$VSC_VER"
 

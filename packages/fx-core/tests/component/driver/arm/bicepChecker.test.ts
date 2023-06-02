@@ -6,12 +6,13 @@ import mockFs from "mock-fs";
 import { AxiosRequestConfig, default as axios } from "axios";
 import * as stream from "stream";
 
-import { ensureBicep } from "../../../../src/component/utils/depsChecker/bicepChecker";
+import { ensureBicepForDriver } from "../../../../src/component/driver/arm/util/bicepChecker";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { ContextV3 } from "@microsoft/teamsfx-api";
+import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 
 chai.use(chaiAsPromised);
 
@@ -98,6 +99,8 @@ describe("BicepChecker", () => {
       });
 
     // If timeout is not handled, there will be unhandled promise rejection but it seems chai has no way to assert that
-    await chai.expect(ensureBicep(context)).to.be.rejectedWith(/Unable to download/);
+    await chai
+      .expect(ensureBicepForDriver(context as unknown as DriverContext, "v0.9.1"))
+      .to.be.rejectedWith(/Unable to download/);
   });
 });

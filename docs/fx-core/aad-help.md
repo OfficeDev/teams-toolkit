@@ -39,11 +39,11 @@ Please refer to [this guide](https://docs.microsoft.com/en-us/azure/active-direc
 Please refer to this [code sample](https://github.com/OfficeDev/TeamsFx/tree/dev/packages/sdk#use-certificate-based-authentication-in-azure-function) to utilize the sdk to authenticate with certificate.
 
 ## aad.CustomDomain
-After provision, you can find the default domain from `fx-resource-frontend-hosting.domain` in `states/state.{envName}.json`. To use custom domain instead of the default one, please follow the instruction as below.
+After provision, you can find the default domain from `TAB_ENDPOINT` in `env/.env.{envName}`. To use custom domain instead of the default one, please follow the instruction as below.
 ### Step #1 Config Custom Domain by CDN
 #### Action 1 Note Frontend Info
-1. Open `.fx\states\state.{envName}.json` file
-2. Note the `domain` and find the resource group in `storageResourceId`.
+1. Open `env\.env.{envName}` file
+2. Note the `TAB_ENDPOINT` and find the resource group in `TAB_AZURE_STORAGE_RESOURCE_ID`.
 
     ![image](../images/fx-core/aad/frontend-state.png)
 
@@ -55,25 +55,21 @@ After provision, you can find the default domain from `fx-resource-frontend-host
 1. Navigate to your created CDN endpoint and copy the endpoint hostname. For example, "https://sample.azureedge.net"
 
 #### Action 3 Update Frontend Info
-1. Open `templates\azure\provision\azureStorageTab.bicep` file, and find the following two lines:
+1. Open `infra\azure.bicep` file, and find the following two lines:
     ```
-    output endpoint string = 'https://${siteDomain}'
-    output domain string = siteDomain
+    output TAB_DOMAIN string = siteDomain
+    output TAB_ENDPOINT string = 'https://${siteDomain}'
     ```
 
 1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
    ```
-   output endpoint string = 'https://sample.azureedge.net'
-   output domain string = 'sample.azureedge.net'
+   output TAB_DOMAIN string = 'sample.azureedge.net'
+   output TAB_ENDPOINT string = 'https://sample.azureedge.net'
    ```
 
-1. Run "Teams - Provision in the cloud" and "Teams - Deploy to the cloud" or press F5 to start local debug.
+1. Run "Teams - Provision" and "Teams - Deploy" or press F5 to start local debug.
 Please refer to the [Setup CDN as storage custom domain](#scenario-one-setup-cdn-as-storage-custom-domain) to config custom domain.
 
-### Step #2 Update Auth Config
-Get the custom domain from `fx-resource-frontend-hosting.domain` in `.fx\states\state.{envName}.json`. Add auth field in `.fx\configs\config.{envName}.json` as below and replace the value of `frontendDomain` with the custom domain. 
-
-   ![update auth config](../images/fx-core/aad/update-auth-config.png)
 ### (Optional) Step #3 Verify Azure AD App Publisher Domain
 To show the aad application domain in the application's consent scenario, please refer to [this guide](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-configure-publisher-domain).
 After that, the custom domain will show in the application's consent screen as below.

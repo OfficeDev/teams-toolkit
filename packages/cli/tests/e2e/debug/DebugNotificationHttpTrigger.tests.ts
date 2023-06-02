@@ -53,7 +53,7 @@ describe("Debug V3 notification-http-trigger template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449529 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 24132570 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }

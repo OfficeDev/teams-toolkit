@@ -29,8 +29,6 @@ export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 export const bicepHelpLink = `${defaultHelpLink}#how-to-install-bicep-cli`;
 
 export const Messages = {
-  learnMoreButtonText: () => getLocalizedString("core.option.learnMore"),
-
   downloadBicep: () => getLocalizedString("depChecker.downloadBicep"),
   finishInstallBicep: () => getLocalizedString("depChecker.finishInstallBicep"),
 };

@@ -46,8 +46,6 @@ import { errorSource, DebugArgumentEmptyError, InvalidExistingAADArgsError } fro
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { AadAppClient } from "../resource/aadApp/aadAppClient";
 import { TokenProvider } from "../resource/aadApp/utils/tokenProvider";
-import { ProvisionConfig } from "../resource/aadApp/utils/configs";
-import { AadAppManifestManager } from "../resource/aadApp/aadAppManifestManager";
 import { Constants } from "../resource/aadApp/constants";
 import { checkM365Tenant } from "./utils";
 
@@ -230,10 +228,9 @@ export class SSODebugHandler {
             m365: this.m365TokenProvider,
           });
 
-          const config = new ProvisionConfig(true, false);
+          const config = { objectId: "", clientId: "", password: "" };
           config.objectId = this.envInfoV3.state[ComponentNames.AadApp].objectId;
           config.clientId = this.envInfoV3.state[ComponentNames.AadApp].clientId;
-          await AadAppClient.createAadAppSecret(TelemetryEvent.DebugSetUpSSO, config);
 
           // set clientSecret to state
           this.envInfoV3.state[ComponentNames.AadApp].clientSecret = config.password;
@@ -252,11 +249,9 @@ export class SSODebugHandler {
       });
 
       const context = this.constructPluginContext(this.envInfoV3, this.cryptoProvider);
-      const manifest = await AadAppManifestManager.loadAadManifest(context);
+      const manifest = {};
 
-      const config = new ProvisionConfig(true, false);
-      await AadAppClient.createAadAppUsingManifest(TelemetryEvent.DebugSetUpSSO, manifest, config);
-      await AadAppClient.createAadAppSecret(TelemetryEvent.DebugSetUpSSO, config);
+      const config = { objectId: "", clientId: "", password: "" };
 
       // set objectId, clientId, clientSecret to state
       this.envInfoV3.state[ComponentNames.AadApp].objectId = config.objectId;
@@ -311,8 +306,7 @@ export class SSODebugHandler {
       ].oauthAuthority = `${Constants.oauthAuthorityPrefix}/${TokenProvider.tenantId}`;
 
       const context = this.constructPluginContext(this.envInfoV3!, this.cryptoProvider!);
-      const manifest = await AadAppManifestManager.loadAadManifest(context);
-      await AadAppClient.updateAadAppUsingManifest(TelemetryEvent.DebugSetUpSSO, manifest, false);
+      const manifest = {};
 
       return ok([ssoDebugMessages.AADConfigured]);
     } catch (error: unknown) {
@@ -323,8 +317,7 @@ export class SSODebugHandler {
   private async buildAndSaveAADManifest(): Promise<Result<string[], FxError>> {
     try {
       const context = this.constructPluginContext(this.envInfoV3!, this.cryptoProvider!);
-      const manifest = await AadAppManifestManager.loadAadManifest(context);
-      await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, context);
+      const manifest = {};
 
       const aadManifestPath = `${context.root}/${BuildFolderName}/${AppPackageFolderName}/aad.${context.envInfo.envName}.json`;
       return ok([util.format(ssoDebugMessages.AADManifestSaved, path.normalize(aadManifestPath))]);

@@ -37,6 +37,7 @@ import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
+import { isDownloadDirectoryEnabled } from "../../../src";
 
 const mockedSampleInfo: SampleInfo = {
   id: "test-id",
@@ -303,6 +304,15 @@ describe("Generator utils", () => {
     await runWithLimitedConcurrency(data, callback, 1);
     assert.deepEqual(res, [1, 10, 2, 3]);
   });
+
+  it("download directory feature flag always return true", async () => {
+    const mockedEnvRestore = mockedEnv({
+      DOWNLOAD_DIRECTORY: "false",
+    });
+    const res = isDownloadDirectoryEnabled();
+    assert.isTrue(res);
+    mockedEnvRestore();
+  });
 });
 
 describe("Generator error", async () => {
@@ -435,7 +445,6 @@ describe("Generator happy path", async () => {
   const context = createContextV3();
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
-
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
@@ -444,11 +453,13 @@ describe("Generator happy path", async () => {
   });
 
   it("external sample", async () => {
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
-    sandbox
-      .stub(generatorUtils, "getSampleInfoFromName")
-      .returns({ link: "test", relativePath: "test" } as SampleInfo);
+    const axiosStub = sandbox.stub(axios, "get");
     const sampleName = "bot-proactive-messaging-teamsfx";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
   });

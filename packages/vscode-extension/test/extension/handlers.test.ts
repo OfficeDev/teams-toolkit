@@ -27,6 +27,7 @@ import {
   VsCodeEnv,
   UserCancelError,
   OptionItem,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -1107,7 +1108,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1124,7 +1124,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1135,7 +1134,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.CommandPalette]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1163,7 +1161,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1299,8 +1296,8 @@ describe("handlers", () => {
 
   describe("scaffoldFromDeveloperPortalHandler", async () => {
     beforeEach(() => {
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
     });
     afterEach(() => {
       sinon.restore();
@@ -1403,6 +1400,9 @@ describe("handlers", () => {
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon
+        .stub(M365TokenInstance, "getAccessToken")
+        .resolves(err(new SystemError("source", "name", "", "")));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
@@ -1427,6 +1427,8 @@ describe("handlers", () => {
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon.stub(M365TokenInstance, "getAccessToken").resolves(ok("authSvcToken"));
+      sinon.stub(commonTools, "setRegion").resolves();
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);

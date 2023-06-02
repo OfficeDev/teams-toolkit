@@ -163,8 +163,6 @@ export const PathConstants = {
   dotnetWorkingDir: ".",
   npmPackageFolder: "node_modules",
   nodePackageFile: "package.json",
-  functionExtensionsFolder: "bin",
-  functionExtensionsFile: "extensions.csproj",
   deploymentInfoFolder: ".deployment",
   deploymentInfoFile: "deployment.json",
   nodeArtifactFolder: "build",
@@ -236,14 +234,10 @@ export enum SolutionError {
   MissingPermissionsJson = "MissingPermissionsJson",
   NoAppStudioToken = "NoAppStudioToken",
   NoUserName = "NoUserName",
-  ResourceGroupNotFound = "ResourceGroupNotFound",
   SubscriptionNotFound = "SubscriptionNotFound",
   CannotLocalDebugInDifferentTenant = "CannotLocalDebugInDifferentTenant",
   NoSubscriptionSelected = "NoSubscriptionSelected",
   InvalidInput = "InvalidInput",
-  FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
-  FailedToPollArmDeploymentStatus = "FailedToPollArmDeploymentStatus",
-  FailedToValidateArmTemplates = "FailedToValidateArmTemplates",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
   EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
@@ -252,7 +246,6 @@ export enum SolutionError {
   SsoEnabled = "SsoEnabled",
   InvalidProjectPath = "InvalidProjectPath",
   FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
-  FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   InvalidManifestError = "InvalidManifestError",
   FailedToLoadManifestFile = "FailedToLoadManifestFile",
@@ -266,6 +259,10 @@ export const AzureRoleAssignmentsHelpLink =
 export const SharePointManageSiteAdminHelpLink =
   "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
 export const ViewAadAppHelpLinkV5 = "https://aka.ms/teamsfx-view-aad-app-v5";
+export const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
+
+// This is the max length specified in
+// https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 
 export enum SolutionTelemetryEvent {
   ArmDeploymentStart = "deploy-armtemplate-start",

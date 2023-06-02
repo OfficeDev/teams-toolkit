@@ -24,10 +24,16 @@ else
 
         if(firstRender)
         {
-            await MicrosoftTeams.InitializeAsync();
-            var context = await MicrosoftTeams.GetTeamsContextAsync();
+            try
+            {
+                await MicrosoftTeams.InitializeAsync();
+                var context = await MicrosoftTeams.GetTeamsContextAsync();
+                hubName = context.App.Host.Name;
+            }
+            catch
+            {
+            }
             isLoading = false;
-            hubName = context.App.Host.Name;
             StateHasChanged();
         }
     }

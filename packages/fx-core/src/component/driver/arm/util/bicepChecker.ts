@@ -3,91 +3,41 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
-  Platform,
   LogProvider,
-  SolutionContext,
   SystemError,
   TelemetryReporter,
-  v2,
-  UserInteraction,
-  Inputs,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import * as semver from "semver";
-import { cpUtils } from "./cpUtils";
+import { cpUtils } from "../../../utils/depsChecker/cpUtils";
 import { finished, Readable, Writable } from "stream";
 import {
-  bicepHelpLink,
   DepsCheckerEvent,
   isMacOS,
   isWindows,
   Messages,
   TelemetryMeasurement,
   TelemtryMessages,
-} from "./common";
+} from "../../../utils/depsChecker/common";
 import {
   SolutionTelemetryComponentName,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-} from "../../constants";
+} from "../../../constants";
 
 import { performance } from "perf_hooks";
-import { sendErrorTelemetryThenReturnError } from "../../utils";
-import { isBicepEnvCheckerEnabled } from "../../../common/tools";
-import { DriverContext } from "../../driver/interface/commonArgs";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { InstallSoftwareError } from "../../../error/common";
-import { DownloadBicepCliError } from "../../../error/arm";
+import { sendErrorTelemetryThenReturnError } from "../../../utils";
+import { DriverContext } from "../../interface/commonArgs";
+import { InstallSoftwareError } from "../../../../error/common";
+import { DownloadBicepCliError } from "../../../../error/arm";
 
 export const BicepName = "Bicep";
-export const installVersion = "v0.4";
-export const installVersionPattern = "^v0.4";
-export const fallbackInstallVersion = "v0.4.1008";
-export const supportedVersions: Array<string> = [installVersion];
 
 const timeout = 5 * 60 * 1000;
 const source = "bicep-envchecker";
 const bicepReleaseApiUrl = "https://api.github.com/repos/Azure/bicep/releases";
 
-export async function ensureBicep(
-  ctx: SolutionContext | v2.Context,
-  inputs?: Inputs
-): Promise<string> {
-  const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter);
-  try {
-    if ((await bicepChecker.isEnabled()) && !(await bicepChecker.isInstalled())) {
-      await bicepChecker.install();
-    }
-  } catch (err) {
-    ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
-    if (!(await bicepChecker.isGlobalBicepInstalled())) {
-      await displayLearnMore(
-        getLocalizedString(
-          "error.common.InstallSoftwareError",
-          bicepChecker.getBicepDisplayBicepName()
-        ),
-        bicepHelpLink,
-        (ctx as SolutionContext).ui || (ctx as v2.Context).userInteraction,
-        ctx.telemetryReporter
-      );
-      outputErrorMessage(ctx, bicepChecker, inputs);
-      throw err;
-    }
-  }
-  return bicepChecker.getBicepCommand();
-}
-
-export async function getAvailableBicepVersions(): Promise<string[]> {
-  const bicepChecker = new BicepChecker();
-  return await bicepChecker.getVersions();
-}
-
-export async function ensureBicepForDriver(
-  ctx: DriverContext,
-  version: string,
-  platform?: Platform
-): Promise<string> {
-  const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter, version);
+export async function ensureBicepForDriver(ctx: DriverContext, version: string): Promise<string> {
+  const bicepChecker = new BicepChecker(version, ctx.logProvider, ctx.telemetryReporter);
   try {
     const isPrivateBicepInstalled: boolean = await bicepChecker.isPrivateBicepInstalled();
     if (!isPrivateBicepInstalled) {
@@ -96,59 +46,24 @@ export async function ensureBicepForDriver(
   } catch (err) {
     throw err;
   }
-  return bicepChecker.getBicepCommand();
-}
-
-function outputErrorMessage(
-  ctx: SolutionContext | v2.Context,
-  bicepChecker: BicepChecker,
-  inputs?: Inputs
-) {
-  const message = getLocalizedString(
-    "error.common.InstallSoftwareError",
-    bicepChecker.getBicepDisplayBicepName()
-  );
-  ctx.logProvider?.warning(message);
+  return bicepChecker.getBicepExecPath();
 }
 
 class BicepChecker {
   private readonly _logger: LogProvider | undefined;
   private readonly _telemetry: TelemetryReporter | undefined;
-  private readonly _version: string | undefined;
+  private readonly version: string;
   private readonly _axios: AxiosInstance;
 
-  constructor(logger?: LogProvider, telemetry?: TelemetryReporter, version?: string) {
+  constructor(version: string, logger?: LogProvider, telemetry?: TelemetryReporter) {
     this._logger = logger;
     this._telemetry = telemetry;
-    this._version = version;
+    this.version = version;
     this._axios = axios.create({
       headers: { "content-type": "application/json" },
       timeout: timeout,
       timeoutErrorMessage: "Failed to download bicep by http request timeout",
     });
-  }
-
-  public async isEnabled(): Promise<boolean> {
-    const isBicepEnabled = isBicepEnvCheckerEnabled();
-    if (!isBicepEnabled) {
-      this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepCheckSkipped, getCommonProps());
-    }
-    return isBicepEnabled;
-  }
-
-  public async isInstalled(): Promise<boolean> {
-    const isGlobalBicepInstalled: boolean = await this.isGlobalBicepInstalled();
-    const isPrivateBicepInstalled: boolean = await this.isPrivateBicepInstalled();
-
-    if (isGlobalBicepInstalled) {
-      this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepAlreadyInstalled, getCommonProps());
-    }
-    if (isPrivateBicepInstalled) {
-      // always install private bicep even if global bicep exists.
-      this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallCompleted, getCommonProps());
-      return true;
-    }
-    return false;
   }
 
   public async install(): Promise<void> {
@@ -208,44 +123,21 @@ class BicepChecker {
   }
 
   getBicepDisplayBicepName() {
-    return `${BicepName} (${this._version || installVersion})`;
+    return `${BicepName} (${this.version})`;
   }
 
   private async doInstallBicep(): Promise<void> {
-    let selectedVersion: string;
-    if (this._version) {
-      selectedVersion = this._version;
-    } else {
-      try {
-        const response: AxiosResponse<Array<{ tag_name: string }>> = await this._axios.get(
-          bicepReleaseApiUrl,
-          {
-            headers: { Accept: "application/vnd.github.v3+json" },
-          }
-        );
-        const versions = response.data.map((item) => item.tag_name);
-        const maxSatisfying = semver.maxSatisfying(versions, installVersionPattern);
-        selectedVersion = maxSatisfying || fallbackInstallVersion;
-      } catch (e) {
-        // GitHub public API has a limit of 60 requests per hour per IP
-        // If it fails to retrieve the latest version, just use a known version.
-        selectedVersion = fallbackInstallVersion;
-        this._telemetry?.sendTelemetryEvent(
-          DepsCheckerEvent.bicepFailedToRetrieveGithubReleaseVersions,
-          { [TelemetryMeasurement.ErrorMessage]: `${e}` }
-        );
-      }
-    }
-
     const installDir = this.getBicepExecPath();
 
     await this._logger?.info(
       Messages.downloadBicep()
-        .replace("@NameVersion", `Bicep ${selectedVersion}`)
+        .replace("@NameVersion", `Bicep ${this.version}`)
         .replace("@InstallDir", installDir)
     );
     const axiosResponse = await this._axios.get(
-      `https://github.com/Azure/bicep/releases/download/${selectedVersion}/${this.getBicepBitSuffixName()}`,
+      `https://github.com/Azure/bicep/releases/download/${
+        this.version
+      }/${this.getBicepBitSuffixName()}`,
       {
         responseType: "stream",
       }
@@ -321,21 +213,7 @@ class BicepChecker {
   }
 
   private isVersionSupported(version: string): boolean {
-    if (this._version) {
-      return this._version === version;
-    }
-    return supportedVersions.some((supported) => version.includes(supported));
-  }
-
-  public async isGlobalBicepInstalled(): Promise<boolean> {
-    try {
-      const version = await this.queryVersion("bicep");
-      // not limit bicep versions of user
-      return version.includes("v");
-    } catch (e) {
-      // do nothing
-      return false;
-    }
+    return this.version === version;
   }
 
   public async isPrivateBicepInstalled(): Promise<boolean> {
@@ -348,14 +226,7 @@ class BicepChecker {
     }
   }
 
-  public async getBicepCommand(): Promise<string> {
-    if (await this.isInstalled()) {
-      return this.getBicepExecPath();
-    }
-    return "bicep";
-  }
-
-  private getBicepExecPath(): string {
+  public getBicepExecPath(): string {
     return path.join(this.getBicepInstallDir(), this.getBicepFileName());
   }
 
@@ -380,7 +251,7 @@ class BicepChecker {
   }
 
   private getBicepInstallDir(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "bicep", this._version || "");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "bicep", this.version);
   }
 
   private async queryVersion(path: string): Promise<string> {
@@ -422,26 +293,4 @@ function getCommonProps(): { [key: string]: string } {
   properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
   properties[SolutionTelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
   return properties;
-}
-
-async function displayLearnMore(
-  message: string,
-  link: string,
-  ui?: UserInteraction,
-  telemetryReporter?: TelemetryReporter
-): Promise<boolean> {
-  if (!ui) {
-    // no dialog, always continue
-    return true;
-  }
-  const res = await ui?.showMessage("info", message, true, Messages.learnMoreButtonText());
-  const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
-
-  if (userSelected === Messages.learnMoreButtonText()) {
-    telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickLearnMore, getCommonProps());
-    ui?.openUrl(link);
-    return true;
-  }
-  telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickCancel);
-  return false;
 }

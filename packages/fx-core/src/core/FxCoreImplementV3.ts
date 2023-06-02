@@ -23,7 +23,6 @@ import * as os from "os";
 import * as path from "path";
 import { Container } from "typedi";
 
-import { DotenvParseOutput } from "dotenv";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -54,6 +53,18 @@ import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/Va
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
+import { DotenvParseOutput } from "dotenv";
+import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import {
+  containsUnsupportedFeature,
+  getFeaturesFromAppDefinition,
+} from "../component/resource/appManifest/utils/utils";
+import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import {
+  getVersionState,
+  getProjectVersionFromPath,
+  getTrackingIdFromPath,
+} from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
   getQuestionsForAddWebpart,
@@ -64,10 +75,6 @@ import {
   getQuestionsForValidateManifest,
 } from "../component/question";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import {
-  containsUnsupportedFeature,
-  getFeaturesFromAppDefinition,
-} from "../component/resource/appManifest/utils/utils";
 import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
@@ -82,15 +89,8 @@ import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
-import {
-  getProjectVersionFromPath,
-  getTrackingIdFromPath,
-  getVersionState,
-} from "./middleware/utils/v3MigrationUtils";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 
 export class FxCoreV3Implement {

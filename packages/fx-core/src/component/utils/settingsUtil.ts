@@ -12,10 +12,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import {
-  getProjectSettingPathV2,
-  getProjectSettingPathV3,
-} from "../../core/middleware/projectSettingsLoader";
+import { getProjectSettingPathV3 } from "../../core/middleware/projectSettingsLoader";
 import { FileNotFoundError } from "../../error/common";
 
 export class SettingsUtils {

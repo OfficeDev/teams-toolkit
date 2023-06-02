@@ -71,7 +71,6 @@ export class UserError extends Error implements FxError {
     param4?: string
   ) {
     let option: UserErrorOptions;
-    let stack: string | undefined;
     if (typeof param1 === "string") {
       option = {
         source: param1,
@@ -94,11 +93,7 @@ export class UserError extends Error implements FxError {
     this.source = option.source || "unknown";
 
     //stack
-    if (stack) {
-      this.stack = stack;
-    } else {
-      Error.captureStackTrace(this, new.target);
-    }
+    Error.captureStackTrace(this, new.target);
 
     //prototype
     Object.setPrototypeOf(this, new.target.prototype);
@@ -153,7 +148,6 @@ export class SystemError extends Error implements FxError {
     param4?: string
   ) {
     let option: SystemErrorOptions;
-    let stack: string | undefined;
     if (typeof param1 === "string") {
       option = {
         source: param1,
@@ -176,11 +170,7 @@ export class SystemError extends Error implements FxError {
     this.source = option.source || "unknown";
 
     //stack
-    if (stack) {
-      this.stack = stack;
-    } else {
-      Error.captureStackTrace(this, new.target);
-    }
+    Error.captureStackTrace(this, new.target);
 
     //prototype
     Object.setPrototypeOf(this, new.target.prototype);
@@ -193,22 +183,5 @@ export class SystemError extends Error implements FxError {
     this.userData = option.userData;
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
-  }
-}
-
-export function assembleError(e: any, source?: string): FxError {
-  if (e instanceof UserError || e instanceof SystemError) return e;
-  if (!source) source = "unknown";
-  const type = typeof e;
-  if (type === "string") {
-    return new SystemError({ name: "UnhandledError", message: e as string, source: source });
-  } else if (e instanceof Error) {
-    const err = e as Error;
-    const fxError = new SystemError({ name: "UnhandledError", error: err, source: source });
-    fxError.stack = err.stack;
-    return fxError;
-  } else {
-    const message = JSON.stringify(e, Object.getOwnPropertyNames(e));
-    return new SystemError({ name: "UnhandledError", message: message, source: source });
   }
 }

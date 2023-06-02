@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, Inputs, ok, UserCancelError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { err, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
@@ -27,7 +27,7 @@ describe("Provision Command Tests", function () {
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
-      else if (inputs.projectPath?.includes("Cancel")) return err(UserCancelError);
+      else if (inputs.projectPath?.includes("Cancel")) return err(new UserCancelError());
       else return err(NotSupportedProjectType());
     });
   });

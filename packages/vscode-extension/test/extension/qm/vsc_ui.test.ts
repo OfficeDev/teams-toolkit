@@ -141,7 +141,7 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
-        expect(result.error).to.equal(UserCancelError);
+        expect(result.error instanceof UserCancelError).is.true;
       }
       sinon.restore();
     });
@@ -226,7 +226,7 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
-        expect(result.error).to.equal(UserCancelError);
+        expect(result.error instanceof UserCancelError).is.true;
       }
       sinon.restore();
     });

@@ -117,7 +117,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       const my = new MyClass();
       await my.methodThrowError(inputs);
     } catch (e) {
-      assert.isTrue(e === UserCancelError);
+      assert.isTrue(e instanceof UserCancelError);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }

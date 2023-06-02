@@ -7,7 +7,6 @@ import {
   Platform,
   Result,
   Settings,
-  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -33,6 +32,7 @@ import {
   FileNotFoundError,
   MissingEnvironmentVariablesError,
   MissingRequiredFileError,
+  UserCancelError,
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
 
@@ -596,7 +596,7 @@ describe("envUtils", () => {
     });
     it("EnvLoaderMW cancel", async () => {
       sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
-      sandbox.stub(tools.ui, "selectOption").resolves(err(UserCancelError));
+      sandbox.stub(tools.ui, "selectOption").resolves(err(new UserCancelError()));
       class MyClass {
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok(undefined);

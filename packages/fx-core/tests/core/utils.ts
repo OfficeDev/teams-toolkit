@@ -4,17 +4,12 @@
 import { TokenCredential } from "@azure/core-auth";
 import {
   AzureAccountProvider,
-  AzureSolutionSettings,
   Colors,
-  ConfigMap,
   CryptoProvider,
-  Func,
   FxError,
-  Inputs,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
-  Json,
   LoginStatus,
   LogLevel,
   LogProvider,
@@ -23,7 +18,6 @@ import {
   MultiSelectResult,
   ok,
   PermissionRequestProvider,
-  QTreeNode,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -33,167 +27,16 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  SolutionContext,
-  Stage,
   SubscriptionInfo,
   TelemetryReporter,
   TokenProvider,
   TokenRequest,
   Tools,
   UserInteraction,
-  v2,
-  Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { DEFAULT_PERMISSION_REQUEST, PluginNames } from "../../src/component/constants";
+import { DEFAULT_PERMISSION_REQUEST } from "../../src/component/constants";
 import { MyTokenCredential } from "../plugins/solution/util";
-
-function solutionSettings(): AzureSolutionSettings {
-  return {
-    name: "fx-solution-azure",
-    version: "1.0.0",
-    hostType: "Azure",
-    capabilities: ["Tab"],
-    azureResources: [],
-    activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA],
-  } as AzureSolutionSettings;
-}
-export class MockSolution {
-  name = "fx-solution-azure";
-
-  async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.projectSettings!.solutionSettings = solutionSettings();
-    const config = new ConfigMap();
-    config.set("create", true);
-    ctx.envInfo.state.set("solution", config);
-    return ok(Void);
-  }
-
-  async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.state.get("solution")!.set("scaffold", true);
-    return ok(Void);
-  }
-
-  async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.state.get("solution")!.set("provision", true);
-    return ok(Void);
-  }
-
-  async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.state.get("solution")!.set("deploy", true);
-    return ok(Void);
-  }
-
-  async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.state.get("solution")!.set("publish", true);
-    return ok(Void);
-  }
-
-  async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.state.get("solution")!.set("localDebug", true);
-    return ok(Void);
-  }
-
-  async getQuestions(
-    task: Stage,
-    ctx: SolutionContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  async getQuestionsForUserTask(
-    func: Func,
-    ctx: SolutionContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.state.get("solution")!.set("executeUserTask", true);
-    return ok(Void);
-  }
-
-  async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.projectSettings!.solutionSettings = solutionSettings();
-    const config = new ConfigMap();
-    ctx.envInfo.state.set("solution", config);
-    return ok(Void);
-  }
-}
-
-export class MockSolutionV2 {
-  name = "fx-solution-azure";
-  displayName = "Azure Solution V2 Mock";
-  async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    ctx.projectSetting.solutionSettings = solutionSettings();
-    return ok(Void);
-  }
-  async generateResourceTemplate(ctx: v2.Context, inputs: Inputs): Promise<Result<Json, FxError>> {
-    return ok({});
-  }
-  async provisionResources(
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: v2.EnvInfoV2,
-    tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-  async deploy(
-    ctx: v2.Context,
-    inputs: Inputs,
-    provisionOutputs: Json,
-    tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-  async publishApplication(
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: M365TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-  async provisionLocalResource(
-    ctx: v2.Context,
-    inputs: Inputs,
-    localSettings: Json,
-    tokenProvider: TokenProvider
-  ): Promise<v2.FxResult<Json, FxError>> {
-    return {
-      kind: "success",
-      output: {},
-    };
-  }
-  async executeUserTask(
-    ctx: v2.Context,
-    inputs: Inputs,
-    func: Func,
-    localSettings: Json,
-    envInfo: v2.EnvInfoV2,
-    tokenProvider: TokenProvider
-  ): Promise<Result<unknown, FxError>> {
-    return ok(Void);
-  }
-  async getQuestions(
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(undefined);
-  }
-  async getQuestionsForUserTask(
-    ctx: v2.Context,
-    inputs: Inputs,
-    func: Func,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(undefined);
-  }
-}
 
 export function randomAppName() {
   return "mock" + new Date().getTime();

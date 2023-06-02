@@ -12,7 +12,10 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import { getProjectSettingPathV3 } from "../../core/middleware/projectSettingsLoader";
+import {
+  getProjectSettingPathV2,
+  getProjectSettingPathV3,
+} from "../../core/middleware/projectSettingsLoader";
 import { FileNotFoundError } from "../../error/common";
 
 export class SettingsUtils {
@@ -39,6 +42,14 @@ export class SettingsUtils {
       trackingId: appYaml.get("projectId") as string,
       version: appYaml.get("version") as string,
     };
+
+    if (!projectSettings.trackingId) {
+      const v4ProjectSettingsPath = getProjectSettingPathV2(projectPath);
+      const v4ProjectSettings = await fs.readJson(v4ProjectSettingsPath);
+      if (v4ProjectSettings && v4ProjectSettings.projectId) {
+        projectSettings.trackingId = v4ProjectSettings.projectId;
+      }
+    }
 
     globalVars.trackingId = projectSettings.trackingId; // set trackingId to globalVars
     return ok(projectSettings);

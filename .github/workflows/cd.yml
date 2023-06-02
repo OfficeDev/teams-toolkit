@@ -282,7 +282,8 @@ jobs:
             if [ "$PREID" == "beta" ]
               npx vsce package --pre-release
             else
-              npx vsce package 
+              npx vsce package
+            fi
 
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}

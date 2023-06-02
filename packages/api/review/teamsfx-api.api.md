@@ -778,38 +778,6 @@ export interface FxError extends Error {
     userData?: any;
 }
 
-// @public (undocumented)
-class FxFailure<Error = FxError> {
-    constructor(error: Error);
-    // (undocumented)
-    error: Error;
-    // (undocumented)
-    kind: "failure";
-}
-
-// @public (undocumented)
-class FxPartialSuccess<T, Error = FxError> {
-    constructor(output: T, error: Error);
-    // (undocumented)
-    error: Error;
-    // (undocumented)
-    kind: "partialSuccess";
-    // (undocumented)
-    output: T;
-}
-
-// @public (undocumented)
-type FxResult<T, Error = FxError> = FxSuccess<T> | FxPartialSuccess<T, Error> | FxFailure<Error>;
-
-// @public (undocumented)
-class FxSuccess<T> {
-    constructor(output: T);
-    // (undocumented)
-    kind: "success";
-    // (undocumented)
-    output: T;
-}
-
 // @public
 export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
 
@@ -939,12 +907,6 @@ export const LocalEnvironmentName = "local";
 
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
-
-// @public (undocumented)
-type LocalSetting = {
-    key: keyof LocalSettings_2;
-    value: Record<string, string>;
-};
 
 // @public
 export interface LocalSettings {
@@ -1767,12 +1729,7 @@ declare namespace v2 {
     export {
         Context_2 as Context,
         LocalSettings_2 as LocalSettings,
-        LocalSetting,
         InputsWithProjectPath,
-        FxSuccess,
-        FxPartialSuccess,
-        FxFailure,
-        FxResult,
         EnvInfoV2,
         DeepReadonly
     }

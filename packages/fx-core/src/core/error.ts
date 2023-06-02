@@ -118,15 +118,6 @@ export function UpgradeV3CanceledError(): UserError {
   );
 }
 
-export function ToolkitNotSupportError(): UserError {
-  return new UserError(
-    CoreSource,
-    "ToolkitNotSupport",
-    getDefaultString("core.migrationV3.CreateNewProject"),
-    getLocalizedString("core.migrationV3.CreateNewProject")
-  );
-}
-
 export function IncompatibleProjectError(messageKey: string): UserError {
   return new UserError(
     CoreSource,

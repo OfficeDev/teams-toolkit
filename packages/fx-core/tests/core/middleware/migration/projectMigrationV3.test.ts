@@ -39,15 +39,9 @@ import {
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
 import { NotAllowedMigrationError } from "../../../../src/core/error";
-import {
-  Metadata,
-  MetadataV3,
-  VersionSource,
-  VersionState,
-} from "../../../../src/common/versionMetadata";
+import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
 import {
   buildEnvUserFileName,
-  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
@@ -1207,21 +1201,6 @@ describe("Migration utils", () => {
         source: VersionSource.unknown,
       }),
       VersionState.unsupported
-    );
-  });
-
-  it("getDownloadLinkByVersionAndPlatform", () => {
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
-      `${Metadata.versionMatchLink}#visual-studio`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
-      `${Metadata.versionMatchLink}#cli`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
-      `${Metadata.versionMatchLink}#vscode`
     );
   });
 

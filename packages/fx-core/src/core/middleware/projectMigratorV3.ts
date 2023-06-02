@@ -34,7 +34,6 @@ import {
   UpgradeV3CanceledError,
   MigrationError,
   AbandonedProjectError,
-  ToolkitNotSupportError,
   NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";

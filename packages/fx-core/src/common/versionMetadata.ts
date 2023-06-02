@@ -58,10 +58,6 @@ export const MetadataV3Abandoned = {
   configFile: "settings.json",
 };
 
-export const Metadata = {
-  versionMatchLink: "https://aka.ms/teamsfx-project-toolkit-match",
-};
-
 export enum VersionState {
   // project version compatible
   compatible = 0,

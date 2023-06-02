@@ -6,7 +6,7 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { unzip } from "../../../common/template-utils/templatesUtils";
+import { unzip } from "../../generator/utils";
 import { FileNotFoundError } from "../../../error/common";
 import { getTemplatesFolder } from "../../../folder";
 import { AddSsoParameters, SolutionError, SolutionSource } from "../../constants";

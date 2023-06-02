@@ -150,6 +150,7 @@ export class PackageService {
       return launchInfo.data;
     } catch (error: any) {
       this.logger?.error("Get LaunchInfo failed.");
+
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
         this.traceError(error);

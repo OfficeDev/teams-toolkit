@@ -1,15 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  assembleError,
-  err,
-  FxError,
-  LogProvider,
-  M365TokenProvider,
-  ok,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@microsoft/teamsfx-api";
 
 import { CoreSource } from "../../core/error";
 import { AppStudioScopes } from "../tools";

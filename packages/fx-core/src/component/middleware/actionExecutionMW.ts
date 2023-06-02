@@ -4,7 +4,6 @@
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
-  assembleError,
   ContextV3,
   Effect,
   err,
@@ -31,6 +30,7 @@ import {
   sendSuccessEvent,
 } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
+import { assembleError } from "../../error/common";
 
 export interface ActionOption {
   componentName?: string;

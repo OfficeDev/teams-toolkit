@@ -1,4 +1,4 @@
-import { SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
+import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
@@ -206,5 +206,22 @@ export class HttpServerError extends SystemError {
       message: getDefaultString(messageKey, actionName, responseBody),
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
     });
+  }
+}
+
+export function assembleError(e: any, source?: string): FxError {
+  if (e instanceof UserError || e instanceof SystemError) return e;
+  if (!source) source = "unknown";
+  const type = typeof e;
+  if (type === "string") {
+    return new UnhandledError(new Error(e as string), source);
+  } else if (e instanceof Error) {
+    const err = e as Error;
+    const fxError = new UnhandledError(err, source);
+    fxError.stack = err.stack;
+    return fxError;
+  } else {
+    const message = JSON.stringify(e, Object.getOwnPropertyNames(e));
+    return new UnhandledError(new Error(message), source);
   }
 }

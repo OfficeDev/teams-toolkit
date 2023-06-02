@@ -19,7 +19,6 @@ import { hasAAD, isMiniApp } from "../../common/projectSettingsHelperV3";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   ComponentNames,
-  Language,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -47,7 +46,7 @@ async function addSsoV3(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const res = await createAuthFiles(inputs, Language.CSharp, false, false, true);
+  const res = await createAuthFiles(inputs);
   if (res.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(

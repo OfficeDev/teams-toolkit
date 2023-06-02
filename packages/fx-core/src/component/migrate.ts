@@ -114,14 +114,6 @@ export const BOT_STATE_KEY = ComponentNames.TeamsBot;
 export const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
 export const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
-export function pluginName2ComponentName(pluginName: string): string {
-  const map = new Map<string, string>();
-  EnvStateMigrationComponentNames.forEach((e) => {
-    map.set(e[0], e[1]);
-  });
-  return map.get(pluginName) || pluginName;
-}
-
 export function ComponentName2pluginName(componentName: string): string {
   const map = new Map<string, string>();
   EnvStateMigrationComponentNames.forEach((e) => {

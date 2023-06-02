@@ -150,6 +150,8 @@ import {
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { compare } from "./utils/versionUtil";
+import { setRegion } from "@microsoft/teamsfx-core";
+import { AuthSvcScopes } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -3269,12 +3271,14 @@ export async function scaffoldFromDeveloperPortalHandler(
   const properties: { [p: string]: string } = {
     teamsAppId: appId,
   };
+
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
   const loginHint = args.length < 2 ? undefined : args[1];
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
     1
   );
+
   await progressBar.start();
   let token = undefined;
   try {
@@ -3299,6 +3303,13 @@ export async function scaffoldFromDeveloperPortalHandler(
       return err(tokenRes.error);
     }
     token = tokenRes.value;
+
+    // set region
+    const AuthSvcTokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+    if (AuthSvcTokenRes.isOk()) {
+      await setRegion(AuthSvcTokenRes.value);
+    }
+
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3316,7 +3327,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   let appDefinition;
   try {
-    AppManifestUtils.init({ telemetryReporter: tools.telemetryReporter } as any); // need to initiate temeletry so that telemetry set up in appManifest component can work.
+    AppManifestUtils.init({ telemetryReporter: tools?.telemetryReporter } as any); // need to initiate temeletry so that telemetry set up in appManifest component can work.
     appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
   } catch (error: any) {
     ExtTelemetry.sendTelemetryErrorEvent(

@@ -1119,7 +1119,7 @@
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["appsettings", "target"],
+          "required": ["target"],
           "properties": {
             "appsettings": {
               "type": "object",
@@ -1128,6 +1128,10 @@
             "target": {
               "type": "string",
               "description": "the target file"
+            },
+            "content": {
+              "type": "object",
+              "description": "the json content to be created or updated"
             }
           }
         }

@@ -35,7 +35,6 @@ import { SSODebugArgs, SSODebugHandler } from "../../../src/component/debugHandl
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
-import { AadAppManifestManager } from "../../../src/component/resource/aadApp/aadAppManifestManager";
 import { AadAppClient } from "../../../src/component/resource/aadApp/aadAppClient";
 import { TokenProvider } from "../../../src/component/resource/aadApp/utils/tokenProvider";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
@@ -307,26 +306,12 @@ describe("SSODebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       const manifest = {};
-      sinon
-        .stub(AadAppManifestManager, "loadAadManifest")
-        .returns(Promise.resolve(manifest as any));
       const objectId = "11111111-1111-1111-1111-111111111111";
       const clientId = "22222222-2222-2222-2222-222222222222";
-      sinon
-        .stub(AadAppClient, "createAadAppUsingManifest")
-        .callsFake(async (stage, manifest, config) => {
-          config.objectId = objectId;
-          config.clientId = clientId;
-        });
       const clientSecret = "xxx";
-      sinon.stub(AadAppClient, "createAadAppSecret").callsFake(async (stage, config) => {
-        config.password = clientSecret;
-      });
-      sinon.stub(AadAppClient, "updateAadAppUsingManifest").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
-      sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
       let frontendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {},
@@ -350,33 +335,10 @@ describe("SSODebugHandler", () => {
       );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientId, clientId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientSecret, clientSecret);
-      chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost:53000/${clientId}`
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
-        "https://localhost"
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].tenantId, tenantId);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthHost,
-        "https://login.microsoftonline.com"
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthAuthority,
-        `https://login.microsoftonline.com/${tenantId}`
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, undefined);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, undefined);
       const expectedEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: "",
           [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${endpoint}/auth-start.html`,
         },
         customized: {},
@@ -424,26 +386,12 @@ describe("SSODebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       const manifest = {};
-      sinon
-        .stub(AadAppManifestManager, "loadAadManifest")
-        .returns(Promise.resolve(manifest as any));
       const objectId = "11111111-1111-1111-1111-111111111111";
       const clientId = "22222222-2222-2222-2222-222222222222";
-      sinon
-        .stub(AadAppClient, "createAadAppUsingManifest")
-        .callsFake(async (stage, manifest, config) => {
-          config.objectId = objectId;
-          config.clientId = clientId;
-        });
       const clientSecret = "xxx";
-      sinon.stub(AadAppClient, "createAadAppSecret").callsFake(async (stage, config) => {
-        config.password = clientSecret;
-      });
-      sinon.stub(AadAppClient, "updateAadAppUsingManifest").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
-      sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
       let botEnvs: LocalEnvs = {
         template: {},
         teamsfx: {},
@@ -465,9 +413,6 @@ describe("SSODebugHandler", () => {
       );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientId, clientId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientSecret, clientSecret);
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
@@ -488,8 +433,8 @@ describe("SSODebugHandler", () => {
       const expectedEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.bot.teamsfx.ClientId]: clientId,
-          [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
+          [LocalEnvKeys.bot.teamsfx.ClientId]: "",
+          [LocalEnvKeys.bot.teamsfx.ClientSecret]: "",
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
           [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://botid-${botId}`,
@@ -546,26 +491,12 @@ describe("SSODebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       const manifest = {};
-      sinon
-        .stub(AadAppManifestManager, "loadAadManifest")
-        .returns(Promise.resolve(manifest as any));
       const objectId = "11111111-1111-1111-1111-111111111111";
       const clientId = "22222222-2222-2222-2222-222222222222";
-      sinon
-        .stub(AadAppClient, "createAadAppUsingManifest")
-        .callsFake(async (stage, manifest, config) => {
-          config.objectId = objectId;
-          config.clientId = clientId;
-        });
       const clientSecret = "xxx";
-      sinon.stub(AadAppClient, "createAadAppSecret").callsFake(async (stage, config) => {
-        config.password = clientSecret;
-      });
-      sinon.stub(AadAppClient, "updateAadAppUsingManifest").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
-      sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
       let frontendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {},
@@ -599,33 +530,10 @@ describe("SSODebugHandler", () => {
       );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientId, clientId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientSecret, clientSecret);
-      chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost:53000/botid-${botId}`
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
-        "https://localhost"
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].tenantId, tenantId);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthHost,
-        "https://login.microsoftonline.com"
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthAuthority,
-        `https://login.microsoftonline.com/${tenantId}`
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, botId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, botEndpoint);
       const expectedFrontendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: "",
           [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${tabEndpoint}/auth-start.html`,
         },
         customized: {},
@@ -633,8 +541,8 @@ describe("SSODebugHandler", () => {
       const expectedBotEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.bot.teamsfx.ClientId]: clientId,
-          [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
+          [LocalEnvKeys.bot.teamsfx.ClientId]: "",
+          [LocalEnvKeys.bot.teamsfx.ClientSecret]: "",
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
           [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost:53000/botid-${botId}`,
@@ -695,26 +603,12 @@ describe("SSODebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       const manifest = {};
-      sinon
-        .stub(AadAppManifestManager, "loadAadManifest")
-        .returns(Promise.resolve(manifest as any));
       const objectId = "11111111-1111-1111-1111-111111111111";
       const clientId = "22222222-2222-2222-2222-222222222222";
-      sinon
-        .stub(AadAppClient, "createAadAppUsingManifest")
-        .callsFake(async (stage, manifest, config) => {
-          config.objectId = objectId;
-          config.clientId = clientId;
-        });
       const clientSecret = "xxx";
-      sinon.stub(AadAppClient, "createAadAppSecret").callsFake(async (stage, config) => {
-        config.password = clientSecret;
-      });
-      sinon.stub(AadAppClient, "updateAadAppUsingManifest").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
-      sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
       let frontendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {},
@@ -760,33 +654,10 @@ describe("SSODebugHandler", () => {
       );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientId, clientId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientSecret, clientSecret);
-      chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost:53000/botid-${botId}`
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
-        "https://localhost"
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].tenantId, tenantId);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthHost,
-        "https://login.microsoftonline.com"
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthAuthority,
-        `https://login.microsoftonline.com/${tenantId}`
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, botId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, botEndpoint);
       const expectedFrontendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: "",
           [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${tabEndpoint}/auth-start.html`,
           [LocalEnvKeys.frontend.teamsfx.FuncName]: projectSettingV3.defaultFunctionName!,
           [LocalEnvKeys.frontend.teamsfx.FuncEndpoint]: "http://localhost:7071",
@@ -796,8 +667,8 @@ describe("SSODebugHandler", () => {
       const expectedBackendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.backend.teamsfx.ClientId]: clientId,
-          [LocalEnvKeys.backend.teamsfx.ClientSecret]: clientSecret,
+          [LocalEnvKeys.backend.teamsfx.ClientId]: "",
+          [LocalEnvKeys.backend.teamsfx.ClientSecret]: "",
           [LocalEnvKeys.backend.teamsfx.TenantId]: tenantId,
           [LocalEnvKeys.backend.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.backend.teamsfx.AllowedAppIds]: getAllowedAppIds().join(";"),
@@ -807,8 +678,8 @@ describe("SSODebugHandler", () => {
       const expectedBotEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.bot.teamsfx.ClientId]: clientId,
-          [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
+          [LocalEnvKeys.bot.teamsfx.ClientId]: "",
+          [LocalEnvKeys.bot.teamsfx.ClientSecret]: "",
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
           [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost:53000/botid-${botId}`,
@@ -869,26 +740,12 @@ describe("SSODebugHandler", () => {
         return ok(Void);
       });
       const manifest = {};
-      sinon
-        .stub(AadAppManifestManager, "loadAadManifest")
-        .returns(Promise.resolve(manifest as any));
       const objectId = "11111111-1111-1111-1111-111111111111";
       const clientId = "22222222-2222-2222-2222-222222222222";
-      sinon
-        .stub(AadAppClient, "createAadAppUsingManifest")
-        .callsFake(async (stage, manifest, config) => {
-          config.objectId = objectId;
-          config.clientId = clientId;
-        });
       const clientSecret = "xxx";
-      sinon.stub(AadAppClient, "createAadAppSecret").callsFake(async (stage, config) => {
-        config.password = clientSecret;
-      });
-      sinon.stub(AadAppClient, "updateAadAppUsingManifest").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
-      sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
       let frontendEnvs: LocalEnvs = {
         template: {},
         teamsfx: {},
@@ -913,33 +770,10 @@ describe("SSODebugHandler", () => {
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(checkM365TenantCalled);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientId, clientId);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientSecret, clientSecret);
-      chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost:53000/${clientId}`
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
-        "https://localhost"
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].tenantId, tenantId);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthHost,
-        "https://login.microsoftonline.com"
-      );
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.AadApp].oauthAuthority,
-        `https://login.microsoftonline.com/${tenantId}`
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, undefined);
-      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, undefined);
       const expectedEnvs: LocalEnvs = {
         template: {},
         teamsfx: {
-          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: "",
           [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${endpoint}/auth-start.html`,
         },
         customized: {},

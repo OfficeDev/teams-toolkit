@@ -19,7 +19,6 @@ import {
   PackDirectoryExistenceError,
   ResourceNotFoundError,
 } from "../../src/component/error";
-import { convertContext } from "../../src/component/resource/aadApp/utils";
 import { createContextV3, createDriverContext } from "../../src/component/utils";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
@@ -34,17 +33,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
   setTools(tools);
   afterEach(() => {
     sandbox.restore();
-  });
-  it("convertContext", () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const envInfo = newEnvInfoV3();
-    const context = createContextV3();
-    context.envInfo = envInfo;
-    const ctx = convertContext(context, inputs);
-    expect(ctx !== undefined).to.eql(true);
   });
 
   it("askForDeployConsentV3 confirm", async () => {

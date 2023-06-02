@@ -43,16 +43,6 @@ export class SettingsUtils {
       version: appYaml.get("version") as string,
     };
 
-    if (!projectSettings.trackingId) {
-      const v4ProjectSettingsPath = getProjectSettingPathV2(projectPath);
-      if (v4ProjectSettingsPath && (await fs.pathExists(v4ProjectSettingsPath))) {
-        const v4ProjectSettings = await fs.readJson(v4ProjectSettingsPath);
-        if (v4ProjectSettings && v4ProjectSettings.projectId) {
-          projectSettings.trackingId = v4ProjectSettings.projectId;
-        }
-      }
-    }
-
     globalVars.trackingId = projectSettings.trackingId; // set trackingId to globalVars
     return ok(projectSettings);
   }

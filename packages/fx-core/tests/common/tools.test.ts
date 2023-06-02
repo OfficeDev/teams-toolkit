@@ -342,6 +342,30 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const result = getFixedCommonProjectSettings("");
       chai.assert.isUndefined(result);
     });
+
+    it("v3: load project id from v2 project settings", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "true",
+      });
+      try {
+        sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
+          return JSON.parse('{"projectId": "00000000-0000-0000-0000-000000000000"}');
+        });
+        sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
+          if (file.includes("projectSettings")) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+
+        const result = getFixedCommonProjectSettings("root-path");
+        chai.assert.isNotEmpty(result);
+        chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
+      } finally {
+        restore();
+      }
+    });
   });
 
   describe("canAddCICDWorkflows", () => {

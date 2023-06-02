@@ -961,18 +961,16 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
       const settingsPath = getProjectSettingPathV3(rootPath);
 
       if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-          // If .yml file does not exist, try to get project id from project settings of v4
-          const v4SettingsPath = getProjectSettingPathV2(rootPath);
-          if (!v4SettingsPath || !fs.pathExistsSync(v4SettingsPath)) {
-            return undefined;
-          }
-
-          const v4SettingsContent = fs.readJsonSync(v4SettingsPath);
-          return {
-            projectId: v4SettingsContent?.projectId ?? undefined,
-          };
+        // If .yml file does not exist, try to get project id from project settings of v4
+        const v4SettingsPath = getProjectSettingPathV2(rootPath);
+        if (!v4SettingsPath || !fs.pathExistsSync(v4SettingsPath)) {
+          return undefined;
         }
+
+        const v4SettingsContent = fs.readJsonSync(v4SettingsPath);
+        return {
+          projectId: v4SettingsContent?.projectId ?? undefined,
+        };
       }
 
       const settingsContent = fs.readFileSync(settingsPath, "utf-8");

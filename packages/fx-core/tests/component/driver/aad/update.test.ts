@@ -509,7 +509,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(UnhandledUserError)
       .and.property("message")
       .equals(
-        'An unexpected error has occurred while performing the aadApp/update task. {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+        'An unexpected error has occurred while performing the aadApp/update task. The reason for this error is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
       );
   });
 
@@ -543,7 +543,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(UnhandledError)
       .and.property("message")
       .equals(
-        'An unexpected error has occurred while performing the aadApp/update task. {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+        'An unexpected error has occurred while performing the aadApp/update task. The reason for this error is: {"error":{"code":"InternalServerError","message":"Internal server error"}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
       );
   });
 

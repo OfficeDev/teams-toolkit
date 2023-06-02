@@ -328,7 +328,7 @@ describe("aadAppCreate", async () => {
       .is.instanceOf(UnhandledUserError)
       .and.has.property("message")
       .and.equals(
-        'An unexpected error has occurred while performing the aadApp/create task. {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+        'An unexpected error has occurred while performing the aadApp/create task. The reason for this error is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
       );
   });
 
@@ -357,7 +357,7 @@ describe("aadAppCreate", async () => {
       .is.instanceOf(UnhandledError)
       .and.has.property("message")
       .and.equals(
-        'An unexpected error has occurred while performing the aadApp/create task. {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+        'An unexpected error has occurred while performing the aadApp/create task. The reason for this error is: {"error":{"code":"InternalServerError","message":"Internal server error"}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
       );
   });
 

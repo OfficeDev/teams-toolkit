@@ -3,14 +3,12 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import {
-  assembleError,
   AzureAccountProvider,
   err,
   FxError,
   InputsWithProjectPath,
   M365TokenProvider,
   ok,
-  Platform,
   ResourceContextV3,
   Result,
   SubscriptionInfo,
@@ -19,6 +17,7 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
+import { assembleError } from "../error/common";
 import fs from "fs-extra";
 import { HelpLinks } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";

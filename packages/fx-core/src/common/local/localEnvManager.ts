@@ -20,14 +20,14 @@ import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
-import { CoreSource, ReadFileError } from "../../core/error";
+import { CoreSource } from "../../core/error";
 import { LocalStateProvider } from "../localStateProvider";
 import {
   getProjectSettingsPath,
   loadProjectSettingsByProjectPath,
 } from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
-import { FileNotFoundError } from "../../error/common";
+import { FileNotFoundError, ReadFileError } from "../../error/common";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -110,7 +110,7 @@ export class LocalEnvManager {
         }
         return res.value;
       } catch (error: any) {
-        throw ReadFileError(error);
+        throw new ReadFileError(error, "localEnvManager");
       }
     });
   }

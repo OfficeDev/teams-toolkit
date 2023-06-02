@@ -11,7 +11,6 @@ import * as path from "path";
 import * as util from "util";
 
 import {
-  assembleError,
   CryptoProvider,
   err,
   FxError,
@@ -50,6 +49,7 @@ import { GraphClient } from "../resource/botService/botRegistration/graphClient"
 import { checkM365Tenant } from "./utils";
 import { AlreadyCreatedBotNotExist } from "../resource/botService/errors";
 import { APP_STUDIO_API_NAMES } from "../resource/appManifest/constants";
+import { assembleError } from "../../error/common";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",

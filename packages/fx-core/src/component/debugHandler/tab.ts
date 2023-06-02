@@ -8,7 +8,6 @@ import * as path from "path";
 import * as util from "util";
 
 import {
-  assembleError,
   CryptoProvider,
   err,
   FxError,
@@ -33,6 +32,7 @@ import { DebugAction } from "./common";
 import { DebugArgumentEmptyError, errorSource, InvalidTabBaseUrlError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { checkM365Tenant } from "./utils";
+import { assembleError } from "../../error/common";
 
 const tabDebugMessages = {
   savingStates: "Saving the states of tab to configure manifest and AAD app ...",

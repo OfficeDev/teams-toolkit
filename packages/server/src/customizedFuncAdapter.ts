@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  assembleError,
   err,
   FxError,
   LocalFunc,
@@ -12,6 +11,7 @@ import {
   SystemError,
   ValidateFunc,
 } from "@microsoft/teamsfx-api";
+import { assembleError } from "@microsoft/teamsfx-core";
 
 import { CustomizeFuncType } from "./apis";
 

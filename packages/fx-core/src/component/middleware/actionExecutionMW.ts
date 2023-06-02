@@ -14,7 +14,6 @@ import {
   QTreeNode,
   Result,
   SystemError,
-  traverse,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
@@ -31,6 +30,7 @@ import {
 } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
 import { assembleError } from "../../error/common";
+import { traverse } from "../../ui/visitor";
 
 export interface ActionOption {
   componentName?: string;

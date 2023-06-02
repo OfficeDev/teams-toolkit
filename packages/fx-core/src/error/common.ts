@@ -139,9 +139,9 @@ export class InstallSoftwareError extends UserError {
 }
 
 export class MissingRequiredInputError extends UserError {
-  constructor(name: string) {
+  constructor(name: string, source?: string) {
     super({
-      source: "coordinator",
+      source: source || "coordinator",
       message: getDefaultString("error.common.MissingRequiredInputError", name),
       displayMessage: getLocalizedString("error.common.MissingRequiredInputError", name),
     });
@@ -205,6 +205,36 @@ export class HttpServerError extends SystemError {
       name: "HttpServerError",
       message: getDefaultString(messageKey, actionName, responseBody),
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
+    });
+  }
+}
+
+export class UserCancelError extends UserError {
+  constructor(actionName?: string) {
+    super({
+      source: actionName ? camelCase(actionName) : "ui",
+      name: "UserCancel",
+      message: "User canceled",
+    });
+  }
+}
+
+export class EmptyOptionError extends SystemError {
+  constructor(source?: string) {
+    super({ source: source ? camelCase(source) : "UI" });
+  }
+}
+
+export class NotImplementedError extends SystemError {
+  constructor(source: string, method: string) {
+    super({ source: source, message: `Method not implemented:${method}` });
+  }
+}
+export class ConcurrentError extends UserError {
+  constructor(source: string) {
+    super({
+      source: source,
+      message: getLocalizedString("error.common.ConcurrentError"),
     });
   }
 }

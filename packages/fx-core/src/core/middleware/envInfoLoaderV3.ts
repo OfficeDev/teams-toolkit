@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, QTreeNode, Result, err, ok, traverse } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, QTreeNode, Result, err, ok } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../environment";
 import { NoProjectOpenedError } from "../error";
 import { TOOLS } from "../globalVars";
 import { QuestionSelectSourceEnvironment, getQuestionNewTargetEnvironmentName } from "../question";
 import { CoreHookContext } from "../types";
+import { traverse } from "../../ui/visitor";
 
 const lastUsedMark = " (last used)";
 export let lastUsedEnv: string | undefined;

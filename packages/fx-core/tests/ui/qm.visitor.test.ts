@@ -36,7 +36,7 @@ import {
   err,
   ok,
   traverse,
-} from "../src/index";
+} from "@microsoft/teamsfx-api";
 
 function createInputs(): Inputs {
   return {

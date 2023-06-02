@@ -4,5 +4,4 @@
 
 export * from "./question";
 export * from "./ui";
-export * from "./visitor";
 export * from "./validation";

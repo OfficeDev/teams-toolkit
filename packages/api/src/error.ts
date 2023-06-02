@@ -201,117 +201,14 @@ export function assembleError(e: any, source?: string): FxError {
   if (!source) source = "unknown";
   const type = typeof e;
   if (type === "string") {
-    return new UnknownError(source, e as string);
+    return new SystemError({ name: "UnhandledError", message: e as string, source: source });
   } else if (e instanceof Error) {
     const err = e as Error;
-    const fxError = new SystemError({ error: err, source });
+    const fxError = new SystemError({ name: "UnhandledError", error: err, source: source });
     fxError.stack = err.stack;
     return fxError;
   } else {
-    return new UnknownError(source, JSON.stringify(e));
-  }
-}
-
-export class UnknownError extends SystemError {
-  constructor(source?: string, message?: string) {
-    super({ source: source || "API", message: message });
-  }
-}
-
-export const UserCancelError: UserError = new UserError("UI", "UserCancel", "User canceled.");
-
-export class EmptyOptionError extends SystemError {
-  constructor(source?: string) {
-    super({ source: source || "API" });
-  }
-}
-
-export class PathAlreadyExistsError extends UserError {
-  constructor(source: string, path: string) {
-    super({ source: source, message: `Path ${path} already exists.` });
-  }
-}
-
-export class ObjectAlreadyExistsError extends UserError {
-  constructor(source: string, name: string) {
-    super({ source: source, message: `${name} already exists.` });
-  }
-}
-
-export class ObjectNotExistError extends UserError {
-  constructor(source: string, name: string) {
-    super({ source: source, message: `${name} does not exist.` });
-  }
-}
-
-export class UndefinedError extends SystemError {
-  constructor(source: string, name: string) {
-    super({ source: source, message: `${name} is undefined, which is not expected` });
-  }
-}
-
-export class NotImplementedError extends SystemError {
-  constructor(source: string, method: string) {
-    super({ source: source, message: `Method not implemented:${method}` });
-  }
-}
-
-export class WriteFileError extends SystemError {
-  constructor(source: string, e: Error) {
-    super({ source: source, error: e, name: "WriteFileError" });
-  }
-}
-
-export class ReadFileError extends SystemError {
-  constructor(source: string, e: Error) {
-    super({ source: source, error: e, name: "ReadFileError" });
-  }
-}
-
-export class NoProjectOpenedError extends UserError {
-  constructor(source: string) {
-    super({
-      source: source,
-      message: "No project opened, you can create a new project or open an existing one.",
-    });
-  }
-}
-
-export class ConcurrentError extends UserError {
-  constructor(source: string) {
-    super({
-      source: source,
-      message:
-        "Previous task is still running. Please wait util your previous task to finish and try again.",
-    });
-  }
-}
-
-export class InvalidInputError extends UserError {
-  constructor(source: string, name: string, reason?: string) {
-    super({ source: source, message: `Input '${name}' is invalid: ${reason}` });
-  }
-}
-
-export class InvalidProjectError extends UserError {
-  constructor(source: string, msg?: string) {
-    super({
-      source: source,
-      message: `The command only works for project created by Teams Toolkit. ${
-        msg ? ": " + msg : ""
-      }`,
-    });
-  }
-}
-
-export class InvalidObjectError extends UserError {
-  constructor(source: string, name: string, reason?: string) {
-    super({ source: source, message: `${name} is invalid: ${reason}` });
-  }
-}
-
-export class InvalidOperationError extends UserError {
-  constructor(source: string, name: string, reason?: string) {
-    super({ source: source, message: `Invalid operation: ${name} ${reason}` });
+    const message = JSON.stringify(e, Object.getOwnPropertyNames(e));
+    return new SystemError({ name: "UnhandledError", message: message, source: source });
   }
 }

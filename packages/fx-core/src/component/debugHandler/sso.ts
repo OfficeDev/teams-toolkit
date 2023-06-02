@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import {
   AppPackageFolderName,
-  assembleError,
   BuildFolderName,
   ConfigMap,
   CryptoProvider,
@@ -31,7 +30,6 @@ import {
 
 import { ProjectSettingsHelper } from "../../common/local/projectSettingsHelper";
 import { hasSQL } from "../../common/projectSettingsHelperV3";
-import { TelemetryEvent } from "../../common/telemetry";
 import { getAllowedAppIds, objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
@@ -48,6 +46,7 @@ import { AadAppClient } from "../resource/aadApp/aadAppClient";
 import { TokenProvider } from "../resource/aadApp/utils/tokenProvider";
 import { Constants } from "../resource/aadApp/constants";
 import { checkM365Tenant } from "./utils";
+import { assembleError } from "../../error/common";
 
 const ssoDebugMessages = {
   registeringAAD: "Registering an AAD app for SSO ...",

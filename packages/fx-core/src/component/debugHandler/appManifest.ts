@@ -8,7 +8,6 @@ import * as path from "path";
 import * as util from "util";
 
 import {
-  assembleError,
   CryptoProvider,
   err,
   FxError,
@@ -43,7 +42,7 @@ import {
 } from "./error";
 import { checkM365Tenant } from "./utils";
 import { v4 } from "uuid";
-import { FileNotFoundError } from "../../error/common";
+import { assembleError, FileNotFoundError } from "../../error/common";
 
 const appManifestDebugMessages = {
   buildingAndSavingAppManifest:

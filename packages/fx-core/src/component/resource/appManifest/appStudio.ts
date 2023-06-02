@@ -17,7 +17,6 @@ import {
   ProjectSettingsV3,
   ProjectSettings,
   UserError,
-  UserCancelError,
   SystemError,
   LogProvider,
   Platform,
@@ -53,7 +52,7 @@ import set from "lodash/set";
 import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
 import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
-import { FileNotFoundError } from "../../../error/common";
+import { FileNotFoundError, UserCancelError } from "../../../error/common";
 
 /**
  * Create Teams app if not exists
@@ -393,7 +392,7 @@ export async function updateManifestV3(
     } else if (res?.isOk() && res.value === previewUpdate) {
       await buildDriver.run(createAppPackageArgs, driverContext);
     } else {
-      return err(UserCancelError);
+      return err(new UserCancelError("appStudio"));
     }
   }
 
@@ -419,7 +418,7 @@ export async function updateManifestV3(
           option
         );
         if (!(res?.isOk() && res.value === option)) {
-          return err(UserCancelError);
+          return err(new UserCancelError("appStudio"));
         }
       }
     }

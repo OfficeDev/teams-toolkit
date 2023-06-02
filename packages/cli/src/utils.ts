@@ -13,7 +13,6 @@ import {
   Result,
   SingleSelectQuestion,
   err,
-  getSingleOption,
   ok,
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -26,6 +25,7 @@ import { Options } from "yargs";
 import { FeatureFlags, teamsAppFileName } from "./constants";
 import { ConfigNotFoundError, ReadFileError } from "./error";
 import CLIUIInstance from "./userInteraction";
+import { getSingleOption } from "@microsoft/teamsfx-core";
 
 export type Json = { [_: string]: any };
 

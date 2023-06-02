@@ -373,11 +373,6 @@ export interface Component extends Json {
 }
 
 // @public (undocumented)
-export class ConcurrentError extends UserError {
-    constructor(source: string);
-}
-
-// @public (undocumented)
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
@@ -551,11 +546,6 @@ export const DynamicPlatforms: Platform[];
 
 // @public (undocumented)
 export type Effect = string | FileEffect | CallServiceEffect | Bicep | ShellAction;
-
-// @public (undocumented)
-export class EmptyOptionError extends SystemError {
-    constructor(source?: string);
-}
 
 // @public
 export interface EnvConfig {
@@ -820,12 +810,6 @@ class FxSuccess<T> {
     output: T;
 }
 
-// @public (undocumented)
-export function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown>;
-
-// @public (undocumented)
-export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, option?: StaticOptions): any;
-
 // @public
 export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
 
@@ -914,34 +898,11 @@ export interface InputTextConfig extends UIConfig<string> {
 export type InputTextResult = InputResult<string>;
 
 // @public (undocumented)
-export class InvalidInputError extends UserError {
-    constructor(source: string, name: string, reason?: string);
-}
-
-// @public (undocumented)
-export class InvalidObjectError extends UserError {
-    constructor(source: string, name: string, reason?: string);
-}
-
-// @public (undocumented)
-export class InvalidOperationError extends UserError {
-    constructor(source: string, name: string, reason?: string);
-}
-
-// @public (undocumented)
-export class InvalidProjectError extends UserError {
-    constructor(source: string, msg?: string);
-}
-
-// @public (undocumented)
 export interface IProgressHandler {
     end: (success: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
 }
-
-// @public (undocumented)
-export function isAutoSkipSelect(q: Question): boolean;
 
 // @public (undocumented)
 interface ISolution {
@@ -972,12 +933,6 @@ interface ISolution {
 
 // @public (undocumented)
 export type Json = Record<string, any>;
-
-// @public (undocumented)
-export function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
-    autoSkip: boolean;
-    options?: StaticOptions;
-}, FxError>>;
 
 // @public (undocumented)
 export const LocalEnvironmentName = "local";
@@ -1124,26 +1079,6 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
-export class NoProjectOpenedError extends UserError {
-    constructor(source: string);
-}
-
-// @public (undocumented)
-export class NotImplementedError extends SystemError {
-    constructor(source: string, method: string);
-}
-
-// @public (undocumented)
-export class ObjectAlreadyExistsError extends UserError {
-    constructor(source: string, name: string);
-}
-
-// @public (undocumented)
-export class ObjectNotExistError extends UserError {
-    constructor(source: string, name: string);
-}
-
-// @public (undocumented)
 export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
 
 // @public
@@ -1160,11 +1095,6 @@ export interface OptionItem {
     groupName?: string;
     id: string;
     label: string;
-}
-
-// @public (undocumented)
-export class PathAlreadyExistsError extends UserError {
-    constructor(source: string, path: string);
 }
 
 // @public
@@ -1290,11 +1220,6 @@ export class QTreeNode {
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
-
-// @public (undocumented)
-export class ReadFileError extends SystemError {
-    constructor(source: string, e: Error);
-}
 
 // @public (undocumented)
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
@@ -1709,9 +1634,6 @@ export interface Tools {
 }
 
 // @public (undocumented)
-export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter, visitor?: (question: Question, ui: UserInteraction, inputs: Inputs, step?: number | undefined, totalSteps?: number | undefined) => Promise<Result<InputResult<any>, FxError>>): Promise<Result<Void, FxError>>;
-
-// @public (undocumented)
 export enum TreeCategory {
     // (undocumented)
     Account = 1,
@@ -1782,19 +1704,6 @@ export interface UIConfig<T> {
     totalSteps?: number;
     validation?: (input: T) => string | undefined | Promise<string | undefined>;
 }
-
-// @public (undocumented)
-export class UndefinedError extends SystemError {
-    constructor(source: string, name: string);
-}
-
-// @public (undocumented)
-export class UnknownError extends SystemError {
-    constructor(source?: string, message?: string);
-}
-
-// @public (undocumented)
-export const UserCancelError: UserError;
 
 // @public
 export class UserError extends Error implements FxError {
@@ -1931,11 +1840,6 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
-}
-
-// @public (undocumented)
-export class WriteFileError extends SystemError {
-    constructor(source: string, e: Error);
 }
 
 

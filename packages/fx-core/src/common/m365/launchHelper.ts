@@ -9,6 +9,7 @@ import { Hub } from "./constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
+import { assembleError } from "../../error/common";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -87,9 +88,6 @@ export class LaunchHelper {
       }
       return ok(m365AppId);
     } catch (error) {
-      if ((error as FxError).innerError?.response.status === 404) {
-        return err(new NotExtendedToM365Error(CoreSource));
-      }
       return err(assembleError(error));
     }
   }

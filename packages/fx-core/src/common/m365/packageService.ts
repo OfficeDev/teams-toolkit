@@ -5,10 +5,12 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { assembleError, LogProvider } from "@microsoft/teamsfx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
 import { CoreSource } from "../../core/error";
+import { NotExtendedToM365Error } from "./errors";
+import { assembleError } from "../../error/common";
 
 // Call m365 service for package CRUD
 export class PackageService {
@@ -150,14 +152,11 @@ export class PackageService {
       return launchInfo.data;
     } catch (error: any) {
       this.logger?.error("Get LaunchInfo failed.");
-
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
-      } else {
-        this.logger?.error(error.message);
+        if (error.response.status === 404) {
+          throw new NotExtendedToM365Error(CoreSource);
+        }
       }
-
       throw assembleError(error, CoreSource);
     }
   }

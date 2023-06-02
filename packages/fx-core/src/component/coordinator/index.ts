@@ -61,7 +61,7 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
   TabOptionItem,
-  TabSPFxNewUIItem,
+  TabSPFxItem,
   WorkflowOptionItem,
 } from "../constants";
 import { deployUtils } from "../deployUtils";
@@ -218,7 +218,7 @@ export class Coordinator {
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
 
-      if (feature === TabSPFxNewUIItem().id) {
+      if (feature === TabSPFxItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
       } else if (

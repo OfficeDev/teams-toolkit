@@ -259,8 +259,6 @@ export const PathConstants = {
   dotnetWorkingDir: ".",
   npmPackageFolder: "node_modules",
   nodePackageFile: "package.json",
-  functionExtensionsFolder: "bin",
-  functionExtensionsFile: "extensions.csproj",
   deploymentInfoFolder: ".deployment",
   deploymentInfoFile: "deployment.json",
   nodeArtifactFolder: "build",
@@ -332,14 +330,10 @@ export enum SolutionError {
   MissingPermissionsJson = "MissingPermissionsJson",
   NoAppStudioToken = "NoAppStudioToken",
   NoUserName = "NoUserName",
-  ResourceGroupNotFound = "ResourceGroupNotFound",
   SubscriptionNotFound = "SubscriptionNotFound",
   CannotLocalDebugInDifferentTenant = "CannotLocalDebugInDifferentTenant",
   NoSubscriptionSelected = "NoSubscriptionSelected",
   InvalidInput = "InvalidInput",
-  FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
-  FailedToPollArmDeploymentStatus = "FailedToPollArmDeploymentStatus",
-  FailedToValidateArmTemplates = "FailedToValidateArmTemplates",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
   EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
@@ -348,7 +342,6 @@ export enum SolutionError {
   SsoEnabled = "SsoEnabled",
   InvalidProjectPath = "InvalidProjectPath",
   FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
-  FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
   FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
   InvalidManifestError = "InvalidManifestError",
   FailedToLoadManifestFile = "FailedToLoadManifestFile",
@@ -362,6 +355,10 @@ export const AzureRoleAssignmentsHelpLink =
 export const SharePointManageSiteAdminHelpLink =
   "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
 export const ViewAadAppHelpLinkV5 = "https://aka.ms/teamsfx-view-aad-app-v5";
+export const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
+
+// This is the max length specified in
+// https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 
 export enum SolutionTelemetryEvent {
   ArmDeploymentStart = "deploy-armtemplate-start",
@@ -443,24 +440,6 @@ export function TabOptionItem(): OptionItem {
   };
 }
 
-export function TabNewUIOptionItem(): OptionItem {
-  return {
-    id: "Tab",
-    label: `$(browser) ${getLocalizedString("core.TabOption.labelNew")}`,
-    cliName: "tab",
-    detail: getLocalizedString("core.TabOption.detailNew"),
-    groupName: getLocalizedString("core.options.separator.scenario"),
-    data: "https://aka.ms/teamsfx-tab-with-sso",
-    buttons: [
-      {
-        iconPath: "file-symlink-file",
-        tooltip: getLocalizedString("core.option.github"),
-        command: "fx-extension.openTutorial",
-      },
-    ],
-  };
-}
-
 export function DashboardOptionItem(): OptionItem {
   return {
     id: "dashboard-tab",
@@ -482,16 +461,6 @@ export function DashboardOptionItem(): OptionItem {
 }
 
 export function BotOptionItem(): OptionItem {
-  return {
-    id: "Bot",
-    label: "Bot",
-    cliName: "bot",
-    description: getLocalizedString("core.BotOption.description"),
-    detail: getLocalizedString("core.BotOption.detail"),
-  };
-}
-
-export function BotNewUIOptionItem(): OptionItem {
   return {
     id: "Bot",
     label: `${getLocalizedString("core.BotNewUIOption.label")}`,
@@ -575,22 +544,12 @@ export function MessageExtensionNewUIItem(): OptionItem {
 export function TabSPFxItem(): OptionItem {
   return {
     id: "TabSPFx",
-    label: getLocalizedString("core.TabSPFxOption.label"),
+    label: getLocalizedString("core.TabSPFxOption.labelNew"),
     cliName: "tab-spfx",
-    description: getLocalizedString("core.TabSPFxOption.description"),
-    detail: getLocalizedString("core.TabSPFxOption.detail"),
-  };
-}
-
-export function TabSPFxNewUIItem(): OptionItem {
-  return {
-    id: "TabSPFx",
-    label: `${getLocalizedString("core.TabSPFxOption.labelNew")}`,
-    cliName: "tab-spfx",
-    detail: getLocalizedString("core.TabSPFxOption.detailNew"),
     description: getLocalizedString(
       "core.createProjectQuestion.option.description.worksInOutlookM365"
     ),
+    detail: getLocalizedString("core.TabSPFxOption.detailNew"),
   };
 }
 

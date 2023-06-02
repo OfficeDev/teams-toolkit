@@ -19,6 +19,7 @@ import {
   deleteResourceGroupByName,
   customizeBicepFilesToCustomizedRg,
   readContextMultiEnvV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
@@ -40,7 +41,7 @@ describe("Deploy to customized resource group", function () {
 
   it(
     `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
-    { testPlanCaseId: 9863660 },
+    { testPlanCaseId: 17449539 },
     async function () {
       if (isV3Enabled()) {
         // Create new tab project
@@ -49,6 +50,9 @@ describe("Deploy to customized resource group", function () {
           testFolder,
           Capability.M365SsoLaunchPage
         );
+
+        // remove teamsApp/extendToM365 in case it fails
+        removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
         // Create empty resource group
         const customizedRgName = `${appName}-customized-rg`;

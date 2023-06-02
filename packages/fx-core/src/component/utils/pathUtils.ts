@@ -1,16 +1,9 @@
-import {
-  err,
-  FxError,
-  InvalidInputError,
-  ok,
-  Result,
-  SettingsFolderName,
-} from "@microsoft/teamsfx-api";
-import * as path from "path";
+import { err, FxError, InvalidInputError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { yamlParser } from "../configManager/parser";
+import * as path from "path";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { MissingRequiredFileError } from "../../error/common";
+import { yamlParser } from "../configManager/parser";
 
 export const YmlFileNameOld = "app.yml";
 export const LocalYmlFileNameOld = "app.local.yml";

@@ -52,7 +52,7 @@ describe("Debug V3 command-and-response template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17469675 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 15685858 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }

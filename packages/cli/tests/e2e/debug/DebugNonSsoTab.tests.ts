@@ -21,7 +21,8 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { deleteAadAppByObjectId, deleteTeamsApp, getTeamsApp } from "./utility";
+import { deleteTeamsApp, getTeamsApp } from "./utility";
+import { removeTeamsAppExtendToM365 } from "../commonUtils";
 
 describe("Debug V3 tab-non-sso template", () => {
   const testFolder = getTestFolder();
@@ -41,7 +42,7 @@ describe("Debug V3 tab-non-sso template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449525 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 9426074 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }
@@ -49,6 +50,9 @@ describe("Debug V3 tab-non-sso template", () => {
     // create
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso);
     console.log(`[Successfully] scaffold to ${projectPath}`);
+
+    // remove teamsApp/extendToM365 in case it fails
+    removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.local.yml"));
 
     // provision
     await CliHelper.provisionProject(projectPath, "", "local");

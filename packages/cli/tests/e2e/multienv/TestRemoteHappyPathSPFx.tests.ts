@@ -18,6 +18,7 @@ import {
   getUniqueAppName,
   mockTeamsfxMultiEnvFeatureFlag,
   readContextMultiEnvV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
@@ -36,7 +37,7 @@ describe("Multi Env Happy Path for SPFx", function () {
 
   it(
     "Can create/provision/deploy/validate/package/publish an SPFx project",
-    { testPlanCaseId: 15687128 },
+    { testPlanCaseId: 24137702 },
     async function () {
       if (!isV3Enabled()) {
         return this.skip();
@@ -97,6 +98,9 @@ describe("Multi Env Happy Path for SPFx", function () {
       console.log(
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
+
+      // remove teamsApp/extendToM365 in case it fails
+      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
       // provision
       result = await execAsyncWithRetry(`teamsfx provision --env ${env}`, {

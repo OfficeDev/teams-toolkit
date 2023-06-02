@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      PREID: ${{ github.event.inputs.preid }}
     steps:
       - name: Validate CD branch
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' }}
@@ -114,15 +115,10 @@ jobs:
         run: |
           echo "CHANGED=$(git tag --points-at HEAD | xargs)" >> $GITHUB_OUTPUT
           echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_OUTPUT
-          echo "EXTENSION_VERSION_NUM=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)" >> $GITHUB_OUTPUT
           echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT
-          echo "SERVER_VERSION_NUM=$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)" >> $GITHUB_OUTPUT
-          echo "SERVER_VERSION=$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)" >> $GITHUB_OUTPUT
-          echo "SIMPLEAUTH_VERSION=$(git tag --points-at HEAD | grep simpleauth)" >> $GITHUB_OUTPUT
-          echo "SIMPLEAUTH_VERSION_NUM=$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)" >> $GITHUB_OUTPUT
           if git tag --points-at HEAD | grep templates | grep rc;
           then
-              git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
+              git push -d origin $TEMPLATE_VERSION
           fi
 
       - name: generate templates v3
@@ -271,7 +267,7 @@ jobs:
             npm run package
 
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid != 'beta' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
@@ -283,7 +279,11 @@ jobs:
             sleep 20
             cd ./packages/vscode-extension
             npm install --only=production
-            npx vsce package
+            if [ "$PREID" == "beta" ]
+              npx vsce package --pre-release
+            else
+              npx vsce package
+            fi
 
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -294,42 +294,6 @@ jobs:
           artifacts: ./packages/**/*.vsix
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
-
-      - name: Calculate beta version number
-        id: beta-version
-        working-directory: packages/vscode-extension
-        run: |
-          DATE_WITH_TIME=`date "+%Y%m%d%H"`
-          PRERELEASE_VERSION=$(jq -r .version package.json | cut -c1-3)
-          TTK_VERSION=$PRERELEASE_VERSION.$DATE_WITH_TIME
-          echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
-          echo $TTK_VERSION
-
-      - name: set vsc version for beta
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'beta' }}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/vscode-extension/package.json
-          field: version
-          value: ${{ steps.beta-version.outputs.version }}
-
-      - name: pack vsix for beta
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'beta' }}
-        env:
-          RELEASE: preview
-          NODE_OPTIONS: "--max_old_space_size=4096"
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            sleep 20
-            cd ./packages/vscode-extension
-            touch test.vsix
-            rm *.vsix
-            npm install --only=production
-            npx vsce package --pre-release ${{ steps.beta-version.outputs.version }}
 
       - name: save release info
         run: |

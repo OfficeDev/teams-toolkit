@@ -4,7 +4,6 @@
 import * as path from "path";
 import { TemplateType } from "../constant";
 import { deploymentOutput, templateArgs } from "../interface";
-import { getLocalizedString } from "../../../../common/localizeUtils";
 import { ConvertArmOutputError } from "../../../../error/arm";
 
 export function hasBicepTemplate(args: templateArgs[]): boolean {

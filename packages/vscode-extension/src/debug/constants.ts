@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import * as util from "util";
 
-import { defaultHelpLink } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { TaskLabel } from "@microsoft/teamsfx-core/build/common/local";
 import { ExtensionErrors } from "../error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
@@ -66,18 +65,6 @@ export enum Host {
   office = "www.office.com",
 }
 
-export class LaunchUrl {
-  public static readonly teams: string =
-    "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";
-  public static readonly outlookTab: string =
-    "https://outlook.office.com/host/${teamsAppInternalId}?${account-hint}";
-  public static readonly outlookBot: string = "https://outlook.office.com/mail?${account-hint}";
-  public static readonly officeTab: string =
-    "https://www.office.com/m365apps/${teamsAppInternalId}?auth=2&${account-hint}";
-}
-
-export const teamsAppIdPlaceholder = "${teamsAppId}";
-export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
 export const openOutputMessage = () =>
@@ -185,26 +172,6 @@ export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
     `Finished 'Validate prerequisites' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
-export const npmInstallDisplayMessages: DisplayMessages = {
-  taskName: TaskLabel.InstallNpmPackages,
-  title: "Running 'Install npm packages' Visual Studio Code task.",
-  checkNumber: (n: number) =>
-    `${stepPrefix(
-      n
-    )} Teams Toolkit is checking if all the npm packages are installed and will install them if not. It may take several minutes for the first time execution, you can check the TERMINAL window for progress and details.`,
-  summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about 'Install npm packages' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task",
-  errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
-  errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
-  errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
-  showDetailMessage: openTerminalMessage,
-  showDetailDisplayMessage: openTerminalDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-npm-package-task",
-  durationMessage: (duration: number) =>
-    `Finished 'Install npm packages' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
-};
-
 export const baseTunnelDisplayMessages = Object.freeze({
   taskName: TaskLabel.StartLocalTunnel,
   title: () => localize("teamstoolkit.localDebug.output.tunnel.title"),
@@ -299,78 +266,6 @@ export const ngrokTunnelDisplayMessages = Object.freeze(
     baseTunnelDisplayMessages
   )
 );
-
-export const setUpTabDisplayMessages: DisplayMessages = {
-  taskName: TaskLabel.SetUpTab,
-  title: "Running 'Set up tab' Visual Studio Code task.",
-  checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up tab for debugging.`,
-  summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about 'Set up tab' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab-task",
-  errorName: ExtensionErrors.SetUpTabError,
-  errorMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
-  errorDisplayMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
-  showDetailMessage: openOutputMessage,
-  showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab-task",
-  durationMessage: (duration: number) =>
-    `Finished 'Set up tab' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
-};
-
-export const setUpBotDisplayMessages: DisplayMessages = {
-  taskName: TaskLabel.SetUpBot,
-  title: "Running 'Set up bot' Visual Studio Code task.",
-  checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up bot for debugging.`,
-  summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about 'Set up bot' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-bot-task",
-  errorName: ExtensionErrors.SetUpBotError,
-  errorMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
-  errorDisplayMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
-  showDetailMessage: openOutputMessage,
-  showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-bot-task",
-  durationMessage: (duration: number) =>
-    `Finished 'Set up bot' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
-};
-
-export const setUpSSODisplayMessages: DisplayMessages = {
-  taskName: TaskLabel.SetUpSSO,
-  title: "Running 'Set up SSO' Visual Studio Code task.",
-  checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up SSO for debugging.`,
-  summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about 'Set up SSO' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-sso-task",
-  errorName: ExtensionErrors.SetUpSSOError,
-  errorMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
-  errorDisplayMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
-  showDetailMessage: openOutputMessage,
-  showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-sso-task",
-  durationMessage: (duration: number) =>
-    `Finished 'Set up SSO' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
-};
-
-export const prepareManifestDisplayMessages: DisplayMessages = {
-  taskName: TaskLabel.PrepareManifest,
-  title: "Running 'Build and upload Teams manifest' Visual Studio Code task.",
-  checkNumber: (n: number) =>
-    `${stepPrefix(n)} Teams Toolkit is building and uploading Teams manifest for debugging.`,
-  summary: "Summary:",
-  learnMore: (link: string) =>
-    `Visit ${link} to learn more about 'Build and upload Teams manifest' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest-task",
-  errorName: ExtensionErrors.PrepareManifestError,
-  errorMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
-  errorDisplayMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
-  showDetailMessage: openOutputMessage,
-  showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest-task",
-  durationMessage: (duration: number) =>
-    `Finished 'Build and upload Teams manifest' Visual Studio Code task in ${duration.toFixed(
-      2
-    )} seconds.`,
-};
 
 export const sideloadingDisplayMessages = Object.freeze({
   title: (hub: Hub) => `Launching ${hub} web client.`,

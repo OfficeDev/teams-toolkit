@@ -18,8 +18,6 @@ import {
   ok,
   Platform,
   Result,
-  SingleSelectConfig,
-  Stage,
   SystemError,
   UserCancelError,
   UserError,
@@ -40,6 +38,7 @@ import {
   SolutionSource,
   TabNonSsoItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../../src/component/constants";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
@@ -51,6 +50,7 @@ import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/vali
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { Generator } from "../../src/component/generator/generator";
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
+import { SPFxGenerator } from "../../src/component/generator/spfx/spfxGenerator";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
@@ -61,6 +61,7 @@ import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
+import * as coll from "../../src/core/collaborator";
 import {
   checkPermissionFunc,
   FxCore,
@@ -94,7 +95,6 @@ import {
   randomAppName,
 } from "../core/utils";
 import { MockedUserInteraction } from "../plugins/solution/util";
-import * as coll from "../../src/core/collaborator";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -277,22 +277,21 @@ describe("component coordinator test", () => {
       assert.isTrue(res.error instanceof MissingRequiredInputError);
     }
   });
-
-  it("create project from VS", async () => {
-    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+  it("create SPFx project", async () => {
+    sandbox.stub(SPFxGenerator, "generate").resolves(ok(undefined));
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
-      platform: Platform.VS,
+      platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "csharp",
-      [CoreQuestionNames.SafeProjectName]: "safeprojectname",
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      ["spfx-framework-type"]: "none",
+      ["spfx-webpart-name"]: "test",
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);

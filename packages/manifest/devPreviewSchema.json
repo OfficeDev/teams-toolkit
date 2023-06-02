@@ -112,7 +112,8 @@
         }
       },
       "required": [
-        "short"
+        "short",
+        "full"
       ]
     },
     "description": {
@@ -181,7 +182,7 @@
             "items": {
               "enum": [
                 "team",
-                "groupchat"
+                "groupChat"
               ]
             }
           },
@@ -272,7 +273,7 @@
             "description": "The url which points to the entity UI to be displayed in the Teams canvas."
           },
           "contentBotId": {
-            "$ref": "#/definitions/botId",
+            "$ref": "#/definitions/guid",
             "description": "The Microsoft App ID specified for the bot in the Bot Framework portal (https://dev.botframework.com/bots)"
           },
           "websiteUrl": {
@@ -285,23 +286,30 @@
           },
           "scopes": {
             "type": "array",
-            "description": "Specifies whether the tab offers an experience in the context of a channel in a team, or an experience scoped to an individual user alone. These options are non-exclusive. Currently static tabs are only supported in the 'personal' scope.",
-            "maxItems": 2,
+            "description": "Specifies whether the tab offers an experience in the context of a channel in a team, or an experience scoped to an individual user alone or a group chat. These options are non-exclusive. Currently static tabs are only supported in the 'personal' scope.",
+            "maxItems": 3,
             "items": {
               "enum": [
                 "team",
-                "personal"
+                "personal",
+                "groupChat"
               ]
             }
           },
           "context": {
             "type": "array",
             "description": "The set of contextItem scopes that a tab belong to",
-            "maxItems": 2,
+            "maxItems": 8,
             "items": {
               "enum": [
                 "personalTab",
-                "channelTab"
+                "channelTab",
+                "privateChatTab",
+                "meetingChatTab",
+                "meetingDetailsTab",
+                "meetingSidePanel",
+                "meetingStage",
+                "teamLevelApp"
               ]
             }
           },
@@ -333,8 +341,117 @@
         "additionalProperties": false,
         "properties": {
           "botId": {
-            "$ref": "#/definitions/botId",
+            "$ref": "#/definitions/guid",
             "description": "The Microsoft App ID specified for the bot in the Bot Framework portal (https://dev.botframework.com/bots)"
+          },
+          "configuration": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "team": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "parameters": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Name of the parameter.",
+                          "maxLength": 64
+                        },
+                        "inputType": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "textarea",
+                            "number",
+                            "date",
+                            "time",
+                            "toggle",
+                            "choiceset"
+                          ],
+                          "description": "Type of the parameter",
+                          "default": "text"
+                        },
+                        "title": {
+                          "type": "string",
+                          "description": "Title of the parameter.",
+                          "maxLength": 32
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description of the parameter.",
+                          "maxLength": 128
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Initial value for the parameter",
+                          "maxLength": 512
+                        },
+                        "choices": {
+                          "type": "array",
+                          "maxItems": 10,
+                          "description": "The choice options for the parameter",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string",
+                                "description": "Title of the choice",
+                                "maxLength": 128
+                              },
+                              "value": {
+                                "type": "string",
+                                "description": "Value of the choice",
+                                "maxLength": 512
+                              }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                              "title",
+                              "value"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "title"
+                      ]
+                    }
+                  },
+                  "taskInfo": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "description": "Task module title",
+                        "maxLength": 64
+                      },
+                      "width": {
+                        "$ref": "#/definitions/taskInfoDimension",
+                        "description": "Task module width - either a number in pixels or default layout such as 'large', 'medium', or 'small'"
+                      },
+                      "height": {
+                        "$ref": "#/definitions/taskInfoDimension",
+                        "description": "Task module height - either a number in pixels or default layout such as 'large', 'medium', or 'small'"
+                      },
+                      "url": {
+                        "$ref": "#/definitions/httpsUrl",
+                        "description": "Task module URL"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "needsChannelSelector": {
             "type": "boolean",
@@ -344,6 +461,11 @@
           "isNotificationOnly": {
             "type": "boolean",
             "description": "A value indicating whether or not the bot is a one-way notification only bot, as opposed to a conversational bot.",
+            "default": false
+          },
+          "requiresSecurityEnabledGroup": {
+            "type": "boolean",
+            "description": "A value indicating whether the team's Office group needs to be security enabled.",
             "default": false
           },
           "supportsFiles": {
@@ -369,7 +491,7 @@
               "enum": [
                 "team",
                 "personal",
-                "groupchat"
+                "groupChat"
               ]
             }
           },
@@ -389,7 +511,7 @@
                     "enum": [
                       "team",
                       "personal",
-                      "groupchat"
+                      "groupChat"
                     ]
                   }
                 },
@@ -487,7 +609,7 @@
         "additionalProperties": false,
         "properties": {
           "botId": {
-            "$ref": "#/definitions/botId",
+            "$ref": "#/definitions/guid",
             "description": "The Microsoft App ID specified for the bot powering the compose extension in the Bot Framework portal (https://dev.botframework.com/bots)"
           },
           "canUpdateConfiguration": {
@@ -680,6 +802,16 @@
                         "type": "string",
                         "maxLength": 2048
                       }
+                    },
+                    "supportsAnonymousAccess": {
+                      "type": "boolean",
+                      "description": "A boolean value that indicates whether the app's link message handler supports anonymous invoke flow. [Deprecated]. This property has been superceded by 'supportsAnonymizedPayloads'.",
+                      "default": false
+                    },
+                    "supportsAnonymizedPayloads": {
+                      "type": "boolean",
+                      "description": "A boolean value that indicates whether the app's link message handler supports anonymous invoke flow.",
+                      "default": false
                     }
                   }
                 }
@@ -698,8 +830,45 @@
         ]
       }
     },
-    "extensions": {
-        "$ref": "#/definitions/element-extensions"
+    "scopeConstraints": {
+      "type": "object",
+      "properties": {
+        "teams": {
+          "type": "array",
+          "description": "A list of team thread ids to which your app is restricted to",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Team's thread Id",
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [ "id" ],
+            "additionalProperties": false
+          }
+        },
+        "groupChats": {
+          "type": "array",
+          "description": "A list of chat thread ids to which your app is restricted to",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Chat's thread Id",
+                "type": "string",
+                "maxLength": 64
+              }
+            },
+            "required": [ "id" ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "permissions": {
       "type": "array",
@@ -808,6 +977,17 @@
       },
       "additionalProperties": false
     },
+    "supportedChannelTypes": {
+      "type": "array",
+      "description": "The set of supported channel type that an app belongs to",
+      "maxItems": 2,
+      "items": {
+        "enum": [
+          "sharedChannels",
+          "privateChannels"
+        ]
+      }
+    },
     "configurableProperties": {
       "type": "array",
       "description": "A list of tenant configured properties for an app",
@@ -840,7 +1020,7 @@
       "enum": [
         "personal",
         "team",
-        "groupchat",
+        "groupChat",
         "meetings"
       ],
       "description": "The install scope defined for this app by default. This will be the option displayed on the button when a user tries to add the app"
@@ -912,7 +1092,7 @@
               },
               "seatsReservedForOrganizersOrPresenters": {
                 "type": "integer",
-                "description": "Meeting scene's number of seats reserved for organizers or presenters.",
+                "description": "Number of seats reserved for organizers or presenters.",
                 "maximum": 50
               }
             },
@@ -922,35 +1102,46 @@
           "type": "array",
           "uniqueItems": true
         },
-        "filters": {
-          "description": "Meeting supported A/V filters.",
+        "videoFilters": {
+          "description": "Meeting supported video filters.",
           "items": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "id": {
                 "$ref": "#/definitions/guid",
-                "description": "A unique identifier for this A/V filter. This id must be a GUID."
+                "description": "A unique identifier for this video filter. This id must be a GUID."
               },
               "name": {
                 "type": "string",
-                "description": "A/V filter's name.",
+                "description": "Video filter's name.",
                 "maxLength": 128
               },
               "thumbnail": {
                 "$ref": "#/definitions/relativePath",
-                "description": "A relative file path to a A/V filter's thumbnail."
+                "description": "A relative file path to a video filter's thumbnail."
               }
             },
             "required": [ "id", "name", "thumbnail" ]
           },
-          "maxItems": 16,
+          "maxItems": 32,
           "type": "array",
           "uniqueItems": true
         },
-        "videoAppContentUrl": {
-          "$ref": "#/definitions/httpsUrl",
-          "description": "The url which indicates A/V filters' video app content."
+        "videoFiltersConfigurationUrl": {
+          "type": "string",
+          "description": "A URL for configuring the video filters.",
+          "maxLength": 2048
+        },
+        "supportsStreaming": {
+          "type": "boolean",
+          "description": "A boolean value indicating whether this app can stream the meeting's audio video content to an RTMP endpoint.",
+          "default": false
+        },
+        "supportsAnonymousGuestUsers": {
+          "type": "boolean",
+          "description": "A boolean value indicating whether this app supports access by anonymous guest users.",
+          "default": false
         }
       },
       "description": "Specify meeting extension definition.",
@@ -963,34 +1154,11 @@
       "properties": {
         "permissions": {
           "type": "object",
-          "description": "Specify Permissions which App lists for accessing Resource.",
+          "description": "List of permissions that the app needs to function.",
           "additionalProperties": false,
           "properties": {
-            "orgWide": {
-              "description": "App's organization wide classic permissions provided by user.",
-              "maxItems": 16,
-              "type": "array",
-              "uniqueItems": true,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "The Permission name of app's permission node.",
-                    "maxLength": 128
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [ "Application", "Delegated" ],
-                    "description": "The Permission type of app's permission node."
-                  }
-                },
-                "required": [ "name", "type" ]
-              }
-            },
             "resourceSpecific": {
-              "description": "App's resource specific permissions provided by user.",
+              "description": "Permissions that guard data access on a resource instance level.",
               "maxItems": 16,
               "type": "array",
               "uniqueItems": true,
@@ -1000,21 +1168,30 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "The Permission name of app's permission node.",
+                    "description": "The name of the resource-specific permission.",
                     "maxLength": 128
                   },
                   "type": {
                     "type": "string",
-                    "enum": [ "Application", "Delegated" ],
-                    "description": "The Permission type of app's permission node."
+                    "enum": [
+                      "Application",
+                      "Delegated"
+                    ],
+                    "description": "The type of the resource-specific permission."
                   }
                 },
-                "required": [ "name", "type" ]
+                "required": [
+                  "name",
+                  "type"
+                ]
               }
             }
           }
         }
       }
+    },
+    "extensions": {
+      "$ref": "#/definitions/elementExtensions"
     }
   },
   "required": [
@@ -1050,10 +1227,6 @@
       "type": "string",
       "pattern": "^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$"
     },
-    "botId": {
-      "type": "string",
-      "maxLength": 64
-    },
     "languageTag": {
       "type": "string",
       "pattern": "^[A-Za-z0-9]{1,8}(-[A-Za-z0-9]{1,8}){0,2}$"
@@ -1063,7 +1236,7 @@
       "pattern": "^((([0-9]*\\.)?[0-9]+)|[lL][aA][rR][gG][eE]|[mM][eE][dD][iI][uU][mM]|[sS][mM][aA][lL][lL])$",
       "maxLength": 16
     },
-    "element-extensions": {
+    "elementExtensions": {
       "type": "array",
       "description": "The set of extensions for this app. Currently only one extensions per app is supported.",
       "maxItems": 1,
@@ -1071,26 +1244,30 @@
         "type": "object",
         "properties": {
           "requirements": {
-            "$ref": "#/definitions/requirements-extension-element"
+            "$ref": "#/definitions/requirementsExtensionElement"
           },
           "runtimes": {
-            "$ref": "#/definitions/extension-runtimes-array"
+            "$ref": "#/definitions/extensionRuntimesArray"
           },
           "ribbons": {
-            "$ref": "#/definitions/extension-ribbons-array"
+            "$ref": "#/definitions/extensionRibbonsArray"
           },
           "autoRunEvents": {
-            "$ref": "#/definitions/extension-autoRunEvents-array"
+            "$ref": "#/definitions/extensionAutoRunEventsArray"
           },
           "alternates": {
-            "$ref": "#/definitions/extension-alternateVersions-array"
+            "$ref": "#/definitions/extensionAlternateVersionsArray"
+          },
+          "audienceClaimUrl": {
+            "$ref": "#/definitions/httpsUrl",
+            "description": "The url for your extension, used to validate Exchange user identity tokens."
           }
         },
         "additionalProperties": false
       },
       "additionalProperties": false
     },
-    "requirements-extension-element": {
+    "requirementsExtensionElement": {
       "type": "object",
       "properties": {
         "capabilities": {
@@ -1137,15 +1314,15 @@
       },
       "additionalProperties": false
     },
-    "extension-runtimes-array": {
+    "extensionRuntimesArray": {
       "type": "array",
-      "minitems": 1,
+      "minItems": 1,
       "items": {
         "type": "object",
         "description": "A runtime environment for a page or script",
         "properties": {
           "requirements": {
-            "$ref": "#/definitions/requirements-extension-element"
+            "$ref": "#/definitions/requirementsExtensionElement"
           },
           "id": {
             "type": "string",
@@ -1157,7 +1334,7 @@
             "enum": [
               "general"
             ],
-            "default" : "general",
+            "default": "general",
             "description": "Supports running functions and launching pages."
           },
           "code": {
@@ -1181,12 +1358,13 @@
             "type": "string",
             "default": "short",
             "enum": [
-              "short"
+              "short",
+              "long"
             ],
             "description": "Runtimes with a short lifetime do not preserve state across executions. Runtimes with a long lifetime do."
           },
           "actions": {
-            "$ref": "#/definitions/extension-runtimes-actions"
+            "$ref": "#/definitions/extensionRuntimesActions"
           }
         },
         "additionalProperties": false,
@@ -1196,25 +1374,14 @@
         ]
       }
     },
-
-    "extension-runtimes-actions": {
+    "extensionRuntimesActions": {
       "type": "array",
       "items": {
-        "oneOf": [
-          {
-            "$ref": "#/definitions/extension-runtimes-actions-executeFunction"
-          },
-          {
-            "$ref": "#/definitions/extension-runtimes-actions-openPage"
-          }
-        ]
+        "$ref": "#/definitions/extensionRuntimesActionsItem"
       },
-      "additionalProperties": false,
-      "required": [
-        "actions"
-      ]
+      "additionalProperties": false
     },
-    "extension-runtimes-actions-executeFunction": {
+    "extensionRuntimesActionsItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -1225,37 +1392,24 @@
         "type": {
           "type": "string",
           "enum": [
-            "executeFunction"
-          ],
-          "default": "executeFunction",
-          "description": "Run a script function without waiting for it to finish."
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "type"
-      ]
-    },
-    "extension-runtimes-actions-openPage": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Identifier for this action. Maximum length is 64 characters. ",
-          "maxLength": 64
-        },
-        "type": {
-          "type": "string",
-          "enum": [
+            "executeFunction",
             "openPage"
           ],
-          "default": "openPage",
-          "description": "Open a page in a view."
+          "description": "executeFunction: Run a script function without waiting for it to finish. openPate: Open a page in a view."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the action. Maximum length is 64 characters.",
+          "maxLength": 64
         },
         "pinnable": {
           "type": "boolean",
           "description": "Specifies that a task pane supports pinning, which keeps the task pane open when the user changes the selection."
+        },
+        "view": {
+          "type": "string",
+          "description": "View where the page should be opened. Maximum length is 64 characters.  ",
+          "maxLength": 64
         }
       },
       "additionalProperties": false,
@@ -1264,24 +1418,21 @@
         "type"
       ]
     },
-    "extension-ribbons-array": {
+    "extensionRibbonsArray": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "requirements": {
-            "$ref": "#/definitions/requirements-extension-element"
+            "$ref": "#/definitions/requirementsExtensionElement"
           },
           "contexts": {
-            "$ref": "#/definitions/extension-contexts"
+            "$ref": "#/definitions/extensionContexts"
           },
           "tabs": {
             "type": "array",
             "items": {
-              "oneOf": [
-                { "$ref": "#/definitions/extension-ribbons-customTab" },
-                { "$ref": "#/definitions/extension-ribbons-builtInTab" }
-              ]
+              "$ref": "#/definitions/extensionRibbonsArrayTabsItem"
             }
           }
         },
@@ -1291,7 +1442,7 @@
         ]
       }
     },
-    "extension-contexts": {
+    "extensionContexts": {
       "type": "array",
       "maxItems": 4,
       "items": {
@@ -1304,12 +1455,12 @@
         ]
       }
     },
-    "extension-ribbons-customTab": {
+    "extensionRibbonsArrayTabsItem": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "description": "A unique identifier for this tab within the app. Maximum length is 64 characters. ",          
+          "description": "A unique identifier for this tab within the app. Maximum length is 64 characters. ",
           "maxLength": 64
         },
         "label": {
@@ -1340,27 +1491,6 @@
             "align"
           ]
         },
-        "groups": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              { "$ref": "#/definitions/extension-common-customGroup" },
-              { "$ref": "#/definitions/extension-common-builtInGroup" }
-            ]
-          },
-          "minItems": 1
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "label",
-        "groups"
-      ]
-    },
-    "extension-ribbons-builtInTab": {
-      "type": "object",
-      "properties": {
         "builtInTabId": {
           "type": "string",
           "description": "Id of the existing office Tab. Maximum length is 64 characters.",
@@ -1369,16 +1499,34 @@
         "groups": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/extension-common-customGroup"
-          }
+            "$ref": "#/definitions/extensionRibbonsCustomTabGroupsItem"
+          },
+          "minItems": 1
         }
       },
-      "additionalProperties": false,
-      "required": [
-        "builtInTabId"
-      ]
+      "dependencies": {
+        "builtInTabId": {
+          "properties": {
+            "groups": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/extensionCommonCustomGroup"
+              }
+            }
+          },
+          "required": [ "builtInTabId" ]
+        },
+        "id": {
+          "required": [
+            "id",
+            "label",
+            "groups"
+          ]
+        }
+      },
+      "additionalProperties": false
     },
-    "extension-common-customGroup": {
+    "extensionRibbonsCustomTabGroupsItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -1394,50 +1542,61 @@
         "icons": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/extension-common-icon"
+            "$ref": "#/definitions/extensionCommonIcon"
           }
         },
         "controls": {
           "type": "array",
           "items": {
-            "oneOf": [
-              {
-                "$ref": "#/definitions/extension-common-custom-control-button"
-              },
-              {
-                "$ref": "#/definitions/extension-common-builtInControl-button"
-              },
-              {
-                "$ref": "#/definitions/extension-common-custom-control-menu"
-              }
-            ]
+            "$ref": "#/definitions/extensionCommonCustomGroupControlsItem"
           },
           "minItems": 1
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "label",
-        "controls"
-      ]
-    },
-    "extension-common-builtInGroup": {
-      "type": "object",
-      "properties": {
+        },
         "builtInGroupId": {
           "type": "string",
           "description": "Id of a built-in Group. Maximum length is 64 characters.",
           "maxLength": 64
         }
       },
-      "additionalProperties": false,
-      "required": [
-        "builtInGroupId"
-      ]
+      "additionalProperties": false
     },
-    "extension-common-custom-control-button": {
+    "extensionCommonCustomGroup": {
       "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "A unique identifier for this group within the app. Maximum length is 64 characters. ",
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "description": "Displayed text for the group. Maximum length is 64 characters.",
+          "maxLength": 64
+        },
+        "icons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extensionCommonIcon"
+          }
+        },
+        "controls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extensionCommonCustomGroupControlsItem"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "controls"
+      ],
+      "additionalProperties": false
+    },
+    "extensionCommonCustomGroupControlsItem": {
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "id": {
           "type": "string",
@@ -1447,8 +1606,14 @@
         "type": {
           "type": "string",
           "enum": [
-            "button"
+            "button",
+            "menu"
           ]
+        },
+        "builtInControlId": {
+          "type": "string",
+          "description": "Id of the existing office control. Maximum length is 64 characters.",
+          "maxLength": 64
         },
         "label": {
           "type": "string",
@@ -1458,11 +1623,11 @@
         "icons": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/extension-common-icon"
+            "$ref": "#/definitions/extensionCommonIcon"
           }
         },
         "supertip": {
-          "$ref": "#/definitions/extension-common-superToolTip"
+          "$ref": "#/definitions/extensionCommonSuperToolTip"
         },
         "actionId": {
           "type": "string",
@@ -1477,33 +1642,23 @@
           "type": "boolean",
           "description": "Whether the control is initially enabled.",
           "default": true
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/extensionCommonCustomControlMenuItem"
+          }
         }
       },
-      "additionalProperties": false,
       "required": [
         "id",
         "type",
         "label",
         "icons",
-        "supertip",
-        "actionId"
+        "supertip"
       ]
     },
-    "extension-common-builtInControl-button": {
-      "type": "object",
-      "properties": {
-        "builtInControlId": {
-          "type": "string",
-          "description": "Id of the existing office control. Maximum length is 64 characters.",
-          "maxLength": 64
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "builtInControlId"
-      ]
-    },
-    "extension-common-custom-control-menu": {
+    "extensionCommonCustomControlMenu": {
       "type": "object",
       "properties": {
         "id": {
@@ -1525,22 +1680,22 @@
         "icons": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/extension-common-icon"
+            "$ref": "#/definitions/extensionCommonIcon"
           }
         },
         "supertip": {
-          "$ref": "#/definitions/extension-common-superToolTip"
+          "$ref": "#/definitions/extensionCommonSuperToolTip"
         },
         "items": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/extension-common-custom-control-menuItem"
+            "$ref": "#/definitions/extensionCommonCustomControlMenuItem"
           }
         },
         "overriddenByRibbonApi": {
           "type": "boolean",
           "default": "false"
-        }    
+        }
       },
       "additionalProperties": false,
       "required": [
@@ -1552,7 +1707,7 @@
         "items"
       ]
     },
-    "extension-common-custom-control-menuItem": {
+    "extensionCommonCustomControlMenuItem": {
       "type": "object",
       "properties": {
         "id": {
@@ -1574,11 +1729,11 @@
         "icons": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/extension-common-icon"
+            "$ref": "#/definitions/extensionCommonIcon"
           }
         },
         "supertip": {
-          "$ref": "#/definitions/extension-common-superToolTip"
+          "$ref": "#/definitions/extensionCommonSuperToolTip"
         },
         "actionId": {
           "type": "string",
@@ -1604,7 +1759,7 @@
         "actionId"
       ]
     },
-    "extension-common-superToolTip": {
+    "extensionCommonSuperToolTip": {
       "type": "object",
       "properties": {
         "title": {
@@ -1624,32 +1779,35 @@
         "description"
       ]
     },
-    "extension-common-icon": {
+    "extensionCommonIcon": {
       "type": "object",
       "properties": {
         "size": {
           "type": "number",
           "description": "Size in pixels of the icon. Three image sizes are required (16, 32, and 80 pixels)",
-          "enum": [ 16, 20, 24, 32, 40, 48, 64, 80]
+          "enum": [ 16, 20, 24, 32, 40, 48, 64, 80 ]
+        },
+        "url": {
+          "$ref": "#/definitions/httpsUrl",
+          "description": "Url to the icon."
         },
         "file": {
           "$ref": "#/definitions/relativePath",
-          "description": "Relative path to the file that contains the icon."
+          "description": "Relative path to the file that contains the icon. This property is currently not supported as a relative path."
         }
       },
       "additionalProperties": false,
       "required": [
-        "size",
-        "file"
+        "size"
       ]
     },
-    "extension-autoRunEvents-array": {
+    "extensionAutoRunEventsArray": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "requirements": {
-            "$ref": "#/definitions/requirements-extension-element"
+            "$ref": "#/definitions/requirementsExtensionElement"
           },
           "events": {
             "type": "array",
@@ -1657,7 +1815,8 @@
               "type": "object",
               "properties": {
                 "type": {
-                  "$ref": "#/definitions/extension-autoRunEvents-types"
+                  "type": "string",
+                  "maxLength": 64
                 },
                 "actionId": {
                   "type": "string",
@@ -1665,7 +1824,21 @@
                   "maxLength": 64
                 },
                 "options": {
-                  "$ref": "#/definitions/extension-autoRunEvents-options"
+                  "type": "object",
+                  "properties": {
+                    "sendMode": {
+                      "type": "string",
+                      "enum": [
+                        "promptUser",
+                        "softBlock",
+                        "block"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "sendMode"
+                  ]
                 }
               },
               "additionalProperties": false,
@@ -1682,48 +1855,13 @@
         ]
       }
     },
-    "extension-autoRunEvents-types": {
-      "type": "string",
-      "enum": [
-        "newMessageComposeCreated",
-        "newAppointmentOrganizerCreated",
-        "messageAttachmentsChanged",
-        "appointmentAttachmentsChanged",
-        "messageRecipientsChanged",
-        "appointmentAttendeesChanged",
-        "appointmentTimeChanged",
-        "appointmentRecurrenceChanged",
-        "infoBarDismissClicked",
-        "messageSending",
-        "appointmentSending",
-        "documentNew",
-        "documentOpen"
-      ]
-    },
-    "extension-autoRunEvents-options": {
-      "type": "object",
-      "properties": {
-        "sendMode": {
-          "type": "string",
-          "enum": [
-            "promptUser",
-            "softBlock",
-            "block"
-          ]
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "sendMode"
-      ]
-    },
-    "extension-alternateVersions-array": {
+    "extensionAlternateVersionsArray": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "requirements": {
-            "$ref": "#/definitions/requirements-extension-element"
+            "$ref": "#/definitions/requirementsExtensionElement"
           },
           "prefer": {
             "properties": {

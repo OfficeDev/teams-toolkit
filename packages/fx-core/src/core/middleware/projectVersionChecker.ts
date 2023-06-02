@@ -1,23 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { CoreHookContext } from "../types";
-import { TOOLS } from "../globalVars";
-import { getLocalizedString } from "../../common/localizeUtils";
+import { err, FxError, Inputs, Platform } from "@microsoft/teamsfx-api";
 import semver from "semver";
-import { isV3Enabled } from "../../common/tools";
-import { getProjectVersion } from "./utils/v3MigrationUtils";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { MetadataV2, VersionInfo, VersionSource } from "../../common/versionMetadata";
-import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
-import {
-  sendTelemetryEvent,
-  Component,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "../../common/telemetry";
 import { IncompatibleProjectError } from "../error";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "../types";
+import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
+import { getProjectVersion } from "./utils/v3MigrationUtils";
 
 let userCancelFlag = false;
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -37,17 +30,8 @@ export const ProjectVersionCheckerMW: Middleware = async (
 };
 
 async function needToShowUpdateDialog(ctx: CoreHookContext, versionInfo: VersionInfo) {
-  if (isV3Enabled()) {
-    if (versionInfo.source === VersionSource.teamsapp && semver.gte(versionInfo.version, "2.0.0")) {
-      return true;
-    }
-  } else {
-    if (versionInfo.source !== VersionSource.projectSettings) {
-      sendTelemetryEvent(Component.core, TelemetryEvent.DisplayToolingUpdateNotification, {
-        [TelemetryProperty.ToolkitVersion]: "V2",
-      });
-      return true;
-    }
+  if (versionInfo.source === VersionSource.teamsapp && semver.gte(versionInfo.version, "2.0.0")) {
+    return true;
   }
   return false;
 }

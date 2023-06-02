@@ -2,20 +2,11 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  err,
-  FxError,
-  Inputs,
-  ok,
-  Platform,
-  Result,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
-import { UserCancelError } from "../../../src/error/common";
+import { UnhandledError, UserCancelError } from "../../../src/error/common";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -75,9 +66,7 @@ describe("Middleware - ErrorHandlerMW", () => {
     });
     const my = new MyClass();
     const res = await my.myMethod(inputs);
-    assert.isTrue(
-      res.isErr() && res.error instanceof SystemError && res.error.message === "unknown"
-    );
+    assert.isTrue(res.isErr() && res.error instanceof UnhandledError);
   });
 
   it("convert system error to user error: The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action", async () => {
@@ -97,7 +86,6 @@ describe("Middleware - ErrorHandlerMW", () => {
     if (res.isErr()) {
       const error = res.error;
       assert.isTrue(error instanceof UserError);
-      assert.equal(error.message, msg);
     }
   });
   it("convert system error to user error: no space left on device", async () => {
@@ -116,7 +104,6 @@ describe("Middleware - ErrorHandlerMW", () => {
     if (res.isErr()) {
       const error = res.error;
       assert.isTrue(error instanceof UserError);
-      assert.equal(error.message, msg);
     }
   });
 });

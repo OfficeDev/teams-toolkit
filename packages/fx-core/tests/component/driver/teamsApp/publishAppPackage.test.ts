@@ -19,6 +19,7 @@ import {
 import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
 import { Constants } from "./../../../../src/component/resource/appManifest/constants";
 import { PublishingState } from "../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
+import { UserCancelError } from "../../../../src/error/common";
 
 describe("teamsApp/publishAppPackage", async () => {
   const teamsAppDriver = new PublishAppPackageDriver();
@@ -108,7 +109,7 @@ describe("teamsApp/publishAppPackage", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(result.error.name, "UserCancelError");
+      chai.assert.isTrue(result.error instanceof UserCancelError);
     }
   });
 

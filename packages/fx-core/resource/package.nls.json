@@ -107,7 +107,6 @@
   "plugins.frontend.checkFsPermissionsTip": "Check if you have Read/Write permissions to your file system.",
   "plugins.frontend.checkStoragePermissionsTip": "Check if you have permissions to your Azure Storage Account.",
   "plugins.frontend.checkSystemTimeTip": "You may get expired credentials, check if your system time is correct.",
-  "plugins.baseErrorMessage": "%s Suggestions: %s",
   "suggestions.retryTheCurrentStep": "Retry the current step.",
   "plugins.appstudio.buildSucceedNotice": "Teams package is successfully built at [local address](%s).",
   "plugins.appstudio.buildSucceedNotice.fallback": "Teams package is successfully built at %s.",

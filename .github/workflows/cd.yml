@@ -279,7 +279,7 @@ jobs:
             sleep 20
             cd ./packages/vscode-extension
             npm install --only=production
-            if [ "$PREID" == "beta" ]
+            if [ "$PREID" == "beta" ]; then
               npx vsce package --pre-release
             else
               npx vsce package

@@ -51,9 +51,10 @@ describe("New Command Tests", function () {
   });
 
   it("Builder Check - error", async () => {
-    sandbox.stub(FxCore.prototype, "getQuestions").resolves(err(new UserCancelError()));
+    const error = new UserCancelError();
+    sandbox.stub(FxCore.prototype, "getQuestions").resolves(err(error));
     const cmd = new New();
-    await expect(cmd.builder(yargs)).to.be.rejectedWith(new UserCancelError());
+    await expect(cmd.builder(yargs)).to.be.rejectedWith(error);
   });
 
   it("New Command Running Check", async () => {

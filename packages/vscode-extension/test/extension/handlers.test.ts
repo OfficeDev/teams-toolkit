@@ -25,7 +25,7 @@ import {
   OptionItem,
   SystemError,
 } from "@microsoft/teamsfx-api";
-import { UserCancelError } from "@microsoft/teamsfx-core";
+import { UserCancelError, UnhandledError } from "@microsoft/teamsfx-core";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
@@ -1343,7 +1343,7 @@ describe("handlers", () => {
       chai.assert.isTrue(endProgress.calledOnceWithExactly(false));
       chai.assert.isTrue(showErrorMessage.calledOnce);
       if (res.isErr()) {
-        chai.assert.equal(res.error.name, "error1");
+        chai.assert.isTrue(res.error instanceof UnhandledError);
       }
     });
 

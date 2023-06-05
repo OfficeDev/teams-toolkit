@@ -209,7 +209,6 @@
     "teamstoolkit.handlers.signOutOfM365": "Sign out of Microsoft 365: ",
     "teamstoolkit.handlers.stateFileNotFound": "State file not found in environment %s. You must run 'Provision' first to generate related state file.",
     "teamstoolkit.handlers.localStateFileNotFound": "State file not found in environment %s. You must run `debug` first to generate related state file.",
-    "teamstoolkit.handlers.teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
     "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Manifest template file not found in %s. You can use CLI with your own template file.",
     "teamstoolkit.handlers.defaultAppPackageNotExists": "App package file not found in %s. You can use CLI with your own app package file.",
     "teamstoolkit.localDebug.failedCheckers": "Failed to check: [%s]. ",

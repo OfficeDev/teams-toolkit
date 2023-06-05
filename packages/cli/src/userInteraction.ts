@@ -37,7 +37,7 @@ import {
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
-import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
+import { EmptySubConfigOptions, NotValidInputValue } from "./error";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";

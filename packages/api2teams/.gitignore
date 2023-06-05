@@ -46,3 +46,4 @@ templates
 *.tgz
 
 generated-teams-app
+/tests/e2e/e2e-test-output

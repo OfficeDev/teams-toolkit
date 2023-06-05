@@ -12,10 +12,10 @@ export async function generateIndexFile(
     const card = cards[i];
     importCode += `import { ${capitalizeFirstLetter(
       card.id
-    )}CommandHandler } from './commands/${card.id}CommandHandler';\n`;
+    )}CommandHandler } from "./commands/${card.id}CommandHandler";\n`;
     importCode += `import { ${capitalizeFirstLetter(
       card.id
-    )}ActionHandler } from './cardActions/${card.id}ActionHandler';\n`;
+    )}ActionHandler } from "./cardActions/${card.id}ActionHandler";\n`;
 
     newCommandHandlers.push(
       'new ' + capitalizeFirstLetter(card.id) + 'CommandHandler()'
@@ -24,6 +24,10 @@ export async function generateIndexFile(
       'new ' + capitalizeFirstLetter(card.id) + 'ActionHandler()'
     );
   }
+
+  newCommandHandlers.push('new HelpCommandHandler()');
+  importCode +=
+    'import { HelpCommandHandler } from "./commands/helpCommandHandler";\n';
 
   const codeTemplate = await fs.readFile(
     __dirname + '/resources/indexFileTemplate.txt',

@@ -1,0 +1,30 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "size": "Medium",
+      "weight": "Bolder",
+      "text": "Get Help"
+    },
+    {
+      "type": "TextBlock",
+      "text": "You can click Read Doc button to view the documentation, or click the Report Issue button to provide feedback",
+      "wrap": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Read Doc",
+      "url": "https://github.com/OfficeDev/TeamsFx"
+    },
+    {
+      "type": "Action.OpenUrl",
+      "title": "Report Issue",
+      "url": "https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=bug_report.md&title="
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

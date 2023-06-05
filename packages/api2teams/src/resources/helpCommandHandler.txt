@@ -1,0 +1,20 @@
+import { Activity, TurnContext } from "botbuilder";
+import {
+  CommandMessage,
+  TeamsFxBotCommandHandler,
+  TriggerPatterns,
+  MessageBuilder
+} from "@microsoft/teamsfx";
+import helpCard from "../adaptiveCards/helpCard.json";
+
+export class HelpCommandHandler implements TeamsFxBotCommandHandler {
+  triggerPatterns: TriggerPatterns = new RegExp("^help$", "i");
+
+  async handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage
+  ): Promise<string | Partial<Activity> | void> {
+    console.log("Bot received message: " + message.text);
+    return MessageBuilder.attachAdaptiveCardWithoutData(helpCard);
+  }
+}

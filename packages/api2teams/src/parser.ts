@@ -82,6 +82,12 @@ export async function parseApi(yaml: string, options: CliOptions) {
     console.log(` > generate ${card.name} successfully!`);
   }
 
+  console.log('generate help command card');
+  await fs.copy(
+    __dirname + '/resources/helpCard.json',
+    options.output + '/src/adaptiveCards/helpCard.json'
+  );
+
   console.log('generate action cards');
   for (const card of responseCards) {
     const cardActionHandler: CodeResult = await generateActionHandler(
@@ -119,6 +125,12 @@ export async function parseApi(yaml: string, options: CliOptions) {
     await fs.outputFile(cardActionHandlerPath, commandHandler.code);
     console.log(` > generate ${commandHandler.name} successfully!`);
   }
+
+  console.log('generate help command handler');
+  await fs.copy(
+    __dirname + '/resources/helpCommandHandler.txt',
+    options.output + '/src/commands/helpCommandHandler.ts'
+  );
 
   console.log('generate apis');
   const apiProviders = await generateApi(apis);

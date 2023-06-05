@@ -1614,6 +1614,19 @@ describe("handlers", () => {
       chai.expect(showMessageCalledCount).to.be.equal(1);
       sinon.restore();
     });
+
+    it("signinAzureCallback", async () => {
+      sinon.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
+      const getIdentityCredentialStub = sinon.stub(
+        AzureAccountManager.prototype,
+        "getIdentityCredentialAsync"
+      );
+
+      await handlers.signinAzureCallback([{}, { status: 0 }]);
+
+      chai.assert.isTrue(getIdentityCredentialStub.calledOnce);
+      sinon.restore();
+    });
   });
 
   describe("validateAzureDependenciesHandler", () => {

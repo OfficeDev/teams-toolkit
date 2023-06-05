@@ -17,8 +17,6 @@ tsconfig.json
 teamsapp.yml
 teamsapp.*.yml
 /env/
-/script/
 /appPackage/
 /infra/
-/teamsfx/
 /devTools/

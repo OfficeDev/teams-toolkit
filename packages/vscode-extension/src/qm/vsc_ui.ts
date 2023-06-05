@@ -758,8 +758,8 @@ export class VsCodeUI implements UserInteraction {
       ExtTelemetry.reporter?.dispose();
     }
 
-    // wait 1 second before reloading.
-    await sleep(1000);
+    // wait 2 seconds before reloading.
+    await sleep(2000);
     const success = await commands.executeCommand("workbench.action.reloadWindow");
     if (success) {
       return ok(success as boolean);

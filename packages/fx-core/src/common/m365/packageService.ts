@@ -102,12 +102,12 @@ export class PackageService {
       } while (true);
     } catch (error: any) {
       this.logger?.error("Sideloading failed.");
-      // if (error.response) {
-      //   this.logger?.error(JSON.stringify(error.response.data));
-      //   this.traceError(error);
-      // } else {
-      //   this.logger?.error(error.message);
-      // }
+      if (error.response) {
+        this.logger?.error(JSON.stringify(error.response.data));
+        this.traceError(error);
+      } else {
+        this.logger?.error(error.message);
+      }
       throw assembleError(error, CoreSource);
     }
   }
@@ -190,12 +190,12 @@ export class PackageService {
       this.logger?.info("Unacquiring done.");
     } catch (error: any) {
       this.logger?.error("Unacquire failed.");
-      // if (error.response) {
-      //   this.logger?.error(JSON.stringify(error.response.data));
-      //   this.traceError(error);
-      // } else {
-      //   this.logger?.error(error.message);
-      // }
+      if (error.response) {
+        this.logger?.error(JSON.stringify(error.response.data));
+        this.traceError(error);
+      } else {
+        this.logger?.error(error.message);
+      }
 
       throw assembleError(error, CoreSource);
     }
@@ -232,5 +232,17 @@ export class PackageService {
 
       throw assembleError(error, CoreSource);
     }
+  }
+
+  private traceError(error: any) {
+    // add error details and trace to message
+    const detail = JSON.stringify(error.response.data ?? {});
+    const tracingId = error.response.headers?.traceresponse ?? "";
+    const originalMessage = error.message;
+    error.message = JSON.stringify({
+      message: originalMessage,
+      detail: detail,
+      tracingId: tracingId,
+    });
   }
 }

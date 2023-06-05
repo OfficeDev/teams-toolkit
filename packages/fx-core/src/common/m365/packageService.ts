@@ -153,9 +153,13 @@ export class PackageService {
     } catch (error: any) {
       this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
+        this.logger?.error(JSON.stringify(error.response.data));
+        this.traceError(error);
         if (error.response.status === 404) {
           throw new NotExtendedToM365Error(CoreSource);
         }
+      } else {
+        this.logger?.error(error.message);
       }
       throw assembleError(error, CoreSource);
     }

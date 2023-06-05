@@ -76,7 +76,6 @@ export class FeatureFlagName {
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
   static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly SPFxMultiTab = "TEAMSFX_SPFX_MULTI_TAB";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
@@ -86,6 +85,7 @@ export class FeatureFlagName {
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly ImportSPFx = "IMPORT_SPFX";
 }
 
 export class ManifestVariables {

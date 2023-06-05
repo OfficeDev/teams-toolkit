@@ -153,6 +153,7 @@ import { ExtensionSurvey } from "./utils/survey";
 import { compare } from "./utils/versionUtil";
 import { setRegion } from "@microsoft/teamsfx-core";
 import { AuthSvcScopes } from "@microsoft/teamsfx-core";
+import { isImportSPFxEnabled } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -744,6 +745,9 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs.projectId = inputs.projectId ?? uuid.v4();
+        if (!isImportSPFxEnabled()) {
+          inputs["spfx-solution"] = "new";
+        }
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);

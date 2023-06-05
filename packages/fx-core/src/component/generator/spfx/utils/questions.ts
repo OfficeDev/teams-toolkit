@@ -7,6 +7,7 @@ import { DevEnvironmentSetupError } from "../error";
 import { Constants } from "./constants";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
 import { SPFxQuestionNames } from "../../../constants";
+import { CoreQuestionNames } from "../../../../core/question";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -15,6 +16,9 @@ export enum SPFXQuestionNames {
   version_check = "spfx-version-check",
   load_package_version = "spfx-load-package-version",
   use_global_package_or_install_local = "spfx-install-latest-package",
+  spfx_solution = "spfx-solution",
+  spfx_import_folder = "spfx-folder",
+  skip_app_name = "skip-app-name",
 }
 
 export const frameworkQuestion: Question = {
@@ -105,5 +109,38 @@ export const spfxPackageSelectQuestion: Question = {
 
       return undefined;
     },
+  },
+};
+
+export const spfxSolutionQuestion: Question = {
+  type: "singleSelect",
+  name: SPFXQuestionNames.spfx_solution,
+  title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
+  staticOptions: [
+    { id: "new", label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew") },
+    {
+      id: "import",
+      label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
+    },
+  ],
+};
+
+export function spfxImportFolderQuestion(): Question {
+  return {
+    type: "folder",
+    name: SPFXQuestionNames.spfx_import_folder,
+    title: getLocalizedString("core.spfxFolder.title"),
+    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+  };
+}
+
+export const skipAppName: Question = {
+  type: "func",
+  name: SPFXQuestionNames.skip_app_name,
+  title: "Set app name to skip",
+  func: async (inputs: Inputs) => {
+    if (inputs[SPFXQuestionNames.spfx_solution] == "import") {
+      inputs[CoreQuestionNames.AppName] = "appnamePlaceholder";
+    }
   },
 };

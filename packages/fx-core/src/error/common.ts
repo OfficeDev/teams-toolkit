@@ -63,7 +63,7 @@ export class InvalidProjectError extends UserError {
 }
 
 export class JSONSyntaxError extends UserError {
-  constructor(filePathOrContent: string, e: Error) {
+  constructor(filePathOrContent: string, e: Error, source?: string) {
     super({
       message: getDefaultString("error.common.JSONSyntaxError", filePathOrContent, e.message),
       displayMessage: getLocalizedString(
@@ -71,7 +71,7 @@ export class JSONSyntaxError extends UserError {
         filePathOrContent,
         e.message
       ),
-      source: "coordinator",
+      source: source || "coordinator",
     });
     super.stack = e.stack;
   }
@@ -83,6 +83,17 @@ export class ReadFileError extends SystemError {
       source: source || "unknown",
       message: e.message || getDefaultString("error.common.ReadFileError"),
       displayMessage: e.message || getLocalizedString("error.common.ReadFileError"),
+    });
+    if (e.stack) super.stack = e.stack;
+  }
+}
+
+export class WriteFileError extends SystemError {
+  constructor(e: Error, source?: string) {
+    super({
+      source: source || "unknown",
+      message: e.message || getDefaultString("error.common.WriteFileError"),
+      displayMessage: e.message || getLocalizedString("error.common.WriteFileError"),
     });
     if (e.stack) super.stack = e.stack;
   }

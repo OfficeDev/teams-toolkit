@@ -52,13 +52,14 @@ import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
-import { CopyFileError, InvalidInputError, ObjectIsUndefinedError, WriteFileError } from "./error";
+import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { WriteFileError } from "../error";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -557,7 +558,7 @@ export async function ensureBasicFolderStructure(
       await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
-    return err(WriteFileError(e));
+    return err(new WriteFileError(e as Error, "core"));
   }
   return ok(null);
 }

@@ -13,6 +13,7 @@ export * from "./core/error";
 export * from "./common/globalState";
 export * from "./common/permissionInterface";
 export * from "./common/featureFlags";
+export * from "./common/jsonUtils";
 export * from "./component/migrate";
 export * from "./common/projectSettingsHelperV3";
 export * from "./component/constants";

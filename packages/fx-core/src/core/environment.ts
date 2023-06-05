@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  CloudResource,
   ConfigFolderName,
   ConfigMap,
   CryptoProvider,
@@ -43,8 +42,8 @@ import {
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { envUtil } from "../component/utils/envUtil";
-import { FileNotFoundError, NoEnvFilesError } from "../error/common";
-import { InvalidEnvConfigError, WriteFileError } from "./error";
+import { FileNotFoundError, NoEnvFilesError, WriteFileError } from "../error/common";
+import { InvalidEnvConfigError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { GLOBAL_CONFIG } from "../component/constants";
 
@@ -119,7 +118,7 @@ class EnvironmentManager {
     try {
       await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
     } catch (error) {
-      return err(WriteFileError(error));
+      return err(new WriteFileError(error as Error, "EnvironmentManager"));
     }
 
     return ok(envConfigPath);
@@ -188,7 +187,7 @@ class EnvironmentManager {
         await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
       }
     } catch (error) {
-      return err(WriteFileError(error));
+      return err(new WriteFileError(error as Error, "EnvironmentManager"));
     }
 
     return ok(envFiles.envState);

@@ -10,10 +10,10 @@ import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
  * Azure token/credential is invalid (usually not happen because TTK will ask user to login)
  */
 export class InvalidAzureCredentialError extends SystemError {
-  constructor() {
+  constructor(source?: string) {
     const key = "error.azure.InvalidAzureCredentialError";
     const errorOptions: SystemErrorOptions = {
-      source: "coordinator",
+      source: source || "coordinator",
       name: "InvalidAzureCredentialError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),
@@ -27,10 +27,10 @@ export class InvalidAzureCredentialError extends SystemError {
  * may caused by user's account it not right
  */
 export class InvalidAzureSubscriptionError extends UserError {
-  constructor(subscriptionId: string) {
+  constructor(subscriptionId: string, source?: string) {
     const key = "error.azure.InvalidAzureSubscriptionError";
     const errorOptions: UserErrorOptions = {
-      source: "coordinator",
+      source: source || "coordinator",
       name: "InvalidAzureSubscriptionError",
       message: getDefaultString(key, subscriptionId),
       displayMessage: getLocalizedString(key, subscriptionId),
@@ -43,10 +43,10 @@ export class InvalidAzureSubscriptionError extends UserError {
  * Failed to select subscription in current account.
  */
 export class SelectSubscriptionError extends UserError {
-  constructor() {
+  constructor(source?: string) {
     const key = "error.azure.SelectSubscriptionError";
     const errorOptions: UserErrorOptions = {
-      source: "coordinator",
+      source: source || "coordinator",
       name: "SelectSubscriptionError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),

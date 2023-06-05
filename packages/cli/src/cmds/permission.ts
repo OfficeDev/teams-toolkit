@@ -7,8 +7,7 @@ import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
-import { CollaboratorEmailOptions, RootFolderOptions } from "../constants";
-import { EnvNotSpecified } from "../error";
+import { CollaboratorEmailOptions, RootFolderOptions, cliSource } from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -18,6 +17,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { MissingRequiredArgumentError } from "../error";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -81,7 +81,7 @@ export class PermissionStatus extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new EnvNotSpecified();
+      const error = new MissingRequiredArgumentError("teamsfx status", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
       return err(error);
     }
@@ -157,7 +157,7 @@ export class PermissionGrant extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new EnvNotSpecified();
+      const error = new MissingRequiredArgumentError("teamsfx grant", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, error);
       return err(error);
     }

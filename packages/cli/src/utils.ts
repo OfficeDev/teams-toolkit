@@ -23,9 +23,8 @@ import * as uuid from "uuid";
 import { parse } from "yaml";
 import { Options } from "yargs";
 import { FeatureFlags, cliSource, teamsAppFileName } from "./constants";
-import { ReadFileError } from "./error";
 import CLIUIInstance from "./userInteraction";
-import { FileNotFoundError, getSingleOption } from "@microsoft/teamsfx-core";
+import { FileNotFoundError, ReadFileError, getSingleOption } from "@microsoft/teamsfx-core";
 
 export type Json = { [_: string]: any };
 
@@ -126,7 +125,7 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
       version: configuration.version,
     });
   } catch (e) {
-    return err(ReadFileError(e));
+    return err(new ReadFileError(e as Error, cliSource));
   }
 }
 

@@ -24,6 +24,7 @@ export class MetadataUtil {
           .join("");
         props[name + ".actions"] = str ?? "";
       }
+      props[TelemetryProperty.YmlSchemaVersion] = res.value.version;
 
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }

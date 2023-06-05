@@ -27,6 +27,7 @@ import { localize } from "../utils/localizeUtils";
 import * as util from "util";
 import { VS_CODE_UI } from "../extension";
 import * as vscode from "vscode";
+import { sleep } from "../utils/commonUtils";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -352,5 +353,7 @@ export async function triggerV3Migration(): Promise<void> {
     throw result.error;
   }
   // reload window to terminate debugging
+  // wait 2 seconds for the migration telemetry to be sent
+  await sleep(2000);
   await VS_CODE_UI.reload();
 }

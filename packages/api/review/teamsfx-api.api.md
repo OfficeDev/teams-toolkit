@@ -1273,9 +1273,6 @@ export interface Settings {
 }
 
 // @public (undocumented)
-export const SettingsFileName = "settings.json";
-
-// @public (undocumented)
 export const SettingsFolderName = "teamsfx";
 
 // @public

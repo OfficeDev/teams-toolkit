@@ -1,23 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, Inputs, ok, Result, SystemError } from "@microsoft/teamsfx-api";
-import path from "path";
-import { isAadManifestEnabled } from "../../../common/tools";
-import { CoreHookContext } from "../../types";
-import fs from "fs-extra";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { TOOLS } from "../../globalVars";
-import { generateAadManifestTemplate } from "../../generateAadManifestTemplate";
-import { PluginNames } from "../../../component/constants";
-import { RequiredResourceAccess } from "../../../component/resource/aadApp/interfaces/AADManifest";
+import { err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import { CoreSource } from "../../error";
-
-export interface Permission {
-  resource: string;
-  delegated: string[];
-  application: string[];
-}
 
 export enum FileType {
   STATE,

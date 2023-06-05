@@ -5,57 +5,8 @@ import { ConfigFolderName, StatesFolderName, SystemError, UserError } from "@mic
 import * as constants from "./constants";
 import { strings } from "./resource";
 
-export function NotSupportedProjectType(): UserError {
-  return new UserError(
-    constants.cliSource,
-    "NotSupportedProjectType",
-    "Project type not supported"
-  );
-}
-
-export function CannotDeployPlugin(pluginName: string): UserError {
-  return new UserError(
-    constants.cliSource,
-    "CannotDeployPlugin",
-    `Cannot deploy ${pluginName} since it is not contained in the project`
-  );
-}
-
 export function NotValidInputValue(inputName: string, msg: string): UserError {
   return new UserError(constants.cliSource, "NotValidInputValue", `${inputName} - ${msg}`);
-}
-
-export function NotFoundInputedFolder(folder: string): UserError {
-  return new UserError(
-    constants.cliSource,
-    "NotFoundInputFolder",
-    `Cannot find folder (${folder}).`
-  );
-}
-
-export function NotFoundSubscriptionId(): UserError {
-  return new UserError(
-    constants.cliSource,
-    "NotFoundSubscriptionId",
-    strings["error.NotFoundSubscriptionId"]
-  );
-}
-
-export function ConfigNotFoundError(configpath: string): UserError {
-  return new UserError(
-    constants.cliSource,
-    "ConfigNotFound",
-    "Please execute this command in a TeamsFx project."
-  );
-}
-
-export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemError {
-  e.message = `Cannot download this sample app from ${sampleAppUrl}. Error: ${e.message}`;
-  return new SystemError({
-    error: e,
-    source: constants.cliSource,
-    name: "SampleAppDownloadFailed",
-  });
 }
 
 export function ReadFileError(e: Error): SystemError | UserError {

@@ -9,7 +9,6 @@ import { Argv } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { NotFoundInputedFolder } from "../error";
 import { filterQTreeNode, toYargsOptionsGroup } from "../questionUtils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -19,6 +18,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { FileNotFoundError } from "@microsoft/teamsfx-core";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -118,11 +118,9 @@ class NewTemplate extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const folder = path.resolve((args.folder as string) || "./");
     if (!fs.pathExistsSync(folder)) {
-      CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.DownloadSample,
-        NotFoundInputedFolder(folder)
-      );
-      return err(NotFoundInputedFolder(folder));
+      const error = new FileNotFoundError(constants.cliSource, folder);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error);
+      return err(error);
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
 

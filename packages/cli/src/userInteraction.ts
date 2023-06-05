@@ -41,6 +41,8 @@ import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
+import { UnhandledError } from "@microsoft/teamsfx-core";
+import { cliSource } from "./constants";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -194,7 +196,7 @@ export class CLIUserInteraction implements UserInteraction {
         ScreenManager.continue();
         resolve(ok(anwsers[question.name!]));
       } catch (e) {
-        resolve(err(UnknownError(e)));
+        resolve(err(new UnhandledError(e as Error, cliSource)));
       }
     });
   }

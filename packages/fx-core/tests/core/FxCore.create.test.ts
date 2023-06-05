@@ -106,6 +106,24 @@ describe("Core basic APIs for v3", () => {
     projectPath = inputs.projectPath!;
   });
 
+  it("Import existing SPFx solution (VSC, SPFx)", async () => {
+    appName = randomAppName();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+      [SPFXQuestionNames.spfx_solution]: "import",
+      [SPFXQuestionNames.spfx_import_folder]: "c:\\test",
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+    inputs[CoreQuestionNames.AppName] = "appnamePlaceholder";
+  });
+
   it("create from sample (CLI)", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,

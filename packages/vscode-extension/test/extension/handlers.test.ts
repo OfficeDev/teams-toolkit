@@ -5,8 +5,6 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { stubInterface } from "ts-sinon";
-import * as util from "util";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 
@@ -15,7 +13,6 @@ import {
   err,
   FxError,
   Inputs,
-  IProgressHandler,
   ok,
   Platform,
   ProjectSettings,
@@ -25,10 +22,10 @@ import {
   UserError,
   Void,
   VsCodeEnv,
-  UserCancelError,
   OptionItem,
   SystemError,
 } from "@microsoft/teamsfx-api";
+import { UserCancelError, UnhandledError } from "@microsoft/teamsfx-core";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
@@ -1346,7 +1343,7 @@ describe("handlers", () => {
       chai.assert.isTrue(endProgress.calledOnceWithExactly(false));
       chai.assert.isTrue(showErrorMessage.calledOnce);
       if (res.isErr()) {
-        chai.assert.equal(res.error.name, "error1");
+        chai.assert.isTrue(res.error instanceof UnhandledError);
       }
     });
 
@@ -1494,7 +1491,7 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test2.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
-      sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(UserCancelError));
+      sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(new UserCancelError("VSC")));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
@@ -1512,7 +1509,7 @@ describe("handlers", () => {
     it("select file error", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(UserCancelError));
+      sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(new UserCancelError("VSC")));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");

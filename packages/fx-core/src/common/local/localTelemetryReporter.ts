@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, assembleError, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { performance } from "perf_hooks";
 import { TelemetrySuccess, TelemetryProperty } from "../telemetry";
+import { assembleError } from "../../error/common";
 
 export interface TelemetryContext {
   properties: Record<string, string>;

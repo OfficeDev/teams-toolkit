@@ -8,14 +8,23 @@ import {
   SingleSelectQuestion,
   StaticOptions,
   MultiSelectQuestion,
-} from "./question";
-import { getValidationFunction, validate } from "./validation";
-import { assembleError, EmptyOptionError, FxError, UserCancelError, UserError } from "../error";
-import { Inputs, OptionItem, Void } from "../types";
-import { InputResult, UserInteraction } from "./ui";
-import { err, ok, Result } from "neverthrow";
-import { TelemetryReporter } from "../utils/telemetry";
-import { TelemetryEvent, TelemetryProperty } from "../constants";
+  Inputs,
+  FxError,
+  err,
+  ok,
+  OptionItem,
+  UserInteraction,
+  Result,
+  InputResult,
+  getValidationFunction,
+  UserError,
+  TelemetryReporter,
+  Void,
+  validate,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "@microsoft/teamsfx-api";
+import { EmptyOptionError, UserCancelError, assembleError } from "../error";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -69,13 +78,21 @@ export async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<u
   return raw;
 }
 
+export type QuestionTreeVisitor = (
+  question: Question,
+  ui: UserInteraction,
+  inputs: Inputs,
+  step?: number,
+  totalSteps?: number
+) => Promise<Result<InputResult<any>, FxError>>;
+
 /**
  * ask question when visiting the question tree
  * @param question
  * @param core
  * @param inputs
  */
-const questionVisitor = async function (
+const questionVisitor: QuestionTreeVisitor = async function (
   question: Question,
   ui: UserInteraction,
   inputs: Inputs,
@@ -243,7 +260,7 @@ export async function traverse(
   inputs: Inputs,
   ui: UserInteraction,
   telemetryReporter?: TelemetryReporter,
-  visitor = questionVisitor
+  visitor: QuestionTreeVisitor = questionVisitor
 ): Promise<Result<Void, FxError>> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
@@ -273,17 +290,6 @@ export async function traverse(
       }
       const inputResult = qvRes.value;
       if (inputResult.type === "back") {
-        //go back
-        // if (curr.children) {
-        //   while (stack.length > 0) {
-        //     const tmp = stack[stack.length - 1];
-        //     if (curr.children.includes(tmp)) {
-        //       stack.pop();
-        //     } else {
-        //       break;
-        //     }
-        //   }
-        // }
         stack.push(curr);
 
         // find the previous input that is neither group nor func nor single option select
@@ -311,7 +317,7 @@ export async function traverse(
           }
         }
         if (!found) {
-          return err(UserCancelError);
+          return err(new UserCancelError());
         }
         --step;
         continue; //ignore the following steps

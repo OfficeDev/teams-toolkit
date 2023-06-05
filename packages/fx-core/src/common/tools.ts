@@ -16,7 +16,6 @@ import {
   SystemError,
   UserError,
   UserInteraction,
-  assembleError,
   err,
   ok,
   v2,
@@ -52,6 +51,7 @@ import {
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { getProjectTemplatesFolderPath } from "./utils";
+import { assembleError } from "../error/common";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];

@@ -24,3 +24,5 @@ export { getPermissionMap } from "./component/resource/aadApp/permissions/index"
 export { AppStudioClient } from "./component/resource/appManifest/appStudioClient";
 export { AppDefinition } from "./component/resource/appManifest/interfaces/appDefinition";
 export { CollaborationConstants } from "./core/collaborator";
+export * from "./error/index";
+export * from "./ui/visitor";

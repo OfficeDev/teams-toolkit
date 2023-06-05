@@ -1,8 +1,8 @@
-import { err, FxError, InvalidInputError, ok, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { MissingRequiredFileError } from "../../error/common";
+import { MissingRequiredFileError, MissingRequiredInputError } from "../../error/common";
 import { yamlParser } from "../configManager/parser";
 
 export const YmlFileNameOld = "app.yml";
@@ -11,7 +11,7 @@ export const LocalYmlFileNameOld = "app.local.yml";
 export class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
     const envName = env || process.env.TEAMSFX_ENV;
-    if (!envName) throw new InvalidInputError("util", "env", "env is undefined");
+    if (!envName) throw new MissingRequiredInputError("env", "PathUtils");
     const ymlPath = path.join(
       projectPath,
       envName === "local" ? MetadataV3.localConfigFile : MetadataV3.configFile

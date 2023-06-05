@@ -10,7 +10,6 @@ import * as xml2js from "xml2js";
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
-  assembleError,
   Colors,
   ContextV3,
   err,
@@ -23,8 +22,7 @@ import {
   Result,
   Void,
 } from "@microsoft/teamsfx-api";
-
-import { globalStateUpdate } from "../../common/globalState";
+import { assembleError } from "../../error/common";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";

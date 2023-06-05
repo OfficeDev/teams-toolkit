@@ -23,14 +23,6 @@ export function WriteFileError(e: Error): SystemError {
   });
 }
 
-export function ReadFileError(e: Error): SystemError {
-  return new SystemError({
-    name: "ReadFileError",
-    source: CoreSource,
-    error: e,
-  });
-}
-
 export function MigrationError(e: Error, name: string, helpLink?: string): UserError {
   return new UserError({
     name: name,

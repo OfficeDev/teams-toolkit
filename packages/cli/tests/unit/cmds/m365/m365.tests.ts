@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, LogLevel, ok, UserCancelError } from "@microsoft/teamsfx-api";
+import { err, LogLevel, ok } from "@microsoft/teamsfx-api";
 import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
@@ -12,6 +12,7 @@ import M365TokenProvider from "../../../../src/commonlib/m365Login";
 import CLILogProvider from "../../../../src/commonlib/log";
 import { signedIn } from "../../../../src/commonlib/common/constant";
 import { CLILogLevel } from "../../../../src/constants";
+import { UserCancelError } from "@microsoft/teamsfx-core";
 
 describe("M365", () => {
   const sandbox = sinon.createSandbox();
@@ -158,7 +159,7 @@ describe("M365", () => {
   it("M365 Token Error", async () => {
     sandbox
       .stub(M365TokenProvider, "getAccessToken")
-      .returns(Promise.resolve(err(UserCancelError)));
+      .returns(Promise.resolve(err(new UserCancelError())));
 
     const m365 = new M365();
     const sideloading = m365.subCommands.find((cmd) => cmd.commandHead === "sideloading");
@@ -175,7 +176,9 @@ describe("M365", () => {
 
   it("M365 UPN undefined", async () => {
     sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
-    sandbox.stub(M365TokenProvider, "getStatus").returns(Promise.resolve(err(UserCancelError)));
+    sandbox
+      .stub(M365TokenProvider, "getStatus")
+      .returns(Promise.resolve(err(new UserCancelError())));
     sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("test-title-id");
     sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves({ foo: "bar" });
 

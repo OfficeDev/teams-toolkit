@@ -12,7 +12,6 @@ import {
   Platform,
   QTreeNode,
   Result,
-  traverse,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../common/constants";
@@ -33,6 +32,7 @@ import {
   ResourceGroupConflictError,
 } from "../../error/azure";
 import { SolutionSource } from "../constants";
+import { traverse } from "../../ui/visitor";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";

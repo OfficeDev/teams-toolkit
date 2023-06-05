@@ -19,7 +19,6 @@ import {
   Platform,
   Result,
   SystemError,
-  UserCancelError,
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -87,6 +86,7 @@ import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  UserCancelError,
 } from "../../src/error/common";
 import {
   MockAzureAccountProvider,
@@ -3042,7 +3042,7 @@ describe("component coordinator test", () => {
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync").resolves();
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
-      .rejects(UserCancelError);
+      .rejects(new UserCancelError());
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",

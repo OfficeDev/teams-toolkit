@@ -24,9 +24,7 @@ import {
 } from "vscode";
 import {
   AppPackageFolderName,
-  assembleError,
   BuildFolderName,
-  ConcurrentError,
   ConfigFolderName,
   CoreCallbackEvent,
   EnvConfigFileNameTemplate,
@@ -66,6 +64,8 @@ import {
   isOfficeAddinEnabled,
   isUserCancelError,
   isV3Enabled,
+  assembleError,
+  ConcurrentError,
 } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";

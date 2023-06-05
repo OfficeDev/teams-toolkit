@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as apis from "@microsoft/teamsfx-api";
+import * as core from "@microsoft/teamsfx-core";
 import { Colors, Platform, QTreeNode } from "@microsoft/teamsfx-api";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import fs from "fs-extra";
@@ -78,7 +79,7 @@ describe("Utils Tests", function () {
 
     before(() => {
       sandbox
-        .stub(apis, "getSingleOption")
+        .stub(core, "getSingleOption")
         .callsFake((q: apis.SingleSelectQuestion | apis.MultiSelectQuestion) => {
           if (q.type === "singleSelect") return q.staticOptions[0];
           else return [q.staticOptions[0]];

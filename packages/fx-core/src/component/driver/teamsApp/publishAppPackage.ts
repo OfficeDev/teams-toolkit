@@ -1,15 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  FxError,
-  Result,
-  err,
-  ok,
-  TeamsAppManifest,
-  UserCancelError,
-  Platform,
-} from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, TeamsAppManifest, Platform } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import { merge } from "lodash";
@@ -27,7 +19,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/publishAppPackage";
@@ -168,7 +160,7 @@ export class PublishAppPackageDriver implements StepDriver {
             [TelemetryPropertyKey.publishedAppId]: appId,
           });
         } else {
-          return err(UserCancelError);
+          return err(new UserCancelError(actionName));
         }
       } else {
         context.addSummary(

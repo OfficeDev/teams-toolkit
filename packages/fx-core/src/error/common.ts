@@ -1,4 +1,4 @@
-import { SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
+import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
@@ -139,9 +139,9 @@ export class InstallSoftwareError extends UserError {
 }
 
 export class MissingRequiredInputError extends UserError {
-  constructor(name: string) {
+  constructor(name: string, source?: string) {
     super({
-      source: "coordinator",
+      source: source || "coordinator",
       message: getDefaultString("error.common.MissingRequiredInputError", name),
       displayMessage: getLocalizedString("error.common.MissingRequiredInputError", name),
     });
@@ -206,5 +206,52 @@ export class HttpServerError extends SystemError {
       message: getDefaultString(messageKey, actionName, responseBody),
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
     });
+  }
+}
+
+export class UserCancelError extends UserError {
+  constructor(actionName?: string) {
+    super({
+      source: actionName ? camelCase(actionName) : "ui",
+      name: "UserCancel",
+      message: "User canceled",
+    });
+  }
+}
+
+export class EmptyOptionError extends SystemError {
+  constructor(source?: string) {
+    super({ source: source ? camelCase(source) : "UI" });
+  }
+}
+
+export class NotImplementedError extends SystemError {
+  constructor(source: string, method: string) {
+    super({ source: source, message: `Method not implemented:${method}` });
+  }
+}
+export class ConcurrentError extends UserError {
+  constructor(source: string) {
+    super({
+      source: source,
+      message: getLocalizedString("error.common.ConcurrentError"),
+    });
+  }
+}
+
+export function assembleError(e: any, source?: string): FxError {
+  if (e instanceof UserError || e instanceof SystemError) return e;
+  if (!source) source = "unknown";
+  const type = typeof e;
+  if (type === "string") {
+    return new UnhandledError(new Error(e as string), source);
+  } else if (e instanceof Error) {
+    const err = e as Error;
+    const fxError = new UnhandledError(err, source);
+    fxError.stack = err.stack;
+    return fxError;
+  } else {
+    const message = JSON.stringify(e, Object.getOwnPropertyNames(e));
+    return new UnhandledError(new Error(message), source);
   }
 }

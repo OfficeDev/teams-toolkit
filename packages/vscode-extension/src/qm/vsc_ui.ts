@@ -23,7 +23,6 @@ import {
 } from "vscode";
 
 import {
-  assembleError,
   Colors,
   err,
   ExecuteFuncConfig,
@@ -48,10 +47,9 @@ import {
   StaticOptions,
   SystemError,
   UIConfig,
-  UserCancelError,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-
+import { UserCancelError, assembleError } from "@microsoft/teamsfx-core";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
@@ -237,7 +235,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
+              resolve(err(new UserCancelError("VSC")));
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -361,7 +359,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
+              resolve(err(new UserCancelError("VSC")));
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -443,7 +441,7 @@ export class VsCodeUI implements UserInteraction {
           }),
           inputBox.onDidAccept(onDidAccept),
           inputBox.onDidHide(() => {
-            resolve(err(UserCancelError));
+            resolve(err(new UserCancelError("VSC")));
           }),
           inputBox.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -515,7 +513,7 @@ export class VsCodeUI implements UserInteraction {
                   const result = uriList[0].fsPath;
                   resolve(ok({ type: "success", result: result }));
                 } else {
-                  resolve(err(UserCancelError));
+                  resolve(err(new UserCancelError("VSC")));
                 }
               }
             }
@@ -525,7 +523,7 @@ export class VsCodeUI implements UserInteraction {
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
               if (!hideByDialog) {
-                resolve(err(UserCancelError));
+                resolve(err(new UserCancelError("VSC")));
               }
             }),
             quickPick.onDidTriggerButton((button) => {
@@ -650,7 +648,7 @@ export class VsCodeUI implements UserInteraction {
                   resolve(ok({ type: "success", result: result }));
                 }
               } else {
-                resolve(err(UserCancelError));
+                resolve(err(new UserCancelError("VSC")));
               }
             } else {
               resolve(
@@ -666,7 +664,7 @@ export class VsCodeUI implements UserInteraction {
         disposables.push(
           quickPick.onDidAccept(onDidAccept),
           quickPick.onDidHide(() => {
-            if (fileSelectorIsOpen === false) resolve(err(UserCancelError));
+            if (fileSelectorIsOpen === false) resolve(err(new UserCancelError("VSC")));
           }),
           quickPick.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -734,7 +732,7 @@ export class VsCodeUI implements UserInteraction {
         }
         promise.then((v) => {
           if (v) resolve(ok(v));
-          else resolve(err(UserCancelError));
+          else resolve(err(new UserCancelError("VSC")));
         });
       } catch (error) {
         resolve(err(assembleError(error)));

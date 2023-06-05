@@ -4,18 +4,12 @@
 import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "@azure/core-auth";
 
-import {
-  AzureAccountProvider,
-  NotImplementedError,
-  SubscriptionInfo,
-  TokenRequest,
-} from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, SubscriptionInfo, TokenRequest } from "@microsoft/teamsfx-api";
 
 import { RequestTypes } from "../../apis";
-import { env } from "../../constant";
 import { getResponseWithErrorHandling } from "../../utils";
-import { MemoryCache } from "./memoryCache";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
+import { NotImplementedError } from "@microsoft/teamsfx-core";
 
 class TeamsFxTokenCredential implements TokenCredential {
   private connection: MessageConnection;

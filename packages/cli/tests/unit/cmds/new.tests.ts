@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, ok, UserCancelError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
+import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import "mocha";
 import sinon from "sinon";
@@ -51,9 +51,10 @@ describe("New Command Tests", function () {
   });
 
   it("Builder Check - error", async () => {
-    sandbox.stub(FxCore.prototype, "getQuestions").resolves(err(UserCancelError));
+    const error = new UserCancelError();
+    sandbox.stub(FxCore.prototype, "getQuestions").resolves(err(error));
     const cmd = new New();
-    await expect(cmd.builder(yargs)).to.be.rejectedWith(UserCancelError);
+    await expect(cmd.builder(yargs)).to.be.rejectedWith(error);
   });
 
   it("New Command Running Check", async () => {

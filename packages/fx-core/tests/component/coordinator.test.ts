@@ -596,6 +596,7 @@ describe("component coordinator test", () => {
 
   it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -697,6 +698,7 @@ describe("component coordinator test", () => {
   });
   it("provision success with subscriptionId in yml", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -766,6 +768,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -847,6 +850,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path: validate multi-env", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -941,6 +945,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with existing resource groups in VS Code", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1021,6 +1026,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get selected subscription", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1096,6 +1102,7 @@ describe("component coordinator test", () => {
   });
   it("provision SPFx project shows success notification", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1155,6 +1162,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when user directly update yml with empty subscriptionId", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1207,6 +1215,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get subInfo", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1277,6 +1286,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed getLifecycleDescriptions Error", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1367,6 +1377,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with partial success", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1468,6 +1479,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getM365TenantId Error", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1535,6 +1547,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getSelectedSubscription Error", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1609,6 +1622,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1673,6 +1687,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs for existing resource group", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1739,6 +1754,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with CLI inputs: create resource group failed", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1801,6 +1817,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when getting azure credentials", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1887,6 +1904,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when checking resource group existence", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1978,6 +1996,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [],
@@ -2019,6 +2038,7 @@ describe("component coordinator test", () => {
 
   it("provision failed with check whether m365 tenant matched fail", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -2104,6 +2124,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with no subscription permission", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -2163,6 +2184,7 @@ describe("component coordinator test", () => {
   });
   it("provision with no progress bar", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -2258,6 +2280,7 @@ describe("component coordinator test", () => {
 
   it("deploy happy path", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2302,6 +2325,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path - VS", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2347,6 +2371,7 @@ describe("component coordinator test", () => {
   });
   it("deploy cancel", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2390,6 +2415,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "configureApp",
         driverDefs: [],
@@ -2438,6 +2464,7 @@ describe("component coordinator test", () => {
   });
   it("deploy failed partial success", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2498,6 +2525,7 @@ describe("component coordinator test", () => {
   });
   it("deploy without progress bar", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2543,6 +2571,7 @@ describe("component coordinator test", () => {
   });
   it("publish happy path", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2605,6 +2634,7 @@ describe("component coordinator test", () => {
   });
   it("publish happy path - CLI", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2666,6 +2696,7 @@ describe("component coordinator test", () => {
   });
   it("publish happy path - no ui", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2705,6 +2736,7 @@ describe("component coordinator test", () => {
   });
   it("publish happy path - VS - no ui", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2744,6 +2776,7 @@ describe("component coordinator test", () => {
   });
   it("publish failed", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2805,6 +2838,7 @@ describe("component coordinator test", () => {
   });
   it("publish without progress bar", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2854,7 +2888,9 @@ describe("component coordinator test", () => {
     assert.isTrue(progressEndStub.notCalled);
   });
   it("provision lifecycle undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+    };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     const inputs: InputsWithProjectPath = {
@@ -2868,7 +2904,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
   });
   it("deploy lifecycle undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+    };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     const inputs: InputsWithProjectPath = {
@@ -2882,7 +2920,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
   });
   it("publish lifecycle undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+    };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     const inputs: InputsWithProjectPath = {
@@ -2946,6 +2986,7 @@ describe("component coordinator test", () => {
 
   it("preProvisionForVS", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       registerApp: {
         name: "configureApp",
         driverDefs: [
@@ -3001,6 +3042,7 @@ describe("component coordinator test", () => {
   });
   it("provision select subscription cancel", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       registerApp: {
         name: "configureApp",
         driverDefs: [

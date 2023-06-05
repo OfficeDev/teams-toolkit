@@ -3237,6 +3237,7 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
+  await AzureAccountManager.getIdentityCredentialAsync(true);
   return ok(null);
 }
 

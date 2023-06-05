@@ -1,30 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok, Func } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
+import {
+  AadManifestFilePathName,
+  AadManifestOptions,
+  EnvOptions,
+  RootFolderOptions,
+  TeamsAppManifestFilePathName,
+  TeamsAppManifestOptions,
+} from "../constants";
+import { MissingRequiredArgumentError } from "../error";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import {
-  EnvOptions,
-  RootFolderOptions,
-  AadManifestOptions,
-  AadManifestFilePathName,
-  TeamsAppManifestOptions,
-  TeamsAppManifestFilePathName,
-  cliSource,
-} from "../constants";
-import CLIUIInstance from "../userInteraction";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
-import { MissingRequiredArgumentError } from "../error";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;
@@ -105,7 +104,7 @@ export class UpdateTeamsApp extends YargsCommand {
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[TeamsAppManifestFilePathName];
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("env");
+      const error = new MissingRequiredArgumentError("teamsfx teams-app", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }

@@ -11,6 +11,7 @@ import Update, { UpdateAadApp, UpdateTeamsApp } from "../../../src/cmds/update";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../../src/userInteraction";
 import { mockLogProvider, mockTelemetry, mockYargs } from "../utils";
+import { MissingRequiredArgumentError } from "../../../src/error";
 
 describe("Update Aad Manifest Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -48,7 +49,7 @@ describe("Update Aad Manifest Command Tests", function () {
     const res = await updateAadManifest!.runCommand(args);
     expect(res.isErr()).to.be.true;
     if (res.isErr()) {
-      expect(res.error.message).equal("The --env argument is not specified");
+      expect(res.error instanceof MissingRequiredArgumentError).to.be.true;
     }
   });
 
@@ -173,7 +174,7 @@ describe("Update Teams app manifest Command Tests", function () {
     const res = await updateTeamsAppManifest!.runCommand(args);
     expect(res.isErr()).to.be.true;
     if (res.isErr()) {
-      expect(res.error.message).equal("The --env argument is not specified");
+      expect(res.error instanceof MissingRequiredArgumentError).to.be.true;
     }
   });
 });

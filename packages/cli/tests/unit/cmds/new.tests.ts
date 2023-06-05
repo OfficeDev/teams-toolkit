@@ -82,7 +82,7 @@ describe("New Command Tests", function () {
       expect(result.isErr()).equals(true);
       if (result.isErr()) {
         expect(result.error).instanceOf(UserError);
-        expect(result.error.name).equals("NotFoundInputFolder");
+        expect(result.error.name).equals("FileNotFoundError");
       }
     });
 

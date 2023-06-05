@@ -15,10 +15,10 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import LogProvider from "../../src/commonlib/log";
-import { EmptySubConfigOptions } from "../../src/error";
 import UI from "../../src/userInteraction";
 import { getColorizedString } from "../../src/utils";
 import { expect } from "./utils";
+import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -82,7 +82,7 @@ describe("User Interaction Tests", function () {
       };
       const result = await UI.selectOption(config);
       expect(result.isOk() ? result.value.result : result.error.name).equals(
-        EmptySubConfigOptions().name
+        new SelectSubscriptionError().name
       );
     });
 

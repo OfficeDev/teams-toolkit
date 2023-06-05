@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
+import { FxCore, InvalidProjectError, UserCancelError } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
@@ -10,7 +10,6 @@ import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import Provision from "../../../src/cmds/provision";
 import * as constants from "../../../src/constants";
-import { NotSupportedProjectType } from "../../../src/error";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 
@@ -28,7 +27,7 @@ describe("Provision Command Tests", function () {
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
       else if (inputs.projectPath?.includes("Cancel")) return err(new UserCancelError());
-      else return err(NotSupportedProjectType());
+      else return err(new InvalidProjectError());
     });
   });
 
@@ -63,7 +62,7 @@ describe("Provision Command Tests", function () {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
     if (result.isErr()) {
       expect(result.error).instanceOf(UserError);
-      expect(result.error.name).equals("NotSupportedProjectType");
+      expect(result.error.name).equals("InvalidProjectError");
     }
   });
 });

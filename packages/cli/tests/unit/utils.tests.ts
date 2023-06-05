@@ -243,7 +243,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Fake Path", () => {
       const result = readSettingsFileSync("fake");
-      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+      expect(result.isOk() ? result.value : result.error.name).equals("FileNotFoundError");
     });
   });
 

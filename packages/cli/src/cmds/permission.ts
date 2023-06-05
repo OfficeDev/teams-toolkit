@@ -7,7 +7,7 @@ import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
-import { CollaboratorEmailOptions, RootFolderOptions, cliSource } from "../constants";
+import { CollaboratorEmailOptions, RootFolderOptions } from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,

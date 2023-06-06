@@ -81,8 +81,8 @@ export class ReadFileError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: source || "unknown",
-      message: e.message || getDefaultString("error.common.ReadFileError"),
-      displayMessage: e.message || getLocalizedString("error.common.ReadFileError"),
+      message: e.message || getDefaultString("error.common.ReadFileError", e.message),
+      displayMessage: e.message || getLocalizedString("error.common.ReadFileError", e.message),
     });
     if (e.stack) super.stack = e.stack;
   }
@@ -92,8 +92,8 @@ export class WriteFileError extends SystemError {
   constructor(e: Error, source?: string) {
     super({
       source: source || "unknown",
-      message: e.message || getDefaultString("error.common.WriteFileError"),
-      displayMessage: e.message || getLocalizedString("error.common.WriteFileError"),
+      message: e.message || getDefaultString("error.common.WriteFileError", e.message),
+      displayMessage: e.message || getLocalizedString("error.common.WriteFileError", e.message),
     });
     if (e.stack) super.stack = e.stack;
   }

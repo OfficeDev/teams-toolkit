@@ -98,6 +98,7 @@ describe("metadata util", () => {
     const result = await util.parse(".", "local");
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
         "configureApp.actions": "",
         "deploy.actions": "",
         "provision.actions": "",
@@ -116,6 +117,7 @@ describe("metadata util", () => {
     const result = await util.parse(".", "dev");
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
         "configureApp.actions": "",
         "deploy.actions": "",
         "provision.actions": "",

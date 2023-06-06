@@ -89,11 +89,12 @@ export class ReadFileError extends SystemError {
 }
 
 export class WriteFileError extends SystemError {
-  constructor(e: Error, source?: string) {
+  constructor(filePath: string, e: Error, source?: string) {
     super({
       source: source || "unknown",
-      message: e.message || getDefaultString("error.common.WriteFileError", e.message),
-      displayMessage: e.message || getLocalizedString("error.common.WriteFileError", e.message),
+      message: e.message || getDefaultString("error.common.WriteFileError", filePath, e.message),
+      displayMessage:
+        e.message || getLocalizedString("error.common.WriteFileError", filePath, e.message),
     });
     if (e.stack) super.stack = e.stack;
   }

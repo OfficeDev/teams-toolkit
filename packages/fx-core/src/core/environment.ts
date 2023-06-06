@@ -118,7 +118,7 @@ class EnvironmentManager {
     try {
       await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
     } catch (error) {
-      return err(new WriteFileError(error as Error, "EnvironmentManager"));
+      return err(new WriteFileError(envConfigPath, error as Error, "EnvironmentManager"));
     }
 
     return ok(envConfigPath);
@@ -187,7 +187,7 @@ class EnvironmentManager {
         await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
       }
     } catch (error) {
-      return err(new WriteFileError(error as Error, "EnvironmentManager"));
+      return err(new WriteFileError(envFiles.envState, error as Error, "EnvironmentManager"));
     }
 
     return ok(envFiles.envState);

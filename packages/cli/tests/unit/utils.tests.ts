@@ -27,6 +27,8 @@ import {
 } from "../../src/utils";
 import { expect } from "./utils";
 import { UserSettings } from "../../src/userSetttings";
+import AzureAccountManager from "../../src/commonlib/azureLogin";
+import activate from "../../src/activate";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -435,7 +437,7 @@ describe("UserSettings", async () => {
   afterEach(() => {
     sandbox.restore();
   });
-  it("getConfigSync", async () => {
+  it("getConfigSync WriteFileError", async () => {
     sandbox.stub(fs, "pathExistsSync").throws(new Error("error"));
     const res = UserSettings.getConfigSync();
     expect(res.isErr()).equals(true);
@@ -443,7 +445,7 @@ describe("UserSettings", async () => {
       expect(res.error instanceof core.WriteFileError).equals(true);
     }
   });
-  it("getConfigSync", async () => {
+  it("setConfigSync WriteFileError", async () => {
     sandbox.stub(UserSettings, "getConfigSync").returns(apis.ok({}));
     sandbox.stub(UserSettings, "getUserSettingsFile").returns("");
     sandbox.stub(fs, "writeJSONSync").throws(new Error("error"));
@@ -451,6 +453,21 @@ describe("UserSettings", async () => {
     expect(res.isErr()).equals(true);
     if (res.isErr()) {
       expect(res.error instanceof core.WriteFileError).equals(true);
+    }
+  });
+});
+
+describe("activate", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("UnhandledError", async () => {
+    sandbox.stub(AzureAccountManager, "setRootPath").throws(new Error("error"));
+    const res = await activate(".", false);
+    expect(res.isErr()).equals(true);
+    if (res.isErr()) {
+      expect(res.error instanceof core.UnhandledError).equals(true);
     }
   });
 });

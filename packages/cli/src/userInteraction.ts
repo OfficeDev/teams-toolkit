@@ -47,7 +47,7 @@ import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
-export class CLIUserInteraction implements UserInteraction {
+class CLIUserInteraction implements UserInteraction {
   private static instance: CLIUserInteraction;
   private presetAnswers: Map<string, any> = new Map();
 

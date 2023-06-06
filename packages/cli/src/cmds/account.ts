@@ -97,7 +97,7 @@ class AccountShow extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const m365StatusRes = await M365TokenProvider.getStatus({ scopes: AppStudioScopes });
     if (m365StatusRes.isErr()) {
       return err(m365StatusRes.error);
@@ -142,7 +142,7 @@ class AccountLogin extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }
@@ -156,7 +156,7 @@ export class M365Login extends YargsCommand {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     await M365TokenProvider.signout();
     await outputM365Info("login");
 
@@ -303,7 +303,7 @@ export default class Account extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }

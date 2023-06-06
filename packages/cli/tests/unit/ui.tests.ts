@@ -307,6 +307,7 @@ describe("Errors in User Interaction", async () => {
         return "failed";
       },
     };
+    UI.updatePresetAnswer("testInput", "valuebrabrabra");
     const result = await UI.inputText(config);
     expect(result.isErr());
     if (result.isErr()) {
@@ -319,10 +320,8 @@ describe("Errors in User Interaction", async () => {
     const config: InputTextConfig = {
       name: "testInput",
       title: "input text",
-      validation: (input: string) => {
-        return "failed";
-      },
     };
+    UI.clearPresetAnswers();
     const result = await UI.inputText(config);
     expect(result.isErr());
     if (result.isErr()) {

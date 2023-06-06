@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, getUuid, InvalidProjectError } from "@microsoft/teamsfx-core";
+import { FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
@@ -11,7 +11,6 @@ import * as activate from "../../../src/activate";
 import Publish from "../../../src/cmds/publish";
 import * as constants from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
-import * as utils from "../../../src/utils";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 
 describe("Publish Command Tests", function () {
@@ -45,11 +44,6 @@ describe("Publish Command Tests", function () {
   });
 
   it("Publish Command Running Check (CLI)", async () => {
-    sandbox.stub(utils, "getTeamsAppTelemetryInfoByEnv").returns({
-      appId: getUuid(),
-      tenantId: getUuid(),
-    });
-
     const cmd = new Publish();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",

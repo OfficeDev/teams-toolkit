@@ -13,7 +13,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export default class Publish extends YargsCommand {
@@ -31,14 +31,6 @@ export default class Publish extends YargsCommand {
     const properties: { [key: string]: string } = {};
     if (inputs.env) {
       properties[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    }
-    /// TODO: may be out of date
-    if (inputs.projectPath && inputs.env) {
-      const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.projectPath, inputs.env);
-      if (appInfo) {
-        properties[TelemetryProperty.AppId] = appInfo.appId;
-        properties[TelemetryProperty.TenantId] = appInfo.tenantId;
-      }
     }
 
     const rootFolder = inputs.projectPath!;

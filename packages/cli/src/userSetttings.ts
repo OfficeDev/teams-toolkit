@@ -24,12 +24,7 @@ export enum CliConfigOptions {
   Interactive = "interactive",
 }
 
-export enum CliConfigTelemetry {
-  On = "on",
-  Off = "off",
-}
-
-export enum CliConfigEnvChecker {
+enum CliConfigTelemetry {
   On = "on",
   Off = "off",
 }

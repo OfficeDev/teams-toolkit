@@ -10,11 +10,13 @@ import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } fro
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
 import { Validator } from "./validator";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const validator = new Validator();
 
 const environmentFolderPath = "environmentFolderPath";
 const writeToEnvironmentFile = "writeToEnvironmentFile";
+const versionNotSupportedKey = "error.yaml.VersionNotSupported";
 
 function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
   const result: RawProjectModel = { version: "" };
@@ -126,6 +128,18 @@ export class YamlParser implements IYamlParser {
         return err(new InvalidYamlSchemaError(path, diagnostic));
       }
       if (validateSchema) {
+        if (!validator.isVersionSupported(version ?? "undefined")) {
+          return err(
+            new InvalidYamlSchemaError(
+              path,
+              getLocalizedString(
+                versionNotSupportedKey,
+                version,
+                validator.supportedVersions().join(", ")
+              )
+            )
+          );
+        }
         const valid = validator.validate(value, version);
         if (!valid) {
           return err(new InvalidYamlSchemaError(path, diagnostic));

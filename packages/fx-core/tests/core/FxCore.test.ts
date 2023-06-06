@@ -756,7 +756,7 @@ describe("apply yaml template", async () => {
 
     before(() => {
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-      sandbox.stub(YamlParser.prototype, "parse").resolves(ok({}));
+      sandbox.stub(YamlParser.prototype, "parse").resolves(ok({ version: "1.0.0" }));
     });
 
     after(() => {
@@ -809,6 +809,7 @@ describe("apply yaml template", async () => {
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
       sandbox.stub(YamlParser.prototype, "parse").resolves(
         ok({
+          version: "1.0.0",
           provision: new MockedProvision(),
         })
       );

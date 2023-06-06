@@ -5,34 +5,37 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
-import Ajv from "ajv";
 import { globalVars } from "../../core/globalVars";
 import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
-import path from "path";
-import { getResourceFolder } from "../../folder";
-import { YAMLDiagnostics } from "./diagnostic";
+import { Validator } from "./validator";
+import { getLocalizedString } from "../../common/localizeUtils";
 
-const ajv = new Ajv();
-ajv.addKeyword("deprecationMessage");
-const schemaPath = path.join(getResourceFolder(), "yaml.schema.json");
-const schema = fs.readJSONSync(schemaPath);
-const validator = ajv.compile(schema);
-const schemaString = fs.readFileSync(path.join(getResourceFolder(), "yaml.schema.json"), "utf8");
-const yamlDiagnostic = new YAMLDiagnostics(schemaPath, schemaString);
+const validator = new Validator();
 
 const environmentFolderPath = "environmentFolderPath";
 const writeToEnvironmentFile = "writeToEnvironmentFile";
+const versionNotSupportedKey = "error.yaml.VersionNotSupported";
 
 function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
-  const result: RawProjectModel = {};
+  const result: RawProjectModel = { version: "" };
   if (environmentFolderPath in obj) {
     if (typeof obj["environmentFolderPath"] !== "string") {
       return err(new YamlFieldTypeError("environmentFolderPath", "string"));
     }
     result.environmentFolderPath = obj[environmentFolderPath] as string;
   }
+
+  if ("version" in obj) {
+    if (typeof obj["version"] !== "string") {
+      return err(new YamlFieldTypeError("version", "string"));
+    }
+    result.version = obj["version"] as string;
+  } else {
+    return err(new YamlFieldMissingError("version"));
+  }
+
   for (const name of LifecycleNames) {
     if (name in obj) {
       const value = obj[name];
@@ -91,12 +94,12 @@ export class YamlParser implements IYamlParser {
     if (raw.isErr()) {
       return err(raw.error);
     }
-    const result: ProjectModel = {};
+    const result: ProjectModel = { version: raw.value.version };
     for (const name of LifecycleNames) {
       if (name in raw.value) {
         const definitions = raw.value[name];
         if (definitions) {
-          result[name] = new Lifecycle(name, definitions);
+          result[name] = new Lifecycle(name, definitions, result.version);
         }
       }
     }
@@ -116,15 +119,28 @@ export class YamlParser implements IYamlParser {
     try {
       globalVars.ymlFilePath = path;
       const str = await fs.readFile(path, "utf8");
-      diagnostic = await yamlDiagnostic.doValidation(path, str);
       const content = load(str);
+      const value = content as unknown as Record<string, unknown>;
+      const version = typeof value["version"] === "string" ? value["version"] : undefined;
+      diagnostic = await validator.generateDiagnosticMessage(path, str, version);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
         return err(new InvalidYamlSchemaError(path, diagnostic));
       }
-      const value = content as unknown as Record<string, unknown>;
       if (validateSchema) {
-        const valid = validator(value);
+        if (!validator.isVersionSupported(version ?? "undefined")) {
+          return err(
+            new InvalidYamlSchemaError(
+              path,
+              getLocalizedString(
+                versionNotSupportedKey,
+                version,
+                validator.supportedVersions().join(", ")
+              )
+            )
+          );
+        }
+        const valid = validator.validate(value, version);
         if (!valid) {
           return err(new InvalidYamlSchemaError(path, diagnostic));
         }

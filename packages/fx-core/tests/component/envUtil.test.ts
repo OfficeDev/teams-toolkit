@@ -86,6 +86,7 @@ describe("envUtils", () => {
   describe("pathUtils.getEnvFolderPath", () => {
     it("happy path", async () => {
       const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
         environmentFolderPath: "/home/envs",
       };
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
@@ -98,7 +99,9 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {};
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(true);
@@ -109,7 +112,9 @@ describe("envUtils", () => {
       }
     });
     it("returns undefined value", async () => {
-      const mockProjectModel: ProjectModel = {};
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(false);
@@ -124,6 +129,7 @@ describe("envUtils", () => {
   describe("pathUtils.getEnvFilePath", () => {
     it("happy path", async () => {
       const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
         environmentFolderPath: "/home/envs",
       };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
@@ -136,7 +142,9 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {};
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");

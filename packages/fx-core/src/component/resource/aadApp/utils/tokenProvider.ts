@@ -10,7 +10,7 @@ export enum TokenAudience {
   Graph = "graph",
 }
 
-export interface GraphAndAppStudioTokenProvider {
+interface GraphAndAppStudioTokenProvider {
   m365?: M365TokenProvider;
 }
 interface TokenInstance {

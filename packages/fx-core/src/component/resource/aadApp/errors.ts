@@ -3,9 +3,6 @@
 
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
-const referHelpLink = "Please refer to the help link for further steps.";
-const aadHelpLink = "https://aka.ms/teamsfx-aad-help";
-
 export interface AadError {
   name: string;
   message: (...args: string[]) => [string, string];

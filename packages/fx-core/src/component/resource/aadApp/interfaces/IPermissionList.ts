@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export interface AppRole {
+interface AppRole {
   allowedMemberTypes: string[];
   description: string;
   displayName: string;
@@ -11,7 +11,7 @@ export interface AppRole {
   value: string;
 }
 
-export interface Oauth2PermissionScopes {
+interface Oauth2PermissionScopes {
   adminConsentDescription: string;
   adminConsentDisplayName: string;
   id: string;
@@ -22,7 +22,7 @@ export interface Oauth2PermissionScopes {
   value: string;
 }
 
-export interface Value {
+interface Value {
   appId: string;
   displayName: string;
   appRoles: AppRole[];

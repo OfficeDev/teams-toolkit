@@ -275,11 +275,11 @@ fakeCert
     const credential = new OnBehalfOfUserCredential(expiredSsoToken, authConfig);
     let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
-    assert.isTrue(err.message!.indexOf("AADSTS50013") >= 0);
+    assert.strictEqual(err.message!, "Sso token has already expired.");
 
     err = await expect(credential.getToken("")).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
-    assert.isTrue(err.message!.indexOf("AADSTS50013") >= 0);
+    assert.strictEqual(err.message!, "Sso token has already expired.");
   });
 
   it("getToken should throw ServiceError when fail to get access token due to AAD outage", async function () {

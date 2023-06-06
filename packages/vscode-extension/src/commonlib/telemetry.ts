@@ -9,6 +9,7 @@ import {
   getPackageVersion,
   isFeatureFlagEnabled,
   FeatureFlags,
+  anonymizeFilePaths,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
@@ -98,6 +99,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
+
+    if (TelemetryProperty.ErrorMessage in properties) {
+      properties[TelemetryProperty.ErrorMessage] = anonymizeFilePaths(
+        properties[TelemetryProperty.ErrorMessage]
+      );
+    }
 
     if (this.testFeatureFlag) {
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);

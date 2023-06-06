@@ -1096,7 +1096,7 @@
     "fileCreateOrUpdateJsonFile": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create or update JSON file. Refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
+      "description": "Create or update appsettings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -1112,14 +1112,14 @@
         },
         "uses": {
           "type": "string",
-          "description": "Create or update JSON file. Refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
+          "description": "Create or update appsettings to JSON file. Refer to https://aka.ms/teamsfx-actions/file-createorupdatejsonfile for more details.",
           "const": "file/createOrUpdateJsonFile"
         },
         "with": {
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["target"],
+          "required": ["appsettings", "target"],
           "properties": {
             "appsettings": {
               "type": "object",
@@ -1128,10 +1128,6 @@
             "target": {
               "type": "string",
               "description": "the target file"
-            },
-            "content": {
-              "type": "object",
-              "description": "the json content to be created or updated, will be merged with existing content"
             }
           }
         }

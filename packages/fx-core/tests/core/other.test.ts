@@ -26,7 +26,6 @@ import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { WriteFileError } from "../../src/core/error";
 import { createAppNameQuestion } from "../../src/core/question";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";

@@ -7,7 +7,6 @@ import { Colors, Platform, QTreeNode } from "@microsoft/teamsfx-api";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import {
@@ -27,6 +26,9 @@ import {
   toYargsOptions,
 } from "../../src/utils";
 import { expect } from "./utils";
+import { UserSettings } from "../../src/userSetttings";
+import AzureAccountManager from "../../src/commonlib/azureLogin";
+import activate from "../../src/activate";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -243,7 +245,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Fake Path", () => {
       const result = readSettingsFileSync("fake");
-      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+      expect(result.isOk() ? result.value : result.error.name).equals("FileNotFoundError");
     });
   });
 
@@ -427,5 +429,45 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const result = getIsM365("real.isM365=undefined");
       expect(result).equals(undefined);
     });
+  });
+});
+
+describe("UserSettings", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("getConfigSync WriteFileError", async () => {
+    sandbox.stub(fs, "pathExistsSync").throws(new Error("error"));
+    const res = UserSettings.getConfigSync();
+    expect(res.isErr()).equals(true);
+    if (res.isErr()) {
+      expect(res.error instanceof core.WriteFileError).equals(true);
+    }
+  });
+  it("setConfigSync WriteFileError", async () => {
+    sandbox.stub(UserSettings, "getConfigSync").returns(apis.ok({}));
+    sandbox.stub(UserSettings, "getUserSettingsFile").returns("");
+    sandbox.stub(fs, "writeJSONSync").throws(new Error("error"));
+    const res = UserSettings.setConfigSync({});
+    expect(res.isErr()).equals(true);
+    if (res.isErr()) {
+      expect(res.error instanceof core.WriteFileError).equals(true);
+    }
+  });
+});
+
+describe("activate", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("UnhandledError", async () => {
+    sandbox.stub(AzureAccountManager, "setRootPath").throws(new Error("error"));
+    const res = await activate(".", false);
+    expect(res.isErr()).equals(true);
+    if (res.isErr()) {
+      expect(res.error instanceof core.UnhandledError).equals(true);
+    }
   });
 });

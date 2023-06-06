@@ -22,10 +22,9 @@ import path from "path";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { Options } from "yargs";
-import { FeatureFlags, teamsAppFileName } from "./constants";
-import { ConfigNotFoundError, ReadFileError } from "./error";
+import { FeatureFlags, cliSource, teamsAppFileName } from "./constants";
 import CLIUIInstance from "./userInteraction";
-import { getSingleOption } from "@microsoft/teamsfx-core";
+import { FileNotFoundError, ReadFileError, getSingleOption } from "@microsoft/teamsfx-core";
 
 export type Json = { [_: string]: any };
 
@@ -115,7 +114,7 @@ export function getSettingsFilePath(projectFolder: string) {
 export function readSettingsFileSync(projectFolder: string): Result<Json, FxError> {
   const filePath = getSettingsFilePath(projectFolder);
   if (!fs.existsSync(filePath)) {
-    return err(ConfigNotFoundError(filePath));
+    return err(new FileNotFoundError(cliSource, filePath));
   }
 
   try {
@@ -126,7 +125,7 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
       version: configuration.version,
     });
   } catch (e) {
-    return err(ReadFileError(e));
+    return err(new ReadFileError(e as Error, cliSource));
   }
 }
 

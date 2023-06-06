@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
@@ -10,7 +10,6 @@ import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import Deploy from "../../../src/cmds/deploy";
 import * as constants from "../../../src/constants";
-import { NotSupportedProjectType } from "../../../src/error";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockTelemetry, mockYargs } from "../utils";
 
@@ -26,7 +25,7 @@ describe("Deploy Command Tests", function () {
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
-      else return err(NotSupportedProjectType());
+      else return err(new InvalidProjectError());
     });
   });
 
@@ -52,7 +51,7 @@ describe("Deploy Command Tests", function () {
     expect(result.isErr()).to.be.true;
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
     if (result.isErr()) {
-      expect(result.error.name).equals("NotSupportedProjectType");
+      expect(result.error.name).equals("InvalidProjectError");
     }
   });
 });

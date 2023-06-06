@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, getUuid } from "@microsoft/teamsfx-core";
+import { FxCore, getUuid, InvalidProjectError } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
@@ -10,7 +10,6 @@ import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import Publish from "../../../src/cmds/publish";
 import * as constants from "../../../src/constants";
-import { NotSupportedProjectType } from "../../../src/error";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import * as utils from "../../../src/utils";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
@@ -29,7 +28,7 @@ describe("Publish Command Tests", function () {
     sandbox.stub(FxCore.prototype, "publishApplication").callsFake(async (inputs: Inputs) => {
       expect(inputs.platform).equals(Platform.CLI);
       if (inputs.projectPath?.includes("real")) return ok("");
-      else return err(NotSupportedProjectType());
+      else return err(new InvalidProjectError());
     });
   });
 
@@ -71,7 +70,7 @@ describe("Publish Command Tests", function () {
     expect(telemetryEvents).deep.equals([TelemetryEvent.PublishStart, TelemetryEvent.Publish]);
     if (result.isErr()) {
       expect(result.error).instanceOf(UserError);
-      expect(result.error.name).equals("NotSupportedProjectType");
+      expect(result.error.name).equals("InvalidProjectError");
     }
   });
 });

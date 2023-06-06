@@ -15,14 +15,6 @@ import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 export const CoreSource = "Core";
 export const UpgradeSource = "Upgrade";
 
-export function WriteFileError(e: Error): SystemError {
-  return new SystemError({
-    name: "WriteFileError",
-    source: CoreSource,
-    error: e,
-  });
-}
-
 export function MigrationError(e: Error, name: string, helpLink?: string): UserError {
   return new UserError({
     name: name,

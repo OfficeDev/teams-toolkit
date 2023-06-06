@@ -9,8 +9,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 
 import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-
-import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
 
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
@@ -19,11 +17,8 @@ import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import {
-  AzureScopes,
-  ConvertTokenToJson,
-  isV3Enabled,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { ConvertTokenToJson } from "@microsoft/teamsfx-core/build/common/tools";
+import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -195,7 +190,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         return;
       }
     }
-    throw NotFoundSubscriptionId();
+    throw new InvalidAzureSubscriptionError(subscriptionId);
   }
 
   async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {

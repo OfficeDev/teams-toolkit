@@ -50,6 +50,7 @@ export const MetadataV2 = {
   userdataSuffix: "userdata",
   configFile: "projectSettings.json",
   updateToolkitLink: "https://aka.ms/update-teams-toolkit",
+  aadTemplateFileName: "aad.template.json",
 };
 
 export const MetadataV3Abandoned = {

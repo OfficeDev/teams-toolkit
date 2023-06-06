@@ -6,6 +6,7 @@ import sinon from "sinon";
 
 import {
   Colors,
+  InputTextConfig,
   LogLevel,
   MultiSelectConfig,
   SelectFileConfig,
@@ -290,5 +291,56 @@ describe("User Interaction Tests", function () {
 
   it("Create Progress Bar", async () => {
     UI.createProgressBar("title", 3);
+  });
+});
+
+describe("Errors in User Interaction", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("InputValidationError", async () => {
+    const config: InputTextConfig = {
+      name: "testInput",
+      title: "input text",
+      validation: (input: string) => {
+        return "failed";
+      },
+    };
+    const result = await UI.inputText(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("InputValidationError");
+    }
+  });
+
+  it("UnhandledError", async () => {
+    sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+    const config: InputTextConfig = {
+      name: "testInput",
+      title: "input text",
+      validation: (input: string) => {
+        return "failed";
+      },
+    };
+    const result = await UI.inputText(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("UnhandledError");
+    }
+  });
+
+  it("SelectSubscriptionError", async () => {
+    sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+    const config: SingleSelectConfig = {
+      name: "subscription",
+      title: "select subscription",
+      options: [],
+    };
+    const result = await UI.selectOption(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("SelectSubscriptionError");
+    }
   });
 });

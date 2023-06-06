@@ -44,6 +44,7 @@ describe("metadata util", () => {
   const sandbox = sinon.createSandbox();
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
   const mockProjectModel: ProjectModel = {
+    version: "1.0.0",
     registerApp: {
       name: "registerApp",
       driverDefs: [

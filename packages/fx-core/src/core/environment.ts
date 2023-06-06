@@ -217,18 +217,6 @@ class EnvironmentManager {
     return ok(remoteEnvs);
   }
 
-  public async checkEnvExist(projectPath: string, env: string): Promise<Result<boolean, FxError>> {
-    const envList = await environmentManager.listAllEnvConfigs(projectPath);
-    if (envList.isErr()) {
-      return err(envList.error);
-    }
-    if (envList.value?.indexOf(env) >= 0) {
-      return ok(true);
-    } else {
-      return ok(false);
-    }
-  }
-
   public isEnvConfig(projectPath: string, filePath: string): boolean {
     const fileName = path.basename(filePath);
     const fileDirname = path.dirname(filePath);

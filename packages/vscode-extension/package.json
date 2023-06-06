@@ -290,13 +290,8 @@
           "group": "inline@3"
         },
         {
-          "command": "fx-extension.listCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isV3Enabled",
-          "group": "inline@3"
-        },
-        {
           "command": "fx-extension.manageCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/ && fx-extension.isV3Enabled",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -307,11 +302,6 @@
         {
           "command": "fx-extension.openResourceGroupInPortal",
           "when": "view == teamsfx-environment && viewItem == openResourceGroupInPortal",
-          "group": "inline@3"
-        },
-        {
-          "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isV3Enabled",
           "group": "inline@3"
         },
         {
@@ -654,7 +644,7 @@
       {
         "command": "fx-extension.manageCollaborator",
         "title": "%teamstoolkit.commands.manageCollaborator.title%",
-        "enablement": "fx-extension.isV3Enabled && !fx-extension.commandLocked",
+        "enablement": "!fx-extension.commandLocked",
         "icon": "$(organization)"
       },
       {

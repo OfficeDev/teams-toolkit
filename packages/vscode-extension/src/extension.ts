@@ -502,34 +502,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateAadAppManifestFromCtxMenu);
 
-  if (isV3Enabled()) {
-    const manageCollaborator = vscode.commands.registerCommand(
-      "fx-extension.manageCollaborator",
-      (node) => {
-        const envName = node.identifier;
-        Correlator.run(handlers.manageCollaboratorHandler, envName);
-      }
-    );
-    context.subscriptions.push(manageCollaborator);
-  } else {
-    const grantPermission = vscode.commands.registerCommand(
-      "fx-extension.grantPermission",
-      (node) => {
-        const envName = node.identifier;
-        Correlator.run(handlers.grantPermission, envName);
-      }
-    );
-    context.subscriptions.push(grantPermission);
-
-    const listCollaborator = vscode.commands.registerCommand(
-      "fx-extension.listCollaborator",
-      (node) => {
-        const envName = node.identifier;
-        Correlator.run(handlers.listCollaborator, envName);
-      }
-    );
-    context.subscriptions.push(listCollaborator);
-  }
+  const manageCollaborator = vscode.commands.registerCommand(
+    "fx-extension.manageCollaborator",
+    (node) => {
+      const envName = node.identifier;
+      Correlator.run(handlers.manageCollaboratorHandler, envName);
+    }
+  );
+  context.subscriptions.push(manageCollaborator);
 
   const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
     Correlator.run(handlers.treeViewLocalDebugHandler);

@@ -913,73 +913,6 @@ function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-function showWarningMessageWithProvisionButton(message: string): void {
-  window
-    .showWarningMessage(message, localize("teamstoolkit.handlers.provisionResourcesButton"))
-    .then((result) => {
-      if (result === localize("teamstoolkit.handlers.provisionResourcesButton")) {
-        return Correlator.run(provisionHandler);
-      }
-    });
-}
-
-async function showGrantSuccessMessageWithGetHelpButton(
-  message: string,
-  helpUrl: string
-): Promise<void> {
-  window
-    .showInformationMessage(message, localize("teamstoolkit.handlers.getHelp"))
-    .then((result) => {
-      if (result === localize("teamstoolkit.handlers.getHelp")) {
-        return VS_CODE_UI.openUrl(helpUrl);
-      }
-    });
-}
-
-async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
-  try {
-    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
-    if (!provisionSucceeded) {
-      return ok({
-        state: CollaborationState.NotProvisioned,
-        message: localize("teamstoolkit.handlers.provisionBeforeGrantOrListPermission"),
-      });
-    }
-
-    const tokenJsonObjectRes = await M365TokenInstance.getJsonObject({
-      scopes: AppStudioScopes,
-      showDialog: true,
-    });
-    const tokenJsonObject = tokenJsonObjectRes.isOk() ? tokenJsonObjectRes.value : undefined;
-    if (tokenJsonObject) {
-      const m365TenantId = await getM365TenantFromEnv(env);
-      if (!m365TenantId) {
-        return ok({
-          state: CollaborationState.EmptyM365Tenant,
-          message: localize("teamstoolkit.commandsTreeViewProvider.emptyM365Tenant"),
-        });
-      }
-      if (tokenJsonObject.tid !== m365TenantId) {
-        return ok({
-          state: CollaborationState.M365TenantNotMatch,
-          message: localize("teamstoolkit.commandsTreeViewProvider.m365TenantNotMatch"),
-        });
-      }
-    } else {
-      return ok({
-        state: CollaborationState.m365AccountNotSignedIn,
-        message: localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn"),
-      });
-    }
-
-    return ok({
-      state: CollaborationState.OK,
-    });
-  } catch (e) {
-    return wrapError(e);
-  }
-}
-
 async function processResult(
   eventName: string | undefined,
   result: Result<null, FxError>,
@@ -1787,54 +1720,19 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       throw checkCoreRes.error;
     }
 
-    if (!isV3Enabled()) {
-      const collaborationStateResult = await checkCollaborationState(env!);
-      if (collaborationStateResult.isErr()) {
-        throw collaborationStateResult.error;
-      }
-
-      if (collaborationStateResult.value.state !== CollaborationState.OK) {
-        result = collaborationStateResult;
-        if (result.value.state === CollaborationState.NotProvisioned) {
-          showWarningMessageWithProvisionButton(result.value.message);
-        } else {
-          window.showWarningMessage(result.value.message);
-        }
-
-        await processResult(TelemetryEvent.GrantPermission, result, inputs);
-        return result;
-      }
-    }
-
     inputs = getSystemInputs();
     inputs.env = env;
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
     }
-    const grantSucceededMsg = isV3Enabled()
-      ? util.format(localize("teamstoolkit.handlers.grantPermissionSucceededV3"), inputs.email)
-      : util.format(localize("teamstoolkit.handlers.grantPermissionSucceeded"), inputs.email, env);
+    const grantSucceededMsg = util.format(
+      localize("teamstoolkit.handlers.grantPermissionSucceededV3"),
+      inputs.email
+    );
 
-    // Will not show help messages in V3
-    if (!isV3Enabled()) {
-      let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
-      let helpUrl = AzureAssignRoleHelpUrl;
-      if (globalVariables.isSPFxProject) {
-        warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
-        helpUrl = SpfxManageSiteAdminUrl;
-      }
-
-      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
-
-      VsCodeLogInstance.info(grantSucceededMsg);
-      VsCodeLogInstance.warning(
-        warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
-      );
-    } else {
-      window.showInformationMessage(grantSucceededMsg);
-      VsCodeLogInstance.info(grantSucceededMsg);
-    }
+    window.showInformationMessage(grantSucceededMsg);
+    VsCodeLogInstance.info(grantSucceededMsg);
   } catch (e) {
     result = wrapError(e);
   }
@@ -1852,25 +1750,6 @@ export async function listCollaborator(env?: string): Promise<Result<any, FxErro
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
-    }
-
-    if (!isV3Enabled()) {
-      const collaborationStateResult = await checkCollaborationState(env!);
-      if (collaborationStateResult.isErr()) {
-        throw collaborationStateResult.error;
-      }
-
-      if (collaborationStateResult.value.state !== CollaborationState.OK) {
-        result = collaborationStateResult;
-        if (result.value.state === CollaborationState.NotProvisioned) {
-          showWarningMessageWithProvisionButton(result.value.message);
-        } else {
-          window.showWarningMessage(result.value.message);
-        }
-
-        await processResult(TelemetryEvent.ListCollaborator, result, inputs);
-        return result;
-      }
     }
 
     inputs = getSystemInputs();

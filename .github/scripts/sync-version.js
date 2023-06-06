@@ -63,18 +63,10 @@ function updateFileDeps(file, deps) {
 
 function main() {
     const pathInput = process.argv[2];
-    console.log('=================', __filename, " pathInput: ", pathInput);
-    if (pathInput) {
-        console.log('syncup ', pathInput);
-        const content = getSdkDeps();
-        const configFilePath = path.join(pathInput, "package.json");
-        updateFileDeps(configFilePath, content);
-    } else {
-        console.log('syncup templates')
-        const templateDir = path.join(__dirname, "../../templates");
-        const templateList = require(path.join(templateDir, "package.json")).templates;
-        updateTemplatesDeps(templateDir, templateList);
-    }
+    console.log('================= syncup templates', __filename)
+    const templateDir = path.join(__dirname, "../../templates");
+    const templateList = require(path.join(templateDir, "package.json")).templates;
+    updateTemplatesDeps(templateDir, templateList);
 }
 
 main()

@@ -37,7 +37,6 @@ import {
   ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { coordinator } from "../component/coordinator";
-import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
@@ -239,13 +238,6 @@ export class FxCoreV3Implement {
     const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
     if (res.isErr()) {
-      if (res.error instanceof MissingEnvInFileUserError) {
-        res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
-        if (res.error.displayMessage) {
-          res.error.displayMessage +=
-            " " + getLocalizedString("error.UpdateAadManifest.MissingEnvHint");
-        }
-      }
       return err(res.error);
     }
     if (contextV3.platform === Platform.CLI) {

@@ -57,13 +57,16 @@ import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import * as coreImplement from "../../src/core/FxCore";
-import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
-import { FileNotFoundError, InvalidProjectError } from "../../src/error/common";
+import {
+  FileNotFoundError,
+  InvalidProjectError,
+  MissingEnvironmentVariablesError,
+} from "../../src/error/common";
 import * as collaborator from "../../src/core/collaborator";
 import { CollaborationUtil } from "../../src/core/collaborator";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
@@ -326,21 +329,25 @@ describe("Core basic APIs", () => {
         .stub(UpdateAadAppDriver.prototype, "run")
         .resolves(
           err(
-            new MissingEnvInFileUserError(
+            new MissingEnvironmentVariablesError(
               "aadApp/update",
               "AAD_APP_OBJECT_ID",
-              "https://fake-help-link",
-              "driver.aadApp.error.generateManifestFailed",
-              "fake path"
+              "fake path",
+              "https://fake-help-link"
             )
           )
         );
       const res = await core.deployAadManifest(inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
-        assert.strictEqual(
+        // Cannot assert the full message because the mocked code can't get correct env file path
+        assert.include(
           res.error.message,
-          "Unable to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path has no value. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
+          "The program cannot proceed as the following environment variables are missing: 'AAD_APP_OBJECT_ID', which are required for file: fake path. Make sure the required variables are set either by editing the .env file"
+        );
+        assert.include(
+          res.error.message,
+          "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables"
         );
       }
     } finally {

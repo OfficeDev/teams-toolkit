@@ -8,31 +8,13 @@ import faker from "faker";
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
 import { TestHelper } from "../helper";
 import { PluginContext, UserError, SystemError } from "@microsoft/teamsfx-api";
-import {
-  GraphAndAppStudioTokenProvider,
-  TokenAudience,
-  TokenProvider,
-} from "../../../../../src/component/resource/aadApp/utils/tokenProvider";
 import { GraphClient } from "../../../../../src/component/resource/aadApp/graph";
-import {
-  IAADDefinition,
-  RequiredResourceAccess,
-} from "../../../../../src/component/resource/aadApp/interfaces/IAADDefinition";
-import {
-  CreateAppError,
-  CreateSecretError,
-} from "../../../../../src/component/resource/aadApp/errors";
-import { ConfigKeys, Constants } from "../../../../../src/component/resource/aadApp/constants";
-import { MockM365TokenProvider, MockTools } from "../../../../core/utils";
+import { Constants } from "../../../../../src/component/resource/aadApp/constants";
+import { MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
-
-import * as tool from "../../../../../src/common/tools";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
-  const mockTokenProviders: GraphAndAppStudioTokenProvider = {
-    m365: new MockM365TokenProvider(),
-  };
   beforeEach(async () => {
     setTools(new MockTools());
     ctx = await TestHelper.pluginContext(new Map(), true, false, false);

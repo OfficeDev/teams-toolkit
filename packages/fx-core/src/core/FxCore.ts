@@ -558,7 +558,7 @@ export async function ensureBasicFolderStructure(
       await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
-    return err(new WriteFileError(path.join(inputs.projectPath, `.gitignore`), e as Error, "core"));
+    return err(new WriteFileError(e as Error, "core"));
   }
   return ok(null);
 }

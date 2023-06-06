@@ -59,7 +59,7 @@ export class UserSettings {
         fs.writeJSONSync(filePath, {});
       }
     } catch (e) {
-      return err(new WriteFileError(filePath, e as Error, cliSource));
+      return err(new WriteFileError(e as Error, cliSource));
     }
 
     const res = jsonUtils.readJSONFileSync(filePath);
@@ -79,7 +79,7 @@ export class UserSettings {
       fs.writeJSONSync(this.getUserSettingsFile(), obj);
       return ok(null);
     } catch (e) {
-      return err(new WriteFileError(this.getUserSettingsFile(), e as Error, cliSource));
+      return err(new WriteFileError(e as Error, cliSource));
     }
   }
 

@@ -66,11 +66,11 @@ describe("Errors", () => {
     sandbox.restore();
   });
   it("WriteFileError", () => {
-    const error = new WriteFileError("", new Error("write file error"), "common");
+    const error = new WriteFileError(new Error("write file error"), "common");
     chai.assert(error.name === "WriteFileError");
   });
   it("WriteFileError", () => {
-    const error = new WriteFileError("", new Error(""), "common");
+    const error = new WriteFileError(new Error(""), "common");
     chai.assert(error.name === "WriteFileError");
   });
 });

@@ -7,7 +7,6 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { getAllFeatureFlags } from "../utils";
 import { CliConfigOptions } from "../userSetttings";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 
@@ -62,9 +61,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -84,9 +80,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -105,9 +98,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
-
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
     this.reporter.sendTelemetryException(error, properties, measurements);
   }

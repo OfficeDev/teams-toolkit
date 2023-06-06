@@ -14,18 +14,12 @@ import {
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
-import {
-  CodeFlowLogin,
-  LoginFailureError,
-  ConvertTokenToJson,
-  checkIsOnline,
-} from "./codeFlowLogin";
+import { CodeFlowLogin, ConvertTokenToJson, checkIsOnline } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
 import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
-import { NotFoundSubscriptionId } from "../error";
 import {
   changeLoginTenantMessage,
   env,
@@ -395,7 +389,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         return;
       }
     }
-    throw NotFoundSubscriptionId();
+    throw new InvalidAzureSubscriptionError(subscriptionId);
   }
 
   getAccountInfo(): Record<string, string> | undefined {
@@ -547,6 +541,7 @@ async function listAll<T>(
 
 import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 import AzureLoginCI from "./azureLoginCI";
+import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 
 const ciEnabled = process.env.CI_ENABLED;
 // todo delete ciEnabled

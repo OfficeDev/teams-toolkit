@@ -8,7 +8,6 @@ import {
   FxError,
   LoginStatus,
   M365TokenProvider,
-  NotImplementedError,
   ok,
   Result,
   TokenRequest,
@@ -16,7 +15,7 @@ import {
 
 import { RequestTypes } from "../../apis";
 import { getResponseWithErrorHandling } from "../../utils";
-import { signedIn } from "../../constant";
+import { NotImplementedError } from "@microsoft/teamsfx-core";
 
 export default class ServerM365TokenProvider implements M365TokenProvider {
   private readonly connection: MessageConnection;

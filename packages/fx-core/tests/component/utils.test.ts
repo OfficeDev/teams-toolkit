@@ -14,12 +14,6 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { deployUtils } from "../../src/component/deployUtils";
-import {
-  FindFunctionAppError,
-  PackDirectoryExistenceError,
-  ResourceNotFoundError,
-} from "../../src/component/error";
-import { convertContext } from "../../src/component/resource/aadApp/utils";
 import { createContextV3, createDriverContext } from "../../src/component/utils";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
@@ -34,17 +28,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
   setTools(tools);
   afterEach(() => {
     sandbox.restore();
-  });
-  it("convertContext", () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const envInfo = newEnvInfoV3();
-    const context = createContextV3();
-    context.envInfo = envInfo;
-    const ctx = convertContext(context, inputs);
-    expect(ctx !== undefined).to.eql(true);
   });
 
   it("askForDeployConsentV3 confirm", async () => {
@@ -68,14 +51,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     sandbox.stub(ctx.ui!, "showMessage").resolves(ok(undefined));
     const res = await deployUtils.askForDeployConsentV3(ctx);
     assert.isTrue(res.isErr());
-  });
-  it("errors", async () => {
-    const error1 = new PackDirectoryExistenceError("FE");
-    assert.isDefined(error1);
-    const error2 = new ResourceNotFoundError("test", "");
-    assert.isDefined(error2);
-    const error3 = new FindFunctionAppError("FE");
-    assert.isDefined(error3);
   });
 });
 

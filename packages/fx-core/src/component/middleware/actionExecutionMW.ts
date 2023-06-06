@@ -4,7 +4,6 @@
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
-  assembleError,
   ContextV3,
   Effect,
   err,
@@ -15,7 +14,6 @@ import {
   QTreeNode,
   Result,
   SystemError,
-  traverse,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
@@ -31,6 +29,8 @@ import {
   sendSuccessEvent,
 } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
+import { assembleError } from "../../error/common";
+import { traverse } from "../../ui/visitor";
 
 export interface ActionOption {
   componentName?: string;

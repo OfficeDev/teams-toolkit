@@ -1,31 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert } from "chai";
-import "mocha";
-import fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
-import { deleteFolder, randomAppName } from "./utils";
 import {
   ConfigFolderName,
   CryptoProvider,
   EnvConfig,
   EnvConfigFileNameTemplate,
-  EnvInfo,
   EnvNamePlaceholder,
   FxError,
   InputConfigsFolderName,
   Json,
-  ok,
   Result,
+  ok,
   v3,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, envPrefix } from "../../src/core/environment";
+import { assert } from "chai";
+import fs from "fs-extra";
+import "mocha";
+import mockedEnv from "mocked-env";
+import * as os from "os";
+import * as path from "path";
+import sinon from "sinon";
 import { ManifestVariables } from "../../src/common/constants";
 import * as tools from "../../src/common/tools";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import sinon from "sinon";
+import { envPrefix, environmentManager } from "../../src/core/environment";
+import { WriteFileError } from "../../src/error/common";
+import { deleteFolder, randomAppName } from "./utils";
 
 class MockCrypto implements CryptoProvider {
   private readonly encryptedValue: string;
@@ -424,81 +424,45 @@ describe("APIs of Environment Manager", () => {
     });
   });
 
-  describe("Write Environment State", () => {
-    before(async () => {
-      sandbox.stub(tools, "dataNeedEncryption").returns(true);
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
-        fileMap.set(file, data);
-      });
-    });
-
+  describe("WriteFileError", () => {
     afterEach(async () => {
-      fileMap.clear();
-      deleteFolder(projectPath);
-    });
-
-    after(async () => {
       sandbox.restore();
     });
-
-    it("no userdata: write environment state without target env", async () => {
-      await environmentManager.writeEnvState(
-        tools.objectToMap(envStateDataWithoutCredential),
+    it("writeEnvConfig throws WriteFileError", async () => {
+      sandbox.stub<any, any>(fs, "pathExists").resolves(true);
+      sandbox.stub<any, any>(environmentManager, "getEnvConfigsFolder").returns(ok("test"));
+      sandbox.stub<any, any>(environmentManager, "getEnvConfigPath").returns("test");
+      sandbox.stub<any, any>(fs, "writeFile").rejects(new Error());
+      const envName = "test";
+      const envConfig = environmentManager.newEnvConfigData(appName);
+      const envConfigPathResult = await environmentManager.writeEnvConfig(
         projectPath,
-        cryptoProvider
+        envConfig,
+        envName
       );
-      const envFiles = environmentManager.getEnvStateFilesPath(
-        environmentManager.getDefaultEnvName(),
-        projectPath
-      );
-
-      assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithoutCredential);
-      assert.isUndefined(fileMap.get(envFiles.userDataFile));
+      assert.isTrue(envConfigPathResult.isErr());
+      if (envConfigPathResult.isErr()) {
+        const truth = envConfigPathResult.error instanceof WriteFileError;
+        assert.isTrue(truth);
+      }
     });
 
-    it("no userdata: write environment state with target env", async () => {
-      await environmentManager.writeEnvState(
-        tools.objectToMap(envStateDataWithoutCredential),
-        projectPath,
-        cryptoProvider,
-        targetEnvName
+    it("writeEnvState throws WriteFileError", async () => {
+      sandbox.stub<any, any>(fs, "pathExists").resolves(true);
+      sandbox.stub<any, any>(environmentManager, "getEnvConfigsFolder").returns(ok("test"));
+      sandbox.stub<any, any>(environmentManager, "getEnvConfigPath").returns("test");
+      sandbox.stub<any, any>(environmentManager, "isEmptyRecord").throws(new Error());
+      const envName = "test";
+      const envConfigPathResult = await environmentManager.writeEnvState(
+        new Map(),
+        ".",
+        new MockCrypto("a", "b"),
+        envName
       );
-      const envFiles = environmentManager.getEnvStateFilesPath(targetEnvName, projectPath);
-
-      assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithoutCredential);
-      assert.isUndefined(fileMap.get(envFiles.userDataFile));
-    });
-
-    it("with userdata: write environment state without target env", async () => {
-      await environmentManager.writeEnvState(
-        envStateDataObj,
-        projectPath,
-        cryptoProvider,
-        undefined
-      );
-      const envFiles = environmentManager.getEnvStateFilesPath(
-        environmentManager.getDefaultEnvName(),
-        projectPath
-      );
-
-      assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithCredential);
-    });
-
-    it("with userdata: write environment state with target env", async () => {
-      await environmentManager.writeEnvState(
-        envStateDataObj,
-        projectPath,
-        cryptoProvider,
-        targetEnvName
-      );
-      const envFiles = environmentManager.getEnvStateFilesPath(targetEnvName, projectPath);
-
-      const expectedEnvStateContent = JSON.stringify(envStateDataWithCredential, null, 4);
-      assert.equal(
-        formatContent(fileMap.get(envFiles.envState)),
-        formatContent(expectedEnvStateContent)
-      );
+      assert.isTrue(envConfigPathResult.isErr());
+      if (envConfigPathResult.isErr()) {
+        assert.isTrue(envConfigPathResult.error instanceof WriteFileError);
+      }
     });
   });
 

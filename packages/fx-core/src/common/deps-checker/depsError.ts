@@ -44,14 +44,6 @@ export class LinuxNotSupportedError extends DepsCheckerError {
   }
 }
 
-export class BackendExtensionsInstallError extends DepsCheckerError {
-  constructor(message: string, helpLink: string) {
-    super(message, helpLink);
-
-    Object.setPrototypeOf(this, BackendExtensionsInstallError.prototype);
-  }
-}
-
 export class VxTestAppCheckError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);

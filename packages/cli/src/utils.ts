@@ -3,33 +3,25 @@
 
 import {
   Colors,
-  FxError,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Platform,
   QTreeNode,
   Question,
-  Result,
   SingleSelectQuestion,
-  err,
-  getSingleOption,
-  ok,
 } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { getSingleOption } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { Options } from "yargs";
-import { FeatureFlags, teamsAppFileName } from "./constants";
-import { ConfigNotFoundError, ReadFileError } from "./error";
+import { teamsAppFileName } from "./constants";
 import CLIUIInstance from "./userInteraction";
 
-export type Json = { [_: string]: any };
-
-export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
+function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
   const option = "staticOptions" in data ? data.staticOptions : undefined;
   if (option && option instanceof Array && option.length > 0) {
     if (typeof option[0] === "string") {
@@ -104,32 +96,6 @@ export function flattenNodes(node: QTreeNode): QTreeNode[] {
   return [nodeCopy].concat(...children.map((nd) => flattenNodes(nd)));
 }
 
-export async function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function getSettingsFilePath(projectFolder: string) {
-  return path.join(projectFolder, teamsAppFileName);
-}
-
-export function readSettingsFileSync(projectFolder: string): Result<Json, FxError> {
-  const filePath = getSettingsFilePath(projectFolder);
-  if (!fs.existsSync(filePath)) {
-    return err(ConfigNotFoundError(filePath));
-  }
-
-  try {
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const configuration = parse(fileContent);
-    return ok({
-      projectId: configuration.projectId,
-      version: configuration.version,
-    });
-  } catch (e) {
-    return err(ReadFileError(e));
-  }
-}
-
 export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 
@@ -143,62 +109,24 @@ export function isWorkspaceSupported(workspace: string): boolean {
   return true;
 }
 
-export interface TeamsAppTelemetryInfo {
-  appId: string;
-  tenantId: string;
-}
-
-export function getTeamsAppTelemetryInfoByEnv(
-  projectDir: string,
-  env: string
-): TeamsAppTelemetryInfo | undefined {
-  try {
-    if (isWorkspaceSupported(projectDir)) {
-      const result = environmentManager.getEnvStateFilesPath(env, projectDir);
-      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-      const appstudioState = envJson["fx-resource-appstudio"];
-      return {
-        appId: appstudioState.teamsAppId,
-        tenantId: appstudioState.tenantId,
-      };
-    }
-  } catch (e) {
-    return undefined;
-  }
-}
-
 // Only used for telemetry
 export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
   if (!rootFolder) {
     return undefined;
   }
-  try {
-    if (isWorkspaceSupported(rootFolder)) {
-      const result = readSettingsFileSync(rootFolder);
-      if (result.isOk()) {
-        return result.value.version;
-      }
+  if (isWorkspaceSupported(rootFolder)) {
+    const filePath = path.join(rootFolder, teamsAppFileName);
+    if (!fs.existsSync(filePath)) {
+      return undefined;
     }
-  } catch (e) {
-    // ignore errors for telemetry
-  }
-  return undefined;
-}
 
-// Only used for telemetry
-export function getIsM365(rootFolder: string | undefined): string | undefined {
-  if (!rootFolder) {
-    return undefined;
-  }
-  try {
-    if (isWorkspaceSupported(rootFolder)) {
-      const result = readSettingsFileSync(rootFolder);
-      if (result.isOk() && result.value.isM365 !== undefined) {
-        return `${result.value.isM365}`;
-      }
+    try {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const configuration = parse(fileContent);
+      return configuration.version;
+    } catch (e) {
+      return undefined;
     }
-  } catch (e) {
-    // ignore errors for telemetry
   }
   return undefined;
 }
@@ -212,24 +140,6 @@ export function getSystemInputs(projectPath?: string, env?: string): Inputs {
     nonInteractive: !CLIUIInstance.interactive,
   };
   return systemInputs;
-}
-
-export function argsToInputs(
-  params: { [_: string]: Options },
-  args: { [argName: string]: string | string[] }
-): Inputs {
-  const inputs = getSystemInputs();
-  for (const name in params) {
-    if (name.endsWith("folder") && args[name]) {
-      inputs[name] = path.resolve(args[name] as string);
-    } else {
-      inputs[name] = args[name];
-    }
-  }
-  const rootFolder = path.resolve((inputs["folder"] as string) || "./");
-  delete inputs["folder"];
-  inputs.projectPath = rootFolder;
-  return inputs;
 }
 
 export function getColorizedString(message: Array<{ content: string; color: Colors }>): string {
@@ -267,30 +177,4 @@ export function getVersion(): string {
   const pkgPath = path.resolve(__dirname, "..", "package.json");
   const pkgContent = fs.readJsonSync(pkgPath);
   return pkgContent.version;
-}
-
-// Determine whether feature flag is enabled based on environment variable setting
-export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
-  const flag = process.env[featureFlagName];
-  if (flag === undefined) {
-    return defaultValue; // allows consumer to set a default value when environment variable not set
-  } else {
-    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
-  }
-}
-
-export function isRemoteCollaborationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlags.InsiderPreview, true);
-}
-
-export function getAllFeatureFlags(): string[] | undefined {
-  const result = Object.values(FeatureFlags)
-    .filter((featureFlag) => {
-      return isFeatureFlagEnabled(featureFlag);
-    })
-    .map((featureFlag) => {
-      return featureFlag;
-    });
-
-  return result;
 }

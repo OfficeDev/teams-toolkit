@@ -7,7 +7,6 @@ import {
   Platform,
   Result,
   Settings,
-  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -33,6 +32,7 @@ import {
   FileNotFoundError,
   MissingEnvironmentVariablesError,
   MissingRequiredFileError,
+  UserCancelError,
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
 
@@ -86,6 +86,7 @@ describe("envUtils", () => {
   describe("pathUtils.getEnvFolderPath", () => {
     it("happy path", async () => {
       const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
         environmentFolderPath: "/home/envs",
       };
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
@@ -98,7 +99,9 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {};
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(true);
@@ -109,7 +112,9 @@ describe("envUtils", () => {
       }
     });
     it("returns undefined value", async () => {
-      const mockProjectModel: ProjectModel = {};
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(false);
@@ -124,6 +129,7 @@ describe("envUtils", () => {
   describe("pathUtils.getEnvFilePath", () => {
     it("happy path", async () => {
       const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
         environmentFolderPath: "/home/envs",
       };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
@@ -136,7 +142,9 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {};
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
       sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
@@ -596,7 +604,7 @@ describe("envUtils", () => {
     });
     it("EnvLoaderMW cancel", async () => {
       sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
-      sandbox.stub(tools.ui, "selectOption").resolves(err(UserCancelError));
+      sandbox.stub(tools.ui, "selectOption").resolves(err(new UserCancelError()));
       class MyClass {
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok(undefined);

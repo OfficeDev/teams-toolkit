@@ -42,7 +42,7 @@ describe("Debug V3 tab-non-sso template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449525 }, async function () {
+  it("happy path: provision and deploy", { testPlanCaseId: 9426074 }, async function () {
     if (!isV3Enabled()) {
       this.skip();
     }

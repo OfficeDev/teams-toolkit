@@ -55,7 +55,7 @@
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
 /packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
-/packages/fx-core/resource/yaml.schema.json @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
+/packages/fx-core/resource/yaml-schema @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 
 /packages/fx-core/src/question @jayzhang @xzf0587 @hund030 @LongOddCode
@@ -66,7 +66,7 @@
 
 /packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
- 
+
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 

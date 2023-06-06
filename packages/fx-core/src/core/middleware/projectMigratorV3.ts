@@ -34,7 +34,6 @@ import {
   UpgradeV3CanceledError,
   MigrationError,
   AbandonedProjectError,
-  ToolkitNotSupportError,
   NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
@@ -403,8 +402,6 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
       learnMoreLink
     );
   }
-  // Backup templates/appPackage
-  await context.backup(oldAppPackageFolderPath);
 
   // Validate manifest template
   {
@@ -419,6 +416,9 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     }
   }
 
+  // Backup templates/appPackage
+  await context.backup(oldAppPackageFolderPath);
+
   // Read Bicep
   const bicepContent = await readBicepContent(context);
   if (isValidDomainForBotOutputKey(bicepContent)) {
@@ -428,14 +428,17 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   // Ensure appPackage
   await context.fsEnsureDir(AppPackageFolderName);
 
-  // Copy templates/appPackage/resources
-  const oldResourceFolderPath = path.join(oldAppPackageFolderPath, "resources");
-  const oldResourceFolderExists = await fs.pathExists(
-    path.join(context.projectPath, oldResourceFolderPath)
+  // copy other files from old path to new except manifest.template.json and aad.template.json
+  const oldAppPackageFiles = await fs.readdir(
+    path.join(context.projectPath, oldAppPackageFolderPath)
   );
-  if (oldResourceFolderExists) {
-    const resourceFolderPath = path.join(AppPackageFolderName, "resources");
-    await context.fsCopy(oldResourceFolderPath, resourceFolderPath);
+  for (const file of oldAppPackageFiles) {
+    if (file !== MANIFEST_TEMPLATE_CONSOLIDATE && file !== MetadataV2.aadTemplateFileName) {
+      await context.fsCopy(
+        path.join(oldAppPackageFolderPath, file),
+        path.join(AppPackageFolderName, file)
+      );
+    }
   }
 
   // Read capability project settings
@@ -464,7 +467,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   }
 
   // Read AAD app manifest and save to ./aad.manifest.json
-  const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
+  const oldAadManifestPath = path.join(oldAppPackageFolderPath, MetadataV2.aadTemplateFileName);
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );

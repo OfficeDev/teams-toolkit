@@ -175,7 +175,7 @@ describe("v3 lifecyle", () => {
         with: {},
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(result.isErr() && result.error.name === "InvalidYmlActionNameError");
 
@@ -228,7 +228,7 @@ describe("v3 lifecyle", () => {
         with: {},
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -271,7 +271,7 @@ describe("v3 lifecyle", () => {
         with: {},
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(result.isErr() && result.error.name === "fakeError");
 
@@ -332,7 +332,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
       });
 
-      let lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -348,7 +348,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
       });
 
-      lifecycle = new Lifecycle("configureApp", driverDefs);
+      lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(execResult.isOk() && execResult.value.get("OUTPUT") === "HELLO XXX");
       assert(summaries.length === 1 && summaries[0].length === 0);
@@ -402,7 +402,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }} and ${{OTHER_ENV_VAR}}" },
       });
 
-      let lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -416,7 +416,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }} and ${{OTHER_ENV_VAR}}" },
       });
 
-      lifecycle = new Lifecycle("configureApp", driverDefs);
+      lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(execResult.isOk() && execResult.value.get("OUTPUT") === "HELLO XXX AND YYY");
       assert(summaries.length === 1 && summaries[0].length === 0);
@@ -433,7 +433,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "Hello ${{OTHER_ENV_VAR}}" },
       });
 
-      let lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -452,7 +452,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "Hello ${{OTHER_ENV_VAR}}" },
       });
 
-      lifecycle = new Lifecycle("configureApp", driverDefs);
+      lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(
         execResult.isOk() &&
@@ -472,7 +472,7 @@ describe("v3 lifecyle", () => {
         },
       });
 
-      let lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -488,7 +488,7 @@ describe("v3 lifecyle", () => {
         },
       });
 
-      lifecycle = new Lifecycle("configureApp", driverDefs);
+      lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(execResult.isOk() && execResult.value.get("OUTPUT_D") === "hello xxx,hello yyy");
       assert(summaries.length === 1 && summaries[0].length === 0);
@@ -507,7 +507,7 @@ describe("v3 lifecyle", () => {
           with: { INPUT_A: "Hello ${{OUTPUT}}" },
         });
 
-        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
         const { result, summaries } = await lifecycle.execute(mockedDriverContext);
         assert(
           result.isOk() &&
@@ -528,7 +528,7 @@ describe("v3 lifecyle", () => {
           },
         });
 
-        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
         const { result, summaries } = await lifecycle.execute(mockedDriverContext);
         assert(result.isOk() && result.value.get("OUTPUT_E") === "hello xxx");
         assert(summaries.length === 1 && summaries[0].length === 0);
@@ -573,7 +573,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "${{CCC}} Hello ${{OTHER_ENV_VAR}}" },
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -627,7 +627,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: { a: "${{CCC}} Hello ${{OTHER_ENV_VAR}}" } },
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -681,7 +681,7 @@ describe("v3 lifecyle", () => {
           },
         });
 
-        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
         const { result, summaries } = await lifecycle.execute(mockedDriverContext);
         assert(
           result.isErr() &&
@@ -747,7 +747,7 @@ describe("Summary", () => {
       with: {},
     });
 
-    const lifecycle = new Lifecycle("configureApp", driverDefs);
+    const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
     const { result, summaries } = await lifecycle.execute(mockedDriverContext);
 
     assert(
@@ -782,7 +782,7 @@ describe("Summary", () => {
       with: {},
     });
 
-    const lifecycle = new Lifecycle("configureApp", driverDefs);
+    const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
     const { result, summaries } = await lifecycle.execute(mockedDriverContext);
 
     assert(
@@ -826,7 +826,7 @@ describe("Summary", () => {
       with: {},
     });
 
-    const lifecycle = new Lifecycle("configureApp", driverDefs);
+    const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
     const { result, summaries } = await lifecycle.execute(mockedDriverContext);
 
     assert(
@@ -885,7 +885,7 @@ describe("writeToEnvironmentFile", () => {
       },
     });
 
-    const lifecycle = new Lifecycle("configureApp", driverDefs);
+    const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
     const { result } = await lifecycle.execute(mockedDriverContext);
 
     assert(

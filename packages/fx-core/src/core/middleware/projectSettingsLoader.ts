@@ -29,9 +29,10 @@ import {
 import { MetadataV3 } from "../../common/versionMetadata";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 import { settingsUtil } from "../../component/utils/settingsUtil";
-import { NoProjectOpenedError, ReadFileError } from "../error";
+import { NoProjectOpenedError } from "../error";
 import { globalVars } from "../globalVars";
 import { CoreHookContext } from "../types";
+import { ReadFileError } from "../../error/common";
 
 export async function loadProjectSettings(
   inputs: Inputs,
@@ -59,7 +60,7 @@ export async function loadProjectSettingsByProjectPath(
       return err(readSettingsResult.error);
     }
   } catch (e) {
-    return err(ReadFileError(e));
+    return err(new ReadFileError(e, "projectSettingsLoader"));
   }
 }
 

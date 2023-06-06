@@ -5,8 +5,6 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { stubInterface } from "ts-sinon";
-import * as util from "util";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 
@@ -15,7 +13,6 @@ import {
   err,
   FxError,
   Inputs,
-  IProgressHandler,
   ok,
   Platform,
   ProjectSettings,
@@ -25,9 +22,10 @@ import {
   UserError,
   Void,
   VsCodeEnv,
-  UserCancelError,
   OptionItem,
+  SystemError,
 } from "@microsoft/teamsfx-api";
+import { UserCancelError, UnhandledError } from "@microsoft/teamsfx-core";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
@@ -814,124 +812,6 @@ describe("handlers", () => {
     });
   });
 
-  describe("permissions", async function () {
-    this.afterEach(() => {
-      sinon.restore();
-    });
-    it("grant permission", async () => {
-      sinon.restore();
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(handlers, "core").value(new MockCore());
-      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
-      sinon.stub(M365TokenInstance, "getJsonObject").resolves(
-        ok({
-          tid: "fake-tenant-id",
-        })
-      );
-
-      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse("file://fakeProjectPath"));
-      sinon.stub(globalVariables, "isSPFxProject").value(false);
-      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
-        return "fake-tenant-id";
-      });
-
-      sinon.stub(MockCore.prototype, "grantPermission").returns(
-        Promise.resolve(
-          ok({
-            state: CollaborationState.OK,
-            userInfo: {
-              userObjectId: "fake-user-object-id",
-              userPrincipalName: "fake-user-principle-name",
-            },
-            permissions: [
-              {
-                name: "name",
-                type: "type",
-                resourceId: "id",
-                roles: ["Owner"],
-              },
-            ],
-          })
-        )
-      );
-
-      const result = await handlers.grantPermission("env");
-      chai.expect(result.isOk()).equals(true);
-    });
-
-    it("grant permission with empty tenant id", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(handlers, "core").value(new MockCore());
-      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
-      sinon.stub(M365TokenInstance, "getJsonObject").resolves(
-        ok({
-          tid: "fake-tenant-id",
-        })
-      );
-      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
-        return "";
-      });
-
-      const result = await handlers.grantPermission("env");
-
-      if (result.isErr()) {
-        throw new Error("Unexpected error: " + result.error.message);
-      }
-
-      chai.expect(result.isOk()).equals(true);
-      chai.expect(result.value.state === CollaborationState.EmptyM365Tenant);
-    });
-
-    it("list collaborators", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(handlers, "core").value(new MockCore());
-      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
-      sinon.stub(M365TokenInstance, "getJsonObject").resolves(
-        ok({
-          tid: "fake-tenant-id",
-        })
-      );
-      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
-        return "fake-tenant-id";
-      });
-
-      await handlers.listCollaborator("env");
-    });
-
-    it("list collaborators with empty tenant id", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
-      sinon.stub(handlers, "core").value(new MockCore());
-      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
-      sinon.stub(M365TokenInstance, "getJsonObject").resolves(
-        ok({
-          tid: "fake-tenant-id",
-        })
-      );
-      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
-        return "";
-      });
-
-      const showWarningMessage = sinon
-        .stub(vscode.window, "showWarningMessage")
-        .callsFake((message: string): any => {
-          chai
-            .expect(message)
-            .equal(StringResources["teamstoolkit.commandsTreeViewProvider.emptyM365Tenant"]);
-        });
-      await handlers.listCollaborator("env");
-
-      chai.expect(showWarningMessage.callCount).to.be.equal(1);
-    });
-  });
-
   describe("permission v3", function () {
     const sandbox = sinon.createSandbox();
 
@@ -1107,7 +987,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1124,7 +1003,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1135,7 +1013,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.CommandPalette]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1163,7 +1040,6 @@ describe("handlers", () => {
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
         phantomMigrationV3Stub.calledOnceWith({
-          "function-dotnet-checker-enabled": true,
           locale: "en-us",
           platform: "vsc",
           projectPath: undefined,
@@ -1299,8 +1175,8 @@ describe("handlers", () => {
 
   describe("scaffoldFromDeveloperPortalHandler", async () => {
     beforeEach(() => {
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
     });
     afterEach(() => {
       sinon.restore();
@@ -1349,7 +1225,7 @@ describe("handlers", () => {
       chai.assert.isTrue(endProgress.calledOnceWithExactly(false));
       chai.assert.isTrue(showErrorMessage.calledOnce);
       if (res.isErr()) {
-        chai.assert.equal(res.error.name, "error1");
+        chai.assert.isTrue(res.error instanceof UnhandledError);
       }
     });
 
@@ -1403,6 +1279,9 @@ describe("handlers", () => {
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon
+        .stub(M365TokenInstance, "getAccessToken")
+        .resolves(err(new SystemError("source", "name", "", "")));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
@@ -1427,6 +1306,8 @@ describe("handlers", () => {
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon.stub(M365TokenInstance, "getAccessToken").resolves(ok("authSvcToken"));
+      sinon.stub(commonTools, "setRegion").resolves();
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
@@ -1492,7 +1373,7 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test2.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
-      sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(UserCancelError));
+      sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(new UserCancelError("VSC")));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
@@ -1510,7 +1391,7 @@ describe("handlers", () => {
     it("select file error", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(UserCancelError));
+      sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(new UserCancelError("VSC")));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1610,6 +1491,19 @@ describe("handlers", () => {
       await handlers.checkSideloadingCallback();
 
       chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
+    });
+
+    it("signinAzureCallback", async () => {
+      sinon.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
+      const getIdentityCredentialStub = sinon.stub(
+        AzureAccountManager.prototype,
+        "getIdentityCredentialAsync"
+      );
+
+      await handlers.signinAzureCallback([{}, { status: 0 }]);
+
+      chai.assert.isTrue(getIdentityCredentialStub.calledOnce);
       sinon.restore();
     });
   });

@@ -6,6 +6,7 @@ import sinon from "sinon";
 
 import {
   Colors,
+  InputTextConfig,
   LogLevel,
   MultiSelectConfig,
   SelectFileConfig,
@@ -15,10 +16,10 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import LogProvider from "../../src/commonlib/log";
-import { EmptySubConfigOptions } from "../../src/error";
 import UI from "../../src/userInteraction";
 import { getColorizedString } from "../../src/utils";
 import { expect } from "./utils";
+import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -82,7 +83,7 @@ describe("User Interaction Tests", function () {
       };
       const result = await UI.selectOption(config);
       expect(result.isOk() ? result.value.result : result.error.name).equals(
-        EmptySubConfigOptions().name
+        new SelectSubscriptionError().name
       );
     });
 
@@ -290,5 +291,55 @@ describe("User Interaction Tests", function () {
 
   it("Create Progress Bar", async () => {
     UI.createProgressBar("title", 3);
+  });
+});
+
+describe("Errors in User Interaction", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("InputValidationError", async () => {
+    const config: InputTextConfig = {
+      name: "testInput",
+      title: "input text",
+      validation: (input: string) => {
+        return "failed";
+      },
+    };
+    UI.updatePresetAnswer("testInput", "valuebrabrabra");
+    const result = await UI.inputText(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("InputValidationError");
+    }
+  });
+
+  it("UnhandledError", async () => {
+    sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+    const config: InputTextConfig = {
+      name: "testInput",
+      title: "input text",
+    };
+    UI.clearPresetAnswers();
+    const result = await UI.inputText(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("UnhandledError");
+    }
+  });
+
+  it("SelectSubscriptionError", async () => {
+    sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+    const config: SingleSelectConfig = {
+      name: "subscription",
+      title: "select subscription",
+      options: [],
+    };
+    const result = await UI.selectOption(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("SelectSubscriptionError");
+    }
   });
 });

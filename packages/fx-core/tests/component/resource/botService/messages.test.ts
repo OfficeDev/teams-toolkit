@@ -30,23 +30,6 @@ describe("Test Messages", () => {
     expect(messages[1]).to.be.equals(getLocalizedString("plugins.bot.FailedToUpdateConfigs", sth));
   });
 
-  it("FailToUpdateMessageEndpoint", () => {
-    const endpoint = "endpoint";
-    const messages = Messages.FailToUpdateMessageEndpoint(endpoint);
-    expect(messages[0]).to.be.equals(
-      getDefaultString("plugins.bot.FailedUpdateMessageEndpoint", endpoint)
-    );
-    expect(messages[1]).to.be.equals(
-      getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint)
-    );
-  });
-
-  it("FailToCallAppStudioForCheckingAADApp", () => {
-    const messages = Messages.FailToCallAppStudioForCheckingAADApp();
-    expect(messages[0]).to.be.equals(getDefaultString("plugins.bot.FailToCallAppStudioApi"));
-    expect(messages[1]).to.be.equals(getLocalizedString("plugins.bot.FailToCallAppStudioApi"));
-  });
-
   it("BotResourceExist", () => {
     const place = "place";
     const message = Messages.BotResourceExist(place);

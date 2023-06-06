@@ -2,10 +2,9 @@
 // Licensed under the MIT license.
 
 import { validate as uuidValidate } from "uuid";
-import { getAvailableBicepVersions } from "../../utils/depsChecker/bicepChecker";
 import { TemplateType } from "./constant";
 import { deployArgs, templateArgs } from "./interface";
-import { getFileExtension, hasBicepTemplate } from "./util/util";
+import { getFileExtension } from "./util/util";
 
 export async function validateArgs(args: deployArgs): Promise<string[]> {
   const invalidParameters: string[] = [];

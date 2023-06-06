@@ -4,20 +4,13 @@
 /**
  * @author Ivan He <ruhe@microsoft.com>
  */
-import {
-  err,
-  FxError,
-  Result,
-  ok,
-  M365TokenProvider,
-  NotImplementedError,
-  LogProvider,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Result, ok, M365TokenProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { GraphScopes } from "../../../../common/tools";
 import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { logMessageKeys } from "./constants";
 import { GraphClient } from "./graphClient";
+import { NotImplementedError } from "../../../../error/common";
 
 export enum BotAuthType {
   AADApp = "AADApp",

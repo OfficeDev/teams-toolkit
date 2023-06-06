@@ -19,7 +19,6 @@ import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
 import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
@@ -27,10 +26,10 @@ import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { ReadFileError, WriteFileError } from "../../src/core/error";
 import { createAppNameQuestion } from "../../src/core/question";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
+import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 
 export class MockedAzureTokenProvider implements AzureAccountProvider {
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
@@ -132,20 +131,6 @@ describe("Other test case", () => {
     assert.isTrue(validRes === undefined);
   });
 
-  it("error: WriteFileError", async () => {
-    const msg = "file not exist";
-    const error = WriteFileError(new Error(msg));
-    assert.isTrue(error.name === "WriteFileError");
-    assert.isTrue(error.message === msg);
-  });
-
-  it("error: ReadFileError", async () => {
-    const msg = "file not exist";
-    const error = ReadFileError(new Error(msg));
-    assert.isTrue(error.name === "ReadFileError");
-    assert.isTrue(error.message === msg);
-  });
-
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
 
@@ -210,13 +195,13 @@ describe("Other test case", () => {
   it("executeCommand", async () => {
     {
       try {
-        const res = await executeCommand("ls", []);
+        const res = await cpUtils.executeCommand(undefined, undefined, undefined, "ls");
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }
     {
       try {
-        const res = await tryExecuteCommand("ls", []);
+        const res = await cpUtils.tryExecuteCommand(undefined, undefined, undefined, "ls");
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }

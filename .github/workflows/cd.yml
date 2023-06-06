@@ -279,10 +279,11 @@ jobs:
             sleep 20
             cd ./packages/vscode-extension
             npm install --only=production
-            if [ "$PREID" == "beta" ]
+            if [ "$PREID" == "beta" ]; then
               npx vsce package --pre-release
             else
-              npx vsce package 
+              npx vsce package
+            fi
 
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}

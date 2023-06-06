@@ -37,15 +37,17 @@ import {
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
-import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
+import { InputValidationError, UnhandledError } from "@microsoft/teamsfx-core";
+import { cliSource } from "./constants";
+import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
-export class CLIUserInteraction implements UserInteraction {
+class CLIUserInteraction implements UserInteraction {
   private static instance: CLIUserInteraction;
   private presetAnswers: Map<string, any> = new Map();
 
@@ -156,7 +158,7 @@ export class CLIUserInteraction implements UserInteraction {
       }
       const result = await question.validate?.(answer);
       if (typeof result === "string") {
-        return err(NotValidInputValue(question.name!, result));
+        return err(new InputValidationError(question.name!, result));
       }
       return ok(answer);
     }
@@ -194,7 +196,7 @@ export class CLIUserInteraction implements UserInteraction {
         ScreenManager.continue();
         resolve(ok(anwsers[question.name!]));
       } catch (e) {
-        resolve(err(UnknownError(e)));
+        resolve(err(new UnhandledError(e as Error, cliSource)));
       }
     });
   }
@@ -349,7 +351,7 @@ export class CLIUserInteraction implements UserInteraction {
     if (config.name === "subscription") {
       const subscriptions = config.options as string[];
       if (subscriptions.length === 0) {
-        return err(EmptySubConfigOptions());
+        return err(new SelectSubscriptionError(cliSource));
       } else if (subscriptions.length === 1) {
         const sub = subscriptions[0];
         CLILogProvider.necessaryLog(

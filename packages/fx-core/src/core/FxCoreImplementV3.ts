@@ -15,7 +15,6 @@ import {
   Result,
   Stage,
   Tools,
-  UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -79,7 +78,7 @@ import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
-import { FileNotFoundError, InvalidProjectError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
@@ -504,7 +503,7 @@ export class FxCoreV3Implement {
       !createEnvCopyInput.targetEnvName ||
       !createEnvCopyInput.sourceEnvName
     ) {
-      return err(UserCancelError);
+      return err(new UserCancelError("core"));
     }
 
     return this.createEnvCopyV3(

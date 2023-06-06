@@ -11,7 +11,6 @@ import {
   Result,
   err,
   ok,
-  traverse,
 } from "@microsoft/teamsfx-api";
 
 import { isCLIDotNetEnabled, isOfficeAddinEnabled } from "../../common/featureFlags";
@@ -63,6 +62,7 @@ import {
   tabsWebsitetUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
+import { traverse } from "../../ui/visitor";
 
 /**
  * This middleware will help to collect input from question flow

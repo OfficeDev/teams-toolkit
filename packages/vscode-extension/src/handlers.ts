@@ -24,9 +24,7 @@ import {
 } from "vscode";
 import {
   AppPackageFolderName,
-  assembleError,
   BuildFolderName,
-  ConcurrentError,
   ConfigFolderName,
   CoreCallbackEvent,
   EnvConfigFileNameTemplate,
@@ -66,6 +64,8 @@ import {
   isOfficeAddinEnabled,
   isUserCancelError,
   isV3Enabled,
+  assembleError,
+  ConcurrentError,
 } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
@@ -150,6 +150,8 @@ import {
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { compare } from "./utils/versionUtil";
+import { setRegion } from "@microsoft/teamsfx-core";
+import { AuthSvcScopes } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -395,7 +397,6 @@ export function getSystemInputs(): Inputs {
     projectPath: globalVariables.workspaceUri?.fsPath,
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    "function-dotnet-checker-enabled": true, // TODO: remove this flag
     locale: parseLocale(),
   };
   return answers;
@@ -910,73 +911,6 @@ export async function runUserTask(
 //TODO workaround
 function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
-}
-
-function showWarningMessageWithProvisionButton(message: string): void {
-  window
-    .showWarningMessage(message, localize("teamstoolkit.handlers.provisionResourcesButton"))
-    .then((result) => {
-      if (result === localize("teamstoolkit.handlers.provisionResourcesButton")) {
-        return Correlator.run(provisionHandler);
-      }
-    });
-}
-
-async function showGrantSuccessMessageWithGetHelpButton(
-  message: string,
-  helpUrl: string
-): Promise<void> {
-  window
-    .showInformationMessage(message, localize("teamstoolkit.handlers.getHelp"))
-    .then((result) => {
-      if (result === localize("teamstoolkit.handlers.getHelp")) {
-        return VS_CODE_UI.openUrl(helpUrl);
-      }
-    });
-}
-
-async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
-  try {
-    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
-    if (!provisionSucceeded) {
-      return ok({
-        state: CollaborationState.NotProvisioned,
-        message: localize("teamstoolkit.handlers.provisionBeforeGrantOrListPermission"),
-      });
-    }
-
-    const tokenJsonObjectRes = await M365TokenInstance.getJsonObject({
-      scopes: AppStudioScopes,
-      showDialog: true,
-    });
-    const tokenJsonObject = tokenJsonObjectRes.isOk() ? tokenJsonObjectRes.value : undefined;
-    if (tokenJsonObject) {
-      const m365TenantId = await getM365TenantFromEnv(env);
-      if (!m365TenantId) {
-        return ok({
-          state: CollaborationState.EmptyM365Tenant,
-          message: localize("teamstoolkit.commandsTreeViewProvider.emptyM365Tenant"),
-        });
-      }
-      if (tokenJsonObject.tid !== m365TenantId) {
-        return ok({
-          state: CollaborationState.M365TenantNotMatch,
-          message: localize("teamstoolkit.commandsTreeViewProvider.m365TenantNotMatch"),
-        });
-      }
-    } else {
-      return ok({
-        state: CollaborationState.m365AccountNotSignedIn,
-        message: localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn"),
-      });
-    }
-
-    return ok({
-      state: CollaborationState.OK,
-    });
-  } catch (e) {
-    return wrapError(e);
-  }
 }
 
 async function processResult(
@@ -1786,54 +1720,19 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       throw checkCoreRes.error;
     }
 
-    if (!isV3Enabled()) {
-      const collaborationStateResult = await checkCollaborationState(env!);
-      if (collaborationStateResult.isErr()) {
-        throw collaborationStateResult.error;
-      }
-
-      if (collaborationStateResult.value.state !== CollaborationState.OK) {
-        result = collaborationStateResult;
-        if (result.value.state === CollaborationState.NotProvisioned) {
-          showWarningMessageWithProvisionButton(result.value.message);
-        } else {
-          window.showWarningMessage(result.value.message);
-        }
-
-        await processResult(TelemetryEvent.GrantPermission, result, inputs);
-        return result;
-      }
-    }
-
     inputs = getSystemInputs();
     inputs.env = env;
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
     }
-    const grantSucceededMsg = isV3Enabled()
-      ? util.format(localize("teamstoolkit.handlers.grantPermissionSucceededV3"), inputs.email)
-      : util.format(localize("teamstoolkit.handlers.grantPermissionSucceeded"), inputs.email, env);
+    const grantSucceededMsg = util.format(
+      localize("teamstoolkit.handlers.grantPermissionSucceededV3"),
+      inputs.email
+    );
 
-    // Will not show help messages in V3
-    if (!isV3Enabled()) {
-      let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
-      let helpUrl = AzureAssignRoleHelpUrl;
-      if (globalVariables.isSPFxProject) {
-        warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
-        helpUrl = SpfxManageSiteAdminUrl;
-      }
-
-      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
-
-      VsCodeLogInstance.info(grantSucceededMsg);
-      VsCodeLogInstance.warning(
-        warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
-      );
-    } else {
-      window.showInformationMessage(grantSucceededMsg);
-      VsCodeLogInstance.info(grantSucceededMsg);
-    }
+    window.showInformationMessage(grantSucceededMsg);
+    VsCodeLogInstance.info(grantSucceededMsg);
   } catch (e) {
     result = wrapError(e);
   }
@@ -1851,25 +1750,6 @@ export async function listCollaborator(env?: string): Promise<Result<any, FxErro
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
-    }
-
-    if (!isV3Enabled()) {
-      const collaborationStateResult = await checkCollaborationState(env!);
-      if (collaborationStateResult.isErr()) {
-        throw collaborationStateResult.error;
-      }
-
-      if (collaborationStateResult.value.state !== CollaborationState.OK) {
-        result = collaborationStateResult;
-        if (result.value.state === CollaborationState.NotProvisioned) {
-          showWarningMessageWithProvisionButton(result.value.message);
-        } else {
-          window.showWarningMessage(result.value.message);
-        }
-
-        await processResult(TelemetryEvent.ListCollaborator, result, inputs);
-        return result;
-      }
     }
 
     inputs = getSystemInputs();
@@ -3236,6 +3116,7 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
+  await AzureAccountManager.getIdentityCredentialAsync(true);
   return ok(null);
 }
 
@@ -3270,12 +3151,14 @@ export async function scaffoldFromDeveloperPortalHandler(
   const properties: { [p: string]: string } = {
     teamsAppId: appId,
   };
+
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
   const loginHint = args.length < 2 ? undefined : args[1];
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
     1
   );
+
   await progressBar.start();
   let token = undefined;
   try {
@@ -3300,6 +3183,13 @@ export async function scaffoldFromDeveloperPortalHandler(
       return err(tokenRes.error);
     }
     token = tokenRes.value;
+
+    // set region
+    const AuthSvcTokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+    if (AuthSvcTokenRes.isOk()) {
+      await setRegion(AuthSvcTokenRes.value);
+    }
+
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3317,7 +3207,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   let appDefinition;
   try {
-    AppManifestUtils.init({ telemetryReporter: tools.telemetryReporter } as any); // need to initiate temeletry so that telemetry set up in appManifest component can work.
+    AppManifestUtils.init({ telemetryReporter: tools?.telemetryReporter } as any); // need to initiate temeletry so that telemetry set up in appManifest component can work.
     appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
   } catch (error: any) {
     ExtTelemetry.sendTelemetryErrorEvent(

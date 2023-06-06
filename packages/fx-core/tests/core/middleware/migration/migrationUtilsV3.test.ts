@@ -2,7 +2,6 @@
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
 import { assert } from "chai";
-import fs from "fs-extra";
 import {
   convertPluginId,
   FileType,

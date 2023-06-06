@@ -4,7 +4,6 @@
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import mockFs from "mock-fs";
 
 import { UserError, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -13,18 +12,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 import sinon from "sinon";
-import {
-  LocalEnvProvider,
-  LocalEnvs,
-  LocalEnvKeys,
-} from "../../../src/component/debugHandler/localEnvProvider";
-import {
-  LocalCertificate,
-  LocalCertificateManager,
-} from "../../../src/common/local/localCertificateManager";
 import { environmentManager } from "../../../src/core/environment";
 import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
-import { FeatureFlagName } from "../../../src/common/constants";
 chai.use(chaiAsPromised);
 
 describe("LocalEnvManager", () => {

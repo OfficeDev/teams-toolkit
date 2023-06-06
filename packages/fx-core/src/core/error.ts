@@ -15,22 +15,6 @@ import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 export const CoreSource = "Core";
 export const UpgradeSource = "Upgrade";
 
-export function WriteFileError(e: Error): SystemError {
-  return new SystemError({
-    name: "WriteFileError",
-    source: CoreSource,
-    error: e,
-  });
-}
-
-export function ReadFileError(e: Error): SystemError {
-  return new SystemError({
-    name: "ReadFileError",
-    source: CoreSource,
-    error: e,
-  });
-}
-
 export function MigrationError(e: Error, name: string, helpLink?: string): UserError {
   return new UserError({
     name: name,
@@ -115,15 +99,6 @@ export function UpgradeV3CanceledError(): UserError {
     "UserCancel", // @see tools.isUserCancelError()
     getDefaultString("error.UpgradeV3CanceledError"),
     getLocalizedString("error.UpgradeV3CanceledError")
-  );
-}
-
-export function ToolkitNotSupportError(): UserError {
-  return new UserError(
-    CoreSource,
-    "ToolkitNotSupport",
-    getDefaultString("core.migrationV3.CreateNewProject"),
-    getLocalizedString("core.migrationV3.CreateNewProject")
   );
 }
 

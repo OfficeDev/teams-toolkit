@@ -141,7 +141,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         output: outputs,
         summaries: [summary],
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -159,6 +159,10 @@ export class CreateBotAadAppDriver implements StepDriver {
         } else {
           throw new UnhandledError(new Error(error.response!.data), actionName);
         }
+      }
+
+      if (error.name === "AadCreateAppError") {
+        throw new UnhandledUserError(new Error(error.details[0]), actionName);
       }
 
       const message = JSON.stringify(error);

@@ -42,7 +42,7 @@ export interface AADManifest {
   // certification: any; // no reference
 }
 
-export interface AppRole {
+interface AppRole {
   allowedMemberTypes: string[];
   description: string;
   displayName: string;
@@ -52,14 +52,14 @@ export interface AppRole {
   // lang?: string | null; graph api do not contain this property
 }
 
-export interface InformationalUrls {
+interface InformationalUrls {
   termsOfService?: string | null; // info.termsOfServiceUrl
   support?: string | null; // info.supportUrl
   privacy?: string | null; // info.privacyStatementUrl
   marketing?: string | null; // info.marketingUrl
 }
 
-export interface Oauth2Permission {
+interface Oauth2Permission {
   adminConsentDescription: string;
   adminConsentDisplayName: string;
   id: string;
@@ -72,60 +72,56 @@ export interface Oauth2Permission {
   origin?: string | null;
 }
 
-export interface OptionalClaims {
+interface OptionalClaims {
   idToken: Token[];
   accessToken: Token[];
   saml2Token: Token[];
 }
 
-export interface Token {
+interface Token {
   additionalProperties: string[];
   essential: boolean;
   name: string;
   source?: string | null;
 }
 
-export interface ParentalControlSettings {
+interface ParentalControlSettings {
   countriesBlockedForMinors: string[];
   legalAgeGroupRule?: string | null;
 }
 
-export interface PasswordCredential {
-  displayName: string;
-}
-
-export interface PreAuthorizedApplication {
+interface PreAuthorizedApplication {
   appId: string;
   permissionIds: string[]; //api.preAuthorizedApplication.delegatedPermissionIds
 }
 
-export interface ReplyUrlsWithType {
+interface ReplyUrlsWithType {
   type: string;
   url: string;
 }
 
-export interface RequiredResourceAccess {
+interface RequiredResourceAccess {
   resourceAppId: string;
   resourceAccess: ResourceAccess[];
 }
 
-export interface ResourceAccess {
+interface ResourceAccess {
   id: string;
   type: string;
 }
 
-export interface KeyValuePair {
+interface KeyValuePair {
   key: string;
   value: string;
 }
 
-export interface AddIn {
+interface AddIn {
   id: string;
   properties: KeyValuePair[];
   type: string;
 }
 
-export interface KeyCredential {
+interface KeyCredential {
   customKeyIdentifier: string;
   endDate: string; // KeyCredential.endDateTime
   keyId: string;
@@ -135,3 +131,8 @@ export interface KeyCredential {
   value: string; // KeyCredential.key
   displayName: string;
 }
+
+// Microsoft Graph API does not support updating PasswordCredential using manifest
+// interface PasswordCredential {
+//   displayName: string;
+// }

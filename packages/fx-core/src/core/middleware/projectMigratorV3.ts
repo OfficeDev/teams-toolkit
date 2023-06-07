@@ -984,7 +984,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   const gitignoreFile = ".gitignore";
   const ignoreFileExist: boolean = await context.backup(gitignoreFile);
   if (!ignoreFileExist) {
-    context.fsCreateFile(gitignoreFile);
+    await context.fsCreateFile(gitignoreFile);
   }
 
   let ignoreFileContent: string = await fs.readFile(

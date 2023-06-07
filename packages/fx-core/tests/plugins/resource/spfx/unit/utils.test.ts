@@ -4,6 +4,7 @@ import {
   FuncValidation,
   getValidationFunction,
   Inputs,
+  ok,
   Platform,
   SingleSelectQuestion,
   Stage,
@@ -223,5 +224,15 @@ describe("utils", () => {
     const res = await Utils.findGloballyInstalledVersion(undefined, "name", 0, false);
 
     chai.expect(res).to.be.undefined;
+  });
+
+  it("dynamicOptions", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    sinon.stub(PackageSelectOptionsHelper, "loadOptions").resolves();
+    sinon.stub(PackageSelectOptionsHelper, "getOptions").resolves([]);
+    const res = await (spfxPackageSelectQuestion as SingleSelectQuestion).dynamicOptions!(inputs);
+    chai.expect(res.length === 0).to.be.true;
   });
 });

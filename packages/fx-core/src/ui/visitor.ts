@@ -37,25 +37,6 @@ export function isAutoSkipSelect(q: Question): boolean {
   return false;
 }
 
-export async function loadOptions(
-  q: Question,
-  inputs: Inputs
-): Promise<Result<{ autoSkip: boolean; options?: StaticOptions }, FxError>> {
-  if (q.type === "singleSelect" || q.type === "multiSelect") {
-    const selectQuestion = q as SingleSelectQuestion | MultiSelectQuestion;
-    let option: StaticOptions;
-    if (selectQuestion.dynamicOptions)
-      option = (await getCallFuncValue(inputs, selectQuestion.dynamicOptions)) as StaticOptions;
-    else option = selectQuestion.staticOptions;
-    if (!option || option.length === 0) {
-      return err(new EmptyOptionError());
-    }
-    if (selectQuestion.skipSingleOption && option.length === 1)
-      return ok({ autoSkip: true, options: option });
-    else return ok({ autoSkip: false, options: option });
-  } else return ok({ autoSkip: false });
-}
-
 export function getSingleOption(
   q: SingleSelectQuestion | MultiSelectQuestion,
   option?: StaticOptions

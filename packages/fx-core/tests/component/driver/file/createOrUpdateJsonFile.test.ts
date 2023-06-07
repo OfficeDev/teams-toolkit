@@ -89,7 +89,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
       });
-      sinon.stub(fs, "readFileSync").callsFake((path) => {
+      sinon.stub(fs, "readFile").callsFake(async (path) => {
         return Buffer.from(JSON.stringify(appsettings));
       });
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -124,7 +124,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
       });
-      sinon.stub(fs, "readFileSync").callsFake((path) => {
+      sinon.stub(fs, "readFile").callsFake(async (path) => {
         return Buffer.from(JSON.stringify(appsettings));
       });
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -162,7 +162,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
       });
-      sinon.stub(fs, "readFileSync").callsFake((path) => {
+      sinon.stub(fs, "readFile").callsFake(async (path) => {
         return Buffer.from(JSON.stringify(appsettings));
       });
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -201,7 +201,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
       });
-      sinon.stub(fs, "readFileSync").callsFake((path) => {
+      sinon.stub(fs, "readFile").callsFake(async (path) => {
         return Buffer.from(JSON.stringify(appsettings));
       });
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -248,7 +248,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(appsettings));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -289,7 +289,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(commentJson.stringify(jsonContent, null, "\t"));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -335,7 +335,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(commentJson.stringify(jsonContent, null, "\t"));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -378,7 +378,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(jsonContent));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -425,7 +425,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(jsonContent));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -468,7 +468,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(jsonContent));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -510,7 +510,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(jsonContent));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -546,7 +546,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(jsonContent));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
@@ -576,7 +576,7 @@ describe("CreateOrUpdateJsonFileDriver", () => {
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
     });
-    sinon.stub(fs, "readFileSync").callsFake((path) => {
+    sinon.stub(fs, "readFile").callsFake(async (path) => {
       return Buffer.from(JSON.stringify(jsonContent));
     });
     sinon.stub(fs, "writeFile").callsFake(async (path, data) => {

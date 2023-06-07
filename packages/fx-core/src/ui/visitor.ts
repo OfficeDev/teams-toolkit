@@ -23,6 +23,7 @@ import {
   validate,
   TelemetryEvent,
   TelemetryProperty,
+  DynamicOptions,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, UserCancelError, assembleError } from "../error";
 
@@ -153,18 +154,20 @@ const questionVisitor: QuestionTreeVisitor = async function (
       });
     } else if (question.type === "singleSelect" || question.type === "multiSelect") {
       const selectQuestion = question as SingleSelectQuestion | MultiSelectQuestion;
-      const loadRes = await loadOptions(selectQuestion, inputs);
-      if (loadRes.isErr()) {
-        return err(loadRes.error);
-      }
-      // Skip single/mulitple option select
-      const res = loadRes.value;
-      if (!res.options || res.options.length === 0) {
-        return err(new EmptyOptionError());
-      }
-      if (res.autoSkip === true) {
-        const returnResult = getSingleOption(selectQuestion, res.options);
-        return ok({ type: "skip", result: returnResult });
+      let options: StaticOptions | (() => Promise<StaticOptions>) | undefined = undefined;
+      if (selectQuestion.dynamicOptions) {
+        options = async () => {
+          return selectQuestion.dynamicOptions!(inputs);
+        };
+      } else {
+        if (!selectQuestion.staticOptions || selectQuestion.staticOptions.length === 0) {
+          return err(new EmptyOptionError());
+        }
+        if (selectQuestion.skipSingleOption && selectQuestion.staticOptions.length === 1) {
+          const returnResult = getSingleOption(selectQuestion, selectQuestion.staticOptions);
+          return ok({ type: "skip", result: returnResult });
+        }
+        options = selectQuestion.staticOptions;
       }
       if (question.type === "singleSelect") {
         const validationFunc = question.validation
@@ -173,7 +176,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         return await ui.selectOption({
           name: question.name,
           title: title,
-          options: res.options,
+          options: options,
           returnObject: selectQuestion.returnObject,
           default: defaultValue as string,
           placeholder: placeholder,
@@ -182,6 +185,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
           totalSteps: totalSteps,
           buttons: question.buttons,
           validation: validationFunc,
+          skipSingleOption: selectQuestion.skipSingleOption,
         });
       } else {
         const mq = selectQuestion as MultiSelectQuestion;
@@ -191,7 +195,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         return await ui.selectOptions({
           name: question.name,
           title: title,
-          options: res.options,
+          options: options,
           returnObject: selectQuestion.returnObject,
           default: defaultValue as string[],
           placeholder: placeholder,
@@ -200,6 +204,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
           step: step,
           totalSteps: totalSteps,
           validation: validationFunc,
+          skipSingleOption: selectQuestion.skipSingleOption,
         });
       }
     } else if (question.type === "multiFile") {

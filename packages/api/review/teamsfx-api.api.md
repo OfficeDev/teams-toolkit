@@ -1013,8 +1013,9 @@ export interface MultiFileQuestion extends UserInputQuestion {
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
     onDidChangeSelection?: OnSelectionChangeFunc;
-    options: StaticOptions;
+    options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
+    skipSingleOption?: boolean;
 }
 
 // @public
@@ -1312,8 +1313,9 @@ export interface SingleFileQuestion extends UserInputQuestion {
 
 // @public
 export interface SingleSelectConfig extends UIConfig<string> {
-    options: StaticOptions;
+    options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
+    skipSingleOption?: boolean;
 }
 
 // @public

@@ -40,9 +40,13 @@ import ScreenManager from "./console/screen";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
-import { InputValidationError, UnhandledError } from "@microsoft/teamsfx-core";
+import {
+  InputValidationError,
+  UnhandledError,
+  SelectSubscriptionError,
+} from "@microsoft/teamsfx-core";
 import { cliSource } from "./constants";
-import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
+import { assembleError } from "@microsoft/teamsfx-core";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -100,11 +104,10 @@ class CLIUserInteraction implements UserInteraction {
       return;
     }
 
-    if (typeof config.options[0] === "string") {
+    if (typeof (config.options as StaticOptions)[0] === "string") {
       return;
     }
     const options = config.options as OptionItem[];
-    const labels = options.map((op) => op.label);
     const ids = options.map((op) => op.id);
     const cliNames = options.map((op) => op.cliName || toLocaleLowerCase(op.id));
 
@@ -361,9 +364,23 @@ class CLIUserInteraction implements UserInteraction {
         return ok({ type: "success", result: sub });
       }
     }
+    let options: StaticOptions = [];
+    if (typeof config.options === "function") {
+      const bar = await this.createProgressBar(config.title, 1);
+      await bar.start();
+      await bar.next();
+      try {
+        options = await config.options();
+      } catch (e) {
+        return err(assembleError(e));
+      } finally {
+        await bar.end(true);
+      }
+    }
+    config.options = options;
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(options, config.default);
       const result = await this.singleSelect(
         config.name,
         config.title,
@@ -376,7 +393,7 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwser = config.options[index];
+        const anwser = options[index];
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwser }));
         } else {
@@ -395,9 +412,23 @@ class CLIUserInteraction implements UserInteraction {
   public async selectOptions(
     config: MultiSelectConfig
   ): Promise<Result<MultiSelectResult, FxError>> {
+    let options: StaticOptions = [];
+    if (typeof config.options === "function") {
+      const bar = await this.createProgressBar(config.title, 1);
+      await bar.start();
+      await bar.next();
+      try {
+        options = await config.options();
+      } catch (e) {
+        return err(assembleError(e));
+      } finally {
+        await bar.end(true);
+      }
+    }
+    config.options = options;
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(options, config.default);
       const result = await this.multiSelect(
         config.name,
         config.title,
@@ -410,7 +441,7 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwers = this.getSubArray(config.options as any[], indexes);
+        const anwers = this.getSubArray(options as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));
         } else {

@@ -47,6 +47,7 @@ import {
   SingleSelectConfig,
   Stage,
   StatesFolderName,
+  StaticOptions,
   SubscriptionInfo,
   SystemError,
   TemplateFolderName,
@@ -2941,7 +2942,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
     returnObject: true,
   };
   if (TreatmentVariableValue.inProductDoc && !globalVariables.isSPFxProject) {
-    config.options.splice(0, 1, {
+    (config.options as StaticOptions).splice(0, 1, {
       id: "cardActionResponse",
       label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
       description: localize("teamstoolkit.common.recommended"),

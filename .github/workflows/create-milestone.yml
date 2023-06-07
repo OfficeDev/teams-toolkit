@@ -23,6 +23,7 @@ jobs:
       - name: Npm install
         run: npm install --production --prefix ./action-base
       - name: Build action
+        continue-on-error: true
         run: npm run build --prefix ./action-base
 
       - name: Run Create Milestone

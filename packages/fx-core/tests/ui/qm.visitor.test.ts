@@ -35,7 +35,7 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import { UserCancelError } from "../../src/error/common";
+import { EmptyOptionError, UserCancelError } from "../../src/error/common";
 import { traverse } from "../../src/ui/visitor";
 
 function createInputs(): Inputs {
@@ -131,9 +131,12 @@ class MockUserInteraction implements UserInteraction {
 }
 
 const mockUI = new MockUserInteraction();
-const sandbox = sinon.createSandbox();
 
 describe("Question Model - Visitor Test", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
   describe("question", () => {
     it("trim() case 1", async () => {
       const node1 = new QTreeNode({ type: "group" });
@@ -668,6 +671,37 @@ describe("Question Model - Visitor Test", () => {
         assert.isTrue(inputs[`${i}`] === `mocked value of ${i}`);
       }
       assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+
+    it("single selection", async () => {
+      sandbox.stub(mockUI, "selectOption").resolves(ok({ type: "success", result: "1" }));
+      const question: SingleSelectQuestion = {
+        type: "singleSelect",
+        name: "test",
+        title: "test",
+        staticOptions: [],
+        dynamicOptions: () => Promise.resolve([{ id: "1", label: "1" }]),
+      };
+      const inputs = createInputs();
+      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.isTrue(inputs["test"] === "1");
+    });
+
+    it("single selection empty options", async () => {
+      sandbox.stub(mockUI, "selectOption").resolves(ok({ type: "success", result: "1" }));
+      const question: SingleSelectQuestion = {
+        type: "singleSelect",
+        name: "test",
+        title: "test",
+        staticOptions: [],
+      };
+      const inputs = createInputs();
+      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.isTrue(res.error instanceof EmptyOptionError);
+      }
     });
   });
 });

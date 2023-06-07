@@ -19,7 +19,7 @@ jobs:
          path: ./action-base
 
       - name: Copy action
-        run: cp .github/actions/create-milestone ./action-base/create-milestone
+        run: cp -r .github/actions/create-milestone ./action-base/create-milestone
       - name: Npm install
         run: npm install --production --prefix ./action-base
       - name: Build action

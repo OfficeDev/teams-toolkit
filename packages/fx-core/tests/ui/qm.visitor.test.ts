@@ -419,7 +419,7 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: config.options[0] });
+            return ok({ type: "success", result: (config.options as StaticOptions)[0] });
           }
         );
       sandbox
@@ -427,7 +427,10 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: [config.options[0] as OptionItem] });
+            return ok({
+              type: "success",
+              result: [(config.options as StaticOptions)[0] as OptionItem],
+            });
           }
         );
       const root = new QTreeNode({ type: "group" });
@@ -478,7 +481,10 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: config.options[0] as OptionItem });
+            return ok({
+              type: "success",
+              result: (config.options as StaticOptions)[0] as OptionItem,
+            });
           }
         );
       sandbox
@@ -486,7 +492,10 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: [config.options[0] as OptionItem] });
+            return ok({
+              type: "success",
+              result: [(config.options as StaticOptions)[0] as OptionItem],
+            });
           }
         );
 
@@ -526,7 +535,10 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: config.options[0] as OptionItem });
+            return ok({
+              type: "success",
+              result: (config.options as StaticOptions)[0] as OptionItem,
+            });
           }
         );
       sandbox
@@ -534,7 +546,10 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: [config.options[0] as OptionItem] });
+            return ok({
+              type: "success",
+              result: [(config.options as StaticOptions)[0] as OptionItem],
+            });
           }
         );
 
@@ -577,7 +592,7 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: config.options[0] });
+            return ok({ type: "success", result: (config.options as StaticOptions)[0] });
           }
         );
       const multiSelect = sandbox
@@ -585,7 +600,10 @@ describe("Question Model - Visitor Test", () => {
         .callsFake(
           async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
             actualSequence.push(config.name);
-            return ok({ type: "success", result: [config.options[0] as OptionItem] });
+            return ok({
+              type: "success",
+              result: [(config.options as StaticOptions)[0] as OptionItem],
+            });
           }
         );
 

@@ -71,7 +71,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
         await fs.ensureFile(jsonFilePath);
         await fs.writeFile(jsonFilePath, "{}", "utf-8");
       }
-      const jsonContent = commentJson.parse(fs.readFileSync(jsonFilePath, "utf-8").toString());
+      const jsonContent = commentJson.parse((await fs.readFile(jsonFilePath, "utf-8")).toString());
       this.addOrUpdateJsonContent(jsonContent, args.appsettings ?? args.content ?? {});
       await fs.writeFile(jsonFilePath, commentJson.stringify(jsonContent, null, "\t"), "utf-8");
       return {

@@ -446,24 +446,6 @@ describe("APIs of Environment Manager", () => {
         assert.isTrue(truth);
       }
     });
-
-    it("writeEnvState throws WriteFileError", async () => {
-      sandbox.stub<any, any>(fs, "pathExists").resolves(true);
-      sandbox.stub<any, any>(environmentManager, "getEnvConfigsFolder").returns(ok("test"));
-      sandbox.stub<any, any>(environmentManager, "getEnvConfigPath").returns("test");
-      sandbox.stub<any, any>(environmentManager, "isEmptyRecord").throws(new Error());
-      const envName = "test";
-      const envConfigPathResult = await environmentManager.writeEnvState(
-        new Map(),
-        ".",
-        new MockCrypto("a", "b"),
-        envName
-      );
-      assert.isTrue(envConfigPathResult.isErr());
-      if (envConfigPathResult.isErr()) {
-        assert.isTrue(envConfigPathResult.error instanceof WriteFileError);
-      }
-    });
   });
 
   describe("Check If File Is Environment Config", () => {

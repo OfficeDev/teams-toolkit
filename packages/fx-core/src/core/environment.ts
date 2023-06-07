@@ -34,18 +34,15 @@ import { Component, TelemetryEvent, sendTelemetryErrorEvent } from "../common/te
 import {
   compileHandlebarsTemplateString,
   dataNeedEncryption,
-  mapToJson,
   replaceTemplateWithUserData,
-  separateSecretData,
-  serializeDict,
 } from "../common/tools";
-import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
+import { GLOBAL_CONFIG } from "../component/constants";
+import { convertEnvStateV2ToV3 } from "../component/migrate";
 import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { FileNotFoundError, NoEnvFilesError, WriteFileError } from "../error/common";
 import { InvalidEnvConfigError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
-import { GLOBAL_CONFIG } from "../component/constants";
 
 export interface EnvStateFiles {
   envState: string;
@@ -151,46 +148,6 @@ class EnvironmentManager {
     }
 
     return envConfig;
-  }
-
-  public async writeEnvState(
-    envData: Map<string, any> | Json,
-    projectPath: string,
-    cryptoProvider: CryptoProvider,
-    envName?: string,
-    isV3?: boolean
-  ): Promise<Result<string, FxError>> {
-    if (!(await fs.pathExists(projectPath))) {
-      return err(new FileNotFoundError("EnvironmentManager", projectPath));
-    }
-
-    const envStatesFolder = this.getEnvStatesFolder(projectPath);
-    if (!(await fs.pathExists(envStatesFolder))) {
-      await fs.ensureDir(envStatesFolder);
-    }
-
-    envName = envName ?? this.getDefaultEnvName();
-    const envFiles = this.getEnvStateFilesPath(envName, projectPath);
-
-    let envState: Json = envData instanceof Map ? mapToJson(envData) : envData;
-    // v3 envState will be converted into v2 for compatibility
-    envState = convertEnvStateV3ToV2(envState);
-    const secrets = separateSecretData(envState);
-    this.encrypt(secrets, cryptoProvider);
-
-    try {
-      if (!this.isEmptyRecord(envState)) {
-        await fs.writeFile(envFiles.envState, JSON.stringify(envState, null, 4));
-      }
-
-      if (!this.isEmptyRecord(secrets)) {
-        await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
-      }
-    } catch (error) {
-      return err(new WriteFileError(error as Error, "EnvironmentManager"));
-    }
-
-    return ok(envFiles.envState);
   }
 
   public async listAllEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {

@@ -19,7 +19,6 @@ import os from "os";
 import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
-import { sleep } from "../../src/utils";
 import * as dotenv from "dotenv";
 import {
   cfg,
@@ -61,6 +60,7 @@ export async function execAsyncWithRetry(
   stdout: string;
   stderr: string;
 }> {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   while (retries > 0) {
     retries--;
     try {

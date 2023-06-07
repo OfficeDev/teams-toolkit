@@ -30,7 +30,7 @@ import { DriverContext } from "../../interface/commonArgs";
 import { InstallSoftwareError } from "../../../../error/common";
 import { DownloadBicepCliError } from "../../../../error/arm";
 
-export const BicepName = "Bicep";
+const BicepName = "Bicep";
 
 const timeout = 5 * 60 * 1000;
 const source = "bicep-envchecker";

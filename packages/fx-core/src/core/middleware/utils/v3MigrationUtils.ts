@@ -383,7 +383,7 @@ export function tryExtractEnvFromUserdata(filename: string): string {
   return "";
 }
 
-export function buildFileName(...parts: string[]): string {
+function buildFileName(...parts: string[]): string {
   return parts.join(".");
 }
 export function buildEnvFileName(envName: string): string {

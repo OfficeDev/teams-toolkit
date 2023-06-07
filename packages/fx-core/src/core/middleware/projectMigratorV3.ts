@@ -106,7 +106,7 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
 import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
 
-export const Constants = {
+const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
@@ -119,7 +119,7 @@ export const Constants = {
   envFilePrefix: ".env.",
 };
 
-export const Parameters = {
+const Parameters = {
   skipUserConfirm: "skipUserConfirm",
   isNonmodalMessage: "isNonmodalMessage",
   confirmOnly: "confirmOnly",
@@ -152,7 +152,7 @@ export const errorNames = {
   manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-export const upgradeButton = getLocalizedString("core.option.upgrade");
+const upgradeButton = getLocalizedString("core.option.upgrade");
 export const moreInfoButton = getLocalizedString("core.option.moreInfo");
 const migrationMessageButtons = [upgradeButton, moreInfoButton];
 

@@ -767,16 +767,25 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async executeFunction(config: ExecuteFuncConfig) {
-    const quickPick = window.createQuickPick<FxQuickPickItem>();
-    quickPick.title = config.title;
-    quickPick.busy = true;
-    quickPick.enabled = false;
-    quickPick.show();
+    // const quickPick = window.createQuickPick<FxQuickPickItem>();
+    // quickPick.title = config.title;
+    // quickPick.busy = true;
+    // quickPick.enabled = false;
+    // quickPick.show();
+    // try {
+    //   return await config.func(config.inputs);
+    // } finally {
+    //   quickPick.hide();
+    //   quickPick.dispose();
+    // }
+
+    const progressBar = await this.createProgressBar(config.title, 1);
+    await progressBar.start();
+    await progressBar.next();
     try {
       return await config.func(config.inputs);
     } finally {
-      quickPick.hide();
-      quickPick.dispose();
+      progressBar.end(true);
     }
   }
 

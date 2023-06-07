@@ -57,7 +57,7 @@ provision:
             commandName: "Project"
             dotnetRunMessages: true
             launchBrowser: true
-            launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{USER_NAME}}"
+            launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
             applicationUrl: "https://localhost:44302;http://localhost:2544"
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"

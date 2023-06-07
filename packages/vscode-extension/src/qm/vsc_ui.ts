@@ -188,7 +188,7 @@ export class VsCodeUI implements UserInteraction {
           let options: StaticOptions = [];
           if (typeof option.options === "function") {
             quickPick.busy = true;
-            quickPick.placeholder = "Loading options...";
+            quickPick.placeholder = "Loading options ...";
             option
               .options()
               .then((results) => {
@@ -337,7 +337,7 @@ export class VsCodeUI implements UserInteraction {
           let options: StaticOptions = [];
           if (typeof option.options === "function") {
             quickPick.busy = true;
-            quickPick.placeholder = "Loading options...";
+            quickPick.placeholder = "Loading options ...";
             option
               .options()
               .then((results) => {

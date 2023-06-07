@@ -44,9 +44,9 @@ import {
   InputValidationError,
   UnhandledError,
   SelectSubscriptionError,
+  assembleError,
 } from "@microsoft/teamsfx-core";
 import { cliSource } from "./constants";
-import { assembleError } from "@microsoft/teamsfx-core";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -368,19 +368,22 @@ class CLIUserInteraction implements UserInteraction {
     if (typeof config.options === "function") {
       const bar = await this.createProgressBar(config.title, 1);
       await bar.start();
-      await bar.next();
+      await bar.next("Loading options ...");
       try {
         options = await config.options();
+        config.options = options;
       } catch (e) {
         return err(assembleError(e));
       } finally {
         await bar.end(true);
       }
     }
-    config.options = options;
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(options, config.default);
+      const [choices, defaultValue] = this.toChoices(
+        config.options as StaticOptions,
+        config.default
+      );
       const result = await this.singleSelect(
         config.name,
         config.title,
@@ -393,7 +396,7 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwser = options[index];
+        const anwser = (config.options as StaticOptions)[index];
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwser }));
         } else {
@@ -416,19 +419,22 @@ class CLIUserInteraction implements UserInteraction {
     if (typeof config.options === "function") {
       const bar = await this.createProgressBar(config.title, 1);
       await bar.start();
-      await bar.next();
+      await bar.next("Loading options ...");
       try {
         options = await config.options();
+        config.options = options;
       } catch (e) {
         return err(assembleError(e));
       } finally {
         await bar.end(true);
       }
     }
-    config.options = options;
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(options, config.default);
+      const [choices, defaultValue] = this.toChoices(
+        config.options as StaticOptions,
+        config.default
+      );
       const result = await this.multiSelect(
         config.name,
         config.title,
@@ -441,7 +447,7 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwers = this.getSubArray(options as any[], indexes);
+        const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));
         } else {

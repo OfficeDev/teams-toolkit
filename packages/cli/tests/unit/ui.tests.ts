@@ -13,6 +13,7 @@ import {
   SelectFilesConfig,
   SelectFolderConfig,
   SingleSelectConfig,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import LogProvider from "../../src/commonlib/log";
@@ -143,6 +144,32 @@ describe("User Interaction Tests", function () {
         expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
       }
     });
+
+    it("load options success", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(ok(undefined));
+      const config: SingleSelectConfig = {
+        name: "subscription",
+        title: "Select a subscription",
+        options: async () => ["a", "b", "c"],
+        default: "c",
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals("c");
+      }
+    });
+    it("throw error", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
+    });
   });
 
   describe("Multi Select Options", () => {
@@ -189,6 +216,29 @@ describe("User Interaction Tests", function () {
         const result = await UI.selectOptions(config);
         expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
       }
+    });
+
+    it("load options success", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(ok(undefined));
+      const config: MultiSelectConfig = {
+        name: "subscription",
+        title: "Select a subscription",
+        options: async () => ["a", "b", "c"],
+        default: ["c"],
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+    });
+    it("throw error", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
     });
   });
 
@@ -341,5 +391,39 @@ describe("Errors in User Interaction", async () => {
     if (result.isErr()) {
       expect(result.error.name).equals("SelectSubscriptionError");
     }
+  });
+
+  describe("loadOptions", async () => {
+    it("happy path", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => ["a", "b", "c"],
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isOk());
+      expect(config.options).deep.equals(["a", "b", "c"]);
+    });
+    it("throw error", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isErr());
+    });
+    it("no need to call function", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a", "b", "c"],
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isOk());
+      expect(config.options).deep.equals(["a", "b", "c"]);
+    });
   });
 });

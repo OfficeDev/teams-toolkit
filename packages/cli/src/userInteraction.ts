@@ -47,6 +47,7 @@ import {
   assembleError,
 } from "@microsoft/teamsfx-core";
 import { cliSource } from "./constants";
+import { load } from "proxyquire";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -364,19 +365,9 @@ class CLIUserInteraction implements UserInteraction {
         return ok({ type: "success", result: sub });
       }
     }
-    let options: StaticOptions = [];
-    if (typeof config.options === "function") {
-      const bar = await this.createProgressBar(config.title, 1);
-      await bar.start();
-      await bar.next("Loading options ...");
-      try {
-        options = await config.options();
-        config.options = options;
-      } catch (e) {
-        return err(assembleError(e));
-      } finally {
-        await bar.end(true, true);
-      }
+    const loadRes = await this.loadOptions(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
     }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
@@ -412,22 +403,32 @@ class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async selectOptions(
-    config: MultiSelectConfig
-  ): Promise<Result<MultiSelectResult, FxError>> {
-    let options: StaticOptions = [];
+  async loadOptions(
+    config: MultiSelectConfig | SingleSelectConfig
+  ): Promise<Result<undefined, FxError>> {
     if (typeof config.options === "function") {
       const bar = await this.createProgressBar(config.title, 1);
       await bar.start();
       await bar.next("Loading options ...");
       try {
-        options = await config.options();
+        const options = await config.options();
         config.options = options;
+        return ok(undefined);
       } catch (e) {
         return err(assembleError(e));
       } finally {
         await bar.end(true, true);
       }
+    }
+    return ok(undefined);
+  }
+
+  public async selectOptions(
+    config: MultiSelectConfig
+  ): Promise<Result<MultiSelectResult, FxError>> {
+    const loadRes = await this.loadOptions(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
     }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {

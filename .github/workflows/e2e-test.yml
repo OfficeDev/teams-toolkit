@@ -10,11 +10,15 @@ on:
   schedule:
     - cron: "0 22 * * *"
 
+  push:
+    branches:
+      - renovate/**
+
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
+      cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases || steps.push-cases.outputs.cases }}
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
@@ -28,8 +32,15 @@ jobs:
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
-      - name: Checkout
+      - name: Checkout (dev)
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         uses: actions/checkout@v3
+
+      - name: Checkout (main)
+        if: ${{  github.event_name == 'push'  }}
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -37,6 +48,7 @@ jobs:
           node-version: 16
 
       - name: Setup legacy-peer-deps
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         run: |
           npm config set legacy-peer-deps true
 
@@ -82,6 +94,16 @@ jobs:
             echo "cases=$inputCases" >> $GITHUB_OUTPUT
           fi
 
+      - name: List cases for push
+        id: push-cases
+        if: ${{  github.event_name == 'push' }}
+        working-directory: packages/cli/tests/e2e
+        run: |
+          cases=`find ./bot ./frontend -path "*.tests.ts" -and \
+            -not '(' -path '*/*.dotnet.tests.ts' -or -path '*/Blazor*' ')' \
+            | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+          echo "cases=$cases" >> $GITHUB_OUTPUT
+
       - name: E2E Test clean
         working-directory: packages/cli
         run: |
@@ -115,8 +137,15 @@ jobs:
     name: ${{ matrix.cases }}
 
     steps:
-      - name: Checkout
+      - name: Checkout (dev)
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         uses: actions/checkout@v3
+
+      - name: Checkout (main)
+        if: ${{  github.event_name == 'push'  }}
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -134,6 +163,7 @@ jobs:
           func --version
 
       - name: Setup legacy-peer-deps
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         run: |
           npm config set legacy-peer-deps true
 
@@ -173,7 +203,15 @@ jobs:
           repository: OfficeDev/TeamsFx-Samples
           ref: v3
           path: packages/cli/tests/e2e/resource
-      
+
+      - name: Download samples(main)
+        if: github.event_name == 'push' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: main
+          path: packages/cli/tests/e2e/resource
+
       - name: Download samples from another repo
         if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage')
         uses: actions/checkout@v3
@@ -228,8 +266,15 @@ jobs:
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
-      - name: Checkout
+      - name: Checkout (dev)
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         uses: actions/checkout@v3
+
+      - name: Checkout (main)
+        if: ${{  github.event_name == 'push'  }}
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -237,6 +282,7 @@ jobs:
           node-version: 16
 
       - name: Setup legacy-peer-deps
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         run: |
           npm config set legacy-peer-deps true
 
@@ -255,7 +301,7 @@ jobs:
 
   rerun:
     needs: tear-down
-    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'push') && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
       - name: rerun

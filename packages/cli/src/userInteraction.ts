@@ -34,20 +34,19 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 
+import {
+  InputValidationError,
+  SelectSubscriptionError,
+  UnhandledError,
+  assembleError,
+} from "@microsoft/teamsfx-core";
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
+import { cliSource } from "./constants";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
-import {
-  InputValidationError,
-  UnhandledError,
-  SelectSubscriptionError,
-  assembleError,
-} from "@microsoft/teamsfx-core";
-import { cliSource } from "./constants";
-import { load } from "proxyquire";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;

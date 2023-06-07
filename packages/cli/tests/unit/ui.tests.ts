@@ -13,6 +13,8 @@ import {
   SelectFilesConfig,
   SelectFolderConfig,
   SingleSelectConfig,
+  UserError,
+  err,
   ok,
 } from "@microsoft/teamsfx-api";
 
@@ -144,32 +146,6 @@ describe("User Interaction Tests", function () {
         expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
       }
     });
-
-    it("load options success", async () => {
-      sandbox.stub(UI, "loadOptions").resolves(ok(undefined));
-      const config: SingleSelectConfig = {
-        name: "subscription",
-        title: "Select a subscription",
-        options: async () => ["a", "b", "c"],
-        default: "c",
-      };
-      const result = await UI.selectOption(config);
-      expect(result.isOk());
-      if (result.isOk()) {
-        expect(result.value.result).deep.equals("c");
-      }
-    });
-    it("throw error", async () => {
-      const config: SingleSelectConfig = {
-        name: "test",
-        title: "test",
-        options: async () => {
-          throw new Error("test");
-        },
-      };
-      const result = await UI.selectOption(config);
-      expect(result.isErr());
-    });
   });
 
   describe("Multi Select Options", () => {
@@ -216,29 +192,6 @@ describe("User Interaction Tests", function () {
         const result = await UI.selectOptions(config);
         expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
       }
-    });
-
-    it("load options success", async () => {
-      sandbox.stub(UI, "loadOptions").resolves(ok(undefined));
-      const config: MultiSelectConfig = {
-        name: "subscription",
-        title: "Select a subscription",
-        options: async () => ["a", "b", "c"],
-        default: ["c"],
-      };
-      const result = await UI.selectOptions(config);
-      expect(result.isOk());
-    });
-    it("throw error", async () => {
-      const config: MultiSelectConfig = {
-        name: "test",
-        title: "test",
-        options: async () => {
-          throw new Error("test");
-        },
-      };
-      const result = await UI.selectOptions(config);
-      expect(result.isErr());
     });
   });
 
@@ -392,7 +345,20 @@ describe("Errors in User Interaction", async () => {
       expect(result.error.name).equals("SelectSubscriptionError");
     }
   });
+});
 
+describe("User Interaction Tests for select", function () {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {
+    sandbox.stub(UI, "createProgressBar").returns({
+      start: async (s) => {},
+      next: async (s) => {},
+      end: async (s) => {},
+    });
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
   describe("loadOptions", async () => {
     it("happy path", async () => {
       const config: SingleSelectConfig = {
@@ -424,6 +390,36 @@ describe("Errors in User Interaction", async () => {
       const result = await UI.loadOptions(config);
       expect(result.isOk());
       expect(config.options).deep.equals(["a", "b", "c"]);
+    });
+  });
+
+  describe("selectOptions", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
+    });
+  });
+
+  describe("selectOption", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
     });
   });
 });

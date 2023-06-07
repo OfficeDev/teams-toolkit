@@ -30,7 +30,7 @@ export const fixedNamingsV3: { [key: string]: string } = {
   "state.fx-resource-apim.publisherEmail": "APIM__PUBLISHEREMAIL",
   "state.fx-resource-apim.publisherName": "APIM__PUBLISHERNAME",
 };
-export const provisionOutputNamingsV3: string[] = [
+const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.indexPath",
   "state.fx-resource-frontend-hosting.domain",
   "state.fx-resource-frontend-hosting.endpoint",
@@ -64,12 +64,12 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-key-vault.m365ClientSecretReference",
   "state.fx-resource-key-vault.botClientSecretReference",
 ];
-export const nameMappingV3: { [key: string]: string } = {
+const nameMappingV3: { [key: string]: string } = {
   "state.fx-resource-aad-app-for-teams.botEndpoint": "state.fx-resource-bot.siteEndpoint",
   "state.fx-resource-aad-app-for-teams.frontendEndpoint":
     "state.fx-resource-frontend-hosting.endpoint",
 };
-export const pluginIdMappingV3: { [key: string]: string } = {
+const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-frontend-hosting": "teams-tab",
   "fx-resource-function": "teams-api",
   "fx-resource-identity": "identity",
@@ -81,7 +81,7 @@ export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-appstudio": "app-manifest",
   "fx-resource-simple-auth": "simple-auth",
 };
-export const secretKeys = [
+const secretKeys = [
   "state.fx-resource-aad-app-for-teams.clientSecret",
   "state.fx-resource-bot.botPassword",
   "state.fx-resource-apim.apimClientAADClientSecret",

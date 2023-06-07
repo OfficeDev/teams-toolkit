@@ -59,7 +59,6 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import e = require("express");
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;

@@ -864,7 +864,7 @@ export type InputTextResult = InputResult<string>;
 
 // @public (undocumented)
 export interface IProgressHandler {
-    end: (success: boolean) => Promise<void>;
+    end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
 }

@@ -347,5 +347,5 @@ export interface IProgressHandler {
    * End the progress bar and tell if success. After calling it, the progress bar will disappear. This handler
    * can be reused after calling end().
    */
-  end: (success: boolean) => Promise<void>;
+  end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
 }

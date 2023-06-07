@@ -375,7 +375,7 @@ class CLIUserInteraction implements UserInteraction {
       } catch (e) {
         return err(assembleError(e));
       } finally {
-        await bar.end(true);
+        await bar.end(true, true);
       }
     }
     this.updatePresetAnswerFromConfig(config);
@@ -426,7 +426,7 @@ class CLIUserInteraction implements UserInteraction {
       } catch (e) {
         return err(assembleError(e));
       } finally {
-        await bar.end(true);
+        await bar.end(true, true);
       }
     }
     this.updatePresetAnswerFromConfig(config);

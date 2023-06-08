@@ -3,6 +3,7 @@
   "extends": ["config:base"],
   "username": "teamsfx-renovate[bot]",
   "gitAuthor": "teamsfx-renovate<134346904+teamsfx-renovate[bot]@users.noreply.github.com>",
+  "dependencyDashboard": false,
   "repositories": ["OfficeDev/TeamsFx"],
   "includePaths": ["packages/sdk/**", "packages/sdk-react/**", "templates/**"],
   "enabledManagers": ["npm"],

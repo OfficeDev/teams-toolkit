@@ -121,7 +121,6 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
-    inputs[CoreQuestionNames.AppName] = "appnamePlaceholder";
   });
 
   it("create from sample (CLI)", async () => {

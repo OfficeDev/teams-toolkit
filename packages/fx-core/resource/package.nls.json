@@ -364,6 +364,7 @@
   "core.summary.actionFailed": "%s failed.",
   "core.summary.actionSucceeded": "%s was executed successfully.",
   "core.summary.createdEnvFile": "Environment file was created at",
+  "ui.select.LoadingOptionsPlaceholder": "Loading options ...",
   "error.aad.CreateAppError": "Unable to create an app in Azure Active Directory.",
   "error.aad.CreateSecretError": "`Unable to create an application secret in Azure Active Directory.`",
   "error.aad.GetTokenError": "Unable to get user login information for %s.",

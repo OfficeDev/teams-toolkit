@@ -49,7 +49,7 @@ import {
   UIConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { UserCancelError, assembleError } from "@microsoft/teamsfx-core";
+import { UserCancelError, assembleError, loadingOptionsPlaceholder } from "@microsoft/teamsfx-core";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
@@ -187,7 +187,7 @@ export class VsCodeUI implements UserInteraction {
           let options: StaticOptions = [];
           if (typeof option.options === "function") {
             quickPick.busy = true;
-            quickPick.placeholder = "Loading options ...";
+            quickPick.placeholder = loadingOptionsPlaceholder();
             option
               .options()
               .then((results) => {
@@ -336,7 +336,7 @@ export class VsCodeUI implements UserInteraction {
           let options: StaticOptions = [];
           if (typeof option.options === "function") {
             quickPick.busy = true;
-            quickPick.placeholder = "Loading options ...";
+            quickPick.placeholder = loadingOptionsPlaceholder();
             option
               .options()
               .then((results) => {

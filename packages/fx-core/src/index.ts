@@ -9,6 +9,7 @@ export * from "./common/correlator";
 export * from "./common/local";
 export * from "./common/deps-checker";
 export * from "./common/samples";
+export * from "./common/utils";
 export * from "./core/error";
 export * from "./common/globalState";
 export * from "./common/permissionInterface";

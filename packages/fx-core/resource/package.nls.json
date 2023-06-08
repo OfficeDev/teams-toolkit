@@ -341,7 +341,6 @@
   "core.common.LifecycleComplete.provision": "Successfully executed %s/%s actions in provision stage.",
   "core.common.LifecycleComplete.deploy": "Successfully executed %s/%s actions in deploy stage.",
   "core.common.LifecycleComplete.publish": "Successfully executed %s/%s actions in publish stage.",
-  "core.common.LifecycleComplete.prepareTeamsApp": "Successfully prepared Teams app.",
   "core.common.TeamsMobileDesktopClientName": "Teams desktop, mobile client id",
   "core.common.TeamsWebClientName": "Teams web client id",
   "core.common.OfficeDesktopClientName": "The Microsoft 365 app for desktop client id",

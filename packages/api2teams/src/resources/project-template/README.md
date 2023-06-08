@@ -124,12 +124,15 @@ If user input contains all required parameters:
 -  Then `listPetsCommandHandler` would send back `PetsListCard.json` adaptive card to user.
   ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow3.png)
 
-# Customize adaptive cards
-The generated adaptive card can be found in `src/adaptiveCards` folder and you can customize the cards according to your own personal needs. You can use [adaptive card designer](https://adaptivecards.io/designer) from browser to design your cards.
 
-# Learn and customize command bot project
-The generated project is a general TeamsFx command response bot project, and you can custimize and add your own command handlers, for more information, you can refer [this wiki page](https://github.com/OfficeDev/TeamsFx/wiki/Respond-to-chat-commands-in-Teams#how-command-and-response-works)
+# Customize the Project
+To learn more about the template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-new). You can find more scenarios like:
 
+- [Customize the trigger pattern](https://aka.ms/teamsfx-command-new#customize-the-trigger-pattern)
+- [Customize the Adaptive Card with dynamic content](https://aka.ms/teamsfx-command-new#how-to-build-command-response-using-adaptive-card-with-dynamic-content)
+- [Change the way to initialize the bot](https://aka.ms/teamsfx-command-new#customize-initialization)
+- [Connect to an existing API](https://aka.ms/teamsfx-command-new#connect-to-existing-api)
+- [Access Microsoft Graph](https://aka.ms/teamsfx-add-sso-new)
 
 # Limitations
 1. Only support openapi version >= 3.0.0

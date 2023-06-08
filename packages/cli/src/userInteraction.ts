@@ -39,6 +39,7 @@ import {
   SelectSubscriptionError,
   UnhandledError,
   assembleError,
+  loadingOptionsPlaceholder,
 } from "@microsoft/teamsfx-core";
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
@@ -408,7 +409,7 @@ class CLIUserInteraction implements UserInteraction {
     if (typeof config.options === "function") {
       const bar = await this.createProgressBar(config.title, 1);
       await bar.start();
-      await bar.next("Loading options ...");
+      await bar.next(loadingOptionsPlaceholder());
       try {
         const options = await config.options();
         config.options = options;

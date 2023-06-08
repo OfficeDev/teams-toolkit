@@ -79,3 +79,23 @@ export function YoGeneratorScaffoldError(): UserError {
     helpLink: Constants.ScaffoldHelpLink,
   });
 }
+
+export function RetrieveSPFxInfoError(): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "RetrieveSPFxInfoFailed",
+    message: getDefaultString("plugins.spfx.error.import.retrieveSolutionInfo"),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.retrieveSolutionInfo"),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}
+
+export function ImportSPFxSolutionError(e: Error): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "ImportSPFxSolutionFailed",
+    message: getDefaultString("plugins.spfx.error.import.common", e.message),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.common", e.message),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}

@@ -9,7 +9,7 @@
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
     "templates": [
-        "common/init-infra",
+        "common",
         "js/notification-http-timer-trigger",
         "js/notification-http-trigger",
         "js/notification-timer-trigger",
@@ -31,15 +31,7 @@
         "ts/non-sso-tab",
         "ts/dashboard-tab",
         "ts/non-sso-tab-default-bot",
-        "ts/default-bot-message-extension",
-        "csharp/notification-http-timer-trigger",
-        "csharp/notification-http-trigger",
-        "csharp/notification-timer-trigger",
-        "csharp/notification-webapi",
-        "csharp/command-and-response",
-        "csharp/message-extension",
-        "csharp/sso-tab",
-        "csharp/non-sso-tab"
+        "ts/default-bot-message-extension"
     ],
     "devDependencies": {
         "@microsoft/eslint-plugin-teamsfx": "^0.0.3",

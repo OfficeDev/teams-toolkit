@@ -16,25 +16,21 @@ To run this CLI and run generated Teams APP in your local dev machine or deploy 
   npm install @microsoft/api2teams@latest -g
   ```
 
-- Clone and download sample swagger yaml files
-  ```
-  git clone https://github.com/SLdragon/test-swagger-yaml-files
-  ```
+- Download [sample-open-api-spec.yml](./sample-spec/sample-open-api-spec.yml) to current working directory
 
-- Go to `test-swagger-yaml-files` folder, and run the command below to convert `test4.yml` file to Teams App, it will generate teams project to `generated-teams-app` folder
+- Run the command below to convert `sample-open-api-spec.yml` file to Teams App, it will generate teams project to `generated-teams-app` folder
   ```
-  cd test-swagger-yaml-files
-  api2teams test4.yml
+  api2teams sample-open-api-spec.yml
   ```
 
 - You can specify which folder to generate teams project as below
   ```
-  api2teams test4.yml -o my-custom-teams-app-folder
+  api2teams sample-open-api-spec.yml -o my-custom-teams-app-folder
   ```
 
-- If you want to overwrite the output folder, you can use `-f` paramters
+- If you want to overwrite the output folder, you can use `-f` parameters
   ```
-  api2teams test4.yml -o my-custom-teams-app-folder -f
+  api2teams sample-open-api-spec.yml -o my-custom-teams-app-folder -f
   ```
 
 - If you have other personal swagger yaml files, you can also use this CLI tool to covert them.
@@ -61,9 +57,9 @@ Options:
 User can input below command to generate Teams App to default or specific folder:
 
 ```bash
-api2teams test.yml # generate teams app to default folder ./generated-teams-app
-api2teams test.yml -o ./my-app # generate teams app to ./my-app folder
-api2teams test.yml -o ./my-app -f # generate teams app to ./my-app folder, and force overwrite output folder
+api2teams sample-open-api-spec.yml # generate teams app to default folder ./generated-teams-app
+api2teams sample-open-api-spec.yml -o ./my-app # generate teams app to ./my-app folder
+api2teams sample-open-api-spec.yml -o ./my-app -f # generate teams app to ./my-app folder, and force overwrite output folder
 api2teams -h # show help message
 api2teams -v # show version information
 ```
@@ -76,19 +72,19 @@ api2teams -v # show version information
 
   - Send message `GET /pets/1` to Bot, bot will send a response adaptive card:
 
-    ![](./images/workflow1.png)
+    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow1.png)
 
   - Send message `GET /pets` to Bot, it will first send request a request adaptive card:
 
-    ![](./images/workflow2.png)
+    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow2.png)
 
   - Input value in the request adaptive card, and then click GET button, it will send back response adaptive card:
 
-    ![](./images/workflow3.png)
+    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow3.png)
 
   - Send message `GET /pets?limit=1`, it will send back response adaptive card directly:
 
-    ![](./images/workflow4.png)
+    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow4.png)
     
 # Current Limitations
 1. Only OpenAPI version 3.0.0 or higher is supported.

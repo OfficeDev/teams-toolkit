@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.0.0
+version: 1.1.0
 
 provision:
   # Creates a new Azure Active Directory (AAD) app to authenticate users if
@@ -51,7 +51,7 @@ provision:
   - uses: file/createOrUpdateJsonFile
     with:
       target: ./appsettings.Development.json
-      appsettings:
+      content:
         TeamsFx:
           Authentication:
             ClientId: ${{AAD_APP_CLIENT_ID}}
@@ -92,3 +92,19 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+
+  # Create or update debug profile in lauchsettings file
+  - uses: file/createOrUpdateJsonFile
+    with:
+      target: ./Properties/launchSettings.json
+      content:
+        profiles:
+          Microsoft Teams (browser):
+            commandName: "Project"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+            applicationUrl: "https://localhost:44302;http://localhost:2544"
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+            hotReloadProfile: "aspnetcore"

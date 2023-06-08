@@ -63,6 +63,7 @@ import {
 } from "../question";
 import { CoreHookContext } from "../types";
 import { traverse } from "../../ui/visitor";
+import { skipAppName } from "../../component/generator/spfx/utils/questions";
 
 /**
  * This middleware will help to collect input from question flow
@@ -293,6 +294,7 @@ async function getQuestionsForCreateProjectInVSC(
   const defaultName = !inputs.teamsAppFromTdp?.appName
     ? undefined
     : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  root.addChild(new QTreeNode(skipAppName));
   root.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (isFromDevPortal(inputs)) {

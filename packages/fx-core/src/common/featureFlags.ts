@@ -38,10 +38,6 @@ export function isCLIDotNetEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
 }
 
-export function isSPFxMultiTabEnabled(): boolean {
-  return true;
-}
-
 export function isTDPIntegrationEnabled(): boolean {
   return isV3Enabled();
 }

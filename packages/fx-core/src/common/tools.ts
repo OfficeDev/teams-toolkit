@@ -400,6 +400,10 @@ export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }
 
+export function isImportSPFxEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
+}
+
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
   let projectSPFxVersion = undefined;
   const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");

@@ -290,6 +290,7 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
       [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      ["spfx-solution"]: "new",
       ["spfx-framework-type"]: "none",
       ["spfx-webpart-name"]: "test",
     };

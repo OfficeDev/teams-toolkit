@@ -92,6 +92,7 @@ api2teams -v # show version information
     
 # Current Limitations
 1. Only OpenAPI version 3.0.0 or higher is supported.
+1. Authorization properties inside OpenAPI spec is not supported
 1. Only GET operations are supported.
 1. The webhooks property is not supported and will be ignored during conversion.
 1. The oneOf, anyOf, and not keywords are not supported, not because there is no better way to represent them in adaptive cards. Only the allOf keyword is supported.

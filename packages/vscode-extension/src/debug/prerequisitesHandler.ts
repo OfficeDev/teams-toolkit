@@ -516,7 +516,9 @@ async function checkNode(
             ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
             : nodeStatus.name,
           failureMsg: nodeStatus.name,
-          error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
+          error: nodeStatus.error
+            ? handleDepsCheckerError(nodeStatus.error, nodeStatus)
+            : undefined,
         };
       } catch (error: unknown) {
         return {

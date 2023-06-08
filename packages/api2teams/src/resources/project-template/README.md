@@ -53,77 +53,13 @@ In the src folder, there are 4 subfolders and a index.ts file insdie:
 * index.ts file
     - Index file using `restify` as web service framework to host bot server, and register command handlers and action handlers for bot to handle use messages and button clicking event. 
 
-![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/project-structure.png)
+Below is workflow when user input command message with all required parameters:
 
-# Workflow
-For example, below is the API to get pets list:
-
-```yaml
-paths:
-  /pets:
-    get:
-      summary: List all pets
-      parameters:
-        - name: limit
-          in: query
-          description: How many items to return at one time (max 100)
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: A paged array of pets
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Pets"
-components:
-  schemas:
-    Pet:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        tag:
-          type: string
-    Pets:
-      type: array
-      maxItems: 100
-      items:
-        $ref: "#/components/schemas/Pet"
-```
-
-The workflow would be as below:
-
-If user input command missing some required parameters:
-![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/flow1.png)
-
-- User input command message `GET /pets`
-- Bot service receive this message, and trigger `listPetsCommandHandler`
-- Due to the required query paramter `limit` is missing, so `listPetsCommandHandler` would send back `listPetsRequestCard`
-- User receive `listPetsRequestCard`, and input limit number in the adaptive card, and click `GET` button
-  ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow1.png)
-- The `GET` button trigger `listPetsActionHandler`, and this action handler call `mockApiProvider.listPets` to get the data from API service.
-- `listPetsActionHandler` use the response data to render `PetsListCard.json` adaptive card and send back to user
-  ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow2.png)
-
-
-If user input contains all required parameters:
 ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/flow2.png)
 
-- User input the command message `GET /pets?limit=3`
-- Bot service receive this message, and trigger `listPetsCommandHandler`
-- Due to the required parameter `limit` is inside the user message, so `listPetsCommandHandler` would call API service and use the response data to render `PetsListCard.json` card.  
--  Then `listPetsCommandHandler` would send back `PetsListCard.json` adaptive card to user.
-  ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow3.png)
 
+In the event that a user inputs a command message with missing required parameters, the following workflow is triggered:
+![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/flow1.png)
 
 # Customize the Project
 To learn more about the template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-new). You can find more scenarios like:

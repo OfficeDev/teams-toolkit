@@ -69,7 +69,8 @@ export async function zipFolderAsync(
         }
 
         // If fail to reuse cached entry, load it from disk.
-        const fullPath = path.join(sourceDir, relativePath);
+        // path doesn't work properly under windows
+        const fullPath = path.normalize(path.join(sourceDir, relativePath)).split("\\").join("/");
         const task = addFileIntoZip(zip, fullPath, relativePath, stats);
         tasks.push(task);
       }

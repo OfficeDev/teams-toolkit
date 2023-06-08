@@ -149,7 +149,7 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    if (option.options.length === 0) {
+    if (typeof option.options === "object" && option.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -184,8 +184,25 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          const options = option.options;
-          quickPick.items = convertToFxQuickPickItems(option.options);
+          let options: StaticOptions = [];
+          if (typeof option.options === "function") {
+            quickPick.busy = true;
+            quickPick.placeholder = "Loading options ...";
+            option
+              .options()
+              .then((results) => {
+                options = results;
+                quickPick.items = convertToFxQuickPickItems(options);
+                quickPick.busy = false;
+                quickPick.placeholder = option.placeholder;
+              })
+              .catch((error) => {
+                resolve(err(assembleError(error)));
+              });
+          } else {
+            options = option.options as StaticOptions;
+          }
+          quickPick.items = convertToFxQuickPickItems(options);
           // set default
           if (option.default) {
             // let defaultOption: string | OptionItem | undefined;
@@ -212,7 +229,7 @@ export class VsCodeUI implements UserInteraction {
               const item = selectedItems[0];
               let result: string | OptionItem;
               if (
-                typeof option.options[0] === "string" ||
+                typeof options[0] === "string" ||
                 option.returnObject === undefined ||
                 option.returnObject === false
               ) {
@@ -254,7 +271,7 @@ export class VsCodeUI implements UserInteraction {
               }
             }),
             quickPick.onDidTriggerItemButton((event) => {
-              const itemOptions: StaticOptions = option.options;
+              const itemOptions: StaticOptions = options;
               if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
                 return;
               }
@@ -316,7 +333,25 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = convertToFxQuickPickItems(option.options);
+          let options: StaticOptions = [];
+          if (typeof option.options === "function") {
+            quickPick.busy = true;
+            quickPick.placeholder = "Loading options ...";
+            option
+              .options()
+              .then((results) => {
+                options = results;
+                quickPick.items = convertToFxQuickPickItems(options);
+                quickPick.busy = false;
+                quickPick.placeholder = option.placeholder;
+              })
+              .catch((error) => {
+                resolve(err(assembleError(error)));
+              });
+          } else {
+            options = option.options as StaticOptions;
+          }
+          quickPick.items = convertToFxQuickPickItems(options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -347,7 +382,7 @@ export class VsCodeUI implements UserInteraction {
             }
             let result: OptionItem[] | string[] = strArray;
             if (
-              typeof option.options[0] === "string" ||
+              typeof options[0] === "string" ||
               option.returnObject === undefined ||
               option.returnObject === false
             )

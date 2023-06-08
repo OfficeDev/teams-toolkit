@@ -34,15 +34,19 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 
+import {
+  InputValidationError,
+  SelectSubscriptionError,
+  UnhandledError,
+  assembleError,
+} from "@microsoft/teamsfx-core";
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
+import { cliSource } from "./constants";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
-import { InputValidationError, UnhandledError } from "@microsoft/teamsfx-core";
-import { cliSource } from "./constants";
-import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -100,11 +104,10 @@ class CLIUserInteraction implements UserInteraction {
       return;
     }
 
-    if (typeof config.options[0] === "string") {
+    if (typeof (config.options as StaticOptions)[0] === "string") {
       return;
     }
     const options = config.options as OptionItem[];
-    const labels = options.map((op) => op.label);
     const ids = options.map((op) => op.id);
     const cliNames = options.map((op) => op.cliName || toLocaleLowerCase(op.id));
 
@@ -361,9 +364,16 @@ class CLIUserInteraction implements UserInteraction {
         return ok({ type: "success", result: sub });
       }
     }
+    const loadRes = await this.loadOptions(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(
+        config.options as StaticOptions,
+        config.default
+      );
       const result = await this.singleSelect(
         config.name,
         config.title,
@@ -376,7 +386,7 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwser = config.options[index];
+        const anwser = (config.options as StaticOptions)[index];
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwser }));
         } else {
@@ -392,12 +402,39 @@ class CLIUserInteraction implements UserInteraction {
     });
   }
 
+  async loadOptions(
+    config: MultiSelectConfig | SingleSelectConfig
+  ): Promise<Result<undefined, FxError>> {
+    if (typeof config.options === "function") {
+      const bar = await this.createProgressBar(config.title, 1);
+      await bar.start();
+      await bar.next("Loading options ...");
+      try {
+        const options = await config.options();
+        config.options = options;
+        return ok(undefined);
+      } catch (e) {
+        return err(assembleError(e));
+      } finally {
+        await bar.end(true, true);
+      }
+    }
+    return ok(undefined);
+  }
+
   public async selectOptions(
     config: MultiSelectConfig
   ): Promise<Result<MultiSelectResult, FxError>> {
+    const loadRes = await this.loadOptions(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(
+        config.options as StaticOptions,
+        config.default
+      );
       const result = await this.multiSelect(
         config.name,
         config.title,
@@ -410,7 +447,7 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwers = this.getSubArray(config.options as any[], indexes);
+        const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));
         } else {

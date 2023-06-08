@@ -5,7 +5,6 @@ import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { DevEnvironmentSetupError } from "../error";
 import { Constants } from "./constants";
-import { Utils } from "./utils";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
 import { SPFxQuestionNames } from "../../../constants";
 
@@ -84,16 +83,6 @@ export const webpartDescriptionQuestion: Question = {
   },
 };
 
-export const loadPackageVersions: Question = {
-  type: "func",
-  name: SPFXQuestionNames.load_package_version,
-  title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
-  func: async (inputs: Inputs) => {
-    await PackageSelectOptionsHelper.loadOptions();
-    return undefined;
-  },
-};
-
 export const spfxPackageSelectQuestion: Question = {
   type: "singleSelect",
   name: SPFXQuestionNames.use_global_package_or_install_local,
@@ -101,6 +90,7 @@ export const spfxPackageSelectQuestion: Question = {
   staticOptions: [],
   placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
   dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    await PackageSelectOptionsHelper.loadOptions();
     return PackageSelectOptionsHelper.getOptions();
   },
   default: SPFxVersionOptionIds.installLocally,

@@ -13,6 +13,9 @@ import {
   SelectFilesConfig,
   SelectFolderConfig,
   SingleSelectConfig,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import LogProvider from "../../src/commonlib/log";
@@ -341,5 +344,82 @@ describe("Errors in User Interaction", async () => {
     if (result.isErr()) {
       expect(result.error.name).equals("SelectSubscriptionError");
     }
+  });
+});
+
+describe("User Interaction Tests for select", function () {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {
+    sandbox.stub(UI, "createProgressBar").returns({
+      start: async (s) => {},
+      next: async (s) => {},
+      end: async (s) => {},
+    });
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+  describe("loadOptions", async () => {
+    it("happy path", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => ["a", "b", "c"],
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isOk());
+      expect(config.options).deep.equals(["a", "b", "c"]);
+    });
+    it("throw error", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isErr());
+    });
+    it("no need to call function", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a", "b", "c"],
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isOk());
+      expect(config.options).deep.equals(["a", "b", "c"]);
+    });
+  });
+
+  describe("selectOptions", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
+    });
+  });
+
+  describe("selectOption", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
+    });
   });
 });

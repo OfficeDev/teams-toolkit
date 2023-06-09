@@ -9,7 +9,7 @@ To test latest template in dev branch, please refer to [How to debug templates](
 
 ## How to release a new template?
 
-1. If your template relies on TeamsFx SDK or TeamsFx React SDK, please include the relative path to your new template in the [package.json](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/package.json) file. Here is an example of how to add the path:
+1. If your template relies on @microsoft/teamsfx, @microsoft/teamsfx-react or @microsoft/adaptivecards-tools, please include the relative path to your new template in the [package.json](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/package.json) file. Here is an example of how to add the path:
   ```
   "templates": [
     "js/command-and-response",
@@ -17,7 +17,7 @@ To test latest template in dev branch, please refer to [How to debug templates](
     "language/your-new-template"
   ]
   ```
-1. The CD pipeline will automatically update the dependencies in the package.json or package.json.tpl file when a new version of TeamsFx SDK or TeamsFx React SDK is released. You can access the script used for this process [here](https://github.com/OfficeDev/TeamsFx/blob/dev/.github/scripts/sync-version.js).
+1. The CD pipeline will automatically update the dependencies in the package.json or package.json.tpl file when a new version of @microsoft/teamsfx, @microsoft/teamsfx-react or @microsoft/adaptivecards-tools is released. You can access the script used for this process [here](https://github.com/OfficeDev/TeamsFx/blob/dev/.github/scripts/sync-version.js).
 1. TeamsFx no longer uses Lerna for template versioning. Adding a `BREAKING CHANGE` footer will no longer have any effect. The release manager must manually bump up the major version of the template when a breaking change occurs.
 
 Some breaking change cases:

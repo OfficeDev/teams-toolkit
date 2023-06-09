@@ -341,7 +341,7 @@
   "core.M365HostQuestion.placeholder": "Select a platform to preview the app",
   "core.options.separator.scenario": "Scenario-based Teams apps",
   "core.options.separator.additional": "Additional features",
-  "core.common.LifecycleComplete.prepareTeamsApp": "Successfully prepared Teams app",
+  "core.common.LifecycleComplete.prepareTeamsApp": "Successfully prepared Teams app.",
   "core.common.LifecycleComplete.provision": "Successfully executed %s/%s actions in provision stage.",
   "core.common.LifecycleComplete.deploy": "Successfully executed %s/%s actions in deploy stage.",
   "core.common.LifecycleComplete.publish": "Successfully executed %s/%s actions in publish stage.",

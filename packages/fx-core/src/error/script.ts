@@ -26,8 +26,8 @@ export class ScriptExecutionError extends UserError {
     const errorOptions: UserErrorOptions = {
       source: "script",
       name: "ScriptExecutionError",
-      message: getDefaultString(key, message),
-      displayMessage: getLocalizedString(key, message),
+      message: getDefaultString(key, script, message),
+      displayMessage: getLocalizedString(key, script, message),
     };
     super(errorOptions);
   }

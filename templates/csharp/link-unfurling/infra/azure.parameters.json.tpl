@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "mebot${{RESOURCE_SUFFIX}}"
+        "value": "linkunfurling${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"

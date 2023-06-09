@@ -10,9 +10,9 @@ public class LinkUnfurlingApp : TeamsActivityHandler
 { 
     private readonly string _adaptiveCardFilePath = Path.Combine(".", "Resources", "helloWorldCard.json");
 
-    // Message Extension Code
 
     // Link Unfurling.
+    // This function can be triggered after this app is installed.
     protected override async Task<MessagingExtensionResponse> OnTeamsAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
     {
         var adaptiveCardJson = await System.IO.File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);
@@ -46,6 +46,8 @@ public class LinkUnfurlingApp : TeamsActivityHandler
         return new MessagingExtensionResponse(result);
     }
 
+    // Zero Install Link Unfurling
+    // This function can be triggered if this app sets "supportsAnonymizedPayloads": true in manifest and is uploaded to org's app catalog.
     protected override async Task<MessagingExtensionResponse> OnTeamsAnonymousAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
     {
         var adaptiveCardJson = await System.IO.File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);

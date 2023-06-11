@@ -43,6 +43,8 @@ import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./utils/questi
 import { SPFxQuestionNames } from "../../constants";
 import * as util from "util";
 import { envUtil } from "../../utils/envUtil";
+import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { EOL } from "os";
 
 export class SPFxGenerator {
   @hooks([
@@ -93,13 +95,17 @@ export class SPFxGenerator {
       getLocalizedString("plugins.spfx.import.title"),
       3
     );
+    importProgress.start();
+
+    const importDetails = [];
     try {
       // Copy & paste existing SPFx solution
-      await importProgress.start(
-        getLocalizedString("plugins.spfx.import.copyExistingSPFxSolution")
-      );
+      await importProgress.next(getLocalizedString("plugins.spfx.import.copyExistingSPFxSolution"));
       const spfxFolder = inputs[SPFXQuestionNames.spfx_import_folder] as string;
       const destSpfxFolder = path.join(destinationPath, "src");
+      importDetails.push(
+        `Copying existing SPFx solution from ${spfxFolder} to ${destSpfxFolder}...` + EOL
+      );
       await fs.ensureDir(destSpfxFolder);
       await fs.copy(spfxFolder, destSpfxFolder, {
         overwrite: true,
@@ -108,15 +114,26 @@ export class SPFxGenerator {
           return file.indexOf("node_modules") < 0;
         },
       });
+      importDetails.push(`Succeeded to Copy existing SPFx solution.` + EOL);
 
       // Retrieve solution info to generate template
       await importProgress.next(getLocalizedString("plugins.spfx.import.generateSPFxTemplates"));
+      importDetails.push(`Reading web part manifest in SPFx solution...` + EOL);
       const webpartManifest = await this.getWebpartManifest(spfxFolder);
       if (
         !webpartManifest ||
         !webpartManifest["id"] ||
         !webpartManifest["preconfiguredEntries"][0].title.default
       ) {
+        importDetails.push(
+          `Failed to Read web part manifest due to invalid ${
+            !webpartManifest
+              ? "web part manifest"
+              : !webpartManifest["id"]
+              ? "web part manifest id"
+              : "preconfiguredEntries title in web part manifest file"
+          }!` + EOL
+        );
         throw RetrieveSPFxInfoError();
       }
       if (!context.templateVariables) {
@@ -128,22 +145,37 @@ export class SPFxGenerator {
       context.templateVariables["webpartName"] =
         webpartManifest["preconfiguredEntries"][0].title.default;
 
+      importDetails.push(
+        `Generating SPFx project templates with app name: ${
+          inputs[CoreQuestionNames.AppName]
+        }, component id: ${webpartManifest["id"]}, web part name: ${
+          webpartManifest["preconfiguredEntries"][0].title.default
+        }` + EOL
+      );
       const templateRes = await Generator.generateTemplate(
         context,
         destinationPath,
         Constants.TEMPLATE_NAME,
         "ts"
       );
-      if (templateRes.isErr()) throw templateRes.error;
+      if (templateRes.isErr()) {
+        importDetails.push(`Failed to generate SPFx project templates!` + EOL);
+        throw templateRes.error;
+      }
 
       // Update manifest and related files
       await importProgress.next(getLocalizedString("plugins.spfx.import.updateTemplates"));
-      const localManifest = (await fs.readJson(
+      const localManifestRes = await manifestUtils._readAppManifest(
         path.join(destinationPath, AppPackageFolderName, "manifest.local.json")
-      )) as TeamsAppManifest;
-      let remoteManifest = (await fs.readJson(
+      );
+      if (localManifestRes.isErr()) throw localManifestRes.error;
+      const localManifest = localManifestRes.value;
+
+      const remoteManifestRes = await manifestUtils._readAppManifest(
         path.join(destinationPath, AppPackageFolderName, "manifest.json")
-      )) as TeamsAppManifest;
+      );
+      if (remoteManifestRes.isErr()) throw remoteManifestRes.error;
+      let remoteManifest = remoteManifestRes.value;
 
       const webpartsDir = path.join(spfxFolder, "src", "webparts");
       const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
@@ -186,7 +218,7 @@ export class SPFxGenerator {
       if (await fs.pathExists(path.join(spfxFolder, "teams", "manifest.json"))) {
         const existingManifest = await fs.readJson(path.join(spfxFolder, "teams", "manifest.json"));
 
-        envUtil.writeEnv(destinationPath, "dev", { TEAMS_APP_ID: existingManifest.id });
+        await envUtil.writeEnv(destinationPath, "dev", { TEAMS_APP_ID: existingManifest.id });
 
         existingManifest.schema = remoteManifest.$schema;
         existingManifest.manifestVersion = remoteManifest.manifestVersion;
@@ -197,13 +229,13 @@ export class SPFxGenerator {
 
         remoteManifest = existingManifest;
       }
-      await fs.writeJson(
-        path.join(destinationPath, AppPackageFolderName, "manifest.local.json"),
-        localManifest
+      await manifestUtils._writeAppManifest(
+        localManifest,
+        path.join(destinationPath, AppPackageFolderName, "manifest.local.json")
       );
-      await fs.writeJson(
-        path.join(destinationPath, AppPackageFolderName, "manifest.json"),
-        remoteManifest
+      await manifestUtils._writeAppManifest(
+        remoteManifest,
+        path.join(destinationPath, AppPackageFolderName, "manifest.json")
       );
 
       let colorUpdated = false,
@@ -229,6 +261,10 @@ export class SPFxGenerator {
     } catch (error) {
       await importProgress.end(false);
 
+      context.logProvider.error(
+        getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
+      );
+
       if (error instanceof UserError || error instanceof SystemError) {
         return err(error);
       }
@@ -236,6 +272,15 @@ export class SPFxGenerator {
     }
 
     await importProgress.end(true);
+
+    context.logProvider.info(
+      getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
+    );
+    await context.userInteraction.showMessage(
+      "info",
+      getLocalizedString("plugins.spfx.import.success", destinationPath),
+      false
+    );
     return ok(undefined);
   }
 

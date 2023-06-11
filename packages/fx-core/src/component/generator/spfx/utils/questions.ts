@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { DevEnvironmentSetupError, RetrieveSPFxInfoError } from "../error";
+import { DevEnvironmentSetupError, PathAlreadyExistsError, RetrieveSPFxInfoError } from "../error";
 import { Constants } from "./constants";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
 import { SPFxQuestionNames } from "../../../constants";
@@ -146,6 +146,8 @@ export const skipAppName: Question = {
       );
       if (solutionName) {
         inputs[CoreQuestionNames.AppName] = solutionName;
+        if (await fs.pathExists(path.join(inputs.folder, solutionName)))
+          throw PathAlreadyExistsError(path.join(inputs.folder, solutionName));
       } else {
         throw RetrieveSPFxInfoError();
       }

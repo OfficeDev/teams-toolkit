@@ -99,3 +99,12 @@ export function ImportSPFxSolutionError(e: Error): UserError {
     helpLink: Constants.IMPORT_HELP_LINK,
   });
 }
+
+export function PathAlreadyExistsError(path: string): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "PathAlreadyExists",
+    message: getDefaultString("core.QuestionAppName.validation.pathExist", path),
+    displayMessage: getLocalizedString("core.QuestionAppName.validation.pathExist", path),
+  });
+}

@@ -53,8 +53,8 @@ export class AppStudioError {
   public static readonly TeamsAppUpdateFailedError = {
     name: "TeamsAppUpdateFailed",
     message: (teamsAppId: string, error: any): [string, string] => [
-      getDefaultString("error.appstudio.teamsAppUpdateFailed", teamsAppId, error?.message),
-      getLocalizedString("error.appstudio.teamsAppUpdateFailed", teamsAppId, error?.displayMessage),
+      getDefaultString("error.appstudio.teamsAppUpdateFailed", teamsAppId, error.message),
+      getLocalizedString("error.appstudio.teamsAppUpdateFailed", teamsAppId, error.displayMessage),
     ],
   };
 

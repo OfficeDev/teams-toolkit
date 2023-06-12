@@ -25,7 +25,7 @@ class Milestoned extends Action {
 
 	async onMilestoned(issue: OctoKitIssue) {
 		const content = await issue.getIssue();
-		const milestoneTitle = content.milestone?.title;
+		const milestoneTitle = content.milestone?.title ?? "";
 		if (milestoneTitle.startsWith(milestonePrefix)) {
 			safeLog(`the issue ${content.number} is milestoned with ${milestoneTitle}`);
 			let client = await this.createClient();

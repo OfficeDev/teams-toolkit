@@ -249,7 +249,7 @@ jobs:
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ always() }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
     needs: execute-case
     runs-on: ubuntu-latest
     env:

@@ -1,5 +1,48 @@
 # Changelog
 
+## 5.0.0 - May 16, 2023
+
+This major version update of Teams Toolkit addresses your top feedback requests with new features and bug fixes, including a new way to customize the automation with composable actions, integrated tunneling support for debugging using Dev Tunnels, simpler project structure and template options, and much more. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
+
+- [February Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-v5-0-prerelease/): Update the fundamental new design for Teams Toolkit that allows you to use existing cloud resources, integrate Teams Toolkit with existing projects and customize Teams Toolkit to fit your needs.
+- [March Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-march-2023/): Create, debug and deploy an Outlook Add-in project with Teams Toolkit.
+- [April Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-april-2023/): Switch to an integrated and secure tunneling for bot and message extension apps. Introduced GitHub Codespaces for a new getting started experience.
+
+We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
+
+New features:
+
+- Added a how-to guide with instructions for running and debugging apps on mobile clients.
+- Simplified the Basic Tab project template by removing the dependency on React, single sign-on, and complicated example code. Use this template like an empty starting point for Tab apps.
+- You can customize which version of Azure Functions Core Tools is used with the `devTool/install` action. If not specified, the default version used is `4.0.4670` and [supports Node.js 18](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=v4&pivots=programming-language-typescript#languages).
+- We've re-categorized the project templates to use familiar terminology that matches the documentation and platform.
+    ![create-new-app](https://github.com/OfficeDev/TeamsFx/assets/11220663/fe3ac358-775d-4deb-9b1e-a9eb4d932e56)
+
+Enhancements:
+
+- Removed SPFx version selection when adding additional web parts.
+- Updated the `Tab App with Azure Backend` sample to use an on-behalf-of flow for authentication.
+- Added a warning message if you're using Node.js 14 because it's [no longer actively supported](https://nodejs.dev/en/about/releases/).
+
+Sample additions:
+
+- `Dice Roller in meeting`: The dice roller example is a simple app that allows multiple users to roll a dice and see the results. This sample is a great way to get started with Live Share and Fluid.
+- `Set signature using Outlook add-in`: An Outlook add-in that demonstrates how to set an email signature.
+
+Bug fixes:
+
+- Fixed an issue with `xml2js` package versions that may cause security vulnerabilities. ([#8390](https://github.com/OfficeDev/TeamsFx/pull/8390))
+- Fixed an issue where `manifest-file-path` will be asked twice even if it was specified in the parameter for `teamsfx update aad-app` command. ([#8435](https://github.com/OfficeDev/TeamsFx/pull/8435))
+- Fixed an issue where the `Validate Application` continues with errors. ([#8467](https://github.com/OfficeDev/TeamsFx/pull/8467))
+- Fixed an issue where `teamsfx validate` command will default to `dev` environment even for multi-environment projects in non-interactive cli mode when not specifying `--env` parameters. ([#8499](https://github.com/OfficeDev/TeamsFx/pull/8499))
+- Fixed an issue where sometimes Teams Toolkit tree view will not show up if project upgrade detects error.([#8538](https://github.com/OfficeDev/TeamsFx/pull/8538))
+
+## 4.2.5 - May 04, 2023
+
+Incremental version for Teams Toolkit with an enhancement.
+
+- Added a note on pre-requisite checker for usage of [NGROK](https://ngrok.com/).
+
 ## 4.2.4 - Feb 28, 2023
 
 Incremental version for Teams Toolkit with an enhancement.

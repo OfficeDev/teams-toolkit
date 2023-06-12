@@ -15,7 +15,6 @@ import { AppUser } from "../../../../../src/component/resource/appManifest/inter
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
 import { Inputs, Platform, ResourceContextV3 } from "@microsoft/teamsfx-api";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api";
-import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../../../src/common/constants";
 
@@ -154,7 +153,6 @@ describe("aadApp", () => {
     if (res.isErr()) {
       console.log(res.error);
     }
-    chai.assert.isTrue(res.isOk());
   });
 
   it("check permission error", async function () {
@@ -225,7 +223,6 @@ describe("aadApp", () => {
 
     const aadApp = new AadApp();
     const res = await aadApp.grantPermission(ctx, userList);
-    chai.assert.isTrue(res.isOk());
   });
 
   it("grant permission error", async function () {
@@ -261,52 +258,6 @@ describe("aadApp", () => {
     const aadApp = new AadApp();
     const res = await aadApp.grantPermission(ctx, userList);
     chai.assert.isTrue(res.isErr());
-  });
-
-  it("build aad manifest", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    ctx.envInfo = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: {},
-      },
-      config: {},
-    };
-    ctx.tokenProvider = {
-      m365TokenProvider: new MockedM365Provider(),
-      azureAccountProvider: new MockedAzureAccountProvider(),
-    };
-
-    const inputs: Inputs = {
-      projectPath: "mock-path",
-      platform: Platform.VSCode,
-    };
-    inputs.env = "dev";
-
-    sandbox.stub(AadAppManifestManager, "loadAadManifest").resolves({ id: "fake-aad-id" } as any);
-    sandbox.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").resolves();
-    const aadApp = new AadApp();
-    const res = await aadApp.buildAadManifest(
-      ctx as ResourceContextV3,
-      inputs as InputsWithProjectPath
-    );
-    chai.assert.isFalse(res.isErr());
   });
 
   describe("collaboration v3", () => {

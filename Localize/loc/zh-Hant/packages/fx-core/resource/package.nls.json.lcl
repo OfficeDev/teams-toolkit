@@ -2572,15 +2572,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[您的專案已成功初始化，以使用 TeamsFx 操作。]A;]A;一些後續步驟:]A;teamsfx 新增 <feature> 可讓您新增單一登入或 Teams 通知整合等功能。]A;]A;專業提示:]A;閱讀 aka.ms/teams-manifest 以深入了解如何更新資訊清單檔案，以連線到您現有的啟動頁面體驗。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.]]></Val>
@@ -3415,6 +3406,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用驗證規則驗證應用程式套件]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.appPackageOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate app package using validation rules]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用驗證規則驗證應用程式套件]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用資訊清單結構描述驗證]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.schemaOptionDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate using manifest schema]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用資訊清單結構描述驗證]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.selectValidateMethodQuestion.validate.selectTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a validation method]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[選取驗證方法]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.spfxFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select the folder that contains your SPFx solution]]></Val>
@@ -3703,15 +3739,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js (@CurrentVersion) 不在支援的版本清單(@SupportedVersions)。]A;]A;按一下 [深入了解]5D; 以深入了解支援的 Node.js 版本。]A;]A;(如果您剛安裝 Node.js (@SupportedVersions)，請重新啟動 isual Studio Code 讓變更生效。)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.V3NodeNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to %s to install a supported Node.js.]]></Val>
@@ -3802,18 +3829,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.failToValidateNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to validate @NameVersion after installation.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[安裝後無法驗證 @NameVersion。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to validate @NameVersion after installation.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.failToValidateVxTestApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to validate video extensibility test app after installation.]]></Val>
@@ -3845,15 +3860,6 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.finishInstallDotnet" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[已成功安裝 @NameVersion。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.finishInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3910,15 +3916,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";depChecker.needInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You must have @NameVersion installed to debug your local bot.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[您必須安裝 @NameVersion 才能對本機 Bot 偵錯。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";depChecker.needInstallNpm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You must have NPM installed to debug your local functions.]]></Val>
@@ -3946,15 +3943,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";depChecker.startInstallNgrok" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Downloading and installing @NameVersion.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在下載並安裝 @NameVersion。]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5223,15 +5211,6 @@
           <Val><![CDATA[MultipleEnv feature is not enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[MultipleEnv 功能未啟用]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.NgrokTunnelNotConnected" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Ngrok tunnel is not connected. Check your network settings and try again.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ngrok 通道未連線。請檢查您的網路設定，然後再試一次。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6628,6 +6607,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.common.MissingRequiredFileError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Missing %srequired file `%s`]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[遺失 %s 必要的檔案 `%s`]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.common.MissingRequiredInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing required input: %s]]></Val>
@@ -6648,12 +6636,12 @@
       </Item>
       <Item ItemId=";error.common.UnhandledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
+          <Val><![CDATA[An unexpected error has occurred while performing the %s task. %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[執行 %s 工作時發生意外的錯誤。發生此錯誤的原因為: %s。歡迎按一下提供的 「問題連結」來回報此問題，以便我們能夠盡快調查並解決問題。]]></Val>
+            <Val><![CDATA[執行 %s 工作時發生未預期的錯誤。%s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unhandled error: %s]]></Val>
+            <Val><![CDATA[An unexpected error has occurred while performing the %s task. The reason for this error is: %s. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -6837,15 +6825,6 @@
           <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start due to error: %s.]A; If the reason is not clearly specified, here are some suggestions to troubleshoot:]A; 1. Check the application logs: Look for any error messages or stack traces in the application logs to identify the root cause of the problem.]A; 2. Check the Azure configuration: Ensure that the Azure configuration is correct, including connection strings and application settings.]A; 3. Check the application code: Review the code to see if there are any syntax or logic errors that could be causing the issue.]A; 4. Check the dependencies: Verify that all dependencies required by the application are correctly installed and updated.]A; 5. Restart the application: Try restarting the application in Azure to see if that resolves the issue.]A; 6. Check the resource allocation: Make sure that the resource allocation for the Azure instance is appropriate for the application and its workload.]A; 7. Seek help from Azure support: If the issue persists, reach out to Azure support for further assistance.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[套件已成功部署到 Azure 的位置: '%s'，但應用程式無法啟動，因為發生錯誤: %s。]A; 如果原因未清楚指定，以下是一些疑難排解建議:]A; 1. 檢查應用程式記錄檔: 在應用程式記錄檔中尋找任何錯誤訊息或堆疊追蹤，以找出問題的根本原因。]A; 2. 檢查 Azure 設定: 確認 Azure 設定正確，包括連接字串和應用程式設定。]A; 3. 檢查應用程式程式碼: 檢閱程式碼，以查看是否有可能導致問題的語法或邏輯錯誤。]A; 4. 檢查相依性: 確認應用程式所需的所有相依性都正確安裝及更新。]A; 5. 重新啟動應用程式: 嘗試在 Azure 中重新啟動應用程式，看看這是否解決了問題。]A; 6. 檢查資源配置: 確定 Azure 執行個體的資源配置適用於應用程式及其工作負載。]A; 7. 向 Azure 支援尋求協助: 如果問題持續發生，請與 Azure 支援服務連絡以取得進一步的協助。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.deploy.DeployRemoteStartError.Notification" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The package has been successfully deployed to Azure for location: '%s', but the application is not able to start. Refer to the [Output panel]5D;(command:fx-extension.showOutputChannel) for more suggestions.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[套件已成功部署到 Azure 的位置: '%s'，但應用程式無法啟動。請參閱 [輸出面板]5D;(command:fx-extension.showOutputChannel) 以了解更多建議。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7200,10 +7179,13 @@
       </Item>
       <Item ItemId=";error.script.ScriptExecutionError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s]]></Val>
+          <Val><![CDATA[Script ('%s') execution error: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s]]></Val>
+            <Val><![CDATA[指令碼 ('%s') 執行錯誤: %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[%s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7470,22 +7452,25 @@
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法剖析 yaml 檔案: %s。請開啟 yaml 檔案，並查看 [問題]5D; 索引標籤，以了解更多詳細資料。]]></Val>
+            <Val><![CDATA[無法剖析 yaml 檔案: %s。請檢閱 yaml 檔案。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to parse yaml file: %s]]></Val>
+            <Val><![CDATA[Unable to parse yaml file: %s. Please open the yaml file and check the PROBLEMS tab for more details.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.yaml.InvalidYamlSchemaErrorWithReason" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s Please review the yaml file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法剖析 yaml 檔案: %s。原因: %s。請開啟 yaml 檔案，並查看 [問題]5D; 索引標籤，以了解更多詳細資料]]></Val>
+            <Val><![CDATA[無法剖析 yaml 檔案: %s。原因: %s 請檢閱 yaml 檔案。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to parse yaml file: %s. Reason: %s. Please open the yaml file and check the PROBLEMS tab for more details]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

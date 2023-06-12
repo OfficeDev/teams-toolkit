@@ -8,9 +8,7 @@ import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
-import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { MessageExtensionNewUIItem } from "./constants";
-import { ComponentNames } from "./constants";
+import { ComponentNames, MessageExtensionNewUIItem } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
 
@@ -114,22 +112,6 @@ export const BOT_STATE_KEY = ComponentNames.TeamsBot;
 export const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
 export const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
-export function pluginName2ComponentName(pluginName: string): string {
-  const map = new Map<string, string>();
-  EnvStateMigrationComponentNames.forEach((e) => {
-    map.set(e[0], e[1]);
-  });
-  return map.get(pluginName) || pluginName;
-}
-
-export function ComponentName2pluginName(componentName: string): string {
-  const map = new Map<string, string>();
-  EnvStateMigrationComponentNames.forEach((e) => {
-    map.set(e[1], e[0]);
-  });
-  return map.get(componentName) || componentName;
-}
-
 /**
  * convert envState from V3 to V2
  */
@@ -146,24 +128,6 @@ export function convertEnvStateV3ToV2(envStateV3: Json): EnvStateV2 {
     }
   }
   return envStateV2 as EnvStateV2;
-}
-
-/**
- * convert envState Map from V3 key to V2 key
- */
-export function convertEnvStateMapV3ToV2(envStateV3: Map<string, any>): Map<string, any> {
-  const envStateV2 = new Map<string, any>();
-  const component2plugin = new Map<string, string>();
-  EnvStateMigrationComponentNames.forEach((e) => {
-    component2plugin.set(e[1], e[0]);
-  });
-  for (const componentName of envStateV3.keys()) {
-    const pluginName = component2plugin.get(componentName);
-    if (pluginName) {
-      envStateV2.set(pluginName, envStateV3.get(componentName));
-    }
-  }
-  return envStateV2;
 }
 
 /**
@@ -366,106 +330,6 @@ export function convertProjectSettingsV2ToV3(
     ensureComponentConnections(settingsV3);
   }
   return settingsV3;
-}
-
-export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {
-  const settingsV2: ProjectSettings = cloneDeep(settingsV3) as ProjectSettings;
-  if (settingsV3.components?.length > 0) {
-    const hostType = hasAzureResourceV3(settingsV3) ? "Azure" : "SPFx";
-    settingsV2.solutionSettings = {
-      name: "fx-solution-azure",
-      version: "1.0.0",
-      hostType: hostType,
-      azureResources: [],
-      capabilities: [],
-      activeResourcePlugins: [
-        "fx-resource-local-debug",
-        "fx-resource-appstudio",
-        "fx-resource-cicd",
-      ],
-    };
-    if (hostType === "Azure") {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-api-connector");
-    }
-    const aad = getComponent(settingsV3, ComponentNames.AadApp);
-    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
-    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
-    if (aad) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
-      if (!teamsTab && !teamsBot && !settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
-        settingsV2.solutionSettings.capabilities.push("TabSSO");
-      }
-    }
-    if (teamsTab) {
-      settingsV2.solutionSettings.capabilities.push("Tab");
-      if (teamsTab.sso) {
-        if (!settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
-          settingsV2.solutionSettings.capabilities.push("TabSSO");
-        }
-      }
-      if (teamsTab.hosting === "spfx") {
-        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-spfx");
-      } else {
-        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
-      }
-    }
-    if (teamsBot) {
-      const botCapabilities = teamsBot?.capabilities;
-      if (
-        (botCapabilities && botCapabilities.length === 0) ||
-        botCapabilities?.includes("bot") ||
-        botCapabilities?.includes("command-response")
-      ) {
-        settingsV2.solutionSettings.capabilities.push("Bot");
-        if (teamsBot.sso) {
-          settingsV2.solutionSettings.capabilities.push("BotSSO");
-        }
-      }
-      if (
-        botCapabilities?.includes("message-extension") &&
-        !settingsV2.solutionSettings.capabilities.includes(MessageExtensionNewUIItem().id)
-      ) {
-        settingsV2.solutionSettings.capabilities.push(MessageExtensionNewUIItem().id);
-      }
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
-      const hostType =
-        teamsBot.hosting === ComponentNames.AzureWebApp ? "app-service" : "azure-function";
-      settingsV2.pluginSettings = {
-        "fx-resource-bot": {
-          "host-type": hostType,
-          capabilities: botCapabilities,
-        },
-      };
-    }
-    if (getComponent(settingsV3, ComponentNames.Identity)) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-identity");
-    }
-    if (getComponent(settingsV3, ComponentNames.SimpleAuth)) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
-    }
-    if (getComponent(settingsV3, ComponentNames.KeyVault)) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-key-vault");
-      settingsV2.solutionSettings.azureResources.push("keyvault");
-    }
-    if (getComponent(settingsV3, ComponentNames.AzureSQL)) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-azure-sql");
-      settingsV2.solutionSettings.azureResources.push("sql");
-    }
-    if (getComponent(settingsV3, ComponentNames.APIM)) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-apim");
-      settingsV2.solutionSettings.azureResources.push("apim");
-    }
-    const teamsApi = getComponent(settingsV3, ComponentNames.TeamsApi);
-    if (teamsApi) {
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-function");
-      settingsV2.defaultFunctionName =
-        teamsApi.functionNames && teamsApi.functionNames.length > 0
-          ? teamsApi.functionNames[0]
-          : "getUserProfile";
-      settingsV2.solutionSettings.azureResources.push("function");
-    }
-  }
-  return settingsV2;
 }
 
 export function convertManifestTemplateToV3(content: string): string {

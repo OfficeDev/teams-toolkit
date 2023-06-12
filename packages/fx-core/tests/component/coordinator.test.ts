@@ -18,10 +18,7 @@ import {
   ok,
   Platform,
   Result,
-  SingleSelectConfig,
-  Stage,
   SystemError,
-  UserCancelError,
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -40,6 +37,7 @@ import {
   SolutionSource,
   TabNonSsoItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../../src/component/constants";
 import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
@@ -51,6 +49,7 @@ import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/vali
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { Generator } from "../../src/component/generator/generator";
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
+import { SPFxGenerator } from "../../src/component/generator/spfx/spfxGenerator";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
@@ -61,7 +60,13 @@ import { MetadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
-import { FxCore } from "../../src/core/FxCore";
+import * as coll from "../../src/core/collaborator";
+import {
+  checkPermissionFunc,
+  FxCore,
+  grantPermissionFunc,
+  listCollaboratorFunc,
+} from "../../src/core/FxCore";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import { setTools } from "../../src/core/globalVars";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
@@ -81,6 +86,7 @@ import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  UserCancelError,
 } from "../../src/error/common";
 import {
   MockAzureAccountProvider,
@@ -141,6 +147,25 @@ describe("component coordinator test", () => {
     const res = await fxCore.createProject(inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("fail to create project from sample", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(err(new UserError({})));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isErr());
+  });
+
   it("create project from sample rename folder", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -271,22 +296,44 @@ describe("component coordinator test", () => {
       assert.isTrue(res.error instanceof MissingRequiredInputError);
     }
   });
-
-  it("create project from VS", async () => {
-    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+  it("create SPFx project", async () => {
+    sandbox.stub(SPFxGenerator, "generate").resolves(err(new UserError({})));
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
-      platform: Platform.VS,
+      platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "csharp",
-      [CoreQuestionNames.SafeProjectName]: "safeprojectname",
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      ["spfx-solution"]: "new",
+      ["spfx-framework-type"]: "none",
+      ["spfx-webpart-name"]: "test",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isErr());
+  });
+
+  it("fail to create SPFx project", async () => {
+    sandbox.stub(SPFxGenerator, "generate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      ["spfx-solution"]: "new",
+      ["spfx-framework-type"]: "none",
+      ["spfx-webpart-name"]: "test",
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -591,6 +638,7 @@ describe("component coordinator test", () => {
 
   it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -692,6 +740,7 @@ describe("component coordinator test", () => {
   });
   it("provision success with subscriptionId in yml", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -761,6 +810,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -842,6 +892,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path: validate multi-env", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -936,6 +987,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with existing resource groups in VS Code", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1016,6 +1068,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get selected subscription", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1091,6 +1144,7 @@ describe("component coordinator test", () => {
   });
   it("provision SPFx project shows success notification", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1150,6 +1204,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when user directly update yml with empty subscriptionId", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1202,6 +1257,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed to get subInfo", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1272,6 +1328,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed getLifecycleDescriptions Error", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1362,6 +1419,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with partial success", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1463,6 +1521,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getM365TenantId Error", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1530,6 +1589,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with getSelectedSubscription Error", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1604,6 +1664,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1668,6 +1729,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path with CLI inputs for existing resource group", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1734,6 +1796,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with CLI inputs: create resource group failed", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1796,6 +1859,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when getting azure credentials", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1882,6 +1946,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed when checking resource group existence", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -1973,6 +2038,7 @@ describe("component coordinator test", () => {
   });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [],
@@ -2012,8 +2078,51 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
+  it("provision happy path (VS debug)", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      provision: {
+        name: "configureApp",
+        driverDefs: [],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      projectPath: ".",
+      workflowFilePath: "./app.local.yml",
+      env: "local",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    if (res.isErr()) {
+      console.log(res?.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+
   it("provision failed with check whether m365 tenant matched fail", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -2099,6 +2208,7 @@ describe("component coordinator test", () => {
   });
   it("provision failed with no subscription permission", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -2158,6 +2268,7 @@ describe("component coordinator test", () => {
   });
   it("provision with no progress bar", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       provision: {
         name: "configureApp",
         driverDefs: [
@@ -2253,6 +2364,7 @@ describe("component coordinator test", () => {
 
   it("deploy happy path", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2297,6 +2409,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path - VS", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2342,6 +2455,7 @@ describe("component coordinator test", () => {
   });
   it("deploy cancel", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2385,6 +2499,7 @@ describe("component coordinator test", () => {
   });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "configureApp",
         driverDefs: [],
@@ -2433,6 +2548,7 @@ describe("component coordinator test", () => {
   });
   it("deploy failed partial success", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2493,6 +2609,7 @@ describe("component coordinator test", () => {
   });
   it("deploy without progress bar", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       deploy: {
         name: "deploy",
         run: async (ctx: DriverContext) => {
@@ -2538,6 +2655,7 @@ describe("component coordinator test", () => {
   });
   it("publish happy path", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2573,7 +2691,15 @@ describe("component coordinator test", () => {
       start: progressStartStub,
       end: progressEndStub,
     } as any as IProgressHandler);
-    const showMessageStub = sandbox.stub(tools.ui, "showMessage").resolves(ok(""));
+    const showMessageStub = sandbox
+      .stub(tools.ui, "showMessage")
+      .callsFake(async (level, msg, modal, ...items) => {
+        if (items.length > 0 && items[0].includes("admin portal")) {
+          return ok(items[0]);
+        }
+        return ok("");
+      });
+    const openUrlStub = sandbox.stub(tools.ui, "openUrl").resolves(ok(true));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
@@ -2588,9 +2714,153 @@ describe("component coordinator test", () => {
     assert.isTrue(showMessageStub.calledOnce);
     assert.isTrue(progressStartStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(true));
+    assert.isTrue(openUrlStub.calledOnce);
+  });
+  it("publish happy path - CLI", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return {
+            result: err({
+              kind: "Failure",
+              error: { source: "test", timestamp: new Date() },
+            } as ExecutionError),
+            summaries: [],
+          };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const progressStartStub = sandbox.stub();
+    const progressEndStub = sandbox.stub();
+    sandbox.stub(tools.ui, "createProgressBar").returns({
+      start: progressStartStub,
+      end: progressEndStub,
+    } as any as IProgressHandler);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.publishApplication(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error.message.indexOf("test") !== -1);
+    }
+    assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
+    assert.isTrue(progressStartStub.calledOnce);
+    assert.isTrue(progressEndStub.calledOnceWithExactly(false));
+  });
+  it("publish happy path - no ui", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    const mockTools = new MockTools();
+    mockTools.ui = undefined as any;
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+      env: "dev",
+    };
+    const fxCore = new FxCore(mockTools);
+    const res = await fxCore.publishApplication(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("publish happy path - VS - no ui", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    const mockTools = new MockTools();
+    mockTools.ui = undefined as any;
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      projectPath: ".",
+      ignoreLockByUT: true,
+      env: "dev",
+    };
+    const fxCore = new FxCore(mockTools);
+    const res = await fxCore.publishApplication(inputs);
+    assert.isTrue(res.isOk());
   });
   it("publish failed", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2652,6 +2922,7 @@ describe("component coordinator test", () => {
   });
   it("publish without progress bar", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       publish: {
         name: "publish",
         run: async (ctx: DriverContext) => {
@@ -2701,7 +2972,9 @@ describe("component coordinator test", () => {
     assert.isTrue(progressEndStub.notCalled);
   });
   it("provision lifecycle undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+    };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     const inputs: InputsWithProjectPath = {
@@ -2715,7 +2988,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
   });
   it("deploy lifecycle undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+    };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     const inputs: InputsWithProjectPath = {
@@ -2729,7 +3004,9 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr() && res.error.name === "LifeCycleUndefinedError");
   });
   it("publish lifecycle undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+    };
     sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     const inputs: InputsWithProjectPath = {
@@ -2791,325 +3068,9 @@ describe("component coordinator test", () => {
     assert.isTrue(convertRes[1]! instanceof MissingEnvironmentVariablesError);
   });
 
-  it("init infra happy path vsc", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vsc",
-      capability: "tab",
-      spfx: "true",
-      proceed: "true",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    if (res.isErr()) {
-      console.log(res.error);
-    }
-    assert.isTrue(res.isOk());
-  });
-  it("init infra happy path vs", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(coordinator, "ensureTeamsFxInCsproj").resolves(ok(undefined));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vs",
-      capability: "tab",
-      proceed: "true",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    if (res.isErr()) {
-      console.log(res.error);
-    }
-    assert.isTrue(res.isOk());
-  });
-  it("init infra cancel", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vsc",
-      capability: "tab",
-      spfx: "true",
-      proceed: "false",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init infra template not found", async () => {
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "aaa",
-      capability: "tab",
-      spfx: "true",
-      proceed: "true",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init infra happy path with question model", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
-      if (config.name === "editor") {
-        return ok({ type: "success", result: "vsc" });
-      } else if (config.name === "capability") {
-        return ok({ type: "success", result: "tab" });
-      } else if (config.name === "spfx") {
-        return ok({ type: "success", result: "true" });
-      } else if (config.name === "proceed") {
-        return ok({ type: "success", result: "true" });
-      }
-      return ok({ type: "success", result: "" });
-    });
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    if (res.isErr()) {
-      console.log(res.error);
-    }
-    assert.isTrue(res.isOk());
-  });
-  it("init infra happy path with question model 2", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
-      if (config.name === "editor") {
-        return ok({ type: "success", result: "vsc" });
-      } else if (config.name === "capability") {
-        return ok({ type: "success", result: "bot" });
-      } else if (config.name === "proceed") {
-        return ok({ type: "success", result: "true" });
-      }
-      return ok({ type: "success", result: "" });
-    });
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    if (res.isErr()) {
-      console.log(res.error);
-    }
-    assert.isTrue(res.isOk());
-  });
-  it("init infra happy path with question model 3", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
-      if (config.name === "editor") {
-        return ok({ type: "success", result: "vs" });
-      } else if (config.name === "capability") {
-        return ok({ type: "success", result: "bot" });
-      } else if (config.name === "proceed") {
-        return ok({ type: "success", result: "true" });
-      }
-      return ok({ type: "success", result: "" });
-    });
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    if (res.isErr()) {
-      console.log(res.error);
-    }
-    assert.isTrue(res.isOk());
-  });
-  it("init debug happy path with question model", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
-      if (config.name === "editor") {
-        return ok({ type: "success", result: "vs" });
-      } else if (config.name === "capability") {
-        return ok({ type: "success", result: "bot" });
-      } else if (config.name === "proceed") {
-        return ok({ type: "success", result: "true" });
-      }
-      return ok({ type: "success", result: "" });
-    });
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    if (res.isErr()) {
-      console.log(res.error);
-    }
-    assert.isTrue(res.isOk());
-  });
-  it("init infra fail without projectPath", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init infra fail without editor", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init infra fail without capability", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vsc",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init debug happy path vsc", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vsc",
-      capability: "tab",
-      spfx: "true",
-      proceed: "true",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isOk());
-  });
-  it("init debug happy path vs", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(coordinator, "ensureTeamsFxInCsproj").resolves(ok(undefined));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vs",
-      capability: "tab",
-      proceed: "true",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isOk());
-  });
-  it("init debug cancel", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vsc",
-      capability: "tab",
-      spfx: "true",
-      proceed: "false",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init debug template not found", async () => {
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "aaa",
-      capability: "tab",
-      spfx: "true",
-      proceed: "true",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init debug fail without projectPath", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isErr());
-  });
-  it("init debug fail without editor", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isErr());
-  });
-
-  it("init debug fail without capability", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      editor: "vsc",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isErr());
-  });
-
   it("preProvisionForVS", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       registerApp: {
         name: "configureApp",
         driverDefs: [
@@ -3145,7 +3106,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
-    sandbox.stub(fs, "pathExistsSync").onFirstCall().returns(false).onSecondCall().returns(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -3165,6 +3126,7 @@ describe("component coordinator test", () => {
   });
   it("provision select subscription cancel", async () => {
     const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
       registerApp: {
         name: "configureApp",
         driverDefs: [
@@ -3206,7 +3168,7 @@ describe("component coordinator test", () => {
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync").resolves();
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
-      .rejects(UserCancelError);
+      .rejects(new UserCancelError());
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -3217,16 +3179,6 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("getQuestionsForInit", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
-    const fxCore = new FxCore(tools);
-    const res1 = await fxCore.getQuestions(Stage.initDebug, inputs);
-    assert.isTrue(res1.isOk());
-    const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
-    assert.isTrue(res2.isOk());
-  });
   it("buildAadManifest", async () => {
     sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
     const inputs: Inputs = {
@@ -3317,6 +3269,47 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
 
+  it("getSelectedEnv", async () => {
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.getSelectedEnv(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("listCollaboratorFunc", async () => {
+    sandbox.stub(coll, "listCollaborator").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await listCollaboratorFunc(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("checkPermissionFunc", async () => {
+    sandbox.stub(coll, "checkPermission").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await checkPermissionFunc(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("grantPermissionFunc", async () => {
+    sandbox.stub(coll, "grantPermission").resolves(err(new UserError({})));
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await grantPermissionFunc(inputs);
+    assert.isTrue(res.isErr());
+  });
   describe("encrypt/decrypt", () => {
     afterEach(() => {
       sandbox.restore();

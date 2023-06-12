@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 
 import { Result, FxError, err, Tools, ok } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, UnhandledError } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import CLILogProvider from "./commonlib/log";
 import M365Login from "./commonlib/m365Login";
-import { UnknownError } from "./error";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUserInteraction from "./userInteraction";
+import { cliSource } from "./constants";
 
 export default async function activate(
   rootPath?: string,
@@ -24,7 +24,7 @@ export default async function activate(
       CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
     } catch (e) {
       if (!shouldIgnoreSubscriptionNotFoundError) {
-        return err(UnknownError(e as Error));
+        return err(new UnhandledError(e as Error, cliSource));
       }
     }
   }

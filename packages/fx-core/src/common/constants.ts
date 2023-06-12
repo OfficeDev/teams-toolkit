@@ -21,16 +21,6 @@ export class VSCodeExtensionCommand {
   static readonly openReadme = "command:fx-extension.openReadMe?%5B%22Notification%22%5D";
 }
 
-export class Bicep {
-  static readonly ParameterOrchestrationFileName: string = "param.template.bicep";
-  static readonly ModuleOrchestrationFileName: string = "module.template.bicep";
-  static readonly OutputOrchestrationFileName: string = "output.template.bicep";
-  static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
-  static readonly ParameterFileName: string = "parameters.json";
-  static readonly ProvisionFileName: string = "provision.template.bicep";
-  static readonly ConfigFileName: string = "config.template.bicep";
-}
-
 export class TeamsClientId {
   static readonly MobileDesktop = "1fec8e78-bce4-4aaf-ab1b-5451cc387264";
   static readonly Web = "5e3ce6c0-2b1f-4285-8d4b-75ee78787346";
@@ -61,11 +51,6 @@ export class ResourcePlugins {
   static readonly SPFx = "fx-resource-spfx";
   static readonly AppStudio = "fx-resource-appstudio";
 }
-export class PluginDisplayName {
-  static readonly Solution = "Teams Toolkit";
-  static readonly SpfxSolution = "SPFx";
-}
-
 export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   // This will default to true and this environment is only for tests. It does not expose to user.
@@ -76,7 +61,6 @@ export class FeatureFlagName {
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
   static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly SPFxMultiTab = "TEAMSFX_SPFX_MULTI_TAB";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
@@ -86,6 +70,7 @@ export class FeatureFlagName {
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly ImportSPFx = "IMPORT_SPFX";
 }
 
 export class ManifestVariables {

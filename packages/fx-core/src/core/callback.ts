@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CoreCallbackEvent, CoreCallbackFunc } from "@microsoft/teamsfx-api";
+import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
+import { CoreCallbackFunc } from "./FxCore";
 
 export class CallbackRegistry {
   private static registry: Map<CoreCallbackEvent, CoreCallbackFunc[]> = new Map();

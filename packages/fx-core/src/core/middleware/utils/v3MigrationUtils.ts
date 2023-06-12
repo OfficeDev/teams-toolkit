@@ -13,13 +13,11 @@ import {
   Inputs,
   Platform,
   ProjectSettings,
-  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 import {
-  Metadata,
   MetadataV2,
   MetadataV3,
   MetadataV3Abandoned,
@@ -126,19 +124,8 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   return res;
 }
 
-export function getDownloadLinkByVersionAndPlatform(version: string, platform: Platform): string {
-  let anchorInLink = "vscode";
-  if (platform === Platform.VS) {
-    anchorInLink = "visual-studio";
-  } else if (platform === Platform.CLI) {
-    anchorInLink = "cli";
-  }
-  return `${Metadata.versionMatchLink}#${anchorInLink}`;
-}
-
 export function outputCancelMessage(version: string, platform: Platform): void {
   TOOLS?.logProvider.warning(`Upgrade cancelled.`);
-  const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
@@ -247,10 +234,6 @@ export function getParameterFromCxt(
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const value = (inputs[key] as string) || defaultValue || "";
   return value;
-}
-
-export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {
-  return Metadata.versionMatchLink;
 }
 
 export function getCapabilityStatus(projectSettings: ProjectSettings): {
@@ -388,7 +371,7 @@ export async function addMissingValidDomainForManifest(
   if (shouldAddBotDomain) {
     teamsAppManifest.validDomains.push(isValidDomain ? validDomain.botWithValid : validDomain.bot);
   }
-  manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
+  await manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
 }
 
 export function tryExtractEnvFromUserdata(filename: string): string {
@@ -400,7 +383,7 @@ export function tryExtractEnvFromUserdata(filename: string): string {
   return "";
 }
 
-export function buildFileName(...parts: string[]): string {
+function buildFileName(...parts: string[]): string {
   return parts.join(".");
 }
 export function buildEnvFileName(envName: string): string {

@@ -6,11 +6,9 @@ import {
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
-  CoreCallbackFunc,
   CryptoProvider,
   err,
   Func,
-  FunctionRouter,
   FxError,
   InputConfigsFolderName,
   Inputs,
@@ -18,14 +16,12 @@ import {
   ok,
   Platform,
   ProjectSettings,
-  ProjectSettingsV3,
   QTreeNode,
   Result,
   Stage,
   StatesFolderName,
   Tools,
   v2,
-  v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
@@ -36,47 +32,35 @@ import { Container } from "typedi";
 import * as uuid from "uuid";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { isV3Enabled } from "../common/tools";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
 import { ComponentNames, validateSchemaOption } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
-import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
-import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import {
-  FeatureId,
-  getQuestionsForAddFeatureSubCommand,
-  getQuestionsForAddFeatureV3,
-  getQuestionsForAddResourceV3,
-  getQuestionsForDeployV3,
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
-  getQuestionsForValidateMethod,
-} from "../component/question";
-import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
+import { getQuestionsForValidateMethod } from "../component/question";
+import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
+import { WriteFileError } from "../error";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
-import { CopyFileError, InvalidInputError, ObjectIsUndefinedError, WriteFileError } from "./error";
+import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
-import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 
-export class FxCore implements v3.ICore {
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
+
+export class FxCore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
@@ -102,20 +86,6 @@ export class FxCore implements v3.ICore {
    */
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     return this.v3Implement.dispatch(this.createProject, inputs);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return this.v3Implement.dispatch(this.initInfra, inputs);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return this.v3Implement.dispatch(this.initDebug, inputs);
   }
 
   /**
@@ -262,65 +232,10 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    const context = createContextV3();
-    if (stage === Stage.publish) {
-      return await publishQuestion(inputs);
-    } else if (stage === Stage.create) {
+    if (stage === Stage.create) {
       return await getQuestionsForCreateProjectV2(inputs);
-    } else if (stage === Stage.deploy) {
-      return await getQuestionsForDeployV3(context, inputs);
-    } else if (stage === Stage.provision) {
-      return await getQuestionsForProvisionV3(inputs);
-    } else if (stage === Stage.initDebug) {
-      return await getQuestionsForInit("debug", inputs);
-    } else if (stage === Stage.initInfra) {
-      return await getQuestionsForInit("infra", inputs);
     }
     return ok(undefined);
-  }
-
-  /**
-   * @deprecated for V3
-   */
-  async getQuestionsForAddFeature(
-    featureId: FeatureId,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
-    return res;
-  }
-
-  /**
-   * @deprecated for V3
-   */
-  @hooks([ErrorHandlerMW])
-  async getQuestionsForUserTask(
-    func: FunctionRouter,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    inputs.stage = Stage.getQuestions;
-    setCurrentStage(Stage.getQuestions);
-    const context = createContextV3();
-    if (func.method === "addFeature") {
-      return await getQuestionsForAddFeatureV3(context, inputs);
-    } else if (func.method === "addResource") {
-      return await getQuestionsForAddResourceV3(context, inputs);
-    } else if (func.method === "addCICDWorkflows") {
-      return await addCicdQuestion(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "connectExistingApi") {
-      const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
-      return await apiConnectorImpl.generateQuestion(context, inputs as InputsWithProjectPath);
-    }
-    return ok(undefined);
-  }
-
-  /**
-   * @deprecated
-   */
-  async getDotEnv(
-    inputs: InputsWithProjectPath
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return this.v3Implement.dispatch(this.getDotEnv, inputs);
   }
 
   /**
@@ -330,29 +245,6 @@ export class FxCore implements v3.ICore {
     inputs: InputsWithProjectPath
   ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnvs, inputs);
-  }
-
-  /**
-   * @deprecated in V3
-   */
-  async getProjectConfig(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any | undefined, FxError>> {
-    return ok({
-      settings: {},
-      config: {},
-    });
-  }
-
-  /**
-   * @deprecated in V3
-   */
-  async getProjectConfigV3(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any | undefined, FxError>> {
-    return ok({});
   }
 
   async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -373,17 +265,8 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.listCollaborator, inputs);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvLoaderMW(false),
-    ContextInjectorMW,
-  ])
-  async getSelectedEnv(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string | undefined, FxError>> {
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false)])
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
     return ok(inputs.env); //work for both v2 and v3
   }
 
@@ -641,33 +524,26 @@ export async function ensureBasicFolderStructure(
       await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
-    return err(WriteFileError(e));
+    return err(new WriteFileError(e as Error, "core"));
   }
   return ok(null);
 }
 
-export async function listCollaboratorFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
+export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
   setCurrentStage(Stage.listCollaborator);
   inputs.stage = Stage.listCollaborator;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await listCollaborator(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  const context = createContextV3();
+  const res = await listCollaborator(
+    context,
+    inputs as v2.InputsWithProjectPath,
+    undefined,
+    TOOLS.tokenProvider
+  );
+  return res;
 }
 
 export async function checkPermissionFunc(
@@ -680,18 +556,14 @@ export async function checkPermissionFunc(
   if (!projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await checkPermission(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  const context = createContextV3();
+  const res = await checkPermission(
+    context,
+    inputs as v2.InputsWithProjectPath,
+    undefined,
+    TOOLS.tokenProvider
+  );
+  return res;
 }
 
 export async function grantPermissionFunc(
@@ -704,16 +576,12 @@ export async function grantPermissionFunc(
   if (!projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await grantPermission(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
+  const context = createContextV3();
+  const res = await grantPermission(
+    context,
+    inputs as v2.InputsWithProjectPath,
+    undefined,
+    TOOLS.tokenProvider
+  );
+  return res;
 }

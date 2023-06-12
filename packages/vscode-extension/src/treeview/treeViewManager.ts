@@ -5,17 +5,14 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { TreatmentVariableValue } from "../exp/treatmentVariables";
+import { isSPFxProject } from "../globalVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
-import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
-import { isSPFxProject } from "../globalVariables";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -178,7 +175,7 @@ class TreeViewManager {
         { name: "library", custom: false },
         TreeCategory.GettingStarted
       ),
-      ...(isV3Enabled() && isSPFxProject
+      ...(isSPFxProject
         ? [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.addWebpartTitle"),
@@ -204,24 +201,6 @@ class TreeViewManager {
         undefined,
         { name: "debug-alt", custom: false }
       ),
-      ...(isV3Enabled()
-        ? []
-        : [
-            new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
-              localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
-              "fx-extension.addFeature",
-              "addFeature",
-              { name: "teamsfx-add-feature", custom: false }
-            ),
-            new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitle"),
-              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
-              "fx-extension.openManifest",
-              "manifestEditor",
-              { name: "edit", custom: false }
-            ),
-          ]),
     ];
   }
 
@@ -270,7 +249,7 @@ class TreeViewManager {
   }
 
   private registerUtility(disposables: vscode.Disposable[]) {
-    const isTdpIntegration = isTDPIntegrationEnabled();
+    const isTdpIntegration = true;
     const utilityCommands = [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),

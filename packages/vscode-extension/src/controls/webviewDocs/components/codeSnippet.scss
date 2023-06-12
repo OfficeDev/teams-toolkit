@@ -5,26 +5,45 @@
   .codeTitle {
     display: flex;
     justify-content: flex-end;
-    background-color: var(--vscode-editor-background);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-
-    button {
-      padding: 5px;
-      height: 30px;
-      background-color: var(--vscode-editor-background);
-      margin-right: 6px;
-      border: none;
-      color: inherit;
-    }
+    background-color: var(--vscode-editorGroup-border);
+    border-radius: 6px 6px 0 0;
+    height: 36px;
 
     .copyButton {
-      background-color: var(--vscode-activeSelectionForeground);
       color: var(--vscode-breadcrumb-activeSelectionForeground);
+      height: 26px;
+      width: 58px;
+      margin-top: 5px;
+      margin-right: 5px;
+      display: flex;
+      padding: 0 8.5px;
+
+      i {
+        padding: 2px;
+      }
+
+      button {
+        padding: 5px;
+        height: 26px;
+        background-color: inherit;
+        border: none;
+        color: inherit;
+      }
     }
 
     .copyButton:hover {
-      color: var(--vscode-peekViewTitleLabel-foreground);
+      background-color: var(--vscode-editor-background);
+    }
+
+    .copiedButton {
+      background-color: var(--vscode-editorGutter-addedBackground);
+      color: var(--vscode-breadcrumb-activeSelectionForeground);
+      height: 26px;
+      width: 75px;
+      margin-top: 5px;
+      margin-right: 5px;
+      display: flex;
+      justify-content: center;
     }
   }
 

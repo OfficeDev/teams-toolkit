@@ -4,7 +4,6 @@
 import { HandlerResult, ResponseError } from "vscode-jsonrpc";
 
 import {
-  assembleError,
   err,
   FxError,
   MultiSelectConfig,
@@ -16,7 +15,7 @@ import {
   UIConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
-
+import { assembleError } from "@microsoft/teamsfx-core";
 import { CustomizeFuncRequestType, IServerFxError } from "./apis";
 import { setFunc } from "./customizedFuncAdapter";
 

@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export interface Web {
+interface Web {
   redirectUris: string[];
 }
 
-export interface Spa {
+interface Spa {
   redirectUris: string[];
 }
 
-export interface Oauth2PermissionScopes {
+interface Oauth2PermissionScopes {
   adminConsentDescription: string;
   adminConsentDisplayName: string;
   id: string;
@@ -20,39 +20,39 @@ export interface Oauth2PermissionScopes {
   value: string;
 }
 
-export interface PreAuthorizedApplication {
+interface PreAuthorizedApplication {
   appId: string;
   delegatedPermissionIds: string[];
 }
 
-export interface Api {
+interface Api {
   requestedAccessTokenVersion: number;
   oauth2PermissionScopes: Oauth2PermissionScopes[];
   preAuthorizedApplications: PreAuthorizedApplication[];
 }
 
-export interface AccessToken {
+interface AccessToken {
   name: string;
   source?: any;
   essential: boolean;
   additionalProperties: any[];
 }
 
-export interface OptionalClaims {
+interface OptionalClaims {
   accessToken: AccessToken[];
 }
 
-export interface ResourceAccess {
+interface ResourceAccess {
   id: string;
   type: string;
 }
 
-export interface RequiredResourceAccess {
+interface RequiredResourceAccess {
   resourceAppId?: string;
   resourceAccess?: ResourceAccess[];
 }
 
-export interface PasswordCredential {
+interface PasswordCredential {
   hint?: string;
   id?: string;
   endDate?: string;

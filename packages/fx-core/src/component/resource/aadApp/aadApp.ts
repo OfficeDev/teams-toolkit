@@ -2,200 +2,31 @@
 // Licensed under the MIT license.
 
 import {
-  Bicep,
-  CloudResource,
   ContextV3,
   err,
   FxError,
-  InputsWithProjectPath,
-  ok,
   PluginContext,
-  ResourceContextV3,
   Result,
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { AadAppOutputs, ComponentNames } from "../../constants";
-import * as path from "path";
-import fs from "fs-extra";
-import { getTemplatesFolder } from "../../../folder";
-import { convertContext, createAuthFiles } from "./utils";
-import { convertProjectSettingsV3ToV2 } from "../../migrate";
-import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
-import { isVSProject } from "../../../common/projectSettingsHelper";
+import { ComponentNames } from "../../constants";
 import { AadAppForTeamsImpl } from "./aadAppForTeamsImpl";
 import { Messages, Telemetry } from "./constants";
 import { AadResult, ResultFactory } from "./results";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
 import { UnhandledError } from "./errors";
-import { hooks } from "@feathersjs/hooks/lib";
-import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
-import { BuiltInFeaturePluginNames } from "../../constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { Language } from "../../constants";
+import { hooks } from "@feathersjs/hooks/lib";
+import { addStartAndEndTelemetry } from "../../driver/middleware/addStartAndEndTelemetry";
+
 @Service(ComponentNames.AadApp)
-export class AadApp implements CloudResource {
-  readonly type = "cloud";
-  readonly name = ComponentNames.AadApp;
-  outputs = AadAppOutputs;
-  finalOutputKeys = [
-    "applicationIdUris",
-    "clientId",
-    "clientSecret",
-    "objectId",
-    "oauth2PermissionScopeId",
-    "frontendEndpoint",
-    "botId",
-    "botEndpoint",
-    "domain",
-    "endpoint",
-    "oauthAuthority",
-    "oauthHost",
-    "tenantId",
-  ];
-  secretFields = ["clientSecret"];
-  async generateManifest(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
-    await generateAadManifestTemplate(inputs.projectPath, projectSetting);
-    return ok(undefined);
-  }
-  async generateAuthFiles(
-    context: ContextV3,
-    inputs: InputsWithProjectPath,
-    needTab: boolean,
-    needBot: boolean
-  ): Promise<Result<undefined, FxError>> {
-    const res = await createAuthFiles(
-      inputs,
-      (context.projectSetting.programmingLanguage as string) ?? Language.JavaScript,
-      needTab,
-      needBot,
-      isVSProject(context.projectSetting)
-    );
-    if (res.isErr()) return err(res.error);
-    return ok(undefined);
-  }
-  async generateBicep(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<Bicep[], FxError>> {
-    const bicep: Bicep = {
-      type: "bicep",
-      Parameters: await fs.readJson(
-        path.join(getTemplatesFolder(), "bicep", "aadApp.parameters.json")
-      ),
-    };
-    return ok([bicep]);
-  }
-  async provision(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    context.envInfo.state[ComponentNames.AadApp] ??= {};
-    const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(context, inputs);
-    const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.provisionUsingManifest(convertCtx),
-      convertCtx,
-      Messages.EndProvision.telemetry
-    );
-    if (res.isErr()) {
-      return res;
-    }
-    this.setState(convertCtx, context);
-    return res;
-  }
-  async configure(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(context, inputs);
-    const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.postProvisionUsingManifest(convertCtx),
-      convertCtx,
-      Messages.EndPostProvision.telemetry
-    );
-    if (res.isErr()) {
-      return res;
-    }
-    this.setState(convertCtx, context);
-    return res;
-  }
-  async setApplicationInContext(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(context, inputs);
-    const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.setApplicationInContext(convertCtx),
-      convertCtx,
-      "setApplicationInContext"
-    );
-    if (res.isErr()) {
-      return res;
-    }
-    this.setState(convertCtx, context);
-    return res;
-  }
-
-  async deploy(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(context, inputs);
-    const res = await this.runWithExceptionCatchingAsync(
-      () => aadAppImplement.deploy(convertCtx),
-      convertCtx,
-      Messages.EndDeploy.telemetry
-    );
-    if (res.isErr()) {
-      return res;
-    }
-    this.setState(convertCtx, context);
-    return res;
-  }
-
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
-  async buildAadManifest(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(context, inputs);
-    const res = await this.runWithExceptionCatchingAsync(
-      async () => {
-        await aadAppImplement.loadAndBuildManifest(convertCtx);
-        return ResultFactory.Success();
-      },
-      convertCtx,
-      Messages.EndBuildAadManifest.telemetry
-    );
-    if (res.isErr()) {
-      return res;
-    }
-    this.setState(convertCtx, context);
-    return res;
-  }
-
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
+export class AadApp {
+  @hooks([addStartAndEndTelemetry("list-collaborator", "fx-resource-aad-app-for-teams")])
   async listCollaborator(
     ctx: ContextV3,
     aadObjectIdV3?: string
@@ -208,12 +39,7 @@ export class AadApp implements CloudResource {
     );
     return res;
   }
-
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
+  @hooks([addStartAndEndTelemetry("grant-permission", "fx-resource-aad-app-for-teams")])
   async grantPermission(
     ctx: ContextV3,
     userInfo: AppUser,
@@ -227,12 +53,7 @@ export class AadApp implements CloudResource {
     );
     return res;
   }
-
-  @hooks([
-    CommonErrorHandlerMW({
-      telemetry: { component: BuiltInFeaturePluginNames.aad },
-    }),
-  ])
+  @hooks([addStartAndEndTelemetry("check-permission", "fx-resource-aad-app-for-teams")])
   async checkPermission(
     ctx: ContextV3,
     userInfo: AppUser,
@@ -245,13 +66,6 @@ export class AadApp implements CloudResource {
       Messages.EndCheckPermission.telemetry
     );
     return res;
-  }
-
-  private setState(convertCtx: PluginContext, context: ResourceContextV3) {
-    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
-    convertState.forEach((v: any, k: string) => {
-      context.envInfo.state[ComponentNames.AadApp][k] = v;
-    });
   }
 
   private async runWithExceptionCatchingAsync(

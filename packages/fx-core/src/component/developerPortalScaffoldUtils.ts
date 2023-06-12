@@ -27,6 +27,7 @@ import { CoreQuestionNames } from "../core/question";
 import {
   BOTS_TPL_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
+  DEFAULT_DESCRIPTION,
   DEFAULT_DEVELOPER,
 } from "./resource/appManifest/constants";
 import { ObjectIsUndefinedError } from "../core/error";
@@ -247,6 +248,18 @@ async function updateManifest(
     if (!manifest.developer.termsOfUseUrl) {
       manifest.developer.termsOfUseUrl = DEFAULT_DEVELOPER.termsOfUseUrl;
     }
+
+    if (!manifest.developer.name) {
+      manifest.developer.name = DEFAULT_DEVELOPER.name;
+    }
+
+    if (!manifest.description.short) {
+      manifest.description.short = DEFAULT_DESCRIPTION.short;
+    }
+
+    if (!manifest.description.full) {
+      manifest.description.full = DEFAULT_DESCRIPTION.full;
+    }
   }
 
   await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, "\t"), "utf-8");
@@ -357,8 +370,8 @@ export function updateScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
 }
 
-export function isFromDevPortal(inputs: Inputs): boolean {
-  return !!inputs.teamsAppFromTdp;
+export function isFromDevPortal(inputs: Inputs | undefined): boolean {
+  return !!inputs?.teamsAppFromTdp;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

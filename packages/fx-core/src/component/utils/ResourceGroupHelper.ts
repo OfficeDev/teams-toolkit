@@ -12,11 +12,8 @@ import {
   Platform,
   QTreeNode,
   Result,
-  traverse,
   UserError,
-  v2,
 } from "@microsoft/teamsfx-api";
-import { PluginDisplayName } from "../../common/constants";
 import { TOOLS } from "../../core/globalVars";
 import {
   CoreQuestionNames,
@@ -34,6 +31,7 @@ import {
   ResourceGroupConflictError,
 } from "../../error/azure";
 import { SolutionSource } from "../constants";
+import { traverse } from "../../ui/visitor";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -237,19 +235,6 @@ export class ResourceGroupHelper {
   }
 
   /**
-   * Ask user to create a new resource group or use an existing resource group
-   */
-  async askResourceGroupInfo(
-    ctx: v2.Context,
-    inputs: Inputs,
-    azureAccountProvider: AzureAccountProvider,
-    rmClient: ResourceManagementClient,
-    defaultResourceGroupName: string
-  ): Promise<Result<ResourceGroupInfo, FxError>> {
-    return this.askResourceGroupInfoV3(azureAccountProvider, rmClient, defaultResourceGroupName);
-  }
-
-  /**
    * Ask user to create a new resource group or use an existing resource group  V3
    */
   async askResourceGroupInfoV3(
@@ -277,9 +262,6 @@ export class ResourceGroupHelper {
     if (node) {
       const res = await traverse(node, inputs, TOOLS.ui);
       if (res.isErr()) {
-        TOOLS.logProvider?.debug(
-          `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
-        );
         return err(res.error);
       }
     }

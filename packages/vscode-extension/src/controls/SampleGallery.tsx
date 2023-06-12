@@ -9,16 +9,12 @@ import ToDoList from "../../img/webview/sample/to-do-list.gif";
 import ToDoListSharepoint from "../../img/webview/sample/to-do-list-sharepoint.gif";
 import ToDoListM365 from "../../img/webview/sample/to-do-list-M365.gif";
 import NpmSearchConnectorM365 from "../../img/webview/sample/npm-search-connector-M365.gif";
-import HelloWorldTab from "../../img/webview/sample/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../img/webview/sample/helloWorld-tab-with-backend.gif";
-import HelloWorldBot from "../../img/webview/sample/helloWorld-bot.gif";
 import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../img/webview/sample/graph-toolkit-contact-exporter.gif";
 import GraphToolkitOneProductivityHub from "../../img/webview/sample/graph-toolkit-one-productivity-hub.gif";
-import BOTSSO from "../../img/webview/sample/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
-import NoneSSOTab from "../../img/webview/sample/hello-world-tab-without-sso.gif";
 import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
 import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
 import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
@@ -26,12 +22,12 @@ import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.g
 import StockUpdate from "../../img/webview/sample/stock-update.gif";
 import MsgExtSSO from "../../img/webview/sample/message-extension-sso.gif";
 import VideoFilterApp from "../../img/webview/sample/video-filter-app-sample-in-test-app.gif";
-import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
 import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-tab-and-outlook-add-in.png";
 import OutlookSetSignatureAddin from "../../img/webview/sample/outlook-set-signature-overview.png";
 import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
 import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif";
+import TeamsChef from "../../img/webview/sample/teams-chef.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -45,12 +41,8 @@ const imageMapping: { [p: string]: any } = {
   "hello-world-in-meeting": InMeetingApp,
   "todo-list-with-Azure-backend-M365": ToDoListM365,
   "NPM-search-connector-M365": NpmSearchConnectorM365,
-  "hello-world-tab": HelloWorldTab,
   "hello-world-tab-with-backend": HelloWorldTabWithBackend,
   "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
-  "hello-world-bot": HelloWorldBot,
-  "bot-sso": BOTSSO,
-  "hello-world-tab-without-sso": NoneSSOTab,
   "graph-connector-app": GraphConnector,
   "adaptive-card-notification": AdaptiveCardNotification,
   "incoming-webhook-notification": IncomingWebhook,
@@ -59,12 +51,12 @@ const imageMapping: { [p: string]: any } = {
   "stocks-update-notification-bot": StockUpdate,
   "query-org-user-with-message-extension-sso": MsgExtSSO,
   "teams-videoapp-sample": VideoFilterApp,
-  "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
   "team-central-dashboard": DashboardTab,
   "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
   "outlook-add-in-set-signature": OutlookSetSignatureAddin,
   "developer-assist-dashboard": DevAssistDashboard,
   "live-share-dice-roller": LiveShareDiceRoller,
+  "teams-chef-bot": TeamsChef,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

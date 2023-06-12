@@ -12,6 +12,7 @@ import { Hub } from "../../../src/common/m365/constants";
 import { LaunchHelper } from "../../../src/common/m365/launchHelper";
 import { MockM365TokenProvider } from "../../core/utils";
 import { PackageService } from "../../../src/common/m365/packageService";
+import { NotExtendedToM365Error } from "../../../src/common/m365/errors";
 
 describe("LaunchHelper", () => {
   const m365TokenProvider = new MockM365TokenProvider();
@@ -138,13 +139,9 @@ describe("LaunchHelper", () => {
 
     it("retrieveAppId 404", async () => {
       sinon.stub(m365TokenProvider, "getAccessToken").resolves(ok(""));
-      sinon.stub(PackageService.prototype, "retrieveAppId").throws({
-        innerError: {
-          response: {
-            status: 404,
-          },
-        },
-      });
+      sinon
+        .stub(PackageService.prototype, "retrieveAppId")
+        .rejects(new NotExtendedToM365Error("test"));
       const result = await launchHelper.getM365AppId("test-id");
       chai.assert(result.isErr());
       chai.assert.deepEqual((result as any).error.name, "NotExtendedToM365Error");

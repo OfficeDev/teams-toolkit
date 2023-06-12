@@ -8,8 +8,8 @@ import fs from "fs-extra";
 import path from "path";
 
 import { ConfigFolderName, FxError, err, ok, Result } from "@microsoft/teamsfx-api";
-
-import { ReadFileError, WriteFileError } from "./error";
+import { WriteFileError, jsonUtils } from "@microsoft/teamsfx-core";
+import { cliSource } from "./constants";
 
 const UserSettingsFileName = "cliProfile.json";
 
@@ -22,15 +22,9 @@ export enum CliConfigOptions {
   TrustDevCert = "trust-development-certificate",
   RunFrom = "run-from",
   Interactive = "interactive",
-  AutomaticNpmInstall = "automatic-npm-install",
 }
 
-export enum CliConfigTelemetry {
-  On = "on",
-  Off = "off",
-}
-
-export enum CliConfigEnvChecker {
+enum CliConfigTelemetry {
   On = "on",
   Off = "off",
 }
@@ -40,11 +34,6 @@ export enum CliConfigRunFrom {
   AzDo = "AzDo",
   Jenkins = "Jenkins",
   Other = "Other",
-}
-
-export enum CliConfigAutomaticNpmInstall {
-  On = "on",
-  Off = "off",
 }
 
 export class UserSettings {
@@ -65,15 +54,11 @@ export class UserSettings {
         fs.writeJSONSync(filePath, {});
       }
     } catch (e) {
-      return err(WriteFileError(e));
+      return err(new WriteFileError(e as Error, cliSource));
     }
 
-    try {
-      const config = fs.readJSONSync(filePath);
-      return ok(config);
-    } catch (e) {
-      return err(ReadFileError(e));
-    }
+    const res = jsonUtils.readJSONFileSync(filePath);
+    return res;
   }
 
   public static setConfigSync(option: { [key: string]: string }): Result<null, FxError> {
@@ -89,7 +74,7 @@ export class UserSettings {
       fs.writeJSONSync(this.getUserSettingsFile(), obj);
       return ok(null);
     } catch (e) {
-      return err(WriteFileError(e));
+      return err(new WriteFileError(e as Error, cliSource));
     }
   }
 

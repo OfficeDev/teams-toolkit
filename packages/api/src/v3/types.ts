@@ -2,16 +2,13 @@
 // Licensed under the MIT license.
 
 import {
-  IStaticTab,
-  IConfigurableTab,
   IBot,
   IComposeExtension,
+  IConfigurableTab,
+  IStaticTab,
   IWebApplicationInfo,
 } from "@microsoft/teams-manifest";
-import { ProjectSettings } from "../types";
-import { TokenProvider } from "../utils/login";
-import { Context, EnvInfoV2 } from "../v2/types";
-import { AppManifestProvider } from "./plugins";
+import { EnvInfoV2 } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
 
 export interface EnvInfoV3 extends EnvInfoV2 {

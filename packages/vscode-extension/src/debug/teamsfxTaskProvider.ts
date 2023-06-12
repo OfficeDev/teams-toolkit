@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 
 import { ProductName, Stage, ok } from "@microsoft/teamsfx-api";
-import { isV3Enabled, TunnelType } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { ITaskDefinition, TaskCommand } from "@microsoft/teamsfx-core/build/common/local";
 import { isValidProjectV3 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
@@ -13,17 +13,11 @@ import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
-import { NgrokTunnelTaskTerminal } from "./taskTerminal/ngrokTunnelTaskTerminal";
-import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
-import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
-import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
-import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
-import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import * as globalVariables from "../globalVariables";
 import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
 import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
-import { showError } from "../handlers";
+import { MigrateTaskTerminal } from "./taskTerminal/migrateTaskTerminal";
 
 const deprecatedTasks = [
   "frontend start",
@@ -42,6 +36,12 @@ const deprecatedTasks = [
 ];
 
 const customTasks = Object.freeze({
+  [TaskCommand.migrate]: {
+    createTerminal: async (d: vscode.TaskDefinition) => new MigrateTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
   [TaskCommand.checkPrerequisites]: {
     createTerminal: async (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
@@ -131,13 +131,18 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       }
       if (needsMigration) {
         // migrate to v3
-        try {
-          await commonUtils.triggerV3Migration();
-          return undefined;
-        } catch (error: any) {
-          showError(error);
-          throw error;
-        }
+        const newTask = new vscode.Task(
+          task.definition,
+          vscode.TaskScope.Workspace,
+          TaskCommand.migrate,
+          TeamsfxTaskProvider.type,
+          new vscode.CustomExecution(customTasks[TaskCommand.migrate].createTerminal)
+        );
+        newTask.presentationOptions.reveal = customTasks[TaskCommand.migrate].presentationReveal;
+        newTask.presentationOptions.echo = customTasks[TaskCommand.migrate].presentationEcho;
+        newTask.presentationOptions.showReuseMessage =
+          customTasks[TaskCommand.migrate].presentationshowReuseMessage;
+        return newTask;
       }
     }
 

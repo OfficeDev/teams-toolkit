@@ -98,10 +98,6 @@ export const AddinProjectManifestQuestion: SingleFileQuestion = {
   type: "singleFile",
   name: QuestionName.AddinProjectManifestQuestion,
   title: "Select import project manifest file",
-  default: (inputs: Inputs): string | undefined => {
-    const projFolder: string = inputs[AddinProjectFolderQuestion.name];
-    return path.join(projFolder, "manifest.json");
-  },
 };
 
 export const getTemplate = (inputs: Inputs): string => {

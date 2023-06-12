@@ -8,7 +8,6 @@ environmentFolderPath: ./env
 provision:
 {{teamsAppCreate}}
 {{teamsAppUpdate}}
-{{m365Title}}
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:

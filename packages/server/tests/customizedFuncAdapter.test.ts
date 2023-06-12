@@ -18,9 +18,8 @@ import {
   OnSelectionChangeFunc,
   ValidateFunc,
   SystemError,
-  assembleError,
 } from "@microsoft/teamsfx-api";
-
+import { assembleError } from "@microsoft/teamsfx-core";
 let FuncId = 0;
 
 const func = () => {

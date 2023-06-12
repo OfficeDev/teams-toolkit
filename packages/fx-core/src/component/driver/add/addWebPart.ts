@@ -15,13 +15,13 @@ import { AddWebPartArgs } from "./interface/AddWebPartArgs";
 import path from "path";
 import * as fs from "fs-extra";
 import * as util from "util";
-import { ManifestTemplate } from "../../resource/spfx/utils/constants";
-import { SPFxGenerator } from "../../generator/spfxGenerator";
+import { ManifestTemplate } from "../../generator/spfx/utils/constants";
+import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
 import { createContextV3 } from "../../utils";
 import { Constants } from "./utility/constants";
 import { NoConfigurationError } from "./error/noConfigurationError";
 import { SPFxQuestionNames } from "../../constants";
-import { SPFXQuestionNames } from "../../resource/spfx/utils/questions";
+import { SPFXQuestionNames } from "../../generator/spfx/utils/questions";
 
 @Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {

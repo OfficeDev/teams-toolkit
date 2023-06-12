@@ -1,57 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogLevel, err, ok } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
 import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
-import { replaceTemplateString } from "../../../src/colorize";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
-import * as codeFlowLogin from "../../../src/commonlib/codeFlowLogin";
-import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
-import LogProvider from "../../../src/commonlib/log";
+import { signedOut } from "../../../src/commonlib/common/constant";
 import M365TokenProvider from "../../../src/commonlib/m365Login";
-import { ConfigNotFoundError, NotFoundSubscriptionId } from "../../../src/error";
-import * as Utils from "../../../src/utils";
-import { expect } from "../utils";
+import { expect, mockLogProvider, mockYargs } from "../utils";
+import { FileNotFoundError, M365TokenJSONNotFoundError } from "@microsoft/teamsfx-core";
 
 describe("Account Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let messages: string[] = [];
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
 
   beforeEach(() => {
-    sandbox.stub(process, "exit");
-    sandbox
-      .stub<any, any>(yargs, "command")
-      .callsFake((cmd: any, desc: any, builder: any, handler: any) => {
-        return builder(yargs);
-      });
-    sandbox.stub(yargs, "options").returns(yargs);
-    sandbox.stub(yargs, "positional").returns(yargs);
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      messages.push(message);
-    });
-    sandbox.stub(LogProvider, "outputInfo").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputWarning").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputError").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputSuccess").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
-    sandbox.stub(LogProvider, "outputDetails").callsFake((message: string, ...args: string[]) => {
-      messages.push(replaceTemplateString(message, ...args));
-    });
+    mockYargs(sandbox);
+    mockLogProvider(sandbox, messages);
   });
 
   afterEach(() => {
@@ -66,53 +35,9 @@ describe("Account Command Tests", function () {
     expect(cmd.subCommands).to.be.lengthOf(3);
   });
 
-  it("Builder Check - V2", () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    const cmd = new Account();
-    yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(cmd.subCommands).to.be.lengthOf(4);
-  });
-
   it("Account Command Running Check", async () => {
     const cmd = new Account();
     await cmd.runCommand({});
-  });
-
-  it("Account Show Command Running Check - signedIn - V2", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));
-    sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "M365@xxx.com" }));
-    sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedIn });
-    sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "Azure@xxx.com" });
-    sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
-    sandbox.stub(AzureTokenProvider, "readSubscription").resolves({
-      subscriptionName: "",
-      subscriptionId: "",
-      tenantId: "",
-    });
-    sandbox.stub(AzureTokenProvider, "setRootPath");
-    sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(true);
-    const cmd = new Account();
-    const show = cmd.subCommands.find((cmd) => cmd.commandHead === "show");
-    expect(show).not.to.be.undefined;
-    await show!.runCommand({});
-    expect(messages).to.be.lengthOf(2);
-  });
-
-  it("Account Show Command Running Check - Azure signedIn but no Active Sub - V2", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));
-    sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "M365@xxx.com" }));
-    sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedIn });
-    sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "Azure@xxx.com" });
-    sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
-    sandbox.stub(AzureTokenProvider, "readSubscription").resolves(undefined);
-    sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(true);
-    const cmd = new Account();
-    const show = cmd.subCommands.find((cmd) => cmd.commandHead === "show");
-    expect(show).not.to.be.undefined;
-    await show!.runCommand({});
-    expect(messages).to.be.lengthOf(4);
   });
 
   it("Account Show Command Running Check - signedOut", async () => {
@@ -125,22 +50,6 @@ describe("Account Command Tests", function () {
     expect(messages).to.be.lengthOf(1);
   });
 
-  it("Account Show Command Running Check - Failed - V2", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));
-    sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "M365@xxx.com" }));
-    sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedIn });
-    sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "Azure@xxx.com" });
-    sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
-    sandbox.stub(AzureTokenProvider, "readSubscription").rejects(ConfigNotFoundError("test"));
-    sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(true);
-    const cmd = new Account();
-    const show = cmd.subCommands.find((cmd) => cmd.commandHead === "show");
-    expect(show).not.to.be.undefined;
-    await show!.runCommand({});
-    expect(messages).to.be.lengthOf(3);
-  });
-
   it("Account Login Azure Command Running Check - Success", async () => {
     sandbox.stub(AzureTokenProvider, "signout");
     sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "Azure@xxx.com" });
@@ -148,16 +57,6 @@ describe("Account Command Tests", function () {
     const cmd = new AzureLogin();
     await cmd!.runCommand({});
     expect(messages).to.be.lengthOf(2);
-  });
-
-  it("Account Login Azure Command Running Check - Success - V2", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(AzureTokenProvider, "signout");
-    sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "Azure@xxx.com" });
-    sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
-    const cmd = new AzureLogin();
-    await cmd!.runCommand({});
-    expect(messages).to.be.lengthOf(3);
   });
 
   it("Account Login Azure Command Running Check - Failed", async () => {
@@ -176,18 +75,11 @@ describe("Account Command Tests", function () {
     expect(messages).to.be.lengthOf(2);
   });
 
-  it("Account Login M365 Command Running Check - Success - V2", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(M365TokenProvider, "signout");
-    sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "M365@xxx.com" }));
-    const cmd = new M365Login();
-    await cmd!.runCommand({});
-    expect(messages).to.be.lengthOf(1);
-  });
-
   it("Account Login M365 Command Running Check - Failed", async () => {
     sandbox.stub(M365TokenProvider, "signout");
-    sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(ConfigNotFoundError("test")));
+    sandbox
+      .stub(M365TokenProvider, "getJsonObject")
+      .resolves(err(new M365TokenJSONNotFoundError()));
     const cmd = new M365Login();
     await cmd!.runCommand({});
     expect(messages).to.be.lengthOf(1);
@@ -223,25 +115,5 @@ describe("Account Command Tests", function () {
     const logout = cmd.subCommands.find((cmd) => cmd.commandHead === "logout");
     await logout!.runCommand({ service: "m365" });
     expect(messages).to.be.lengthOf(1);
-  });
-
-  it("Account Set Subscription Command Running Check - Success", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(Utils, "setSubscriptionId").resolves(ok(null));
-    sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "Azure@xxx.com" });
-    sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
-    const cmd = new Account();
-    const set = cmd.subCommands.find((cmd) => cmd.commandHead === "set");
-    await set!.runCommand({});
-    expect(messages).to.be.lengthOf(3);
-  });
-
-  it("Account Set Subscription Command Running Check - Failed", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    sandbox.stub(Utils, "setSubscriptionId").resolves(err(NotFoundSubscriptionId()));
-    const cmd = new Account();
-    const set = cmd.subCommands.find((cmd) => cmd.commandHead === "set");
-    const result = await set!.runCommand({});
-    expect(result.isErr()).to.be.true;
   });
 });

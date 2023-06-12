@@ -21,9 +21,9 @@ import {
   SelectFileConfig,
   SelectFolderConfig,
   SingleSelectConfig,
-  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
+import { UserCancelError } from "@microsoft/teamsfx-core";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -141,7 +141,7 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
-        expect(result.error).to.equal(UserCancelError);
+        expect(result.error instanceof UserCancelError).is.true;
       }
       sinon.restore();
     });
@@ -226,7 +226,7 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
-        expect(result.error).to.equal(UserCancelError);
+        expect(result.error instanceof UserCancelError).is.true;
       }
       sinon.restore();
     });

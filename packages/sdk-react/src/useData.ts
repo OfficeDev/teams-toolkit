@@ -50,7 +50,7 @@ const createReducer =
  * @param options - if autoLoad is true, reload data immediately
  * @returns data, loading status, error and reload function
  *
- * @beta
+ * @public
  */
 export function useData<T>(
   fetchDataAsync: () => Promise<T>,

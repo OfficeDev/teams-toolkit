@@ -13,6 +13,7 @@ export type RawProjectModel = {
   deploy?: DriverDefinition[];
   publish?: DriverDefinition[];
   environmentFolderPath?: string;
+  version: string;
 };
 
 export type ProjectModel = {
@@ -22,6 +23,7 @@ export type ProjectModel = {
   deploy?: ILifecycle;
   publish?: ILifecycle;
   environmentFolderPath?: string;
+  version: string;
 };
 
 export type DriverDefinition = {

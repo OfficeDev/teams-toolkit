@@ -1,117 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, Inputs, ok, Result, SystemError } from "@microsoft/teamsfx-api";
-import path from "path";
-import { isAadManifestEnabled } from "../../../common/tools";
-import { CoreHookContext } from "../../types";
-import fs from "fs-extra";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { TOOLS } from "../../globalVars";
-import { generateAadManifestTemplate } from "../../generateAadManifestTemplate";
-import { PluginNames } from "../../../component/constants";
-import { RequiredResourceAccess } from "../../../component/resource/aadApp/interfaces/AADManifest";
+import { err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import { CoreSource } from "../../error";
-
-export interface Permission {
-  resource: string;
-  delegated: string[];
-  application: string[];
-}
-
-export function permissionsToRequiredResourceAccess(
-  permissions: Permission[]
-): RequiredResourceAccess[] | undefined {
-  const result: RequiredResourceAccess[] = [];
-  try {
-    permissions.forEach((permission) => {
-      const res: RequiredResourceAccess = {
-        resourceAppId: permission.resource,
-        resourceAccess: permission.application
-          .map((item) => {
-            return { id: item, type: "Role" };
-          })
-          .concat(
-            permission.delegated.map((item) => {
-              return { id: item, type: "Scope" };
-            })
-          ),
-      };
-      result.push(res);
-    });
-  } catch (err) {
-    return undefined;
-  }
-
-  return result;
-}
-
-export async function generateAadManifest(
-  projectPath: string,
-  projectSettingsJson: any
-): Promise<void> {
-  const permissionFilePath = path.join(projectPath, "permissions.json");
-
-  // add aad.template.file
-  const permissions = (await fs.readJson(permissionFilePath)) as Permission[];
-
-  const requiredResourceAccess = permissionsToRequiredResourceAccess(permissions);
-  if (!requiredResourceAccess) {
-    TOOLS?.logProvider.warning(
-      getLocalizedString("core.aadManifestMigration.ParsePermissionsFailedWarning")
-    );
-  }
-
-  await generateAadManifestTemplate(projectPath, projectSettingsJson, requiredResourceAccess, true);
-}
-
-export async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> {
-  try {
-    if (!isAadManifestEnabled()) {
-      return false;
-    }
-
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if (!inputs.projectPath) {
-      return false;
-    }
-    const fxExist = await fs.pathExists(path.join(inputs.projectPath as string, ".fx"));
-    if (!fxExist) {
-      return false;
-    }
-
-    const aadManifestTemplateExist = await fs.pathExists(
-      path.join(inputs.projectPath as string, "templates", "appPackage", "aad.template.json")
-    );
-
-    if (aadManifestTemplateExist) {
-      return false;
-    }
-
-    const permissionFileExist = await fs.pathExists(
-      path.join(inputs.projectPath as string, "permissions.json")
-    );
-
-    if (!permissionFileExist) {
-      return false;
-    }
-
-    const projectSettingsJson = await fs.readJson(
-      path.join(inputs.projectPath as string, ".fx", "configs", "projectSettings.json")
-    );
-    const aadPluginIsActive = projectSettingsJson.solutionSettings?.activeResourcePlugins?.includes(
-      PluginNames.AAD
-    );
-
-    if (!aadPluginIsActive) {
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
 
 export enum FileType {
   STATE,
@@ -139,7 +30,7 @@ export const fixedNamingsV3: { [key: string]: string } = {
   "state.fx-resource-apim.publisherEmail": "APIM__PUBLISHEREMAIL",
   "state.fx-resource-apim.publisherName": "APIM__PUBLISHERNAME",
 };
-export const provisionOutputNamingsV3: string[] = [
+const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.indexPath",
   "state.fx-resource-frontend-hosting.domain",
   "state.fx-resource-frontend-hosting.endpoint",
@@ -173,12 +64,12 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-key-vault.m365ClientSecretReference",
   "state.fx-resource-key-vault.botClientSecretReference",
 ];
-export const nameMappingV3: { [key: string]: string } = {
+const nameMappingV3: { [key: string]: string } = {
   "state.fx-resource-aad-app-for-teams.botEndpoint": "state.fx-resource-bot.siteEndpoint",
   "state.fx-resource-aad-app-for-teams.frontendEndpoint":
     "state.fx-resource-frontend-hosting.endpoint",
 };
-export const pluginIdMappingV3: { [key: string]: string } = {
+const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-frontend-hosting": "teams-tab",
   "fx-resource-function": "teams-api",
   "fx-resource-identity": "identity",
@@ -190,7 +81,7 @@ export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-appstudio": "app-manifest",
   "fx-resource-simple-auth": "simple-auth",
 };
-export const secretKeys = [
+const secretKeys = [
   "state.fx-resource-aad-app-for-teams.clientSecret",
   "state.fx-resource-bot.botPassword",
   "state.fx-resource-apim.apimClientAADClientSecret",

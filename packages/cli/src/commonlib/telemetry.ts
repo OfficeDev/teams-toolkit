@@ -7,7 +7,6 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { getAllFeatureFlags } from "../utils";
 import { CliConfigOptions } from "../userSetttings";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 
@@ -37,13 +36,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
       // add shared properties
       const fixedProjectSettings = getFixedCommonProjectSettings(rootPath);
       this.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
-      this.addSharedProperty(TelemetryProperty.IsFromSample, fixedProjectSettings?.isFromSample);
-      this.addSharedProperty(
-        TelemetryProperty.ProgrammingLanguage,
-        fixedProjectSettings?.programmingLanguage
-      );
-      this.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
-      this.addSharedProperty(TelemetryProperty.IsM365, fixedProjectSettings?.isM365);
     }
     return this;
   }
@@ -69,9 +61,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -90,9 +79,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
-
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -113,9 +99,6 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 
@@ -124,28 +107,12 @@ export class CliTelemetryReporter implements TelemetryReporter {
   }
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage] ||
-      !properties[TelemetryProperty.IsFromSample]
-    ) {
+    if (!properties[TelemetryProperty.ProjectId]) {
       const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
 
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
         this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
       }
     }
   }

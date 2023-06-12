@@ -3,7 +3,8 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "../e2e/commonUtils";
-import { Capability, TemplateProject } from "./constants";
+import { Capability } from "./constants";
+import { TemplateProject } from "../commonlib/constants";
 import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
 import path from "path";
 
@@ -71,8 +72,7 @@ export class Executor {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}` +
-      ` --spfx-install-latest-package true`;
+      ` --local-manifest-path ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 
@@ -153,7 +153,7 @@ export class Executor {
 
   static async installCLI(workspace: string, version: string, global: boolean) {
     if (global) {
-      const command = `npm install -g @microsoft/teamsfx-cli@${version}`;
+      const command = `npm install -g @microsoft/teamsfx-cli@${version} --force`;
       return this.execute(command, workspace);
     } else {
       const command = `npm install @microsoft/teamsfx-cli@${version}`;
@@ -205,7 +205,10 @@ export class Executor {
     processEnv?: NodeJS.ProcessEnv
   ) {
     const timeout = 100000;
-    const oldPath = path.resolve("./resource", template);
+    const oldPath = path.resolve(
+      template !== TemplateProject.ProactiveMessaging ? "./resource" : "./resource/samples",
+      template
+    );
     const newPath = path.resolve(testFolder, appName);
     try {
       await this.execute(`mv ${oldPath} ${newPath}`, testFolder, processEnv, timeout);

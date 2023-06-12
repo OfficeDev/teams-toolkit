@@ -3,8 +3,9 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { assembleError, err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { setLocale } from "../globalVars";
+import { assembleError } from "../../error/common";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard

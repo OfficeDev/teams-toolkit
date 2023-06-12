@@ -34,10 +34,17 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 
+import {
+  InputValidationError,
+  SelectSubscriptionError,
+  UnhandledError,
+  assembleError,
+  loadingOptionsPlaceholder,
+} from "@microsoft/teamsfx-core";
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
-import { EmptySubConfigOptions, NotValidInputValue, UnknownError } from "./error";
+import { cliSource } from "./constants";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
@@ -45,7 +52,7 @@ import { getColorizedString, toLocaleLowerCase } from "./utils";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
-export class CLIUserInteraction implements UserInteraction {
+class CLIUserInteraction implements UserInteraction {
   private static instance: CLIUserInteraction;
   private presetAnswers: Map<string, any> = new Map();
 
@@ -98,11 +105,10 @@ export class CLIUserInteraction implements UserInteraction {
       return;
     }
 
-    if (typeof config.options[0] === "string") {
+    if (typeof (config.options as StaticOptions)[0] === "string") {
       return;
     }
     const options = config.options as OptionItem[];
-    const labels = options.map((op) => op.label);
     const ids = options.map((op) => op.id);
     const cliNames = options.map((op) => op.cliName || toLocaleLowerCase(op.id));
 
@@ -156,7 +162,7 @@ export class CLIUserInteraction implements UserInteraction {
       }
       const result = await question.validate?.(answer);
       if (typeof result === "string") {
-        return err(NotValidInputValue(question.name!, result));
+        return err(new InputValidationError(question.name!, result));
       }
       return ok(answer);
     }
@@ -194,7 +200,7 @@ export class CLIUserInteraction implements UserInteraction {
         ScreenManager.continue();
         resolve(ok(anwsers[question.name!]));
       } catch (e) {
-        resolve(err(UnknownError(e)));
+        resolve(err(new UnhandledError(e as Error, cliSource)));
       }
     });
   }
@@ -349,7 +355,7 @@ export class CLIUserInteraction implements UserInteraction {
     if (config.name === "subscription") {
       const subscriptions = config.options as string[];
       if (subscriptions.length === 0) {
-        return err(EmptySubConfigOptions());
+        return err(new SelectSubscriptionError(cliSource));
       } else if (subscriptions.length === 1) {
         const sub = subscriptions[0];
         CLILogProvider.necessaryLog(
@@ -359,9 +365,16 @@ export class CLIUserInteraction implements UserInteraction {
         return ok({ type: "success", result: sub });
       }
     }
+    const loadRes = await this.loadOptions(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(
+        config.options as StaticOptions,
+        config.default
+      );
       const result = await this.singleSelect(
         config.name,
         config.title,
@@ -374,7 +387,7 @@ export class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwser = config.options[index];
+        const anwser = (config.options as StaticOptions)[index];
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwser }));
         } else {
@@ -390,12 +403,39 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
+  async loadOptions(
+    config: MultiSelectConfig | SingleSelectConfig
+  ): Promise<Result<undefined, FxError>> {
+    if (typeof config.options === "function") {
+      const bar = await this.createProgressBar(config.title, 1);
+      await bar.start();
+      await bar.next(loadingOptionsPlaceholder());
+      try {
+        const options = await config.options();
+        config.options = options;
+        return ok(undefined);
+      } catch (e) {
+        return err(assembleError(e));
+      } finally {
+        await bar.end(true, true);
+      }
+    }
+    return ok(undefined);
+  }
+
   public async selectOptions(
     config: MultiSelectConfig
   ): Promise<Result<MultiSelectResult, FxError>> {
+    const loadRes = await this.loadOptions(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue] = this.toChoices(
+        config.options as StaticOptions,
+        config.default
+      );
       const result = await this.multiSelect(
         config.name,
         config.title,
@@ -408,7 +448,7 @@ export class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        const anwers = this.getSubArray(config.options as any[], indexes);
+        const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));
         } else {

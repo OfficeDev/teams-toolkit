@@ -3,28 +3,9 @@
 "use strict";
 
 import * as chai from "chai";
-import "mocha";
-import {
-  assembleError,
-  ConcurrentError,
-  EmptyOptionError,
-  InvalidInputError,
-  InvalidObjectError,
-  InvalidOperationError,
-  InvalidProjectError,
-  NoProjectOpenedError,
-  NotImplementedError,
-  ObjectAlreadyExistsError,
-  ObjectNotExistError,
-  PathAlreadyExistsError,
-  ReadFileError,
-  SystemError,
-  UndefinedError,
-  UnknownError,
-  UserError,
-  WriteFileError,
-} from "../src/error";
 import fs from "fs-extra";
+import "mocha";
+import { SystemError, UserError } from "../src/error";
 
 const myName = "MyError";
 const myMessage = "message1";
@@ -167,61 +148,6 @@ describe("error", function () {
         }
       });
   });
-  describe("assembleError", function () {
-    it("error is string", () => {
-      const fxError = assembleError(myMessage);
-      chai.assert.isTrue(fxError instanceof UnknownError);
-      chai.assert.isTrue(fxError.message === myMessage);
-      chai.assert.isTrue(fxError.name === "UnknownError");
-      chai.assert.isTrue(fxError.source === "unknown");
-      chai.assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
-    });
-
-    it("error is Error", () => {
-      const raw = new Error(myMessage);
-      const fxError = assembleError(raw);
-      chai.assert.isTrue(fxError instanceof SystemError);
-      chai.assert.isTrue(fxError.message === myMessage);
-      chai.assert.isTrue(fxError.name === "Error");
-      chai.assert.isTrue(fxError.source === "unknown");
-      chai.assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
-    });
-
-    it("error is Error with source", () => {
-      const raw = new Error(myMessage);
-      const fxError = assembleError(raw, mySource);
-      chai.assert.isTrue(fxError instanceof SystemError);
-      chai.assert.isTrue(fxError.message === myMessage);
-      chai.assert.isTrue(fxError.name === "Error");
-      chai.assert.isTrue(fxError.source === mySource);
-      chai.assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
-    });
-
-    it("throw real error", () => {
-      try {
-        fs.readFileSync("12345" + new Date().getTime());
-        chai.assert.fail("Should not reach here");
-      } catch (e) {
-        const fxError = assembleError(e, mySource);
-        chai.assert.isTrue(fxError instanceof SystemError);
-        chai.assert.isTrue(
-          fxError.message !== undefined &&
-            fxError.message.includes("ENOENT: no such file or directory")
-        );
-        chai.assert.isTrue(fxError.name === "Error");
-        chai.assert.isTrue(fxError.source === mySource);
-        chai.assert.isTrue(fxError.stack === e.stack);
-      }
-    });
-
-    it("error has other type", () => {
-      const raw = [1, 2, 3];
-      const fxError = assembleError(raw);
-      chai.assert.isTrue(fxError instanceof SystemError);
-      chai.assert.isTrue(fxError.message === JSON.stringify(raw));
-      chai.assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
-    });
-  });
 
   describe("Sub class", function () {
     it("happy path", () => {
@@ -234,94 +160,6 @@ describe("error", function () {
       chai.assert.equal(error.source, "unknown");
       chai.assert.equal(error.name, "MyError");
       chai.assert.isTrue(error.stack?.includes("error.test.ts"));
-    });
-  });
-
-  describe("Predefined Errors", function () {
-    it("happy path", () => {
-      {
-        const error = new EmptyOptionError();
-        chai.assert.equal(error.name, "EmptyOptionError");
-        chai.assert.isTrue(error instanceof EmptyOptionError);
-      }
-      {
-        const error = new PathAlreadyExistsError(mySource, "123");
-        chai.assert.equal(error.name, "PathAlreadyExistsError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof PathAlreadyExistsError);
-      }
-      {
-        const error = new ObjectAlreadyExistsError(mySource, "123");
-        chai.assert.equal(error.name, "ObjectAlreadyExistsError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof ObjectAlreadyExistsError);
-      }
-      {
-        const error = new ObjectNotExistError(mySource, "123");
-        chai.assert.equal(error.name, "ObjectNotExistError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof ObjectNotExistError);
-      }
-      {
-        const error = new UndefinedError(mySource, "123");
-        chai.assert.equal(error.name, "UndefinedError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof UndefinedError);
-      }
-      {
-        const error = new NotImplementedError(mySource, "123");
-        chai.assert.equal(error.name, "NotImplementedError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof NotImplementedError);
-      }
-      {
-        const error = new WriteFileError(mySource, new Error("my error"));
-        chai.assert.equal(error.name, "WriteFileError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof WriteFileError);
-      }
-      {
-        const error = new ReadFileError(mySource, new Error("my error"));
-        chai.assert.equal(error.name, "ReadFileError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof ReadFileError);
-      }
-      {
-        const error = new NoProjectOpenedError(mySource);
-        chai.assert.equal(error.name, "NoProjectOpenedError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof NoProjectOpenedError);
-      }
-      {
-        const error = new ConcurrentError(mySource);
-        chai.assert.equal(error.name, "ConcurrentError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof ConcurrentError);
-      }
-      {
-        const error = new InvalidInputError(mySource, "123");
-        chai.assert.equal(error.name, "InvalidInputError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof InvalidInputError);
-      }
-      {
-        const error = new InvalidProjectError(mySource);
-        chai.assert.equal(error.name, "InvalidProjectError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof InvalidProjectError);
-      }
-      {
-        const error = new InvalidObjectError(mySource, "123");
-        chai.assert.equal(error.name, "InvalidObjectError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof InvalidObjectError);
-      }
-      {
-        const error = new InvalidOperationError(mySource, "123");
-        chai.assert.equal(error.name, "InvalidOperationError");
-        chai.assert.equal(error.source, mySource);
-        chai.assert.isTrue(error instanceof InvalidOperationError);
-      }
     });
   });
 });

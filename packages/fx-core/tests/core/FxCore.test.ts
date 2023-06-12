@@ -26,10 +26,8 @@ import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
-import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
-import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
   ProgrammingLanguageQuestion,
@@ -42,7 +40,6 @@ import {
   TabSPFxItem,
 } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
-import * as templateActions from "../../src/common/template-utils/templatesActions";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import "../../src/component/driver/aad/update";
 import { envUtil } from "../../src/component/utils/envUtil";
@@ -60,13 +57,16 @@ import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import * as coreImplement from "../../src/core/FxCore";
-import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
-import { FileNotFoundError, InvalidProjectError } from "../../src/error/common";
+import {
+  FileNotFoundError,
+  InvalidProjectError,
+  MissingEnvironmentVariablesError,
+} from "../../src/error/common";
 import * as collaborator from "../../src/core/collaborator";
 import { CollaborationUtil } from "../../src/core/collaborator";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
@@ -83,8 +83,6 @@ describe("Core basic APIs", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
-    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
-    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
   afterEach(async () => {
     sandbox.restore();
@@ -330,21 +328,25 @@ describe("Core basic APIs", () => {
         .stub(UpdateAadAppDriver.prototype, "run")
         .resolves(
           err(
-            new MissingEnvInFileUserError(
+            new MissingEnvironmentVariablesError(
               "aadApp/update",
               "AAD_APP_OBJECT_ID",
-              "https://fake-help-link",
-              "driver.aadApp.error.generateManifestFailed",
-              "fake path"
+              "fake path",
+              "https://fake-help-link"
             )
           )
         );
       const res = await core.deployAadManifest(inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
-        assert.strictEqual(
+        // Cannot assert the full message because the mocked code can't get correct env file path
+        assert.include(
           res.error.message,
-          "Unable to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path has no value. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
+          "The program cannot proceed as the following environment variables are missing: 'AAD_APP_OBJECT_ID', which are required for file: fake path. Make sure the required variables are set either by editing the .env file"
+        );
+        assert.include(
+          res.error.message,
+          "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables"
         );
       }
     } finally {
@@ -408,7 +410,7 @@ describe("Core basic APIs", () => {
     }
   });
 
-  it("phantomMigrationV3 return error for invalid project", async () => {
+  it("phantomMigrationV3 return error for invalid V2 project", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });
@@ -425,6 +427,25 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr());
       assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
       await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
+  it("phantomMigrationV3 return error for non-project", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir()),
+        skipUserConfirm: true,
+      };
+      const res = await core.phantomMigrationV3(inputs);
+      assert.isTrue(res.isErr());
+      assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
     } finally {
       restore();
     }
@@ -741,7 +762,7 @@ describe("apply yaml template", async () => {
 
     before(() => {
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-      sandbox.stub(YamlParser.prototype, "parse").resolves(ok({}));
+      sandbox.stub(YamlParser.prototype, "parse").resolves(ok({ version: "1.0.0" }));
     });
 
     after(() => {
@@ -794,6 +815,7 @@ describe("apply yaml template", async () => {
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
       sandbox.stub(YamlParser.prototype, "parse").resolves(
         ok({
+          version: "1.0.0",
           provision: new MockedProvision(),
         })
       );

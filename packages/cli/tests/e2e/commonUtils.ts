@@ -19,7 +19,6 @@ import os from "os";
 import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
-import { sleep } from "../../src/utils";
 import * as dotenv from "dotenv";
 import {
   cfg,
@@ -43,6 +42,7 @@ import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
+import { YAMLMap, YAMLSeq, parseDocument } from "yaml";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -60,6 +60,7 @@ export async function execAsyncWithRetry(
   stdout: string;
   stderr: string;
 }> {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   while (retries > 0) {
     retries--;
     try {
@@ -685,5 +686,30 @@ export function editDotEnvFile(filePath: string, key: string, value: string): vo
     fs.writeFileSync(filePath, newEnvFileContent);
   } catch (error) {
     console.log('Failed to edit ".env" file.');
+  }
+}
+
+export function removeTeamsAppExtendToM365(filePath: string) {
+  try {
+    const yamlFileContent = fs.readFileSync(filePath, "utf-8");
+    const appYaml = parseDocument(yamlFileContent);
+    if (!appYaml.has("provision")) {
+      return;
+    }
+
+    const provisionStage = appYaml.get("provision") as YAMLSeq;
+    for (let i = 0; i < provisionStage.items?.length; ++i) {
+      const action = provisionStage.items?.[i] as YAMLMap;
+      if (
+        action.commentBefore &&
+        action.commentBefore?.includes("Extend your Teams app to Outlook and the Microsoft 365 app")
+      ) {
+        provisionStage.delete(i);
+      }
+    }
+
+    fs.writeFileSync(filePath, appYaml.toString());
+  } catch (error) {
+    console.log(`Failed to remove teamsApp/extendToM365 action due to: ${error.message}`);
   }
 }

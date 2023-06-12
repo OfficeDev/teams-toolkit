@@ -30,7 +30,6 @@ import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
-import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import {
   AppStudioScopes,
@@ -282,25 +281,6 @@ export function mergeProcessEnv(
     }
   }
   return result;
-}
-
-export function getAutomaticNpmInstallSetting(): boolean {
-  try {
-    const result = UserSettings.getConfigSync();
-    if (result.isErr()) {
-      throw result.error;
-    }
-
-    const config = result.value;
-    const automaticNpmInstallOption = CliConfigOptions.AutomaticNpmInstall;
-    if (!(automaticNpmInstallOption in config)) {
-      return false;
-    }
-    return config[automaticNpmInstallOption] == CliConfigAutomaticNpmInstall.On;
-  } catch (error: any) {
-    cliLogger.warning(`Getting automatic-npm-install setting failed: ${error}`);
-    return false;
-  }
 }
 
 export async function generateAccountHint(

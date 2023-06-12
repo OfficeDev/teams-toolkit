@@ -1,231 +1,63 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ok } from "@microsoft/teamsfx-api";
+import "mocha";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import yargs, { Options } from "yargs";
-import * as dotenv from "dotenv";
-
-import { FxError, Inputs, LogLevel, Result, ok, err, UserError } from "@microsoft/teamsfx-api";
-import { envUtil, FxCore } from "@microsoft/teamsfx-core";
-
+import yargs from "yargs";
 import Config from "../../../src/cmds/config";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import { RootFolderNode } from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
-import * as constants from "../../../src/constants";
-import LogProvider from "../../../src/commonlib/log";
-import { expect } from "../utils";
-import * as Utils from "../../../src/utils";
-import { CliConfigOptions, UserSettings } from "../../../src/userSetttings";
-import { NonTeamsFxProjectFolder } from "../../../src/error";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { UserSettings } from "../../../src/userSetttings";
+import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 
 describe("Config Command Tests", function () {
   const sandbox = sinon.createSandbox();
-  let registeredCommands: string[] = [];
   let options: string[] = [];
   let positionals: string[] = [];
   let telemetryEvents: string[] = [];
   let logs: string[] = [];
-  let decrypted: string[] = [];
-  let mockedEnvRestore: RestoreFn;
-  const config = {
+  const mockedEnvRestore: RestoreFn = () => {};
+  const config: { [key: string]: string } = {
     telemetry: "on",
-    envCheckerValidateDotnetSdk: "true",
   };
 
-  before(() => {
-    sandbox.stub(process, "exit");
-    sandbox
-      .stub<any, any>(yargs, "command")
-      .callsFake((command: string, description: string, builder: any, handler: any) => {
-        registeredCommands.push(command);
-        builder(yargs);
-      });
-    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }) => {
-      if (typeof ops === "string") {
-        options.push(ops);
-      } else {
-        options = options.concat(...Object.keys(ops));
-      }
-      return yargs;
-    });
-    sandbox.stub(yargs, "positional").callsFake((name: string) => {
-      positionals.push(name);
-      return yargs;
-    });
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
-    sandbox
-      .stub<any, any>(FxCore.prototype, "decrypt")
-      .callsFake((ciphertext: string, inputs: Inputs) => {
-        decrypted.push(ciphertext);
-        return ok("decrypted");
-      });
-    sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      logs.push(message);
-    });
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
-  });
-
-  after(() => {
-    sandbox.restore();
-  });
-
   beforeEach(() => {
-    registeredCommands = [];
+    mockYargs(sandbox, options, positionals);
+    mockTelemetry(sandbox, telemetryEvents);
+    mockLogProvider(sandbox, logs);
+    sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
+    sandbox.stub(UserSettings, "setConfigSync").callsFake((opt: { [key: string]: string }) => {
+      config.telemetry = opt.telemetry;
+      return ok(null);
+    });
+  });
+
+  afterEach(() => {
     options = [];
     positionals = [];
     telemetryEvents = [];
     logs = [];
-    decrypted = [];
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-  });
-
-  afterEach(() => {
+    config.telemetry = "on";
     mockedEnvRestore();
-  });
-
-  it("has configured proper parameters", () => {
-    const cmd = new Config();
-    cmd.builder(yargs);
-    expect(registeredCommands).deep.equals(
-      ["get [option]", "set <option> <value>"],
-      JSON.stringify(registeredCommands)
-    );
-    expect(options).includes("global", JSON.stringify(options));
-    expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
-    expect(positionals).deep.equals(["option", "option", "value"], JSON.stringify(positionals));
-  });
-
-  it("has configured proper parameters V3", () => {
-    const cmd = new Config();
-    cmd.builder(yargs);
-    expect(registeredCommands).deep.equals(
-      ["get [option]", "set <option> <value>"],
-      JSON.stringify(registeredCommands)
-    );
-    expect(options).includes("global", JSON.stringify(options));
-    expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
-    expect(positionals).deep.equals(["option", "option", "value"], JSON.stringify(positionals));
-  });
-});
-
-describe("Config Get Command Check", () => {
-  const cmd = new Config();
-  const sandbox = sinon.createSandbox();
-  let telemetryEvents: string[] = [];
-  let logs: string[] = [];
-  let decrypted: string[] = [];
-  const config = {
-    telemetry: "on",
-    envCheckerValidateDotnetSdk: "true",
-  };
-  let mockedEnvRestore: RestoreFn = () => {};
-
-  before(() => {
-    sandbox.stub(process, "exit");
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox
-      .stub<any, any>(FxCore.prototype, "decrypt")
-      .callsFake((ciphertext: string, inputs: Inputs) => {
-        decrypted.push(ciphertext);
-        return ok("decrypted");
-      });
-    sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      logs.push(message);
-    });
-    // sandbox.stub(Utils, "readConfigs").returns(Promise.resolve(err(NonTeamsFxProjectFolder())));
-    sandbox
-      .stub(Utils, "readEnvJsonFile")
-      .callsFake(async (rootFolder: string): Promise<Result<any, FxError>> => {
-        if (rootFolder.endsWith("testProjectFolder")) {
-          return ok({});
-        }
-        return err(NonTeamsFxProjectFolder());
-      });
-    sandbox
-      .stub(Utils, "readSettingsFileSync")
-      .callsFake((rootFolder: string): Result<any, FxError> => {
-        if (rootFolder.endsWith("testProjectFolder")) {
-          return ok({});
-        }
-        return err(NonTeamsFxProjectFolder());
-      });
-    sandbox.stub(Utils, "readProjectSecrets").callsFake((projectFolder, env) => {
-      if (projectFolder.includes("fake")) {
-        return Promise.resolve(err(NonTeamsFxProjectFolder()));
-      }
-      return Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc")));
-    });
-    sandbox
-      .stub(envUtil, "readEnv")
-      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
-  });
-
-  after(() => {
     sandbox.restore();
   });
 
-  afterEach(() => {
-    mockedEnvRestore();
+  it("builder check", () => {
+    const cmd = new Config();
+    cmd.builder(yargs);
   });
 
-  beforeEach(() => {
-    telemetryEvents = [];
-    logs = [];
-    decrypted = [];
-  });
-
-  it("has configured proper parameters", () => {
+  it("get - has configured proper parameters", () => {
+    const cmd = new Config();
     expect(cmd.subCommands.length).equals(2);
     expect(cmd.subCommands[0].command).equals("get [option]");
   });
 
-  it("only prints all global config when running 'config get' and not in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
+  it("get - prints all global config when running 'config get'", async () => {
+    const cmd = new Config();
+    const result = await cmd.subCommands[0].runCommand({});
+    expect(result.isErr()).equals(false);
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes(JSON.stringify(config, null, 2));
@@ -233,13 +65,12 @@ describe("Config Get Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
   });
 
-  it("only prints all global config when running 'config get' and not in a project folder V3", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
+  it("get - prints all global config when running 'config get test'", async () => {
+    const cmd = new Config();
+    const result = await cmd.subCommands[0].runCommand({
+      option: "test",
     });
-    await cmd.subCommands[0].handler({
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
+    expect(result.isErr()).equals(false);
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes(JSON.stringify(config, null, 2));
@@ -247,60 +78,12 @@ describe("Config Get Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
   });
 
-  it("only prints all global config when running 'config get --global' in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      global: true,
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
-
-    expect(logs.length).equals(1);
-    const result = JSON.parse(logs[0]);
-    expect(result).to.deep.equal(config);
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-
-  it("prints all global config and project config when running 'config get' in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[0].handler({
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
-
-    expect(logs.length).equals(3);
-    const globalConfig = JSON.parse(logs[0]);
-    expect(globalConfig).to.deep.equal(config);
-    expect(logs[1]).includes("fx-resource-bot.botPassword: decrypted");
-    expect(logs[2]).includes("test: abc");
-
-    expect(decrypted).deep.equals(["password"]);
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-
-  it("only prints specific global config when running 'config get telemetry' and not in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[0].handler({
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
+  it("get - only prints specific global config when running 'config get telemetry'", async () => {
+    const cmd = new Config();
+    const result = await cmd.subCommands[0].runCommand({
       option: "telemetry",
     });
-
-    expect(logs.length).equals(2);
-    expect(logs[0]).includes("Showing global config. You can add '-g' to specify global scope.");
-    expect(logs[1]).includes(JSON.stringify(config.telemetry, null, 2));
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-
-  it("only prints specific global config when running 'config get telemetry -g' and not in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      option: "telemetry",
-      global: true,
-    });
+    expect(result.isErr()).equals(false);
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes(JSON.stringify(config.telemetry, null, 2));
@@ -308,239 +91,19 @@ describe("Config Get Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
   });
 
-  it("only prints specific project config that doesn't need decryption when running 'config get test' in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[0].handler({
-      option: "test",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
-
-    expect(logs.length).equals(1);
-    expect(logs[0]).includes("test: abc");
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-
-  it("throw error when the project is not TTK project", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await expect(
-      cmd.subCommands[0].handler({
-        option: "test",
-        [constants.RootFolderNode.data.name as string]: "fakeProjectFolder",
-        [constants.EnvNodeNoCreate.data.name as string]: "dev",
-      })
-    ).rejected;
-  });
-
-  it("only prints specific project config that needs decryption when running 'config get test' in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[0].handler({
-      option: "fx-resource-bot.botPassword",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
-
-    expect(logs.length).equals(1);
-    expect(logs[0]).includes("fx-resource-bot.botPassword: decrypted");
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-
-  it("fails to print when running 'config get xxx' in a non-project folder", async () => {
-    try {
-      await cmd.subCommands[0].handler({
-        option: "fx-resource-bot.botPassword",
-        [constants.EnvNodeNoCreate.data.name as string]: "dev",
-      });
-    } catch (e) {
-      expect(logs.length).equals(2);
-      expect(logs[0]).equals(
-        "You can change to teamsfx project folder or use --folder to specify."
-      );
-      expect(logs[1]).equals(
-        "[TeamsfxCLI.NonTeamsFxProjectFolder]: Current folder is not a TeamsFx project folder."
-      );
-
-      expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NonTeamsFxProjectFolder");
-    }
-  });
-
-  it("successfully print global config when running 'config get xxx' and xxx is a global option", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[0].handler({
-      option: "telemetry",
-    });
-    expect(logs.length).equals(2);
-    expect(logs[1]).equals('"on"');
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-
-  it("successfully print global config when running 'config get xxx --env' and xxx is a global option", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[0].handler({
-      option: "telemetry",
-      env: "dev",
-    });
-    expect(logs.length).equals(2);
-    expect(logs[1]).equals('"on"');
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
-  });
-});
-
-describe("Config Set Command Check", () => {
-  const cmd = new Config();
-  const sandbox = sinon.createSandbox();
-  let telemetryEvents: string[] = [];
-  let logs: string[] = [];
-  let encrypted: string[] = [];
-  let secretFile: dotenv.DotenvParseOutput;
-  let globalSettings: { [key: string]: string } = {};
-  const config = {
-    telemetry: "on",
-    envCheckerValidateDotnetSdk: "true",
-  };
-  let mockedEnvRestore: RestoreFn = () => {};
-
-  before(() => {
-    sandbox.stub(process, "exit");
-    sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
-      telemetryEvents.push(eventName);
-    });
-    sandbox
-      .stub(CliTelemetry, "sendTelemetryErrorEvent")
-      .callsFake((eventName: string, error: FxError) => {
-        telemetryEvents.push(eventName);
-      });
-    sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-      throw err;
-    });
-    sandbox
-      .stub<any, any>(FxCore.prototype, "encrypt")
-      .callsFake((ciphertext: string, inputs: Inputs) => {
-        encrypted.push(ciphertext);
-        return ok("encrypted");
-      });
-    sandbox
-      .stub(UserSettings, "setConfigSync")
-      .callsFake((option: { [key: string]: string }): Result<null, FxError> => {
-        if (option.telemetry) {
-          config.telemetry = option.telemetry;
-        }
-        return ok(null);
-      });
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      logs.push(message);
-    });
-    sandbox
-      .stub(Utils, "readSettingsFileSync")
-      .callsFake((rootFolder: string): Result<any, FxError> => {
-        if (rootFolder.endsWith("testProjectFolder")) {
-          return ok({});
-        }
-        return err(NonTeamsFxProjectFolder());
-      });
-    sandbox
-      .stub(Utils, "readEnvJsonFile")
-      .callsFake(async (rootFolder: string): Promise<Result<any, FxError>> => {
-        if (rootFolder.endsWith("testProjectFolder")) {
-          return ok({});
-        }
-        return err(NonTeamsFxProjectFolder());
-      });
-    sandbox
-      .stub(Utils, "writeSecretToFile")
-      .callsFake(
-        (secrets: dotenv.DotenvParseOutput, rootFolder: string): Result<undefined, FxError> => {
-          secretFile = secrets;
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(Utils, "readProjectSecrets")
-      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
-    sandbox
-      .stub(envUtil, "readEnv")
-      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
-    sandbox
-      .stub(envUtil, "writeEnv")
-      .callsFake(
-        (
-          projectPath: string,
-          env: string,
-          secrets: dotenv.DotenvParseOutput
-        ): Promise<Result<undefined, FxError>> => {
-          secretFile = secrets;
-          return Promise.resolve(ok(undefined));
-        }
-      );
-    sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
-      ok<VersionCheckRes, FxError>({
-        isSupport: VersionState.compatible,
-        versionSource: "",
-        currentVersion: "1.0.0",
-        trackingId: "",
-      })
-    );
-  });
-
-  after(() => {
-    sandbox.restore();
-  });
-
-  afterEach(() => {
-    mockedEnvRestore();
-  });
-
-  beforeEach(() => {
-    telemetryEvents = [];
-    logs = [];
-    encrypted = [];
-    globalSettings = {};
-  });
-
-  it("has configured proper parameters", () => {
+  it("set - has configured proper parameters", () => {
+    const cmd = new Config();
     expect(cmd.subCommands.length).equals(2);
     expect(cmd.subCommands[1].command).equals("set <option> <value>");
   });
 
-  it("successfully sets global config when running 'config set xx xx' and not in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[1].handler({
+  it("set - global config when running 'config set telemetry off'", async () => {
+    const cmd = new Config();
+    const result = await cmd.subCommands[1].runCommand({
       option: "telemetry",
       value: "off",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
     });
-
-    expect(config.telemetry).equals("off");
-    expect(logs.length).equals(2);
-    expect(logs[0]).includes("Setting user config. You can add '-g' to specify global scope.");
-    expect(logs[1]).includes("Successfully configured user setting telemetry.");
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-  });
-
-  it("only sets global config when running 'config set xx xx --global' in a project folder", async () => {
-    await cmd.subCommands[1].handler({
-      global: true,
-      option: "telemetry",
-      value: "off",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
+    expect(result.isErr()).equals(false);
 
     expect(config.telemetry).equals("off");
     expect(logs.length).equals(1);
@@ -549,129 +112,19 @@ describe("Config Set Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 
-  it("fail to set global config when running 'config set test off' and not in a project folder", async () => {
-    try {
-      await cmd.subCommands[1].handler({
-        option: "test",
-        value: "off",
-        [constants.EnvNodeNoCreate.data.name as string]: "dev",
-      });
-    } catch (e) {
-      expect(logs.length).equals(2);
-      expect(logs[0]).includes(
-        "You can change to teamsfx project folder or use --folder to specify."
-      );
-      expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NonTeamsFxProjectFolder");
-    }
-  });
-
-  it("fail to set global config when running 'config set test off -g' and not in a project folder", async () => {
-    await cmd.subCommands[1].handler({
-      global: true,
+  it("set - not global config when running 'config set test off'", async () => {
+    const cmd = new Config();
+    const result = await cmd.subCommands[1].runCommand({
       option: "test",
       value: "off",
     });
+    expect(result.isErr()).equals(false);
 
+    expect(config.telemetry).equals("on");
+    expect(config["test"]).undefined;
     expect(logs.length).equals(1);
     expect(logs[0]).includes("No user setting test.");
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-  });
 
-  it("successfully set non-secret project config when running 'config set test off' in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "false",
-    });
-    await cmd.subCommands[1].handler({
-      option: "test",
-      value: "off",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
-
-    expect(logs.length).equals(1);
-    expect(logs[0]).includes("Successfully configured project setting test.");
-    expect(secretFile.test).equals("off");
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-  });
-
-  it("failed to set non-secret project config when running 'config set test off' in a project folder V3", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
-    await cmd.subCommands[1].handler({
-      option: "test",
-      value: "off",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
-
-    expect(logs.length).equals(1);
-    expect(logs[0]).includes("No user setting");
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-  });
-
-  it("successfully set secret project config when running 'config set fx-resource-bot.botPassword pwd' in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    await cmd.subCommands[1].handler({
-      option: "fx-resource-bot.botPassword",
-      value: "pwd",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.EnvNodeNoCreate.data.name as string]: "dev",
-    });
-
-    expect(logs.length).equals(1);
-    expect(logs[0]).includes(
-      "Successfully configured project setting fx-resource-bot.botPassword."
-    );
-    expect(secretFile["fx-resource-bot.botPassword"]).equals("encrypted");
-    expect(encrypted).deep.equals(["pwd"]);
-
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-  });
-
-  it("fail to set project config when running 'config set xx off' and in a project folder", async () => {
-    try {
-      await cmd.subCommands[1].handler({
-        option: "xx",
-        value: "off",
-        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-        [constants.EnvNodeNoCreate.data.name as string]: "dev",
-      });
-    } catch (e) {
-      expect(logs.length).equals(1);
-      expect(logs[0]).includes(
-        "[TeamsfxCLI.ConfigNameNotFound]: Config xx is not found in project."
-      );
-      expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("ConfigNameNotFound");
-    }
-  });
-
-  it("successfullly set global config when running 'config set a b' when 'a' is a global option and in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    await cmd.subCommands[1].handler({
-      option: CliConfigOptions.Telemetry,
-      value: "off",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
-    expect(logs.length).equals(2);
-    expect(logs[1]).includes(`Successfully configured user setting telemetry.`);
-    expect(config.telemetry).equals("off");
-    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
-  });
-
-  it("successfullly set global config when running 'config set a b --env dev' when 'a' is a global option and in a project folder", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    await cmd.subCommands[1].handler({
-      option: CliConfigOptions.Telemetry,
-      value: "off",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      [constants.RootFolderNode.data.name as string]: "dev",
-    });
-    expect(logs.length).equals(2);
-    expect(logs[1]).includes(`Successfully configured user setting telemetry.`);
-    expect(config.telemetry).equals("off");
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 });

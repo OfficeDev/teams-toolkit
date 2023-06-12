@@ -6,14 +6,19 @@ import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result, Platform } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { buildAadManifest } from "./utility/buildAadManifest";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
-import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
+import {
+  HttpClientError,
+  HttpServerError,
+  InvalidActionInputError,
+  UnhandledError,
+} from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
@@ -101,12 +106,12 @@ export class UpdateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new UnhandledUserError(error as Error, actionName, helpLink)),
+            result: err(new HttpClientError(actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new UnhandledError(error as Error, actionName)),
+            result: err(new HttpServerError(actionName, message)),
             summaries: summaries,
           };
         }

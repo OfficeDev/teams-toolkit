@@ -6,8 +6,6 @@ import * as path from "path";
 import semver from "semver";
 import {
   nodeNotFoundHelpLink,
-  nodeNotSupportedForAzureHelpLink,
-  nodeNotSupportedForSPFxHelpLink,
   v3NodeNotFoundHelpLink,
   v3NodeNotLtsHelpLink,
   v3NodeNotSupportedHelpLink,
@@ -19,7 +17,6 @@ import {
   DepsCheckerError,
   NodeNotFoundError,
   NodeNotLtsError,
-  NodeNotSupportedError,
   V3NodeNotSupportedError,
 } from "../depsError";
 import { DepsLogger } from "../depsLogger";
@@ -188,68 +185,6 @@ function getNodeVersion(output: string): NodeVersion | null {
   }
 
   return new NodeVersion(match[0], majorVersion);
-}
-
-export class SPFxNodeChecker extends NodeChecker {
-  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
-  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
-  protected readonly _type = DepsType.SpfxNode;
-  protected readonly _minErrorVersion = 15;
-  protected readonly _maxErrorVersion = 17;
-
-  protected async getSupportedVersions(): Promise<string[]> {
-    return ["16"];
-  }
-
-  protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
-    return supportedVersions.includes(version.majorVersion);
-  }
-
-  protected getVersionNotSupportedError(
-    supportedVersions: string[],
-    version: NodeVersion
-  ): DepsCheckerError {
-    const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
-    return new NodeNotSupportedError(
-      Messages.NodeNotSupported()
-        .split("@CurrentVersion")
-        .join(version.version)
-        .split("@SupportedVersions")
-        .join(supportedVersionsString),
-      nodeNotSupportedForSPFxHelpLink
-    );
-  }
-}
-
-export class AzureNodeChecker extends NodeChecker {
-  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
-  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
-  protected readonly _type = DepsType.AzureNode;
-  protected readonly _minErrorVersion = 11;
-  protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
-
-  protected async getSupportedVersions(): Promise<string[]> {
-    return ["16", "18"];
-  }
-
-  protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
-    return supportedVersions.includes(version.majorVersion);
-  }
-
-  protected getVersionNotSupportedError(
-    supportedVersions: string[],
-    version: NodeVersion
-  ): DepsCheckerError {
-    const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
-    return new NodeNotSupportedError(
-      Messages.NodeNotSupported()
-        .split("@CurrentVersion")
-        .join(version.version)
-        .split("@SupportedVersions")
-        .join(supportedVersionsString),
-      nodeNotSupportedForAzureHelpLink
-    );
-  }
 }
 
 export class LtsNodeChecker extends NodeChecker {

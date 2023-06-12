@@ -23,7 +23,6 @@ import {
 } from "vscode";
 
 import {
-  assembleError,
   Colors,
   err,
   ExecuteFuncConfig,
@@ -48,10 +47,9 @@ import {
   StaticOptions,
   SystemError,
   UIConfig,
-  UserCancelError,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-
+import { UserCancelError, assembleError, loadingOptionsPlaceholder } from "@microsoft/teamsfx-core";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
@@ -151,7 +149,7 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    if (option.options.length === 0) {
+    if (typeof option.options === "object" && option.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -186,8 +184,25 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          const options = option.options;
-          quickPick.items = convertToFxQuickPickItems(option.options);
+          let options: StaticOptions = [];
+          if (typeof option.options === "function") {
+            quickPick.busy = true;
+            quickPick.placeholder = loadingOptionsPlaceholder();
+            option
+              .options()
+              .then((results) => {
+                options = results;
+                quickPick.items = convertToFxQuickPickItems(options);
+                quickPick.busy = false;
+                quickPick.placeholder = option.placeholder;
+              })
+              .catch((error) => {
+                resolve(err(assembleError(error)));
+              });
+          } else {
+            options = option.options as StaticOptions;
+          }
+          quickPick.items = convertToFxQuickPickItems(options);
           // set default
           if (option.default) {
             // let defaultOption: string | OptionItem | undefined;
@@ -214,7 +229,7 @@ export class VsCodeUI implements UserInteraction {
               const item = selectedItems[0];
               let result: string | OptionItem;
               if (
-                typeof option.options[0] === "string" ||
+                typeof options[0] === "string" ||
                 option.returnObject === undefined ||
                 option.returnObject === false
               ) {
@@ -237,7 +252,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
+              resolve(err(new UserCancelError("VSC")));
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -256,7 +271,7 @@ export class VsCodeUI implements UserInteraction {
               }
             }),
             quickPick.onDidTriggerItemButton((event) => {
-              const itemOptions: StaticOptions = option.options;
+              const itemOptions: StaticOptions = options;
               if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
                 return;
               }
@@ -318,7 +333,25 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = convertToFxQuickPickItems(option.options);
+          let options: StaticOptions = [];
+          if (typeof option.options === "function") {
+            quickPick.busy = true;
+            quickPick.placeholder = loadingOptionsPlaceholder();
+            option
+              .options()
+              .then((results) => {
+                options = results;
+                quickPick.items = convertToFxQuickPickItems(options);
+                quickPick.busy = false;
+                quickPick.placeholder = option.placeholder;
+              })
+              .catch((error) => {
+                resolve(err(assembleError(error)));
+              });
+          } else {
+            options = option.options as StaticOptions;
+          }
+          quickPick.items = convertToFxQuickPickItems(options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -349,7 +382,7 @@ export class VsCodeUI implements UserInteraction {
             }
             let result: OptionItem[] | string[] = strArray;
             if (
-              typeof option.options[0] === "string" ||
+              typeof options[0] === "string" ||
               option.returnObject === undefined ||
               option.returnObject === false
             )
@@ -361,7 +394,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
+              resolve(err(new UserCancelError("VSC")));
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -443,7 +476,7 @@ export class VsCodeUI implements UserInteraction {
           }),
           inputBox.onDidAccept(onDidAccept),
           inputBox.onDidHide(() => {
-            resolve(err(UserCancelError));
+            resolve(err(new UserCancelError("VSC")));
           }),
           inputBox.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -515,7 +548,7 @@ export class VsCodeUI implements UserInteraction {
                   const result = uriList[0].fsPath;
                   resolve(ok({ type: "success", result: result }));
                 } else {
-                  resolve(err(UserCancelError));
+                  resolve(err(new UserCancelError("VSC")));
                 }
               }
             }
@@ -525,7 +558,7 @@ export class VsCodeUI implements UserInteraction {
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
               if (!hideByDialog) {
-                resolve(err(UserCancelError));
+                resolve(err(new UserCancelError("VSC")));
               }
             }),
             quickPick.onDidTriggerButton((button) => {
@@ -650,7 +683,7 @@ export class VsCodeUI implements UserInteraction {
                   resolve(ok({ type: "success", result: result }));
                 }
               } else {
-                resolve(err(UserCancelError));
+                resolve(err(new UserCancelError("VSC")));
               }
             } else {
               resolve(
@@ -666,7 +699,7 @@ export class VsCodeUI implements UserInteraction {
         disposables.push(
           quickPick.onDidAccept(onDidAccept),
           quickPick.onDidHide(() => {
-            if (fileSelectorIsOpen === false) resolve(err(UserCancelError));
+            if (fileSelectorIsOpen === false) resolve(err(new UserCancelError("VSC")));
           }),
           quickPick.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -734,7 +767,7 @@ export class VsCodeUI implements UserInteraction {
         }
         promise.then((v) => {
           if (v) resolve(ok(v));
-          else resolve(err(UserCancelError));
+          else resolve(err(new UserCancelError("VSC")));
         });
       } catch (error) {
         resolve(err(assembleError(error)));
@@ -758,8 +791,8 @@ export class VsCodeUI implements UserInteraction {
       ExtTelemetry.reporter?.dispose();
     }
 
-    // wait 1 second before reloading.
-    await sleep(1000);
+    // wait 2 seconds before reloading.
+    await sleep(2000);
     const success = await commands.executeCommand("workbench.action.reloadWindow");
     if (success) {
       return ok(success as boolean);

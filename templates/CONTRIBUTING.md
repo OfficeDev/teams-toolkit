@@ -9,27 +9,16 @@ To test latest template in dev branch, please refer to [How to debug templates](
 
 ## How to release a new template?
 
-1. Add the relative path to your new template in [package.json](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/package.json)
+1. If your template relies on @microsoft/teamsfx, @microsoft/teamsfx-react or @microsoft/adaptivecards-tools, please include the relative path to your new template in the [package.json](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/package.json) file. Here is an example of how to add the path:
   ```
   "templates": [
-        "blazor-base/csharp/default",
-        "bot/csharp/default",
-        "bot/js/default",
-        "bot/ts/default",
-        "your/new/template"
+    "js/command-and-response",
+    "ts/command-and-response",
+    "language/your-new-template"
   ]
   ```
-2. In cd pipeline, all templates in the list will be zipped and be released to GitHub.
-
-3. If your new template can not be scaffolded by older version Teams Toolkit, you need to commit your changes with a `BREAKING CHANGE` footer. The body of the footer has to be multi-line and the footer line must start with `BREAKING CHANGE:`
-```
-$ git add .
-
-$ git commit -m "feat(tab): upgrade react-scirpts
-BREAKING CHANGE: drop support for Node 12"
-
-$ git push
-```
+1. The CD pipeline will automatically update the dependencies in the package.json or package.json.tpl file when a new version of @microsoft/teamsfx, @microsoft/teamsfx-react or @microsoft/adaptivecards-tools is released. You can access the script used for this process [here](https://github.com/OfficeDev/TeamsFx/blob/dev/.github/scripts/sync-version.js).
+1. TeamsFx no longer uses Lerna for template versioning. Adding a `BREAKING CHANGE` footer will no longer have any effect. The release manager must manually bump up the major version of the template when a breaking change occurs.
 
 Some breaking change cases:
 

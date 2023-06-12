@@ -1,43 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import {
   InputsWithProjectPath,
   Platform,
-  v3,
-  ok,
-  UserError,
   SystemError,
+  UserError,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
-import { convertContext } from "../../src/component/resource/aadApp/utils";
-import {
-  addFeatureNotify,
-  createContextV3,
-  createDriverContext,
-  newProjectSettingsV3,
-  resetEnvInfoWhenSwitchM365,
-  scaffoldRootReadme,
-} from "../../src/component/utils";
-import { BuiltInFeaturePluginNames } from "../../src/component/constants";
-import { MockTools } from "../core/utils";
-import sinon from "sinon";
-import { deployUtils } from "../../src/component/deployUtils";
-import { assert } from "chai";
-import {
-  FindFunctionAppError,
-  PackDirectoryExistenceError,
-  ResourceNotFoundError,
-} from "../../src/component/error";
-import { setTools } from "../../src/core/globalVars";
-import { newEnvInfoV3 } from "../../src/core/environment";
-import fs from "fs-extra";
-import { MockedTelemetryReporter, MyTokenCredential } from "../plugins/solution/util";
-import { expandEnvironmentVariable } from "../../src/component/utils/common";
+import { assert, expect } from "chai";
+import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
+import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { deployUtils } from "../../src/component/deployUtils";
+import { createContextV3, createDriverContext } from "../../src/component/utils";
+import { expandEnvironmentVariable } from "../../src/component/utils/common";
+import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
+import { newEnvInfoV3 } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
+import { MockTools } from "../core/utils";
+import { MockedTelemetryReporter } from "../plugins/solution/util";
 
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
@@ -47,206 +30,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     sandbox.restore();
   });
 
-  it("clear keys and apim", () => {
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.aad]: {},
-        [BuiltInFeaturePluginNames.appStudio]: {},
-        [BuiltInFeaturePluginNames.apim]: {
-          apimClientAADObjectId: "mockId",
-          apimClientAADClientSecret: "mockSecret",
-        },
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-
-    resetEnvInfoWhenSwitchM365(envInfo);
-
-    const expected = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.apim]: {},
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-    expect(envInfo).to.eql(expected);
-  });
-
-  it("clear bot id", () => {
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.appStudio]: {},
-        [BuiltInFeaturePluginNames.bot]: {
-          resourceId: "mockResourceId",
-          botId: "mockBotId",
-          random: "random",
-        },
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-
-    resetEnvInfoWhenSwitchM365(envInfo);
-
-    const expected = {
-      envName: "dev",
-      state: {
-        solution: { subscriptionId: "subId" },
-        [BuiltInFeaturePluginNames.bot]: {
-          random: "random",
-        },
-        [BuiltInFeaturePluginNames.function]: { resourceId: "mockResourceId" },
-      },
-      config: {},
-    };
-    expect(envInfo).to.eql(expected);
-  });
-
-  it("convertContext", () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const envInfo = newEnvInfoV3();
-    const context = createContextV3();
-    context.envInfo = envInfo;
-    const ctx = convertContext(context, inputs);
-    expect(ctx !== undefined).to.eql(true);
-  });
-  it("addFeatureNotify", () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    addFeatureNotify(inputs, context.userInteraction, "Resource", ["sql", "apim"]);
-    addFeatureNotify(inputs, context.userInteraction, "Capability", ["Tab"]);
-    expect(true).to.eql(true);
-  });
-
-  it("checkDeployAzureSubscription case 1", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
-      subscriptionName: "mockSubName",
-      subscriptionId: "mockSubId",
-      tenantId: "mockTenantId",
-    });
-    const envInfo = newEnvInfoV3();
-    const res = await deployUtils.checkDeployAzureSubscription(
-      context,
-      envInfo,
-      tools.tokenProvider.azureAccountProvider
-    );
-    assert.isTrue(res.isOk());
-  });
-
-  it("checkDeployAzureSubscription case 2", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
-      .resolves(undefined);
-    const envInfo = newEnvInfoV3();
-    const res = await deployUtils.checkDeployAzureSubscription(
-      context,
-      envInfo,
-      tools.tokenProvider.azureAccountProvider
-    );
-    assert.isTrue(res.isErr());
-  });
-
-  it("checkDeployAzureSubscription case 3", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
-      .resolves(undefined);
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(undefined);
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "listSubscriptions").resolves([
-      {
-        subscriptionName: "mockSubName",
-        subscriptionId: "mockSubId",
-        tenantId: "mockTenantId",
-      },
-    ]);
-    const envInfo = newEnvInfoV3();
-    envInfo.state.solution.subscriptionId = "mockSubId";
-    const res = await deployUtils.checkDeployAzureSubscription(
-      context,
-      envInfo,
-      tools.tokenProvider.azureAccountProvider
-    );
-    assert.isTrue(res.isOk());
-  });
-
-  it("checkDeployAzureSubscription case 3", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
-      .resolves(undefined);
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(undefined);
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "listSubscriptions").resolves([
-      {
-        subscriptionName: "mockSubName",
-        subscriptionId: "mockSubId2",
-        tenantId: "mockTenantId",
-      },
-    ]);
-    const envInfo = newEnvInfoV3();
-    envInfo.state.solution.subscriptionId = "mockSubId";
-    const res = await deployUtils.checkDeployAzureSubscription(
-      context,
-      envInfo,
-      tools.tokenProvider.azureAccountProvider
-    );
-    assert.isTrue(res.isErr());
-  });
-
-  it("askForDeployConsent", async () => {
-    const inputs: InputsWithProjectPath = {
-      projectPath: "",
-      platform: Platform.VSCode,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Deploy"));
-    const envInfo = newEnvInfoV3();
-    envInfo.state.solution.subscriptionId = "mockSubId";
-    const res = await deployUtils.askForDeployConsent(
-      context,
-      tools.tokenProvider.azureAccountProvider,
-      envInfo
-    );
-    assert.isTrue(res.isErr());
-  });
   it("askForDeployConsentV3 confirm", async () => {
     process.env.TEAMSFX_ENV = "dev";
     const inputs: InputsWithProjectPath = {
@@ -268,28 +51,6 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     sandbox.stub(ctx.ui!, "showMessage").resolves(ok(undefined));
     const res = await deployUtils.askForDeployConsentV3(ctx);
     assert.isTrue(res.isErr());
-  });
-  it("errors", async () => {
-    const error1 = new PackDirectoryExistenceError("FE");
-    assert.isDefined(error1);
-    const error2 = new ResourceNotFoundError("test", "");
-    assert.isDefined(error2);
-    const error3 = new FindFunctionAppError("FE");
-    assert.isDefined(error3);
-  });
-  it("scaffoldRootReadme", async () => {
-    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
-    sandbox.stub(fs, "copy").resolves();
-    const projectSettings = newProjectSettingsV3();
-    projectSettings.components = [
-      {
-        name: "teams-tab",
-      },
-      {
-        name: "teams-bot",
-      },
-    ];
-    await scaffoldRootReadme(projectSettings, ".");
   });
 });
 

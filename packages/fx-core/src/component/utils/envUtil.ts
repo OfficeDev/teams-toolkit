@@ -10,6 +10,7 @@ import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
 import { FileNotFoundError } from "../../error/common";
+import { internalOutputNames as UpdateTeamsAppOutputNames } from "../driver/teamsApp/configure";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -167,6 +168,10 @@ export class EnvUtil {
         value = res.value;
         // envs[key] = value;
         secretEnv[key] = value;
+      } else if (key === UpdateTeamsAppOutputNames.teamsAppUpdateTime) {
+        // Corner case: Avoid TEAMS_APP_UPDATE_TIME to be committed and cause merge conflict
+        // Bug: 21970450
+        secretEnv[key] = value;
       } else {
         noneSecretEnv[key] = value;
       }
@@ -194,9 +199,12 @@ export class EnvUtil {
     const contentSecret = dotenvUtil.serialize(parsedDotenvSecret);
 
     //persist
+    await fs.ensureFile(dotEnvFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
-    if (Object.keys(parsedDotenvSecret.obj).length > 0)
+    if (Object.keys(parsedDotenvSecret.obj).length > 0) {
+      await fs.ensureFile(dotEnvSecretFilePath);
       await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
+    }
     if (!envFileExists) {
       TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
     }

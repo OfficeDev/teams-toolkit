@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import { Argv } from "yargs";
-import { assembleError, Colors, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
+import { Colors, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
 import { TelemetryContext } from "@microsoft/teamsfx-core/build/common/local/localTelemetryReporter";
 import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
@@ -32,8 +32,7 @@ import { YargsCommand } from "../../yargsCommand";
 import activate from "../../activate";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { FxCore } from "@microsoft/teamsfx-core";
-
+import { FxCore, assembleError } from "@microsoft/teamsfx-core";
 enum Progress {
   M365Account = "Microsoft 365 Account",
 }
@@ -432,7 +431,7 @@ export default class PreviewEnv extends YargsCommand {
 
     cliLogger.necessaryLog(
       LogLevel.Warning,
-      util.format(constants.installApp.nonInteractive.manifestChangesV3, `--env ${env}`)
+      util.format(constants.manifestChangesHintMessage, `--env ${env}`)
     );
     if (hub !== Hub.teams) {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);

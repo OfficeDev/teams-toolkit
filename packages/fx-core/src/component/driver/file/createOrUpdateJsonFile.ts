@@ -14,8 +14,10 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { updateProgress } from "../middleware/updateProgress";
-import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
+import { GenerateJsonArgs } from "./interface/generateJsonArgs";
 import { InvalidActionInputError, UnhandledError } from "../../../error/common";
+import * as commentJson from "comment-json";
+import { CommentJSONValue } from "comment-json";
 
 const actionName = "file/createOrUpdateJsonFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
@@ -29,7 +31,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
   ])
   public async run(
-    args: GenerateAppsettingsArgs,
+    args: GenerateJsonArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     return wrapRun(async () => {
@@ -42,10 +44,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     addStartAndEndTelemetry(actionName, actionName),
     updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
   ])
-  public async execute(
-    args: GenerateAppsettingsArgs,
-    ctx: DriverContext
-  ): Promise<ExecutionResult> {
+  public async execute(args: GenerateJsonArgs, ctx: DriverContext): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
       const result = await this.handler(args, ctx);
@@ -59,7 +58,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
   }
 
   private async handler(
-    args: GenerateAppsettingsArgs,
+    args: GenerateJsonArgs,
     context: DriverContext
   ): Promise<{
     output: Map<string, string>;
@@ -67,19 +66,14 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
   }> {
     try {
       this.validateArgs(args);
-      const appsettingsPath = getAbsolutePath(args.target, context.projectPath);
-      if (!(await fs.pathExists(appsettingsPath))) {
-        // try to copy appsettings.json
-        const appsettingsTemplatePath = getAbsolutePath("appsettings.json", context.projectPath);
-        if (!fs.existsSync(appsettingsTemplatePath)) {
-          await fs.writeFile(appsettingsPath, "{}");
-        } else {
-          await fs.copyFile(appsettingsTemplatePath, appsettingsPath);
-        }
+      const jsonFilePath = getAbsolutePath(args.target, context.projectPath);
+      if (!(await fs.pathExists(jsonFilePath))) {
+        await fs.ensureFile(jsonFilePath);
+        await fs.writeFile(jsonFilePath, "{}", "utf-8");
       }
-      const appSettingsJson = JSON.parse(fs.readFileSync(appsettingsPath, "utf-8"));
-      this.replaceProjectAppsettings(appSettingsJson, args.appsettings);
-      await fs.writeFile(appsettingsPath, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
+      const jsonContent = commentJson.parse((await fs.readFile(jsonFilePath, "utf-8")).toString());
+      this.addOrUpdateJsonContent(jsonContent, args.appsettings ?? args.content ?? {});
+      await fs.writeFile(jsonFilePath, commentJson.stringify(jsonContent, null, "\t"), "utf-8");
       return {
         output: new Map<string, string>(),
         summaries: [getLocalizedString("driver.file.createOrUpdateJsonFile.summary", args.target)],
@@ -100,7 +94,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     }
   }
 
-  private validateArgs(args: GenerateAppsettingsArgs): void {
+  private validateArgs(args: GenerateJsonArgs): void {
     const invalidParameters: string[] = [];
     if (args.target === undefined) {
       invalidParameters.push("target");
@@ -111,13 +105,17 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
       invalidParameters.push("target");
     }
 
-    if (!args.appsettings || typeof args.appsettings !== "object") {
+    if (args.appsettings === undefined && args.content === undefined) {
+      invalidParameters.push("content");
+    } else if (args.appsettings !== undefined && args.content !== undefined) {
       invalidParameters.push("appsettings");
-    }
-
-    for (const value of Object.values(args.appsettings)) {
-      if (!value) {
+    } else if (args.appsettings) {
+      if (typeof args.appsettings !== "object") {
         invalidParameters.push("appsettings");
+      }
+    } else if (args.content) {
+      if (typeof args.content !== "object") {
+        invalidParameters.push("content");
       }
     }
 
@@ -126,19 +124,19 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     }
   }
 
-  private replaceProjectAppsettings(
-    projectAppsettings: Record<string, unknown>,
-    ymlAppsettings: Record<string, unknown>
+  private addOrUpdateJsonContent(
+    jsonContent: CommentJSONValue,
+    ymlJsonContent: Record<string, unknown>
   ) {
-    for (const item of Object.entries(ymlAppsettings)) {
-      if (typeof item[1] === "string") {
-        (projectAppsettings as any)[item[0]] = item[1];
-      } else if (typeof item[1] === "object") {
-        if ((projectAppsettings as any)[item[0]]) {
-          this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1] as any);
+    for (const [key, value] of Object.entries(ymlJsonContent)) {
+      if (typeof value === "object") {
+        if (!(jsonContent as any)[key]) {
+          (jsonContent as any)[key] = value;
         } else {
-          (projectAppsettings as any)[item[0]] = item[1];
+          this.addOrUpdateJsonContent((jsonContent as any)[key], value as any);
         }
+      } else {
+        (jsonContent as any)[key] = value;
       }
     }
   }

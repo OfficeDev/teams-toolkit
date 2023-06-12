@@ -6,7 +6,6 @@ export enum Capability {
   CommandBot = "command-bot",
   WorkflowBot = "workflow-bot",
   DashBoardTab = "dashboard-tab",
-  Tab = "tab",
   SPFxTab = "tab-spfx",
   TabNonSso = "tab-non-sso",
   Bot = "bot",

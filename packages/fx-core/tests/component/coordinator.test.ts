@@ -147,6 +147,25 @@ describe("component coordinator test", () => {
     const res = await fxCore.createProject(inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("fail to create project from sample", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(err(new UserError({})));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isErr());
+  });
+
   it("create project from sample rename folder", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -278,6 +297,28 @@ describe("component coordinator test", () => {
     }
   });
   it("create SPFx project", async () => {
+    sandbox.stub(SPFxGenerator, "generate").resolves(err(new UserError({})));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      ["spfx-solution"]: "new",
+      ["spfx-framework-type"]: "none",
+      ["spfx-webpart-name"]: "test",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isErr());
+  });
+
+  it("fail to create SPFx project", async () => {
     sandbox.stub(SPFxGenerator, "generate").resolves(ok(undefined));
     sandbox
       .stub(settingsUtil, "readSettings")

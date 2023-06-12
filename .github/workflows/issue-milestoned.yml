@@ -7,7 +7,7 @@ on:
     inputs:
       issueNumber:
         description: 'specific issue number to test issue-milestoned action'
-        type: environment  
+        required: true  
 
 jobs:
   main:
@@ -33,7 +33,7 @@ jobs:
         run: npm run build --prefix ./action-base
       
       - name: Test env
-        run: echo "issue number is $issueNumber"
+        run: echo "issue number is $github.event.inputs.issueNumber"
       
       - name: Create AZDO Item 
         uses: ./action-base/issue-milestoned

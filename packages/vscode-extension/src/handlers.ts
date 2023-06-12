@@ -62,11 +62,13 @@ import {
   askSubscription,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  isOfficeAddinEnabled,
   isUserCancelError,
   isV3Enabled,
   assembleError,
   ConcurrentError,
+  setRegion,
+  AuthSvcScopes,
+  isImportSPFxEnabled,
 } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
@@ -2771,24 +2773,22 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
                 },
               ],
             },
-            ...(isOfficeAddinEnabled()
-              ? [
+            ...[
+              {
+                id: "addOutlookAddin",
+                label: `${localize("teamstoolkit.guides.addOutlookAddin.label")}`,
+                detail: localize("teamstoolkit.guides.addOutlookAddin.detail"),
+                groupName: localize("teamstoolkit.guide.capability"),
+                data: "https://aka.ms/teamsfx-add-outlook-add-in",
+                buttons: [
                   {
-                    id: "addOutlookAddin",
-                    label: `${localize("teamstoolkit.guides.addOutlookAddin.label")}`,
-                    detail: localize("teamstoolkit.guides.addOutlookAddin.detail"),
-                    groupName: localize("teamstoolkit.guide.capability"),
-                    data: "https://aka.ms/teamsfx-add-outlook-add-in",
-                    buttons: [
-                      {
-                        iconPath: "file-symlink-file",
-                        tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                        command: "fx-extension.openTutorial",
-                      },
-                    ],
+                    iconPath: "file-symlink-file",
+                    tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                    command: "fx-extension.openTutorial",
                   },
-                ]
-              : []),
+                ],
+              },
+            ],
             {
               id: "addSso",
               label: `${localize("teamstoolkit.guides.addSso.label")}`,

@@ -37,7 +37,6 @@ import { SampleInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
-import { isDownloadDirectoryEnabled } from "../../../src";
 
 const mockedSampleInfo: SampleInfo = {
   id: "test-id",
@@ -303,15 +302,6 @@ describe("Generator utils", () => {
     res = [];
     await runWithLimitedConcurrency(data, callback, 1);
     assert.deepEqual(res, [1, 10, 2, 3]);
-  });
-
-  it("download directory feature flag always return true", async () => {
-    const mockedEnvRestore = mockedEnv({
-      DOWNLOAD_DIRECTORY: "false",
-    });
-    const res = isDownloadDirectoryEnabled();
-    assert.isTrue(res);
-    mockedEnvRestore();
   });
 });
 

@@ -36,7 +36,6 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { isDownloadDirectoryEnabled } from "../../common/tools";
 import { BaseComponentInnerError } from "../error/componentError";
 import fs from "fs-extra";
 
@@ -111,7 +110,7 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: sampleName,
-      [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled().toString(),
+      [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
@@ -119,13 +118,13 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: isDownloadDirectoryEnabled() ? sample.url : sample.link,
+      url: sample.url,
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
-    const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
+    const actionSeq = DownloadDirectoryActionSeq;
     await this.generate(generatorContext, actionSeq);
     return ok(undefined);
   }

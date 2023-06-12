@@ -1,4 +1,4 @@
-name: issue-milestoned
+name: Issue-milestoned
 
 on: 
   issues:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # allows to run manually for testing
     inputs:
       issue-number:
-        description: 'specific issue to test issue-milestoned action'
+        description: 'specific issue number to test issue-milestoned action'
         required: true  
 
 jobs:

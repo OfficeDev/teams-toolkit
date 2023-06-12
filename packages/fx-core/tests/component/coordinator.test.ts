@@ -150,6 +150,25 @@ describe("component coordinator test", () => {
     const res = await fxCore.createProject(inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("fail to create project from sample", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(err(new UserError({})));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isErr());
+  });
+
   it("create project from sample rename folder", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -2017,6 +2036,48 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     const inputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: ".",
+      workflowFilePath: "./app.local.yml",
+      env: "local",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    if (res.isErr()) {
+      console.log(res?.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+
+  it("provision happy path (VS debug)", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      provision: {
+        name: "configureApp",
+        driverDefs: [],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VS,
       projectPath: ".",
       workflowFilePath: "./app.local.yml",
       env: "local",

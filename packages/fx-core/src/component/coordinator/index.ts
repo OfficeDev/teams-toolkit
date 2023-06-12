@@ -832,7 +832,15 @@ export class Coordinator {
         }
       }
     } else {
-      ctx.ui?.showMessage("info", msg, false);
+      if (ctx.platform === Platform.VS) {
+        ctx.ui!.showMessage(
+          "info",
+          getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
+          false
+        );
+      } else {
+        ctx.ui!.showMessage("info", msg, false);
+      }
     }
     ctx.logProvider.info(msg);
 

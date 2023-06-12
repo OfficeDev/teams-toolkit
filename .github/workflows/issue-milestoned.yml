@@ -32,9 +32,6 @@ jobs:
         continue-on-error: true
         run: npm run build --prefix ./action-base
       
-      - name: Test env
-        run: echo "issue number is ${{github.event.inputs.issueNumber}}"
-      
       - name: Create AZDO Item 
         uses: ./action-base/issue-milestoned
         with:

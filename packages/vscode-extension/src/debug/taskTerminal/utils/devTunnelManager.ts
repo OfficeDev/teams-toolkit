@@ -100,8 +100,10 @@ export class DevTunnelManager {
       });
       return res;
     } catch (error: any) {
-      if (error instanceof UserError || error instanceof SystemError) throw error;
-      const operationError = TunnelError.DevTunnelOperationError(operationName, error);
+      const operationError =
+        error instanceof UserError || error instanceof SystemError
+          ? error
+          : TunnelError.DevTunnelOperationError(operationName, error);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugDevTunnelOperation, operationError, {
         [TelemetryProperty.DebugDevTunnelOperationName]: operationName,
         ...this.telemetryProperties,

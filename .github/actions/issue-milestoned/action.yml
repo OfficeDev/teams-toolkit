@@ -37,7 +37,9 @@ inputs:
   feature-iteration-path: 
     description: the iteration path to create feature item.  
     default: ''
-
+  issue-number: 
+    description: specific issue number for manually trigger  
+    required: false
     
 runs:
   using: 'node16'

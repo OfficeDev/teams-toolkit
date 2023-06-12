@@ -25,8 +25,9 @@ class Milestoned extends Action {
 
 	async onMilestoned(issue: OctoKitIssue) {
 		const content = await issue.getIssue();
-		if (content.milestone?.title.startsWith(milestonePrefix)) {
-			safeLog(`the issue ${content.number} is milestoned with ${content.milestone}`);
+		const milestoneTitle = content.milestone?.title;
+		if (milestoneTitle.startsWith(milestonePrefix)) {
+			safeLog(`the issue ${content.number} is milestoned with ${milestoneTitle}`);
 			let client = await this.createClient();
 			const users = getAccounts;
 			let asignee = undefined;
@@ -35,7 +36,7 @@ class Milestoned extends Action {
 				asignee += '@microsoft.com';
 			}
 			const url = this.issueUrl(content.number);
-			const title = titlePreix + `[${content.milestone}]` + content.title;
+			const title = titlePreix + `[${milestoneTitle}]` + content.title;
 			if (featureLabel && content.labels.includes(featureLabel)) {
 				safeLog(`issue labeled with ${featureLabel}. Feature work item will be created.`);
 				await client.createFeatureItem(title, asignee, undefined, url);

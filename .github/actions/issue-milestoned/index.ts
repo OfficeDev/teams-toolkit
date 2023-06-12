@@ -4,6 +4,8 @@ import { DevopsClient } from './azdo';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
 import { getInput } from '@actions/core';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 
 const githubToken = getRequiredInput('token');
 const milestonePrefix = getRequiredInput('milestone-prefix');

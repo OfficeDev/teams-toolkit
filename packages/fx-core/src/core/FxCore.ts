@@ -6,11 +6,9 @@ import {
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
-  CoreCallbackFunc,
   CryptoProvider,
   err,
   Func,
-  FunctionRouter,
   FxError,
   InputConfigsFolderName,
   Inputs,
@@ -24,7 +22,6 @@ import {
   StatesFolderName,
   Tools,
   v2,
-  v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
@@ -48,6 +45,7 @@ import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
+import { WriteFileError } from "../error";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -59,9 +57,10 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { WriteFileError } from "../error";
 
-export class FxCore implements v3.ICore {
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
+
+export class FxCore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
@@ -236,17 +235,6 @@ export class FxCore implements v3.ICore {
     if (stage === Stage.create) {
       return await getQuestionsForCreateProjectV2(inputs);
     }
-    return ok(undefined);
-  }
-
-  /**
-   * @deprecated for V3
-   */
-  @hooks([ErrorHandlerMW])
-  async getQuestionsForUserTask(
-    func: FunctionRouter,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(undefined);
   }
 

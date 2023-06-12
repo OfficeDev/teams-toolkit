@@ -1,19 +1,17 @@
 import {
-  Core,
   Inputs,
   Result,
   FxError,
   ok,
   QTreeNode,
-  FunctionRouter,
   Stage,
   Func,
   Void,
   CoreCallbackEvent,
-  CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
+import { CoreCallbackFunc } from "@microsoft/teamsfx-core";
 
-export class MockCore implements Core {
+export class MockCore {
   constructor() {}
 
   public on(event: CoreCallbackEvent, callback: CoreCallbackFunc): void {
@@ -65,13 +63,6 @@ export class MockCore implements Core {
   }
 
   async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(new QTreeNode({ type: "group" }));
-  }
-
-  async getQuestionsForUserTask(
-    router: FunctionRouter,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(new QTreeNode({ type: "group" }));
   }
 

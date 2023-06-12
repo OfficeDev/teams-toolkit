@@ -239,38 +239,12 @@ export class FxCore {
   }
 
   /**
-   * @deprecated
-   */
-  async getDotEnv(
-    inputs: InputsWithProjectPath
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return this.v3Implement.dispatch(this.getDotEnv, inputs);
-  }
-
-  /**
    * get all dot envs
    */
   async getDotEnvs(
     inputs: InputsWithProjectPath
   ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnvs, inputs);
-  }
-
-  /**
-   * @deprecated in V3
-   */
-  async getProjectConfig(inputs: Inputs): Promise<Result<any | undefined, FxError>> {
-    return ok({
-      settings: {},
-      config: {},
-    });
-  }
-
-  /**
-   * @deprecated in V3
-   */
-  async getProjectConfigV3(inputs: Inputs): Promise<Result<any | undefined, FxError>> {
-    return ok({});
   }
 
   async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {

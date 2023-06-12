@@ -86,14 +86,6 @@ export class MockCore {
     return ok("");
   }
 
-  async getProjectConfig(inputs: Inputs): Promise<Result<any, FxError>> {
-    return ok("");
-  }
-
-  async getProjectConfigV3(inputs: Inputs): Promise<Result<any, FxError>> {
-    return ok("");
-  }
-
   async getSettings(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }

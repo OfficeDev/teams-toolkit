@@ -135,10 +135,6 @@ export abstract class YargsCommand {
               }
             }
           }
-          const configResult = await result.value.getProjectConfigV3(inputs);
-          if (configResult.isOk()) {
-            CliTelemetry.setIsFromSample(configResult.value?.projectSettings?.isFromSample);
-          }
         }
       }
 

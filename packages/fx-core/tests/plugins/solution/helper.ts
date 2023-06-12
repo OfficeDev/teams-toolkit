@@ -5,22 +5,15 @@ import {
   PluginContext,
   Result,
   SubscriptionInfo,
-  TokenProvider,
   Void,
 } from "@microsoft/teamsfx-api";
 import os from "os";
 import path from "path";
 import sinon from "sinon";
-import { v4 as uuid } from "uuid";
-import * as cpUtils from "../../../src/common/cpUtils";
 import { createContextV3 } from "../../../src/component/utils";
 import { newEnvInfoV3 } from "../../../src/core/environment";
-import { MockedAzureAccountProvider, MockedM365Provider, MyTokenCredential } from "./util";
+import { MyTokenCredential } from "./util";
 
-const mockedTokenProvider: TokenProvider = {
-  azureAccountProvider: new MockedAzureAccountProvider(),
-  m365TokenProvider: new MockedM365Provider(),
-};
 export class TestHelper {
   static appName = "ut_app_name";
   static rootDir = path.join(__dirname, "ut");
@@ -43,15 +36,7 @@ export class TestHelper {
   static armTemplateJson = `{"test_key": "test_value"}`;
 
   static mockContextV3(): ContextV3 {
-    const ctx = createContextV3({
-      appName: TestHelper.appName,
-      projectId: uuid(),
-      components: [],
-      solutionSettings: {
-        name: "",
-        version: "",
-      },
-    });
+    const ctx = createContextV3();
     const envInfo = newEnvInfoV3();
     envInfo.state.solution = {
       resourceBaseName: TestHelper.resourceBaseName,
@@ -85,11 +70,6 @@ export class TestHelper {
       } as SubscriptionInfo;
       return subscriptionInfo;
     };
-    mocker.stub(cpUtils, "executeCommand").returns(
-      new Promise((resolve) => {
-        resolve(TestHelper.armTemplateJson);
-      })
-    );
   }
 
   static mockScaffoldThatAlwaysSucceed(plugin: any) {

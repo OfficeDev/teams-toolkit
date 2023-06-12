@@ -99,6 +99,7 @@
     "got": "^11.8.2",
     "handlebars": "^4.7.7",
     "http-close": "^1.0.0",
+    "iconv-lite": "^0.6.3",
     "ignore": "^5.1.8",
     "install": "^0.13.0",
     "js-base64": "^3.6.0",

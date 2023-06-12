@@ -20,7 +20,7 @@ import {
 } from "../../../src/component/generator/spfx/utils/question-helper";
 import { SPFXQuestionNames } from "../../../src/component/generator/spfx/utils/questions";
 import { Utils } from "../../../src/component/generator/spfx/utils/utils";
-import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 
@@ -32,7 +32,7 @@ describe("SPFxGenerator", function () {
   beforeEach(async () => {
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3(newProjectSettingsV3());
+    context = createContextV3();
 
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");

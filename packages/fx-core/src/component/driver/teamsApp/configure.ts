@@ -11,7 +11,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
+import { AppStudioClient } from "./clients/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";

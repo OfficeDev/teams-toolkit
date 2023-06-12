@@ -32,7 +32,7 @@ import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import { Container } from "typedi";
 import { AppStudioScopes, getAppDirectory, isSPFxProject } from "../../../common/tools";
-import { AppStudioClient } from "./appStudioClient";
+import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { ComponentNames } from "../../constants";

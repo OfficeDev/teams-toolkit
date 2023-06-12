@@ -463,8 +463,6 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     envInfo?: EnvInfoV3;
     // (undocumented)
-    manifestProvider: AppManifestProvider;
-    // (undocumented)
     projectPath?: string;
     // (undocumented)
     projectSetting: ProjectSettingsV3;

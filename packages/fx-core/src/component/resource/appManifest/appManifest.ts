@@ -6,13 +6,10 @@ import {
   CloudResource,
   err,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   M365TokenProvider,
   ok,
-  Platform,
   ProjectSettingsV3,
-  QTreeNode,
   ResourceContextV3,
   Result,
   TokenProvider,
@@ -31,7 +28,7 @@ import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { AppStudioScopes, isV3Enabled } from "../../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { getTemplatesFolder } from "../../../folder";
-import { AppStudioClient } from "./appStudioClient";
+import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
 import {
   COLOR_TEMPLATE,
   Constants,
@@ -44,7 +41,6 @@ import {
 } from "./constants";
 import { AppStudioError } from "./errors";
 import { AppUser } from "./interfaces/appUser";
-import { autoPublishOption, manuallySubmitOption } from "./questions";
 import { AppStudioResultFactory } from "./results";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { ComponentNames } from "../../constants";
@@ -457,20 +453,4 @@ export class AppManifest implements CloudResource {
       return err(fxError);
     }
   }
-}
-
-export async function publishQuestion(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.platform === Platform.VSCode) {
-    const buildOrPublish = new QTreeNode({
-      name: Constants.BUILD_OR_PUBLISH_QUESTION,
-      type: "singleSelect",
-      staticOptions: [manuallySubmitOption(), autoPublishOption()],
-      title: getLocalizedString("plugins.appstudio.publishTip"),
-      default: autoPublishOption().id,
-    });
-    return ok(buildOrPublish);
-  }
-  return ok(undefined);
 }

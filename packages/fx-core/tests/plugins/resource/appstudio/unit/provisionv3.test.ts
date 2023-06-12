@@ -37,7 +37,6 @@ import { MockedM365TokenProvider, MockUserInteraction } from "../helper";
 import { MockTools } from "../../../../core/utils";
 import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../../src/component/constants";
-import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
 import { getAzureProjectRoot } from "../../../../plugins/resource/appstudio/helper";
 
 describe("Provision Teams app with Azure", () => {
@@ -90,7 +89,6 @@ describe("Provision Teams app with Azure", () => {
       projectSetting: projectSettings as ProjectSettingsV3,
       logProvider: new MockedLogProvider(),
       telemetryReporter: new MockedTelemetryReporter(),
-      manifestProvider: new DefaultManifestProvider(),
     };
 
     sandbox.stub(fs, "readFile").callsFake(async () => {

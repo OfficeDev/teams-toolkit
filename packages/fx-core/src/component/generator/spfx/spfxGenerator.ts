@@ -45,6 +45,7 @@ import * as util from "util";
 import { envUtil } from "../../utils/envUtil";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { EOL } from "os";
+import { FileNotFoundError } from "../../../error";
 
 export class SPFxGenerator {
   @hooks([
@@ -528,6 +529,8 @@ export class SPFxGenerator {
       if (yoInfo["@microsoft/generator-sharepoint"]) {
         return yoInfo["@microsoft/generator-sharepoint"][Constants.YO_RC_SOLUTION_NAME];
       }
+    } else {
+      throw new FileNotFoundError(Constants.PLUGIN_NAME, yoInfoPath, Constants.IMPORT_HELP_LINK);
     }
     return undefined;
   }
@@ -545,7 +548,11 @@ export class SPFxGenerator {
       const webpartName = webparts[0].split(path.sep).pop();
       const webpartManifestPath = path.join(webparts[0], `${webpartName}WebPart.manifest.json`);
       if (!(await fs.pathExists(path.join(webpartsDir, webpartManifestPath)))) {
-        return undefined;
+        throw new FileNotFoundError(
+          Constants.PLUGIN_NAME,
+          path.join(webpartsDir, webpartManifestPath),
+          Constants.IMPORT_HELP_LINK
+        );
       }
 
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
@@ -557,5 +564,6 @@ export class SPFxGenerator {
       );
       return manifest;
     }
+    return undefined;
   }
 }

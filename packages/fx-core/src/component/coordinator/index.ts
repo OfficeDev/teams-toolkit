@@ -656,13 +656,13 @@ export class Coordinator {
       }
     } else {
       if (ctx.platform === Platform.VS) {
-        ctx.ui?.showMessage(
+        ctx.ui!.showMessage(
           "info",
           getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
           false
         );
       } else {
-        ctx.ui?.showMessage("info", msg, false);
+        ctx.ui!.showMessage("info", msg, false);
       }
     }
     ctx.logProvider.info(msg);

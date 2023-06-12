@@ -544,7 +544,18 @@ export class FxCoreV3Implement {
   ])
   async preCheckForVSLocal(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const context = createDriverContext(inputs);
-    return coordinator.preCheckForVSLocal(context, inputs as InputsWithProjectPath);
+    const checkLocalYmlAndEnv = await coordinator.preCheckForVSLocalYmlAndEnv(
+      context,
+      inputs as InputsWithProjectPath
+    );
+    if (checkLocalYmlAndEnv.isErr()) {
+      return err(checkLocalYmlAndEnv.error);
+    }
+    const checkLocalManifestAndEnv = await this.validateManifest(inputs, ctx);
+    if (checkLocalManifestAndEnv.isErr()) {
+      return err(checkLocalManifestAndEnv.error);
+    }
+    return ok(Void);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])

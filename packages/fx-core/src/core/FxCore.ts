@@ -97,35 +97,6 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * Only used to provision Teams app with user provided app package in CLI
-   * @returns teamsAppId on provision success
-   */
-  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (!inputs.appPackagePath) {
-      return err(InvalidInputError("appPackagePath is not defined", inputs));
-    }
-    const projectSettings: ProjectSettings = {
-      appName: "fake",
-      projectId: uuid.v4(),
-    };
-    const context: v2.Context = {
-      userInteraction: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      cryptoProvider: new LocalCrypto(projectSettings.projectId),
-      permissionRequestProvider: TOOLS.permissionRequest,
-      projectSetting: projectSettings,
-    };
-    const appStudioV3 = Container.get<AppManifest>(ComponentNames.AppManifest);
-    return appStudioV3.provisionForCLI(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      newEnvInfoV3(),
-      TOOLS.tokenProvider
-    );
-  }
-
-  /**
    * lifecycle commands: deploy
    */
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {

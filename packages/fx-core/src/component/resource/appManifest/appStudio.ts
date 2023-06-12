@@ -11,13 +11,7 @@ import {
   Result,
   ResourceContextV3,
   TeamsAppManifest,
-  TokenProvider,
-  v2,
-  v3,
-  ProjectSettingsV3,
-  ProjectSettings,
   UserError,
-  SystemError,
   LogProvider,
   Platform,
   Colors,
@@ -26,19 +20,16 @@ import {
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
-import { v4 } from "uuid";
 import _ from "lodash";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import { Container } from "typedi";
-import { AppStudioScopes, getAppDirectory, isSPFxProject } from "../../../common/tools";
+import { AppStudioScopes } from "../../../common/tools";
 import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
-import { ComponentNames } from "../../constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
 import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
@@ -53,125 +44,6 @@ import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
 import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
-
-/**
- * Create Teams app if not exists
- * @param ctx
- * @param inputs
- * @param envInfo
- * @param tokenProvider
- * @returns Teams app id
- */
-export async function createTeamsApp(
-  ctx: v2.Context,
-  inputs: InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3,
-  tokenProvider: TokenProvider
-): Promise<Result<string, FxError>> {
-  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
-    scopes: AppStudioScopes,
-  });
-  if (appStudioTokenRes.isErr()) {
-    return err(appStudioTokenRes.error);
-  }
-  const appStudioToken = appStudioTokenRes.value;
-
-  let teamsAppId;
-  let archivedFile;
-  let create = true;
-  if (inputs.appPackagePath) {
-    if (!(await fs.pathExists(inputs.appPackagePath))) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
-        )
-      );
-    }
-    archivedFile = await fs.readFile(inputs.appPackagePath);
-    const zipEntries = new AdmZip(archivedFile).getEntries();
-    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
-    if (!manifestFile) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
-        )
-      );
-    }
-    const manifestString = manifestFile.getData().toString();
-    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-    teamsAppId = manifest.id;
-    if (teamsAppId) {
-      try {
-        await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-        create = false;
-      } catch (error) {}
-    }
-  } else {
-    // Corner case: users under same tenant cannot import app with same Teams app id
-    // Generate a new Teams app id for local debug to avoid conflict
-    teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
-    if (teamsAppId) {
-      try {
-        await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-        create = false;
-      } catch (error: any) {
-        if (
-          envInfo.envName === environmentManager.getLocalEnvName() &&
-          error.message &&
-          error.message.includes("404")
-        ) {
-          const exists = await AppStudioClient.checkExistsInTenant(
-            teamsAppId,
-            appStudioToken,
-            ctx.logProvider
-          );
-          if (exists) {
-            envInfo.state[ComponentNames.AppManifest].teamsAppId = v4();
-          }
-        }
-      }
-    }
-    const buildPackage = await buildTeamsAppPackage(
-      ctx.projectSetting,
-      inputs.projectPath,
-      envInfo!,
-      true
-    );
-    if (buildPackage.isErr()) {
-      return err(buildPackage.error);
-    }
-    archivedFile = await fs.readFile(buildPackage.value);
-  }
-
-  if (create) {
-    try {
-      const appDefinition = await AppStudioClient.importApp(
-        archivedFile,
-        appStudioTokenRes.value,
-        ctx.logProvider
-      );
-      ctx.logProvider.info(
-        getLocalizedString("plugins.appstudio.teamsAppCreatedNotice", appDefinition.teamsAppId!)
-      );
-      return ok(appDefinition.teamsAppId!);
-    } catch (e: any) {
-      if (e instanceof UserError || e instanceof SystemError) {
-        return err(e);
-      } else {
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.TeamsAppCreateFailedError.name,
-            AppStudioError.TeamsAppCreateFailedError.message(e)
-          )
-        );
-      }
-    }
-  } else {
-    return ok(teamsAppId);
-  }
-}
 
 export async function checkIfAppInDifferentAcountSameTenant(
   teamsAppId: string,
@@ -198,129 +70,6 @@ export async function checkIfAppInDifferentAcountSameTenant(
   }
 
   return ok(false);
-}
-
-/**
- * Build appPackage.{envName}.zip
- * @returns Path for built Teams app package
- */
-export async function buildTeamsAppPackage(
-  projectSettings: ProjectSettingsV3 | ProjectSettings,
-  projectPath: string,
-  envInfo: v3.EnvInfoV3,
-  withEmptyCapabilities = false,
-  telemetryProps?: Record<string, string>
-): Promise<Result<string, FxError>> {
-  const buildFolderPath = path.join(projectPath, BuildFolderName, AppPackageFolderName);
-  await fs.ensureDir(buildFolderPath);
-  const manifestRes = await manifestUtils.getManifest(
-    projectPath,
-    envInfo,
-    withEmptyCapabilities,
-    telemetryProps
-  );
-  if (manifestRes.isErr()) {
-    return err(manifestRes.error);
-  }
-  const manifest: TeamsAppManifest = manifestRes.value;
-  if (!isUUID(manifest.id)) {
-    manifest.id = v4();
-  }
-  if (withEmptyCapabilities) {
-    manifest.bots = [];
-    manifest.composeExtensions = [];
-    manifest.configurableTabs = [];
-    manifest.staticTabs = [];
-    manifest.webApplicationInfo = undefined;
-  }
-  const appDirectory = await getAppDirectory(projectPath);
-  const colorFile = path.join(appDirectory, manifest.icons.color);
-  if (!(await fs.pathExists(colorFile))) {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(colorFile)
-      )
-    );
-  }
-
-  const outlineFile = path.join(appDirectory, manifest.icons.outline);
-  if (!(await fs.pathExists(outlineFile))) {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(outlineFile)
-      )
-    );
-  }
-
-  const zip = new AdmZip();
-  zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
-
-  // outline.png & color.png, relative path
-  let dir = path.dirname(manifest.icons.color);
-  zip.addLocalFile(colorFile, dir === "." ? "" : dir);
-  dir = path.dirname(manifest.icons.outline);
-  zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
-
-  // localization file
-  if (
-    manifest.localizationInfo &&
-    manifest.localizationInfo.additionalLanguages &&
-    manifest.localizationInfo.additionalLanguages.length > 0
-  ) {
-    await Promise.all(
-      manifest.localizationInfo.additionalLanguages.map(async function (language: any) {
-        const file = language.file;
-        const fileName = `${appDirectory}/${file}`;
-        if (!(await fs.pathExists(fileName))) {
-          throw AppStudioResultFactory.UserError(
-            AppStudioError.FileNotFoundError.name,
-            AppStudioError.FileNotFoundError.message(fileName)
-          );
-        }
-        const dir = path.dirname(file);
-        zip.addLocalFile(fileName, dir === "." ? "" : dir);
-      })
-    );
-  }
-
-  const zipFileName = path.join(buildFolderPath, `appPackage.${envInfo.envName}.zip`);
-  zip.writeZip(zipFileName);
-
-  const manifestFileName = path.join(buildFolderPath, `manifest.${envInfo.envName}.json`);
-  if (await fs.pathExists(manifestFileName)) {
-    await fs.chmod(manifestFileName, 0o777);
-  }
-  await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
-  await fs.chmod(manifestFileName, 0o444);
-
-  if (isSPFxProject(projectSettings)) {
-    const spfxTeamsPath = `${projectPath}/SPFx/teams`;
-    await fs.copyFile(zipFileName, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
-
-    for (const file of await fs.readdir(`${projectPath}/SPFx/teams/`)) {
-      if (
-        file.endsWith("color.png") &&
-        manifest.icons.color &&
-        !manifest.icons.color.startsWith("https://")
-      ) {
-        const colorFile = `${appDirectory}/${manifest.icons.color}`;
-        const color = await fs.readFile(colorFile);
-        await fs.writeFile(path.join(spfxTeamsPath, file), color);
-      } else if (
-        file.endsWith("outline.png") &&
-        manifest.icons.outline &&
-        !manifest.icons.outline.startsWith("https://")
-      ) {
-        const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-        const outline = await fs.readFile(outlineFile);
-        await fs.writeFile(path.join(spfxTeamsPath, file), outline);
-      }
-    }
-  }
-
-  return ok(zipFileName);
 }
 
 export async function updateManifestV3(

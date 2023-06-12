@@ -10,45 +10,8 @@ import { ComponentNames } from "../../constants";
 const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
 const BOT_STATE_KEY = ComponentNames.TeamsBot;
-const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
 export const manifestStateDataRegex = /{{{?state\.[a-zA-Z-_]+\.\w+}}}?/g;
-
-export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.14",
-  "version": "1.0.0",
-  "id": "{{state.${APP_MANIFEST_KEY}.teamsAppId}}",
-  "packageName": "com.microsoft.teams.extension",
-  "developer": {
-      "name": "Teams App, Inc.",
-      "websiteUrl": "{{{state.${TAB_STATE_KEY}.endpoint}}}",
-      "privacyUrl": "{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/privacy",
-      "termsOfUseUrl": "{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/termsofuse"
-  },
-  "icons": {
-      "color": "{{config.manifest.icons.color}}",
-      "outline": "{{config.manifest.icons.outline}}"
-  },
-  "name": {
-      "short": "{{config.manifest.appName.short}}",
-      "full": "{{config.manifest.appName.full}}"
-  },
-  "description": {
-      "short": "{{config.manifest.description.short}}",
-      "full": "{{config.manifest.description.full}}"
-  },
-  "accentColor": "#FFFFFF",
-  "bots": [],
-  "composeExtensions": [],
-  "configurableTabs": [],
-  "staticTabs": [],
-  "permissions": [
-      "identity",
-      "messageTeamMembers"
-  ],
-  "validDomains": []
-}`;
 
 export const STATIC_TABS_TPL_V3: IStaticTab[] = [
   {
@@ -291,15 +254,7 @@ export class APP_STUDIO_API_NAMES {
 /**
  * Config keys that are useful for generating remote teams app manifest
  */
-export const REMOTE_MANIFEST = "manifest.source.json";
-export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
-export const MANIFEST_LOCAL = "manifest.local.template.json";
 export const MANIFEST_TEMPLATE_CONSOLIDATE = "manifest.template.json";
-export const FRONTEND_ENDPOINT = "endpoint";
-export const FRONTEND_DOMAIN = "domain";
-export const FRONTEND_INDEX_PATH = "indexPath";
-export const BOT_ID = "botId";
-export const LOCAL_BOT_ID = "localBotId";
 export const COLOR_TEMPLATE = "plugins/resource/appstudio/defaultIcon.png";
 export const OUTLINE_TEMPLATE = "plugins/resource/appstudio/defaultOutline.png";
 export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
@@ -370,12 +325,6 @@ export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
-
-/**
- * Config Keys that are useful for remote collaboration
- */
-export const SOLUTION = "solution";
-export const SOLUTION_USERINFO = "userinfo";
 
 /**
  * Language codes.

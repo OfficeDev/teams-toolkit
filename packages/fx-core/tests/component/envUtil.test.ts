@@ -464,9 +464,6 @@ describe("envUtils", () => {
       };
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isOk());
-      const core = new FxCore(tools);
-      const getDotEnvRes = await core.getDotEnv(inputs);
-      assert.isTrue(getDotEnvRes.isOk());
     });
     it("EnvLoaderMW failed for F5 (missing .env file and getEnvFilePath Error)", async () => {
       sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserError({})));
@@ -528,8 +525,6 @@ describe("envUtils", () => {
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isOk());
       const core = new FxCore(tools);
-      const getDotEnvRes = await core.getDotEnv(inputs);
-      assert.isTrue(getDotEnvRes.isOk());
     });
     it("EnvLoaderMW fail without projectPath", async () => {
       class MyClass {

@@ -383,18 +383,6 @@ export class FxCoreV3Implement {
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
     return listCollaboratorFunc(inputs);
   }
-
-  /**
-   * @deprecated
-   */
-  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
-  async getDotEnv(
-    inputs: InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return ok(ctx?.envVars);
-  }
-
   /**
    * get all dot envs
    */

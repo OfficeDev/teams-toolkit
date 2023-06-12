@@ -5,9 +5,9 @@ on:
     types: [milestoned]
   workflow_dispatch: # allows to run manually for testing
     inputs:
-      issue-number:
+      issueNumber:
         description: 'specific issue number to test issue-milestoned action'
-        required: true  
+        type: environment  
 
 jobs:
   main:
@@ -31,7 +31,10 @@ jobs:
       - name: Build action
         continue-on-error: true
         run: npm run build --prefix ./action-base
-
+      
+      - name: Test env
+        run: echo "issue number is $issueNumber"
+      
       - name: Create AZDO Item 
         uses: ./action-base/issue-milestoned
         with:
@@ -44,4 +47,3 @@ jobs:
           bug-label: "bug"
           bug-area-path: "Microsoft Teams Extensibility"
           bug-iteration-path: "Microsoft Teams Extensibility"
-          issue-number: ${{ github.event_name == 'workflow_dispatch' && steps.dispatch-cases.outputs.issue-number}}

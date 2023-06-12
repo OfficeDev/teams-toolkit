@@ -381,16 +381,6 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
   }
 }
 
-export async function getAzureProjectConfigV3(): Promise<ProjectConfigV3 | undefined> {
-  const input = getSystemInputs();
-  input.ignoreEnvInfo = true;
-  const res = await core.getProjectConfigV3(input);
-  if (res.isOk()) {
-    return res.value;
-  }
-  return undefined;
-}
-
 export function getSystemInputs(): Inputs {
   const answers: Inputs = {
     projectPath: globalVariables.workspaceUri?.fsPath,

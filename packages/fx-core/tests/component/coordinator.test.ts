@@ -3185,24 +3185,7 @@ describe("component coordinator test", () => {
     const res = await fxCore.getDotEnvs(inputs);
     assert.isTrue(res.isErr());
   });
-  it("getProjectConfig", async () => {
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.getProjectConfig(inputs);
-    assert.isTrue(res.isOk());
-  });
-  it("getProjectConfigV3", async () => {
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const fxCore = new FxCore(tools);
-    const res = await fxCore.getProjectConfigV3(inputs);
-    assert.isTrue(res.isOk());
-  });
+
   it("getSelectedEnv", async () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     const inputs: InputsWithProjectPath = {

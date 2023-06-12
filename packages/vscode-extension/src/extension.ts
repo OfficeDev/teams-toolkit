@@ -678,18 +678,7 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
 }
 
 async function setAadManifestEnabledContext() {
-  if (isV3Enabled()) {
-    vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
-  } else {
-    const projectSettingsConfig = await handlers.getAzureProjectConfigV3();
-    vscode.commands.executeCommand(
-      "setContext",
-      "fx-extension.isAadManifestEnabled",
-      projectSettingsConfig
-        ? hasAAD(projectSettingsConfig.projectSettings as ProjectSettingsV3)
-        : false
-    );
-  }
+  vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
 }
 
 async function setApiV3EnabledContext() {

@@ -476,40 +476,6 @@ export interface ContextV3 extends Context_2 {
     tokenProvider?: TokenProvider;
 }
 
-// @public (undocumented)
-export interface Core {
-    // (undocumented)
-    activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
-    // (undocumented)
-    createEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
-    // (undocumented)
-    decrypt: (ciphertext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
-    // (undocumented)
-    deployArtifacts: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    encrypt: (plaintext: string, inputs: Inputs) => Promise<Result<string, FxError>>;
-    // (undocumented)
-    executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
-    getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
-    // (undocumented)
-    listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
-    // (undocumented)
-    localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    on: (event: CoreCallbackEvent, callback: CoreCallbackFunc) => void;
-    // (undocumented)
-    provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    version?: string;
-}
-
 // @public
 export enum CoreCallbackEvent {
     // (undocumented)
@@ -517,9 +483,6 @@ export enum CoreCallbackEvent {
     // (undocumented)
     unlock = "unlock"
 }
-
-// @public (undocumented)
-export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
 // @public
 export interface CryptoProvider {
@@ -796,11 +759,6 @@ export interface GroupAction extends ActionBase {
 }
 
 // @public (undocumented)
-interface ICore extends Core {
-    addFeature?: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-}
-
-// @public (undocumented)
 export const InputConfigsFolderName = "configs";
 
 // @public
@@ -867,33 +825,6 @@ export interface IProgressHandler {
     end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
     next: (detail?: string) => Promise<void>;
     start: (detail?: string) => Promise<void>;
-}
-
-// @public (undocumented)
-interface ISolution {
-    addFeature?: (ctx: Context_2, inputs: SolutionAddFeatureInputs) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<any, FxError>>;
-    getQuestionsForAddFeature?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForInit?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: M365TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    init?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: M365TokenProvider) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -1334,12 +1265,6 @@ export interface SingleSelectQuestion extends UserInputQuestion {
 export type SingleSelectResult = InputResult<string | OptionItem>;
 
 // @public (undocumented)
-interface SolutionAddFeatureInputs extends InputsWithProjectPath {
-    // (undocumented)
-    features: string[];
-}
-
-// @public (undocumented)
 export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
 
 // @public (undocumented)
@@ -1740,9 +1665,6 @@ declare namespace v3 {
         TeamsAppResource,
         TeamsFxAzureResourceStates,
         AppManifestProvider,
-        SolutionAddFeatureInputs,
-        ISolution,
-        ICore,
         AzureIdentity,
         FrontendHostingResource,
         AzureSQL,
@@ -1769,16 +1691,6 @@ export type Void = {};
 
 // @public (undocumented)
 export const Void: {};
-
-// @public (undocumented)
-export interface VsCode {
-    addConfigurations: (configurations: any) => Promise<Result<null, FxError>>;
-    // (undocumented)
-    addInputs: (iputs: any) => Promise<Result<null, FxError>>;
-    addRecommendations: (recommendations: any) => Promise<Result<null, FxError>>;
-    addSettings: (settings: any) => Promise<Result<null, FxError>>;
-    addTasks: (tasks: any) => Promise<Result<null, FxError>>;
-}
 
 // @public (undocumented)
 export enum VsCodeEnv {

@@ -169,8 +169,6 @@
 
 /packages/sdk-react @tecton @yiqing-zhao
 
-/packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
-
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 
 /packages/fx-core/src/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu

@@ -1,4 +1,4 @@
-name: issue-milestoned
+name: milestoned-azdo
 
 on: 
   issues:

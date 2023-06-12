@@ -75,10 +75,9 @@ import {
   globalStateUpdate,
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/clients/appStudioClient";
 import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -92,14 +91,10 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
   AadManifestDeployConstants,
-  AzureAssignRoleHelpUrl,
   AzurePortalUrl,
-  CLI_FOR_M365,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
-  SpfxManageSiteAdminUrl,
-  SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
@@ -136,8 +131,6 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   anonymizeFilePaths,
   getAppName,
-  getM365TenantFromEnv,
-  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
@@ -148,7 +141,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { compare } from "./utils/versionUtil";
 import { setRegion } from "@microsoft/teamsfx-core";
 import { AuthSvcScopes } from "@microsoft/teamsfx-core";
 import { isImportSPFxEnabled } from "@microsoft/teamsfx-core";

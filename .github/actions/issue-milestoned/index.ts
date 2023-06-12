@@ -1,10 +1,11 @@
-import { OctoKitIssue } from '../api/octokit';
+import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { Action } from '../common/Action';
 import { DevopsClient } from '../common/azdo';
-import { getAccounts, getRequiredInput, safeLog } from '../common/utils';
+import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
 import { getInput } from '@actions/core';
 
+const githubToken = getRequiredInput('token');
 const milestonePrefix = getRequiredInput('milestone-prefix');
 const devopsToken = getRequiredInput('devops-token');
 const org = getRequiredInput('devops-org');
@@ -22,8 +23,9 @@ class Milestoned extends Action {
 
 	async onMilestoned(issue: OctoKitIssue) {
 		const content = await issue.getIssue();
+		content.id
 		if (content.milestone?.startsWith(milestonePrefix)) {
-			safeLog(`got a milestoned ${content.milestone} issue`);
+			safeLog(`the issue ${content.number} is milestoned with ${content.milestone}`);
 			let client = await this.createClient();
 			const users = getAccounts;
 			let asignee = undefined;
@@ -46,7 +48,15 @@ class Milestoned extends Action {
 				await client.createBugItem(title, asignee, undefined, url);
 			}
 			safeLog(`finished to create work item.`);
+		} else {
+			safeLog(`the issue ${content.number} is not milestoned with prefix ${milestonePrefix}, ignore.`);
 		}
+	}
+	async onTriggered(_: OctoKit) {
+		safeLog(`start manually create work item`);
+		const issueNumber = +getRequiredInput('issue-number');
+		const issue = await new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
+		await this.onMilestoned(issue);
 	}
 
 	private async createClient() {
@@ -68,4 +78,8 @@ class Milestoned extends Action {
 	}
 }
 
-new Milestoned().run() // eslint-disable-line
+const getAccounts = (() => {
+	return fs.readJsonSync(path.join(__dirname, '../..', '.github', 'accounts.json'));
+})();
+
+new Milestoned().run(); // eslint-disable-line

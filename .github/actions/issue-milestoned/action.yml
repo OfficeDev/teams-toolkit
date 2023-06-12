@@ -1,5 +1,5 @@
 name: Issue Milestoned
-description: Generate an work item for milestoned issue
+description: Generate a work item for milestoned issue
 inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions

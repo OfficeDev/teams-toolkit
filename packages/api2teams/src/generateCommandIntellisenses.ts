@@ -5,6 +5,11 @@ export function generateCommandIntellisenses(
   requestCards: AdaptiveCardResult[]
 ): CommandIntellisense[] {
   const commandIntellisenses: CommandIntellisense[] = [];
+  commandIntellisenses.push({
+    title: 'help',
+    description: 'Show help information'
+  });
+
   for (const card of requestCards) {
     if (commandIntellisenses.length >= 10) {
       console.warn(

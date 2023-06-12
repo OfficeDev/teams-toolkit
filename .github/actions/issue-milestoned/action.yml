@@ -39,7 +39,6 @@ inputs:
     default: ''
   issue-number: 
     description: specific issue number for manually trigger  
-    required: false
     
 runs:
   using: 'node16'

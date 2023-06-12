@@ -54,8 +54,8 @@ class Milestoned extends Action {
 		}
 	}
 	async onTriggered(_: OctoKit) {
-		safeLog(`start manually create work item`);
-		const issueNumber = +getRequiredInput('issue-number');
+		const issueNumber = +getInput('issue-number');
+		safeLog(`start manually create work item for issue ${issueNumber}`);
 		const issue = await new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
 		await this.onMilestoned(issue);
 	}

@@ -33,7 +33,7 @@ jobs:
         run: npm run build --prefix ./action-base
       
       - name: Test env
-        run: echo "issue number is $github.event.inputs.issueNumber"
+        run: echo "issue number is ${{github.event.inputs.issueNumber}}"
       
       - name: Create AZDO Item 
         uses: ./action-base/issue-milestoned
@@ -47,3 +47,5 @@ jobs:
           bug-label: "bug"
           bug-area-path: "Microsoft Teams Extensibility"
           bug-iteration-path: "Microsoft Teams Extensibility"
+        env:
+          ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}

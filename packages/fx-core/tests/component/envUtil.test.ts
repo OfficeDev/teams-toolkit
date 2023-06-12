@@ -32,6 +32,7 @@ import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
 import { MetadataV3 } from "../../src/common/versionMetadata";
 import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../src/error/common";
+import { parseSetOutputCommand } from "../../src/component/driver/script/scriptDriver";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -771,5 +772,31 @@ describe("environmentManager.listRemoteEnvConfigs", () => {
     sandbox.stub(fs, "readdir").resolves([] as any);
     const res = await environmentManager.listRemoteEnvConfigs(".", true);
     assert.isTrue(res.isErr());
+  });
+});
+
+describe("parseSetOutputCommand", () => {
+  const tools = new MockTools();
+  setTools(tools);
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn | undefined;
+  afterEach(() => {
+    sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+  });
+  it("parse one key value pair", async () => {
+    const res = parseSetOutputCommand('echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"');
+    assert.deepEqual(res, { TAB_DOMAIN: "localhost:53000" });
+  });
+  it("parse two key value pairs", async () => {
+    const res = parseSetOutputCommand(
+      'echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"; echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";'
+    );
+    assert.deepEqual(res, {
+      TAB_DOMAIN: "localhost:53000",
+      TAB_ENDPOINT: "https://localhost:53000",
+    });
   });
 });

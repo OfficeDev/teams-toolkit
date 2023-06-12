@@ -5,7 +5,6 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 import { isSPFxProject } from "../globalVariables";
@@ -250,7 +249,7 @@ class TreeViewManager {
   }
 
   private registerUtility(disposables: vscode.Disposable[]) {
-    const isTdpIntegration = isTDPIntegrationEnabled();
+    const isTdpIntegration = true;
     const utilityCommands = [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),

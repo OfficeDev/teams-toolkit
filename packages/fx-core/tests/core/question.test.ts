@@ -338,21 +338,10 @@ describe("addOfficeAddinQuestions()", () => {
   });
 
   it("should show in scratch option when feature flag is on", () => {
-    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(true);
-
     const officeAddinOption = ScratchOptionYesVSC();
     chai.assert.equal(
       officeAddinOption.label,
       `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")}`
-    );
-  });
-
-  it("should not show in scratch option when feature flag is off", () => {
-    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(false);
-    const originOption = ScratchOptionYesVSC();
-    chai.assert.equal(
-      originOption.label,
-      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`
     );
   });
 });

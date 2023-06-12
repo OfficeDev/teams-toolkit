@@ -83,7 +83,6 @@ describe("Core basic APIs", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
-    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
   });
   afterEach(async () => {
     sandbox.restore();

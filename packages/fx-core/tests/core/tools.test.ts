@@ -6,11 +6,7 @@ import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
 import "mocha";
 import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
-import {
-  convertDotenvToEmbeddedJson,
-  redactObject,
-  replaceTemplateWithUserData,
-} from "../../src/common/tools";
+import { convertDotenvToEmbeddedJson, replaceTemplateWithUserData } from "../../src/common/tools";
 import { newEnvInfo } from "../../src/core/environment";
 describe("tools", () => {
   it("newEnvInfo should return valid object", () => {
@@ -88,27 +84,6 @@ describe("redactObject", () => {
     [{ name: "name" }, { type: "object", properties: { name: "name" } }, { name: null }],
     [{ name: "name" }, { type: "object", properties: { name: {} } }, { name: null }],
   ];
-
-  it("should redact objects", () => {
-    // test that the function does not change input object
-    Object.freeze(testCases);
-    for (const [obj, schema, expectedResult] of testCases) {
-      const actualResult = redactObject(obj, schema);
-      expect(actualResult).to.deep.equal(expectedResult);
-    }
-  });
-
-  it("should prevent stackoverflow", () => {
-    const input = {};
-    (input as any).a = input;
-    const jsonSchema = {
-      type: "object",
-      properties: {},
-    };
-    (jsonSchema.properties as any).a = jsonSchema;
-    const actualResult = redactObject(input, jsonSchema, 1);
-    expect(actualResult).to.deep.equal({ a: null });
-  });
 
   it("replaceTemplateWithUserData", () => {
     const str =

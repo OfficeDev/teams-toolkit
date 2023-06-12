@@ -7,7 +7,6 @@ import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
 import { StateConfigKey, PluginId, EnvConstants } from "./constants";
 import {
   getSubscriptionIdFromResourceId,
@@ -19,7 +18,6 @@ import {
   getExpectedM365ApplicationIdUri,
   getExpectedM365ClientSecret,
 } from "./utilities";
-import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
@@ -97,9 +95,7 @@ export class FunctionValidator {
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
-    const activeResourcePlugins = isV3Enabled()
-      ? []
-      : await getActivePluginsFromProjectSetting(this.projectPath);
+    const activeResourcePlugins = [];
     chai.assert.isArray(activeResourcePlugins);
     // Validating app settings
     console.log("validating app settings.");
@@ -113,32 +109,7 @@ export class FunctionValidator {
     const endpoint =
       (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
       (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
-    if (isV3Enabled()) {
-      chai.assert.equal(webappSettingsResponse[BaseConfig.API_ENDPOINT], endpoint);
-      // TODO: add v3 validation
-    } else {
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.API_ENDPOINT],
-        this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
-      );
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
-        getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
-      );
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-        await getExpectedM365ClientSecret(
-          this.ctx,
-          this.projectPath,
-          this.env,
-          activeResourcePlugins
-        )
-      );
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.IDENTITY_ID],
-        this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
-      );
-    }
+    chai.assert.equal(webappSettingsResponse[BaseConfig.API_ENDPOINT], endpoint);
 
     if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
       chai.assert.equal(

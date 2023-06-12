@@ -14,7 +14,6 @@ import {
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { PluginDisplayName } from "../../common/constants";
 import { TOOLS } from "../../core/globalVars";
 import {
   CoreQuestionNames,
@@ -263,9 +262,6 @@ export class ResourceGroupHelper {
     if (node) {
       const res = await traverse(node, inputs, TOOLS.ui);
       if (res.isErr()) {
-        TOOLS.logProvider?.debug(
-          `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
-        );
         return err(res.error);
       }
     }

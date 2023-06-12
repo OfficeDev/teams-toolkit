@@ -16,7 +16,7 @@ import {
   ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
-import { isTDPIntegrationEnabled, isV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
@@ -700,7 +700,7 @@ async function setTDPIntegrationEnabledContext() {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isTDPIntegrationEnabled", // Currently it will return whether v3 is enabled or not.
-    isTDPIntegrationEnabled()
+    true
   );
 }
 

@@ -107,10 +107,8 @@ import * as commonUtils from "./debug/commonUtils";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
-import { localTelemetryReporter, sendDebugAllEvent } from "./debug/localTelemetryReporter";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
-import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
@@ -1133,37 +1131,6 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       showError(error);
       return "1";
     }
-  }
-
-  const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-  const result = await localTelemetryReporter.runWithTelemetryProperties(
-    TelemetryEvent.DebugPreCheck,
-    {
-      [TelemetryProperty.DebugAppId]: localAppId,
-    },
-    async (): Promise<Result<void, FxError>> => {
-      const result = await localTelemetryReporter.runWithTelemetry(
-        TelemetryEvent.DebugPreCheckCoreLocalDebug,
-        () => {
-          VsCodeLogInstance.outputChannel.show();
-          return runCommand(Stage.debug);
-        }
-      );
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      return ok(undefined);
-    }
-  );
-
-  if (result.isErr()) {
-    terminateAllRunningTeamsfxTasks();
-    await debug.stopDebugging();
-    // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(result.error, { [TelemetryProperty.DebugIsTransparentTask]: "false" });
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
   }
 }
 

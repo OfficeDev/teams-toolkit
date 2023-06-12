@@ -4,27 +4,20 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import * as constants from "./constants";
-import { ConfigFolderName, InputConfigsFolderName, Stage, UserError } from "@microsoft/teamsfx-api";
+import { Stage, UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { core, getSystemInputs, showError } from "../handlers";
+import { core, getSystemInputs } from "../handlers";
 import * as globalVariables from "../globalVariables";
 import {
   LocalEnvManager,
-  FolderName,
   getProjectComponents as coreGetProjectComponents,
 } from "@microsoft/teamsfx-core/build/common/local";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
-import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { localize } from "../utils/localizeUtils";
-import * as util from "util";
 import { VS_CODE_UI } from "../extension";
 import * as vscode from "vscode";
 
@@ -37,173 +30,9 @@ export async function getProjectRoot(
   return projectExists ? projectRoot : undefined;
 }
 
-export async function hasTeamsfxBackend(): Promise<boolean> {
-  if (!globalVariables.workspaceUri) {
-    return false;
-  }
-
-  if (!globalVariables.isTeamsFxProject) {
-    return false;
-  }
-
-  const backendRoot = await getProjectRoot(
-    globalVariables.workspaceUri.fsPath,
-    FolderName.Function
-  );
-
-  return backendRoot !== undefined;
-}
-
-export async function hasTeamsfxBot(): Promise<boolean> {
-  if (!globalVariables.workspaceUri) {
-    return false;
-  }
-
-  if (!globalVariables.isTeamsFxProject) {
-    return false;
-  }
-
-  const botRoot = await getProjectRoot(globalVariables.workspaceUri.fsPath, FolderName.Bot);
-
-  return botRoot !== undefined;
-}
-
-export async function getDebugConfig(
-  isLocalSideloadingConfiguration: boolean,
-  env?: string
-): Promise<{ appId: string; env?: string } | undefined> {
-  try {
-    const inputs = getSystemInputs();
-    // hide core log by default
-    inputs.loglevel = "Debug";
-    const getConfigRes = await core.getProjectConfigV3(inputs);
-    if (getConfigRes.isErr()) throw getConfigRes.error;
-    const config = getConfigRes.value;
-    if (!config) throw new UserError("extension", "GetConfigError", "Failed to get project config");
-    if (isLocalSideloadingConfiguration) {
-      const envInfo = config.envInfos["local"];
-      if (!envInfo)
-        throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
-      const appId = envInfo.state["app-manifest"]?.teamsAppId;
-      if (!appId) {
-        throw new UserError(
-          ExtensionSource,
-          ExtensionErrors.TeamsAppIdNotFoundError,
-          util.format(
-            localize("teamstoolkit.handlers.teamsAppIdNotFound"),
-            environmentManager.getLocalEnvName()
-          )
-        );
-      }
-      return { appId: appId, env: "local" };
-    } else {
-      if (env === undefined) {
-        const inputs = getSystemInputs();
-        inputs.ignoreConfigPersist = true;
-        inputs.ignoreEnvInfo = false;
-        const envRes = await core.getSelectedEnv(inputs);
-        if (envRes.isErr()) {
-          VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
-          return undefined;
-        }
-        env = envRes.value;
-      }
-      if (!env)
-        throw new UserError("extension", "GetSelectedEnvError", "Failed to get selected Env name");
-      const envInfo = config.envInfos[env];
-      if (!envInfo)
-        throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
-      const appId = envInfo.state["app-manifest"]?.teamsAppId;
-      if (!appId) {
-        throw new UserError({
-          name: "MissingTeamsAppId",
-          message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
-          source: "preview",
-        });
-      }
-      return { appId: appId, env: env };
-    }
-  } catch (error: any) {
-    showError(error);
-    return undefined;
-  }
-}
-
 export async function getNpmInstallLogInfo(): Promise<any> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
   return await localEnvManager.getNpmInstallLogInfo();
-}
-
-export async function getPortsInUse(): Promise<number[]> {
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  try {
-    const projectPath = globalVariables.workspaceUri!.fsPath;
-    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-    const ports = await localEnvManager.getPortsFromProject(projectPath, projectSettings);
-    return await localEnvManager.getPortsInUse(ports);
-  } catch (error: any) {
-    VsCodeLogInstance.warning(`Failed to check used ports. Error: ${error}`);
-    return [];
-  }
-}
-
-export async function getTeamsAppTenantId(): Promise<string | undefined> {
-  try {
-    const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    const localEnvInfo = await localEnvManager.getLocalEnvInfo(
-      globalVariables.workspaceUri!.fsPath,
-      {
-        projectId: projectSettings.projectId,
-      }
-    );
-    if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.AAD]) {
-      return localEnvInfo["state"][PluginNames.APPST].tenantId as string;
-    }
-    return undefined;
-  } catch {
-    // in case structure changes
-    return undefined;
-  }
-}
-
-export async function getLocalTeamsAppId(): Promise<string | undefined> {
-  try {
-    const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    const localEnvInfo = await localEnvManager.getLocalEnvInfo(
-      globalVariables.workspaceUri!.fsPath,
-      {
-        projectId: projectSettings.projectId,
-      }
-    );
-    if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.APPST]) {
-      return localEnvInfo["state"][PluginNames.APPST].teamsAppId as string;
-    }
-    return undefined;
-  } catch {
-    // in case structure changes
-    return undefined;
-  }
-}
-
-export async function loadPackageJson(path: string): Promise<any> {
-  if (!(await fs.pathExists(path))) {
-    VsCodeLogInstance.error(`Cannot load package.json from ${path}. File not found.`);
-    return undefined;
-  }
-
-  const rpj = require("read-package-json-fast");
-  try {
-    return await rpj(path);
-  } catch (error) {
-    VsCodeLogInstance.error(`Cannot load package.json from ${path}. Error: ${error}`);
-    return undefined;
-  }
 }
 
 export class LocalDebugSession {
@@ -317,30 +146,6 @@ export async function getTeamsAppKeyName(env?: string): Promise<string | undefin
     }
   }
   return undefined;
-}
-
-export async function getV3M365TitleId(
-  projectPath: string,
-  env: string
-): Promise<string | undefined> {
-  const result = await envUtil.readEnv(projectPath, env, false, true);
-  if (result.isErr()) {
-    throw result.error;
-  }
-
-  return result.value.M365_TITLE_ID;
-}
-
-export async function getV3M365AppId(
-  projectPath: string,
-  env: string
-): Promise<string | undefined> {
-  const result = await envUtil.readEnv(projectPath, env, false, true);
-  if (result.isErr()) {
-    throw result.error;
-  }
-
-  return result.value.M365_APP_ID;
 }
 
 export async function triggerV3Migration(): Promise<void> {

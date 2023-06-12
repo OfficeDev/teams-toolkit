@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ivan He <ruhe@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { err, FxError, Result, ok, M365TokenProvider } from "@microsoft/teamsfx-api";

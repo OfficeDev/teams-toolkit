@@ -13,8 +13,13 @@ import {
 } from "@microsoft/dev-tunnels-management";
 import { Trace } from "@microsoft/dev-tunnels-ssh";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../../telemetry/extTelemetryEvents";
 import { TunnelError } from "../baseTunnelTaskTerminal";
+import { UserError, SystemError } from "@microsoft/teamsfx-api";
 
 const DevTunnelOperationName = Object.freeze({
   create: "create",
@@ -87,10 +92,17 @@ export class DevTunnelManager {
         [TelemetryProperty.DebugDevTunnelOperationName]: operationName,
         ...this.telemetryProperties,
       });
-      return await operation();
-    } catch (error: any) {
-      const operationError = TunnelError.DevTunnelOperationError(operationName, error);
+      const res = await operation();
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelOperation, {
+        [TelemetryProperty.DebugDevTunnelOperationName]: operationName,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        ...this.telemetryProperties,
+      });
+      return res;
+    } catch (error: any) {
+      if (error instanceof UserError || error instanceof SystemError) throw error;
+      const operationError = TunnelError.DevTunnelOperationError(operationName, error);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugDevTunnelOperation, operationError, {
         [TelemetryProperty.DebugDevTunnelOperationName]: operationName,
         ...this.telemetryProperties,
       });

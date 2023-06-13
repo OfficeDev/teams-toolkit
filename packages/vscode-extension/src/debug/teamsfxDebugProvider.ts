@@ -9,7 +9,7 @@ import {
   isValidProject,
   isValidProjectV3,
 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core/build/error/common";
@@ -59,10 +59,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
 
       if (typeof debugConfiguration.url !== "string") {
-        return debugConfiguration;
-      }
-
-      if (!isV3Enabled()) {
         return debugConfiguration;
       }
 

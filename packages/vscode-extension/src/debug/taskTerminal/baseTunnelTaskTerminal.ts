@@ -8,7 +8,7 @@
 import * as util from "util";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { assembleError, envUtil, isV3Enabled, TunnelType } from "@microsoft/teamsfx-core";
+import { assembleError, envUtil, TunnelType } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import { DotenvOutput } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
@@ -106,10 +106,8 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       }
     }
 
-    if (isV3Enabled()) {
-      if (typeof args.env !== "undefined" && typeof args.env !== "string") {
-        throw BaseTaskTerminal.taskDefinitionError("args.env");
-      }
+    if (typeof args.env !== "undefined" && typeof args.env !== "string") {
+      throw BaseTaskTerminal.taskDefinitionError("args.env");
     }
   }
 
@@ -238,7 +236,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
       const result: OutputInfo = {
         file: undefined,
       };
-      if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
+      if (!globalVariables.workspaceUri?.fsPath || !env) {
         return ok(result);
       }
 
@@ -263,7 +261,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   protected async readPropertiesFromEnv(
     env: string | undefined
   ): Promise<Result<DotenvOutput, FxError>> {
-    if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !env) {
+    if (!globalVariables.workspaceUri?.fsPath || !env) {
       return ok({});
     }
     return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env, false, false);

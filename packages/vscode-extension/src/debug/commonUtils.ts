@@ -9,10 +9,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { core, getSystemInputs } from "../handlers";
 import * as globalVariables from "../globalVariables";
-import {
-  LocalEnvManager,
-  getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core/build/common/local";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
@@ -91,12 +88,6 @@ export function checkAndSkipDebugging(): boolean {
     return true;
   }
   return false;
-}
-
-// for telemetry use only
-export async function getProjectComponents(): Promise<string | undefined> {
-  const projectPath = globalVariables.workspaceUri!.fsPath;
-  return coreGetProjectComponents(projectPath, VsCodeLogInstance, ExtTelemetry.reporter);
 }
 
 export class Step {

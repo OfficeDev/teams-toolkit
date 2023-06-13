@@ -125,11 +125,13 @@ describe("CommonUtils", () => {
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").resolves(err(new UserError({})));
       const result = await commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").rejects(new UserError({}));
       const result = await commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
@@ -160,11 +162,13 @@ describe("CommonUtils", () => {
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getTeamsAppName").resolves(err(new UserError({})));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);

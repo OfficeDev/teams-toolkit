@@ -57,6 +57,8 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { pathUtils } from "../component/utils/pathUtils";
+import { metadataUtil } from "../component/utils/metadataUtil";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -245,6 +247,101 @@ export class FxCore {
     inputs: InputsWithProjectPath
   ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnvs, inputs);
+  }
+
+  /**
+   * get projectId
+   */
+  async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value as any;
+    return ok(projectModel.projectId || "");
+  }
+
+  /**
+   * get Teams App Name from yml
+   */
+  async getTeamsAppName(projectPath: string): Promise<Result<string, FxError>> {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value as any;
+    if (projectModel.provision) {
+      const teamsAppCreate = projectModel.provision?.driverDefs.find(
+        (d: any) => d.uses === "teamsApp/create"
+      );
+      if (teamsAppCreate) {
+        const name = (teamsAppCreate.with as any).name;
+        if (name) {
+          return ok(name.replace("-${{TEAMSFX_ENV}}", "") || "");
+        }
+      }
+    }
+    return ok("");
+  }
+
+  /**
+   * get project info
+   */
+  async getProjectInfo(
+    projectPath: string,
+    env: string
+  ): Promise<
+    Result<
+      {
+        projectId: string;
+        teamsAppId: string;
+        teamsAppName: string;
+        m365TenantId: string;
+      },
+      FxError
+    >
+  > {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, env);
+    const maybeProjectModel = await metadataUtil.parse(ymlPath, env);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const readEnvRes = await envUtil.readEnv(projectPath, env, false, true);
+    if (readEnvRes.isErr()) {
+      return err(readEnvRes.error);
+    }
+    const envObject = readEnvRes.value;
+    const res: {
+      projectId: string;
+      teamsAppId: string;
+      teamsAppName: string;
+      m365TenantId: string;
+    } = {
+      projectId: (projectModel as any).projectId || "",
+      teamsAppId: "",
+      teamsAppName: "",
+      m365TenantId: envObject.TEAMS_APP_TENANT_ID || "",
+    };
+    if (projectModel.provision) {
+      const teamsAppCreate = projectModel.provision.driverDefs.find(
+        (d) => d.uses === "teamsApp/create"
+      );
+      if (teamsAppCreate) {
+        const teamsAppIdEnvName = teamsAppCreate.writeToEnvironmentFile?.teamsAppId;
+        if (teamsAppIdEnvName) {
+          const teamsAppId = envObject[teamsAppIdEnvName];
+          res.teamsAppId = teamsAppId;
+        }
+        const name = (teamsAppCreate.with as any).name;
+        if (name) {
+          res.teamsAppName = name.replace("-${{TEAMSFX_ENV}}", "") || "";
+        }
+      }
+    }
+    return ok(res);
   }
 
   async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {

@@ -32,6 +32,7 @@ import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import * as yaml from "yaml";
 import { getV3TeamsAppId } from "../debug/commonUtils";
+import { core } from "../handlers";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -77,69 +78,56 @@ export interface TeamsAppTelemetryInfo {
 }
 
 // Only used for telemetry when multi-env is enabled
-export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInfo | undefined {
+export async function getTeamsAppTelemetryInfoByEnv(
+  env: string
+): Promise<TeamsAppTelemetryInfo | undefined> {
   try {
     const ws = globalVariables.workspaceUri!.fsPath;
-
     if (isValidProject(ws)) {
-      const result = environmentManager.getEnvStateFilesPath(env, ws);
-      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-      const appstudioState = envJson[PluginNames.APPST];
-      return {
-        appId: appstudioState.teamsAppId,
-        tenantId: appstudioState.tenantId,
-      };
+      const projectInfoRes = await core.getProjectInfo(ws, env);
+      if (projectInfoRes.isOk()) {
+        const projectInfo = projectInfoRes.value;
+        return {
+          appId: projectInfo.teamsAppId,
+          tenantId: projectInfo.m365TenantId,
+        };
+      }
     }
   } catch (e) {
     return undefined;
   }
+  return undefined;
 }
 
-export function getProjectId(): string | undefined {
+export async function getProjectId(): Promise<string | undefined> {
   if (!globalVariables.workspaceUri) {
     return undefined;
   }
   try {
     const ws = globalVariables.workspaceUri.fsPath;
-    const settingsJsonPathNew = path.join(
-      ws,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
-    const settingsJsonPathOld = path.join(ws, `.${ConfigFolderName}/settings.json`);
-
-    // Do not check validity of project in multi-env.
-    // Before migration, `isValidProject()` is false, but we still need to send `project-id` telemetry property.
-    try {
-      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
-      return settingsJson.projectId;
-    } catch (e) {}
-
-    // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
-    // While doing migration, sending telemetry will call this `getProjectId()` function.
-    // But before migration done, the settings file is still in the old location.
-    const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
-    return settingsJson.projectId;
+    const projInfoRes = await core.getProjectId(ws);
+    if (projInfoRes.isOk()) {
+      return projInfoRes.value;
+    }
   } catch (e) {
     return undefined;
   }
+  return undefined;
 }
 
-export function getAppName(): string | undefined {
-  const yamlFilPath = path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.yml");
-  try {
-    const settings = yaml.parse(fs.readFileSync(yamlFilPath, "utf-8"));
-    for (const action of settings?.provision) {
-      if (action?.uses === "teamsApp/create") {
-        const name = action?.with?.name;
-        if (name) {
-          return name.replace(YmlEnvNamePlaceholder, "");
-        }
-      }
-    }
+export async function getAppName(): Promise<string | undefined> {
+  if (!globalVariables.workspaceUri) {
     return undefined;
-  } catch (e) {}
+  }
+  try {
+    const ws = globalVariables.workspaceUri.fsPath;
+    const nameRes = await core.getTeamsAppName(ws);
+    if (nameRes.isOk()) {
+      return nameRes.value;
+    }
+  } catch (e) {
+    return undefined;
+  }
   return undefined;
 }
 

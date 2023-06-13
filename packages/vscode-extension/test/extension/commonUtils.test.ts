@@ -274,7 +274,7 @@ describe("CommonUtils", () => {
       sandbox.restore();
     });
 
-    it("get app name successfully", () => {
+    it("get app name successfully", async () => {
       const ymlData = `# Triggered when 'teamsfx provision' is executed
       provision:
         - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
@@ -288,7 +288,7 @@ describe("CommonUtils", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(fs, "readFileSync").returns(ymlData);
 
-      const res = commonUtils.getAppName();
+      const res = await commonUtils.getAppName();
       chai.expect(res).equal("appNameTest");
     });
 

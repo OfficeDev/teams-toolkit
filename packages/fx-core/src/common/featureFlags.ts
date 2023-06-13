@@ -23,10 +23,6 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.DeployManifest] = "true";
 }
 
-export function isBotNotificationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
-}
-
 export function isCLIDotNetEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
 }

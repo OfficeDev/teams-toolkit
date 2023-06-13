@@ -59,7 +59,7 @@ describe("OfficeAddinGenerator", function () {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3(newProjectSettingsV3());
+    context = createContextV3();
 
     await fse.ensureDir(testFolder);
     sinon.stub(fs, "stat").resolves();

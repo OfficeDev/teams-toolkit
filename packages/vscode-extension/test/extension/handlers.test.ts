@@ -126,33 +126,6 @@ describe("handlers", () => {
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
-  it("getAzureProjectConfigV3", async () => {
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-    const fake_config_v3 = {
-      projectSettings: {
-        appName: "fake_test",
-        projectId: "fake_projectId",
-      },
-      envInfos: {},
-    };
-    sandbox.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(fake_config_v3));
-    const res = await handlers.getAzureProjectConfigV3();
-    chai.assert.exists(res?.projectSettings);
-    chai.assert.equal(res?.projectSettings.appName, "fake_test");
-    chai.assert.equal(res?.projectSettings.projectId, "fake_projectId");
-  });
-
-  it("getAzureProjectConfigV3 return undefined", async () => {
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-    sandbox
-      .stub(MockCore.prototype, "getProjectConfigV3")
-      .resolves(err(new FileNotFoundError("path not exist", "fake path")));
-    const res = await handlers.getAzureProjectConfigV3();
-    chai.assert.isUndefined(res);
-  });
-
   it("getSettingsVersion", async () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);

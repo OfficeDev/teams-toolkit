@@ -3,14 +3,7 @@
 
 import "mocha";
 import { assert, expect } from "chai";
-import {
-  callFunc,
-  getFunc,
-  GlobalFuncId,
-  GlobalFuncMap,
-  reset,
-  setFunc,
-} from "../src/customizedFuncAdapter";
+import { callFunc, getFunc, setFunc, reset } from "../src/customizedFuncAdapter";
 import {
   LocalFunc,
   ok,
@@ -40,8 +33,6 @@ describe("customizedFuncAdapter", () => {
   it("reset", () => {
     reset();
     FuncId = 0;
-    assert.equal(GlobalFuncId, 0);
-    assert.isEmpty(GlobalFuncMap);
   });
 
   describe("callFunc", () => {

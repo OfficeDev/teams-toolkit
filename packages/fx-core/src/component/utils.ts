@@ -16,7 +16,6 @@ import { LocalCrypto } from "../core/crypto";
 import { TOOLS } from "../core/globalVars";
 import {
   ComponentNames,
-  ProgrammingLanguage,
   Scenarios,
   SolutionTelemetryComponentName,
   SolutionTelemetryProperty,
@@ -35,15 +34,14 @@ export function newProjectSettingsV3(): ProjectSettingsV3 {
   return projectSettings;
 }
 
-export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 {
-  if (!projectSettings) projectSettings = newProjectSettingsV3();
+export function createContextV3(): ContextV3 {
   const context: ContextV3 = {
     userInteraction: TOOLS.ui,
     logProvider: TOOLS.logProvider,
     telemetryReporter: TOOLS.telemetryReporter!,
-    cryptoProvider: new LocalCrypto(projectSettings?.projectId),
+    cryptoProvider: new LocalCrypto(""),
     permissionRequestProvider: TOOLS.permissionRequest,
-    projectSetting: projectSettings,
+    projectSetting: newProjectSettingsV3(),
     manifestProvider: new DefaultManifestProvider(),
     tokenProvider: TOOLS.tokenProvider,
   };
@@ -110,10 +108,6 @@ export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void 
     );
     functionConfig?.connections?.push(ComponentNames.APIM);
   }
-}
-
-export function isCSharpProject(programmingLanguage: string | undefined): boolean {
-  return programmingLanguage === ProgrammingLanguage.CSharp;
 }
 
 export function sendErrorTelemetryThenReturnError(

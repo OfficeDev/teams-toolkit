@@ -28,7 +28,6 @@ public class LinkUnfurlingApp : TeamsActivityHandler
         {
             ContentType = ThumbnailCard.ContentType,
             Content = previewCard
-
         };
 
         var attachments = new MessagingExtensionAttachment("application/vnd.microsoft.card.adaptive", null, adaptiveCard, preview: previewAttachment);
@@ -63,7 +62,6 @@ public class LinkUnfurlingApp : TeamsActivityHandler
         {
             ContentType = ThumbnailCard.ContentType,
             Content = previewCard
-
         };
 
         var attachments = new MessagingExtensionAttachment("application/vnd.microsoft.card.adaptive", null, adaptiveCard, preview: previewAttachment);

@@ -68,7 +68,7 @@ api2teams -v # show version information
 
 - Open generated folder in VSCode, and make sure you have installed [Teams Toolkit >= 5.0.0](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension).
 
-- Click F5 in VSCode to run the Teams App to view the result (Below is the example of teams app converted by [sample-open-api-spec.yml](./sample-spec/sample-open-api-spec.yml) file)
+- Click F5 in VSCode to run the Teams App to view the result (Below is the example of teams app converted by [sample-open-api-spec.yml](https://raw.githubusercontent.com/OfficeDev/TeamsFx/api2teams/packages/api2teams/sample-spec/sample-open-api-spec.yml) file)
 
   - Send message `GET /pets/1` to Bot, bot will send a response adaptive card:
 

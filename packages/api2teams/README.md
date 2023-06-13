@@ -1,41 +1,17 @@
-# Introduction
-This is a CLI tool to convert OpenAPI spec file to Teams App command bot project with adaptive cards based on [TeamsFx](https://github.com/OfficeDev/TeamsFx).
+# Welcome to `api2teams`
+> The `api2teams` and its generated project template is currently under active development. Report any issues to us [here](https://github.com/OfficeDev/TeamsFx/issues/new/choose)
 
-# Prerequisite
-To run this CLI and run generated Teams APP in your local dev machine or deploy to Azure, you will need:
+`api2teams` is a command line tool to generated a complete conversational style command and response [Teams application](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/conversations/command-bot-in-teams) based on your Open API specification file and represent the API response in the form of [Adaptive Cards](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#adaptive-card).
 
-- [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
-- An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
-- [Option] If you want to deploy this APP to Azure, you also need an Azure subscription. If you don't have an Azure subscription, [create a free account](https://azure.microsoft.com/en-us/free/) before you begin
+`api2teams` is the best way to start integrating your APIs with Teams conversational experience.
 
-# Quick Start
+## Quick start
 
-- Install the CLI
-  ```
-  npm install @microsoft/api2teams@latest -g
-  ```
+- Install `api2teams` with npm: `npm install @microsoft/api2teams@latest -g`
+- Prepare the Open API specification. If you don't currently have one, start with a sample we provided by saving a copy of the [sample-open-api-spec.yml](https://raw.githubusercontent.com/OfficeDev/TeamsFx/api2teams/packages/api2teams/sample-spec/sample-open-api-spec.yml) to your local disk.
+- Convert the Open API spec to a Teams app, assuming you are using the `sample-open-api-spec.yml`: `api2teams sample-open-api-spec.yml`
 
-- Download [sample-open-api-spec.yml](https://raw.githubusercontent.com/OfficeDev/TeamsFx/api2teams/packages/api2teams/sample-spec/sample-open-api-spec.yml) to current working directory
-
-- Run the command below to convert `sample-open-api-spec.yml` file to Teams App, it will generate teams project to `generated-teams-app` folder
-  ```
-  api2teams sample-open-api-spec.yml
-  ```
-
-- You can specify which folder to generate teams project as below
-  ```
-  api2teams sample-open-api-spec.yml -o my-custom-teams-app-folder
-  ```
-
-- If you want to overwrite the output folder, you can use `-f` parameters
-  ```
-  api2teams sample-open-api-spec.yml -o my-custom-teams-app-folder -f
-  ```
-
-- If you have other personal swagger yaml files, you can also use this CLI tool to covert them.
-
-# CLI Usage
+## Available commands and options
 
 The CLI name is `api2teams`. Usage is as below:
 
@@ -54,7 +30,7 @@ Options:
   -h, --help             display help for command
 ```
 
-User can input below command to generate Teams App to default or specific folder:
+You can input below command to generate Teams App to default or specific folder:
 
 ```bash
 api2teams sample-open-api-spec.yml # generate teams app to default folder ./generated-teams-app
@@ -64,41 +40,26 @@ api2teams -h # show help message
 api2teams -v # show version information
 ```
 
-# Run Generated Teams App
+## Getting started with the generated Teams app
 
-- Open generated folder in VSCode, and make sure you have installed [Teams Toolkit >= 5.0.0](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension).
+- Open the generated project in [Visual Studio Code](https://code.visualstudio.com/) and make sure you have the latest [Teams Toolkit](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension) (version 5.0.0 or higher) installed.
 
-- Click F5 in VSCode to run the Teams App to view the result (Below is the example of teams app converted by [sample-open-api-spec.yml](https://raw.githubusercontent.com/OfficeDev/TeamsFx/api2teams/packages/api2teams/sample-spec/sample-open-api-spec.yml) file)
+- Follow the instruction provided in the `README.md` for the generated project to get started. For the Teams app converted by the given sample Open API spec, you will be able to run a `GET /pets/1` command in Teams and a bot will return an Adaptive Card as response.
 
-  - Send message `GET /pets/1` to Bot, bot will send a response adaptive card:
-
-    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow1.png)
-
-  - Send message `GET /pets` to Bot, it will first send request a request adaptive card:
-
-    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow2.png)
-
-  - Input value in the request adaptive card, and then click GET button, it will send back response adaptive card:
-
-    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow3.png)
-
-  - Send message `GET /pets?limit=1`, it will send back response adaptive card directly:
-
-    ![](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow4.png)
+    ![response](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow1.png)
     
-# Current Limitations
-1. Only OpenAPI version 3.0.0 or higher is supported.
-1. Authorization properties inside OpenAPI spec is not supported
-1. Only GET operations are supported.
-1. The webhooks property is not supported and will be ignored during conversion.
-1. The oneOf, anyOf, and not keywords are not supported, not because there is no better way to represent them in adaptive cards. Only the allOf keyword is supported.
-1. For request cards, there is no proper element to represent array types in adaptive cards, so users need to input array values manually.
-1. Adaptive cards do not support file uploads, so if an API contains file uploads, it cannot be converted to adaptive card.
-1. Due to Teams limitations, command intellisense can only contain a maximum of 10 items.
+## Current limitations
+1. The `api2teams` doesn't support Open API schema version < 3.0.0
+1. The `api2teams` doesn't support Authorization property in Open API specification
+1. The `api2teams` doesn't support `webhooks` property and it would be ignored during convert
+1. The `api2teams` doesn't support `oneOf`, `anyOf`, `not`keyword (It only support `allOf` keyword currently)
+1. The generated Adaptive Card doesn't support array type. 
+1. The generated Adaptive Card doesn't support file upload.
+1. The generated Teams app can only contain up to 10 items in the command menu.
 
-# References
-- [Teams Toolkit extension](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-- [Adaptive card official site](https://adaptivecards.io/)
-- [Adaptive card designer](https://adaptivecards.io/designer)
+## Further reading
+- [Teams Toolkit](https://learn.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
+- [Teams Platform Developer Documentation](https://learn.microsoft.com/microsoftteams/platform/mstdd-landing)
+- [Adaptive Card Designer](https://adaptivecards.io/designer)
 - [Swagger Parser](https://github.com/APIDevTools/swagger-parser)
 - [Swagger Samples](https://github.com/OAI/OpenAPI-Specification)

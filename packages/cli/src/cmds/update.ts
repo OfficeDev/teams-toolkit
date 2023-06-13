@@ -40,10 +40,10 @@ export class UpdateAadApp extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateAadAppStart);
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.deployAadAppStart);
     const resultFolder = await activate(rootFolder);
     if (resultFolder.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, resultFolder.error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.deployAadApp, resultFolder.error);
       return err(resultFolder.error);
     }
     const core = resultFolder.value;
@@ -52,21 +52,21 @@ export class UpdateAadApp extends YargsCommand {
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
       const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.deployAadApp, error);
       return err(error);
     }
     // Update the aad manifest
     const result = await core.deployAadManifest(inputs);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.UpdateAadApp,
+        TelemetryEvent.deployAadApp,
         result.error,
         makeEnvRelatedProperty(rootFolder, inputs)
       );
 
       return err(result.error);
     }
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadApp, {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.deployAadApp, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });
@@ -105,7 +105,7 @@ export class UpdateTeamsApp extends YargsCommand {
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
       const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateTeamsApp, error);
       return err(error);
     }
 

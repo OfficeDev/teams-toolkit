@@ -142,7 +142,7 @@ const meetingExtensionConfigured = (tab: ConfigurableTab) => {
     includes(tab.context, MeetingsContext.DetailsTab) ||
     includes(tab.context, MeetingsContext.ChatTab);
 
-  const validMeetingScope = includes(tab.scopes, CommandScope.GroupChat);
+  const validMeetingScope = !!tab.scopes && includeGroupChatScope(tab.scopes);
 
   return validMeetingScope && validMeetingContext;
 };

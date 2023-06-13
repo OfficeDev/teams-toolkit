@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import sinon from "sinon";
 import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
 import ServerConnection from "../src/serverConnection";

@@ -347,10 +347,6 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<string | undefined, FxError>> {
-    if (!inputs.projectPath) {
-      return ok(undefined);
-    }
-
     // No components for V5
     return ok("");
   }

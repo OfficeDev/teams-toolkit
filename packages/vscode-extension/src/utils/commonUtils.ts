@@ -93,9 +93,7 @@ export async function getTeamsAppTelemetryInfoByEnv(
         };
       }
     }
-  } catch (e) {
-    return undefined;
-  }
+  } catch (e) {}
   return undefined;
 }
 
@@ -109,9 +107,7 @@ export async function getProjectId(): Promise<string | undefined> {
     if (projInfoRes.isOk()) {
       return projInfoRes.value;
     }
-  } catch (e) {
-    return undefined;
-  }
+  } catch (e) {}
   return undefined;
 }
 
@@ -125,9 +121,7 @@ export async function getAppName(): Promise<string | undefined> {
     if (nameRes.isOk()) {
       return nameRes.value;
     }
-  } catch (e) {
-    return undefined;
-  }
+  } catch (e) {}
   return undefined;
 }
 

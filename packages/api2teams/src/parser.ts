@@ -175,5 +175,5 @@ export async function parseApi(yaml: string, options: CliOptions) {
   await fs.outputJSON(teamsAppMainifestPath, manifestJson, { spaces: 2 });
   console.log(` > update manifest successfully!`);
 
-  console.log('generate code successfully!');
+  console.log('generate teams app successfully!');
 }

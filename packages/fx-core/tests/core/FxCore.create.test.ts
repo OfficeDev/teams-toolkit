@@ -7,6 +7,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import fs from "fs-extra";
 import { FxCore } from "../../src";
 import {
   CoreQuestionNames,
@@ -118,6 +119,13 @@ describe("Core basic APIs for v3", () => {
       [SPFXQuestionNames.spfx_solution]: "import",
       [SPFXQuestionNames.spfx_import_folder]: "c:\\test",
     };
+    sinon
+      .stub(fs, "readJson")
+      .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
+    sinon.stub(fs, "pathExists").callsFake((directory: string) => {
+      if (directory.includes(".yo-rc.json")) return true;
+      else return false;
+    });
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());

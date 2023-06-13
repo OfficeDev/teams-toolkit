@@ -207,7 +207,13 @@ export class SPFxGenerator {
             continue;
           }
 
-          const webpartManifest = await fs.readJson(webpartManifestPath);
+          const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
+          const webpartManifest = JSON.parse(
+            (await fs.readFile(webpartManifestPath, "utf8"))
+              .toString()
+              .replace(matchHashComment, "")
+              .trim()
+          );
           importDetails.push(
             ` [${i}] Adding web part to Teams manifest with component id: ${webpartManifest["id"]}, web part name: ${webpartManifest["preconfiguredEntries"][0].title.default}...`
           );

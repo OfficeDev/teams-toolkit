@@ -143,9 +143,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { setRegion } from "@microsoft/teamsfx-core";
-import { AuthSvcScopes } from "@microsoft/teamsfx-core";
-import { isImportSPFxEnabled } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
